@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X, School, Mail, MapPin, Users } from "lucide-react";
+import { useCountriesForRegistration } from "@/hooks/useCountries";
 
 const registrationSchema = z.object({
   school: z.object({
@@ -40,6 +41,8 @@ interface SchoolSignUpFormProps {
 export default function SchoolSignUpForm({ onClose }: SchoolSignUpFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const { data: countries = [], isLoading: isLoadingCountries } = useCountriesForRegistration();
 
   const form = useForm<z.infer<typeof registrationSchema>>({
     resolver: zodResolver(registrationSchema),
@@ -108,22 +111,6 @@ export default function SchoolSignUpForm({ onClose }: SchoolSignUpFormProps) {
     { value: 'high_school', label: 'High School' },
     { value: 'international', label: 'International School' },
     { value: 'other', label: 'Other' },
-  ];
-
-  const countries = [
-    'United Kingdom',
-    'United States', 
-    'Australia',
-    'Canada',
-    'Germany',
-    'France',
-    'Spain',
-    'Italy',
-    'Netherlands',
-    'Sweden',
-    'Norway',
-    'Denmark',
-    'Other',
   ];
 
   return (

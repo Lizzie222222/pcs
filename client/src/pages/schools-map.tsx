@@ -5,6 +5,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, School, Award, Globe, Download } from "lucide-react";
+import { useCountries } from "@/hooks/useCountries";
 
 interface SchoolMapData {
   id: string;
@@ -19,6 +20,15 @@ interface SchoolMapData {
 
 export default function SchoolsMap() {
   const [selectedCountry, setSelectedCountry] = useState('');
+
+  // Handle country selection with "all" conversion
+  const handleCountryChange = (value: string) => {
+    // Convert "all" to empty string to show all countries
+    const actualValue = value === 'all' ? '' : value;
+    setSelectedCountry(actualValue);
+  };
+
+  const { data: countryOptions = [], isLoading: isLoadingCountries } = useCountries();
 
   const { data: schools, isLoading } = useQuery<SchoolMapData[]>({
     queryKey: ['/api/schools/map', selectedCountry],
@@ -105,16 +115,16 @@ export default function SchoolsMap() {
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <Select value={selectedCountry} onValueChange={setSelectedCountry}>
+                <Select value={selectedCountry} onValueChange={handleCountryChange}>
                   <SelectTrigger className="w-48" data-testid="select-country-filter">
                     <SelectValue placeholder="All Countries" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">All Countries</SelectItem>
-                    <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                    <SelectItem value="United States">United States</SelectItem>
-                    <SelectItem value="Australia">Australia</SelectItem>
-                    <SelectItem value="Canada">Canada</SelectItem>
+                    {countryOptions.map((option) => (
+                      <SelectItem key={option.value} value={option.value}>
+                        {option.label}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <Button variant="outline" data-testid="button-export-data">

@@ -48,6 +48,7 @@ export interface IStorage {
     countries: number;
     studentsImpacted: number;
   }>;
+  getUniqueCountries(): Promise<string[]>;
   
   // School User operations
   addUserToSchool(schoolUser: InsertSchoolUser): Promise<SchoolUser>;
@@ -218,6 +219,16 @@ export class DatabaseStorage implements IStorage {
       countries: stats.countries,
       studentsImpacted: stats.studentsImpacted,
     };
+  }
+
+  async getUniqueCountries(): Promise<string[]> {
+    const result = await db
+      .selectDistinct({ country: schools.country })
+      .from(schools)
+      .where(sql`${schools.country} IS NOT NULL AND ${schools.country} != ''`)
+      .orderBy(asc(schools.country));
+    
+    return result.map(row => row.country).filter(Boolean);
   }
 
   // School User operations

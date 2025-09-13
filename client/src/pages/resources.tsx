@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Search, Download, Filter, BookOpen, FileText, Video, Image } from "lucide-react";
+import { useCountries } from "@/hooks/useCountries";
 
 interface Resource {
   id: string;
@@ -32,6 +33,8 @@ export default function Resources() {
   const [page, setPage] = useState(0);
   const limit = 12;
 
+  const { data: countryOptions = [], isLoading: isLoadingCountries } = useCountries();
+
   const { data: resources, isLoading } = useQuery<Resource[]>({
     queryKey: ['/api/resources', filters, page],
     queryFn: async () => {
@@ -54,7 +57,9 @@ export default function Resources() {
   });
 
   const handleFilterChange = (key: string, value: string) => {
-    setFilters(prev => ({ ...prev, [key]: value }));
+    // Convert "all" values to empty strings to show all results
+    const actualValue = value === 'all' ? '' : value;
+    setFilters(prev => ({ ...prev, [key]: actualValue }));
     setPage(0); // Reset to first page when filters change
   };
 
@@ -140,11 +145,11 @@ export default function Resources() {
                   <SelectValue placeholder="All Countries" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
-                  <SelectItem value="United Kingdom">United Kingdom</SelectItem>
-                  <SelectItem value="United States">United States</SelectItem>
-                  <SelectItem value="Australia">Australia</SelectItem>
-                  <SelectItem value="Canada">Canada</SelectItem>
+                  {countryOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
               
