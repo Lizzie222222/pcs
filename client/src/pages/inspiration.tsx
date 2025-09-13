@@ -101,7 +101,7 @@ export default function Inspiration() {
                   <SelectValue placeholder="All Countries" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Countries</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
                   <SelectItem value="United Kingdom">United Kingdom</SelectItem>
                   <SelectItem value="United States">United States</SelectItem>
                   <SelectItem value="Australia">Australia</SelectItem>
@@ -114,7 +114,7 @@ export default function Inspiration() {
                   <SelectValue placeholder="All Stages" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Stages</SelectItem>
+                  <SelectItem value="all">All Stages</SelectItem>
                   <SelectItem value="inspire">Inspire</SelectItem>
                   <SelectItem value="investigate">Investigate</SelectItem>
                   <SelectItem value="act">Act</SelectItem>

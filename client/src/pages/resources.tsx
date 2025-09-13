@@ -140,7 +140,7 @@ export default function Resources() {
                   <SelectValue placeholder="All Countries" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Countries</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
                   <SelectItem value="United Kingdom">United Kingdom</SelectItem>
                   <SelectItem value="United States">United States</SelectItem>
                   <SelectItem value="Australia">Australia</SelectItem>
@@ -153,7 +153,7 @@ export default function Resources() {
                   <SelectValue placeholder="All Languages" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Languages</SelectItem>
+                  <SelectItem value="all">All Languages</SelectItem>
                   <SelectItem value="English">English</SelectItem>
                   <SelectItem value="Spanish">Spanish</SelectItem>
                   <SelectItem value="French">French</SelectItem>
@@ -166,7 +166,7 @@ export default function Resources() {
                   <SelectValue placeholder="All Ages" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Ages</SelectItem>
+                  <SelectItem value="all">All Ages</SelectItem>
                   <SelectItem value="5-7 years">5-7 years</SelectItem>
                   <SelectItem value="8-11 years">8-11 years</SelectItem>
                   <SelectItem value="12-16 years">12-16 years</SelectItem>

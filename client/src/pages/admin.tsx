@@ -74,7 +74,7 @@ export default function Admin() {
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
-    if (!isLoading && (!isAuthenticated || !user?.isAdmin)) {
+    if (!isLoading && (!isAuthenticated || !(user?.role === 'admin' || user?.isAdmin))) {
       toast({
         title: "Access Denied",
         description: "Admin access required",
@@ -90,21 +90,28 @@ export default function Admin() {
   // Admin stats query
   const { data: stats, error: statsError } = useQuery<AdminStats>({
     queryKey: ['/api/admin/stats'],
-    enabled: isAuthenticated && user?.isAdmin,
+    enabled: isAuthenticated && (user?.role === 'admin' || user?.isAdmin),
     retry: false,
   });
 
   // Pending evidence query
   const { data: pendingEvidence, error: evidenceError } = useQuery<PendingEvidence[]>({
     queryKey: ['/api/admin/evidence/pending'],
-    enabled: isAuthenticated && user?.isAdmin && activeTab === 'evidence',
+    enabled: isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'evidence',
     retry: false,
   });
 
+  // Clean filters for API (convert "all" values to empty strings)
+  const cleanFilters = (filters: typeof schoolFilters) => {
+    return Object.fromEntries(
+      Object.entries(filters).map(([key, value]) => [key, value === 'all' ? '' : value])
+    );
+  };
+
   // Schools query
   const { data: schools, error: schoolsError } = useQuery<SchoolData[]>({
-    queryKey: ['/api/admin/schools', schoolFilters],
-    enabled: isAuthenticated && user?.isAdmin && activeTab === 'schools',
+    queryKey: ['/api/admin/schools', cleanFilters(schoolFilters)],
+    enabled: isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'schools',
     retry: false,
   });
 
@@ -176,7 +183,7 @@ export default function Admin() {
     );
   }
 
-  if (!isAuthenticated || !user?.isAdmin) {
+  if (!isAuthenticated || !(user?.role === 'admin' || user?.isAdmin)) {
     return null; // Will redirect in useEffect
   }
 
@@ -440,7 +447,7 @@ export default function Admin() {
                       <SelectValue placeholder="All Countries" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All Countries</SelectItem>
+                      <SelectItem value="all">All Countries</SelectItem>
                       <SelectItem value="United Kingdom">United Kingdom</SelectItem>
                       <SelectItem value="United States">United States</SelectItem>
                       <SelectItem value="Australia">Australia</SelectItem>
@@ -544,7 +551,7 @@ export default function Admin() {
                   Cancel
                 </Button>
                 <Button
-                  className={reviewData.action === 'approved' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}
+                  className={`flex-1 ${reviewData.action === 'approved' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}`}
                   onClick={() => {
                     if (reviewData.action === 'rejected' && !reviewData.notes.trim()) {
                       toast({
@@ -561,7 +568,6 @@ export default function Admin() {
                     });
                   }}
                   disabled={reviewEvidenceMutation.isPending}
-                  className="flex-1"
                   data-testid="button-confirm-review"
                 >
                   {reviewEvidenceMutation.isPending ? 'Processing...' : 'Confirm'}

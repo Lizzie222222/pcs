@@ -110,7 +110,7 @@ export default function SchoolsMap() {
                     <SelectValue placeholder="All Countries" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">All Countries</SelectItem>
+                    <SelectItem value="all">All Countries</SelectItem>
                     <SelectItem value="United Kingdom">United Kingdom</SelectItem>
                     <SelectItem value="United States">United States</SelectItem>
                     <SelectItem value="Australia">Australia</SelectItem>

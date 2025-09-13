@@ -44,7 +44,7 @@ function Router() {
             <Route path="/resources" component={Resources} />
             <Route path="/inspiration" component={Inspiration} />
             <Route path="/schools-map" component={SchoolsMap} />
-            {user?.isAdmin && <Route path="/admin" component={Admin} />}
+            <Route path="/admin" component={Admin} />
           </>
         )}
         <Route component={NotFound} />
