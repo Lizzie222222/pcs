@@ -1,0 +1,43 @@
+Create a comprehensive web application for Plastic Clever Schools, including a public-facing website and an integrated CRM. The application should be a single, self-contained project, and it should include a database to store all necessary information. The project should be built to be easily deployed on a platform like Replit.
+
+Website Features:
+
+Homepage: A professional, low-bandwidth, and SEO-optimized page. It should include a brief introduction to the Plastic Clever Schools program , a clear call-to-action for teachers to sign up, and a dynamic section displaying key figures from the CRM (e.g., number of schools signed up, number of schools that have completed the award).
+
+
+Resources Section: A searchable and filterable page for high-quality educational resources. Filters should include country, language, age range, and program stage (Inspire, Investigate, Act).
+
+
+Inspiration/Case Studies Page: A gallery-style page showcasing curated case studies and inspiring evidence submitted by schools. This content must be manually reviewed and approved by the admin team, with the ability to prioritize the display of the most inspiring items. It should be searchable by school name and filterable by country, language, age range, and program stage.
+
+
+
+Public-facing Map: A map that visually displays schools that have signed up and distinguishes those that have completed the award. This map should be populated with data directly from the database.
+
+
+User Authentication: Implement a secure login wall for the 'Members' Area'.
+
+Members' Area (Post-Login):
+
+
+Dashboard: A visual progress tracker for the logged-in school, clearly showing their progress through the three stages: Inspire, Investigate, and Act.
+
+
+Evidence Submission: A simple form allowing teachers to upload evidence (photos, videos, PDFs) for each stage. The form should have an autocomplete feature for the school name.
+
+
+
+Award Completion: When a school completes a stage, their progress tracker on the dashboard should update.
+
+CRM Features (Admin View):
+
+Automated Sign-Up: Automate the sign-up process for new schools. Upon submission, a new school record should be created in the database.
+
+
+Evidence & Case Study Approval: The admin dashboard should have a section to manually review and approve new evidence submissions  and promote a select few to be case studies.
+
+
+Reporting: Provide basic reporting and data export functionality, allowing the admin team to filter schools by various criteria (e.g., school type, stage of completion, geography).
+
+
+Multi-User Support: The CRM should support multiple users (teachers) from the same school account.
