@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
   School, 
   Clock, 
@@ -71,6 +72,7 @@ export default function Admin() {
     action: 'approved' | 'rejected';
     notes: string;
   } | null>(null);
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
@@ -163,6 +165,41 @@ export default function Admin() {
     },
   });
 
+  // Export function
+  const handleExport = async (type: 'schools' | 'evidence' | 'users') => {
+    try {
+      const response = await fetch(`/api/admin/export/${type}`, {
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Export failed');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `${type}_${new Date().toISOString().split('T')[0]}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      setExportDialogOpen(false);
+      toast({
+        title: "Export Successful",
+        description: `${type} data has been exported successfully.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Export Failed",
+        description: "Failed to export data. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStageColor = (stage: string) => {
     switch (stage) {
       case 'inspire': return 'bg-pcs_blue text-white';
@@ -203,10 +240,48 @@ export default function Admin() {
                 </p>
               </div>
               <div className="flex gap-4">
-                <Button variant="outline" data-testid="button-export-data">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export Data
-                </Button>
+                <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" data-testid="button-export-data">
+                      <Download className="h-4 w-4 mr-2" />
+                      Export Data
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Export Data</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <p className="text-gray-600">Choose what data you want to export as CSV:</p>
+                      <div className="grid gap-3">
+                        <Button 
+                          onClick={() => handleExport('schools')} 
+                          className="justify-start"
+                          data-testid="button-export-schools"
+                        >
+                          <School className="h-4 w-4 mr-2" />
+                          Export Schools Data
+                        </Button>
+                        <Button 
+                          onClick={() => handleExport('evidence')} 
+                          className="justify-start"
+                          data-testid="button-export-evidence"
+                        >
+                          <Trophy className="h-4 w-4 mr-2" />
+                          Export Evidence Data
+                        </Button>
+                        <Button 
+                          onClick={() => handleExport('users')} 
+                          className="justify-start"
+                          data-testid="button-export-users"
+                        >
+                          <Users className="h-4 w-4 mr-2" />
+                          Export Users Data
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
                 <Button className="bg-coral hover:bg-coral/90" data-testid="button-send-emails">
                   <Mail className="h-4 w-4 mr-2" />
                   Send Emails

@@ -28,6 +28,7 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
+  getAllUsers(): Promise<User[]>;
   
   // School operations
   createSchool(school: InsertSchool): Promise<School>;
@@ -71,6 +72,7 @@ export interface IStorage {
   getEvidence(id: string): Promise<Evidence | undefined>;
   getSchoolEvidence(schoolId: string): Promise<Evidence[]>;
   getPendingEvidence(): Promise<Evidence[]>;
+  getAllEvidence(): Promise<Evidence[]>;
   updateEvidenceStatus(
     id: string, 
     status: 'approved' | 'rejected',
@@ -122,6 +124,13 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return user;
+  }
+
+  async getAllUsers(): Promise<User[]> {
+    return await db
+      .select()
+      .from(users)
+      .orderBy(asc(users.firstName), asc(users.lastName));
   }
 
   // School operations
@@ -347,6 +356,13 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(evidence)
       .where(eq(evidence.status, 'pending'))
+      .orderBy(desc(evidence.submittedAt));
+  }
+
+  async getAllEvidence(): Promise<Evidence[]> {
+    return await db
+      .select()
+      .from(evidence)
       .orderBy(desc(evidence.submittedAt));
   }
 

@@ -8,6 +8,35 @@ import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail
 import { insertSchoolSchema, insertEvidenceSchema } from "@shared/schema";
 import { z } from "zod";
 
+// CSV generation helper
+function generateCSV(data: any[], type: string): string {
+  if (data.length === 0) return '';
+
+  const headers = getCSVHeaders(type);
+  const rows = data.map(item => headers.map(header => {
+    const value = item[header];
+    if (value === null || value === undefined) return '';
+    if (typeof value === 'object') return JSON.stringify(value);
+    if (typeof value === 'string' && value.includes(',')) return `"${value.replace(/"/g, '""')}"`;
+    return String(value);
+  }));
+
+  return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+}
+
+function getCSVHeaders(type: string): string[] {
+  switch (type) {
+    case 'schools':
+      return ['id', 'name', 'type', 'country', 'address', 'studentCount', 'currentStage', 'progressPercentage', 'createdAt'];
+    case 'evidence':
+      return ['id', 'title', 'description', 'stage', 'status', 'schoolId', 'submittedBy', 'submittedAt', 'reviewedBy', 'reviewedAt'];
+    case 'users':
+      return ['id', 'email', 'firstName', 'lastName', 'role', 'isAdmin', 'createdAt'];
+    default:
+      return [];
+  }
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -415,6 +444,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating school:", error);
       res.status(500).json({ message: "Failed to update school" });
+    }
+  });
+
+  // Export data as CSV
+  app.get('/api/admin/export/:type', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { type } = req.params;
+      const { format = 'csv' } = req.query;
+
+      if (!['schools', 'evidence', 'users'].includes(type)) {
+        return res.status(400).json({ message: "Invalid export type. Use: schools, evidence, or users" });
+      }
+
+      let data: any[] = [];
+      let filename = '';
+
+      switch (type) {
+        case 'schools':
+          data = await storage.getSchools({ limit: 1000 });
+          filename = 'schools';
+          break;
+        case 'evidence':
+          data = await storage.getAllEvidence();
+          filename = 'evidence';
+          break;
+        case 'users':
+          data = await storage.getAllUsers();
+          filename = 'users';
+          break;
+      }
+
+      if (format === 'csv') {
+        const csv = generateCSV(data, type);
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}_${new Date().toISOString().split('T')[0]}.csv"`);
+        res.send(csv);
+      } else {
+        res.json(data);
+      }
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      res.status(500).json({ message: "Failed to export data" });
     }
   });
 
