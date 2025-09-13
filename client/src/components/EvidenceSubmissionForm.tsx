@@ -110,7 +110,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
       
       for (const file of successful) {
         const fileData = {
-          name: file.name,
+          name: file.name || 'Unknown file',
           url: file.uploadURL || '',
           size: file.size || 0,
           type: file.type || '',
