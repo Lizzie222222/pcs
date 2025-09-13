@@ -15,6 +15,7 @@ export default function Navigation() {
     { href: "/resources", label: "Resources", public: true },
     { href: "/inspiration", label: "Inspiration", public: true },
     { href: "/schools-map", label: "Schools Map", public: true },
+    { href: "/search", label: "Search", public: true },
   ];
 
   // Add admin link if user is admin

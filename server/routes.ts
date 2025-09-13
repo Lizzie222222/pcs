@@ -113,6 +113,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Advanced search endpoints
+  
+  // Global search across all content types
+  app.get('/api/search/global', async (req, res) => {
+    try {
+      const { q, contentTypes, limit, offset } = req.query;
+      
+      if (!q || typeof q !== 'string' || q.trim().length === 0) {
+        return res.status(400).json({ message: "Search query 'q' is required" });
+      }
+
+      const searchOptions: any = {};
+      
+      if (contentTypes && typeof contentTypes === 'string') {
+        const types = contentTypes.split(',');
+        const validTypes = ['resources', 'schools', 'evidence', 'caseStudies'];
+        searchOptions.contentTypes = types.filter(type => validTypes.includes(type));
+      }
+      
+      if (limit && typeof limit === 'string') {
+        searchOptions.limit = Math.min(parseInt(limit), 100); // Max 100 results
+      }
+      
+      if (offset && typeof offset === 'string') {
+        searchOptions.offset = parseInt(offset);
+      }
+
+      const results = await storage.searchGlobal(q.trim(), searchOptions);
+      res.json(results);
+    } catch (error) {
+      console.error("Error performing global search:", error);
+      res.status(500).json({ message: "Failed to perform search" });
+    }
+  });
+
+  // Content-specific search with ranking
+  app.get('/api/search/:contentType', async (req, res) => {
+    try {
+      const { contentType } = req.params;
+      const { q, limit, offset } = req.query;
+      
+      if (!q || typeof q !== 'string' || q.trim().length === 0) {
+        return res.status(400).json({ message: "Search query 'q' is required" });
+      }
+
+      const validContentTypes = ['resources', 'schools', 'evidence', 'caseStudies'];
+      if (!validContentTypes.includes(contentType)) {
+        return res.status(400).json({ 
+          message: `Invalid content type. Must be one of: ${validContentTypes.join(', ')}` 
+        });
+      }
+
+      const searchOptions: any = {};
+      
+      if (limit && typeof limit === 'string') {
+        searchOptions.limit = Math.min(parseInt(limit), 50); // Max 50 results for specific searches
+      }
+      
+      if (offset && typeof offset === 'string') {
+        searchOptions.offset = parseInt(offset);
+      }
+
+      const results = await storage.searchWithRanking(
+        q.trim(), 
+        contentType as 'resources' | 'schools' | 'evidence' | 'caseStudies',
+        searchOptions
+      );
+      
+      res.json(results);
+    } catch (error) {
+      console.error(`Error performing ${req.params.contentType} search:`, error);
+      res.status(500).json({ message: "Failed to perform search" });
+    }
+  });
+
   // Get resources with filters
   app.get('/api/resources', async (req, res) => {
     try {

@@ -9,6 +9,7 @@ import Home from "@/pages/home";
 import Resources from "@/pages/resources";
 import Inspiration from "@/pages/inspiration";
 import SchoolsMap from "@/pages/schools-map";
+import Search from "@/pages/search";
 import Admin from "@/pages/admin";
 import NotFound from "@/pages/not-found";
 import Navigation from "@/components/Navigation";
@@ -37,6 +38,7 @@ function Router() {
             <Route path="/resources" component={Resources} />
             <Route path="/inspiration" component={Inspiration} />
             <Route path="/schools-map" component={SchoolsMap} />
+            <Route path="/search" component={Search} />
           </>
         ) : (
           <>
@@ -44,6 +46,7 @@ function Router() {
             <Route path="/resources" component={Resources} />
             <Route path="/inspiration" component={Inspiration} />
             <Route path="/schools-map" component={SchoolsMap} />
+            <Route path="/search" component={Search} />
             <Route path="/admin" component={Admin} />
           </>
         )}
