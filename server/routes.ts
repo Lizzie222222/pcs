@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendBulkEmail, BulkEmailParams } from "./emailService";
 import { insertSchoolSchema, insertEvidenceSchema } from "@shared/schema";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
@@ -538,6 +538,111 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error exporting data:", error);
       res.status(500).json({ message: "Failed to export data" });
+    }
+  });
+
+  // Validation schema for bulk email request
+  const bulkEmailSchema = z.object({
+    recipientType: z.enum(['all_teachers', 'schools', 'custom'], {
+      errorMap: () => ({ message: "Invalid recipient type. Must be 'all_teachers', 'schools', or 'custom'" })
+    }),
+    subject: z.string().min(1, "Subject is required").max(200, "Subject must be less than 200 characters"),
+    content: z.string().min(1, "Content is required").max(10000, "Content must be less than 10,000 characters"),
+    template: z.enum(['announcement', 'reminder', 'invitation', 'newsletter', 'custom'], {
+      errorMap: () => ({ message: "Invalid template type" })
+    }).default('custom'),
+    recipients: z.array(
+      z.string().email("Invalid email format")
+    ).max(500, "Cannot send to more than 500 custom recipients").optional(),
+    filters: z.object({
+      search: z.string().optional(),
+      country: z.string().optional(),
+      stage: z.string().optional(),
+      limit: z.number().optional(),
+      offset: z.number().optional(),
+    }).optional(),
+  }).refine((data) => {
+    // Custom recipients must be provided when recipientType is 'custom'
+    if (data.recipientType === 'custom' && (!data.recipients || data.recipients.length === 0)) {
+      return false;
+    }
+    return true;
+  }, {
+    message: "Recipients list is required when recipient type is 'custom'",
+    path: ["recipients"],
+  });
+
+  // Bulk email API for admin
+  app.post('/api/admin/send-bulk-email', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const validationResult = bulkEmailSchema.safeParse(req.body);
+      
+      if (!validationResult.success) {
+        return res.status(400).json({ 
+          message: "Validation failed", 
+          errors: validationResult.error.errors.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        });
+      }
+
+      const { recipients, subject, content, template, recipientType, filters } = validationResult.data;
+
+      let emailList: string[] = [];
+
+      if (recipientType === 'custom' && recipients) {
+        emailList = recipients;
+      } else if (recipientType === 'schools') {
+        // Get schools based on filters and extract teacher emails from associated users
+        const schools = await storage.getSchools(filters || { limit: 1000, offset: 0 });
+        const schoolIds = schools.map(s => s.id);
+        
+        // Get all users associated with these specific schools
+        const userIdSet = new Set<string>();
+        for (const schoolId of schoolIds) {
+          const schoolUsers = await storage.getSchoolUsers(schoolId);
+          schoolUsers.forEach(su => userIdSet.add(su.userId));
+        }
+        
+        // Get user details for the associated users and filter for teachers with emails
+        const allUsers = await storage.getAllUsers();
+        emailList = allUsers
+          .filter(user => userIdSet.has(user.id) && user.email && user.role === 'teacher')
+          .map(user => user.email!)
+          .filter(Boolean);
+      } else if (recipientType === 'all_teachers') {
+        const users = await storage.getAllUsers();
+        emailList = users
+          .filter(user => user.email && user.role === 'teacher')
+          .map(user => user.email!)
+          .filter(Boolean);
+      }
+
+      if (emailList.length === 0) {
+        return res.status(400).json({ message: "No valid email recipients found" });
+      }
+
+      const bulkEmailParams: BulkEmailParams = {
+        recipients: emailList,
+        subject,
+        content,
+        template: template || 'custom',
+      };
+
+      const results = await sendBulkEmail(bulkEmailParams);
+
+      res.json({
+        message: "Bulk email sent successfully",
+        results: {
+          totalRecipients: emailList.length,
+          sent: results.sent,
+          failed: results.failed,
+        },
+      });
+    } catch (error) {
+      console.error("Error sending bulk email:", error);
+      res.status(500).json({ message: "Failed to send bulk email" });
     }
   });
 

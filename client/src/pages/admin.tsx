@@ -74,6 +74,14 @@ export default function Admin() {
   } | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<'csv' | 'excel'>('csv');
+  const [emailDialogOpen, setEmailDialogOpen] = useState(false);
+  const [emailForm, setEmailForm] = useState({
+    recipientType: 'all_teachers',
+    subject: '',
+    content: '',
+    template: 'announcement',
+    recipients: ''
+  });
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
@@ -214,6 +222,52 @@ export default function Admin() {
     }
   };
 
+  // Send bulk email function
+  const handleSendBulkEmail = async () => {
+    try {
+      const response = await fetch('/api/admin/send-bulk-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          ...emailForm,
+          recipients: emailForm.recipientType === 'custom' ? 
+            emailForm.recipients.split(/[,\n]/).map(email => email.trim()).filter(Boolean) : 
+            undefined,
+          filters: emailForm.recipientType === 'schools' ? cleanFilters(schoolFilters) : undefined,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send emails');
+      }
+
+      const result = await response.json();
+      
+      setEmailDialogOpen(false);
+      setEmailForm({
+        recipientType: 'all_teachers',
+        subject: '',
+        content: '',
+        template: 'announcement',
+        recipients: ''
+      });
+      
+      toast({
+        title: "Emails Sent Successfully",
+        description: `${result.results.sent} emails sent successfully${result.results.failed > 0 ? `, ${result.results.failed} failed` : ''}.`,
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to Send Emails",
+        description: "There was an error sending the bulk emails. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getStageColor = (stage: string) => {
     switch (stage) {
       case 'inspire': return 'bg-pcs_blue text-white';
@@ -308,10 +362,117 @@ export default function Admin() {
                     </div>
                   </DialogContent>
                 </Dialog>
-                <Button className="bg-coral hover:bg-coral/90" data-testid="button-send-emails">
-                  <Mail className="h-4 w-4 mr-2" />
-                  Send Emails
-                </Button>
+                <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button className="bg-coral hover:bg-coral/90" data-testid="button-send-emails">
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Emails
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent className="max-w-2xl">
+                    <DialogHeader>
+                      <DialogTitle>Send Bulk Email</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Recipients</label>
+                        <Select 
+                          value={emailForm.recipientType} 
+                          onValueChange={(value) => setEmailForm(prev => ({ ...prev, recipientType: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select recipients" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all_teachers">All Teachers</SelectItem>
+                            <SelectItem value="schools">Schools (with current filters)</SelectItem>
+                            <SelectItem value="custom">Custom List</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Email Template</label>
+                        <Select 
+                          value={emailForm.template} 
+                          onValueChange={(value) => setEmailForm(prev => ({ ...prev, template: value }))}
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select template" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="announcement">Announcement</SelectItem>
+                            <SelectItem value="reminder">Reminder</SelectItem>
+                            <SelectItem value="invitation">Invitation</SelectItem>
+                            <SelectItem value="newsletter">Newsletter</SelectItem>
+                            <SelectItem value="custom">Custom</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      {emailForm.recipientType === 'custom' && (
+                        <div>
+                          <label className="block text-sm font-medium mb-2">Custom Recipients</label>
+                          <Textarea
+                            className="w-full p-2 border rounded-md h-24"
+                            placeholder="Enter email addresses, one per line or separated by commas...\nexample@school.edu\nteacher@domain.com"
+                            value={emailForm.recipients}
+                            onChange={(e) => setEmailForm(prev => ({ ...prev, recipients: e.target.value }))}
+                            data-testid="textarea-custom-recipients"
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Enter email addresses separated by commas or new lines.
+                          </p>
+                        </div>
+                      )}
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Subject</label>
+                        <input
+                          type="text"
+                          className="w-full p-2 border rounded-md"
+                          placeholder="Enter email subject"
+                          value={emailForm.subject}
+                          onChange={(e) => setEmailForm(prev => ({ ...prev, subject: e.target.value }))}
+                          data-testid="input-email-subject"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium mb-2">Email Content</label>
+                        <textarea
+                          className="w-full p-2 border rounded-md h-32"
+                          placeholder="Enter your email content here..."
+                          value={emailForm.content}
+                          onChange={(e) => setEmailForm(prev => ({ ...prev, content: e.target.value }))}
+                          data-testid="textarea-email-content"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Content will be wrapped in the selected template design.
+                        </p>
+                      </div>
+
+                      <div className="flex justify-end space-x-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => setEmailDialogOpen(false)}
+                          data-testid="button-cancel-email"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSendBulkEmail}
+                          disabled={!emailForm.subject || !emailForm.content || 
+            (emailForm.recipientType === 'custom' && !emailForm.recipients.trim())}
+                          className="bg-coral hover:bg-coral/90"
+                          data-testid="button-send-bulk-email"
+                        >
+                          Send Email
+                        </Button>
+                      </div>
+                    </div>
+                  </DialogContent>
+                </Dialog>
               </div>
             </div>
           </CardContent>
