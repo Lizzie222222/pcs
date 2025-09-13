@@ -7,21 +7,37 @@ import { ObjectPermission } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail } from "./emailService";
 import { insertSchoolSchema, insertEvidenceSchema } from "@shared/schema";
 import { z } from "zod";
+import * as XLSX from 'xlsx';
 
-// CSV generation helper
+// CSV generation helper with proper escaping
 function generateCSV(data: any[], type: string): string {
   if (data.length === 0) return '';
 
   const headers = getCSVHeaders(type);
-  const rows = data.map(item => headers.map(header => {
-    const value = item[header];
-    if (value === null || value === undefined) return '';
-    if (typeof value === 'object') return JSON.stringify(value);
-    if (typeof value === 'string' && value.includes(',')) return `"${value.replace(/"/g, '""')}"`;
-    return String(value);
-  }));
+  const csvRows = [headers.join(',')];
+  
+  data.forEach(item => {
+    const row = headers.map(header => {
+      const value = item[header];
+      if (value === null || value === undefined) return '';
+      
+      let stringValue = String(value);
+      if (typeof value === 'object') {
+        stringValue = JSON.stringify(value);
+      }
+      
+      // Escape CSV special characters: quotes, commas, newlines
+      if (stringValue.includes('"') || stringValue.includes(',') || 
+          stringValue.includes('\n') || stringValue.includes('\r')) {
+        stringValue = `"${stringValue.replace(/"/g, '""')}"`;
+      }
+      
+      return stringValue;
+    });
+    csvRows.push(row.join(','));
+  });
 
-  return [headers.join(','), ...rows.map(row => row.join(','))].join('\n');
+  return csvRows.join('\n');
 }
 
 function getCSVHeaders(type: string): string[] {
@@ -35,6 +51,15 @@ function getCSVHeaders(type: string): string[] {
     default:
       return [];
   }
+}
+
+// Excel generation helper
+function generateExcel(data: any[], type: string): Buffer {
+  const headers = getCSVHeaders(type);
+  const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
+  const workbook = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(workbook, worksheet, type.charAt(0).toUpperCase() + type.slice(1));
+  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -447,11 +472,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Export data as CSV
+  // Export data as CSV/Excel with filtering support
   app.get('/api/admin/export/:type', isAuthenticated, requireAdmin, async (req, res) => {
     try {
       const { type } = req.params;
-      const { format = 'csv' } = req.query;
+      const { format = 'csv', ...filters } = req.query;
 
       if (!['schools', 'evidence', 'users'].includes(type)) {
         return res.status(400).json({ message: "Invalid export type. Use: schools, evidence, or users" });
@@ -462,15 +487,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       switch (type) {
         case 'schools':
-          data = await storage.getSchools({ limit: 1000 });
+          const schoolFilters = {
+            country: filters.country as string,
+            stage: filters.stage as string,
+            type: filters.type as string,
+            search: filters.search as string,
+            limit: 1000,
+            offset: 0,
+          };
+          data = await storage.getSchools(schoolFilters);
           filename = 'schools';
           break;
         case 'evidence':
           data = await storage.getAllEvidence();
+          // Apply client-side filtering for evidence if needed
+          if (filters.status) {
+            data = data.filter(item => item.status === filters.status);
+          }
+          if (filters.stage) {
+            data = data.filter(item => item.stage === filters.stage);
+          }
           filename = 'evidence';
           break;
         case 'users':
           data = await storage.getAllUsers();
+          // Apply client-side filtering for users if needed
+          if (filters.role) {
+            data = data.filter(item => item.role === filters.role);
+          }
+          if (filters.isAdmin !== undefined) {
+            data = data.filter(item => item.isAdmin === (filters.isAdmin === 'true'));
+          }
           filename = 'users';
           break;
       }
@@ -480,6 +527,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         res.setHeader('Content-Type', 'text/csv');
         res.setHeader('Content-Disposition', `attachment; filename="${filename}_${new Date().toISOString().split('T')[0]}.csv"`);
         res.send(csv);
+      } else if (format === 'excel' || format === 'xlsx') {
+        const excel = generateExcel(data, type);
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}_${new Date().toISOString().split('T')[0]}.xlsx"`);
+        res.send(excel);
       } else {
         res.json(data);
       }

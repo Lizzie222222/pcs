@@ -73,6 +73,7 @@ export default function Admin() {
     notes: string;
   } | null>(null);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'csv' | 'excel'>('csv');
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
@@ -165,10 +166,22 @@ export default function Admin() {
     },
   });
 
-  // Export function
+  // Export function with filtering support
   const handleExport = async (type: 'schools' | 'evidence' | 'users') => {
     try {
-      const response = await fetch(`/api/admin/export/${type}`, {
+      let queryParams = new URLSearchParams({ format: exportFormat });
+      
+      // Add current filters to export
+      if (type === 'schools') {
+        const filters = cleanFilters(schoolFilters);
+        Object.entries(filters).forEach(([key, value]) => {
+          if (value && value !== '') {
+            queryParams.append(key, value);
+          }
+        });
+      }
+      
+      const response = await fetch(`/api/admin/export/${type}?${queryParams.toString()}`, {
         credentials: 'include',
       });
       
@@ -180,7 +193,8 @@ export default function Admin() {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `${type}_${new Date().toISOString().split('T')[0]}.csv`;
+      const extension = exportFormat === 'excel' ? 'xlsx' : 'csv';
+      link.download = `${type}_${new Date().toISOString().split('T')[0]}.${extension}`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -189,7 +203,7 @@ export default function Admin() {
       setExportDialogOpen(false);
       toast({
         title: "Export Successful",
-        description: `${type} data has been exported successfully.`,
+        description: `${type} data has been exported as ${exportFormat.toUpperCase()}.`,
       });
     } catch (error) {
       toast({
@@ -252,7 +266,18 @@ export default function Admin() {
                       <DialogTitle>Export Data</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
-                      <p className="text-gray-600">Choose what data you want to export as CSV:</p>
+                      <div>
+                        <p className="text-gray-600 mb-3">Choose format and data to export:</p>
+                        <Select value={exportFormat} onValueChange={(value: 'csv' | 'excel') => setExportFormat(value)}>
+                          <SelectTrigger className="w-full">
+                            <SelectValue placeholder="Select format" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="csv">CSV Format</SelectItem>
+                            <SelectItem value="excel">Excel Format (.xlsx)</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                       <div className="grid gap-3">
                         <Button 
                           onClick={() => handleExport('schools')} 
@@ -261,6 +286,7 @@ export default function Admin() {
                         >
                           <School className="h-4 w-4 mr-2" />
                           Export Schools Data
+                          {activeTab === 'schools' && <span className="text-xs ml-2">(with current filters)</span>}
                         </Button>
                         <Button 
                           onClick={() => handleExport('evidence')} 
