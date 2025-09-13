@@ -86,6 +86,8 @@ export interface IStorage {
     reviewedBy: string,
     reviewNotes?: string
   ): Promise<Evidence | undefined>;
+  deleteEvidence(id: string): Promise<boolean>;
+  deleteSchool(id: string): Promise<boolean>;
   
   // Case Study operations
   createCaseStudy(caseStudy: InsertCaseStudy): Promise<CaseStudy>;
@@ -415,6 +417,30 @@ export class DatabaseStorage implements IStorage {
       .where(eq(evidence.id, id))
       .returning();
     return evidenceRecord;
+  }
+
+  async deleteEvidence(id: string): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(evidence)
+        .where(eq(evidence.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error deleting evidence:", error);
+      return false;
+    }
+  }
+
+  async deleteSchool(id: string): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(schools)
+        .where(eq(schools.id, id));
+      return result.rowCount > 0;
+    } catch (error) {
+      console.error("Error deleting school:", error);
+      return false;
+    }
   }
 
   // Case Study operations

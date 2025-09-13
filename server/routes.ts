@@ -587,6 +587,192 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Bulk evidence review endpoint
+  app.post('/api/admin/evidence/bulk-review', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { evidenceIds, status, reviewNotes } = req.body;
+      const reviewerId = req.user.claims.sub;
+      
+      if (!Array.isArray(evidenceIds) || evidenceIds.length === 0) {
+        return res.status(400).json({ message: "Evidence IDs array is required" });
+      }
+      
+      if (!['approved', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: "Invalid status" });
+      }
+
+      const results = {
+        success: [],
+        failed: [],
+        emailsProcessed: 0
+      };
+
+      // Process each evidence submission
+      for (const evidenceId of evidenceIds) {
+        try {
+          const evidence = await storage.updateEvidenceStatus(
+            evidenceId,
+            status,
+            reviewerId,
+            reviewNotes
+          );
+
+          if (evidence) {
+            results.success.push(evidenceId);
+
+            // Send notification email (non-blocking)
+            try {
+              const user = await storage.getUser(evidence.submittedBy);
+              const school = await storage.getSchool(evidence.schoolId);
+              
+              if (user?.email && school) {
+                if (status === 'approved') {
+                  await sendEvidenceApprovalEmail(user.email, school.name, evidence.title);
+                } else {
+                  await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit');
+                }
+                results.emailsProcessed++;
+              }
+            } catch (emailError) {
+              console.warn(`Email notification failed for evidence ${evidenceId}:`, emailError);
+            }
+          } else {
+            results.failed.push({ id: evidenceId, reason: 'Evidence not found' });
+          }
+        } catch (error) {
+          console.error(`Error reviewing evidence ${evidenceId}:`, error);
+          results.failed.push({ id: evidenceId, reason: 'Review failed' });
+        }
+      }
+
+      res.json({
+        message: `Bulk review completed. ${results.success.length} successful, ${results.failed.length} failed.`,
+        results
+      });
+    } catch (error) {
+      console.error("Error in bulk evidence review:", error);
+      res.status(500).json({ message: "Failed to perform bulk review" });
+    }
+  });
+
+  // Bulk delete evidence endpoint
+  app.delete('/api/admin/evidence/bulk-delete', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { evidenceIds } = req.body;
+      
+      if (!Array.isArray(evidenceIds) || evidenceIds.length === 0) {
+        return res.status(400).json({ message: "Evidence IDs array is required" });
+      }
+
+      const results = {
+        success: [],
+        failed: []
+      };
+
+      for (const evidenceId of evidenceIds) {
+        try {
+          const deleted = await storage.deleteEvidence(evidenceId);
+          if (deleted) {
+            results.success.push(evidenceId);
+          } else {
+            results.failed.push({ id: evidenceId, reason: 'Evidence not found' });
+          }
+        } catch (error) {
+          console.error(`Error deleting evidence ${evidenceId}:`, error);
+          results.failed.push({ id: evidenceId, reason: 'Delete failed' });
+        }
+      }
+
+      res.json({
+        message: `Bulk delete completed. ${results.success.length} deleted, ${results.failed.length} failed.`,
+        results
+      });
+    } catch (error) {
+      console.error("Error in bulk evidence delete:", error);
+      res.status(500).json({ message: "Failed to perform bulk delete" });
+    }
+  });
+
+  // Bulk school update endpoint
+  app.post('/api/admin/schools/bulk-update', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { schoolIds, updates } = req.body;
+      
+      if (!Array.isArray(schoolIds) || schoolIds.length === 0) {
+        return res.status(400).json({ message: "School IDs array is required" });
+      }
+
+      if (!updates || typeof updates !== 'object') {
+        return res.status(400).json({ message: "Updates object is required" });
+      }
+
+      const results = {
+        success: [],
+        failed: []
+      };
+
+      for (const schoolId of schoolIds) {
+        try {
+          const school = await storage.updateSchool(schoolId, updates);
+          if (school) {
+            results.success.push(schoolId);
+          } else {
+            results.failed.push({ id: schoolId, reason: 'School not found' });
+          }
+        } catch (error) {
+          console.error(`Error updating school ${schoolId}:`, error);
+          results.failed.push({ id: schoolId, reason: 'Update failed' });
+        }
+      }
+
+      res.json({
+        message: `Bulk update completed. ${results.success.length} updated, ${results.failed.length} failed.`,
+        results
+      });
+    } catch (error) {
+      console.error("Error in bulk school update:", error);
+      res.status(500).json({ message: "Failed to perform bulk update" });
+    }
+  });
+
+  // Bulk delete schools endpoint
+  app.delete('/api/admin/schools/bulk-delete', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { schoolIds } = req.body;
+      
+      if (!Array.isArray(schoolIds) || schoolIds.length === 0) {
+        return res.status(400).json({ message: "School IDs array is required" });
+      }
+
+      const results = {
+        success: [],
+        failed: []
+      };
+
+      for (const schoolId of schoolIds) {
+        try {
+          const deleted = await storage.deleteSchool(schoolId);
+          if (deleted) {
+            results.success.push(schoolId);
+          } else {
+            results.failed.push({ id: schoolId, reason: 'School not found' });
+          }
+        } catch (error) {
+          console.error(`Error deleting school ${schoolId}:`, error);
+          results.failed.push({ id: schoolId, reason: 'Delete failed' });
+        }
+      }
+
+      res.json({
+        message: `Bulk delete completed. ${results.success.length} deleted, ${results.failed.length} failed.`,
+        results
+      });
+    } catch (error) {
+      console.error("Error in bulk school delete:", error);
+      res.status(500).json({ message: "Failed to perform bulk delete" });
+    }
+  });
+
   // Get all schools for admin management
   app.get('/api/admin/schools', isAuthenticated, requireAdmin, async (req, res) => {
     try {

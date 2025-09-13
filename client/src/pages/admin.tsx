@@ -84,6 +84,17 @@ export default function Admin() {
     template: 'announcement',
     recipients: ''
   });
+  
+  // Bulk operations state
+  const [selectedEvidence, setSelectedEvidence] = useState<string[]>([]);
+  const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
+  const [bulkEvidenceDialogOpen, setBulkEvidenceDialogOpen] = useState(false);
+  const [bulkSchoolDialogOpen, setBulkSchoolDialogOpen] = useState(false);
+  const [bulkAction, setBulkAction] = useState<{
+    type: 'approve' | 'reject' | 'delete' | 'update';
+    notes?: string;
+    updates?: Record<string, any>;
+  } | null>(null);
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
@@ -175,6 +186,157 @@ export default function Admin() {
       });
     },
   });
+
+  // Bulk evidence review mutation
+  const bulkEvidenceReviewMutation = useMutation({
+    mutationFn: async ({ evidenceIds, status, reviewNotes }: {
+      evidenceIds: string[];
+      status: 'approved' | 'rejected';
+      reviewNotes: string;
+    }) => {
+      await apiRequest('POST', '/api/admin/evidence/bulk-review', {
+        evidenceIds,
+        status,
+        reviewNotes,
+      });
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Bulk Review Complete",
+        description: `${variables.evidenceIds.length} evidence submissions have been ${variables.status} and email notifications sent.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      setSelectedEvidence([]);
+      setBulkEvidenceDialogOpen(false);
+      setBulkAction(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Bulk Review Failed",
+        description: "Failed to perform bulk review. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Bulk evidence delete mutation
+  const bulkEvidenceDeleteMutation = useMutation({
+    mutationFn: async (evidenceIds: string[]) => {
+      await apiRequest('DELETE', '/api/admin/evidence/bulk-delete', {
+        evidenceIds,
+      });
+    },
+    onSuccess: (_, evidenceIds) => {
+      toast({
+        title: "Bulk Delete Complete",
+        description: `${evidenceIds.length} evidence submissions have been deleted.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      setSelectedEvidence([]);
+      setBulkEvidenceDialogOpen(false);
+      setBulkAction(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Bulk Delete Failed",
+        description: "Failed to delete evidence submissions. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Bulk school update mutation
+  const bulkSchoolUpdateMutation = useMutation({
+    mutationFn: async ({ schoolIds, updates }: {
+      schoolIds: string[];
+      updates: Record<string, any>;
+    }) => {
+      await apiRequest('POST', '/api/admin/schools/bulk-update', {
+        schoolIds,
+        updates,
+      });
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Bulk Update Complete",
+        description: `${variables.schoolIds.length} schools have been updated successfully.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      setSelectedSchools([]);
+      setBulkSchoolDialogOpen(false);
+      setBulkAction(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Bulk Update Failed",
+        description: "Failed to update schools. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Bulk school delete mutation
+  const bulkSchoolDeleteMutation = useMutation({
+    mutationFn: async (schoolIds: string[]) => {
+      await apiRequest('DELETE', '/api/admin/schools/bulk-delete', {
+        schoolIds,
+      });
+    },
+    onSuccess: (_, schoolIds) => {
+      toast({
+        title: "Bulk Delete Complete",
+        description: `${schoolIds.length} schools have been deleted successfully.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      setSelectedSchools([]);
+      setBulkSchoolDialogOpen(false);
+      setBulkAction(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Bulk Delete Failed",
+        description: "Failed to delete schools. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Helper functions for bulk operations
+  const toggleEvidenceSelection = (evidenceId: string) => {
+    setSelectedEvidence(prev => 
+      prev.includes(evidenceId) 
+        ? prev.filter(id => id !== evidenceId)
+        : [...prev, evidenceId]
+    );
+  };
+
+  const toggleSelectAllEvidence = () => {
+    if (selectedEvidence.length === pendingEvidence?.length) {
+      setSelectedEvidence([]);
+    } else {
+      setSelectedEvidence(pendingEvidence?.map(e => e.id) || []);
+    }
+  };
+
+  const toggleSchoolSelection = (schoolId: string) => {
+    setSelectedSchools(prev => 
+      prev.includes(schoolId) 
+        ? prev.filter(id => id !== schoolId)
+        : [...prev, schoolId]
+    );
+  };
+
+  const toggleSelectAllSchools = () => {
+    if (selectedSchools.length === schools?.length) {
+      setSelectedSchools([]);
+    } else {
+      setSelectedSchools(schools?.map(s => s.id) || []);
+    }
+  };
 
   // Export function with filtering support
   const handleExport = async (type: 'schools' | 'evidence' | 'users') => {
@@ -593,10 +755,71 @@ export default function Admin() {
         {activeTab === 'evidence' && (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Evidence Review Queue
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Evidence Review Queue
+                </CardTitle>
+                {selectedEvidence.length > 0 && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-600">
+                      {selectedEvidence.length} selected
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="bg-green-500 hover:bg-green-600"
+                        onClick={() => {
+                          setBulkAction({ type: 'approve', notes: '' });
+                          setBulkEvidenceDialogOpen(true);
+                        }}
+                        data-testid="button-bulk-approve"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                        Bulk Approve
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          setBulkAction({ type: 'reject', notes: '' });
+                          setBulkEvidenceDialogOpen(true);
+                        }}
+                        data-testid="button-bulk-reject"
+                      >
+                        <XCircle className="h-4 w-4 mr-1" />
+                        Bulk Reject
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setBulkAction({ type: 'delete' });
+                          setBulkEvidenceDialogOpen(true);
+                        }}
+                        data-testid="button-bulk-delete"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {pendingEvidence && pendingEvidence.length > 0 && (
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={selectedEvidence.length === pendingEvidence.length}
+                    onChange={toggleSelectAllEvidence}
+                    className="rounded border-gray-300"
+                    data-testid="checkbox-select-all-evidence"
+                  />
+                  <label className="text-sm text-gray-600">
+                    Select All ({pendingEvidence.length} items)
+                  </label>
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               {pendingEvidence && pendingEvidence.length === 0 ? (
@@ -610,10 +833,23 @@ export default function Admin() {
                   {pendingEvidence?.map((evidence) => (
                     <div 
                       key={evidence.id} 
-                      className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                      className={`border rounded-lg p-4 transition-colors ${
+                        selectedEvidence.includes(evidence.id) 
+                          ? 'bg-blue-50 border-blue-200' 
+                          : 'hover:bg-gray-50'
+                      }`}
                       data-testid={`evidence-${evidence.id}`}
                     >
                       <div className="flex items-start gap-4">
+                        <div className="flex items-center pt-1">
+                          <input
+                            type="checkbox"
+                            checked={selectedEvidence.includes(evidence.id)}
+                            onChange={() => toggleEvidenceSelection(evidence.id)}
+                            className="rounded border-gray-300"
+                            data-testid={`checkbox-evidence-${evidence.id}`}
+                          />
+                        </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
                             <h3 className="font-semibold text-navy">{evidence.title}</h3>
@@ -692,6 +928,42 @@ export default function Admin() {
                   <School className="h-5 w-5" />
                   School Management
                 </CardTitle>
+                {selectedSchools.length > 0 && (
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm text-gray-600">
+                      {selectedSchools.length} selected
+                    </span>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        className="bg-pcs_blue hover:bg-blue-600"
+                        onClick={() => {
+                          setBulkAction({ 
+                            type: 'update', 
+                            updates: { currentStage: 'act' } 
+                          });
+                          setBulkSchoolDialogOpen(true);
+                        }}
+                        data-testid="button-bulk-update-schools"
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Bulk Update
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => {
+                          setBulkAction({ type: 'delete' });
+                          setBulkSchoolDialogOpen(true);
+                        }}
+                        data-testid="button-bulk-delete-schools"
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        Delete Schools
+                      </Button>
+                    </div>
+                  </div>
+                )}
                 <div className="flex items-center gap-4">
                   <div className="relative">
                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
@@ -720,12 +992,27 @@ export default function Admin() {
                   </Select>
                 </div>
               </div>
+              {schools && schools.length > 0 && (
+                <div className="flex items-center gap-2 mt-4">
+                  <input
+                    type="checkbox"
+                    checked={selectedSchools.length === schools.length}
+                    onChange={toggleSelectAllSchools}
+                    className="rounded border-gray-300"
+                    data-testid="checkbox-select-all-schools"
+                  />
+                  <label className="text-sm text-gray-600">
+                    Select All ({schools.length} schools)
+                  </label>
+                </div>
+              )}
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b bg-gray-50">
+                      <th className="text-left p-3 font-semibold text-navy w-12">Select</th>
                       <th className="text-left p-3 font-semibold text-navy">School Name</th>
                       <th className="text-left p-3 font-semibold text-navy">Country</th>
                       <th className="text-left p-3 font-semibold text-navy">Stage</th>
@@ -737,7 +1024,24 @@ export default function Admin() {
                   </thead>
                   <tbody>
                     {schools?.map((school) => (
-                      <tr key={school.id} className="border-b hover:bg-gray-50" data-testid={`school-row-${school.id}`}>
+                      <tr 
+                        key={school.id} 
+                        className={`border-b transition-colors ${
+                          selectedSchools.includes(school.id) 
+                            ? 'bg-blue-50' 
+                            : 'hover:bg-gray-50'
+                        }`} 
+                        data-testid={`school-row-${school.id}`}
+                      >
+                        <td className="p-3">
+                          <input
+                            type="checkbox"
+                            checked={selectedSchools.includes(school.id)}
+                            onChange={() => toggleSchoolSelection(school.id)}
+                            className="rounded border-gray-300"
+                            data-testid={`checkbox-school-${school.id}`}
+                          />
+                        </td>
                         <td className="p-3">
                           <div className="font-medium text-navy">{school.name}</div>
                         </td>
@@ -836,6 +1140,181 @@ export default function Admin() {
                   data-testid="button-confirm-review"
                 >
                   {reviewEvidenceMutation.isPending ? 'Processing...' : 'Confirm'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Evidence Operations Dialog */}
+      {bulkEvidenceDialogOpen && bulkAction && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-navy mb-4">
+              {bulkAction.type === 'approve' ? 'Bulk Approve Evidence' : 
+               bulkAction.type === 'reject' ? 'Bulk Reject Evidence' : 
+               'Bulk Delete Evidence'}
+            </h3>
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  This action will affect <strong>{selectedEvidence.length}</strong> evidence submissions.
+                </p>
+              </div>
+              
+              {(bulkAction.type === 'approve' || bulkAction.type === 'reject') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Review Notes {bulkAction.type === 'reject' && <span className="text-red-500">*</span>}
+                  </label>
+                  <Textarea
+                    value={bulkAction.notes || ''}
+                    onChange={(e) => setBulkAction(prev => prev ? { ...prev, notes: e.target.value } : null)}
+                    placeholder={
+                      bulkAction.type === 'approve' 
+                        ? 'Optional feedback for all schools...'
+                        : 'Please provide feedback on why these evidence submissions were rejected...'
+                    }
+                    rows={4}
+                    data-testid="textarea-bulk-review-notes"
+                  />
+                </div>
+              )}
+
+              {bulkAction.type === 'delete' && (
+                <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
+                  <p className="text-sm text-red-700">
+                    <strong>Warning:</strong> This action cannot be undone. All selected evidence submissions will be permanently deleted.
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setBulkEvidenceDialogOpen(false);
+                    setBulkAction(null);
+                  }}
+                  className="flex-1"
+                  data-testid="button-cancel-bulk-operation"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className={`flex-1 ${
+                    bulkAction.type === 'approve' ? 'bg-green-500 hover:bg-green-600' : 
+                    bulkAction.type === 'reject' ? 'bg-red-500 hover:bg-red-600' :
+                    'bg-red-600 hover:bg-red-700'
+                  }`}
+                  onClick={() => {
+                    if (bulkAction.type === 'reject' && !bulkAction.notes?.trim()) {
+                      toast({
+                        title: "Review Notes Required",
+                        description: "Please provide feedback when rejecting evidence submissions.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    if (bulkAction.type === 'delete') {
+                      bulkEvidenceDeleteMutation.mutate(selectedEvidence);
+                    } else {
+                      bulkEvidenceReviewMutation.mutate({
+                        evidenceIds: selectedEvidence,
+                        status: bulkAction.type as 'approved' | 'rejected',
+                        reviewNotes: bulkAction.notes || '',
+                      });
+                    }
+                  }}
+                  disabled={bulkEvidenceReviewMutation.isPending || bulkEvidenceDeleteMutation.isPending}
+                  data-testid="button-confirm-bulk-operation"
+                >
+                  {(bulkEvidenceReviewMutation.isPending || bulkEvidenceDeleteMutation.isPending) ? 'Processing...' : 'Confirm'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk School Operations Dialog */}
+      {bulkSchoolDialogOpen && bulkAction && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-navy mb-4">
+              {bulkAction.type === 'update' ? 'Bulk Update Schools' : 'Bulk Delete Schools'}
+            </h3>
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  This action will affect <strong>{selectedSchools.length}</strong> schools.
+                </p>
+              </div>
+              
+              {bulkAction.type === 'update' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Update Current Stage
+                  </label>
+                  <select
+                    value={bulkAction.updates?.currentStage || 'inspire'}
+                    onChange={(e) => setBulkAction(prev => prev ? { 
+                      ...prev, 
+                      updates: { ...prev.updates, currentStage: e.target.value } 
+                    } : null)}
+                    className="w-full p-2 border border-gray-300 rounded-md"
+                    data-testid="select-bulk-stage"
+                  >
+                    <option value="inspire">Inspire</option>
+                    <option value="investigate">Investigate</option>
+                    <option value="act">Act</option>
+                  </select>
+                  <p className="text-xs text-gray-500 mt-1">
+                    All selected schools will be moved to this program stage.
+                  </p>
+                </div>
+              )}
+
+              {bulkAction.type === 'delete' && (
+                <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
+                  <p className="text-sm text-red-700">
+                    <strong>Warning:</strong> This action cannot be undone. All selected schools and their associated data will be permanently deleted.
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setBulkSchoolDialogOpen(false);
+                    setBulkAction(null);
+                  }}
+                  className="flex-1"
+                  data-testid="button-cancel-bulk-school-operation"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className={`flex-1 ${
+                    bulkAction.type === 'update' ? 'bg-pcs_blue hover:bg-blue-600' : 'bg-red-600 hover:bg-red-700'
+                  }`}
+                  onClick={() => {
+                    if (bulkAction.type === 'delete') {
+                      bulkSchoolDeleteMutation.mutate(selectedSchools);
+                    } else {
+                      bulkSchoolUpdateMutation.mutate({
+                        schoolIds: selectedSchools,
+                        updates: bulkAction.updates || {},
+                      });
+                    }
+                  }}
+                  disabled={bulkSchoolUpdateMutation.isPending || bulkSchoolDeleteMutation.isPending}
+                  data-testid="button-confirm-bulk-school-operation"
+                >
+                  {(bulkSchoolUpdateMutation.isPending || bulkSchoolDeleteMutation.isPending) ? 'Processing...' : 'Confirm'}
                 </Button>
               </div>
             </div>
