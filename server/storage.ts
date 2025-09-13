@@ -6,6 +6,8 @@ import {
   evidence,
   caseStudies,
   emailLogs,
+  mailchimpAudiences,
+  mailchimpSubscriptions,
   type User,
   type UpsertUser,
   type School,
@@ -20,6 +22,10 @@ import {
   type InsertCaseStudy,
   type EmailLog,
   type InsertEmailLog,
+  type MailchimpAudience,
+  type InsertMailchimpAudience,
+  type MailchimpSubscription,
+  type InsertMailchimpSubscription,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray } from "drizzle-orm";
@@ -95,6 +101,20 @@ export interface IStorage {
   
   // Email operations
   logEmail(emailLog: InsertEmailLog): Promise<EmailLog>;
+  
+  // Mailchimp operations
+  createMailchimpAudience(audience: InsertMailchimpAudience): Promise<MailchimpAudience>;
+  getMailchimpAudiences(): Promise<MailchimpAudience[]>;
+  getMailchimpAudience(id: string): Promise<MailchimpAudience | undefined>;
+  updateMailchimpAudience(id: string, updates: Partial<MailchimpAudience>): Promise<MailchimpAudience | undefined>;
+  deleteMailchimpAudience(id: string): Promise<void>;
+  
+  createMailchimpSubscription(subscription: InsertMailchimpSubscription): Promise<MailchimpSubscription>;
+  getMailchimpSubscriptions(audienceId?: string, email?: string): Promise<MailchimpSubscription[]>;
+  updateMailchimpSubscription(id: string, updates: Partial<MailchimpSubscription>): Promise<MailchimpSubscription | undefined>;
+  deleteMailchimpSubscription(id: string): Promise<void>;
+  getSubscriptionsBySchool(schoolId: string): Promise<MailchimpSubscription[]>;
+  getSubscriptionsByUser(userId: string): Promise<MailchimpSubscription[]>;
   
   // Admin operations
   getAdminStats(): Promise<{
@@ -487,6 +507,76 @@ export class DatabaseStorage implements IStorage {
       .values(emailLogData)
       .returning();
     return emailLog;
+  }
+
+  // Mailchimp operations
+  async createMailchimpAudience(audience: InsertMailchimpAudience): Promise<MailchimpAudience> {
+    const [newAudience] = await db.insert(mailchimpAudiences).values(audience).returning();
+    return newAudience;
+  }
+
+  async getMailchimpAudiences(): Promise<MailchimpAudience[]> {
+    return await db.select().from(mailchimpAudiences).where(eq(mailchimpAudiences.isActive, true)).orderBy(asc(mailchimpAudiences.name));
+  }
+
+  async getMailchimpAudience(id: string): Promise<MailchimpAudience | undefined> {
+    const [audience] = await db.select().from(mailchimpAudiences).where(eq(mailchimpAudiences.id, id));
+    return audience;
+  }
+
+  async updateMailchimpAudience(id: string, updates: Partial<MailchimpAudience>): Promise<MailchimpAudience | undefined> {
+    const [updatedAudience] = await db.update(mailchimpAudiences)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(mailchimpAudiences.id, id))
+      .returning();
+    return updatedAudience;
+  }
+
+  async deleteMailchimpAudience(id: string): Promise<void> {
+    await db.delete(mailchimpAudiences).where(eq(mailchimpAudiences.id, id));
+  }
+
+  async createMailchimpSubscription(subscription: InsertMailchimpSubscription): Promise<MailchimpSubscription> {
+    const [newSubscription] = await db.insert(mailchimpSubscriptions).values(subscription).returning();
+    return newSubscription;
+  }
+
+  async getMailchimpSubscriptions(audienceId?: string, email?: string): Promise<MailchimpSubscription[]> {
+    let query = db.select().from(mailchimpSubscriptions);
+    
+    const conditions = [];
+    if (audienceId) conditions.push(eq(mailchimpSubscriptions.audienceId, audienceId));
+    if (email) conditions.push(eq(mailchimpSubscriptions.email, email));
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    return await query.orderBy(desc(mailchimpSubscriptions.subscribedAt));
+  }
+
+  async updateMailchimpSubscription(id: string, updates: Partial<MailchimpSubscription>): Promise<MailchimpSubscription | undefined> {
+    const [updatedSubscription] = await db.update(mailchimpSubscriptions)
+      .set(updates)
+      .where(eq(mailchimpSubscriptions.id, id))
+      .returning();
+    return updatedSubscription;
+  }
+
+  async deleteMailchimpSubscription(id: string): Promise<void> {
+    await db.delete(mailchimpSubscriptions).where(eq(mailchimpSubscriptions.id, id));
+  }
+
+  async getSubscriptionsBySchool(schoolId: string): Promise<MailchimpSubscription[]> {
+    return await db.select().from(mailchimpSubscriptions)
+      .where(eq(mailchimpSubscriptions.schoolId, schoolId))
+      .orderBy(desc(mailchimpSubscriptions.subscribedAt));
+  }
+
+  async getSubscriptionsByUser(userId: string): Promise<MailchimpSubscription[]> {
+    return await db.select().from(mailchimpSubscriptions)
+      .where(eq(mailchimpSubscriptions.userId, userId))
+      .orderBy(desc(mailchimpSubscriptions.subscribedAt));
   }
 
   // Admin operations

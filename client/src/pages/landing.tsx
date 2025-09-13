@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
+import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { 
   School, 
   Trophy, 
@@ -268,6 +269,16 @@ export default function Landing() {
             Get Started Today
             <ChevronRight className="ml-2 h-5 w-5" />
           </Button>
+        </div>
+      </section>
+
+      {/* Newsletter Section */}
+      <section className="py-16 bg-gray-50 dark:bg-gray-900">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <NewsletterSignup 
+            variant="hero" 
+            className="mx-auto"
+          />
         </div>
       </section>
 

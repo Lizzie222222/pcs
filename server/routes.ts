@@ -5,7 +5,8 @@ import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendBulkEmail, BulkEmailParams } from "./emailService";
-import { insertSchoolSchema, insertEvidenceSchema } from "@shared/schema";
+import { mailchimpService } from "./mailchimpService";
+import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema } from "@shared/schema";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 
@@ -220,6 +221,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Send welcome email
       await sendWelcomeEmail(user.email!, school.name);
 
+      // Add to Mailchimp automation (non-blocking)
+      try {
+        await mailchimpService.setupSchoolSignupAutomation({
+          email: user.email!,
+          firstName: user.firstName || '',
+          lastName: user.lastName || '',
+          schoolName: school.name,
+          schoolCountry: school.country,
+          role: 'teacher',
+          tags: ['new_school_signup', 'teacher', school.currentStage || 'inspire'],
+        });
+      } catch (mailchimpError) {
+        // Log but don't fail registration if Mailchimp fails
+        console.warn('Mailchimp automation failed for school signup:', mailchimpError);
+      }
+
       res.status(201).json({ 
         message: "School registered successfully",
         school: school,
@@ -272,6 +289,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       const evidence = await storage.createEvidence(evidenceData);
+
+      // Add to Mailchimp evidence submission automation (non-blocking)
+      try {
+        const user = await storage.getUser(userId);
+        const school = await storage.getSchool(evidenceData.schoolId);
+        
+        if (user?.email && school) {
+          await mailchimpService.setupEvidenceSubmissionAutomation({
+            email: user.email,
+            firstName: user.firstName || '',
+            lastName: user.lastName || '',
+            schoolName: school.name,
+            schoolCountry: school.country,
+            role: user.role || 'teacher',
+            tags: ['evidence_submitted', evidenceData.stage, user.role || 'teacher'],
+          }, evidence.title);
+        }
+      } catch (mailchimpError) {
+        // Log but don't fail evidence submission if Mailchimp fails
+        console.warn('Mailchimp automation failed for evidence submission:', mailchimpError);
+      }
+
       res.status(201).json(evidence);
     } catch (error) {
       console.error("Error submitting evidence:", error);
@@ -654,6 +693,161 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error sending bulk email:", error);
       res.status(500).json({ message: "Failed to send bulk email" });
+    }
+  });
+
+  // Mailchimp integration routes
+  
+  // Get Mailchimp audiences
+  app.get('/api/mailchimp/audiences', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const audiences = await mailchimpService.getAudiences();
+      res.json(audiences);
+    } catch (error: any) {
+      console.error("Error fetching Mailchimp audiences:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch audiences" });
+    }
+  });
+
+  // Create Mailchimp audience
+  app.post('/api/mailchimp/audiences', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const validationResult = insertMailchimpAudienceSchema.safeParse(req.body);
+      if (!validationResult.success) {
+        return res.status(400).json({ message: "Invalid audience data", errors: validationResult.error.issues });
+      }
+
+      const audience = await storage.createMailchimpAudience(validationResult.data);
+      res.status(201).json(audience);
+    } catch (error: any) {
+      console.error("Error creating Mailchimp audience:", error);
+      res.status(500).json({ message: "Failed to create audience" });
+    }
+  });
+
+  // Subscribe user to newsletter
+  app.post('/api/mailchimp/subscribe', async (req, res) => {
+    try {
+      const { email, firstName, lastName, schoolName, schoolCountry, tags } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ message: "Email is required" });
+      }
+
+      const audienceId = process.env.MAILCHIMP_MAIN_AUDIENCE_ID;
+      if (!audienceId) {
+        return res.status(500).json({ message: "Newsletter signup not configured" });
+      }
+
+      const success = await mailchimpService.addContactToAudience(audienceId, {
+        email,
+        firstName,
+        lastName,
+        schoolName,
+        schoolCountry,
+        tags: tags || ['newsletter_signup'],
+      });
+
+      if (success) {
+        // Track subscription in database
+        await storage.createMailchimpSubscription({
+          audienceId,
+          email,
+          status: 'subscribed',
+          tags: JSON.stringify(tags || ['newsletter_signup']),
+          mergeFields: JSON.stringify({ firstName, lastName, schoolName, schoolCountry }),
+        });
+
+        res.json({ message: "Successfully subscribed to newsletter" });
+      } else {
+        res.status(500).json({ message: "Failed to subscribe to newsletter" });
+      }
+    } catch (error: any) {
+      console.error("Error subscribing to newsletter:", error);
+      res.status(500).json({ message: "Failed to subscribe to newsletter" });
+    }
+  });
+
+  // Get subscriptions for admin
+  app.get('/api/admin/mailchimp/subscriptions', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { audienceId, email } = req.query;
+      const subscriptions = await storage.getMailchimpSubscriptions(
+        audienceId as string,
+        email as string
+      );
+      res.json(subscriptions);
+    } catch (error: any) {
+      console.error("Error fetching Mailchimp subscriptions:", error);
+      res.status(500).json({ message: "Failed to fetch subscriptions" });
+    }
+  });
+
+  // Create and send Mailchimp campaign
+  app.post('/api/admin/mailchimp/campaigns', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { subject, title, content, audienceId, fromName, fromEmail, tags } = req.body;
+      
+      if (!subject || !title || !content || !audienceId) {
+        return res.status(400).json({ message: "Subject, title, content, and audience ID are required" });
+      }
+
+      const campaign = await mailchimpService.createCampaign({
+        subject,
+        title,
+        content,
+        audienceId,
+        fromName,
+        fromEmail,
+        tags,
+      });
+
+      if (campaign) {
+        res.status(201).json({
+          message: "Campaign created successfully",
+          campaignId: campaign.campaignId,
+          webId: campaign.webId,
+        });
+      } else {
+        res.status(500).json({ message: "Failed to create campaign" });
+      }
+    } catch (error: any) {
+      console.error("Error creating Mailchimp campaign:", error);
+      res.status(500).json({ message: error.message || "Failed to create campaign" });
+    }
+  });
+
+  // Send existing campaign
+  app.post('/api/admin/mailchimp/campaigns/:campaignId/send', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { campaignId } = req.params;
+      const success = await mailchimpService.sendCampaign(campaignId);
+      
+      if (success) {
+        res.json({ message: "Campaign sent successfully" });
+      } else {
+        res.status(500).json({ message: "Failed to send campaign" });
+      }
+    } catch (error: any) {
+      console.error("Error sending Mailchimp campaign:", error);
+      res.status(500).json({ message: error.message || "Failed to send campaign" });
+    }
+  });
+
+  // Get campaign statistics
+  app.get('/api/admin/mailchimp/campaigns/:campaignId/stats', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { campaignId } = req.params;
+      const stats = await mailchimpService.getCampaignStats(campaignId);
+      
+      if (stats) {
+        res.json(stats);
+      } else {
+        res.status(404).json({ message: "Campaign stats not found" });
+      }
+    } catch (error: any) {
+      console.error("Error fetching campaign stats:", error);
+      res.status(500).json({ message: error.message || "Failed to fetch campaign stats" });
     }
   });
 

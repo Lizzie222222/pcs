@@ -154,6 +154,29 @@ export const emailLogs = pgTable("email_logs", {
   sentAt: timestamp("sent_at").defaultNow(),
 });
 
+export const mailchimpAudiences = pgTable("mailchimp_audiences", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  mailchimpId: varchar("mailchimp_id").notNull().unique(),
+  name: varchar("name").notNull(),
+  description: text("description"),
+  memberCount: integer("member_count").default(0),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const mailchimpSubscriptions = pgTable("mailchimp_subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  audienceId: varchar("audience_id").notNull().references(() => mailchimpAudiences.id, { onDelete: 'cascade' }),
+  email: varchar("email").notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  schoolId: varchar("school_id").references(() => schools.id, { onDelete: 'cascade' }),
+  status: varchar("status").default('subscribed'),
+  subscribedAt: timestamp("subscribed_at").defaultNow(),
+  tags: jsonb("tags").default('[]'),
+  mergeFields: jsonb("merge_fields").default('{}'),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   schoolUsers: many(schoolUsers),
@@ -280,6 +303,17 @@ export const insertEmailLogSchema = createInsertSchema(emailLogs).omit({
   sentAt: true,
 });
 
+export const insertMailchimpAudienceSchema = createInsertSchema(mailchimpAudiences).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMailchimpSubscriptionSchema = createInsertSchema(mailchimpSubscriptions).omit({
+  id: true,
+  subscribedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -295,3 +329,7 @@ export type CaseStudy = typeof caseStudies.$inferSelect;
 export type InsertCaseStudy = z.infer<typeof insertCaseStudySchema>;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type InsertEmailLog = z.infer<typeof insertEmailLogSchema>;
+export type MailchimpAudience = typeof mailchimpAudiences.$inferSelect;
+export type InsertMailchimpAudience = z.infer<typeof insertMailchimpAudienceSchema>;
+export type MailchimpSubscription = typeof mailchimpSubscriptions.$inferSelect;
+export type InsertMailchimpSubscription = z.infer<typeof insertMailchimpSubscriptionSchema>;
