@@ -179,6 +179,96 @@ export async function sendEvidenceRejectionEmail(
   });
 }
 
+// New evidence submission notification functions
+export async function sendEvidenceSubmissionEmail(
+  userEmail: string, 
+  schoolName: string, 
+  evidenceTitle: string,
+  stage: string
+): Promise<boolean> {
+  return await sendEmail({
+    to: userEmail,
+    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    subject: `Evidence Submitted Successfully - ${evidenceTitle}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #02BBB4 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">📤 Evidence Submitted!</h1>
+        </div>
+        <div style="padding: 40px 20px; background: #f9f9f9;">
+          <h2 style="color: #0B3D5D;">Thank you, ${schoolName}!</h2>
+          <p style="color: #666; line-height: 1.6;">
+            Your evidence submission "<strong>${evidenceTitle}</strong>" for the <strong>${stage}</strong> stage has been successfully submitted and is now under review.
+          </p>
+          <div style="background: #fff; border-left: 4px solid #02BBB4; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #02BBB4; margin-top: 0;">What happens next?</h3>
+            <ul style="color: #666; margin-bottom: 0;">
+              <li>Our team will review your submission within 5-7 business days</li>
+              <li>You'll receive an email notification with the review outcome</li>
+              <li>If approved, your progress will be updated automatically</li>
+              <li>If revisions are needed, we'll provide detailed feedback</li>
+            </ul>
+          </div>
+          <p style="color: #666; line-height: 1.6;">
+            Keep up the excellent work on your plastic-free journey!
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}" 
+               style="background: #02BBB4; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+              View Your Progress
+            </a>
+          </div>
+        </div>
+      </div>
+    `,
+  });
+}
+
+export async function sendAdminNewEvidenceEmail(
+  adminEmail: string,
+  schoolName: string,
+  evidenceTitle: string,
+  stage: string,
+  submitterName: string
+): Promise<boolean> {
+  return await sendEmail({
+    to: adminEmail,
+    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    subject: `New Evidence Submission - ${evidenceTitle}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+        <div style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
+          <h1 style="color: white; margin: 0; font-size: 28px;">🔔 New Evidence Submission</h1>
+        </div>
+        <div style="padding: 40px 20px; background: #f9f9f9;">
+          <h2 style="color: #0B3D5D;">Review Required</h2>
+          <p style="color: #666; line-height: 1.6;">
+            A new evidence submission has been received and requires admin review.
+          </p>
+          <div style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="color: #0B3D5D; margin-top: 0;">Submission Details:</h3>
+            <ul style="color: #666; margin-bottom: 0; list-style: none; padding: 0;">
+              <li style="margin-bottom: 8px;"><strong>Title:</strong> ${evidenceTitle}</li>
+              <li style="margin-bottom: 8px;"><strong>School:</strong> ${schoolName}</li>
+              <li style="margin-bottom: 8px;"><strong>Stage:</strong> ${stage}</li>
+              <li style="margin-bottom: 8px;"><strong>Submitted by:</strong> ${submitterName}</li>
+            </ul>
+          </div>
+          <p style="color: #666; line-height: 1.6;">
+            Please review this submission and provide feedback to help the school continue their progress.
+          </p>
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}/admin" 
+               style="background: #0B3D5D; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
+              Review Evidence
+            </a>
+          </div>
+        </div>
+      </div>
+    `,
+  });
+}
+
 // Bulk email functions for admin use
 export interface BulkEmailParams {
   recipients: string[];

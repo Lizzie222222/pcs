@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendBulkEmail, BulkEmailParams } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema } from "@shared/schema";
 import { z } from "zod";
@@ -365,12 +365,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const evidence = await storage.createEvidence(evidenceData);
 
-      // Add to Mailchimp evidence submission automation (non-blocking)
+      // Send email notifications (non-blocking)
       try {
         const user = await storage.getUser(userId);
         const school = await storage.getSchool(evidenceData.schoolId);
         
         if (user?.email && school) {
+          // Send confirmation email to the teacher who submitted the evidence
+          await sendEvidenceSubmissionEmail(
+            user.email,
+            school.name,
+            evidence.title,
+            evidence.stage
+          );
+
+          // Send notification email to all admin users
+          const adminUsers = await storage.getAllUsers();
+          const admins = adminUsers.filter(adminUser => adminUser.isAdmin);
+          
+          for (const admin of admins) {
+            if (admin.email) {
+              await sendAdminNewEvidenceEmail(
+                admin.email,
+                school.name,
+                evidence.title,
+                evidence.stage,
+                `${user.firstName} ${user.lastName}`.trim() || user.email
+              );
+            }
+          }
+
+          // Add to Mailchimp evidence submission automation
           await mailchimpService.setupEvidenceSubmissionAutomation({
             email: user.email,
             firstName: user.firstName || '',
@@ -381,9 +406,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
             tags: ['evidence_submitted', evidenceData.stage, user.role || 'teacher'],
           }, evidence.title);
         }
-      } catch (mailchimpError) {
-        // Log but don't fail evidence submission if Mailchimp fails
-        console.warn('Mailchimp automation failed for evidence submission:', mailchimpError);
+      } catch (emailError) {
+        // Log but don't fail evidence submission if email/Mailchimp fails
+        console.warn('Email notification failed for evidence submission:', emailError);
       }
 
       res.status(201).json(evidence);
