@@ -210,7 +210,7 @@ export default function Landing() {
             <div className="text-xl lg:text-2xl text-gray-600 mb-8 scroll-reveal">Registered Schools So Far</div>
             <Button 
               size="lg"
-              className="btn-primary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300"
+              className="btn-primary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300 scroll-reveal"
               data-testid="button-view-schools"
             >
               <MapPin className="icon-md mr-2 transition-transform duration-300 group-hover:rotate-12" />
@@ -225,15 +225,15 @@ export default function Landing() {
       <section id="how-it-works" className="section-padding bg-gradient-to-b from-white to-yellow/10">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4">A Simple 3-Stage Journey to a Plastic Clever School</h2>
-            <p className="body-large max-w-3xl mx-auto">
+            <h2 className="heading-2 mb-4 scroll-reveal">A Simple 3-Stage Journey to a Plastic Clever School</h2>
+            <p className="body-large max-w-3xl mx-auto scroll-reveal">
               Our proven framework breaks down your school's transformation into three straightforward stages.
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stage 1: Inspire */}
-            <div className="card-clean card-hover p-8 text-center">
+            <div className="card-clean card-hover p-8 text-center scroll-reveal-left">
               <div className="w-20 h-20 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Lightbulb className="w-10 h-10 text-ocean-blue" />
               </div>
@@ -245,7 +245,7 @@ export default function Landing() {
             </div>
 
             {/* Stage 2: Investigate */}
-            <div className="card-clean card-hover p-8 text-center">
+            <div className="card-clean card-hover p-8 text-center scroll-reveal">
               <div className="w-20 h-20 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search className="w-10 h-10 text-teal" />
               </div>
@@ -257,7 +257,7 @@ export default function Landing() {
             </div>
 
             {/* Stage 3: Act */}
-            <div className="card-clean card-hover p-8 text-center">
+            <div className="card-clean card-hover p-8 text-center scroll-reveal-right">
               <div className="w-20 h-20 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Target className="w-10 h-10 text-navy" />
               </div>
@@ -270,7 +270,7 @@ export default function Landing() {
           </div>
 
           {/* Recognition Section */}
-          <div className="mt-16 text-center bg-gray-50 rounded-xl p-12">
+          <div className="mt-16 text-center bg-gray-50 rounded-xl p-12 scroll-reveal-scale">
             <h3 className="heading-3 mb-4">Earn Recognition for Your Impact</h3>
             <p className="body-large mb-8 max-w-3xl mx-auto">
               Complete each stage to earn digital badges and certificates that showcase your school's environmental leadership
@@ -304,13 +304,13 @@ export default function Landing() {
       <section className="section-padding bg-white border-t-4 border-teal">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4">Built on Strong Partnerships</h2>
-            <p className="body-large max-w-3xl mx-auto">
+            <h2 className="heading-2 mb-4 scroll-reveal">Built on Strong Partnerships</h2>
+            <p className="body-large max-w-3xl mx-auto scroll-reveal">
               Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education.
             </p>
           </div>
           
-          <div className="flex flex-wrap justify-center items-center gap-12 opacity-60">
+          <div className="flex flex-wrap justify-center items-center gap-12 opacity-60 scroll-reveal">
             <div className="flex items-center gap-3 text-gray-500 font-medium text-lg">
               <Globe className="w-8 h-8" />
               Partner Organization 1
@@ -331,15 +331,15 @@ export default function Landing() {
       <section className="section-padding bg-gradient-to-r from-coral/5 to-yellow/5">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4">Why Schools Choose Us</h2>
-            <p className="body-large max-w-3xl mx-auto">
+            <h2 className="heading-2 mb-4 scroll-reveal">Why Schools Choose Us</h2>
+            <p className="body-large max-w-3xl mx-auto scroll-reveal">
               Hear from educators and students who have transformed their schools through our program
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Testimonial 1 */}
-            <div className="card-clean p-6">
+            <div className="card-clean p-6 scroll-reveal-left">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="icon-sm text-yellow fill-current" />
@@ -360,7 +360,7 @@ export default function Landing() {
             </div>
 
             {/* Testimonial 2 */}
-            <div className="card-clean p-6">
+            <div className="card-clean p-6 scroll-reveal">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="icon-sm text-yellow fill-current" />
@@ -381,7 +381,7 @@ export default function Landing() {
             </div>
 
             {/* Testimonial 3 */}
-            <div className="card-clean p-6">
+            <div className="card-clean p-6 scroll-reveal-right">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="icon-sm text-yellow fill-current" />
@@ -438,7 +438,7 @@ export default function Landing() {
               Join hundreds of other schools making a positive, tangible impact. Get started on your journey today and access all the free resources you need.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 scroll-reveal">
               <Button 
                 size="lg" 
                 className="btn-primary px-10 py-4 text-xl font-semibold group hover:scale-105 transition-all duration-300"
@@ -459,7 +459,7 @@ export default function Landing() {
               </Button>
             </div>
 
-            <div className="flex flex-wrap justify-center gap-8 text-white/80 text-sm">
+            <div className="flex flex-wrap justify-center gap-8 text-white/80 text-sm scroll-reveal">
               <div className="flex items-center gap-2">
                 <CheckCircle className="icon-sm text-teal" />
                 No credit card required
@@ -480,7 +480,7 @@ export default function Landing() {
       {/* Clean Professional Footer */}
       <footer className="bg-navy text-white py-12">
         <div className="container-width">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 scroll-reveal">
             <div>
               <img 
                 src={logoUrl} 
@@ -523,7 +523,7 @@ export default function Landing() {
             </div>
           </div>
           
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400 scroll-reveal">
             <p>
               &copy; 2024 Plastic Clever Schools. All rights reserved. | 
               <a href="#" className="hover:text-teal transition-colors ml-1">Privacy</a> | 
