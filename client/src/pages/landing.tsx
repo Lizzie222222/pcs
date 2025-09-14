@@ -84,15 +84,15 @@ export default function Landing() {
               Empower Your School to Lead the Way in Reducing Plastic Waste
             </h1>
 
-            {/* CTA Button with Enhanced Shadow */}
+            {/* CTA Button with Enhanced Animation */}
             <Button 
               size="lg"
-              className="bg-coral hover:bg-coral/90 text-white px-8 py-4 text-xl font-bold mb-8 shadow-xl transition-all duration-300"
+              className="btn-primary px-8 py-4 text-xl mb-8 animate-pulse-subtle hover:animate-none group"
               onClick={() => window.location.href = '/register'}
               data-testid="button-register-school"
             >
               Register Your School Now
-              <ArrowRight className="icon-md ml-3" />
+              <ArrowRight className="icon-md ml-3 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
 
             {/* Simple Trust Indicators with Text Shadow */}
@@ -128,37 +128,39 @@ export default function Landing() {
               Plastic Clever Schools is an awards program designed to help schools reduce their single-use plastic consumption. We provide you with the tools and a simple 3-step framework to inspire change, investigate your school's plastic use, and act on solutions—all while empowering your students to become the next generation of environmental leaders.
             </p>
             
-            {/* Key Callouts */}
+            {/* Key Callouts with Delightful Animations */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Award className="icon-lg text-white" />
+              <div className="text-center group cursor-pointer">
+                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-1">
+                  <Award className="icon-lg text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <h3 className="heading-4 mb-3">Award-Winning Program</h3>
+                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-ocean-blue">Award-Winning Program</h3>
                 <p className="body-text">Recognized for our effective approach to reducing waste.</p>
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="icon-lg text-white" />
+              <div className="text-center group cursor-pointer">
+                <div className="w-16 h-16 bg-teal rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-2">
+                  <Users className="icon-lg text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <h3 className="heading-4 mb-3">Student-Led Action</h3>
+                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-teal">Student-Led Action</h3>
                 <p className="body-text">Kids are at the heart of every step, fostering a sense of ownership and responsibility.</p>
               </div>
-              <div className="text-center">
-                <div className="w-16 h-16 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="icon-lg text-white" />
+              <div className="text-center group cursor-pointer">
+                <div className="w-16 h-16 bg-navy rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-3">
+                  <BookOpen className="icon-lg text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <h3 className="heading-4 mb-3">Free Resources</h3>
+                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-navy">Free Resources</h3>
                 <p className="body-text">Access a full toolkit of guides, worksheets, and activities to make your journey simple and effective.</p>
               </div>
             </div>
             
             <Button 
               size="lg"
-              className="btn-secondary px-8 py-3 text-lg font-semibold"
+              className="btn-secondary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300"
               data-testid="button-download-sample"
             >
+              <span className="mr-2">📚</span>
               Download a Sample Resource
+              <ArrowRight className="icon-md ml-2 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
           </div>
         </div>
@@ -181,10 +183,12 @@ export default function Landing() {
             <div className="text-xl lg:text-2xl text-gray-600 mb-8">Registered Schools So Far</div>
             <Button 
               size="lg"
-              className="btn-secondary px-8 py-3 text-lg font-semibold"
+              className="btn-secondary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300"
               data-testid="button-view-schools"
             >
+              <MapPin className="icon-md mr-2 transition-transform duration-300 group-hover:rotate-12" />
               View All Registered Schools
+              <ArrowRight className="icon-md ml-2 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
           </div>
         </div>
@@ -246,23 +250,23 @@ export default function Landing() {
             </p>
             
             <div className="flex flex-wrap justify-center gap-6">
-              <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm">
-                <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center">
-                  <Star className="icon-sm text-white" />
+              <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-1">
+                <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
+                  <Star className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <span className="font-semibold text-navy">Digital Badges</span>
+                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-ocean-blue">Digital Badges</span>
               </div>
-              <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm">
-                <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center">
-                  <Award className="icon-sm text-white" />
+              <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-2">
+                <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
+                  <Award className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <span className="font-semibold text-navy">Certificates</span>
+                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-teal">Certificates</span>
               </div>
-              <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm">
-                <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center">
-                  <TrendingUp className="icon-sm text-white" />
+              <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-3">
+                <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
+                  <TrendingUp className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <span className="font-semibold text-navy">Progress Tracking</span>
+                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-navy">Progress Tracking</span>
               </div>
             </div>
           </div>
@@ -410,21 +414,20 @@ export default function Landing() {
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
               <Button 
                 size="lg" 
-                className="bg-teal hover:bg-teal/90 text-white px-10 py-4 text-xl font-semibold"
-                onClick={() => setShowSignUp(true)}
+                className="btn-primary px-10 py-4 text-xl font-semibold group hover:scale-105 transition-all duration-300"
+                onClick={() => window.location.href = '/register'}
                 data-testid="button-start-free"
               >
                 Register Your School Now
-                <ArrowRight className="icon-md ml-3" />
+                <ArrowRight className="icon-md ml-3 transition-transform duration-300 group-hover:translate-x-1" />
               </Button>
               <Button 
                 size="lg" 
-                variant="outline" 
-                className="border-2 border-white text-white hover:bg-white hover:text-navy px-10 py-4 text-xl font-semibold"
+                className="btn-secondary border-2 border-white text-white hover:bg-white hover:text-ocean-blue px-10 py-4 text-xl font-semibold group hover:scale-105 transition-all duration-300"
                 onClick={() => scrollToSection('how-it-works')}
                 data-testid="button-learn-more-final"
               >
-                <BookOpen className="icon-md mr-3" />
+                <BookOpen className="icon-md mr-3 transition-transform duration-300 group-hover:scale-110" />
                 Learn More
               </Button>
             </div>

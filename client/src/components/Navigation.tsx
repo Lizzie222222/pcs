@@ -104,16 +104,15 @@ export default function Navigation() {
             ) : (
               <>
                 <Button
-                  variant="outline"
+                  className="btn-secondary"
                   size="sm"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
                   onClick={handleAuth}
                   data-testid="button-login"
                 >
                   Login
                 </Button>
                 <Button
-                  className="bg-coral hover:bg-coral/90 text-white"
+                  className="btn-primary"
                   onClick={() => setLocation('/register')}
                   data-testid="button-register"
                 >
