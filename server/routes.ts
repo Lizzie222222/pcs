@@ -49,6 +49,8 @@ function getCSVHeaders(type: string): string[] {
       return ['id', 'title', 'description', 'stage', 'status', 'schoolId', 'submittedBy', 'submittedAt', 'reviewedBy', 'reviewedAt'];
     case 'users':
       return ['id', 'email', 'firstName', 'lastName', 'role', 'isAdmin', 'createdAt'];
+    case 'analytics':
+      return ['category', 'metric', 'value'];
     default:
       return [];
   }
@@ -876,6 +878,74 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating school:", error);
       res.status(500).json({ message: "Failed to update school" });
+    }
+  });
+
+  // Export analytics data as CSV/Excel (MUST come before the general export endpoint)
+  app.get('/api/admin/export/analytics', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { format = 'csv' } = req.query;
+
+      // Get all analytics data
+      const [overview, schoolProgress, evidenceAnalytics, userEngagement] = await Promise.all([
+        storage.getAnalyticsOverview(),
+        storage.getSchoolProgressAnalytics(),
+        storage.getEvidenceAnalytics(), 
+        storage.getUserEngagementAnalytics()
+      ]);
+
+      // Compile comprehensive analytics summary
+      const analyticsData = [
+        // Overview metrics
+        { category: 'Overview', metric: 'Total Schools', value: overview.totalSchools },
+        { category: 'Overview', metric: 'Total Users', value: overview.totalUsers },
+        { category: 'Overview', metric: 'Total Evidence', value: overview.totalEvidence },
+        { category: 'Overview', metric: 'Completed Awards', value: overview.completedAwards },
+        { category: 'Overview', metric: 'Pending Evidence', value: overview.pendingEvidence },
+        { category: 'Overview', metric: 'Average Progress', value: `${Math.round(overview.averageProgress)}%` },
+        { category: 'Overview', metric: 'Students Impacted', value: overview.studentsImpacted },
+        { category: 'Overview', metric: 'Countries Reached', value: overview.countriesReached },
+        
+        // School progress metrics
+        ...schoolProgress.stageDistribution.map(item => ({ 
+          category: 'School Stages', 
+          metric: `${item.stage} Schools`, 
+          value: item.count 
+        })),
+        
+        // Evidence metrics
+        ...evidenceAnalytics.stageBreakdown.map(item => ({ 
+          category: 'Evidence by Stage', 
+          metric: `${item.stage} Approved`, 
+          value: item.approved 
+        })),
+        
+        // User engagement metrics
+        ...userEngagement.roleDistribution.map(item => ({ 
+          category: 'User Roles', 
+          metric: `${item.role} Users`, 
+          value: item.count 
+        }))
+      ];
+
+      const filename = `analytics_${new Date().toISOString().split('T')[0]}`;
+
+      if (format === 'csv') {
+        const csv = generateCSV(analyticsData, 'analytics');
+        res.setHeader('Content-Type', 'text/csv');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}.csv"`);
+        res.send(csv);
+      } else if (format === 'excel' || format === 'xlsx') {
+        const excel = generateExcel(analyticsData, 'analytics');
+        res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        res.setHeader('Content-Disposition', `attachment; filename="${filename}.xlsx"`);
+        res.send(excel);
+      } else {
+        res.json(analyticsData);
+      }
+    } catch (error) {
+      console.error("Error exporting analytics:", error);
+      res.status(500).json({ message: "Failed to export analytics data" });
     }
   });
 

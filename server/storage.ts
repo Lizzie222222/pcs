@@ -724,19 +724,26 @@ export class DatabaseStorage implements IStorage {
     studentsImpacted: number;
     countriesReached: number;
   }> {
-    const [overview] = await db
-      .select({
-        totalSchools: sql<number>`(SELECT COUNT(*) FROM schools)`,
-        totalUsers: sql<number>`(SELECT COUNT(*) FROM users)`,
-        totalEvidence: sql<number>`(SELECT COUNT(*) FROM evidence)`,
-        completedAwards: sql<number>`(SELECT COUNT(*) FROM schools WHERE award_completed = true)`,
-        pendingEvidence: sql<number>`(SELECT COUNT(*) FROM evidence WHERE status = 'pending')`,
-        averageProgress: sql<number>`(SELECT COALESCE(AVG(progress_percentage), 0) FROM schools)`,
-        studentsImpacted: sql<number>`(SELECT COALESCE(SUM(student_count), 0) FROM schools)`,
-        countriesReached: sql<number>`(SELECT COUNT(DISTINCT country) FROM schools)`
-      });
+    // Get individual metrics separately to avoid complex subquery issues
+    const [schoolsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools);
+    const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users);
+    const [evidenceCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence);
+    const [awardsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools).where(eq(schools.awardCompleted, true));
+    const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(eq(evidence.status, 'pending'));
+    const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools);
+    const [studentsSum] = await db.select({ sum: sql<number>`COALESCE(SUM(student_count), 0)` }).from(schools);
+    const [countriesCount] = await db.select({ count: sql<number>`COUNT(DISTINCT country)` }).from(schools);
 
-    return overview;
+    return {
+      totalSchools: schoolsCount?.count || 0,
+      totalUsers: usersCount?.count || 0,
+      totalEvidence: evidenceCount?.count || 0,
+      completedAwards: awardsCount?.count || 0,
+      pendingEvidence: pendingCount?.count || 0,
+      averageProgress: avgProgress?.avg || 0,
+      studentsImpacted: studentsSum?.sum || 0,
+      countriesReached: countriesCount?.count || 0,
+    };
   }
 
   async getSchoolProgressAnalytics(): Promise<{

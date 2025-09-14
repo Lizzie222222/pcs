@@ -38,6 +38,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   ScatterChart, Scatter
 } from 'recharts';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface AdminStats {
   totalSchools: number;
@@ -95,6 +96,372 @@ interface EvidenceAnalytics {
   stageBreakdown: Array<{ stage: string; total: number; approved: number; pending: number; rejected: number }>;
   reviewTurnaround: Array<{ range: string; count: number }>;
   topSubmitters: Array<{ schoolName: string; submissions: number; approvalRate: number }>;
+}
+
+interface UserEngagementAnalytics {
+  registrationTrends: Array<{ month: string; teachers: number; admins: number }>;
+  roleDistribution: Array<{ role: string; count: number }>;
+  activeUsers: Array<{ period: string; active: number }>;
+  schoolEngagement: Array<{ schoolName: string; users: number; evidence: number; lastActivity: Date }>;
+}
+
+// Color palette for charts
+const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
+
+function AnalyticsContent() {
+  const [selectedTab, setSelectedTab] = useState('overview');
+
+  // Analytics queries
+  const overviewQuery = useQuery<AnalyticsOverview>({
+    queryKey: ['/api/admin/analytics/overview'],
+    enabled: true
+  });
+
+  const schoolProgressQuery = useQuery<SchoolProgressAnalytics>({
+    queryKey: ['/api/admin/analytics/school-progress'],
+    enabled: selectedTab === 'schools'
+  });
+
+  const evidenceQuery = useQuery<EvidenceAnalytics>({
+    queryKey: ['/api/admin/analytics/evidence'],
+    enabled: selectedTab === 'evidence'
+  });
+
+  const userEngagementQuery = useQuery<UserEngagementAnalytics>({
+    queryKey: ['/api/admin/analytics/user-engagement'],
+    enabled: selectedTab === 'users'
+  });
+
+  const exportAnalytics = async (format: 'csv' | 'excel') => {
+    try {
+      const response = await fetch(`/api/admin/export/analytics?format=${format}`, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!response.ok) throw new Error('Export failed');
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `analytics_${new Date().toISOString().split('T')[0]}.${format === 'excel' ? 'xlsx' : 'csv'}`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <div>
+          <h2 className="text-2xl font-bold text-navy">Analytics Dashboard</h2>
+          <p className="text-gray-600 mt-1">Comprehensive insights and metrics for Plastic Clever Schools</p>
+        </div>
+        
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => exportAnalytics('csv')}
+            data-testid="button-export-csv"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export CSV
+          </Button>
+          <Button
+            variant="outline"
+            onClick={() => exportAnalytics('excel')}
+            data-testid="button-export-excel"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            Export Excel
+          </Button>
+        </div>
+      </div>
+
+      {/* Overview Cards */}
+      {overviewQuery.data && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Schools</CardTitle>
+              <School className="h-4 w-4 text-pcs_blue" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="metric-total-schools">
+                {overviewQuery.data.totalSchools.toLocaleString()}
+              </div>
+              <p className="text-xs text-gray-500">Registered institutions</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+              <Users className="h-4 w-4 text-pcs_teal" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="metric-total-users">
+                {overviewQuery.data.totalUsers.toLocaleString()}
+              </div>
+              <p className="text-xs text-gray-500">Teachers and administrators</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Evidence Submissions</CardTitle>
+              <FileText className="h-4 w-4 text-pcs_yellow" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="metric-total-evidence">
+                {overviewQuery.data.totalEvidence.toLocaleString()}
+              </div>
+              <div className="flex items-center text-xs text-gray-500">
+                <span>{overviewQuery.data.pendingEvidence} pending review</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Global Reach</CardTitle>
+              <Globe className="h-4 w-4 text-pcs_coral" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="metric-countries-reached">
+                {overviewQuery.data.countriesReached.toLocaleString()}
+              </div>
+              <p className="text-xs text-gray-500">Countries with participating schools</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {/* Detailed Analytics Tabs */}
+      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="overview" data-testid="analytics-tab-overview">Overview</TabsTrigger>
+          <TabsTrigger value="schools" data-testid="analytics-tab-schools">Schools</TabsTrigger>
+          <TabsTrigger value="evidence" data-testid="analytics-tab-evidence">Evidence</TabsTrigger>
+          <TabsTrigger value="users" data-testid="analytics-tab-users">Users</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="overview">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <TrendingUp className="w-5 h-5 mr-2 text-pcs_blue" />
+                  Platform Growth Overview
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="text-center py-8 text-gray-500">
+                  Select a specific analytics tab to view detailed charts and insights
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <BarChart3 className="w-5 h-5 mr-2 text-pcs_teal" />
+                  Key Performance Indicators
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {overviewQuery.data && (
+                    <>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Program Completion Rate</span>
+                        <span className="font-semibold">
+                          {Math.round((overviewQuery.data.completedAwards / overviewQuery.data.totalSchools) * 100)}%
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Average Progress</span>
+                        <span className="font-semibold">{Math.round(overviewQuery.data.averageProgress)}%</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm text-gray-600">Students Impacted</span>
+                        <span className="font-semibold">{overviewQuery.data.studentsImpacted.toLocaleString()}</span>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="schools">
+          {schoolProgressQuery.data && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Stage Distribution */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>School Stage Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={schoolProgressQuery.data.stageDistribution}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, value }) => `${name}: ${value}`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="count"
+                      >
+                        {schoolProgressQuery.data.stageDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Progress Ranges */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Progress Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={schoolProgressQuery.data.progressRanges}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="range" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="count" fill="#019ADE" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="evidence">
+          {evidenceQuery.data && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Stage Breakdown */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Evidence by Stage</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={evidenceQuery.data.stageBreakdown}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="stage" />
+                      <YAxis />
+                      <Tooltip />
+                      <Legend />
+                      <Bar dataKey="approved" stackId="a" fill="#02BBB4" name="Approved" />
+                      <Bar dataKey="pending" stackId="a" fill="#FFC557" name="Pending" />
+                      <Bar dataKey="rejected" stackId="a" fill="#FF595A" name="Rejected" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Review Turnaround */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Review Turnaround Time</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={evidenceQuery.data.reviewTurnaround}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, value }) => `${name}: ${value}`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="count"
+                      >
+                        {evidenceQuery.data.reviewTurnaround.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
+
+        <TabsContent value="users">
+          {userEngagementQuery.data && (
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Role Distribution */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>User Role Distribution</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <PieChart>
+                      <Pie
+                        data={userEngagementQuery.data.roleDistribution}
+                        cx="50%"
+                        cy="50%"
+                        labelLine={false}
+                        label={({ name, value }) => `${name}: ${value}`}
+                        outerRadius={80}
+                        fill="#8884d8"
+                        dataKey="count"
+                      >
+                        {userEngagementQuery.data.roleDistribution.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+
+              {/* Active Users */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>Active Users by Period</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ResponsiveContainer width="100%" height={300}>
+                    <BarChart data={userEngagementQuery.data.activeUsers}>
+                      <CartesianGrid strokeDasharray="3 3" />
+                      <XAxis dataKey="period" />
+                      <YAxis />
+                      <Tooltip />
+                      <Bar dataKey="active" fill="#0B3D5D" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 }
 
 export default function Admin() {
@@ -1133,6 +1500,13 @@ export default function Admin() {
               </div>
             </CardContent>
           </Card>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-6">
+            <AnalyticsContent />
+          </div>
         )}
       </div>
 
