@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -11,6 +12,9 @@ import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_17578
 import inspireIcon from "@assets/Inspire_1757862013793.png";
 import investigateIcon from "@assets/Investigate_1757862013794.png";
 import actIcon from "@assets/plastic_bottles_and_glass_in_recycling_boxes_static_1757862163412.png";
+import inspireVideo from "@assets/inspire_1757867031379.mp4";
+import investigateVideo from "@assets/investigate_1757867031380.mp4";
+import actVideo from "@assets/ACT_1757867031379.mp4";
 import commonSeasLogo from "@assets/common-seas_1757862244194.png";
 import kidsAgainstPlasticLogo from "@assets/KAP-logo-png-300x300_1757862244194.png";
 import riverCleanupLogo from "@assets/RiverCleanup_logo_rgb_pos-WhiteBG-01-2-256x256_1757862244194.png";
@@ -90,6 +94,94 @@ export default function Landing() {
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Safe HoverVideo component to handle play/pause without promise conflicts
+  interface HoverVideoProps {
+    src: string;
+    poster: string;
+    alt: string;
+    className?: string;
+    containerClassName?: string;
+  }
+
+  function HoverVideo({ src, poster, alt, className = "", containerClassName = "" }: HoverVideoProps) {
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const hoverId = useRef(0);
+    const hovered = useRef(false);
+    const prefersReducedMotion = useReducedMotion();
+
+    const safePlay = () => {
+      if (videoRef.current && !prefersReducedMotion) {
+        videoRef.current.play().catch(() => {
+          // Silently handle any play interruptions
+        });
+      }
+    };
+
+    const handleMouseEnter = () => {
+      if (prefersReducedMotion) return;
+      
+      hovered.current = true;
+      const id = ++hoverId.current;
+      const video = videoRef.current;
+      
+      if (!video) return;
+      
+      video.muted = true;
+      video.playsInline = true;
+      
+      if (video.readyState >= 2) {
+        // Video is ready to play
+        if (hoverId.current === id && hovered.current) {
+          safePlay();
+        }
+      } else {
+        // Wait for video to be ready
+        video.load();
+        const onCanPlay = () => {
+          video.removeEventListener('canplay', onCanPlay);
+          if (hoverId.current === id && hovered.current) {
+            safePlay();
+          }
+        };
+        video.addEventListener('canplay', onCanPlay);
+      }
+    };
+
+    const handleMouseLeave = () => {
+      hovered.current = false;
+      hoverId.current++; // Invalidate any pending play operations
+      
+      const video = videoRef.current;
+      if (video && !video.paused) {
+        video.pause();
+        video.currentTime = 0;
+      }
+    };
+
+    return (
+      <div 
+        className={`group cursor-pointer relative overflow-hidden ${containerClassName}`}
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+      >
+        <img 
+          src={poster}
+          alt={alt}
+          className={`absolute inset-0 m-auto opacity-100 transition-opacity duration-300 group-hover:opacity-0 ${className}`}
+        />
+        <video 
+          ref={videoRef}
+          src={src}
+          className={`absolute inset-0 m-auto object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none ${className}`}
+          loop
+          muted
+          playsInline
+          preload="metadata"
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white pt-16">
@@ -179,90 +271,39 @@ export default function Landing() {
             {/* Key Callouts with Delightful Animations */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 scroll-reveal">
               <div className="text-center group cursor-pointer">
-                <div 
-                  className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden"
-                  onMouseEnter={(e) => {
-                    const video = e.currentTarget.querySelector('video');
-                    if (video) video.play();
-                  }}
-                  onMouseLeave={(e) => {
-                    const video = e.currentTarget.querySelector('video');
-                    if (video) video.pause();
-                  }}
-                >
-                  <img 
-                    src={emojiImage} 
-                    alt="Award trophy" 
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-contain opacity-100 transition-opacity duration-300 group-hover:opacity-0"
-                  />
-                  <video 
+                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200">
+                  <HoverVideo 
                     src={animationVideo}
-                    className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
-                    loop
-                    muted
-                    playsInline
-                    preload="none"
+                    poster={emojiImage}
+                    alt="Award trophy"
+                    className="w-full h-full object-contain"
+                    containerClassName="w-full h-full"
                   />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-ocean-blue">Award-Winning Program</h3>
                 <p className="body-text">Recognized for our effective approach to reducing waste.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div 
-                  className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden"
-                  onMouseEnter={(e) => {
-                    const video = e.currentTarget.querySelector('video');
-                    if (video) video.play();
-                  }}
-                  onMouseLeave={(e) => {
-                    const video = e.currentTarget.querySelector('video');
-                    if (video) video.pause();
-                  }}
-                >
-                  <img 
-                    src={studentImage} 
-                    alt="Student character" 
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-contain opacity-100 transition-opacity duration-300 group-hover:opacity-0"
-                  />
-                  <video 
+                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200">
+                  <HoverVideo 
                     src={studentVideo}
-                    className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
-                    loop
-                    muted
-                    playsInline
-                    preload="none"
+                    poster={studentImage}
+                    alt="Student character"
+                    className="w-full h-full object-contain"
+                    containerClassName="w-full h-full"
                   />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-teal">Student-Led Action</h3>
                 <p className="body-text">Kids are at the heart of every step, fostering a sense of ownership and responsibility.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div 
-                  className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden"
-                  onMouseEnter={(e) => {
-                    const video = e.currentTarget.querySelector('video');
-                    if (video) video.play();
-                  }}
-                  onMouseLeave={(e) => {
-                    const video = e.currentTarget.querySelector('video');
-                    if (video) video.pause();
-                  }}
-                >
-                  <img 
-                    src={booksImage} 
-                    alt="Books and resources" 
-                    loading="lazy"
-                    className="absolute inset-0 w-full h-full object-contain opacity-100 transition-opacity duration-300 group-hover:opacity-0"
-                  />
-                  <video 
+                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200">
+                  <HoverVideo 
                     src={booksVideo}
-                    className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
-                    loop
-                    muted
-                    playsInline
-                    preload="none"
+                    poster={booksImage}
+                    alt="Books and resources"
+                    className="w-full h-full object-contain"
+                    containerClassName="w-full h-full"
                   />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-navy">Free Resources</h3>
@@ -324,11 +365,13 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stage 1: Inspire */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal-left">
-              <div className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-ocean-blue/20">
-                <img 
-                  src={inspireIcon} 
-                  alt="Inspire" 
-                  className="w-30 h-30 transition-transform duration-200 group-hover:scale-110" 
+              <div className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <HoverVideo 
+                  src={inspireVideo}
+                  poster={inspireIcon}
+                  alt="Inspire"
+                  className="w-30 h-30"
+                  containerClassName="w-full h-full"
                 />
               </div>
               <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
@@ -340,11 +383,13 @@ export default function Landing() {
 
             {/* Stage 2: Investigate */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal">
-              <div className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-teal/20">
-                <img 
-                  src={investigateIcon} 
-                  alt="Investigate" 
-                  className="w-30 h-30 transition-transform duration-200 group-hover:scale-110" 
+              <div className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <HoverVideo 
+                  src={investigateVideo}
+                  poster={investigateIcon}
+                  alt="Investigate"
+                  className="w-30 h-30"
+                  containerClassName="w-full h-full"
                 />
               </div>
               <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
@@ -356,11 +401,13 @@ export default function Landing() {
 
             {/* Stage 3: Act */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal-right">
-              <div className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-navy/20">
-                <img 
-                  src={actIcon} 
-                  alt="Act" 
-                  className="w-30 h-30 transition-transform duration-200 group-hover:scale-110" 
+              <div className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <HoverVideo 
+                  src={actVideo}
+                  poster={actIcon}
+                  alt="Act"
+                  className="w-30 h-30"
+                  containerClassName="w-full h-full"
                 />
               </div>
               <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
