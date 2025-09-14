@@ -24,8 +24,20 @@ import {
   Filter,
   Download,
   Eye,
-  Mail
+  Mail,
+  BarChart3,
+  TrendingUp,
+  PieChart as PieChartIcon,
+  Globe,
+  FileText,
+  Award
 } from "lucide-react";
+
+import { 
+  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
+  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+  ScatterChart, Scatter
+} from 'recharts';
 
 interface AdminStats {
   totalSchools: number;
@@ -58,12 +70,39 @@ interface SchoolData {
   primaryContactId: string;
 }
 
+// Analytics interfaces
+interface AnalyticsOverview {
+  totalSchools: number;
+  totalUsers: number;
+  totalEvidence: number;
+  completedAwards: number;
+  pendingEvidence: number;
+  averageProgress: number;
+  studentsImpacted: number;
+  countriesReached: number;
+}
+
+interface SchoolProgressAnalytics {
+  stageDistribution: Array<{ stage: string; count: number }>;
+  progressRanges: Array<{ range: string; count: number }>;
+  completionRates: Array<{ metric: string; rate: number }>;
+  monthlyRegistrations: Array<{ month: string; count: number }>;
+  schoolsByCountry: Array<{ country: string; count: number; students: number }>;
+}
+
+interface EvidenceAnalytics {
+  submissionTrends: Array<{ month: string; submissions: number; approvals: number; rejections: number }>;
+  stageBreakdown: Array<{ stage: string; total: number; approved: number; pending: number; rejected: number }>;
+  reviewTurnaround: Array<{ range: string; count: number }>;
+  topSubmitters: Array<{ schoolName: string; submissions: number; approvalRate: number }>;
+}
+
 export default function Admin() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'analytics'>('overview');
   const [schoolFilters, setSchoolFilters] = useState({
     search: '',
     country: '',
@@ -676,6 +715,17 @@ export default function Admin() {
             data-testid="tab-schools"
           >
             Schools
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'analytics' 
+                ? 'bg-white text-navy shadow-sm' 
+                : 'text-gray-600 hover:text-navy'
+            }`}
+            onClick={() => setActiveTab('analytics')}
+            data-testid="tab-analytics"
+          >
+            Analytics
           </button>
         </div>
 

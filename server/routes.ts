@@ -536,6 +536,77 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Analytics endpoints
+  app.get('/api/admin/analytics/overview', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getAnalyticsOverview();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching analytics overview:", error);
+      res.status(500).json({ message: "Failed to fetch analytics overview" });
+    }
+  });
+
+  app.get('/api/admin/analytics/school-progress', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getSchoolProgressAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching school progress analytics:", error);
+      res.status(500).json({ message: "Failed to fetch school progress analytics" });
+    }
+  });
+
+  app.get('/api/admin/analytics/evidence', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getEvidenceAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching evidence analytics:", error);
+      res.status(500).json({ message: "Failed to fetch evidence analytics" });
+    }
+  });
+
+  app.get('/api/admin/analytics/user-engagement', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getUserEngagementAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching user engagement analytics:", error);
+      res.status(500).json({ message: "Failed to fetch user engagement analytics" });
+    }
+  });
+
+  app.get('/api/admin/analytics/resources', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getResourceAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching resource analytics:", error);
+      res.status(500).json({ message: "Failed to fetch resource analytics" });
+    }
+  });
+
+  app.get('/api/admin/analytics/email', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getEmailAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching email analytics:", error);
+      res.status(500).json({ message: "Failed to fetch email analytics" });
+    }
+  });
+
+  app.get('/api/admin/analytics/geographic', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getGeographicAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching geographic analytics:", error);
+      res.status(500).json({ message: "Failed to fetch geographic analytics" });
+    }
+  });
+
   // Get pending evidence for review
   app.get('/api/admin/evidence/pending', isAuthenticated, requireAdmin, async (req, res) => {
     try {

@@ -125,6 +125,62 @@ export interface IStorage {
     featuredCaseStudies: number;
     activeUsers: number;
   }>;
+
+  // Analytics operations
+  getAnalyticsOverview(): Promise<{
+    totalSchools: number;
+    totalUsers: number;
+    totalEvidence: number;
+    completedAwards: number;
+    pendingEvidence: number;
+    averageProgress: number;
+    studentsImpacted: number;
+    countriesReached: number;
+  }>;
+
+  getSchoolProgressAnalytics(): Promise<{
+    stageDistribution: Array<{ stage: string; count: number }>;
+    progressRanges: Array<{ range: string; count: number }>;
+    completionRates: Array<{ metric: string; rate: number }>;
+    monthlyRegistrations: Array<{ month: string; count: number }>;
+    schoolsByCountry: Array<{ country: string; count: number; students: number }>;
+  }>;
+
+  getEvidenceAnalytics(): Promise<{
+    submissionTrends: Array<{ month: string; submissions: number; approvals: number; rejections: number }>;
+    stageBreakdown: Array<{ stage: string; total: number; approved: number; pending: number; rejected: number }>;
+    reviewTurnaround: Array<{ range: string; count: number }>;
+    topSubmitters: Array<{ schoolName: string; submissions: number; approvalRate: number }>;
+  }>;
+
+  getUserEngagementAnalytics(): Promise<{
+    registrationTrends: Array<{ month: string; teachers: number; admins: number }>;
+    roleDistribution: Array<{ role: string; count: number }>;
+    activeUsers: Array<{ period: string; active: number }>;
+    schoolEngagement: Array<{ schoolName: string; users: number; evidence: number; lastActivity: Date }>;
+  }>;
+
+  getResourceAnalytics(): Promise<{
+    downloadTrends: Array<{ month: string; downloads: number }>;
+    popularResources: Array<{ title: string; downloads: number; stage: string }>;
+    resourcesByStage: Array<{ stage: string; count: number; totalDownloads: number }>;
+    resourcesByCountry: Array<{ country: string; resources: number; downloads: number }>;
+  }>;
+
+  getEmailAnalytics(): Promise<{
+    deliveryStats: Array<{ date: string; sent: number; delivered: number }>;
+    templatePerformance: Array<{ template: string; sent: number; successRate: number }>;
+    recentActivity: Array<{ date: string; template: string; recipient: string; status: string }>;
+  }>;
+
+  getGeographicAnalytics(): Promise<{
+    schoolsByRegion: Array<{ country: string; schools: number; students: number; progress: number }>;
+    globalReach: {
+      totalCountries: number;
+      totalCities: number;
+      coordinates: Array<{ lat: number; lng: number; schoolCount: number; country: string }>;
+    };
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -654,6 +710,434 @@ export class DatabaseStorage implements IStorage {
       pendingEvidence: evidenceStats.pendingEvidence,
       featuredCaseStudies: caseStudyStats.featuredCaseStudies,
       activeUsers: userStats.activeUsers,
+    };
+  }
+
+  // Analytics implementations
+  async getAnalyticsOverview(): Promise<{
+    totalSchools: number;
+    totalUsers: number;
+    totalEvidence: number;
+    completedAwards: number;
+    pendingEvidence: number;
+    averageProgress: number;
+    studentsImpacted: number;
+    countriesReached: number;
+  }> {
+    const [overview] = await db
+      .select({
+        totalSchools: sql<number>`(SELECT COUNT(*) FROM schools)`,
+        totalUsers: sql<number>`(SELECT COUNT(*) FROM users)`,
+        totalEvidence: sql<number>`(SELECT COUNT(*) FROM evidence)`,
+        completedAwards: sql<number>`(SELECT COUNT(*) FROM schools WHERE award_completed = true)`,
+        pendingEvidence: sql<number>`(SELECT COUNT(*) FROM evidence WHERE status = 'pending')`,
+        averageProgress: sql<number>`(SELECT COALESCE(AVG(progress_percentage), 0) FROM schools)`,
+        studentsImpacted: sql<number>`(SELECT COALESCE(SUM(student_count), 0) FROM schools)`,
+        countriesReached: sql<number>`(SELECT COUNT(DISTINCT country) FROM schools)`
+      });
+
+    return overview;
+  }
+
+  async getSchoolProgressAnalytics(): Promise<{
+    stageDistribution: Array<{ stage: string; count: number }>;
+    progressRanges: Array<{ range: string; count: number }>;
+    completionRates: Array<{ metric: string; rate: number }>;
+    monthlyRegistrations: Array<{ month: string; count: number }>;
+    schoolsByCountry: Array<{ country: string; count: number; students: number }>;
+  }> {
+    // Stage distribution
+    const stageDistribution = await db
+      .select({
+        stage: schools.currentStage,
+        count: count()
+      })
+      .from(schools)
+      .groupBy(schools.currentStage);
+
+    // Progress ranges
+    const progressRanges = await db
+      .select({
+        range: sql<string>`CASE 
+          WHEN progress_percentage = 0 THEN 'Not Started'
+          WHEN progress_percentage <= 25 THEN '1-25%'
+          WHEN progress_percentage <= 50 THEN '26-50%'
+          WHEN progress_percentage <= 75 THEN '51-75%'
+          WHEN progress_percentage <= 99 THEN '76-99%'
+          ELSE 'Completed'
+        END`,
+        count: count()
+      })
+      .from(schools)
+      .groupBy(sql`CASE 
+        WHEN progress_percentage = 0 THEN 'Not Started'
+        WHEN progress_percentage <= 25 THEN '1-25%'
+        WHEN progress_percentage <= 50 THEN '26-50%'
+        WHEN progress_percentage <= 75 THEN '51-75%'
+        WHEN progress_percentage <= 99 THEN '76-99%'
+        ELSE 'Completed'
+      END`);
+
+    // Completion rates
+    const [completionData] = await db
+      .select({
+        inspire: sql<number>`COUNT(*) FILTER (WHERE inspire_completed = true)`,
+        investigate: sql<number>`COUNT(*) FILTER (WHERE investigate_completed = true)`,
+        act: sql<number>`COUNT(*) FILTER (WHERE act_completed = true)`,
+        award: sql<number>`COUNT(*) FILTER (WHERE award_completed = true)`,
+        total: count()
+      })
+      .from(schools);
+
+    const completionRates = [
+      { metric: 'Inspire', rate: (completionData.inspire / completionData.total) * 100 },
+      { metric: 'Investigate', rate: (completionData.investigate / completionData.total) * 100 },
+      { metric: 'Act', rate: (completionData.act / completionData.total) * 100 },
+      { metric: 'Award', rate: (completionData.award / completionData.total) * 100 }
+    ];
+
+    // Monthly registrations (last 12 months)
+    const monthlyRegistrations = await db
+      .select({
+        month: sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
+        count: count()
+      })
+      .from(schools)
+      .where(sql`created_at >= NOW() - INTERVAL '12 months'`)
+      .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(created_at, 'YYYY-MM')`);
+
+    // Schools by country
+    const schoolsByCountry = await db
+      .select({
+        country: schools.country,
+        count: count(),
+        students: sql<number>`COALESCE(SUM(student_count), 0)`
+      })
+      .from(schools)
+      .groupBy(schools.country)
+      .orderBy(desc(count()));
+
+    return {
+      stageDistribution,
+      progressRanges,
+      completionRates,
+      monthlyRegistrations,
+      schoolsByCountry
+    };
+  }
+
+  async getEvidenceAnalytics(): Promise<{
+    submissionTrends: Array<{ month: string; submissions: number; approvals: number; rejections: number }>;
+    stageBreakdown: Array<{ stage: string; total: number; approved: number; pending: number; rejected: number }>;
+    reviewTurnaround: Array<{ range: string; count: number }>;
+    topSubmitters: Array<{ schoolName: string; submissions: number; approvalRate: number }>;
+  }> {
+    // Submission trends (last 12 months)
+    const submissionTrends = await db
+      .select({
+        month: sql<string>`TO_CHAR(submitted_at, 'YYYY-MM')`,
+        submissions: count(),
+        approvals: sql<number>`COUNT(*) FILTER (WHERE status = 'approved')`,
+        rejections: sql<number>`COUNT(*) FILTER (WHERE status = 'rejected')`
+      })
+      .from(evidence)
+      .where(sql`submitted_at >= NOW() - INTERVAL '12 months'`)
+      .groupBy(sql`TO_CHAR(submitted_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(submitted_at, 'YYYY-MM')`);
+
+    // Stage breakdown
+    const stageBreakdown = await db
+      .select({
+        stage: evidence.stage,
+        total: count(),
+        approved: sql<number>`COUNT(*) FILTER (WHERE status = 'approved')`,
+        pending: sql<number>`COUNT(*) FILTER (WHERE status = 'pending')`,
+        rejected: sql<number>`COUNT(*) FILTER (WHERE status = 'rejected')`
+      })
+      .from(evidence)
+      .groupBy(evidence.stage);
+
+    // Review turnaround (for completed reviews)
+    const reviewTurnaround = await db
+      .select({
+        range: sql<string>`CASE 
+          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 1 THEN 'Same day'
+          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 3 THEN '1-3 days'
+          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 7 THEN '4-7 days'
+          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 14 THEN '1-2 weeks'
+          ELSE 'Over 2 weeks'
+        END`,
+        count: count()
+      })
+      .from(evidence)
+      .where(and(
+        sql`reviewed_at IS NOT NULL`,
+        sql`submitted_at IS NOT NULL`
+      ))
+      .groupBy(sql`CASE 
+        WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 1 THEN 'Same day'
+        WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 3 THEN '1-3 days'
+        WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 7 THEN '4-7 days'
+        WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 14 THEN '1-2 weeks'
+        ELSE 'Over 2 weeks'
+      END`);
+
+    // Top submitting schools
+    const topSubmitters = await db
+      .select({
+        schoolName: schools.name,
+        submissions: count(),
+        approvalRate: sql<number>`(COUNT(*) FILTER (WHERE evidence.status = 'approved') * 100.0 / COUNT(*))`
+      })
+      .from(evidence)
+      .innerJoin(schools, eq(evidence.schoolId, schools.id))
+      .groupBy(schools.id, schools.name)
+      .having(sql`COUNT(*) >= 3`)
+      .orderBy(desc(count()))
+      .limit(10);
+
+    return {
+      submissionTrends,
+      stageBreakdown,
+      reviewTurnaround,
+      topSubmitters
+    };
+  }
+
+  async getUserEngagementAnalytics(): Promise<{
+    registrationTrends: Array<{ month: string; teachers: number; admins: number }>;
+    roleDistribution: Array<{ role: string; count: number }>;
+    activeUsers: Array<{ period: string; active: number }>;
+    schoolEngagement: Array<{ schoolName: string; users: number; evidence: number; lastActivity: Date }>;
+  }> {
+    // Registration trends (last 12 months)
+    const registrationTrends = await db
+      .select({
+        month: sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
+        teachers: sql<number>`COUNT(*) FILTER (WHERE role = 'teacher')`,
+        admins: sql<number>`COUNT(*) FILTER (WHERE is_admin = true)`
+      })
+      .from(users)
+      .where(sql`created_at >= NOW() - INTERVAL '12 months'`)
+      .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(created_at, 'YYYY-MM')`);
+
+    // Role distribution
+    const roleDistribution = await db
+      .select({
+        role: sql<string>`CASE WHEN is_admin = true THEN 'admin' ELSE role END`,
+        count: count()
+      })
+      .from(users)
+      .groupBy(sql`CASE WHEN is_admin = true THEN 'admin' ELSE role END`);
+
+    // Active users (based on evidence submissions)
+    const activeUsers = [
+      {
+        period: 'Last 7 days',
+        active: (await db
+          .select({ count: sql<number>`COUNT(DISTINCT submitted_by)` })
+          .from(evidence)
+          .where(sql`submitted_at >= NOW() - INTERVAL '7 days'`))[0].count
+      },
+      {
+        period: 'Last 30 days',
+        active: (await db
+          .select({ count: sql<number>`COUNT(DISTINCT submitted_by)` })
+          .from(evidence)
+          .where(sql`submitted_at >= NOW() - INTERVAL '30 days'`))[0].count
+      },
+      {
+        period: 'Last 90 days',
+        active: (await db
+          .select({ count: sql<number>`COUNT(DISTINCT submitted_by)` })
+          .from(evidence)
+          .where(sql`submitted_at >= NOW() - INTERVAL '90 days'`))[0].count
+      }
+    ];
+
+    // School engagement
+    const schoolEngagement = await db
+      .select({
+        schoolName: schools.name,
+        users: sql<number>`COUNT(DISTINCT school_users.user_id)`,
+        evidence: sql<number>`COUNT(DISTINCT evidence.id)`,
+        lastActivity: sql<Date>`GREATEST(MAX(evidence.submitted_at), MAX(school_users.created_at))`
+      })
+      .from(schools)
+      .leftJoin(schoolUsers, eq(schoolUsers.schoolId, schools.id))
+      .leftJoin(evidence, eq(evidence.schoolId, schools.id))
+      .groupBy(schools.id, schools.name)
+      .orderBy(desc(sql`GREATEST(MAX(evidence.submitted_at), MAX(school_users.created_at))`))
+      .limit(20);
+
+    return {
+      registrationTrends,
+      roleDistribution,
+      activeUsers,
+      schoolEngagement
+    };
+  }
+
+  async getResourceAnalytics(): Promise<{
+    downloadTrends: Array<{ month: string; downloads: number }>;
+    popularResources: Array<{ title: string; downloads: number; stage: string }>;
+    resourcesByStage: Array<{ stage: string; count: number; totalDownloads: number }>;
+    resourcesByCountry: Array<{ country: string; resources: number; downloads: number }>;
+  }> {
+    // Download trends (last 12 months) - using created_at as proxy since we don't have download timestamps
+    const downloadTrends = await db
+      .select({
+        month: sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
+        downloads: sql<number>`SUM(download_count)`
+      })
+      .from(resources)
+      .where(sql`created_at >= NOW() - INTERVAL '12 months'`)
+      .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(created_at, 'YYYY-MM')`);
+
+    // Popular resources
+    const popularResources = await db
+      .select({
+        title: resources.title,
+        downloads: resources.downloadCount,
+        stage: resources.stage
+      })
+      .from(resources)
+      .where(eq(resources.isActive, true))
+      .orderBy(desc(resources.downloadCount))
+      .limit(10);
+
+    // Resources by stage
+    const resourcesByStage = await db
+      .select({
+        stage: resources.stage,
+        count: count(),
+        totalDownloads: sql<number>`SUM(download_count)`
+      })
+      .from(resources)
+      .where(eq(resources.isActive, true))
+      .groupBy(resources.stage);
+
+    // Resources by country
+    const resourcesByCountry = await db
+      .select({
+        country: sql<string>`COALESCE(resources.country, 'Global')`,
+        resources: count(),
+        downloads: sql<number>`SUM(download_count)`
+      })
+      .from(resources)
+      .where(eq(resources.isActive, true))
+      .groupBy(sql`COALESCE(resources.country, 'Global')`)
+      .orderBy(desc(sql`SUM(download_count)`));
+
+    return {
+      downloadTrends,
+      popularResources,
+      resourcesByStage,
+      resourcesByCountry
+    };
+  }
+
+  async getEmailAnalytics(): Promise<{
+    deliveryStats: Array<{ date: string; sent: number; delivered: number }>;
+    templatePerformance: Array<{ template: string; sent: number; successRate: number }>;
+    recentActivity: Array<{ date: string; template: string; recipient: string; status: string }>;
+  }> {
+    // Delivery stats (last 30 days)
+    const deliveryStats = await db
+      .select({
+        date: sql<string>`TO_CHAR(sent_at, 'YYYY-MM-DD')`,
+        sent: count(),
+        delivered: sql<number>`COUNT(*) FILTER (WHERE status = 'sent')`
+      })
+      .from(emailLogs)
+      .where(sql`sent_at >= NOW() - INTERVAL '30 days'`)
+      .groupBy(sql`TO_CHAR(sent_at, 'YYYY-MM-DD')`)
+      .orderBy(sql`TO_CHAR(sent_at, 'YYYY-MM-DD')`);
+
+    // Template performance
+    const templatePerformance = await db
+      .select({
+        template: sql<string>`COALESCE(template, 'Unknown')`,
+        sent: count(),
+        successRate: sql<number>`(COUNT(*) FILTER (WHERE status = 'sent') * 100.0 / COUNT(*))`
+      })
+      .from(emailLogs)
+      .groupBy(sql`COALESCE(template, 'Unknown')`)
+      .orderBy(desc(count()));
+
+    // Recent activity
+    const recentActivity = await db
+      .select({
+        date: sql<string>`TO_CHAR(sent_at, 'YYYY-MM-DD HH24:MI')`,
+        template: sql<string>`COALESCE(template, 'Direct Email')`,
+        recipient: emailLogs.recipientEmail,
+        status: emailLogs.status
+      })
+      .from(emailLogs)
+      .orderBy(desc(emailLogs.sentAt))
+      .limit(50);
+
+    return {
+      deliveryStats,
+      templatePerformance,
+      recentActivity
+    };
+  }
+
+  async getGeographicAnalytics(): Promise<{
+    schoolsByRegion: Array<{ country: string; schools: number; students: number; progress: number }>;
+    globalReach: {
+      totalCountries: number;
+      totalCities: number;
+      coordinates: Array<{ lat: number; lng: number; schoolCount: number; country: string }>;
+    };
+  }> {
+    // Schools by region
+    const schoolsByRegion = await db
+      .select({
+        country: schools.country,
+        schools: count(),
+        students: sql<number>`COALESCE(SUM(student_count), 0)`,
+        progress: sql<number>`AVG(progress_percentage)`
+      })
+      .from(schools)
+      .groupBy(schools.country)
+      .orderBy(desc(count()));
+
+    // Global reach summary
+    const [globalSummary] = await db
+      .select({
+        totalCountries: sql<number>`COUNT(DISTINCT country)`,
+        totalCities: sql<number>`COUNT(DISTINCT COALESCE(address, 'Unknown'))`
+      })
+      .from(schools);
+
+    // School coordinates (for mapping)
+    const coordinates = await db
+      .select({
+        lat: sql<number>`latitude::float`,
+        lng: sql<number>`longitude::float`,
+        schoolCount: count(),
+        country: schools.country
+      })
+      .from(schools)
+      .where(and(
+        sql`latitude IS NOT NULL`,
+        sql`longitude IS NOT NULL`
+      ))
+      .groupBy(schools.latitude, schools.longitude, schools.country)
+      .limit(100);
+
+    return {
+      schoolsByRegion,
+      globalReach: {
+        totalCountries: globalSummary.totalCountries,
+        totalCities: globalSummary.totalCities,
+        coordinates
+      }
     };
   }
 
