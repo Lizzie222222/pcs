@@ -16,7 +16,7 @@ import logoUrl from "@assets/Logo_1757848498470.png";
 export default function Register() {
   const { user, isLoading, isAuthenticated, register, isRegistering } = useAuth();
   const [showSignUpForm, setShowSignUpForm] = useState(false);
-  const [showEmailModal, setShowEmailModal] = useState(false);
+  const [showEmailForm, setShowEmailForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   
@@ -136,7 +136,7 @@ export default function Register() {
                   <Button
                     size="lg"
                     className="w-full btn-primary group"
-                    onClick={() => setShowEmailModal(true)}
+                    onClick={() => setShowEmailForm(true)}
                     data-testid="button-register-email"
                     disabled={isRegistering}
                   >
@@ -175,6 +175,201 @@ export default function Register() {
                   <div className="flex items-center gap-3">
                     <Shield className="icon-sm text-navy flex-shrink-0" />
                     <p className="text-sm text-gray-700">Monitor impact and earn awards for sustainability efforts</p>
+                  </div>
+                </div>
+
+                {/* Inline Email Registration Form */}
+                <div className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                  showEmailForm ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+                }`}>
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="space-y-4">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-navy">Create Your Account</h3>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => setShowEmailForm(false)}
+                          className="text-gray-500 hover:text-gray-700"
+                          data-testid="button-close-email-form"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      
+                      <Form {...form}>
+                        <form onSubmit={form.handleSubmit(handleEmailRegistration)} className="space-y-4">
+                          {/* Name Fields */}
+                          <div className="grid grid-cols-2 gap-4">
+                            <FormField
+                              control={form.control}
+                              name="firstName"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>First Name</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="First name"
+                                      {...field}
+                                      data-testid="input-first-name"
+                                      disabled={isRegistering}
+                                    />
+                                  </FormControl>
+                                  <FormMessage data-testid="error-first-name" />
+                                </FormItem>
+                              )}
+                            />
+                            
+                            <FormField
+                              control={form.control}
+                              name="lastName"
+                              render={({ field }) => (
+                                <FormItem>
+                                  <FormLabel>Last Name</FormLabel>
+                                  <FormControl>
+                                    <Input
+                                      placeholder="Last name"
+                                      {...field}
+                                      data-testid="input-last-name"
+                                      disabled={isRegistering}
+                                    />
+                                  </FormControl>
+                                  <FormMessage data-testid="error-last-name" />
+                                </FormItem>
+                              )}
+                            />
+                          </div>
+                          
+                          <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Email Address</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    type="email"
+                                    placeholder="Enter your email address"
+                                    {...field}
+                                    data-testid="input-email"
+                                    disabled={isRegistering}
+                                  />
+                                </FormControl>
+                                <FormMessage data-testid="error-email" />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Password</FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      type={showPassword ? "text" : "password"}
+                                      placeholder="Create a strong password"
+                                      {...field}
+                                      data-testid="input-password"
+                                      disabled={isRegistering}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                      onClick={() => setShowPassword(!showPassword)}
+                                      data-testid="button-toggle-password"
+                                      disabled={isRegistering}
+                                    >
+                                      {showPassword ? (
+                                        <EyeOff className="h-4 w-4 text-gray-500" />
+                                      ) : (
+                                        <Eye className="h-4 w-4 text-gray-500" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                                <FormMessage data-testid="error-password" />
+                                <p className="text-xs text-gray-600 mt-1">
+                                  Must contain uppercase, lowercase, number, and be at least 8 characters
+                                </p>
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <FormField
+                            control={form.control}
+                            name="confirmPassword"
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Confirm Password</FormLabel>
+                                <FormControl>
+                                  <div className="relative">
+                                    <Input
+                                      type={showConfirmPassword ? "text" : "password"}
+                                      placeholder="Confirm your password"
+                                      {...field}
+                                      data-testid="input-confirm-password"
+                                      disabled={isRegistering}
+                                    />
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                      data-testid="button-toggle-confirm-password"
+                                      disabled={isRegistering}
+                                    >
+                                      {showConfirmPassword ? (
+                                        <EyeOff className="h-4 w-4 text-gray-500" />
+                                      ) : (
+                                        <Eye className="h-4 w-4 text-gray-500" />
+                                      )}
+                                    </Button>
+                                  </div>
+                                </FormControl>
+                                <FormMessage data-testid="error-confirm-password" />
+                              </FormItem>
+                            )}
+                          />
+                          
+                          <div className="flex gap-3 pt-4">
+                            <Button
+                              type="button"
+                              variant="outline"
+                              onClick={() => setShowEmailForm(false)}
+                              disabled={isRegistering}
+                              data-testid="button-cancel-registration"
+                              className="flex-1"
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              type="submit"
+                              className="btn-primary flex-1"
+                              disabled={isRegistering}
+                              data-testid="button-submit-registration"
+                            >
+                              {isRegistering ? (
+                                <>
+                                  <LoadingSpinner size="sm" className="mr-2" />
+                                  Creating Account...
+                                </>
+                              ) : (
+                                <>
+                                  <UserPlus className="icon-sm mr-2" />
+                                  Create Account
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </form>
+                      </Form>
+                    </div>
                   </div>
                 </div>
 
@@ -290,192 +485,6 @@ export default function Register() {
         )}
       </div>
 
-      {/* Email Registration Modal */}
-      <Dialog open={showEmailModal} onOpenChange={setShowEmailModal}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Mail className="icon-md text-ocean-blue" />
-              Create Your Account
-            </DialogTitle>
-          </DialogHeader>
-          
-          <div className="space-y-4">
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(handleEmailRegistration)} className="space-y-4">
-                {/* Name Fields */}
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="firstName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>First Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="First name"
-                            {...field}
-                            data-testid="input-first-name-modal"
-                            disabled={isRegistering}
-                          />
-                        </FormControl>
-                        <FormMessage data-testid="error-first-name-modal" />
-                      </FormItem>
-                    )}
-                  />
-                  
-                  <FormField
-                    control={form.control}
-                    name="lastName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Last Name</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder="Last name"
-                            {...field}
-                            data-testid="input-last-name-modal"
-                            disabled={isRegistering}
-                          />
-                        </FormControl>
-                        <FormMessage data-testid="error-last-name-modal" />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Email Address</FormLabel>
-                      <FormControl>
-                        <Input
-                          type="email"
-                          placeholder="Enter your email address"
-                          {...field}
-                          data-testid="input-email-modal"
-                          disabled={isRegistering}
-                        />
-                      </FormControl>
-                      <FormMessage data-testid="error-email-modal" />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="password"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Create a strong password"
-                            {...field}
-                            data-testid="input-password-modal"
-                            disabled={isRegistering}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowPassword(!showPassword)}
-                            data-testid="button-toggle-password-modal"
-                            disabled={isRegistering}
-                          >
-                            {showPassword ? (
-                              <EyeOff className="h-4 w-4 text-gray-500" />
-                            ) : (
-                              <Eye className="h-4 w-4 text-gray-500" />
-                            )}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage data-testid="error-password-modal" />
-                      <p className="text-xs text-gray-600 mt-1">
-                        Must contain uppercase, lowercase, number, and be at least 8 characters
-                      </p>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="confirmPassword"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
-                      <FormControl>
-                        <div className="relative">
-                          <Input
-                            type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Confirm your password"
-                            {...field}
-                            data-testid="input-confirm-password-modal"
-                            disabled={isRegistering}
-                          />
-                          <Button
-                            type="button"
-                            variant="ghost"
-                            size="sm"
-                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                            data-testid="button-toggle-confirm-password-modal"
-                            disabled={isRegistering}
-                          >
-                            {showConfirmPassword ? (
-                              <EyeOff className="h-4 w-4 text-gray-500" />
-                            ) : (
-                              <Eye className="h-4 w-4 text-gray-500" />
-                            )}
-                          </Button>
-                        </div>
-                      </FormControl>
-                      <FormMessage data-testid="error-confirm-password-modal" />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="flex gap-3 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setShowEmailModal(false)}
-                    disabled={isRegistering}
-                    data-testid="button-cancel-registration"
-                    className="flex-1"
-                  >
-                    Cancel
-                  </Button>
-                  <Button
-                    type="submit"
-                    className="btn-primary flex-1"
-                    disabled={isRegistering}
-                    data-testid="button-submit-registration"
-                  >
-                    {isRegistering ? (
-                      <>
-                        <LoadingSpinner size="sm" className="mr-2" />
-                        Creating Account...
-                      </>
-                    ) : (
-                      <>
-                        <UserPlus className="icon-sm mr-2" />
-                        Create Account
-                      </>
-                    )}
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   );
 }
