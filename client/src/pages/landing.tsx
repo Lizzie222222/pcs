@@ -9,7 +9,7 @@ import logoUrl from "@assets/Logo_1757848498470.png";
 import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_1757854869723.png";
 import inspireIcon from "@assets/Inspire_1757862013793.png";
 import investigateIcon from "@assets/Investigate_1757862013794.png";
-import actIcon from "@assets/Act_1757862013793.png";
+import actIcon from "@assets/plastic_bottles_and_glass_in_recycling_boxes_static_1757862163412.png";
 import animationVideo from "@assets/animation-0b930b2b-aef0-4731-b7e3-320580204295_1757854892203.mp4";
 import studentImage from "@assets/emoji-a2ce9597-1802-41f9-90ac-02c0f6bc39c4_1757856002008.png";
 import studentVideo from "@assets/a2ce9597-1802-41f9-90ac-02c0f6bc39c4_3511011f-41fb-4a9f-9a85-e3a6d7a6a50d_1757856002007.mp4";
