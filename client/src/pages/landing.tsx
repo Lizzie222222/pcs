@@ -72,7 +72,7 @@ export default function Landing() {
         <div className="absolute inset-0 bg-black/25 z-10"></div>
         
         <div className="container-width relative z-20 py-20">
-          <div className="max-w-4xl text-left">
+          <div className="max-w-4xl mx-auto text-center">
             {/* Hero Heading with Text Shadow */}
             <h1 
               className="text-4xl lg:text-5xl xl:text-6xl font-bold mb-8 text-white leading-tight"
