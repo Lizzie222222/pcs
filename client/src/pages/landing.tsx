@@ -7,6 +7,8 @@ import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import logoUrl from "@assets/Logo_1757848498470.png";
 import heroVideoUrl from "@assets/PCS_1757851688912.mp4";
+import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_1757854869723.png";
+import animationVideo from "@assets/animation-0b930b2b-aef0-4731-b7e3-320580204295_1757854892203.mp4";
 import { 
   School, 
   Trophy, 
@@ -158,8 +160,20 @@ export default function Landing() {
             {/* Key Callouts with Delightful Animations */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 scroll-reveal">
               <div className="text-center group cursor-pointer">
-                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-1">
-                  <Award className="icon-lg text-white transition-transform duration-300 group-hover:scale-110" />
+                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-1 relative overflow-hidden">
+                  <img 
+                    src={emojiImage} 
+                    alt="Award trophy" 
+                    className="w-10 h-10 transition-opacity duration-300 group-hover:opacity-0"
+                  />
+                  <video 
+                    src={animationVideo}
+                    className="w-10 h-10 absolute inset-0 m-auto opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                  />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-ocean-blue">Award-Winning Program</h3>
                 <p className="body-text">Recognized for our effective approach to reducing waste.</p>
