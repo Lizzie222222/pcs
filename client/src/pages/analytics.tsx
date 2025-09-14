@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
   ScatterChart, Scatter
 } from 'recharts';
+import { useChartAnimation, useChartAnnouncement, chartA11y, getAnimProps } from '@/components/ui/AnimatedChart';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -75,6 +76,10 @@ const COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280'
 
 export default function AnalyticsPage() {
   const [selectedTab, setSelectedTab] = useState('overview');
+  
+  // Chart animation and accessibility hooks
+  const chartAnimation = useChartAnimation();
+  const { announceChart, AnnouncementRegion } = useChartAnnouncement();
 
   // Analytics queries
   const overviewQuery = useQuery<AnalyticsOverview>({
@@ -112,6 +117,25 @@ export default function AnalyticsPage() {
     enabled: selectedTab === 'geographic'
   });
 
+  // Accessibility announcements for chart updates
+  useEffect(() => {
+    if (selectedTab !== 'schools' || !schoolProgressQuery.data) return;
+    const msg = `Schools analytics updated: ${chartA11y.getChartDescription(schoolProgressQuery.data.progressRanges, 'bar', 'count')}`;
+    announceChart(msg);
+  }, [selectedTab, schoolProgressQuery.data, announceChart]);
+
+  useEffect(() => {
+    if (selectedTab !== 'evidence' || !evidenceQuery.data) return;
+    const msg = `Evidence analytics updated: ${chartA11y.getChartDescription(evidenceQuery.data.submissionTrends, 'line', 'submissions')}`;
+    announceChart(msg);
+  }, [selectedTab, evidenceQuery.data, announceChart]);
+
+  useEffect(() => {
+    if (selectedTab !== 'users' || !userEngagementQuery.data) return;
+    const msg = `User analytics updated: ${chartA11y.getChartDescription(userEngagementQuery.data.registrationTrends, 'line', 'teachers')}`;
+    announceChart(msg);
+  }, [selectedTab, userEngagementQuery.data, announceChart]);
+
   const exportAnalytics = async (format: 'csv' | 'excel') => {
     try {
       const response = await fetch(`/api/admin/export/analytics?format=${format}`, {
@@ -138,6 +162,8 @@ export default function AnalyticsPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Accessibility Announcement Region */}
+      <AnnouncementRegion />
         {/* Header */}
         <div className="flex justify-between items-center mb-8">
           <div>
@@ -356,6 +382,9 @@ export default function AnalyticsPage() {
                           outerRadius={80}
                           fill="#8884d8"
                           dataKey="count"
+                          isAnimationActive={chartAnimation.isAnimationActive}
+                          animationBegin={chartAnimation.animationBegin}
+                          animationDuration={chartAnimation.animationDuration}
                         >
                           {schoolProgressQuery.data.stageDistribution.map((entry, index) => (
                             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
@@ -379,7 +408,13 @@ export default function AnalyticsPage() {
                         <XAxis dataKey="range" />
                         <YAxis />
                         <Tooltip />
-                        <Bar dataKey="count" fill="#019ADE" />
+                        <Bar 
+                          dataKey="count" 
+                          fill="#019ADE"
+                          isAnimationActive={chartAnimation.isAnimationActive}
+                          animationBegin={chartAnimation.animationBegin}
+                          animationDuration={chartAnimation.animationDuration}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -398,7 +433,15 @@ export default function AnalyticsPage() {
                         <YAxis />
                         <Tooltip />
                         <Legend />
-                        <Line type="monotone" dataKey="count" stroke="#02BBB4" strokeWidth={2} />
+                        <Line 
+                          type="monotone" 
+                          dataKey="count" 
+                          stroke="#02BBB4" 
+                          strokeWidth={2}
+                          isAnimationActive={chartAnimation.isAnimationActive}
+                          animationBegin={chartAnimation.animationBegin + 100}
+                          animationDuration={chartAnimation.animationDuration}
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </CardContent>
@@ -416,7 +459,13 @@ export default function AnalyticsPage() {
                         <XAxis dataKey="metric" />
                         <YAxis />
                         <Tooltip formatter={(value) => [`${Math.round(value as number)}%`, 'Completion Rate']} />
-                        <Bar dataKey="rate" fill="#FFC557" />
+                        <Bar 
+                          dataKey="rate" 
+                          fill="#FFC557"
+                          isAnimationActive={chartAnimation.isAnimationActive}
+                          animationBegin={chartAnimation.animationBegin}
+                          animationDuration={chartAnimation.animationDuration}
+                        />
                       </BarChart>
                     </ResponsiveContainer>
                   </CardContent>
