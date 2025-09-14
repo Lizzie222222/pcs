@@ -290,10 +290,12 @@
     transform: translateY(-0.25rem);
   }
 
-  /* Professional Section Spacing */
+  /* Professional Section Spacing with Performance Optimization */
   .section-padding {
     padding-top: 4rem;
     padding-bottom: 4rem;
+    content-visibility: auto;
+    contain-intrinsic-size: 0 500px;
   }
 
   @media (min-width: 1024px) {

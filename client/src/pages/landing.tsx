@@ -91,12 +91,13 @@ export default function Landing() {
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
         {/* Video Background - Optimized loading */}
         <video 
-          autoPlay 
+          autoPlay
           muted 
           loop 
           playsInline
           preload="metadata"
           className="absolute inset-0 w-full h-full object-cover z-0"
+          style={{ backgroundColor: '#019ADE' }}
         >
           <source src={heroVideoUrl} type="video/mp4" />
           Your browser does not support the video tag.
@@ -169,6 +170,7 @@ export default function Landing() {
                   <img 
                     src={emojiImage} 
                     alt="Award trophy" 
+                    loading="lazy"
                     className="absolute inset-0 w-full h-full object-contain opacity-100 transition-opacity duration-300 group-hover:opacity-0"
                   />
                   <video 
@@ -190,6 +192,7 @@ export default function Landing() {
                   <img 
                     src={studentImage} 
                     alt="Student character" 
+                    loading="lazy"
                     className="absolute inset-0 w-full h-full object-contain opacity-100 transition-opacity duration-300 group-hover:opacity-0"
                   />
                   <video 
@@ -211,6 +214,7 @@ export default function Landing() {
                   <img 
                     src={booksImage} 
                     alt="Books and resources" 
+                    loading="lazy"
                     className="absolute inset-0 w-full h-full object-contain opacity-100 transition-opacity duration-300 group-hover:opacity-0"
                   />
                   <video 
