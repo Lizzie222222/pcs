@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -37,15 +37,16 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-navy text-white shadow-lg fixed top-0 left-0 right-0 z-50">
+    <nav className="bg-navy text-white shadow-lg fixed top-0 left-0 right-0 z-50" role="navigation" aria-label="Main Navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
             <button 
               onClick={() => handleNavClick('/')}
-              className="text-2xl font-bold text-white hover:text-yellow transition-colors"
+              className="text-2xl font-bold text-white hover:text-yellow transition-colors focus-visible:focus-visible"
               data-testid="button-logo"
+              aria-label="Plastic Clever Schools - Go to homepage"
             >
               🌱 Plastic Clever Schools
             </button>
@@ -59,18 +60,19 @@ export default function Navigation() {
                 
                 const isActive = location === item.href;
                 return (
-                  <button
+                  <Link
                     key={item.href}
-                    onClick={() => handleNavClick(item.href)}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                    href={item.href}
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate ${
                       isActive
                         ? 'bg-white/20 text-white'
                         : 'text-white/90 hover:text-yellow hover:bg-white/10'
                     }`}
                     data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                    aria-current={isActive ? 'page' : undefined}
                   >
                     {item.label}
-                  </button>
+                  </Link>
                 );
               })}
             </div>
@@ -112,36 +114,46 @@ export default function Navigation() {
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-white hover:bg-white/10"
+                  className="text-white hover:bg-white/10 focus-visible:focus-visible"
                   data-testid="button-mobile-menu"
+                  aria-label="Open mobile navigation menu"
+                  aria-expanded={isMobileMenuOpen}
+                  aria-controls="mobile-menu"
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu className="h-5 w-5" aria-hidden="true" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-navy text-white border-navy">
+              <SheetContent 
+                side="right" 
+                className="bg-navy text-white border-navy"
+                id="mobile-menu"
+                aria-label="Mobile navigation menu"
+              >
                 <SheetHeader>
-                  <SheetTitle className="text-white">
+                  <SheetTitle className="text-white text-left">
                     🌱 Plastic Clever Schools
                   </SheetTitle>
                 </SheetHeader>
-                <div className="mt-8 space-y-4">
+                <div className="mt-8 space-y-4" aria-label="Mobile menu navigation">
                   {navItems.map((item) => {
                     if (!item.public && !isAuthenticated) return null;
                     
                     const isActive = location === item.href;
                     return (
-                      <button
+                      <Link
                         key={item.href}
-                        onClick={() => handleNavClick(item.href)}
-                        className={`w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        href={item.href}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className={`block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate min-h-[44px] ${
                           isActive
                             ? 'bg-white/20 text-white'
                             : 'text-white/90 hover:text-yellow hover:bg-white/10'
                         }`}
                         data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                        aria-current={isActive ? 'page' : undefined}
                       >
                         {item.label}
-                      </button>
+                      </Link>
                     );
                   })}
                   
@@ -153,17 +165,17 @@ export default function Navigation() {
                           {user?.firstName || user?.email}
                         </div>
                         <button
-                          className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-white/90 hover:text-yellow hover:bg-white/10 transition-colors"
+                          className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-white/90 hover:text-yellow hover:bg-white/10 transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
                           onClick={handleAuth}
                           data-testid="mobile-button-logout"
                         >
-                          <LogOut className="h-4 w-4 mr-2 inline" />
+                          <LogOut className="h-4 w-4 mr-2 inline" aria-hidden="true" />
                           Logout
                         </button>
                       </>
                     ) : (
                       <Button
-                        className="w-full bg-coral hover:bg-coral/90 text-white"
+                        className="w-full bg-coral hover:bg-coral/90 text-white focus-visible:focus-visible btn-animate min-h-[44px]"
                         onClick={handleAuth}
                         data-testid="mobile-button-login"
                       >

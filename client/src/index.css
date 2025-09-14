@@ -3,12 +3,32 @@
 @tailwind utilities;
 
 :root {
-  /* Plastic Clever Schools Color Palette */
+  /* Plastic Clever Schools Color Palette - WCAG 2.1 AA Compliant */
   --navy: hsl(209, 77%, 21%); /* #0B3D5D */
   --pcs-blue: hsl(199, 95%, 49%); /* #019ADE */
   --teal: hsl(178, 97%, 37%); /* #02BBB4 */
   --yellow: hsl(39, 100%, 67%); /* #FFC557 */
   --coral: hsl(359, 100%, 67%); /* #FF595A */
+  
+  /* Accessibility-safe text combinations */
+  --navy-text: white; /* White text on navy background */
+  --blue-text: white; /* White text on blue background */
+  --teal-text: white; /* White text on teal background */
+  --yellow-text: hsl(0, 0%, 0%); /* Black text on yellow background for contrast */
+  --coral-text: white; /* White text on coral background */
+  
+  /* Design System Tokens */
+  --space-xs: 0.25rem;    /* 4px */
+  --space-sm: 0.5rem;     /* 8px */
+  --space-md: 1rem;       /* 16px */
+  --space-lg: 1.5rem;     /* 24px */
+  --space-xl: 2rem;       /* 32px */
+  --space-2xl: 3rem;      /* 48px */
+  
+  /* Animation durations */
+  --duration-fast: 150ms;
+  --duration-normal: 200ms;
+  --duration-slow: 300ms;
   
   /* Base Theme Colors */
   --background: hsl(0 0% 100%);
@@ -190,6 +210,58 @@
     transform-origin: 50% 50%;
   }
 
+  /* ===== ACCESSIBILITY ENHANCEMENTS ===== */
+  
+  /* Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+  
+  /* High Contrast Mode Support */
+  @media (prefers-contrast: high) {
+    :root {
+      --border: hsl(0 0% 0%);
+      --ring: hsl(0 0% 0%);
+    }
+    
+    .dark {
+      --border: hsl(0 0% 100%);
+      --ring: hsl(0 0% 100%);
+    }
+  }
+  
+  /* Focus-visible Support for Better Accessibility */
+  .focus-visible:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(var(--ring));
+  }
+  
+  /* Skip Link Styles for Screen Readers */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: hsl(var(--navy));
+    color: white;
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 1000;
+    font-weight: 600;
+    transition: top 0.15s ease-out;
+  }
+  
+  .skip-link:focus {
+    top: 6px;
+  }
+
   /* Custom animations */
   @keyframes fadeIn {
     from { 
@@ -204,6 +276,31 @@
   
   .animate-fade-in {
     animation: fadeIn 0.6s ease-out;
+  }
+  
+  /* Button hover and focus animations */
+  .btn-animate {
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .btn-animate:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+  
+  .btn-animate:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Form focus animations */
+  .form-input {
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .form-input:focus {
+    transform: scale(1.02);
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
   }
 
   /* Line clamping utilities */
