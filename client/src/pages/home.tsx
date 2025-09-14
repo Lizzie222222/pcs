@@ -6,6 +6,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import ProgressTracker from "@/components/ProgressTracker";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { LoadingSpinner, ErrorState } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { 
@@ -82,34 +83,20 @@ export default function Home() {
   }, [error, toast]);
 
   if (isLoading || isDashboardLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading your dashboard...</p>
-        </div>
-      </div>
-    );
+    return <LoadingSpinner message="Loading your dashboard..." />;
   }
 
   if (!dashboardData) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <Card className="max-w-md w-full mx-4">
-          <CardContent className="pt-6 text-center">
-            <div className="text-red-500 mb-4">
-              <Award className="h-12 w-12 mx-auto" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-900 mb-2">No School Found</h2>
-            <p className="text-gray-600 mb-4">
-              It looks like your account isn't associated with a school yet. Please contact support for assistance.
-            </p>
-            <Button onClick={() => window.location.href = "/api/logout"}>
-              Sign Out
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+      <ErrorState
+        icon={Award}
+        title="No School Found"
+        description="It looks like your account isn't associated with a school yet. Please contact support for assistance."
+        action={{
+          label: "Sign Out",
+          onClick: () => window.location.href = "/api/logout"
+        }}
+      />
     );
   }
 
