@@ -157,6 +157,18 @@ export default function Register() {
                   </Button>
                 </div>
 
+                {/* Why do I need an account divider */}
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="bg-white px-3 text-gray-600 font-medium">
+                      Why do I need an account?
+                    </span>
+                  </div>
+                </div>
+
                 {/* Benefits */}
                 <div className="space-y-2">
                   <div className="flex items-center gap-3">
@@ -173,24 +185,6 @@ export default function Register() {
                     <Shield className="icon-sm text-navy flex-shrink-0" />
                     <p className="text-sm text-gray-700">Monitor impact and earn awards for sustainability efforts</p>
                   </div>
-                </div>
-
-                {/* Why do I need an account section */}
-                <div className="relative my-4">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-sm">
-                    <span className="bg-white px-3 text-gray-600 font-medium">
-                      Why do I need an account?
-                    </span>
-                  </div>
-                </div>
-
-                <div className="text-center">
-                  <p className="text-xs text-gray-600">
-                    Your account personalizes your experience, saves your school's progress, and provides secure access to resources.
-                  </p>
                 </div>
 
               </CardContent>
