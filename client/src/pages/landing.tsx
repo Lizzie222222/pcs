@@ -91,7 +91,7 @@ export default function Landing() {
         {/* YouTube Video Background - Ultra-fast loading */}
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
           <iframe 
-            src="https://www.youtube.com/embed/jyL1lt-72HQ?autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&widget_referrer=https%3A%2F%2Fexample.com&enablejsapi=0&origin=https%3A%2F%2Fexample.com&widgetid=1"
+            src="https://www.youtube.com/embed/jyL1lt-72HQ?autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=1&end=29&enablejsapi=0"
             className="absolute inset-0"
             style={{ 
               border: 'none',
