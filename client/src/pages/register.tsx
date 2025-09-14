@@ -104,57 +104,9 @@ export default function Register() {
                 </p>
               </CardHeader>
               
-              <CardContent className="space-y-6">
-                {/* Platform Benefits */}
+              <CardContent className="space-y-4">
+                {/* Sign Up Buttons at Top */}
                 <div className="space-y-4">
-                  <div className="flex items-start gap-4 p-4 bg-teal/10 rounded-lg">
-                    <School className="icon-md text-teal flex-shrink-0 mt-1" />
-                    <div>
-                      <h4 className="font-semibold text-navy mb-1">Complete School Registration</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        Add your school profile, set sustainability goals, and track your plastic reduction journey with our comprehensive tools.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4 p-4 bg-ocean-blue/10 rounded-lg">
-                    <Globe className="icon-md text-ocean-blue flex-shrink-0 mt-1" />
-                    <div>
-                      <h4 className="font-semibold text-navy mb-1">Access Educational Resources</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        Download curriculum materials, activity guides, and implementation strategies designed by education experts.
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-start gap-4 p-4 bg-navy/10 rounded-lg">
-                    <Shield className="icon-md text-navy flex-shrink-0 mt-1" />
-                    <div>
-                      <h4 className="font-semibold text-navy mb-1">Track Progress & Achievements</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">
-                        Monitor your plastic reduction impact, celebrate milestones, and earn awards for your sustainability efforts.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Why Account Required */}
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h4 className="font-semibold text-navy mb-2 flex items-center gap-2">
-                    <User className="icon-sm" />
-                    Why do I need an account?
-                  </h4>
-                  <p className="text-sm text-gray-600 leading-relaxed">
-                    Your account enables us to personalize your experience, save your school's progress, and provide secure access to educational resources. We protect your data and only use it to enhance your sustainability journey.
-                  </p>
-                </div>
-
-                {/* Account Creation Options */}
-                <div className="space-y-4 pt-2">
-                  <div className="text-center">
-                    <h4 className="font-semibold text-navy mb-3">Get started with your preferred method:</h4>
-                  </div>
-                  
                   {/* Continue with Google Button */}
                   <Button
                     size="lg"
@@ -171,7 +123,7 @@ export default function Register() {
                             d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                           />
                           <path
-                            fill="34A853"
+                            fill="#34A853"
                             d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
                           />
                           <path
@@ -190,7 +142,7 @@ export default function Register() {
                   </Button>
 
                   {/* Divider */}
-                  <div className="relative my-4">
+                  <div className="relative my-3">
                     <div className="absolute inset-0 flex items-center">
                       <div className="w-full border-t border-gray-200"></div>
                     </div>
@@ -215,6 +167,31 @@ export default function Register() {
                       <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                   </Button>
+                </div>
+
+                {/* Compact Benefits Below */}
+                <div className="space-y-2 pt-4 border-t border-gray-100">
+                  <div className="flex items-center gap-3">
+                    <School className="icon-sm text-teal flex-shrink-0" />
+                    <p className="text-sm text-gray-700">Complete school registration and track your sustainability journey</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Globe className="icon-sm text-ocean-blue flex-shrink-0" />
+                    <p className="text-sm text-gray-700">Access educational resources and curriculum materials</p>
+                  </div>
+                  
+                  <div className="flex items-center gap-3">
+                    <Shield className="icon-sm text-navy flex-shrink-0" />
+                    <p className="text-sm text-gray-700">Monitor impact and earn awards for sustainability efforts</p>
+                  </div>
+                </div>
+
+                {/* Compact Why Account Required */}
+                <div className="bg-gray-50 p-3 rounded-lg">
+                  <p className="text-xs text-gray-600">
+                    <strong>Why do I need an account?</strong> Your account personalizes your experience, saves your school's progress, and provides secure access to resources.
+                  </p>
                 </div>
 
               </CardContent>
