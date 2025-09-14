@@ -171,7 +171,17 @@ export default function Landing() {
             {/* Key Callouts with Delightful Animations */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 scroll-reveal">
               <div className="text-center group cursor-pointer">
-                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden">
+                <div 
+                  className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden"
+                  onMouseEnter={(e) => {
+                    const video = e.currentTarget.querySelector('video');
+                    if (video) video.play();
+                  }}
+                  onMouseLeave={(e) => {
+                    const video = e.currentTarget.querySelector('video');
+                    if (video) video.pause();
+                  }}
+                >
                   <img 
                     src={emojiImage} 
                     alt="Award trophy" 
@@ -185,15 +195,23 @@ export default function Landing() {
                     muted
                     playsInline
                     preload="none"
-                    onMouseEnter={(e) => e.currentTarget.play()}
-                    onMouseLeave={(e) => e.currentTarget.pause()}
                   />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-ocean-blue">Award-Winning Program</h3>
                 <p className="body-text">Recognized for our effective approach to reducing waste.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden">
+                <div 
+                  className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden"
+                  onMouseEnter={(e) => {
+                    const video = e.currentTarget.querySelector('video');
+                    if (video) video.play();
+                  }}
+                  onMouseLeave={(e) => {
+                    const video = e.currentTarget.querySelector('video');
+                    if (video) video.pause();
+                  }}
+                >
                   <img 
                     src={studentImage} 
                     alt="Student character" 
@@ -207,15 +225,23 @@ export default function Landing() {
                     muted
                     playsInline
                     preload="none"
-                    onMouseEnter={(e) => e.currentTarget.play()}
-                    onMouseLeave={(e) => e.currentTarget.pause()}
                   />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-teal">Student-Led Action</h3>
                 <p className="body-text">Kids are at the heart of every step, fostering a sense of ownership and responsibility.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden">
+                <div 
+                  className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden"
+                  onMouseEnter={(e) => {
+                    const video = e.currentTarget.querySelector('video');
+                    if (video) video.play();
+                  }}
+                  onMouseLeave={(e) => {
+                    const video = e.currentTarget.querySelector('video');
+                    if (video) video.pause();
+                  }}
+                >
                   <img 
                     src={booksImage} 
                     alt="Books and resources" 
@@ -229,8 +255,6 @@ export default function Landing() {
                     muted
                     playsInline
                     preload="none"
-                    onMouseEnter={(e) => e.currentTarget.play()}
-                    onMouseLeave={(e) => e.currentTarget.pause()}
                   />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-navy">Free Resources</h3>
