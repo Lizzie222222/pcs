@@ -120,11 +120,11 @@ export function NewsletterSignup({
 
   if (variant === "hero") {
     return (
-      <div className={`bg-gradient-to-r from-blue-600 to-teal-500 text-white p-8 rounded-xl ${className}`}>
+      <div className={`bg-gradient-to-r from-coral to-yellow text-navy p-6 rounded-xl shadow-lg border border-coral/20 ${className}`}>
         <div className="max-w-md mx-auto text-center">
-          <Mail className="h-12 w-12 mx-auto mb-4 text-white/90" />
-          <h3 className="text-2xl font-bold mb-2">Stay Connected</h3>
-          <p className="text-white/90 mb-6">
+          <Mail className="h-10 w-10 mx-auto mb-3 text-navy/80" />
+          <h3 className="text-xl font-bold mb-2 text-navy">Stay Connected</h3>
+          <p className="text-navy/80 mb-4 text-sm">
             Get the latest updates on plastic pollution solutions and educational resources.
           </p>
           <form onSubmit={handleSubmit} className="space-y-3">
@@ -134,7 +134,7 @@ export function NewsletterSignup({
                 placeholder="First name"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/70"
+                className="bg-white/90 border-navy/20 text-navy placeholder:text-navy/60"
                 data-testid="input-newsletter-firstname"
               />
               <Input
@@ -142,7 +142,7 @@ export function NewsletterSignup({
                 placeholder="Last name"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/70"
+                className="bg-white/90 border-navy/20 text-navy placeholder:text-navy/60"
                 data-testid="input-newsletter-lastname"
               />
             </div>
@@ -151,14 +151,14 @@ export function NewsletterSignup({
               placeholder="Enter your email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-white/10 border-white/20 text-white placeholder:text-white/70"
+              className="bg-white/90 border-navy/20 text-navy placeholder:text-navy/60"
               required
               data-testid="input-newsletter-email"
             />
             <Button 
               type="submit"
               disabled={subscriptionMutation.isPending}
-              className="w-full bg-white text-blue-600 hover:bg-white/90"
+              className="w-full bg-navy text-white hover:bg-navy/90 font-semibold"
               data-testid="button-newsletter-subscribe"
             >
               {subscriptionMutation.isPending ? "Subscribing..." : "Subscribe to Newsletter"}

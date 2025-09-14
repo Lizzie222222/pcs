@@ -10,6 +10,10 @@
   --ocean-light: hsl(199, 95%, 85%); /* Light blue for backgrounds */
   --navy-light: hsl(209, 77%, 90%); /* Light navy for subtle backgrounds */
   
+  /* School-Friendly Fun Colors - WCAG AA Compliant */
+  --coral: hsl(16, 84%, 60%); /* #E65B3A - Warm coral for fun appeal */
+  --yellow: hsl(45, 100%, 65%); /* #FFD700 - Bright yellow for energy */
+  
   /* Professional Typography Scale */
   --font-size-xs: 0.75rem;     /* 12px */
   --font-size-sm: 0.875rem;    /* 14px */
@@ -130,6 +134,23 @@
 
   .bg-navy-light {
     background-color: var(--navy-light);
+  }
+
+  /* Fun School-Friendly Color Classes */
+  .text-coral {
+    color: var(--coral);
+  }
+  
+  .bg-coral {
+    background-color: var(--coral);
+  }
+  
+  .text-yellow {
+    color: var(--yellow);
+  }
+  
+  .bg-yellow {
+    background-color: var(--yellow);
   }
 
   /* Professional Button Styles - WCAG AA Compliant */

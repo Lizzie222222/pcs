@@ -64,53 +64,43 @@ export default function Landing() {
           backgroundRepeat: 'no-repeat'
         }}
       >
-        <div className="absolute inset-0 bg-white/85"></div>
+        <div className="absolute inset-0 bg-white/90"></div>
         <div className="container-width relative z-10">
-          <div className="max-w-3xl mx-auto text-center">
-            {/* Trust Badge */}
-            <div className="flex items-center justify-center gap-2 mb-8">
-              <Badge variant="outline" className="border-teal text-teal bg-teal/5 px-4 py-2">
-                <Award className="icon-sm mr-2" />
-                Award-Winning Environmental Program
-              </Badge>
-            </div>
-
+          <div className="max-w-4xl mx-auto text-center">
             {/* Hero Heading */}
             <h1 className="heading-1 mb-6" data-testid="text-hero-title">
-              Empower Your School to Lead the Way in Reducing Plastic Waste.
+              Empower Your School to Lead the Way in Reducing Plastic Waste
             </h1>
             
             {/* Hero Description */}
-            <p className="body-large mb-8 max-w-2xl mx-auto" data-testid="text-hero-description">
+            <p className="body-large mb-10 max-w-3xl mx-auto" data-testid="text-hero-description">
               Join Plastic Clever Schools, the award-winning program that puts students at the heart of meaningful environmental action. Gain access to free resources and a clear path to make a real difference.
             </p>
 
-            {/* CTA Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
-              <Button 
-                size="lg"
-                className="btn-primary px-8 py-3 text-lg font-semibold"
-                onClick={() => setShowSignUp(true)}
-                data-testid="button-register-school"
-              >
-                Register Your School Now
-                <ArrowRight className="icon-md ml-2" />
-              </Button>
-            </div>
+            {/* CTA Button */}
+            <Button 
+              size="lg"
+              className="bg-coral hover:bg-coral/90 text-white px-10 py-4 text-xl font-semibold mb-8"
+              onClick={() => setShowSignUp(true)}
+              data-testid="button-register-school"
+            >
+              Register Your School Now
+              <ArrowRight className="icon-md ml-3" />
+            </Button>
 
-            {/* Trust Indicators */}
-            <div className="flex flex-wrap justify-center items-center gap-6 text-sm text-gray-500">
+            {/* Simple Trust Indicators */}
+            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-600">
               <div className="flex items-center gap-2">
                 <Shield className="icon-sm text-teal" />
-                100% Free Program
+                100% Free
               </div>
               <div className="flex items-center gap-2">
-                <BookOpen className="icon-sm text-teal" />
-                Curriculum Aligned
+                <Award className="icon-sm text-teal" />
+                Award-Winning
               </div>
               <div className="flex items-center gap-2">
                 <Users className="icon-sm text-teal" />
-                Expert Support Included
+                Expert Support
               </div>
             </div>
           </div>
