@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,6 +6,27 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, School, Award, Globe, Download } from "lucide-react";
 import { useCountries } from "@/hooks/useCountries";
+import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
+
+// Fix for default markers in React Leaflet
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon-2x.png',
+  iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-icon.png',
+  shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+});
+
+// Custom icons for different school statuses
+const createCustomIcon = (color: string) => {
+  return L.divIcon({
+    className: 'custom-div-icon',
+    html: `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+    iconSize: [16, 16],
+    iconAnchor: [8, 8],
+  });
+};
 
 interface SchoolMapData {
   id: string;
@@ -139,50 +160,81 @@ export default function SchoolsMap() {
         {/* Interactive Map Container */}
         <Card className="mb-8">
           <CardContent className="p-0">
-            <div 
-              className="relative bg-gradient-to-br from-pcs_blue to-teal rounded-lg overflow-hidden"
-              style={{ height: '500px' }}
-            >
-              <div className="absolute inset-0 flex items-center justify-center text-white">
-                <div className="text-center">
-                  <Globe className="w-16 h-16 mx-auto mb-4" />
-                  <h3 className="text-2xl font-bold mb-2">Interactive Global Map</h3>
-                  <p className="mb-4">Schools from {totalStats.countries} countries participating in the program</p>
-                  <p className="text-sm opacity-90">Integration with mapping service displays real school locations</p>
-                </div>
-              </div>
-              
-              {/* Simulated map markers representing school locations */}
-              {!isLoading && schools && schools.slice(0, 20).map((school, index) => (
-                <div 
-                  key={school.id}
-                  className={`absolute w-3 h-3 rounded-full animate-pulse cursor-pointer ${
-                    school.featuredSchool ? 'bg-yellow' :
-                    school.awardCompleted ? 'bg-green-500' : 
-                    getStageColor(school.currentStage, false)
-                  }`}
-                  style={{
-                    top: `${20 + (index * 3) % 60}%`,
-                    left: `${15 + (index * 7) % 70}%`,
-                  }}
-                  title={`${school.name} - ${school.country}`}
-                  data-testid={`map-marker-${school.id}`}
-                >
-                  <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg shadow-lg p-3 hidden group-hover:block w-48 z-10">
-                    <div className="text-sm font-semibold text-navy">{school.name}</div>
-                    <div className="text-xs text-gray-600">{school.country}</div>
-                    <Badge className={`text-xs mt-1 ${getStageColor(school.currentStage, school.awardCompleted)}`}>
-                      {school.awardCompleted ? 'Completed' : school.currentStage}
-                    </Badge>
+            <div className="h-[500px] rounded-lg overflow-hidden" data-testid="interactive-map-container">
+              {isLoading ? (
+                <div className="h-full flex items-center justify-center bg-gray-100">
+                  <div className="text-center">
+                    <Globe className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600">Loading map...</p>
                   </div>
                 </div>
-              ))}
-              
-              {/* Map Instructions */}
-              <div className="absolute top-4 right-4 bg-white/90 rounded-lg p-4 text-sm max-w-xs">
-                <div className="font-semibold text-navy mb-2">Interactive Map</div>
-                <div className="text-gray-600">Hover over markers to see school details</div>
-              </div>
+              ) : (
+                <MapContainer
+                  center={[20, 0]} // Center on world view
+                  zoom={2}
+                  style={{ height: '100%', width: '100%' }}
+                  data-testid="leaflet-map"
+                >
+                  <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  />
+                  
+                  {schools && schools.map((school) => {
+                    const lat = parseFloat(school.latitude);
+                    const lng = parseFloat(school.longitude);
+                    
+                    // Skip invalid coordinates
+                    if (isNaN(lat) || isNaN(lng)) return null;
+                    
+                    const markerColor = school.featuredSchool 
+                      ? '#fbbf24' // yellow
+                      : school.awardCompleted 
+                      ? '#10b981' // green
+                      : school.currentStage === 'inspire' 
+                      ? '#2563eb' // blue
+                      : school.currentStage === 'investigate'
+                      ? '#0d9488' // teal
+                      : '#ef4444'; // red/coral for act
+                    
+                    return (
+                      <Marker
+                        key={school.id}
+                        position={[lat, lng]}
+                        icon={createCustomIcon(markerColor)}
+                        data-testid={`map-marker-${school.id}`}
+                      >
+                        <Popup>
+                          <div className="min-w-48">
+                            <div className="font-semibold text-navy mb-1">{school.name}</div>
+                            <div className="text-sm text-gray-600 mb-2">{school.country}</div>
+                            <div className="flex items-center gap-2">
+                              <Badge 
+                                className={`text-xs ${
+                                  school.awardCompleted 
+                                    ? 'bg-green-100 text-green-800' 
+                                    : school.currentStage === 'inspire'
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : school.currentStage === 'investigate'
+                                    ? 'bg-teal-100 text-teal-800'
+                                    : 'bg-red-100 text-red-800'
+                                }`}
+                              >
+                                {school.awardCompleted ? 'Completed' : school.currentStage}
+                              </Badge>
+                              {school.featuredSchool && (
+                                <Badge className="text-xs bg-yellow-100 text-yellow-800">
+                                  Featured
+                                </Badge>
+                              )}
+                            </div>
+                          </div>
+                        </Popup>
+                      </Marker>
+                    );
+                  })}
+                </MapContainer>
+              )}
             </div>
           </CardContent>
         </Card>
