@@ -149,16 +149,16 @@ export default function Landing() {
               }}
             >
               <div className="flex items-center gap-2">
-                <Shield className="icon-sm text-white drop-shadow-lg" />
-                100% Free
+                <BookOpen className="icon-sm text-white drop-shadow-lg" />
+                Curriculum Aligned
               </div>
               <div className="flex items-center gap-2">
-                <Award className="icon-sm text-white drop-shadow-lg" />
-                Award-Winning
+                <Recycle className="icon-sm text-white drop-shadow-lg" />
+                Proven Impact
               </div>
               <div className="flex items-center gap-2">
-                <Users className="icon-sm text-white drop-shadow-lg" />
-                Expert Support
+                <Heart className="icon-sm text-white drop-shadow-lg" />
+                Completely Free
               </div>
             </div>
           </div>
