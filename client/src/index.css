@@ -204,7 +204,7 @@
     color: white;
     font-weight: 700;
     border-color: var(--ocean-blue);
-    border-radius: 12px;
+    border-radius: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateY(0);
     box-shadow: 0 4px 14px 0 rgba(1, 154, 222, 0.2);
@@ -232,7 +232,7 @@
     color: var(--ocean-blue);
     font-weight: 700;
     border: 2px solid var(--ocean-blue);
-    border-radius: 12px;
+    border-radius: 8px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateY(0);
     box-shadow: 0 2px 8px 0 rgba(1, 154, 222, 0.1);
@@ -259,6 +259,7 @@
     background-color: var(--teal);
     color: white;
     border-color: var(--teal);
+    border-radius: 8px;
     transition: all 0.2s ease;
   }
 
@@ -560,13 +561,46 @@
   /* Scroll-triggered animations */
   .scroll-reveal {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(50px);
     transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   .scroll-reveal.revealed {
     opacity: 1;
     transform: translateY(0);
+  }
+
+  .scroll-reveal-left {
+    opacity: 0;
+    transform: translateX(-50px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .scroll-reveal-left.revealed {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .scroll-reveal-right {
+    opacity: 0;
+    transform: translateX(50px);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .scroll-reveal-right.revealed {
+    opacity: 1;
+    transform: translateX(0);
+  }
+
+  .scroll-reveal-scale {
+    opacity: 0;
+    transform: scale(0.8);
+    transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .scroll-reveal-scale.revealed {
+    opacity: 1;
+    transform: scale(1);
   }
 
   /* Staggered animations for multiple elements */

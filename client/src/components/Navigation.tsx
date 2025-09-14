@@ -103,14 +103,13 @@ export default function Navigation() {
               </>
             ) : (
               <>
-                <Button
-                  className="btn-primary"
-                  size="sm"
+                <button
+                  className="px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 focus-visible:focus-visible"
                   onClick={handleAuth}
                   data-testid="button-login"
                 >
                   Login
-                </Button>
+                </button>
                 <Button
                   className="btn-primary"
                   onClick={() => setLocation('/register')}
@@ -193,13 +192,22 @@ export default function Navigation() {
                         </button>
                       </>
                     ) : (
-                      <Button
-                        className="w-full bg-coral hover:bg-coral/90 text-white focus-visible:focus-visible btn-animate min-h-[44px]"
-                        onClick={handleAuth}
-                        data-testid="mobile-button-login"
-                      >
-                        Register Your School Now
-                      </Button>
+                      <div className="space-y-2">
+                        <button
+                          className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
+                          onClick={handleAuth}
+                          data-testid="mobile-button-login"
+                        >
+                          Login
+                        </button>
+                        <Button
+                          className="w-full btn-primary focus-visible:focus-visible btn-animate min-h-[44px]"
+                          onClick={() => setLocation('/register')}
+                          data-testid="mobile-button-register"
+                        >
+                          Register Your School
+                        </Button>
+                      </div>
                     )}
                   </div>
                 </div>

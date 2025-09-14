@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -41,10 +41,37 @@ interface SiteStats {
 
 export default function Landing() {
   const [showSignUp, setShowSignUp] = useState(false);
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   const { data: stats } = useQuery<SiteStats>({
     queryKey: ['/api/stats'],
   });
+
+  // Scroll animation setup
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    observerRef.current = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('revealed');
+        }
+      });
+    }, observerOptions);
+
+    // Observe all scroll-reveal elements
+    const revealElements = document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale');
+    revealElements.forEach((el) => {
+      observerRef.current?.observe(el);
+    });
+
+    return () => {
+      observerRef.current?.disconnect();
+    };
+  }, []);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -123,13 +150,13 @@ export default function Landing() {
       <section className="section-padding bg-white">
         <div className="container-width relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="heading-2 mb-8">What is a Plastic Clever School?</h2>
-            <p className="body-large mb-12 max-w-3xl mx-auto">
+            <h2 className="heading-2 mb-8 scroll-reveal">What is a Plastic Clever School?</h2>
+            <p className="body-large mb-12 max-w-3xl mx-auto scroll-reveal">
               Plastic Clever Schools is an awards program designed to help schools reduce their single-use plastic consumption. We provide you with the tools and a simple 3-step framework to inspire change, investigate your school's plastic use, and act on solutions—all while empowering your students to become the next generation of environmental leaders.
             </p>
             
             {/* Key Callouts with Delightful Animations */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 scroll-reveal">
               <div className="text-center group cursor-pointer">
                 <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-1">
                   <Award className="icon-lg text-white transition-transform duration-300 group-hover:scale-110" />
@@ -177,10 +204,10 @@ export default function Landing() {
           </div>
           
           <div className="max-w-2xl mx-auto text-center mb-12">
-            <div className="text-6xl lg:text-8xl font-bold text-navy mb-4" data-testid="stat-registered-schools">
+            <div className="text-6xl lg:text-8xl font-bold text-navy mb-4 scroll-reveal-scale" data-testid="stat-registered-schools">
               {stats?.totalSchools?.toLocaleString() || '1542'}+
             </div>
-            <div className="text-xl lg:text-2xl text-gray-600 mb-8">Registered Schools So Far</div>
+            <div className="text-xl lg:text-2xl text-gray-600 mb-8 scroll-reveal">Registered Schools So Far</div>
             <Button 
               size="lg"
               className="btn-primary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300"
@@ -403,7 +430,7 @@ export default function Landing() {
       {/* Final CTA - Professional and Clean */}
       <section className="section-padding bg-white">
         <div className="container-width">
-          <div className="max-w-4xl mx-auto text-center bg-navy text-white rounded-xl p-12 lg:p-16">
+          <div className="max-w-4xl mx-auto text-center bg-navy text-white rounded-xl p-12 lg:p-16 scroll-reveal-scale">
             <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-white" data-testid="text-final-cta-title">
               Ready to Make Your School Plastic Clever?
             </h2>
