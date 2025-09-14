@@ -10,6 +10,9 @@ import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_17578
 import inspireIcon from "@assets/Inspire_1757862013793.png";
 import investigateIcon from "@assets/Investigate_1757862013794.png";
 import actIcon from "@assets/plastic_bottles_and_glass_in_recycling_boxes_static_1757862163412.png";
+import commonSeasLogo from "@assets/common-seas_1757862244194.png";
+import kidsAgainstPlasticLogo from "@assets/KAP-logo-png-300x300_1757862244194.png";
+import riverCleanupLogo from "@assets/RiverCleanup_logo_rgb_pos-WhiteBG-01-2-256x256_1757862244194.png";
 import animationVideo from "@assets/animation-0b930b2b-aef0-4731-b7e3-320580204295_1757854892203.mp4";
 import studentImage from "@assets/emoji-a2ce9597-1802-41f9-90ac-02c0f6bc39c4_1757856002008.png";
 import studentVideo from "@assets/a2ce9597-1802-41f9-90ac-02c0f6bc39c4_3511011f-41fb-4a9f-9a85-e3a6d7a6a50d_1757856002007.mp4";
@@ -395,18 +398,27 @@ export default function Landing() {
             </p>
           </div>
           
-          <div className="flex flex-wrap justify-center items-center gap-12 opacity-60 scroll-reveal">
-            <div className="flex items-center gap-3 text-gray-500 font-medium text-lg">
-              <Globe className="w-8 h-8" />
-              Partner Organization 1
+          <div className="flex flex-wrap justify-center items-center gap-12 scroll-reveal">
+            <div className="flex items-center justify-center">
+              <img 
+                src={commonSeasLogo} 
+                alt="Common Seas" 
+                className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
+              />
             </div>
-            <div className="flex items-center gap-3 text-gray-500 font-medium text-lg">
-              <Leaf className="w-8 h-8" />
-              Partner Organization 2
+            <div className="flex items-center justify-center">
+              <img 
+                src={kidsAgainstPlasticLogo} 
+                alt="Kids Against Plastic" 
+                className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
+              />
             </div>
-            <div className="flex items-center gap-3 text-gray-500 font-medium text-lg">
-              <Recycle className="w-8 h-8" />
-              Partner Organization 3
+            <div className="flex items-center justify-center">
+              <img 
+                src={riverCleanupLogo} 
+                alt="River Cleanup" 
+                className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
+              />
             </div>
           </div>
         </div>
