@@ -1208,6 +1208,117 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Email system health check endpoint
+  app.get('/api/admin/email/health', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const health = {
+        sendgrid: {
+          configured: !!process.env.SENDGRID_API_KEY,
+          apiKey: process.env.SENDGRID_API_KEY ? `${process.env.SENDGRID_API_KEY.substring(0, 8)}...` : 'Not set',
+          fromEmail: process.env.FROM_EMAIL || 'Not set (will use default)',
+        },
+        mailchimp: {
+          configured: !!(process.env.MAILCHIMP_API_KEY && process.env.MAILCHIMP_SERVER_PREFIX),
+          apiKey: process.env.MAILCHIMP_API_KEY ? `${process.env.MAILCHIMP_API_KEY.substring(0, 8)}...` : 'Not set',
+          serverPrefix: process.env.MAILCHIMP_SERVER_PREFIX || 'Not set',
+          mainAudienceId: process.env.MAILCHIMP_MAIN_AUDIENCE_ID || 'Not set',
+        },
+        environment: {
+          frontendUrl: process.env.FRONTEND_URL || 'Not set (will use default)',
+          nodeEnv: process.env.NODE_ENV || 'development',
+        },
+        lastEmailLogs: []
+      };
+
+      // Get recent email logs
+      try {
+        const recentLogs = await storage.getEmailLogs(10); // Get last 10 email logs
+        health.lastEmailLogs = recentLogs.map(log => ({
+          id: log.id,
+          recipientEmail: log.recipientEmail,
+          subject: log.subject,
+          status: log.status,
+          template: log.template,
+          sentAt: log.sentAt,
+        }));
+      } catch (logError) {
+        console.warn('Could not fetch email logs for health check:', logError);
+        health.lastEmailLogs = 'Could not fetch email logs';
+      }
+
+      res.json(health);
+    } catch (error: any) {
+      console.error("Error checking email health:", error);
+      res.status(500).json({ message: "Failed to check email system health" });
+    }
+  });
+
+  // Test email endpoint for administrators
+  app.post('/api/admin/email/test', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { email } = req.body;
+      const testEmail = email || req.user.email;
+      
+      if (!testEmail) {
+        return res.status(400).json({ message: "Email address is required" });
+      }
+
+      if (!process.env.SENDGRID_API_KEY) {
+        return res.status(500).json({ 
+          message: "SendGrid not configured. Please set SENDGRID_API_KEY environment variable." 
+        });
+      }
+
+      const success = await sendEmail({
+        to: testEmail,
+        from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+        subject: 'Test Email - Plastic Clever Schools Email System',
+        html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+            <div style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 28px;">🧪 Email System Test</h1>
+            </div>
+            <div style="padding: 40px 20px; background: #f9f9f9;">
+              <h2 style="color: #0B3D5D;">Email System Working!</h2>
+              <p style="color: #666; line-height: 1.6;">
+                This is a test email from the Plastic Clever Schools email notification system. 
+                If you're receiving this, your email configuration is working correctly.
+              </p>
+              <div style="background: #fff; border-left: 4px solid #02BBB4; padding: 20px; margin: 20px 0;">
+                <h3 style="color: #02BBB4; margin-top: 0;">System Information:</h3>
+                <ul style="color: #666; margin-bottom: 0;">
+                  <li><strong>Sent at:</strong> ${new Date().toISOString()}</li>
+                  <li><strong>From:</strong> ${process.env.FROM_EMAIL || 'noreply@plasticclever.org'}</li>
+                  <li><strong>Environment:</strong> ${process.env.NODE_ENV || 'development'}</li>
+                </ul>
+              </div>
+            </div>
+            <div style="background: #0B3D5D; color: white; padding: 20px; text-align: center; font-size: 14px;">
+              <p>© 2024 Plastic Clever Schools. Email System Test.</p>
+            </div>
+          </div>
+        `,
+      });
+
+      if (success) {
+        res.json({ 
+          message: `Test email sent successfully to ${testEmail}`,
+          timestamp: new Date().toISOString(),
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Failed to send test email. Check SendGrid configuration.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error sending test email:", error);
+      res.status(500).json({ 
+        message: "Failed to send test email",
+        error: error.message,
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
