@@ -11,9 +11,6 @@ import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_17578
 import inspireIcon from "@assets/Inspire_1757862013793.png";
 import investigateIcon from "@assets/Investigate_1757862013794.png";
 import actIcon from "@assets/plastic_bottles_and_glass_in_recycling_boxes_static_1757862163412.png";
-import inspireVideo from "@assets/inspire_1757867031379.mp4";
-import investigateVideo from "@assets/investigate_1757867031380.mp4";
-import actVideo from "@assets/ACT_1757867031379.mp4";
 import commonSeasLogo from "@assets/common-seas_1757862244194.png";
 import kidsAgainstPlasticLogo from "@assets/KAP-logo-png-300x300_1757862244194.png";
 import riverCleanupLogo from "@assets/RiverCleanup_logo_rgb_pos-WhiteBG-01-2-256x256_1757862244194.png";
@@ -327,41 +324,11 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stage 1: Inspire */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal-left">
-              <div 
-                className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer relative overflow-hidden"
-                onMouseEnter={(e) => {
-                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
-                  if (video) {
-                    // Reset video to start and play immediately
-                    video.currentTime = 0;
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                      playPromise.catch(() => {
-                        // Silently handle play interruption
-                      });
-                    }
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
-                  if (video) {
-                    video.pause();
-                    video.currentTime = 0;
-                  }
-                }}
-              >
+              <div className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-ocean-blue/20">
                 <img 
                   src={inspireIcon} 
                   alt="Inspire" 
-                  className="w-30 h-30 absolute inset-0 m-auto opacity-100 transition-opacity duration-300 group-hover:opacity-0" 
-                />
-                <video 
-                  src={inspireVideo}
-                  className="w-30 h-30 absolute inset-0 m-auto object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
-                  loop
-                  muted
-                  playsInline
-                  preload="none"
+                  className="w-30 h-30 transition-transform duration-200 group-hover:scale-110" 
                 />
               </div>
               <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
@@ -373,41 +340,11 @@ export default function Landing() {
 
             {/* Stage 2: Investigate */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal">
-              <div 
-                className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer relative overflow-hidden"
-                onMouseEnter={(e) => {
-                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
-                  if (video) {
-                    // Reset video to start and play immediately
-                    video.currentTime = 0;
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                      playPromise.catch(() => {
-                        // Silently handle play interruption
-                      });
-                    }
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
-                  if (video) {
-                    video.pause();
-                    video.currentTime = 0;
-                  }
-                }}
-              >
+              <div className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-teal/20">
                 <img 
                   src={investigateIcon} 
                   alt="Investigate" 
-                  className="w-30 h-30 absolute inset-0 m-auto opacity-100 transition-opacity duration-300 group-hover:opacity-0" 
-                />
-                <video 
-                  src={investigateVideo}
-                  className="w-30 h-30 absolute inset-0 m-auto object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
-                  loop
-                  muted
-                  playsInline
-                  preload="none"
+                  className="w-30 h-30 transition-transform duration-200 group-hover:scale-110" 
                 />
               </div>
               <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
@@ -419,41 +356,11 @@ export default function Landing() {
 
             {/* Stage 3: Act */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal-right">
-              <div 
-                className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer relative overflow-hidden"
-                onMouseEnter={(e) => {
-                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
-                  if (video) {
-                    // Reset video to start and play immediately
-                    video.currentTime = 0;
-                    const playPromise = video.play();
-                    if (playPromise !== undefined) {
-                      playPromise.catch(() => {
-                        // Silently handle play interruption
-                      });
-                    }
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
-                  if (video) {
-                    video.pause();
-                    video.currentTime = 0;
-                  }
-                }}
-              >
+              <div className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer transition-all duration-200 hover:scale-105 hover:bg-navy/20">
                 <img 
                   src={actIcon} 
                   alt="Act" 
-                  className="w-30 h-30 absolute inset-0 m-auto opacity-100 transition-opacity duration-300 group-hover:opacity-0" 
-                />
-                <video 
-                  src={actVideo}
-                  className="w-30 h-30 absolute inset-0 m-auto object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
-                  loop
-                  muted
-                  playsInline
-                  preload="none"
+                  className="w-30 h-30 transition-transform duration-200 group-hover:scale-110" 
                 />
               </div>
               <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
