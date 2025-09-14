@@ -55,7 +55,7 @@ export default function Landing() {
     <div className="min-h-screen bg-white pt-16">
 
       {/* Clean Hero Section - StreetSmart Inspired with Video Background */}
-      <section className="section-padding bg-white relative overflow-hidden">
+      <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
         {/* Video Background */}
         <video 
           autoPlay 
@@ -67,36 +67,51 @@ export default function Landing() {
           <source src={heroVideoUrl} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        <div className="container-width relative z-20">
-          <div className="max-w-4xl mx-auto text-center">
-            {/* Hero Heading */}
-            <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold mb-8 text-white" data-testid="text-hero-title">
+        
+        {/* Subtle Black Overlay for Text Contrast */}
+        <div className="absolute inset-0 bg-black/25 z-10"></div>
+        
+        <div className="container-width relative z-20 py-20">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Hero Heading with Text Shadow */}
+            <h1 
+              className="text-6xl lg:text-7xl xl:text-8xl font-bold mb-12 text-white leading-tight"
+              style={{ 
+                textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0px 0px 16px rgba(0,0,0,0.6)' 
+              }}
+              data-testid="text-hero-title"
+            >
               Empower Your School to Lead the Way in Reducing Plastic Waste
             </h1>
 
-            {/* CTA Button */}
+            {/* CTA Button with Enhanced Shadow */}
             <Button 
               size="lg"
-              className="bg-coral hover:bg-coral/90 text-white px-10 py-4 text-xl font-semibold mb-8"
+              className="bg-coral hover:bg-coral/90 text-white px-12 py-6 text-2xl font-bold mb-12 shadow-2xl hover:shadow-coral/50 transition-all duration-300 transform hover:scale-105"
               onClick={() => setShowSignUp(true)}
               data-testid="button-register-school"
             >
               Register Your School Now
-              <ArrowRight className="icon-md ml-3" />
+              <ArrowRight className="icon-lg ml-4" />
             </Button>
 
-            {/* Simple Trust Indicators */}
-            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-white/90">
-              <div className="flex items-center gap-2">
-                <Shield className="icon-sm text-white" />
+            {/* Simple Trust Indicators with Text Shadow */}
+            <div 
+              className="flex flex-wrap justify-center items-center gap-10 text-lg text-white font-semibold"
+              style={{ 
+                textShadow: '1px 1px 4px rgba(0,0,0,0.8)' 
+              }}
+            >
+              <div className="flex items-center gap-3">
+                <Shield className="icon-md text-white drop-shadow-lg" />
                 100% Free
               </div>
-              <div className="flex items-center gap-2">
-                <Award className="icon-sm text-white" />
+              <div className="flex items-center gap-3">
+                <Award className="icon-md text-white drop-shadow-lg" />
                 Award-Winning
               </div>
-              <div className="flex items-center gap-2">
-                <Users className="icon-sm text-white" />
+              <div className="flex items-center gap-3">
+                <Users className="icon-md text-white drop-shadow-lg" />
                 Expert Support
               </div>
             </div>
