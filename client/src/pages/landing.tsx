@@ -155,7 +155,7 @@ export default function Landing() {
             
             <Button 
               size="lg"
-              className="btn-secondary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300"
+              className="btn-primary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300"
               data-testid="button-download-sample"
             >
               <span className="mr-2">📚</span>
@@ -183,7 +183,7 @@ export default function Landing() {
             <div className="text-xl lg:text-2xl text-gray-600 mb-8">Registered Schools So Far</div>
             <Button 
               size="lg"
-              className="btn-secondary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300"
+              className="btn-primary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300"
               data-testid="button-view-schools"
             >
               <MapPin className="icon-md mr-2 transition-transform duration-300 group-hover:rotate-12" />
@@ -423,7 +423,7 @@ export default function Landing() {
               </Button>
               <Button 
                 size="lg" 
-                className="btn-secondary border-2 border-white text-white hover:bg-white hover:text-ocean-blue px-10 py-4 text-xl font-semibold group hover:scale-105 transition-all duration-300"
+                className="btn-primary px-10 py-4 text-xl font-semibold group hover:scale-105 transition-all duration-300"
                 onClick={() => scrollToSection('how-it-works')}
                 data-testid="button-learn-more-final"
               >

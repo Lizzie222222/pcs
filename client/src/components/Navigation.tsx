@@ -104,7 +104,7 @@ export default function Navigation() {
             ) : (
               <>
                 <Button
-                  className="btn-secondary"
+                  className="btn-primary"
                   size="sm"
                   onClick={handleAuth}
                   data-testid="button-login"
