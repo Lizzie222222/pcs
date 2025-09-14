@@ -11,6 +11,9 @@ import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_17578
 import inspireIcon from "@assets/Inspire_1757862013793.png";
 import investigateIcon from "@assets/Investigate_1757862013794.png";
 import actIcon from "@assets/plastic_bottles_and_glass_in_recycling_boxes_static_1757862163412.png";
+import inspireVideo from "@assets/inspire_1757867031379.mp4";
+import investigateVideo from "@assets/investigate_1757867031380.mp4";
+import actVideo from "@assets/ACT_1757867031379.mp4";
 import commonSeasLogo from "@assets/common-seas_1757862244194.png";
 import kidsAgainstPlasticLogo from "@assets/KAP-logo-png-300x300_1757862244194.png";
 import riverCleanupLogo from "@assets/RiverCleanup_logo_rgb_pos-WhiteBG-01-2-256x256_1757862244194.png";
@@ -324,8 +327,30 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stage 1: Inspire */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal-left">
-              <div className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <img src={inspireIcon} alt="Inspire" className="w-30 h-30" />
+              <div 
+                className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer relative overflow-hidden"
+                onMouseEnter={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) video.play();
+                }}
+                onMouseLeave={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) video.pause();
+                }}
+              >
+                <img 
+                  src={inspireIcon} 
+                  alt="Inspire" 
+                  className="w-30 h-30 absolute inset-0 m-auto opacity-100 transition-opacity duration-300 group-hover:opacity-0" 
+                />
+                <video 
+                  src={inspireVideo}
+                  className="w-30 h-30 absolute inset-0 m-auto object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
+                  loop
+                  muted
+                  playsInline
+                  preload="none"
+                />
               </div>
               <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">1</span>
@@ -336,8 +361,30 @@ export default function Landing() {
 
             {/* Stage 2: Investigate */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal">
-              <div className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <img src={investigateIcon} alt="Investigate" className="w-30 h-30" />
+              <div 
+                className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer relative overflow-hidden"
+                onMouseEnter={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) video.play();
+                }}
+                onMouseLeave={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) video.pause();
+                }}
+              >
+                <img 
+                  src={investigateIcon} 
+                  alt="Investigate" 
+                  className="w-30 h-30 absolute inset-0 m-auto opacity-100 transition-opacity duration-300 group-hover:opacity-0" 
+                />
+                <video 
+                  src={investigateVideo}
+                  className="w-30 h-30 absolute inset-0 m-auto object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
+                  loop
+                  muted
+                  playsInline
+                  preload="none"
+                />
               </div>
               <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">2</span>
@@ -348,8 +395,30 @@ export default function Landing() {
 
             {/* Stage 3: Act */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal-right">
-              <div className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <img src={actIcon} alt="Act" className="w-30 h-30" />
+              <div 
+                className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer relative overflow-hidden"
+                onMouseEnter={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) video.play();
+                }}
+                onMouseLeave={(e) => {
+                  const video = e.currentTarget.querySelector('video');
+                  if (video) video.pause();
+                }}
+              >
+                <img 
+                  src={actIcon} 
+                  alt="Act" 
+                  className="w-30 h-30 absolute inset-0 m-auto opacity-100 transition-opacity duration-300 group-hover:opacity-0" 
+                />
+                <video 
+                  src={actVideo}
+                  className="w-30 h-30 absolute inset-0 m-auto object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
+                  loop
+                  muted
+                  playsInline
+                  preload="none"
+                />
               </div>
               <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">3</span>
@@ -426,8 +495,8 @@ export default function Landing() {
         </div>
       </section>
       
-      {/* Why Schools Love Us - Testimonial Style - Fun Coral Background */}
-      <section className="section-padding bg-gradient-to-r from-coral/5 to-yellow/5">
+      {/* Why Schools Love Us - Testimonial Style - Light Grey Background */}
+      <section className="section-padding bg-gray-50">
         <div className="container-width">
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4 scroll-reveal">Why Schools Choose Us</h2>
@@ -501,28 +570,6 @@ export default function Landing() {
             </div>
           </div>
 
-          {/* Trust Indicators */}
-          <div className="mt-16 text-center">
-            <p className="caption mb-8">Trusted by educational organizations worldwide</p>
-            <div className="flex flex-wrap justify-center items-center gap-8 opacity-60">
-              <div className="flex items-center gap-2 text-gray-500 font-medium">
-                <Globe className="icon-md" />
-                UNESCO Partner
-              </div>
-              <div className="flex items-center gap-2 text-gray-500 font-medium">
-                <Recycle className="icon-md" />
-                WWF Supporter
-              </div>
-              <div className="flex items-center gap-2 text-gray-500 font-medium">
-                <Leaf className="icon-md" />
-                Green Schools Alliance
-              </div>
-              <div className="flex items-center gap-2 text-gray-500 font-medium">
-                <BookOpen className="icon-md" />
-                Education Excellence Network
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
@@ -566,55 +613,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Final CTA - Professional and Clean */}
-      <section className="section-padding bg-white">
-        <div className="container-width">
-          <div className="max-w-4xl mx-auto text-center bg-navy text-white rounded-xl p-12 lg:p-16 scroll-reveal-scale">
-            <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-white" data-testid="text-final-cta-title">
-              Ready to Make Your School Plastic Clever?
-            </h2>
-            <p className="text-xl lg:text-2xl opacity-90 mb-10 max-w-3xl mx-auto">
-              Join hundreds of other schools making a positive, tangible impact. Get started on your journey today and access all the free resources you need.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8 scroll-reveal">
-              <Button 
-                size="lg" 
-                className="btn-primary px-10 py-4 text-xl font-semibold group hover:scale-105 transition-all duration-300"
-                onClick={() => window.location.href = '/register'}
-                data-testid="button-start-free"
-              >
-                Register Your School Now
-                <ArrowRight className="icon-md ml-3 transition-transform duration-300 group-hover:translate-x-1" />
-              </Button>
-              <Button 
-                size="lg" 
-                className="btn-primary px-10 py-4 text-xl font-semibold group hover:scale-105 transition-all duration-300"
-                onClick={() => scrollToSection('how-it-works')}
-                data-testid="button-learn-more-final"
-              >
-                <BookOpen className="icon-md mr-3 transition-transform duration-300 group-hover:scale-110" />
-                Learn More
-              </Button>
-            </div>
-
-            <div className="flex flex-wrap justify-center gap-8 text-white/80 text-sm scroll-reveal">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="icon-sm text-teal" />
-                No credit card required
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="icon-sm text-teal" />
-                Setup in under 10 minutes
-              </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle className="icon-sm text-teal" />
-                Expert support included
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* Clean Professional Footer */}
       <footer className="bg-navy text-white py-12">

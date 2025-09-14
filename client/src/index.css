@@ -214,6 +214,7 @@
     background-color: hsl(199, 95%, 35%);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px 0 rgba(1, 154, 222, 0.4);
+    text-decoration: underline;
   }
 
   .btn-primary:active {
