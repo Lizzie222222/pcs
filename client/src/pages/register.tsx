@@ -105,8 +105,8 @@ export default function Register() {
               </CardHeader>
               
               <CardContent className="space-y-4">
-                {/* Sign Up Buttons at Top */}
-                <div className="space-y-4">
+                {/* Sign Up Buttons Together */}
+                <div className="space-y-3">
                   {/* Continue with Google Button */}
                   <Button
                     size="lg"
@@ -141,18 +141,6 @@ export default function Register() {
                     </div>
                   </Button>
 
-                  {/* Divider */}
-                  <div className="relative my-3">
-                    <div className="absolute inset-0 flex items-center">
-                      <div className="w-full border-t border-gray-200"></div>
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-2 text-gray-500 font-medium">
-                        Or
-                      </span>
-                    </div>
-                  </div>
-
                   {/* Email Registration Button */}
                   <Button
                     size="lg"
@@ -169,11 +157,11 @@ export default function Register() {
                   </Button>
                 </div>
 
-                {/* Compact Benefits Below */}
-                <div className="space-y-2 pt-4 border-t border-gray-100">
+                {/* Benefits */}
+                <div className="space-y-2">
                   <div className="flex items-center gap-3">
                     <School className="icon-sm text-teal flex-shrink-0" />
-                    <p className="text-sm text-gray-700">Complete school registration and track your sustainability journey</p>
+                    <p className="text-sm text-gray-700">School registration and dashboard tracking</p>
                   </div>
                   
                   <div className="flex items-center gap-3">
@@ -187,10 +175,21 @@ export default function Register() {
                   </div>
                 </div>
 
-                {/* Compact Why Account Required */}
-                <div className="bg-gray-50 p-3 rounded-lg">
+                {/* Why do I need an account section */}
+                <div className="relative my-4">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="bg-white px-3 text-gray-600 font-medium">
+                      Why do I need an account?
+                    </span>
+                  </div>
+                </div>
+
+                <div className="text-center">
                   <p className="text-xs text-gray-600">
-                    <strong>Why do I need an account?</strong> Your account personalizes your experience, saves your school's progress, and provides secure access to resources.
+                    Your account personalizes your experience, saves your school's progress, and provides secure access to resources.
                   </p>
                 </div>
 
