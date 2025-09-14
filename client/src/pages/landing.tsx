@@ -447,18 +447,29 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Newsletter - Stay Connected */}
-      <section className="section-padding bg-white">
-        <div className="container-width">
-          <div className="max-w-2xl mx-auto text-center">
-            <h2 className="heading-2 mb-4">Stay Connected</h2>
-            <p className="body-large mb-8">
+      {/* Newsletter - Stay Connected with Fun Styling */}
+      <section className="section-padding bg-gradient-to-r from-yellow/20 via-coral/10 to-teal/15 relative">
+        <div className="absolute inset-0 bg-white/60"></div>
+        <div className="container-width relative z-10">
+          <div className="max-w-2xl mx-auto text-center bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-lg border border-white/50">
+            <h2 className="heading-2 mb-4 text-navy">Stay Connected</h2>
+            <p className="body-large mb-8 text-gray-700">
               Get the latest updates, success stories, and resources delivered to your inbox.
             </p>
             <NewsletterSignup 
               variant="hero" 
               className="max-w-md mx-auto"
             />
+            <div className="mt-6 flex justify-center gap-4">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <CheckCircle className="icon-sm text-teal" />
+                No spam, ever
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <CheckCircle className="icon-sm text-teal" />
+                Unsubscribe anytime
+              </div>
+            </div>
           </div>
         </div>
       </section>
