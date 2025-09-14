@@ -211,7 +211,7 @@
   }
 
   .btn-primary:hover {
-    background-color: hsl(199, 95%, 45%);
+    background-color: hsl(199, 95%, 42%);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px 0 rgba(1, 154, 222, 0.4);
   }
@@ -223,7 +223,7 @@
 
   .btn-primary:focus-visible {
     outline: none;
-    background-color: hsl(199, 95%, 45%);
+    background-color: hsl(199, 95%, 42%);
     box-shadow: 0 0 0 2px white, 0 0 0 4px var(--ocean-blue), 0 8px 25px 0 rgba(1, 154, 222, 0.4);
   }
 
