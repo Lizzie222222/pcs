@@ -160,15 +160,15 @@ export default function Landing() {
             {/* Key Callouts with Delightful Animations */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 scroll-reveal">
               <div className="text-center group cursor-pointer">
-                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-1 relative overflow-hidden">
+                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg stagger-delay-1 relative overflow-visible">
                   <img 
                     src={emojiImage} 
                     alt="Award trophy" 
-                    className="w-10 h-10 transition-opacity duration-300 group-hover:opacity-0"
+                    className="w-28 h-28 transition-opacity duration-300 group-hover:opacity-0"
                   />
                   <video 
                     src={animationVideo}
-                    className="w-10 h-10 absolute inset-0 m-auto opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    className="w-28 h-28 absolute inset-0 m-auto opacity-0 transition-opacity duration-300 group-hover:opacity-100"
                     autoPlay
                     loop
                     muted
@@ -179,14 +179,14 @@ export default function Landing() {
                 <p className="body-text">Recognized for our effective approach to reducing waste.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div className="w-16 h-16 bg-teal rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-2">
+                <div className="w-16 h-16 bg-teal rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg stagger-delay-2">
                   <Users className="icon-lg text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-teal">Student-Led Action</h3>
                 <p className="body-text">Kids are at the heart of every step, fostering a sense of ownership and responsibility.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div className="w-16 h-16 bg-navy rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-3">
+                <div className="w-16 h-16 bg-navy rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg stagger-delay-3">
                   <BookOpen className="icon-lg text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-navy">Free Resources</h3>
