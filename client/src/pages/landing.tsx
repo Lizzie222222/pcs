@@ -263,7 +263,7 @@ export default function Landing() {
       <section className="section-padding bg-white">
         <div className="container-width relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="heading-2 mb-8 scroll-reveal">What is a Plastic Clever School?</h2>
+            <h2 className="heading-2 mb-8 scroll-reveal">What is a <span className="text-ocean-blue">Plastic Clever School</span>?</h2>
             <p className="body-large mb-12 max-w-3xl mx-auto scroll-reveal">
               Plastic Clever Schools is an awards program designed to help schools reduce their single-use plastic consumption. We provide you with the tools and a simple 3-step framework to inspire change, investigate your school's plastic use, and act on solutions—all while empowering your students to become the next generation of environmental leaders.
             </p>
@@ -328,7 +328,7 @@ export default function Landing() {
       <section className="section-padding bg-gray-50">
         <div className="container-width relative z-10">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4">Join a Growing Movement</h2>
+            <h2 className="heading-2 mb-4">Join a <span className="text-ocean-blue">Growing Movement</span></h2>
             <p className="body-large max-w-3xl mx-auto">
               More than {stats?.totalSchools?.toLocaleString() || '1,542'} schools have already registered for the Plastic Clever Schools program, making a collective impact on waste reduction and environmental education.
             </p>
@@ -356,7 +356,7 @@ export default function Landing() {
       <section id="how-it-works" className="section-padding bg-gradient-to-b from-white to-yellow/10">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4 scroll-reveal">A Simple 3-Stage Journey to a Plastic Clever School</h2>
+            <h2 className="heading-2 mb-4 scroll-reveal">A Simple <span className="text-ocean-blue">3-Stage Journey</span> to a Plastic Clever School</h2>
             <p className="body-large max-w-3xl mx-auto scroll-reveal">
               Our proven framework breaks down your school's transformation into three straightforward stages.
             </p>
@@ -450,10 +450,10 @@ export default function Landing() {
       </section>
 
       {/* Partnership & Endorsement Section - Clean White */}
-      <section className="section-padding bg-white border-t-4 border-teal">
+      <section className="section-padding bg-white">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4 scroll-reveal">Built on Strong Partnerships</h2>
+            <h2 className="heading-2 mb-4 scroll-reveal">Built on <span className="text-ocean-blue">Strong Partnerships</span></h2>
             <p className="body-large max-w-3xl mx-auto scroll-reveal">
               Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education.
             </p>
@@ -489,7 +489,7 @@ export default function Landing() {
       <section className="section-padding bg-gray-50">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4 scroll-reveal">Why Schools Choose Us</h2>
+            <h2 className="heading-2 mb-4 scroll-reveal">Why <span className="text-ocean-blue">Schools Choose Us</span></h2>
             <p className="body-large max-w-3xl mx-auto scroll-reveal">
               Hear from educators and students who have transformed their schools through our program
             </p>
@@ -567,7 +567,7 @@ export default function Landing() {
       <section className="section-padding bg-gradient-to-b from-teal/5 to-ocean-blue/5">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4 scroll-reveal">Follow Our Journey</h2>
+            <h2 className="heading-2 mb-4 scroll-reveal">Follow <span className="text-ocean-blue">Our Journey</span></h2>
             <p className="body-large max-w-3xl mx-auto scroll-reveal">
               See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.
             </p>
