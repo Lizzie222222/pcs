@@ -161,6 +161,22 @@ export default function SchoolsMap() {
         <Card className="mb-8">
           <CardContent className="p-0">
             <div className="h-[500px] rounded-lg overflow-hidden" data-testid="interactive-map-container">
+              <style dangerouslySetInnerHTML={{
+                __html: `
+                  .map-tiles {
+                    filter: grayscale(100%) brightness(0.9) contrast(1.2);
+                  }
+                  .leaflet-container {
+                    background-color: #f5f5f5 !important;
+                  }
+                  .custom-div-icon div {
+                    box-shadow: 0 3px 8px rgba(0,0,0,0.4) !important;
+                    border: 3px solid white !important;
+                    width: 14px !important;
+                    height: 14px !important;
+                  }
+                `
+              }} />
               {isLoading ? (
                 <div className="h-full flex items-center justify-center bg-gray-100">
                   <div className="text-center">
@@ -176,8 +192,9 @@ export default function SchoolsMap() {
                   data-testid="leaflet-map"
                 >
                   <TileLayer
-                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://carto.com/">CARTO</a>'
+                    url="https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png"
+                    className="map-tiles"
                   />
                   
                   {schools && schools.map((school) => {
@@ -188,14 +205,14 @@ export default function SchoolsMap() {
                     if (isNaN(lat) || isNaN(lng)) return null;
                     
                     const markerColor = school.featuredSchool 
-                      ? '#fbbf24' // yellow
+                      ? '#f59e0b' // bright amber/yellow
                       : school.awardCompleted 
-                      ? '#10b981' // green
+                      ? '#059669' // vibrant green
                       : school.currentStage === 'inspire' 
-                      ? '#2563eb' // blue
+                      ? '#1d4ed8' // bright blue
                       : school.currentStage === 'investigate'
-                      ? '#0d9488' // teal
-                      : '#ef4444'; // red/coral for act
+                      ? '#0891b2' // bright cyan
+                      : '#dc2626'; // bright red for act
                     
                     return (
                       <Marker
