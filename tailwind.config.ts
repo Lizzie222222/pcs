@@ -64,9 +64,12 @@ export default {
         // Plastic Clever Schools Custom Colors
         navy: "var(--navy)",
         pcs_blue: "var(--pcs-blue)",
+        "ocean-blue": "var(--ocean-blue)",
         teal: "var(--teal)",
         yellow: "var(--yellow)",
         coral: "var(--coral)",
+        "ocean-light": "var(--ocean-light)",
+        "navy-light": "var(--navy-light)",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],
