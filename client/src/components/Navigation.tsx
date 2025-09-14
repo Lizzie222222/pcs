@@ -33,7 +33,7 @@ export default function Navigation() {
     if (isAuthenticated) {
       window.location.href = "/api/auth/logout";
     } else {
-      window.location.href = "/api/auth/google";
+      setLocation("/login");
     }
   };
 

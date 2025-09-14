@@ -1,14 +1,34 @@
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Mail, Globe, Shield, ArrowRight, School } from "lucide-react";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { LoadingSpinner } from "@/components/ui/states";
+import { Mail, Globe, Shield, ArrowRight, School, Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { loginSchema, type LoginForm } from "@shared/schema";
 import logoUrl from "@assets/Logo_1757848498470.png";
 
 export default function Login() {
-  const handleLogin = (provider: string) => {
-    // Redirect to Google OAuth with returnTo parameter
-    if (provider === 'google') {
-      window.location.href = `/api/auth/google?returnTo=/`;
-    }
+  const [showPassword, setShowPassword] = useState(false);
+  const { login, isLoggingIn } = useAuth();
+  
+  const form = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  const handleEmailLogin = (data: LoginForm) => {
+    login(data);
+  };
+
+  const handleGoogleLogin = () => {
+    window.location.href = `/api/auth/google?returnTo=/`;
   };
 
   return (
@@ -43,12 +63,107 @@ export default function Login() {
           </CardHeader>
           
           <CardContent className="space-y-4">
+            {/* Email/Password Login Form */}
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(handleEmailLogin)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email Address</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="email"
+                          placeholder="Enter your email address"
+                          {...field}
+                          data-testid="input-email"
+                          disabled={isLoggingIn}
+                        />
+                      </FormControl>
+                      <FormMessage data-testid="error-email" />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="password"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Password</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <Input
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Enter your password"
+                            {...field}
+                            data-testid="input-password"
+                            disabled={isLoggingIn}
+                          />
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                            onClick={() => setShowPassword(!showPassword)}
+                            data-testid="button-toggle-password"
+                            disabled={isLoggingIn}
+                          >
+                            {showPassword ? (
+                              <EyeOff className="h-4 w-4 text-gray-500" />
+                            ) : (
+                              <Eye className="h-4 w-4 text-gray-500" />
+                            )}
+                          </Button>
+                        </div>
+                      </FormControl>
+                      <FormMessage data-testid="error-password" />
+                    </FormItem>
+                  )}
+                />
+                
+                <Button
+                  type="submit"
+                  size="lg"
+                  className="w-full btn-primary"
+                  disabled={isLoggingIn}
+                  data-testid="button-login-submit"
+                >
+                  {isLoggingIn ? (
+                    <>
+                      <LoadingSpinner size="sm" className="mr-2" />
+                      Signing in...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="icon-md mr-2" />
+                      Sign In
+                    </>
+                  )}
+                </Button>
+              </form>
+            </Form>
+
+            {/* Divider */}
+            <div className="relative my-6">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-gray-200"></div>
+              </div>
+              <div className="relative flex justify-center text-xs uppercase">
+                <span className="bg-white px-2 text-gray-500 font-medium">
+                  Or continue with
+                </span>
+              </div>
+            </div>
+
             {/* Continue with Google Button */}
             <Button
               size="lg"
               className="w-full bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 hover:border-gray-300 transition-all duration-300 group shadow-sm hover:shadow-md"
-              onClick={() => handleLogin('google')}
+              onClick={handleGoogleLogin}
               data-testid="button-login-google"
+              disabled={isLoggingIn}
             >
               <div className="flex items-center justify-center gap-3">
                 <div className="w-5 h-5 flex items-center justify-center">
@@ -76,63 +191,21 @@ export default function Login() {
               </div>
             </Button>
 
-            {/* Continue with Email Button */}
-            <Button
-              size="lg"
-              className="w-full btn-primary group"
-              onClick={() => handleLogin('email')}
-              data-testid="button-login-email"
-            >
-              <div className="flex items-center justify-center gap-3">
-                <Mail className="icon-md transition-transform duration-300 group-hover:scale-110" />
-                <span className="font-semibold">Continue with Email</span>
-                <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
-              </div>
-            </Button>
-
-            {/* Divider */}
-            <div className="relative my-6">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-gray-200"></div>
-              </div>
-              <div className="relative flex justify-center text-xs uppercase">
-                <span className="bg-white px-2 text-gray-500 font-medium">
-                  Secure Authentication
-                </span>
-              </div>
-            </div>
-
-            {/* Security Features */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <Shield className="icon-sm text-teal flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-navy">Secure & Private</p>
-                  <p className="text-xs text-gray-600">Your data is protected with enterprise-grade security</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <School className="icon-sm text-ocean-blue flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-navy">School-Focused</p>
-                  <p className="text-xs text-gray-600">Designed specifically for educational environments</p>
-                </div>
-              </div>
-              
-              <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <Globe className="icon-sm text-coral flex-shrink-0" />
-                <div>
-                  <p className="text-sm font-medium text-navy">Global Community</p>
-                  <p className="text-xs text-gray-600">Join schools worldwide making a difference</p>
-                </div>
-              </div>
-            </div>
           </CardContent>
         </Card>
 
         {/* Footer Information */}
         <div className="text-center mt-8 space-y-2">
+          <p className="caption text-gray-500">
+            Don't have an account?{" "}
+            <a 
+              href="/register" 
+              className="text-ocean-blue hover:text-navy font-medium transition-colors duration-200"
+              data-testid="link-register"
+            >
+              Register here
+            </a>
+          </p>
           <p className="caption text-gray-500">
             New to Plastic Clever Schools?{" "}
             <a 

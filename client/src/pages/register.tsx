@@ -1,21 +1,40 @@
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/states";
-import { Mail, Globe, Shield, ArrowRight, School, User, LogOut } from "lucide-react";
+import { Mail, Globe, Shield, ArrowRight, School, User, LogOut, Eye, EyeOff, UserPlus } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { registerSchema, type RegisterForm } from "@shared/schema";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import logoUrl from "@assets/Logo_1757848498470.png";
 
 export default function Register() {
-  const { user, isLoading, isAuthenticated } = useAuth();
+  const { user, isLoading, isAuthenticated, register, isRegistering } = useAuth();
   const [showSignUpForm, setShowSignUpForm] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  const form = useForm<RegisterForm>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      confirmPassword: "",
+      firstName: "",
+      lastName: "",
+    },
+  });
 
-  const handleLogin = (provider: string) => {
-    // Redirect to Google OAuth with returnTo parameter pointing to register page
-    if (provider === 'google') {
-      window.location.href = `/api/auth/google?returnTo=/register`;
-    }
+  const handleEmailRegistration = (data: RegisterForm) => {
+    register(data);
+  };
+
+  const handleGoogleRegistration = () => {
+    window.location.href = `/api/auth/google?returnTo=/register`;
   };
 
   const handleLogout = () => {
@@ -59,12 +78,12 @@ export default function Register() {
             />
           </div>
           <h1 className="heading-2 mb-2" data-testid="text-register-title">
-            {isAuthenticated ? 'Register Your School' : 'Join Plastic Clever Schools'}
+            {isAuthenticated ? 'Register Your School' : 'Create Your Account'}
           </h1>
           <p className="body-text text-gray-600" data-testid="text-register-description">
             {isAuthenticated 
               ? 'Complete your school registration to access all program features'
-              : 'Sign in to register your school for our sustainability program'
+              : 'Create an account to register your school for our sustainability program'
             }
           </p>
         </div>
@@ -76,20 +95,196 @@ export default function Register() {
             <Card className="card-clean shadow-lg border-0">
               <CardHeader className="text-center pb-4">
                 <CardTitle className="heading-4 text-navy">
-                  Sign In to Register Your School
+                  Create Your Account
                 </CardTitle>
                 <p className="caption text-gray-500 mt-2">
-                  Authentication required for school registration
+                  Join our global community of sustainable schools
                 </p>
               </CardHeader>
               
               <CardContent className="space-y-4">
+                {/* Registration Form */}
+                <Form {...form}>
+                  <form onSubmit={form.handleSubmit(handleEmailRegistration)} className="space-y-4">
+                    {/* Name Fields */}
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>First Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="First name"
+                                {...field}
+                                data-testid="input-first-name"
+                                disabled={isRegistering}
+                              />
+                            </FormControl>
+                            <FormMessage data-testid="error-first-name" />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Last Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Last name"
+                                {...field}
+                                data-testid="input-last-name"
+                                disabled={isRegistering}
+                              />
+                            </FormControl>
+                            <FormMessage data-testid="error-last-name" />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                    
+                    <FormField
+                      control={form.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email Address</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder="Enter your email address"
+                              {...field}
+                              data-testid="input-email"
+                              disabled={isRegistering}
+                            />
+                          </FormControl>
+                          <FormMessage data-testid="error-email" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Create a strong password"
+                                {...field}
+                                data-testid="input-password"
+                                disabled={isRegistering}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowPassword(!showPassword)}
+                                data-testid="button-toggle-password"
+                                disabled={isRegistering}
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4 text-gray-500" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-gray-500" />
+                                )}
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage data-testid="error-password" />
+                          <p className="text-xs text-gray-600 mt-1">
+                            Must contain uppercase, lowercase, number, and be at least 8 characters
+                          </p>
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={form.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type={showConfirmPassword ? "text" : "password"}
+                                placeholder="Confirm your password"
+                                {...field}
+                                data-testid="input-confirm-password"
+                                disabled={isRegistering}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                data-testid="button-toggle-confirm-password"
+                                disabled={isRegistering}
+                              >
+                                {showConfirmPassword ? (
+                                  <EyeOff className="h-4 w-4 text-gray-500" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-gray-500" />
+                                )}
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage data-testid="error-confirm-password" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button
+                      type="submit"
+                      size="lg"
+                      className="w-full btn-primary"
+                      disabled={isRegistering}
+                      data-testid="button-register-submit"
+                    >
+                      {isRegistering ? (
+                        <>
+                          <LoadingSpinner size="sm" className="mr-2" />
+                          Creating Account...
+                        </>
+                      ) : (
+                        <>
+                          <UserPlus className="icon-md mr-2" />
+                          Create Account
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+
+                {/* Divider */}
+                <div className="relative my-6">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-200"></div>
+                  </div>
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-white px-2 text-gray-500 font-medium">
+                      Or continue with
+                    </span>
+                  </div>
+                </div>
+
                 {/* Continue with Google Button */}
                 <Button
                   size="lg"
                   className="w-full bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 hover:border-gray-300 transition-all duration-300 group shadow-sm hover:shadow-md"
-                  onClick={() => handleLogin('google')}
+                  onClick={handleGoogleRegistration}
                   data-testid="button-register-google"
+                  disabled={isRegistering}
                 >
                   <div className="flex items-center justify-center gap-3">
                     <div className="w-5 h-5 flex items-center justify-center">
@@ -99,7 +294,7 @@ export default function Register() {
                           d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                         />
                         <path
-                          fill="#34A853"
+                          fill="34A853"
                           d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
                         />
                         <path
@@ -117,58 +312,6 @@ export default function Register() {
                   </div>
                 </Button>
 
-                {/* Continue with Email Button */}
-                <Button
-                  size="lg"
-                  className="w-full btn-primary group"
-                  onClick={() => handleLogin('email')}
-                  data-testid="button-register-email"
-                >
-                  <div className="flex items-center justify-center gap-3">
-                    <Mail className="icon-md transition-transform duration-300 group-hover:scale-110" />
-                    <span className="font-semibold">Continue with Email</span>
-                    <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
-                  </div>
-                </Button>
-
-                {/* Divider */}
-                <div className="relative my-6">
-                  <div className="absolute inset-0 flex items-center">
-                    <div className="w-full border-t border-gray-200"></div>
-                  </div>
-                  <div className="relative flex justify-center text-xs uppercase">
-                    <span className="bg-white px-2 text-gray-500 font-medium">
-                      Why Registration Requires Sign In
-                    </span>
-                  </div>
-                </div>
-
-                {/* Registration Benefits */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Shield className="icon-sm text-teal flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-navy">Secure School Data</p>
-                      <p className="text-xs text-gray-600">Protect your school's information with secure authentication</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <School className="icon-sm text-ocean-blue flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-navy">Personalized Dashboard</p>
-                      <p className="text-xs text-gray-600">Access your school's unique progress tracking and resources</p>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Globe className="icon-sm text-coral flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-navy">Global Community</p>
-                      <p className="text-xs text-gray-600">Connect with schools worldwide in our sustainability network</p>
-                    </div>
-                  </div>
-                </div>
               </CardContent>
             </Card>
 
@@ -256,7 +399,9 @@ export default function Register() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={handleLogout}
+                    onClick={() => {
+                      window.location.href = "/api/auth/logout";
+                    }}
                     className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                     data-testid="button-logout"
                   >
