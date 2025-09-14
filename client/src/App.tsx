@@ -14,6 +14,7 @@ import SchoolsMap from "@/pages/schools-map";
 import Search from "@/pages/search";
 import Admin from "@/pages/admin";
 import Login from "@/pages/login";
+import Register from "@/pages/register";
 import NotFound from "@/pages/not-found";
 import Navigation from "@/components/Navigation";
 
@@ -40,7 +41,8 @@ function Router() {
         '/schools-map': 'Schools Map - Plastic Clever Schools',
         '/search': 'Search - Plastic Clever Schools',
         '/admin': 'Admin Panel - Plastic Clever Schools',
-        '/login': 'Sign In - Plastic Clever Schools'
+        '/login': 'Sign In - Plastic Clever Schools',
+        '/register': 'Register School - Plastic Clever Schools'
       };
       
       const title = pageTitles[location] || 'Page Not Found - Plastic Clever Schools';
@@ -99,6 +101,7 @@ function Router() {
             <>
               <Route path="/" component={Landing} />
               <Route path="/login" component={Login} />
+              <Route path="/register" component={Register} />
               <Route path="/resources" component={Resources} />
               <Route path="/inspiration" component={Inspiration} />
               <Route path="/schools-map" component={SchoolsMap} />
@@ -108,6 +111,7 @@ function Router() {
             <>
               <Route path="/" component={Home} />
               <Route path="/login" component={Login} />
+              <Route path="/register" component={Register} />
               <Route path="/resources" component={Resources} />
               <Route path="/inspiration" component={Inspiration} />
               <Route path="/schools-map" component={SchoolsMap} />

@@ -97,6 +97,25 @@ async function upsertUser(
   await storage.upsertUser(userData);
 }
 
+// Helper function to check if a passport strategy exists
+function strategyExists(strategyName: string): boolean {
+  return !!(passport as any)._strategies && !!(passport as any)._strategies[strategyName];
+}
+
+// Helper function to get the appropriate strategy name with fallback
+function getStrategyName(hostname: string): string {
+  const domains = process.env.REPLIT_DOMAINS!.split(",");
+  const strategyName = `replitauth:${hostname}`;
+  const fallbackStrategy = `replitauth:${domains[0]}`;
+  
+  // Use hostname strategy if it exists, otherwise use fallback
+  if (strategyExists(strategyName)) {
+    return strategyName;
+  } else {
+    return fallbackStrategy;
+  }
+}
+
 export async function setupAuth(app: Express) {
   app.set("trust proxy", 1);
   app.use(getSession());
@@ -143,13 +162,8 @@ export async function setupAuth(app: Express) {
       }
     }
 
-    // Get strategy name - use hostname or fallback to first domain in development
-    const domains = process.env.REPLIT_DOMAINS!.split(",");
-    const strategyName = `replitauth:${req.hostname}`;
-    const fallbackStrategy = `replitauth:${domains[0]}`;
-    
-    // Use hostname strategy if exists, otherwise use fallback for development
-    const strategy = strategyName; // Use computed strategy
+    // Get appropriate strategy name with fallback logic
+    const strategy = getStrategyName(req.hostname);
     
     passport.authenticate(strategy, {
       prompt: "login consent",
@@ -158,13 +172,8 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/callback", (req, res, next) => {
-    // Get strategy name - use hostname or fallback to first domain in development
-    const domains = process.env.REPLIT_DOMAINS!.split(",");
-    const strategyName = `replitauth:${req.hostname}`;
-    const fallbackStrategy = `replitauth:${domains[0]}`;
-    
-    // Use hostname strategy if exists, otherwise use fallback for development
-    const strategy = strategyName; // Use computed strategy
+    // Get appropriate strategy name with fallback logic
+    const strategy = getStrategyName(req.hostname);
     
     passport.authenticate(strategy, {
       successReturnToOrRedirect: "/",
