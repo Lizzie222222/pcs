@@ -96,10 +96,7 @@ export default function Register() {
             {/* Login Card */}
             <Card className="card-clean shadow-lg border-0">
               <CardHeader className="text-center pb-4">
-                <CardTitle className="heading-4 text-navy">
-                  Create Your Account
-                </CardTitle>
-                <p className="caption text-gray-500 mt-2">
+                <p className="caption text-gray-500">
                   Join our global community of sustainable schools
                 </p>
               </CardHeader>
