@@ -7,6 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Search, Download, Filter, BookOpen, FileText, Video, Image } from "lucide-react";
 import { useCountries } from "@/hooks/useCountries";
+import { EmptyState } from "@/components/ui/states";
 
 interface Resource {
   id: string;
@@ -231,7 +232,7 @@ export default function Resources() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {resources?.map((resource) => (
-                <Card key={resource.id} className="hover:shadow-lg transition-shadow" data-testid={`resource-${resource.id}`}>
+                <Card key={resource.id} className="card-interactive" data-testid={`resource-${resource.id}`}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between mb-2">
                       <Badge className={getStageColor(resource.stage)}>
@@ -262,11 +263,11 @@ export default function Resources() {
                       </span>
                       <Button
                         size="sm"
-                        className="bg-coral hover:bg-coral/90"
+                        className="bg-coral hover:bg-coral/90 btn-animate"
                         onClick={() => handleDownload(resource.id, resource.fileUrl, resource.title)}
                         data-testid={`button-download-${resource.id}`}
                       >
-                        <Download className="h-4 w-4 mr-1" />
+                        <Download className="h-4 w-4 mr-1 icon-interactive" />
                         Download
                       </Button>
                     </div>
@@ -290,15 +291,13 @@ export default function Resources() {
             )}
 
             {resources && resources.length === 0 && (
-              <div className="text-center py-12">
-                <BookOpen className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                <h3 className="text-xl font-semibold text-gray-600 mb-2">No Resources Found</h3>
-                <p className="text-gray-500 mb-4">
-                  Try adjusting your search criteria or filters.
-                </p>
-                <Button
-                  variant="outline"
-                  onClick={() => {
+              <EmptyState
+                icon={BookOpen}
+                title="No Resources Found"
+                description="Try adjusting your search criteria or filters to find more resources."
+                action={{
+                  label: "Clear Filters",
+                  onClick: () => {
                     setFilters({
                       search: '',
                       country: '',
@@ -307,11 +306,10 @@ export default function Resources() {
                       stage: '',
                     });
                     setPage(0);
-                  }}
-                >
-                  Clear Filters
-                </Button>
-              </div>
+                  },
+                  variant: "outline"
+                }}
+              />
             )}
           </>
         )}

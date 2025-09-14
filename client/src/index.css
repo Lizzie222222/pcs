@@ -30,6 +30,11 @@
   --duration-normal: 200ms;
   --duration-slow: 300ms;
   
+  /* Easing functions */
+  --ease-in: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out: cubic-bezier(0, 0, 0.2, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  
   /* Base Theme Colors */
   --background: hsl(0 0% 100%);
   --foreground: hsl(210 25% 7.8431%);
@@ -278,29 +283,184 @@
     animation: fadeIn 0.6s ease-out;
   }
   
-  /* Button hover and focus animations */
+  /* Enhanced Button Micro-interactions */
   .btn-animate {
-    transition: all 0.2s ease-in-out;
+    position: relative;
+    transition: all var(--duration-normal) var(--ease-out);
+    overflow: hidden;
+  }
+  
+  .btn-animate::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transition: all var(--duration-slow, 300ms) var(--ease-out, ease-out);
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    pointer-events: none;
+  }
+  
+  .btn-animate > * {
+    position: relative;
+    z-index: 1;
   }
   
   .btn-animate:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  }
+  
+  .btn-animate:hover::before {
+    width: 300px;
+    height: 300px;
   }
   
   .btn-animate:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
   
-  /* Form focus animations */
+  .btn-animate:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1), 0 0 0 3px hsl(var(--ring) / 0.3);
+  }
+  
+  /* Enhanced Form Input Interactions */
   .form-input {
-    transition: all 0.2s ease-in-out;
+    transition: all var(--duration-normal) var(--ease-out);
+    position: relative;
+  }
+  
+  .form-input:hover {
+    border-color: hsl(var(--ring) / 0.5);
   }
   
   .form-input:focus {
     transform: scale(1.02);
     box-shadow: 0 0 0 3px hsl(var(--ring) / 0.2);
+    border-color: hsl(var(--ring));
+  }
+  
+  .form-input:focus + .form-label {
+    color: hsl(var(--ring));
+    transform: scale(0.9) translateY(-4px);
+  }
+  
+  /* Success state animation */
+  .form-input.success {
+    border-color: hsl(var(--success));
+    box-shadow: 0 0 0 3px hsl(var(--success) / 0.2);
+  }
+  
+  /* Error state animation */
+  .form-input.error {
+    border-color: hsl(var(--destructive));
+    box-shadow: 0 0 0 3px hsl(var(--destructive) / 0.2);
+    animation: shake 0.4s ease-in-out;
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-4px); }
+    75% { transform: translateX(4px); }
+  }
+  
+  /* Card hover micro-interactions */
+  .card-interactive {
+    transition: all var(--duration-normal, 200ms) var(--ease-out, ease-out);
+  }
+  
+  .card-clickable {
+    cursor: pointer;
+  }
+  
+  .card-interactive:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12);
+  }
+  
+  .card-interactive:active {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  }
+  
+  /* Loading state pulse improvement */
+  .pulse-animate {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+  
+  @keyframes pulse {
+    0%, 100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0.6;
+    }
+  }
+  
+  /* Page transition animations */
+  .page-enter {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  
+  .page-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: all var(--duration-slow) var(--ease-out);
+  }
+  
+  .page-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  
+  .page-exit-active {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: all var(--duration-fast) var(--ease-in);
+  }
+  
+  /* Toast and notification entrance */
+  .notification-enter {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  
+  .notification-enter-active {
+    opacity: 1;
+    transform: translateX(0);
+    transition: all var(--duration-normal) var(--ease-out);
+  }
+  
+  /* Interactive icon animations */
+  .icon-interactive {
+    transition: transform var(--duration-fast) var(--ease-out);
+  }
+  
+  .icon-interactive:hover {
+    transform: scale(1.1) rotate(5deg);
+  }
+  
+  /* Tooltip delays and micro-interactions */
+  .tooltip-trigger:hover .tooltip-content {
+    animation: tooltip-appear var(--duration-normal) var(--ease-out);
+  }
+  
+  @keyframes tooltip-appear {
+    from {
+      opacity: 0;
+      transform: scale(0.9) translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
   }
 
   /* Line clamping utilities */

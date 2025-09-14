@@ -63,7 +63,7 @@ export default function Navigation() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate ${
+                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate relative overflow-hidden ${
                       isActive
                         ? 'bg-white/20 text-white'
                         : 'text-white/90 hover:text-yellow hover:bg-white/10'
@@ -144,7 +144,7 @@ export default function Navigation() {
                         key={item.href}
                         href={item.href}
                         onClick={() => setIsMobileMenuOpen(false)}
-                        className={`block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate min-h-[44px] ${
+                        className={`block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate min-h-[44px] relative overflow-hidden ${
                           isActive
                             ? 'bg-white/20 text-white'
                             : 'text-white/90 hover:text-yellow hover:bg-white/10'
