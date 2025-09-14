@@ -257,6 +257,12 @@ export const insertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+// Upsert schema that includes ID for OIDC authentication
+export const upsertUserSchema = createInsertSchema(users).omit({
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertSchoolSchema = createInsertSchema(schools).omit({
   id: true,
   createdAt: true,
@@ -315,7 +321,7 @@ export const insertMailchimpSubscriptionSchema = createInsertSchema(mailchimpSub
 });
 
 // Types
-export type UpsertUser = z.infer<typeof insertUserSchema>;
+export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type School = typeof schools.$inferSelect;
 export type InsertSchool = z.infer<typeof insertSchoolSchema>;

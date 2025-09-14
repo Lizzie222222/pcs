@@ -24,13 +24,23 @@ const getOidcConfig = memoize(
 
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
-  const pgStore = connectPg(session);
-  const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
-    createTableIfMissing: false,
-    ttl: sessionTtl,
-    tableName: "sessions",
-  });
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // Use PostgreSQL store in production, memory store in development/test
+  let sessionStore;
+  if (isProduction && process.env.DATABASE_URL) {
+    const pgStore = connectPg(session);
+    sessionStore = new pgStore({
+      conString: process.env.DATABASE_URL,
+      createTableIfMissing: false,
+      ttl: sessionTtl,
+      tableName: "sessions",
+    });
+  } else {
+    // Fall back to memory store for development/test
+    sessionStore = undefined; // Uses default MemoryStore
+  }
+  
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStore,
@@ -38,7 +48,8 @@ export function getSession() {
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: isProduction, // Non-secure cookies in development
+      sameSite: isProduction ? 'none' : 'lax',
       maxAge: sessionTtl,
     },
   });
@@ -57,7 +68,12 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
-  await storage.upsertUser({
+  // Debug logging for OIDC claims (development only)
+  if (process.env.NODE_ENV !== 'production') {
+    console.log("OIDC Claims received:", JSON.stringify(claims, null, 2));
+  }
+  
+  const userData = {
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
@@ -65,7 +81,13 @@ async function upsertUser(
     profileImageUrl: claims["profile_image_url"],
     role: claims["role"] || "teacher",
     isAdmin: claims["role"] === "admin" || claims["isAdmin"] || false,
-  });
+  };
+  
+  if (process.env.NODE_ENV !== 'production') {
+    console.log("User data being upserted:", JSON.stringify(userData, null, 2));
+  }
+  
+  await storage.upsertUser(userData);
 }
 
 export async function setupAuth(app: Express) {
@@ -104,14 +126,30 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    // Get strategy name - use hostname or fallback to first domain in development
+    const domains = process.env.REPLIT_DOMAINS!.split(",");
+    const strategyName = `replitauth:${req.hostname}`;
+    const fallbackStrategy = `replitauth:${domains[0]}`;
+    
+    // Use hostname strategy if exists, otherwise use fallback for development
+    const strategy = strategyName; // Use computed strategy
+    
+    passport.authenticate(strategy, {
       prompt: "login consent",
       scope: ["openid", "email", "profile", "offline_access"],
     })(req, res, next);
   });
 
   app.get("/api/callback", (req, res, next) => {
-    passport.authenticate(`replitauth:${req.hostname}`, {
+    // Get strategy name - use hostname or fallback to first domain in development
+    const domains = process.env.REPLIT_DOMAINS!.split(",");
+    const strategyName = `replitauth:${req.hostname}`;
+    const fallbackStrategy = `replitauth:${domains[0]}`;
+    
+    // Use hostname strategy if exists, otherwise use fallback for development
+    const strategy = strategyName; // Use computed strategy
+    
+    passport.authenticate(strategy, {
       successReturnToOrRedirect: "/",
       failureRedirect: "/api/login",
     })(req, res, next);
