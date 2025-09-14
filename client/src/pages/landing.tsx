@@ -89,12 +89,13 @@ export default function Landing() {
 
       {/* Clean Hero Section - StreetSmart Inspired with Video Background */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
-        {/* Video Background */}
+        {/* Video Background - Optimized loading */}
         <video 
           autoPlay 
           muted 
           loop 
           playsInline
+          preload="metadata"
           className="absolute inset-0 w-full h-full object-cover z-0"
         >
           <source src={heroVideoUrl} type="video/mp4" />
@@ -120,7 +121,7 @@ export default function Landing() {
             {/* CTA Button with Enhanced Animation */}
             <Button 
               size="lg"
-              className="btn-primary px-8 py-4 text-xl mb-8 animate-pulse-subtle hover:animate-none group"
+              className="btn-primary px-8 py-4 text-xl mb-8 group"
               onClick={() => window.location.href = '/register'}
               data-testid="button-register-school"
             >
@@ -164,7 +165,7 @@ export default function Landing() {
             {/* Key Callouts with Delightful Animations */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 scroll-reveal">
               <div className="text-center group cursor-pointer">
-                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 stagger-delay-1 relative overflow-hidden">
+                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden">
                   <img 
                     src={emojiImage} 
                     alt="Award trophy" 
@@ -173,17 +174,19 @@ export default function Landing() {
                   <video 
                     src={animationVideo}
                     className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
-                    autoPlay
                     loop
                     muted
                     playsInline
+                    preload="none"
+                    onMouseEnter={(e) => e.currentTarget.play()}
+                    onMouseLeave={(e) => e.currentTarget.pause()}
                   />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-ocean-blue">Award-Winning Program</h3>
                 <p className="body-text">Recognized for our effective approach to reducing waste.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 stagger-delay-2 relative overflow-hidden">
+                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden">
                   <img 
                     src={studentImage} 
                     alt="Student character" 
@@ -192,17 +195,19 @@ export default function Landing() {
                   <video 
                     src={studentVideo}
                     className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
-                    autoPlay
                     loop
                     muted
                     playsInline
+                    preload="none"
+                    onMouseEnter={(e) => e.currentTarget.play()}
+                    onMouseLeave={(e) => e.currentTarget.pause()}
                   />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-teal">Student-Led Action</h3>
                 <p className="body-text">Kids are at the heart of every step, fostering a sense of ownership and responsibility.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 stagger-delay-3 relative overflow-hidden">
+                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200 group-hover:scale-105 relative overflow-hidden">
                   <img 
                     src={booksImage} 
                     alt="Books and resources" 
@@ -211,10 +216,12 @@ export default function Landing() {
                   <video 
                     src={booksVideo}
                     className="absolute inset-0 w-full h-full object-contain opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
-                    autoPlay
                     loop
                     muted
                     playsInline
+                    preload="none"
+                    onMouseEnter={(e) => e.currentTarget.play()}
+                    onMouseLeave={(e) => e.currentTarget.pause()}
                   />
                 </div>
                 <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-navy">Free Resources</h3>
