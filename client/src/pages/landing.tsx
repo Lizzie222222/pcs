@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import logoUrl from "@assets/Logo_1757848498470.png";
+import heroBackgroundUrl from "@assets/generated_images/Kids_recycling_at_school_a7869617.png";
 import { 
   School, 
   Trophy, 
@@ -51,39 +52,20 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-white">
-      {/* Clean Professional Header */}
-      <header className="py-4 px-4 sm:px-6 lg:px-8">
-        <div className="container-width flex items-center justify-between">
-          <img 
-            src={logoUrl} 
-            alt="Plastic Clever Schools" 
-            className="h-12 w-auto" 
-            data-testid="logo"
-          />
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              className="text-black hover:text-ocean-blue"
-              onClick={() => scrollToSection('how-it-works')}
-              data-testid="link-how-it-works"
-            >
-              How It Works
-            </Button>
-            <Button 
-              className="btn-primary px-6 py-2"
-              onClick={() => setShowSignUp(true)}
-              data-testid="button-header-join"
-            >
-              Register Your School Now
-            </Button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-white pt-16">
 
       {/* Clean Hero Section - StreetSmart Inspired */}
-      <section className="section-padding bg-white">
-        <div className="container-width">
+      <section 
+        className="section-padding bg-white relative overflow-hidden"
+        style={{
+          backgroundImage: `url(${heroBackgroundUrl})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat'
+        }}
+      >
+        <div className="absolute inset-0 bg-white/85"></div>
+        <div className="container-width relative z-10">
           <div className="max-w-3xl mx-auto text-center">
             {/* Trust Badge */}
             <div className="flex items-center justify-center gap-2 mb-8">
