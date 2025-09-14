@@ -1115,18 +1115,7 @@ export default function Admin() {
 
   // Redirect if not authenticated or not admin
   useEffect(() => {
-    // Debug logging to diagnose admin access issue
-    console.log("Admin useEffect debug:", {
-      isLoading,
-      isAuthenticated,
-      user,
-      userRole: user?.role,
-      userIsAdmin: user?.isAdmin,
-      hasAdminAccess: user?.role === 'admin' || user?.isAdmin
-    });
-
     if (!isLoading && (!isAuthenticated || !(user?.role === 'admin' || user?.isAdmin))) {
-      console.log("Access denied, redirecting...");
       toast({
         title: "Access Denied",
         description: "Admin access required",
