@@ -34,7 +34,7 @@ import { eq, and, or, desc, asc, ilike, count, sql, inArray } from "drizzle-orm"
 import * as bcrypt from "bcrypt";
 
 export interface IStorage {
-  // User operations (required for Replit Auth)
+  // User operations (required for authentication system)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
@@ -117,6 +117,7 @@ export interface IStorage {
   
   // Email operations
   logEmail(emailLog: InsertEmailLog): Promise<EmailLog>;
+  getEmailLogs(limit?: number): Promise<EmailLog[]>;
   
   // Mailchimp operations
   createMailchimpAudience(audience: InsertMailchimpAudience): Promise<MailchimpAudience>;
@@ -198,7 +199,7 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  // User operations (required for Replit Auth)
+  // User operations (required for authentication system)
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
@@ -685,6 +686,14 @@ export class DatabaseStorage implements IStorage {
       .values(emailLogData)
       .returning();
     return emailLog;
+  }
+
+  async getEmailLogs(limit: number = 50): Promise<EmailLog[]> {
+    return await db
+      .select()
+      .from(emailLogs)
+      .orderBy(desc(emailLogs.sentAt))
+      .limit(limit);
   }
 
   // Mailchimp operations

@@ -21,7 +21,7 @@ Preferred communication style: Simple, everyday language.
 ### Backend Architecture
 - **Runtime**: Node.js with Express.js framework
 - **Database**: PostgreSQL with Drizzle ORM for type-safe database operations
-- **Authentication**: Replit Auth with OpenID Connect for secure user authentication
+- **Authentication**: Local authentication with password/Google OAuth for secure user authentication
 - **Session Management**: Express sessions with PostgreSQL session store
 - **API Design**: RESTful API with proper HTTP status codes and error handling
 
@@ -32,7 +32,7 @@ Preferred communication style: Simple, everyday language.
 - **Object ACL**: Custom access control system for file permissions
 
 ### Authentication and Authorization
-- **Identity Provider**: Replit Auth with OIDC protocol
+- **Identity Provider**: Local password authentication and Google OAuth integration
 - **Session Storage**: Secure HTTP-only cookies with PostgreSQL backing
 - **Role-Based Access**: Teacher and admin roles with different permission levels
 - **Protected Routes**: Authentication middleware for API endpoints
@@ -53,7 +53,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Core Infrastructure
 - **Database**: Neon PostgreSQL serverless database
-- **Authentication**: Replit Auth service for user identity management
+- **Authentication**: Local authentication system with Google OAuth support
 - **File Storage**: Google Cloud Storage for object storage
 
 ### Email Services

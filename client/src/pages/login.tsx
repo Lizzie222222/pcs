@@ -5,8 +5,10 @@ import logoUrl from "@assets/Logo_1757848498470.png";
 
 export default function Login() {
   const handleLogin = (provider: string) => {
-    // Redirect to Replit Auth with returnTo parameter
-    window.location.href = `/api/login?returnTo=/`;
+    // Redirect to Google OAuth with returnTo parameter
+    if (provider === 'google') {
+      window.location.href = `/api/auth/google?returnTo=/`;
+    }
   };
 
   return (

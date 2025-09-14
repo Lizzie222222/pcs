@@ -15,7 +15,7 @@ import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 import { relations } from "drizzle-orm";
 
-// Session storage table (required for Replit Auth)
+// Session storage table (required for authentication system)
 export const sessions = pgTable(
   "sessions",
   {
@@ -291,11 +291,11 @@ export const registerSchema = z.object({
 export const createPasswordUserSchema = createInsertSchema(users).omit({
   id: true,
   googleId: true,
-  emailVerified: true,
   createdAt: true,
   updatedAt: true,
 }).extend({
   passwordHash: z.string().min(1, "Password hash is required"),
+  emailVerified: z.boolean().default(false),
 });
 
 // OAuth user creation schema (excludes password fields)

@@ -56,7 +56,7 @@ export default function Home() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/api/auth/google";
       }, 500);
       return;
     }
@@ -77,7 +77,7 @@ export default function Home() {
         variant: "destructive",
       });
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/api/auth/google";
       }, 500);
     }
   }, [error, toast]);
@@ -92,7 +92,7 @@ export default function Home() {
         title="No School Found"
         description="It looks like your account isn't associated with a school yet. Please contact support for assistance."
         showHome={true}
-        onGoHome={() => window.location.href = "/api/logout"}
+        onGoHome={() => window.location.href = "/api/auth/logout"}
       />
     );
   }

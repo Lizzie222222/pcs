@@ -77,7 +77,7 @@ export default function SchoolSignUpForm({ onClose }: SchoolSignUpFormProps) {
       onClose();
       // Redirect to login after brief delay
       setTimeout(() => {
-        window.location.href = "/api/login";
+        window.location.href = "/api/auth/google";
       }, 2000);
     },
     onError: (error: any) => {

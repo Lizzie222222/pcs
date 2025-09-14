@@ -12,12 +12,14 @@ export default function Register() {
   const [showSignUpForm, setShowSignUpForm] = useState(false);
 
   const handleLogin = (provider: string) => {
-    // Redirect to Replit Auth with returnTo parameter pointing to register page
-    window.location.href = `/api/login?returnTo=/register`;
+    // Redirect to Google OAuth with returnTo parameter pointing to register page
+    if (provider === 'google') {
+      window.location.href = `/api/auth/google?returnTo=/register`;
+    }
   };
 
   const handleLogout = () => {
-    window.location.href = "/api/logout";
+    window.location.href = "/api/auth/logout";
   };
 
   const handleStartRegistration = () => {

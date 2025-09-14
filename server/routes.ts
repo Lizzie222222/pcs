@@ -1,14 +1,15 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema } from "@shared/schema";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
+import { randomUUID } from 'crypto';
 
 // CSV generation helper with proper escaping
 function generateCSV(data: any[], type: string): string {
@@ -69,27 +70,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      // Get user's schools
-      const schools = await storage.getUserSchools(userId);
-      
-      res.json({ 
-        ...user, 
-        schools: schools.length > 0 ? schools : []
-      });
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
 
   // Public routes
   
@@ -280,7 +260,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       // Create user first
-      const user = await storage.upsertUser(userData);
+      const user = await storage.upsertUser({
+        id: randomUUID(),
+        ...userData,
+      });
       
       // Create school with user as primary contact
       const school = await storage.createSchool({
@@ -333,7 +316,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's school dashboard data
   app.get('/api/dashboard', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const schools = await storage.getUserSchools(userId);
       
       if (schools.length === 0) {
@@ -359,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Submit evidence
   app.post('/api/evidence', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const evidenceData = insertEvidenceSchema.parse({
         ...req.body,
         submittedBy: userId,
@@ -426,7 +409,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get user's evidence
   app.get('/api/evidence', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const schools = await storage.getUserSchools(userId);
       
       if (schools.length === 0) {
@@ -446,7 +429,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Serve private objects with ACL check
   app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
-    const userId = req.user?.claims?.sub;
+    const userId = req.user?.id;
     const objectStorageService = new ObjectStorageService();
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
@@ -486,7 +469,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(400).json({ error: "fileURL is required" });
     }
 
-    const userId = req.user?.claims?.sub;
+    const userId = req.user?.id;
     const visibility = req.body.visibility || 'private';
 
     try {
@@ -510,7 +493,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   const requireAdmin = async (req: any, res: any, next: any) => {
     try {
-      const userId = req.user?.claims?.sub;
+      const userId = req.user?.id;
       if (!userId) {
         return res.status(401).json({ message: "Unauthorized" });
       }
@@ -624,7 +607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.put('/api/admin/evidence/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const { status, reviewNotes } = req.body;
-      const reviewerId = req.user.claims.sub;
+      const reviewerId = req.user.id;
       
       if (!['approved', 'rejected'].includes(status)) {
         return res.status(400).json({ message: "Invalid status" });
@@ -664,7 +647,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/evidence/bulk-review', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const { evidenceIds, status, reviewNotes } = req.body;
-      const reviewerId = req.user.claims.sub;
+      const reviewerId = req.user.id;
       
       if (!Array.isArray(evidenceIds) || evidenceIds.length === 0) {
         return res.status(400).json({ message: "Evidence IDs array is required" });
@@ -674,7 +657,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid status" });
       }
 
-      const results = {
+      const results: {
+        success: string[];
+        failed: Array<{ id: string; reason: string }>;
+        emailsProcessed: number;
+      } = {
         success: [],
         failed: [],
         emailsProcessed: 0
@@ -737,7 +724,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Evidence IDs array is required" });
       }
 
-      const results = {
+      const results: {
+        success: string[];
+        failed: Array<{ id: string; reason: string }>;
+      } = {
         success: [],
         failed: []
       };
@@ -779,7 +769,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Updates object is required" });
       }
 
-      const results = {
+      const results: {
+        success: string[];
+        failed: Array<{ id: string; reason: string }>;
+      } = {
         success: [],
         failed: []
       };
@@ -817,7 +810,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "School IDs array is required" });
       }
 
-      const results = {
+      const results: {
+        success: string[];
+        failed: Array<{ id: string; reason: string }>;
+      } = {
         success: [],
         failed: []
       };
@@ -1281,7 +1277,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Email system health check endpoint
   app.get('/api/admin/email/health', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const health = {
+      const health: {
+        sendgrid: {
+          configured: boolean;
+          apiKey: string;
+          fromEmail: string;
+        };
+        mailchimp: {
+          configured: boolean;
+          apiKey: string;
+          serverPrefix: string;
+          mainAudienceId: string;
+        };
+        environment: {
+          frontendUrl: string;
+          nodeEnv: string;
+        };
+        lastEmailLogs: Array<{
+          id: string;
+          recipientEmail: string;
+          subject: string;
+          status: string | null;
+          template: string | null;
+          sentAt: Date | null;
+        }> | string;
+      } = {
         sendgrid: {
           configured: !!process.env.SENDGRID_API_KEY,
           apiKey: process.env.SENDGRID_API_KEY ? `${process.env.SENDGRID_API_KEY.substring(0, 8)}...` : 'Not set',
