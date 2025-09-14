@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X, Settings, LogOut } from "lucide-react";
+import logoUrl from "@assets/Logo_1757848498470.png";
 
 export default function Navigation() {
   const { isAuthenticated, user } = useAuth();
@@ -37,18 +38,22 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-navy text-white shadow-lg fixed top-0 left-0 right-0 z-50" role="navigation" aria-label="Main Navigation">
+    <nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50" role="navigation" aria-label="Main Navigation">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
           <div className="flex-shrink-0">
             <button 
               onClick={() => handleNavClick('/')}
-              className="text-2xl font-bold text-white hover:text-yellow transition-colors focus-visible:focus-visible"
+              className="flex items-center gap-2 hover:opacity-80 transition-opacity focus-visible:focus-visible"
               data-testid="button-logo"
               aria-label="Plastic Clever Schools - Go to homepage"
             >
-              🌱 Plastic Clever Schools
+              <img 
+                src={logoUrl} 
+                alt="Plastic Clever Schools" 
+                className="h-10 w-auto" 
+              />
             </button>
           </div>
 
@@ -65,8 +70,8 @@ export default function Navigation() {
                     href={item.href}
                     className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate relative overflow-hidden ${
                       isActive
-                        ? 'bg-white/20 text-white'
-                        : 'text-white/90 hover:text-yellow hover:bg-white/10'
+                        ? 'bg-ocean-blue text-white'
+                        : 'text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5'
                     }`}
                     data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                     aria-current={isActive ? 'page' : undefined}
@@ -82,13 +87,13 @@ export default function Navigation() {
           <div className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <span className="text-white/90 text-sm" data-testid="text-user-name">
+                <span className="text-gray-700 text-sm" data-testid="text-user-name">
                   {user?.firstName || user?.email}
                 </span>
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-white/20 text-white hover:bg-white/10 hover:text-white"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
                   onClick={handleAuth}
                   data-testid="button-logout"
                 >
@@ -102,7 +107,7 @@ export default function Navigation() {
                 onClick={handleAuth}
                 data-testid="button-login"
               >
-                Login
+                Register Your School Now
               </Button>
             )}
           </div>
@@ -114,7 +119,7 @@ export default function Navigation() {
                 <Button 
                   variant="ghost" 
                   size="icon"
-                  className="text-white hover:bg-white/10 focus-visible:focus-visible"
+                  className="text-gray-700 hover:bg-gray-100 focus-visible:focus-visible"
                   data-testid="button-mobile-menu"
                   aria-label="Open mobile navigation menu"
                   aria-expanded={isMobileMenuOpen}
@@ -125,13 +130,17 @@ export default function Navigation() {
               </SheetTrigger>
               <SheetContent 
                 side="right" 
-                className="bg-navy text-white border-navy"
+                className="bg-white text-gray-900 border-gray-200"
                 id="mobile-menu"
                 aria-label="Mobile navigation menu"
               >
                 <SheetHeader>
-                  <SheetTitle className="text-white text-left">
-                    🌱 Plastic Clever Schools
+                  <SheetTitle className="text-gray-900 text-left flex items-center gap-2">
+                    <img 
+                      src={logoUrl} 
+                      alt="Plastic Clever Schools" 
+                      className="h-8 w-auto" 
+                    />
                   </SheetTitle>
                 </SheetHeader>
                 <div className="mt-8 space-y-4" aria-label="Mobile menu navigation">
@@ -146,8 +155,8 @@ export default function Navigation() {
                         onClick={() => setIsMobileMenuOpen(false)}
                         className={`block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate min-h-[44px] relative overflow-hidden ${
                           isActive
-                            ? 'bg-white/20 text-white'
-                            : 'text-white/90 hover:text-yellow hover:bg-white/10'
+                            ? 'bg-ocean-blue text-white'
+                            : 'text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5'
                         }`}
                         data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}
                         aria-current={isActive ? 'page' : undefined}
@@ -158,14 +167,14 @@ export default function Navigation() {
                   })}
                   
                   {/* Mobile Auth */}
-                  <div className="border-t border-white/20 pt-4 mt-6">
+                  <div className="border-t border-gray-200 pt-4 mt-6">
                     {isAuthenticated ? (
                       <>
-                        <div className="px-3 py-2 text-sm text-white/90" data-testid="mobile-text-user-name">
+                        <div className="px-3 py-2 text-sm text-gray-700" data-testid="mobile-text-user-name">
                           {user?.firstName || user?.email}
                         </div>
                         <button
-                          className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-white/90 hover:text-yellow hover:bg-white/10 transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
+                          className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
                           onClick={handleAuth}
                           data-testid="mobile-button-logout"
                         >
@@ -179,7 +188,7 @@ export default function Navigation() {
                         onClick={handleAuth}
                         data-testid="mobile-button-login"
                       >
-                        Login
+                        Register Your School Now
                       </Button>
                     )}
                   </div>
