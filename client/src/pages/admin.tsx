@@ -279,8 +279,8 @@ function ResourcesManagement() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Countries</SelectItem>
-                {countryOptions.map(country => (
-                  <SelectItem key={country} value={country}>{country}</SelectItem>
+                {countryOptions.map((country) => (
+                  <SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>
                 ))}
               </SelectContent>
             </Select>
@@ -619,8 +619,8 @@ function ResourceForm({ resource, onClose, onSuccess }: {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="">Global (all countries)</SelectItem>
-                    {countryOptions.map(country => (
-                      <SelectItem key={country} value={country}>{country}</SelectItem>
+                    {countryOptions.map((country) => (
+                      <SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
@@ -1131,14 +1131,14 @@ export default function Admin() {
   // Admin stats query
   const { data: stats, error: statsError } = useQuery<AdminStats>({
     queryKey: ['/api/admin/stats'],
-    enabled: isAuthenticated && (user?.role === 'admin' || user?.isAdmin),
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin)),
     retry: false,
   });
 
   // Pending evidence query
   const { data: pendingEvidence, error: evidenceError } = useQuery<PendingEvidence[]>({
     queryKey: ['/api/admin/evidence/pending'],
-    enabled: isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'evidence',
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'evidence'),
     retry: false,
   });
 
@@ -1152,7 +1152,7 @@ export default function Admin() {
   // Schools query
   const { data: schools, error: schoolsError } = useQuery<SchoolData[]>({
     queryKey: ['/api/admin/schools', cleanFilters(schoolFilters)],
-    enabled: isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'schools',
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'schools'),
     retry: false,
   });
 
