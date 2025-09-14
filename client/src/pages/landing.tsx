@@ -160,15 +160,15 @@ export default function Landing() {
             {/* Key Callouts with Delightful Animations */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 scroll-reveal">
               <div className="text-center group cursor-pointer">
-                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg stagger-delay-1 relative overflow-visible">
+                <div className="w-32 h-32 md:w-40 md:h-40 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg stagger-delay-1 relative overflow-hidden">
                   <img 
                     src={emojiImage} 
                     alt="Award trophy" 
-                    className="w-28 h-28 transition-opacity duration-300 group-hover:opacity-0"
+                    className="absolute inset-0 w-full h-full object-contain p-3 opacity-100 transition-opacity duration-300 group-hover:opacity-0"
                   />
                   <video 
                     src={animationVideo}
-                    className="w-28 h-28 absolute inset-0 m-auto opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+                    className="absolute inset-0 w-full h-full object-contain p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100 pointer-events-none"
                     autoPlay
                     loop
                     muted
