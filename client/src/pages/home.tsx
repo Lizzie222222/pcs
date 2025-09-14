@@ -89,13 +89,10 @@ export default function Home() {
   if (!dashboardData) {
     return (
       <ErrorState
-        icon={Award}
         title="No School Found"
         description="It looks like your account isn't associated with a school yet. Please contact support for assistance."
-        action={{
-          label: "Sign Out",
-          onClick: () => window.location.href = "/api/logout"
-        }}
+        showHome={true}
+        onGoHome={() => window.location.href = "/api/logout"}
       />
     );
   }
