@@ -72,10 +72,10 @@ export default function Landing() {
         <div className="absolute inset-0 bg-black/25 z-10"></div>
         
         <div className="container-width relative z-20 py-20">
-          <div className="max-w-5xl mx-auto text-center">
+          <div className="max-w-4xl text-left">
             {/* Hero Heading with Text Shadow */}
             <h1 
-              className="text-6xl lg:text-7xl xl:text-8xl font-bold mb-12 text-white leading-tight"
+              className="text-4xl lg:text-5xl xl:text-6xl font-bold mb-8 text-white leading-tight"
               style={{ 
                 textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0px 0px 16px rgba(0,0,0,0.6)' 
               }}
@@ -87,31 +87,31 @@ export default function Landing() {
             {/* CTA Button with Enhanced Shadow */}
             <Button 
               size="lg"
-              className="bg-coral hover:bg-coral/90 text-white px-12 py-6 text-2xl font-bold mb-12 shadow-2xl hover:shadow-coral/50 transition-all duration-300 transform hover:scale-105"
+              className="bg-coral hover:bg-coral/90 text-white px-8 py-4 text-xl font-bold mb-8 shadow-xl transition-all duration-300"
               onClick={() => setShowSignUp(true)}
               data-testid="button-register-school"
             >
               Register Your School Now
-              <ArrowRight className="icon-lg ml-4" />
+              <ArrowRight className="icon-md ml-3" />
             </Button>
 
             {/* Simple Trust Indicators with Text Shadow */}
             <div 
-              className="flex flex-wrap justify-center items-center gap-10 text-lg text-white font-semibold"
+              className="flex flex-wrap items-center gap-6 text-base text-white font-medium"
               style={{ 
                 textShadow: '1px 1px 4px rgba(0,0,0,0.8)' 
               }}
             >
-              <div className="flex items-center gap-3">
-                <Shield className="icon-md text-white drop-shadow-lg" />
+              <div className="flex items-center gap-2">
+                <Shield className="icon-sm text-white drop-shadow-lg" />
                 100% Free
               </div>
-              <div className="flex items-center gap-3">
-                <Award className="icon-md text-white drop-shadow-lg" />
+              <div className="flex items-center gap-2">
+                <Award className="icon-sm text-white drop-shadow-lg" />
                 Award-Winning
               </div>
-              <div className="flex items-center gap-3">
-                <Users className="icon-md text-white drop-shadow-lg" />
+              <div className="flex items-center gap-2">
+                <Users className="icon-sm text-white drop-shadow-lg" />
                 Expert Support
               </div>
             </div>
@@ -119,9 +119,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* What is a Plastic Clever School Section - Fun Yellow */}
-      <section className="section-padding bg-yellow/20 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow/10 to-yellow/30"></div>
+      {/* What is a Plastic Clever School Section */}
+      <section className="section-padding bg-white">
         <div className="container-width relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="heading-2 mb-8">What is a Plastic Clever School?</h2>
@@ -165,9 +164,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Social Proof & Impact Section - Fun Coral */}
-      <section className="section-padding bg-coral/15 relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-coral/10 to-coral/20"></div>
+      {/* Social Proof & Impact Section */}
+      <section className="section-padding bg-gray-50">
         <div className="container-width relative z-10">
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4">Join a Growing Movement</h2>
