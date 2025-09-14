@@ -64,7 +64,7 @@ export default function Landing() {
           <div className="flex items-center gap-4">
             <Button 
               variant="ghost" 
-              className="text-navy hover:text-ocean-blue"
+              className="text-black hover:text-ocean-blue"
               onClick={() => scrollToSection('how-it-works')}
               data-testid="link-how-it-works"
             >
@@ -75,7 +75,7 @@ export default function Landing() {
               onClick={() => setShowSignUp(true)}
               data-testid="button-header-join"
             >
-              Join Free
+              Register Your School Now
             </Button>
           </div>
         </div>
@@ -95,13 +95,12 @@ export default function Landing() {
 
             {/* Hero Heading */}
             <h1 className="heading-1 mb-6" data-testid="text-hero-title">
-              Transform Your School Into a 
-              <span className="text-ocean-blue"> Plastic-Free</span> Leader
+              Empower Your School to Lead the Way in Reducing Plastic Waste.
             </h1>
             
             {/* Hero Description */}
             <p className="body-large mb-8 max-w-2xl mx-auto" data-testid="text-hero-description">
-              Join <strong className="text-navy">{stats?.totalSchools?.toLocaleString() || '1,200+'} schools</strong> across <strong className="text-navy">{stats?.countries || '32'} countries</strong> creating lasting environmental change through our proven 3-stage educational program.
+              Join Plastic Clever Schools, the award-winning program that puts students at the heart of meaningful environmental action. Gain access to free resources and a clear path to make a real difference.
             </p>
 
             {/* CTA Buttons */}
@@ -110,20 +109,10 @@ export default function Landing() {
                 size="lg"
                 className="btn-primary px-8 py-3 text-lg font-semibold"
                 onClick={() => setShowSignUp(true)}
-                data-testid="button-start-journey"
+                data-testid="button-register-school"
               >
-                Start Your Journey
+                Register Your School Now
                 <ArrowRight className="icon-md ml-2" />
-              </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                className="btn-secondary px-8 py-3 text-lg font-semibold"
-                onClick={() => scrollToSection('how-it-works')}
-                data-testid="button-explore-program"
-              >
-                <Play className="icon-md mr-2" />
-                Explore Program
               </Button>
             </div>
 
@@ -146,68 +135,84 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Impact Statistics - Clean StreetSmart Style */}
-      <section className="section-padding-sm bg-navy-light/10">
+      {/* What is a Plastic Clever School Section */}
+      <section className="section-padding bg-navy-light/10">
+        <div className="container-width">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="heading-2 mb-8">What is a Plastic Clever School?</h2>
+            <p className="body-large mb-12 max-w-3xl mx-auto">
+              Plastic Clever Schools is an awards program designed to help schools reduce their single-use plastic consumption. We provide you with the tools and a simple 3-step framework to inspire change, investigate your school's plastic use, and act on solutions—all while empowering your students to become the next generation of environmental leaders.
+            </p>
+            
+            {/* Key Callouts */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+              <div className="text-center">
+                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Award className="icon-lg text-white" />
+                </div>
+                <h3 className="heading-4 mb-3">Award-Winning Program</h3>
+                <p className="body-text">Recognized for our effective approach to reducing waste.</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
+                  <Users className="icon-lg text-white" />
+                </div>
+                <h3 className="heading-4 mb-3">Student-Led Action</h3>
+                <p className="body-text">Kids are at the heart of every step, fostering a sense of ownership and responsibility.</p>
+              </div>
+              <div className="text-center">
+                <div className="w-16 h-16 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
+                  <BookOpen className="icon-lg text-white" />
+                </div>
+                <h3 className="heading-4 mb-3">Free Resources</h3>
+                <p className="body-text">Access a full toolkit of guides, worksheets, and activities to make your journey simple and effective.</p>
+              </div>
+            </div>
+            
+            <Button 
+              size="lg"
+              className="btn-secondary px-8 py-3 text-lg font-semibold"
+              data-testid="button-download-sample"
+            >
+              Download a Sample Resource
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof & Impact Section */}
+      <section className="section-padding bg-white">
         <div className="container-width">
           <div className="text-center mb-16">
-            <p className="caption text-gray-600 mb-4">Trusted by educators worldwide</p>
-            <h2 className="heading-2 mb-4">Global Impact</h2>
-            <p className="body-text max-w-2xl mx-auto">
-              Real numbers from our growing community of environmentally conscious schools
+            <h2 className="heading-2 mb-4">Join a Growing Movement</h2>
+            <p className="body-large max-w-3xl mx-auto">
+              More than {stats?.totalSchools?.toLocaleString() || '1,542'} schools have already registered for the Plastic Clever Schools program, making a collective impact on waste reduction and environmental education.
             </p>
           </div>
-
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
-                <School className="icon-lg text-white" />
-              </div>
-              <div className="text-3xl lg:text-4xl font-bold text-navy mb-2" data-testid="stat-schools">
-                {stats?.totalSchools?.toLocaleString() || '1,200+'}
-              </div>
-              <div className="body-text text-gray-600">Schools Enrolled</div>
+          
+          <div className="max-w-2xl mx-auto text-center mb-12">
+            <div className="text-6xl lg:text-8xl font-bold text-navy mb-4" data-testid="stat-registered-schools">
+              {stats?.totalSchools?.toLocaleString() || '1542'}+
             </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
-                <Trophy className="icon-lg text-white" />
-              </div>
-              <div className="text-3xl lg:text-4xl font-bold text-navy mb-2" data-testid="stat-awards">
-                {stats?.completedAwards || '450+'}
-              </div>
-              <div className="body-text text-gray-600">Awards Earned</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
-                <Globe className="icon-lg text-white" />
-              </div>
-              <div className="text-3xl lg:text-4xl font-bold text-navy mb-2" data-testid="stat-countries">
-                {stats?.countries || '32'}+
-              </div>
-              <div className="body-text text-gray-600">Countries</div>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-16 h-16 bg-ocean-blue/80 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="icon-lg text-white" />
-              </div>
-              <div className="text-3xl lg:text-4xl font-bold text-navy mb-2" data-testid="stat-students">
-                {stats?.studentsImpacted?.toLocaleString() || '75K+'}
-              </div>
-              <div className="body-text text-gray-600">Students Impacted</div>
-            </div>
+            <div className="text-xl lg:text-2xl text-gray-600 mb-8">Registered Schools So Far</div>
+            <Button 
+              size="lg"
+              className="btn-secondary px-8 py-3 text-lg font-semibold"
+              data-testid="button-view-schools"
+            >
+              View All Registered Schools
+            </Button>
           </div>
         </div>
       </section>
 
       {/* Three-Stage Program - Clean StreetSmart Cards */}
-      <section id="how-it-works" className="section-padding bg-white">
+      <section id="how-it-works" className="section-padding bg-navy-light/5">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4">Our Three-Stage Program</h2>
+            <h2 className="heading-2 mb-4">A Simple 3-Stage Journey to a Plastic Clever School</h2>
             <p className="body-large max-w-3xl mx-auto">
-              A proven methodology that transforms schools into environmental champions through structured, engaging activities
+              Our proven framework breaks down your school's transformation into three straightforward stages.
             </p>
           </div>
 
@@ -220,22 +225,8 @@ export default function Landing() {
               <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
-              <h3 className="heading-4 mb-4">Inspire</h3>
-              <p className="body-text mb-6">Build awareness and motivation through engaging educational content</p>
-              <ul className="text-left space-y-3 text-gray-600">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="icon-sm text-ocean-blue mt-0.5 flex-shrink-0" />
-                  Interactive learning modules
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="icon-sm text-ocean-blue mt-0.5 flex-shrink-0" />
-                  Multimedia educational resources
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="icon-sm text-ocean-blue mt-0.5 flex-shrink-0" />
-                  School assemblies and workshops
-                </li>
-              </ul>
+              <h3 className="heading-4 mb-4">INSPIRE</h3>
+              <p className="body-text mb-6">Engage and educate your school community about the impact of plastic pollution. Use our resources to inspire students, teachers, and staff to take part in this vital mission.</p>
             </div>
 
             {/* Stage 2: Investigate */}
@@ -246,22 +237,8 @@ export default function Landing() {
               <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">2</span>
               </div>
-              <h3 className="heading-4 mb-4">Investigate</h3>
-              <p className="body-text mb-6">Research and analyze your school's plastic consumption patterns</p>
-              <ul className="text-left space-y-3 text-gray-600">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="icon-sm text-teal mt-0.5 flex-shrink-0" />
-                  Plastic waste audits
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="icon-sm text-teal mt-0.5 flex-shrink-0" />
-                  Data collection and analysis
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="icon-sm text-teal mt-0.5 flex-shrink-0" />
-                  Solution research projects
-                </li>
-              </ul>
+              <h3 className="heading-4 mb-4">INVESTIGATE</h3>
+              <p className="body-text mb-6">Work together to identify the key single-use plastics in your school. Our tools will help you pinpoint problem areas and prepare a clear plan for effective action.</p>
             </div>
 
             {/* Stage 3: Act */}
@@ -272,22 +249,8 @@ export default function Landing() {
               <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">3</span>
               </div>
-              <h3 className="heading-4 mb-4">Act</h3>
-              <p className="body-text mb-6">Implement lasting solutions and share your success</p>
-              <ul className="text-left space-y-3 text-gray-600">
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="icon-sm text-navy mt-0.5 flex-shrink-0" />
-                  Action plan implementation
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="icon-sm text-navy mt-0.5 flex-shrink-0" />
-                  Community engagement campaigns
-                </li>
-                <li className="flex items-start gap-3">
-                  <CheckCircle className="icon-sm text-navy mt-0.5 flex-shrink-0" />
-                  Impact measurement and sharing
-                </li>
-              </ul>
+              <h3 className="heading-4 mb-4">ACT</h3>
+              <p className="body-text mb-6">Implement sustainable 'swaps' and strategies to remove single-use plastics from your school environment. Celebrate your progress as you create lasting change.</p>
             </div>
           </div>
 
@@ -322,6 +285,33 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Partnership & Endorsement Section */}
+      <section className="section-padding bg-white">
+        <div className="container-width">
+          <div className="text-center mb-16">
+            <h2 className="heading-2 mb-4">Built on Strong Partnerships</h2>
+            <p className="body-large max-w-3xl mx-auto">
+              Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education.
+            </p>
+          </div>
+          
+          <div className="flex flex-wrap justify-center items-center gap-12 opacity-60">
+            <div className="flex items-center gap-3 text-gray-500 font-medium text-lg">
+              <Globe className="w-8 h-8" />
+              Partner Organization 1
+            </div>
+            <div className="flex items-center gap-3 text-gray-500 font-medium text-lg">
+              <Leaf className="w-8 h-8" />
+              Partner Organization 2
+            </div>
+            <div className="flex items-center gap-3 text-gray-500 font-medium text-lg">
+              <Recycle className="w-8 h-8" />
+              Partner Organization 3
+            </div>
+          </div>
+        </div>
+      </section>
+      
       {/* Why Schools Love Us - Testimonial Style */}
       <section className="section-padding bg-navy-light/5">
         <div className="container-width">
@@ -427,10 +417,10 @@ export default function Landing() {
         <div className="container-width">
           <div className="max-w-4xl mx-auto text-center bg-navy text-white rounded-xl p-12 lg:p-16">
             <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-white" data-testid="text-final-cta-title">
-              Ready to Transform Your School?
+              Ready to Make Your School Plastic Clever?
             </h2>
             <p className="text-xl lg:text-2xl opacity-90 mb-10 max-w-3xl mx-auto">
-              Join <strong>{stats?.totalSchools?.toLocaleString() || '1,200+'}</strong> schools creating lasting environmental change. Start your journey today - it's completely free!
+              Join hundreds of other schools making a positive, tangible impact. Get started on your journey today and access all the free resources you need.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
@@ -440,7 +430,7 @@ export default function Landing() {
                 onClick={() => setShowSignUp(true)}
                 data-testid="button-start-free"
               >
-                Start Free Today
+                Register Your School Now
                 <ArrowRight className="icon-md ml-3" />
               </Button>
               <Button 
@@ -473,13 +463,19 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Newsletter */}
-      <section className="section-padding-sm bg-gray-50">
+      {/* Newsletter - Stay Connected */}
+      <section className="section-padding bg-white">
         <div className="container-width">
-          <NewsletterSignup 
-            variant="hero" 
-            className="max-w-md mx-auto"
-          />
+          <div className="max-w-2xl mx-auto text-center">
+            <h2 className="heading-2 mb-4">Stay Connected</h2>
+            <p className="body-large mb-8">
+              Get the latest updates, success stories, and resources delivered to your inbox.
+            </p>
+            <NewsletterSignup 
+              variant="hero" 
+              className="max-w-md mx-auto"
+            />
+          </div>
         </div>
       </section>
 
