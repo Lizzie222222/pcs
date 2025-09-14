@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import logoUrl from "@assets/Logo_1757848498470.png";
-import heroBackgroundUrl from "@assets/generated_images/Kids_recycling_at_school_a7869617.png";
+import heroVideoUrl from "@assets/PCS_1757851688912.mp4";
 import { 
   School, 
   Trophy, 
@@ -54,18 +54,21 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-white pt-16">
 
-      {/* Clean Hero Section - StreetSmart Inspired */}
-      <section 
-        className="section-padding bg-white relative overflow-hidden"
-        style={{
-          backgroundImage: `url(${heroBackgroundUrl})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat'
-        }}
-      >
-        <div className="absolute inset-0 bg-white/90"></div>
-        <div className="container-width relative z-10">
+      {/* Clean Hero Section - StreetSmart Inspired with Video Background */}
+      <section className="section-padding bg-white relative overflow-hidden">
+        {/* Video Background */}
+        <video 
+          autoPlay 
+          muted 
+          loop 
+          playsInline
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        >
+          <source src={heroVideoUrl} type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+        <div className="absolute inset-0 bg-white/85 z-10"></div>
+        <div className="container-width relative z-20">
           <div className="max-w-4xl mx-auto text-center">
             {/* Hero Heading */}
             <h1 className="heading-1 mb-6" data-testid="text-hero-title">
