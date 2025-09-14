@@ -145,10 +145,10 @@ export default function Landing() {
                 <p className="body-text">Kids are at the heart of every step, fostering a sense of ownership and responsibility.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-3">
+                <div className="w-16 h-16 bg-navy rounded-full flex items-center justify-center mx-auto mb-4 transition-all duration-300 group-hover:scale-110 group-hover:rotate-6 group-hover:shadow-lg animate-float stagger-delay-3">
                   <BookOpen className="icon-lg text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-ocean-blue">Free Resources</h3>
+                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-navy">Free Resources</h3>
                 <p className="body-text">Access a full toolkit of guides, worksheets, and activities to make your journey simple and effective.</p>
               </div>
             </div>
@@ -177,7 +177,7 @@ export default function Landing() {
           </div>
           
           <div className="max-w-2xl mx-auto text-center mb-12">
-            <div className="text-6xl lg:text-8xl font-bold text-ocean-blue mb-4" data-testid="stat-registered-schools">
+            <div className="text-6xl lg:text-8xl font-bold text-navy mb-4" data-testid="stat-registered-schools">
               {stats?.totalSchools?.toLocaleString() || '1542'}+
             </div>
             <div className="text-xl lg:text-2xl text-gray-600 mb-8">Registered Schools So Far</div>
@@ -231,10 +231,10 @@ export default function Landing() {
 
             {/* Stage 3: Act */}
             <div className="card-clean card-hover p-8 text-center">
-              <div className="w-20 h-20 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Target className="w-10 h-10 text-ocean-blue" />
+              <div className="w-20 h-20 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <Target className="w-10 h-10 text-navy" />
               </div>
-              <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">3</span>
               </div>
               <h3 className="heading-4 mb-4">ACT</h3>
@@ -254,19 +254,19 @@ export default function Landing() {
                 <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
                   <Star className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <span className="font-semibold text-ocean-blue transition-colors duration-300 group-hover:text-ocean-blue">Digital Badges</span>
+                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-ocean-blue">Digital Badges</span>
               </div>
               <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-2">
                 <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
                   <Award className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <span className="font-semibold text-ocean-blue transition-colors duration-300 group-hover:text-teal">Certificates</span>
+                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-teal">Certificates</span>
               </div>
               <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-3">
-                <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
+                <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
                   <TrendingUp className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <span className="font-semibold text-ocean-blue transition-colors duration-300 group-hover:text-ocean-blue">Progress Tracking</span>
+                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-navy">Progress Tracking</span>
               </div>
             </div>
           </div>
@@ -326,7 +326,7 @@ export default function Landing() {
                   SJ
                 </div>
                 <div>
-                  <div className="font-semibold text-ocean-blue">Sarah Johnson</div>
+                  <div className="font-semibold text-navy">Sarah Johnson</div>
                   <div className="caption">Green Valley Primary, UK</div>
                 </div>
               </div>
@@ -347,7 +347,7 @@ export default function Landing() {
                   MR
                 </div>
                 <div>
-                  <div className="font-semibold text-ocean-blue">Maria Rodriguez</div>
+                  <div className="font-semibold text-navy">Maria Rodriguez</div>
                   <div className="caption">Sunshine Elementary, Australia</div>
                 </div>
               </div>
@@ -364,11 +364,11 @@ export default function Landing() {
                 "Perfect for cross-curricular learning! We integrated it across science, geography, and citizenship classes."
               </p>
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-ocean-blue rounded-full flex items-center justify-center text-white font-bold">
+                <div className="w-10 h-10 bg-navy rounded-full flex items-center justify-center text-white font-bold">
                   DK
                 </div>
                 <div>
-                  <div className="font-semibold text-ocean-blue">David Kim</div>
+                  <div className="font-semibold text-navy">David Kim</div>
                   <div className="caption">Future Leaders High, Canada</div>
                 </div>
               </div>
@@ -403,7 +403,7 @@ export default function Landing() {
       {/* Final CTA - Professional and Clean */}
       <section className="section-padding bg-white">
         <div className="container-width">
-          <div className="max-w-4xl mx-auto text-center bg-ocean-blue text-white rounded-xl p-12 lg:p-16">
+          <div className="max-w-4xl mx-auto text-center bg-navy text-white rounded-xl p-12 lg:p-16">
             <h2 className="text-4xl lg:text-5xl font-bold mb-6 text-white" data-testid="text-final-cta-title">
               Ready to Make Your School Plastic Clever?
             </h2>
@@ -451,7 +451,7 @@ export default function Landing() {
       </section>
 
       {/* Clean Professional Footer */}
-      <footer className="bg-ocean-blue text-white py-12">
+      <footer className="bg-navy text-white py-12">
         <div className="container-width">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
