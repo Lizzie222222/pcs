@@ -8,6 +8,13 @@ import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 
+// Extend express-session to include returnTo property
+declare module "express-session" {
+  interface SessionData {
+    returnTo?: string;
+  }
+}
+
 if (!process.env.REPLIT_DOMAINS) {
   throw new Error("Environment variable REPLIT_DOMAINS not provided");
 }
@@ -126,6 +133,16 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser((user: Express.User, cb) => cb(null, user));
 
   app.get("/api/login", (req, res, next) => {
+    // Handle returnTo parameter for secure redirects
+    const returnTo = req.query.returnTo as string;
+    if (returnTo && typeof returnTo === 'string') {
+      // Sanitize returnTo - only allow relative paths starting with '/'
+      // Reject external URLs, protocol-relative URLs, and non-relative paths
+      if (returnTo.startsWith('/') && !returnTo.startsWith('//') && !returnTo.includes('://')) {
+        req.session.returnTo = returnTo;
+      }
+    }
+
     // Get strategy name - use hostname or fallback to first domain in development
     const domains = process.env.REPLIT_DOMAINS!.split(",");
     const strategyName = `replitauth:${req.hostname}`;
