@@ -1,0 +1,311 @@
+import { useState, useRef, useEffect } from "react";
+import { ChevronLeft, ChevronRight, Heart, MessageCircle, Instagram, ExternalLink } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+
+// Sample Instagram-style posts for demonstration
+const samplePosts = [
+  {
+    id: "1",
+    image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&h=400&fit=crop&crop=center",
+    caption: "🌱 Amazing to see Greenfield Primary's students leading their plastic audit today! Such inspiring young environmental champions. #PlasticCleverSchools #SustainableEducation",
+    likes: 127,
+    comments: 23,
+    timestamp: "2h",
+    username: "plasticclever.schools"
+  },
+  {
+    id: "2", 
+    image: "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=400&h=400&fit=crop&crop=center",
+    caption: "🏆 Congratulations to Riverside Academy for completing their Act stage! They've eliminated single-use plastic water bottles school-wide. What an achievement! 💚",
+    likes: 89,
+    comments: 15,
+    timestamp: "5h",
+    username: "plasticclever.schools"
+  },
+  {
+    id: "3",
+    image: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=400&h=400&fit=crop&crop=center", 
+    caption: "✨ Students from Oakwood Elementary sharing their innovative reusable lunch solutions! The creativity of these young minds never ceases to amaze us 🌟 #Innovation",
+    likes: 156,
+    comments: 31,
+    timestamp: "1d",
+    username: "plasticclever.schools"
+  },
+  {
+    id: "4",
+    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop&crop=center",
+    caption: "📚 New resource alert! Our Investigate toolkit is now available with interactive worksheets and fun activities for all age groups. Link in bio! 🔗",
+    likes: 203,
+    comments: 42,
+    timestamp: "2d",
+    username: "plasticclever.schools"
+  },
+  {
+    id: "5",
+    image: "https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?w=400&h=400&fit=crop&crop=center",
+    caption: "🌊 World Ocean Day collaboration with our partner schools! Over 50 schools participated in simultaneous beach cleanups. Together we make waves of change! 🏖️",
+    likes: 345,
+    comments: 67,
+    timestamp: "3d", 
+    username: "plasticclever.schools"
+  },
+  {
+    id: "6",
+    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop&crop=center",
+    caption: "🎓 Teacher training session in Manchester was incredible! Educators learning how to inspire the next generation of environmental leaders. Thank you to all who attended! 👩‍🏫👨‍🏫",
+    likes: 98,
+    comments: 19,
+    timestamp: "4d",
+    username: "plasticclever.schools"
+  }
+];
+
+interface InstagramCarouselProps {
+  className?: string;
+}
+
+export default function InstagramCarousel({ className = "" }: InstagramCarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const postsPerView = 3;
+
+  // Calculate total pages (slides) - showing postsPerView posts per slide
+  const totalSlides = Math.ceil(samplePosts.length / postsPerView);
+  const maxIndex = Math.max(0, totalSlides - 1);
+
+  // Auto-scroll functionality
+  useEffect(() => {
+    if (!isAutoPlaying) return;
+    
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) => {
+        return prev >= maxIndex ? 0 : prev + 1;
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, maxIndex]);
+
+  const scrollToIndex = (index: number) => {
+    setCurrentIndex(index);
+    setIsAutoPlaying(false);
+    setTimeout(() => setIsAutoPlaying(true), 8000); // Resume auto-play after 8s
+  };
+
+  const nextSlide = () => {
+    scrollToIndex(currentIndex >= maxIndex ? 0 : currentIndex + 1);
+  };
+
+  const prevSlide = () => {
+    scrollToIndex(currentIndex <= 0 ? maxIndex : currentIndex - 1);
+  };
+
+  const handleMouseEnter = () => setIsAutoPlaying(false);
+  const handleMouseLeave = () => setIsAutoPlaying(true);
+
+  return (
+    <div className={`w-full ${className}`} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+      <div className="relative">
+        {/* Navigation Buttons */}
+        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={prevSlide}
+            className="w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm border-0 transition-all duration-300 hover:scale-110"
+            disabled={currentIndex === 0}
+            data-testid="button-instagram-prev"
+          >
+            <ChevronLeft className="w-5 h-5 text-navy" />
+          </Button>
+        </div>
+        
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={nextSlide}
+            className="w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm border-0 transition-all duration-300 hover:scale-110"
+            disabled={currentIndex >= maxIndex}
+            data-testid="button-instagram-next"
+          >
+            <ChevronRight className="w-5 h-5 text-navy" />
+          </Button>
+        </div>
+
+        {/* Posts Container */}
+        <div 
+          ref={scrollContainerRef}
+          className="overflow-hidden"
+          data-testid="instagram-carousel-container"
+        >
+          <div 
+            className="flex transition-transform duration-500 ease-out gap-6 px-4"
+            style={{ 
+              transform: `translateX(-${currentIndex * 100}%)`,
+              width: `${totalSlides * 100}%`
+            }}
+          >
+            {Array.from({ length: totalSlides }, (_, slideIndex) => (
+              <div
+                key={slideIndex}
+                className="flex gap-6"
+                style={{ width: `${100 / totalSlides}%` }}
+              >
+                {samplePosts
+                  .slice(slideIndex * postsPerView, (slideIndex + 1) * postsPerView)
+                  .map((post) => (
+                    <div
+                      key={post.id}
+                      className="flex-shrink-0"
+                      style={{ width: `${100 / postsPerView}%` }}
+                    >
+                      <InstagramPost post={post} />
+                    </div>
+                  ))}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Dots Indicator */}
+        <div className="flex justify-center mt-6 gap-2">
+          {Array.from({ length: totalSlides }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => scrollToIndex(i)}
+              className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                i === currentIndex
+                  ? "bg-navy scale-125"
+                  : "bg-gray-300 hover:bg-gray-400"
+              }`}
+              data-testid={`button-instagram-dot-${i}`}
+            />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+interface InstagramPostProps {
+  post: {
+    id: string;
+    image: string;
+    caption: string;
+    likes: number;
+    comments: number;
+    timestamp: string;
+    username: string;
+  };
+}
+
+function InstagramPost({ post }: InstagramPostProps) {
+  const [isLiked, setIsLiked] = useState(false);
+  const [showFullCaption, setShowFullCaption] = useState(false);
+
+  const truncatedCaption = post.caption.length > 100 
+    ? post.caption.substring(0, 100) + "..." 
+    : post.caption;
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+  };
+
+  return (
+    <Card className="instagram-post overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 group">
+      <div className="relative overflow-hidden">
+        {/* Post Image */}
+        <div className="aspect-square overflow-hidden bg-gray-100">
+          <img
+            src={post.image}
+            alt="Instagram post"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="lazy"
+            data-testid={`img-instagram-post-${post.id}`}
+          />
+        </div>
+
+        {/* Hover Overlay with Instagram-style stats */}
+        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+          <div className="flex items-center gap-6 text-white">
+            <div className="flex items-center gap-2">
+              <Heart className="w-6 h-6" />
+              <span className="font-semibold text-lg">{post.likes}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <MessageCircle className="w-6 h-6" />
+              <span className="font-semibold text-lg">{post.comments}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <CardContent className="p-4">
+        {/* Post Header */}
+        <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 rounded-full flex items-center justify-center">
+              <Instagram className="w-4 h-4 text-white" />
+            </div>
+            <div>
+              <div className="font-semibold text-sm text-navy">@{post.username}</div>
+            </div>
+          </div>
+          <div className="text-xs text-gray-500">{post.timestamp}</div>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex items-center gap-4 mb-3">
+          <button
+            onClick={handleLike}
+            className="transition-all duration-200 hover:scale-110"
+            data-testid={`button-like-${post.id}`}
+          >
+            <Heart
+              className={`w-6 h-6 transition-colors duration-300 ${
+                isLiked
+                  ? "text-red-500 fill-red-500"
+                  : "text-gray-600 hover:text-red-500"
+              }`}
+            />
+          </button>
+          <button className="transition-all duration-200 hover:scale-110">
+            <MessageCircle className="w-6 h-6 text-gray-600 hover:text-ocean-blue transition-colors duration-300" />
+          </button>
+          <button className="transition-all duration-200 hover:scale-110">
+            <ExternalLink className="w-5 h-5 text-gray-600 hover:text-teal transition-colors duration-300" />
+          </button>
+        </div>
+
+        {/* Likes Count */}
+        <div className="text-sm font-semibold text-navy mb-2">
+          {isLiked ? post.likes + 1 : post.likes} likes
+        </div>
+
+        {/* Caption */}
+        <div className="text-sm text-gray-800 leading-relaxed">
+          <span className="font-semibold text-navy">@{post.username} </span>
+          <span>
+            {showFullCaption ? post.caption : truncatedCaption}
+            {post.caption.length > 100 && (
+              <button
+                onClick={() => setShowFullCaption(!showFullCaption)}
+                className="text-gray-500 hover:text-gray-700 ml-1 font-medium transition-colors duration-200"
+              >
+                {showFullCaption ? " show less" : " more"}
+              </button>
+            )}
+          </span>
+        </div>
+
+        {/* Comments Preview */}
+        <div className="mt-2 text-sm text-gray-500">
+          View all {post.comments} comments
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

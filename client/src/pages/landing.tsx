@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import InstagramCarousel from "@/components/InstagramCarousel";
 import logoUrl from "@assets/Logo_1757848498470.png";
 import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_1757854869723.png";
 import inspireIcon from "@assets/Inspire_1757862013793.png";
@@ -40,7 +41,8 @@ import {
   Clock,
   TrendingUp,
   Shield,
-  Zap
+  Zap,
+  Instagram
 } from "lucide-react";
 
 interface SiteStats {
@@ -519,6 +521,46 @@ export default function Landing() {
                 <BookOpen className="icon-md" />
                 Education Excellence Network
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Instagram Feed Section */}
+      <section className="section-padding bg-gradient-to-b from-teal/5 to-ocean-blue/5">
+        <div className="container-width">
+          <div className="text-center mb-16">
+            <h2 className="heading-2 mb-4 scroll-reveal">Follow Our Journey</h2>
+            <p className="body-large max-w-3xl mx-auto scroll-reveal">
+              See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.
+            </p>
+            <div className="flex justify-center mt-6">
+              <a 
+                href="https://instagram.com/plasticclever.schools" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                data-testid="button-follow-instagram"
+              >
+                <Instagram className="w-5 h-5" />
+                Follow @plasticclever.schools
+              </a>
+            </div>
+          </div>
+          
+          <div className="scroll-reveal">
+            <InstagramCarousel />
+          </div>
+          
+          <div className="text-center mt-12 scroll-reveal">
+            <p className="body-text text-gray-600 mb-6">
+              Join the conversation and share your school's plastic clever journey with <span className="font-semibold text-teal">#PlasticCleverSchools</span>
+            </p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">#SustainableSchools</span>
+              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">#PlasticFree</span>
+              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">#EcoEducation</span>
+              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">#YoungActivists</span>
             </div>
           </div>
         </div>
