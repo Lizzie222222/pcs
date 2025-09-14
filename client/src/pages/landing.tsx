@@ -6,7 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import logoUrl from "@assets/Logo_1757848498470.png";
-import heroVideoUrl from "@assets/PCS_1757851688912.mp4";
 import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_1757854869723.png";
 import animationVideo from "@assets/animation-0b930b2b-aef0-4731-b7e3-320580204295_1757854892203.mp4";
 import studentImage from "@assets/emoji-a2ce9597-1802-41f9-90ac-02c0f6bc39c4_1757856002008.png";
@@ -89,19 +88,17 @@ export default function Landing() {
 
       {/* Clean Hero Section - StreetSmart Inspired with Video Background */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
-        {/* Video Background - Optimized loading */}
-        <video 
-          autoPlay
-          muted 
-          loop 
-          playsInline
-          preload="metadata"
-          className="absolute inset-0 w-full h-full object-cover z-0"
-          style={{ backgroundColor: '#019ADE' }}
-        >
-          <source src={heroVideoUrl} type="video/mp4" />
-          Your browser does not support the video tag.
-        </video>
+        {/* YouTube Video Background - Ultra-fast loading */}
+        <div className="absolute inset-0 w-full h-full z-0">
+          <iframe 
+            src="https://www.youtube.com/embed/jyL1lt-72HQ?si=R1z07rNUfR-B0Jou&autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1"
+            className="absolute inset-0 w-full h-full"
+            style={{ border: 'none' }}
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            referrerPolicy="strict-origin-when-cross-origin"
+            loading="eager"
+          />
+        </div>
         
         {/* Subtle Black Overlay for Text Contrast */}
         <div className="absolute inset-0 bg-black/25 z-10"></div>
