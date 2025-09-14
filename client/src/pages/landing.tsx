@@ -67,18 +67,12 @@ export default function Landing() {
           <source src={heroVideoUrl} type="video/mp4" />
           Your browser does not support the video tag.
         </video>
-        <div className="absolute inset-0 bg-white/85 z-10"></div>
         <div className="container-width relative z-20">
           <div className="max-w-4xl mx-auto text-center">
             {/* Hero Heading */}
-            <h1 className="heading-1 mb-6" data-testid="text-hero-title">
+            <h1 className="text-5xl lg:text-6xl xl:text-7xl font-bold mb-8 text-white" data-testid="text-hero-title">
               Empower Your School to Lead the Way in Reducing Plastic Waste
             </h1>
-            
-            {/* Hero Description */}
-            <p className="body-large mb-10 max-w-3xl mx-auto" data-testid="text-hero-description">
-              Join Plastic Clever Schools, the award-winning program that puts students at the heart of meaningful environmental action. Gain access to free resources and a clear path to make a real difference.
-            </p>
 
             {/* CTA Button */}
             <Button 
@@ -92,17 +86,17 @@ export default function Landing() {
             </Button>
 
             {/* Simple Trust Indicators */}
-            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-gray-600">
+            <div className="flex flex-wrap justify-center items-center gap-8 text-sm text-white/90">
               <div className="flex items-center gap-2">
-                <Shield className="icon-sm text-teal" />
+                <Shield className="icon-sm text-white" />
                 100% Free
               </div>
               <div className="flex items-center gap-2">
-                <Award className="icon-sm text-teal" />
+                <Award className="icon-sm text-white" />
                 Award-Winning
               </div>
               <div className="flex items-center gap-2">
-                <Users className="icon-sm text-teal" />
+                <Users className="icon-sm text-white" />
                 Expert Support
               </div>
             </div>
