@@ -71,7 +71,7 @@ export default function Navigation() {
                     className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate relative overflow-hidden ${
                       isActive
                         ? 'bg-ocean-blue text-white'
-                        : 'text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5'
+                        : 'text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline'
                     }`}
                     data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
                     aria-current={isActive ? 'page' : undefined}
@@ -104,7 +104,7 @@ export default function Navigation() {
             ) : (
               <>
                 <button
-                  className="px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 focus-visible:focus-visible"
+                  className="px-3 py-2 rounded-md text-sm font-medium transition-colors text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline focus-visible:focus-visible"
                   onClick={handleAuth}
                   data-testid="button-login"
                 >
@@ -165,7 +165,7 @@ export default function Navigation() {
                         className={`block w-full text-left px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate min-h-[44px] relative overflow-hidden ${
                           isActive
                             ? 'bg-ocean-blue text-white'
-                            : 'text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5'
+                            : 'text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline'
                         }`}
                         data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}
                         aria-current={isActive ? 'page' : undefined}
@@ -183,7 +183,7 @@ export default function Navigation() {
                           {user?.firstName || user?.email}
                         </div>
                         <button
-                          className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
+                          className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
                           onClick={handleAuth}
                           data-testid="mobile-button-logout"
                         >
@@ -194,7 +194,7 @@ export default function Navigation() {
                     ) : (
                       <div className="space-y-2">
                         <button
-                          className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
+                          className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
                           onClick={handleAuth}
                           data-testid="mobile-button-login"
                         >
