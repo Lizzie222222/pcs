@@ -7,6 +7,9 @@ import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import logoUrl from "@assets/Logo_1757848498470.png";
 import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_1757854869723.png";
+import inspireIcon from "@assets/Inspire_1757862013793.png";
+import investigateIcon from "@assets/Investigate_1757862013794.png";
+import actIcon from "@assets/Act_1757862013793.png";
 import animationVideo from "@assets/animation-0b930b2b-aef0-4731-b7e3-320580204295_1757854892203.mp4";
 import studentImage from "@assets/emoji-a2ce9597-1802-41f9-90ac-02c0f6bc39c4_1757856002008.png";
 import studentVideo from "@assets/a2ce9597-1802-41f9-90ac-02c0f6bc39c4_3511011f-41fb-4a9f-9a85-e3a6d7a6a50d_1757856002007.mp4";
@@ -316,8 +319,8 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stage 1: Inspire */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal-left">
-              <div className="w-20 h-20 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Lightbulb className="w-10 h-10 text-ocean-blue" />
+              <div className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <img src={inspireIcon} alt="Inspire" className="w-30 h-30" />
               </div>
               <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">1</span>
@@ -328,8 +331,8 @@ export default function Landing() {
 
             {/* Stage 2: Investigate */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal">
-              <div className="w-20 h-20 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="w-10 h-10 text-teal" />
+              <div className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <img src={investigateIcon} alt="Investigate" className="w-30 h-30" />
               </div>
               <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">2</span>
@@ -340,8 +343,8 @@ export default function Landing() {
 
             {/* Stage 3: Act */}
             <div className="card-clean card-hover p-8 text-center scroll-reveal-right">
-              <div className="w-20 h-20 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Target className="w-10 h-10 text-navy" />
+              <div className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <img src={actIcon} alt="Act" className="w-30 h-30" />
               </div>
               <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">3</span>
