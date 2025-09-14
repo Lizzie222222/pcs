@@ -26,15 +26,29 @@ import {
   type InsertMailchimpAudience,
   type MailchimpSubscription,
   type InsertMailchimpSubscription,
+  type CreatePasswordUser,
+  type CreateOAuthUser,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray } from "drizzle-orm";
+import * as bcrypt from "bcrypt";
 
 export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
   getAllUsers(): Promise<User[]>;
+  
+  // Authentication methods
+  findUserByEmail(email: string): Promise<User | undefined>;
+  createUserWithPassword(userData: CreatePasswordUser): Promise<User>;
+  createUserWithOAuth(userData: CreateOAuthUser): Promise<User>;
+  getUserByGoogleId(googleId: string): Promise<User | undefined>;
+  updateUserPassword(id: string, passwordHash: string): Promise<User | undefined>;
+  linkGoogleAccount(userId: string, googleId: string): Promise<User | undefined>;
+  verifyEmail(userId: string): Promise<User | undefined>;
+  verifyPassword(password: string, passwordHash: string): Promise<boolean>;
+  hashPassword(password: string): Promise<string>;
   
   // School operations
   createSchool(school: InsertSchool): Promise<School>;
@@ -190,6 +204,87 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
+  // Authentication methods implementation
+  async findUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUserWithPassword(userData: CreatePasswordUser): Promise<User> {
+    const userId = crypto.randomUUID();
+    const [user] = await db
+      .insert(users)
+      .values({
+        id: userId,
+        ...userData,
+      })
+      .returning();
+    return user;
+  }
+
+  async createUserWithOAuth(userData: CreateOAuthUser): Promise<User> {
+    const userId = crypto.randomUUID();
+    const [user] = await db
+      .insert(users)
+      .values({
+        id: userId,
+        ...userData,
+      })
+      .returning();
+    return user;
+  }
+
+  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
+    return user;
+  }
+
+  async updateUserPassword(id: string, passwordHash: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ passwordHash, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async linkGoogleAccount(userId: string, googleId: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ googleId, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async verifyEmail(userId: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ emailVerified: true, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
+  }
+
+  async verifyPassword(password: string, passwordHash: string): Promise<boolean> {
+    try {
+      return await bcrypt.compare(password, passwordHash);
+    } catch (error) {
+      console.error('Error verifying password:', error);
+      return false;
+    }
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    try {
+      const saltRounds = 12;
+      return await bcrypt.hash(password, saltRounds);
+    } catch (error) {
+      console.error('Error hashing password:', error);
+      throw new Error('Password hashing failed');
+    }
+  }
+
   async upsertUser(userData: UpsertUser): Promise<User> {
     const [user] = await db
       .insert(users)
@@ -238,8 +333,6 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     offset?: number;
   } = {}): Promise<School[]> {
-    let query = db.select().from(schools);
-    
     const conditions = [];
     if (filters.country) {
       conditions.push(eq(schools.country, filters.country));
@@ -250,6 +343,8 @@ export class DatabaseStorage implements IStorage {
     if (filters.type) {
       conditions.push(eq(schools.type, filters.type as any));
     }
+    
+    let query = db.select().from(schools);
     
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
@@ -370,8 +465,6 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     offset?: number;
   } = {}): Promise<Resource[]> {
-    let query = db.select().from(resources);
-    
     const conditions = [eq(resources.isActive, true)];
     
     if (filters.stage) {
@@ -387,16 +480,18 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(resources.ageRange, filters.ageRange));
     }
     if (filters.search) {
-      conditions.push(
-        or(
-          ilike(resources.title, `%${filters.search}%`),
-          ilike(resources.description, `%${filters.search}%`)
-        )
+      const searchCondition = or(
+        ilike(resources.title, `%${filters.search}%`),
+        ilike(resources.description, `%${filters.search}%`)
       );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
     }
     
-    query = query.where(and(...conditions));
-    query = query.orderBy(desc(resources.createdAt));
+    let query = db.select().from(resources)
+      .where(and(...conditions))
+      .orderBy(desc(resources.createdAt));
     
     if (filters.limit) {
       query = query.limit(filters.limit);
@@ -480,7 +575,7 @@ export class DatabaseStorage implements IStorage {
       const result = await db
         .delete(evidence)
         .where(eq(evidence.id, id));
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.error("Error deleting evidence:", error);
       return false;
@@ -492,7 +587,7 @@ export class DatabaseStorage implements IStorage {
       const result = await db
         .delete(schools)
         .where(eq(schools.id, id));
-      return result.rowCount > 0;
+      return (result.rowCount ?? 0) > 0;
     } catch (error) {
       console.error("Error deleting school:", error);
       return false;
@@ -516,6 +611,27 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     offset?: number;
   } = {}): Promise<CaseStudy[]> {
+    const conditions = [];
+    
+    if (filters.stage) {
+      conditions.push(eq(caseStudies.stage, filters.stage as any));
+    }
+    if (filters.country) {
+      conditions.push(eq(schools.country, filters.country));
+    }
+    if (filters.featured !== undefined) {
+      conditions.push(eq(caseStudies.featured, filters.featured));
+    }
+    if (filters.search) {
+      const searchCondition = or(
+        ilike(caseStudies.title, `%${filters.search}%`),
+        ilike(schools.name, `%${filters.search}%`)
+      );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+    
     let query = db
       .select({
         id: caseStudies.id,
@@ -536,26 +652,6 @@ export class DatabaseStorage implements IStorage {
       })
       .from(caseStudies)
       .innerJoin(schools, eq(caseStudies.schoolId, schools.id));
-    
-    const conditions = [];
-    
-    if (filters.stage) {
-      conditions.push(eq(caseStudies.stage, filters.stage as any));
-    }
-    if (filters.country) {
-      conditions.push(eq(schools.country, filters.country));
-    }
-    if (filters.featured !== undefined) {
-      conditions.push(eq(caseStudies.featured, filters.featured));
-    }
-    if (filters.search) {
-      conditions.push(
-        or(
-          ilike(caseStudies.title, `%${filters.search}%`),
-          ilike(schools.name, `%${filters.search}%`)
-        )
-      );
-    }
     
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
@@ -624,11 +720,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMailchimpSubscriptions(audienceId?: string, email?: string): Promise<MailchimpSubscription[]> {
-    let query = db.select().from(mailchimpSubscriptions);
-    
     const conditions = [];
     if (audienceId) conditions.push(eq(mailchimpSubscriptions.audienceId, audienceId));
     if (email) conditions.push(eq(mailchimpSubscriptions.email, email));
+    
+    let query = db.select().from(mailchimpSubscriptions);
     
     if (conditions.length > 0) {
       query = query.where(and(...conditions));

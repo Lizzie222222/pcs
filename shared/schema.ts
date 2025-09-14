@@ -26,10 +26,13 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table (required for Replit Auth)
+// User storage table (supports email/password + Google OAuth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey(),
   email: varchar("email").unique(),
+  emailVerified: boolean("email_verified").default(false),
+  passwordHash: varchar("password_hash"), // nullable for Google OAuth users
+  googleId: varchar("google_id").unique(), // nullable, unique when not null
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -263,6 +266,49 @@ export const upsertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
+// Authentication schemas
+export const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+});
+
+export const registerSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string()
+    .min(8, "Password must be at least 8 characters long")
+    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+    .regex(/\d/, "Password must contain at least one number"),
+  confirmPassword: z.string(),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+// Password-based user creation schema (excludes OAuth fields)
+export const createPasswordUserSchema = createInsertSchema(users).omit({
+  id: true,
+  googleId: true,
+  emailVerified: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  passwordHash: z.string().min(1, "Password hash is required"),
+});
+
+// OAuth user creation schema (excludes password fields)
+export const createOAuthUserSchema = createInsertSchema(users).omit({
+  id: true,
+  passwordHash: true,
+  createdAt: true,
+  updatedAt: true,
+}).extend({
+  googleId: z.string().min(1, "Google ID is required"),
+  emailVerified: z.boolean().default(true),
+});
+
 export const insertSchoolSchema = createInsertSchema(schools).omit({
   id: true,
   createdAt: true,
@@ -339,3 +385,9 @@ export type MailchimpAudience = typeof mailchimpAudiences.$inferSelect;
 export type InsertMailchimpAudience = z.infer<typeof insertMailchimpAudienceSchema>;
 export type MailchimpSubscription = typeof mailchimpSubscriptions.$inferSelect;
 export type InsertMailchimpSubscription = z.infer<typeof insertMailchimpSubscriptionSchema>;
+
+// Authentication types
+export type LoginForm = z.infer<typeof loginSchema>;
+export type RegisterForm = z.infer<typeof registerSchema>;
+export type CreatePasswordUser = z.infer<typeof createPasswordUserSchema>;
+export type CreateOAuthUser = z.infer<typeof createOAuthUserSchema>;
