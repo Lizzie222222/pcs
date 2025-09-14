@@ -117,9 +117,10 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* What is a Plastic Clever School Section */}
-      <section className="section-padding bg-navy-light/10">
-        <div className="container-width">
+      {/* What is a Plastic Clever School Section - Fun Yellow */}
+      <section className="section-padding bg-yellow/20 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-yellow/10 to-yellow/30"></div>
+        <div className="container-width relative z-10">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="heading-2 mb-8">What is a Plastic Clever School?</h2>
             <p className="body-large mb-12 max-w-3xl mx-auto">
@@ -162,9 +163,10 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Social Proof & Impact Section */}
-      <section className="section-padding bg-white">
-        <div className="container-width">
+      {/* Social Proof & Impact Section - Fun Coral */}
+      <section className="section-padding bg-coral/15 relative">
+        <div className="absolute inset-0 bg-gradient-to-r from-coral/10 to-coral/20"></div>
+        <div className="container-width relative z-10">
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4">Join a Growing Movement</h2>
             <p className="body-large max-w-3xl mx-auto">
@@ -188,8 +190,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Three-Stage Program - Clean StreetSmart Cards */}
-      <section id="how-it-works" className="section-padding bg-navy-light/5">
+      {/* Three-Stage Program - Clean StreetSmart Cards with Fun Accent */}
+      <section id="how-it-works" className="section-padding bg-gradient-to-b from-white to-yellow/10">
         <div className="container-width">
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4">A Simple 3-Stage Journey to a Plastic Clever School</h2>
@@ -267,8 +269,8 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Partnership & Endorsement Section */}
-      <section className="section-padding bg-white">
+      {/* Partnership & Endorsement Section - Clean White */}
+      <section className="section-padding bg-white border-t-4 border-teal">
         <div className="container-width">
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4">Built on Strong Partnerships</h2>
@@ -294,8 +296,8 @@ export default function Landing() {
         </div>
       </section>
       
-      {/* Why Schools Love Us - Testimonial Style */}
-      <section className="section-padding bg-navy-light/5">
+      {/* Why Schools Love Us - Testimonial Style - Fun Coral Background */}
+      <section className="section-padding bg-gradient-to-r from-coral/5 to-yellow/5">
         <div className="container-width">
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4">Why Schools Choose Us</h2>
