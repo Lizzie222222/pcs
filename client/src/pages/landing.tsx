@@ -89,12 +89,20 @@ export default function Landing() {
       {/* Clean Hero Section - StreetSmart Inspired with Video Background */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
         {/* YouTube Video Background - Ultra-fast loading */}
-        <div className="absolute inset-0 w-full h-full z-0">
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
           <iframe 
-            src="https://www.youtube.com/embed/jyL1lt-72HQ?si=R1z07rNUfR-B0Jou&autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1"
-            className="absolute inset-0 w-full h-full"
-            style={{ border: 'none' }}
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+            src="https://www.youtube.com/embed/jyL1lt-72HQ?autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&widget_referrer=https%3A%2F%2Fexample.com&enablejsapi=0&origin=https%3A%2F%2Fexample.com&widgetid=1"
+            className="absolute inset-0"
+            style={{ 
+              border: 'none',
+              width: '300%',
+              height: '300%',
+              left: '-100%',
+              top: '-100%',
+              transform: 'scale(0.5)',
+              transformOrigin: 'center center'
+            }}
+            allow="autoplay; encrypted-media"
             referrerPolicy="strict-origin-when-cross-origin"
             loading="eager"
           />
