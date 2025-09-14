@@ -330,17 +330,23 @@ export default function Landing() {
               <div 
                 className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer relative overflow-hidden"
                 onMouseEnter={(e) => {
-                  const video = e.currentTarget.querySelector('video');
+                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
                   if (video) {
-                    video.play().catch(() => {
-                      // Ignore promise rejection if play is interrupted
-                    });
+                    // Reset video to start and play immediately
+                    video.currentTime = 0;
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                      playPromise.catch(() => {
+                        // Silently handle play interruption
+                      });
+                    }
                   }
                 }}
                 onMouseLeave={(e) => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video && !video.paused) {
+                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
+                  if (video) {
                     video.pause();
+                    video.currentTime = 0;
                   }
                 }}
               >
@@ -370,17 +376,23 @@ export default function Landing() {
               <div 
                 className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer relative overflow-hidden"
                 onMouseEnter={(e) => {
-                  const video = e.currentTarget.querySelector('video');
+                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
                   if (video) {
-                    video.play().catch(() => {
-                      // Ignore promise rejection if play is interrupted
-                    });
+                    // Reset video to start and play immediately
+                    video.currentTime = 0;
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                      playPromise.catch(() => {
+                        // Silently handle play interruption
+                      });
+                    }
                   }
                 }}
                 onMouseLeave={(e) => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video && !video.paused) {
+                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
+                  if (video) {
                     video.pause();
+                    video.currentTime = 0;
                   }
                 }}
               >
@@ -410,17 +422,23 @@ export default function Landing() {
               <div 
                 className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6 group cursor-pointer relative overflow-hidden"
                 onMouseEnter={(e) => {
-                  const video = e.currentTarget.querySelector('video');
+                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
                   if (video) {
-                    video.play().catch(() => {
-                      // Ignore promise rejection if play is interrupted
-                    });
+                    // Reset video to start and play immediately
+                    video.currentTime = 0;
+                    const playPromise = video.play();
+                    if (playPromise !== undefined) {
+                      playPromise.catch(() => {
+                        // Silently handle play interruption
+                      });
+                    }
                   }
                 }}
                 onMouseLeave={(e) => {
-                  const video = e.currentTarget.querySelector('video');
-                  if (video && !video.paused) {
+                  const video = e.currentTarget.querySelector('video') as HTMLVideoElement;
+                  if (video) {
                     video.pause();
+                    video.currentTime = 0;
                   }
                 }}
               >
