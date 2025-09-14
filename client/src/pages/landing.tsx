@@ -88,7 +88,7 @@ export default function Landing() {
             <Button 
               size="lg"
               className="bg-coral hover:bg-coral/90 text-white px-8 py-4 text-xl font-bold mb-8 shadow-xl transition-all duration-300"
-              onClick={() => setShowSignUp(true)}
+              onClick={() => window.location.href = '/register'}
               data-testid="button-register-school"
             >
               Register Your School Now
@@ -97,7 +97,7 @@ export default function Landing() {
 
             {/* Simple Trust Indicators with Text Shadow */}
             <div 
-              className="flex flex-wrap items-center gap-6 text-base text-white font-medium"
+              className="flex flex-wrap justify-center items-center gap-6 text-base text-white font-medium"
               style={{ 
                 textShadow: '1px 1px 4px rgba(0,0,0,0.8)' 
               }}
@@ -441,33 +441,6 @@ export default function Landing() {
               <div className="flex items-center gap-2">
                 <CheckCircle className="icon-sm text-teal" />
                 Expert support included
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Newsletter - Stay Connected with Fun Styling */}
-      <section className="section-padding bg-gradient-to-r from-yellow/20 via-coral/10 to-teal/15 relative">
-        <div className="absolute inset-0 bg-white/60"></div>
-        <div className="container-width relative z-10">
-          <div className="max-w-2xl mx-auto text-center bg-white/80 backdrop-blur-sm rounded-2xl p-12 shadow-lg border border-white/50">
-            <h2 className="heading-2 mb-4 text-navy">Stay Connected</h2>
-            <p className="body-large mb-8 text-gray-700">
-              Get the latest updates, success stories, and resources delivered to your inbox.
-            </p>
-            <NewsletterSignup 
-              variant="hero" 
-              className="max-w-md mx-auto"
-            />
-            <div className="mt-6 flex justify-center gap-4">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <CheckCircle className="icon-sm text-teal" />
-                No spam, ever
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <CheckCircle className="icon-sm text-teal" />
-                Unsubscribe anytime
               </div>
             </div>
           </div>

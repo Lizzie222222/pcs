@@ -102,13 +102,24 @@ export default function Navigation() {
                 </Button>
               </>
             ) : (
-              <Button
-                className="bg-coral hover:bg-coral/90 text-white"
-                onClick={handleAuth}
-                data-testid="button-login"
-              >
-                Register Your School Now
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  onClick={handleAuth}
+                  data-testid="button-login"
+                >
+                  Login
+                </Button>
+                <Button
+                  className="bg-coral hover:bg-coral/90 text-white"
+                  onClick={() => setLocation('/register')}
+                  data-testid="button-register"
+                >
+                  Register Your School
+                </Button>
+              </>
             )}
           </div>
 
