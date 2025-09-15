@@ -1,22 +1,31 @@
 import { Switch, Route, useLocation } from "wouter";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, Suspense, lazy } from "react";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LoadingSpinner } from "@/components/ui/states";
 import { useAuth } from "@/hooks/useAuth";
-import Landing from "@/pages/landing";
-import Home from "@/pages/home";
-import Resources from "@/pages/resources";
-import Inspiration from "@/pages/inspiration";
-import SchoolsMap from "@/pages/schools-map";
-import Search from "@/pages/search";
-import Admin from "@/pages/admin";
-import Login from "@/pages/login";
-import Register from "@/pages/register";
-import NotFound from "@/pages/not-found";
 import Navigation from "@/components/Navigation";
+
+// Page Loading Component
+const PageLoadingFallback = () => (
+  <div className="flex justify-center items-center min-h-[50vh]">
+    <LoadingSpinner size="lg" message="Loading page..." />
+  </div>
+);
+
+// Direct lazy imports - proper approach
+const Landing = lazy(() => import("@/pages/landing"));
+const Home = lazy(() => import("@/pages/home"));
+const Resources = lazy(() => import("@/pages/resources"));
+const Inspiration = lazy(() => import("@/pages/inspiration"));
+const SchoolsMap = lazy(() => import("@/pages/schools-map"));
+const Search = lazy(() => import("@/pages/search"));
+const Admin = lazy(() => import("@/pages/admin"));
+const Login = lazy(() => import("@/pages/login"));
+const Register = lazy(() => import("@/pages/register"));
+const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
@@ -96,31 +105,33 @@ function Router() {
         role="main"
         className="focus:outline-none"
       >
-        <Switch>
-          {!isAuthenticated ? (
-            <>
-              <Route path="/" component={Landing} />
-              <Route path="/login" component={Login} />
-              <Route path="/register" component={Register} />
-              <Route path="/resources" component={Resources} />
-              <Route path="/inspiration" component={Inspiration} />
-              <Route path="/schools-map" component={SchoolsMap} />
-              <Route path="/search" component={Search} />
-            </>
-          ) : (
-            <>
-              <Route path="/" component={Home} />
-              <Route path="/login" component={Login} />
-              <Route path="/register" component={Register} />
-              <Route path="/resources" component={Resources} />
-              <Route path="/inspiration" component={Inspiration} />
-              <Route path="/schools-map" component={SchoolsMap} />
-              <Route path="/search" component={Search} />
-              <Route path="/admin" component={Admin} />
-            </>
-          )}
-          <Route component={NotFound} />
-        </Switch>
+        <Suspense fallback={<PageLoadingFallback />}>
+          <Switch>
+            {!isAuthenticated ? (
+              <>
+                <Route path="/" component={Landing} />
+                <Route path="/login" component={Login} />
+                <Route path="/register" component={Register} />
+                <Route path="/resources" component={Resources} />
+                <Route path="/inspiration" component={Inspiration} />
+                <Route path="/schools-map" component={SchoolsMap} />
+                <Route path="/search" component={Search} />
+              </>
+            ) : (
+              <>
+                <Route path="/" component={Home} />
+                <Route path="/login" component={Login} />
+                <Route path="/register" component={Register} />
+                <Route path="/resources" component={Resources} />
+                <Route path="/inspiration" component={Inspiration} />
+                <Route path="/schools-map" component={SchoolsMap} />
+                <Route path="/search" component={Search} />
+                <Route path="/admin" component={Admin} />
+              </>
+            )}
+            <Route component={NotFound} />
+          </Switch>
+        </Suspense>
       </main>
     </div>
   );

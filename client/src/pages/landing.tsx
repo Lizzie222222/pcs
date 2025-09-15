@@ -21,8 +21,8 @@ import riverCleanupLogo from "@assets/RiverCleanup_logo_rgb_pos-WhiteBG-01-2-256
 import animationVideo from "@assets/animation-0b930b2b-aef0-4731-b7e3-320580204295_1757854892203.mp4";
 import studentImage from "@assets/emoji-a2ce9597-1802-41f9-90ac-02c0f6bc39c4_1757856002008.png";
 import studentVideo from "@assets/a2ce9597-1802-41f9-90ac-02c0f6bc39c4_3511011f-41fb-4a9f-9a85-e3a6d7a6a50d_1757856002007.mp4";
-import booksImage from "@assets/emoji-87fc1963-3634-4869-8114-9e623ac4ab1b_1757856145814.png";
-import booksVideo from "@assets/animation-674499de-46d3-4335-b88b-1e2c39496eca_1757856145814.mp4";
+import booksImage from "@assets/generated_images/Kids_recycling_at_school_a7869617.png";
+import booksVideo from "@assets/animation-0b930b2b-aef0-4731-b7e3-320580204295_1757854892203.mp4";
 import { 
   School, 
   Trophy, 
