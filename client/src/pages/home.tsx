@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -45,7 +46,9 @@ interface DashboardData {
 export default function Home() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -68,33 +71,73 @@ export default function Home() {
     retry: false,
   });
 
-  // Handle unauthorized errors
+  // Handle errors (unauthorized and no school registration)
   useEffect(() => {
-    if (error && isUnauthorizedError(error as Error)) {
-      toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
-        variant: "destructive",
-      });
-      setTimeout(() => {
-        window.location.href = "/api/auth/google";
-      }, 500);
+    if (error) {
+      const errorMessage = (error as any)?.message || '';
+      
+      if (isUnauthorizedError(error as Error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/auth/google";
+        }, 500);
+      } else if (errorMessage === "No schools found for user") {
+        // Handle specific case where user needs to register their school
+        if (!isRedirecting) {
+          setIsRedirecting(true);
+          toast({
+            title: "School Registration Required",
+            description: "Please complete your school registration to access the dashboard.",
+          });
+          setTimeout(() => {
+            setLocation("/register");
+          }, 1000);
+        }
+      }
     }
-  }, [error, toast]);
+  }, [error, toast, isRedirecting, setLocation]);
 
   if (isLoading || isDashboardLoading) {
     return <LoadingSpinner message="Loading your dashboard..." />;
   }
 
-  if (!dashboardData) {
+  // Handle case where user is being redirected to registration
+  if (isRedirecting) {
     return (
-      <ErrorState
-        title="No School Found"
-        description="It looks like your account isn't associated with a school yet. Please contact support for assistance."
-        showHome={true}
-        onGoHome={() => window.location.href = "/api/auth/logout"}
-      />
+      <div className="min-h-screen bg-gray-50 pt-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Card className="max-w-md mx-auto">
+            <CardContent className="p-6 text-center">
+              <LoadingSpinner size="lg" className="mb-4" />
+              <h2 className="text-xl font-semibold text-navy mb-2" data-testid="text-redirecting-title">
+                Setting up your account...
+              </h2>
+              <p className="text-gray-600" data-testid="text-redirecting-description">
+                Redirecting you to complete school registration.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     );
+  }
+
+  // Handle general errors (excluding "No schools found for user" which is handled above)
+  if (error) {
+    const errorMessage = (error as any)?.message || 'An unexpected error occurred';
+    // Don't show error state for "No schools found for user" since we handle that above
+    if (errorMessage !== "No schools found for user") {
+      return <ErrorState error={errorMessage} />;
+    }
+  }
+
+  // Handle case where no data is available yet (still loading or error was "No schools found for user")
+  if (!dashboardData) {
+    return <LoadingSpinner message="Loading your dashboard..." />;
   }
 
   const { school, recentEvidence } = dashboardData;

@@ -77,11 +77,11 @@ export default function Register() {
             />
           </div>
           <h1 className="heading-2 mb-2" data-testid="text-register-title">
-            {isAuthenticated ? 'Register Your School' : 'Create Your Account'}
+            {isAuthenticated ? 'Complete Your Registration' : 'Create Your Account'}
           </h1>
           <p className="body-text text-gray-600" data-testid="text-register-description">
             {isAuthenticated 
-              ? 'Complete your school registration to access all program features'
+              ? 'You\'re successfully signed in! Now let\'s register your school to unlock all features and begin your sustainability journey.'
               : 'Create an account to register your school for our sustainability program'
             }
           </p>
@@ -432,7 +432,7 @@ export default function Register() {
                     </CardTitle>
                   </div>
                   <p className="caption text-gray-500">
-                    You're signed in and ready to register your school
+                    Great! You're signed in. Let's get your school registered to join the Plastic Clever Schools program.
                   </p>
                 </CardHeader>
                 
