@@ -35,7 +35,7 @@ function OptimizedImage({ src, alt, width, height, className = "", priority = fa
       className={className}
       loading={loading}
       decoding="async"
-      fetchPriority={fetchPriority}
+      ref={(el) => el?.setAttribute('fetchpriority', fetchPriority)}
       sizes={sizes}
     />
   );
@@ -149,7 +149,7 @@ export default function Landing() {
             alt="Plastic Clever Schools Hero Video"
             className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             loading="eager"
-            fetchPriority="high"
+            ref={(el) => el?.setAttribute('fetchpriority', 'high')}
             width="1920"
             height="1080"
           />
