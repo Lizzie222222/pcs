@@ -36,9 +36,10 @@ const registrationSchema = z.object({
 
 interface SchoolSignUpFormProps {
   onClose: () => void;
+  inline?: boolean;
 }
 
-export default function SchoolSignUpForm({ onClose }: SchoolSignUpFormProps) {
+export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSignUpFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -113,31 +114,31 @@ export default function SchoolSignUpForm({ onClose }: SchoolSignUpFormProps) {
     { value: 'other', label: 'Other' },
   ];
 
-  return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="bg-pcs_blue text-white p-2 rounded-lg">
-                <School className="h-6 w-6" />
-              </div>
-              <div>
-                <h2 className="text-2xl font-bold text-navy" data-testid="text-signup-title">
-                  Join Plastic Clever Schools
-                </h2>
-                <p className="text-gray-600">Register your school for the program</p>
-              </div>
+  const formContent = (
+    <div className={inline ? "" : "p-6"}>
+      {!inline && (
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="bg-pcs_blue text-white p-2 rounded-lg">
+              <School className="h-6 w-6" />
             </div>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={onClose}
-              data-testid="button-close-signup"
-            >
-              <X className="h-5 w-5" />
-            </Button>
+            <div>
+              <h2 className="text-2xl font-bold text-navy" data-testid="text-signup-title">
+                Join Plastic Clever Schools
+              </h2>
+              <p className="text-gray-600">Register your school for the program</p>
+            </div>
           </div>
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={onClose}
+            data-testid="button-close-signup"
+          >
+            <X className="h-5 w-5" />
+          </Button>
+        </div>
+      )}
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -388,6 +389,16 @@ export default function SchoolSignUpForm({ onClose }: SchoolSignUpFormProps) {
             </form>
           </Form>
         </div>
+      );
+      
+  if (inline) {
+    return formContent;
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+      <div className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        {formContent}
       </div>
     </div>
   );

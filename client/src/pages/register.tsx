@@ -18,6 +18,7 @@ export default function Register() {
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showSchoolForm, setShowSchoolForm] = useState(false);
   
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -43,11 +44,11 @@ export default function Register() {
   };
 
   const handleStartRegistration = () => {
-    setShowSignUpForm(true);
+    setShowSchoolForm(true);
   };
 
-  const handleCloseSignUpForm = () => {
-    setShowSignUpForm(false);
+  const handleCloseSchoolForm = () => {
+    setShowSchoolForm(false);
   };
 
   if (isLoading) {
@@ -61,10 +62,7 @@ export default function Register() {
     );
   }
 
-  // Show signup form modal when authenticated user wants to register
-  if (showSignUpForm && isAuthenticated) {
-    return <SchoolSignUpForm onClose={handleCloseSignUpForm} />;
-  }
+  // This is now handled inline with showSchoolForm state
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-white via-ocean-light/20 to-navy-light/30 flex items-center justify-center p-4">
@@ -393,91 +391,123 @@ export default function Register() {
         ) : (
           /* Authenticated State - Show Registration Options */
           <>
-            {/* Welcome Card */}
-            <Card className="card-clean shadow-lg border-0">
-              <CardHeader className="text-center pb-4">
-                <div className="flex items-center justify-center gap-2 mb-2">
-                  <User className="icon-md text-teal" />
-                  <CardTitle className="heading-4 text-navy">
-                    Welcome, {user?.firstName || 'Educator'}!
-                  </CardTitle>
-                </div>
-                <p className="caption text-gray-500">
-                  You're signed in and ready to register your school
-                </p>
-              </CardHeader>
-              
-              <CardContent className="space-y-6">
-                {/* User Info */}
-                {user?.email && (
-                  <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                    <Mail className="icon-sm text-ocean-blue" />
-                    <div>
-                      <p className="text-sm font-medium text-navy">Signed in as</p>
-                      <p className="text-xs text-gray-600" data-testid="text-user-email">{user.email}</p>
+            {showSchoolForm ? (
+              /* School Registration Form */
+              <Card className="card-clean shadow-lg border-0 max-w-2xl w-full">
+                <CardContent className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="bg-pcs_blue text-white p-2 rounded-lg">
+                        <School className="h-6 w-6" />
+                      </div>
+                      <div>
+                        <h2 className="text-2xl font-bold text-navy" data-testid="text-signup-title">
+                          Join Plastic Clever Schools
+                        </h2>
+                        <p className="text-gray-600">Register your school for the program</p>
+                      </div>
                     </div>
-                  </div>
-                )}
-
-                {/* Register School Button */}
-                <Button
-                  size="lg"
-                  className="w-full btn-primary group"
-                  onClick={handleStartRegistration}
-                  data-testid="button-start-school-registration"
-                >
-                  <div className="flex items-center justify-center gap-3">
-                    <School className="icon-md transition-transform duration-300 group-hover:scale-110" />
-                    <span className="font-semibold">Register Your School</span>
-                    <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
-                  </div>
-                </Button>
-
-                {/* Registration Benefits for Authenticated Users */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-3 p-3 bg-teal/10 rounded-lg">
-                    <School className="icon-sm text-teal flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-navy">Complete School Profile</p>
-                      <p className="text-xs text-gray-600">Add your school details to join our global network</p>
-                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowSchoolForm(false)}
+                      className="text-gray-500 hover:text-gray-700"
+                      data-testid="button-back-to-welcome"
+                    >
+                      ← Back
+                    </Button>
                   </div>
                   
-                  <div className="flex items-center gap-3 p-3 bg-ocean-blue/10 rounded-lg">
-                    <Globe className="icon-sm text-ocean-blue flex-shrink-0" />
-                    <div>
-                      <p className="text-sm font-medium text-navy">Access Full Platform</p>
-                      <p className="text-xs text-gray-600">Unlock all tools, resources, and progress tracking features</p>
+                  <SchoolSignUpForm onClose={handleCloseSchoolForm} inline={true} />
+                </CardContent>
+              </Card>
+            ) : (
+              /* Welcome Card */
+              <Card className="card-clean shadow-lg border-0">
+                <CardHeader className="text-center pb-4">
+                  <div className="flex items-center justify-center gap-2 mb-2">
+                    <User className="icon-md text-teal" />
+                    <CardTitle className="heading-4 text-navy">
+                      Welcome, {user?.firstName || 'Educator'}!
+                    </CardTitle>
+                  </div>
+                  <p className="caption text-gray-500">
+                    You're signed in and ready to register your school
+                  </p>
+                </CardHeader>
+                
+                <CardContent className="space-y-6">
+                  {/* User Info */}
+                  {user?.email && (
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                      <Mail className="icon-sm text-ocean-blue" />
+                      <div>
+                        <p className="text-sm font-medium text-navy">Signed in as</p>
+                        <p className="text-xs text-gray-600" data-testid="text-user-email">{user.email}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Register School Button */}
+                  <Button
+                    size="lg"
+                    className="w-full btn-primary group"
+                    onClick={handleStartRegistration}
+                    data-testid="button-start-school-registration"
+                  >
+                    <div className="flex items-center justify-center gap-3">
+                      <School className="icon-md transition-transform duration-300 group-hover:scale-110" />
+                      <span className="font-semibold">Register Your School</span>
+                      <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
+                    </div>
+                  </Button>
+
+                  {/* Registration Benefits for Authenticated Users */}
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3 p-3 bg-teal/10 rounded-lg">
+                      <School className="icon-sm text-teal flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-navy">Complete School Profile</p>
+                        <p className="text-xs text-gray-600">Add your school details to join our global network</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3 p-3 bg-ocean-blue/10 rounded-lg">
+                      <Globe className="icon-sm text-ocean-blue flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-navy">Access Full Platform</p>
+                        <p className="text-xs text-gray-600">Unlock all tools, resources, and progress tracking features</p>
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {/* Account Actions */}
-                <div className="flex gap-3 pt-4 border-t">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      window.location.href = "/api/auth/logout";
-                    }}
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-                    data-testid="button-logout"
-                  >
-                    <LogOut className="icon-xs" />
-                    <span>Sign Out</span>
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => window.location.href = '/'}
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-800 ml-auto"
-                    data-testid="button-back-home"
-                  >
-                    <span>Back to Home</span>
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                  {/* Account Actions */}
+                  <div className="flex gap-3 pt-4 border-t">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        window.location.href = "/api/auth/logout";
+                      }}
+                      className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
+                      data-testid="button-logout"
+                    >
+                      <LogOut className="icon-xs" />
+                      <span>Sign Out</span>
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.location.href = '/'}
+                      className="flex items-center gap-2 text-gray-600 hover:text-gray-800 ml-auto"
+                      data-testid="button-back-home"
+                    >
+                      <span>Back to Home</span>
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </>
         )}
       </div>
