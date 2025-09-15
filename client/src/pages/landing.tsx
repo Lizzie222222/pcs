@@ -54,7 +54,7 @@ import riverCleanupLogo from "@assets/RiverCleanup_logo_rgb_pos-WhiteBG-01-2-256
 import animationVideo from "@assets/animation-0b930b2b-aef0-4731-b7e3-320580204295_1757854892203.mp4";
 import studentImage from "@assets/emoji-a2ce9597-1802-41f9-90ac-02c0f6bc39c4_1757856002008.png";
 import studentVideo from "@assets/a2ce9597-1802-41f9-90ac-02c0f6bc39c4_3511011f-41fb-4a9f-9a85-e3a6d7a6a50d_1757856002007.mp4";
-import booksImage from "@assets/generated_images/Kids_recycling_at_school_a7869617.png";
+import booksImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_1757854869723.png";
 import booksVideo from "@assets/animation-0b930b2b-aef0-4731-b7e3-320580204295_1757854892203.mp4";
 import heroPosterImage from "@assets/generated_images/Hero_poster_background_image_8557f95c.png";
 import { 
@@ -131,42 +131,8 @@ export default function Landing() {
     element?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Optimized Hero Video Component - Click to Play YouTube
+  // YouTube Hero Video Component - Restored to auto-play
   function HeroVideo() {
-    const [isLoaded, setIsLoaded] = useState(false);
-    const [isPlaying, setIsPlaying] = useState(false);
-    
-    const loadVideo = () => {
-      setIsLoaded(true);
-      setIsPlaying(true);
-    };
-    
-    if (!isLoaded) {
-      return (
-        <button 
-          className="absolute inset-0 w-full h-full z-0 overflow-hidden group cursor-pointer bg-transparent border-none p-0" 
-          onClick={loadVideo}
-          aria-label="Play Plastic Clever Schools introduction video"
-        >
-          <img 
-            src={heroPosterImage}
-            alt="Plastic Clever Schools Hero Video"
-            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="eager"
-            ref={(el) => el?.setAttribute('fetchpriority', 'high')}
-            width="1920"
-            height="1080"
-          />
-          {/* Play Button Overlay */}
-          <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/5 transition-colors duration-300">
-            <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all duration-300 shadow-2xl">
-              <Play className="w-8 h-8 text-navy ml-1" fill="currentColor" />
-            </div>
-          </div>
-        </button>
-      );
-    }
-    
     return (
       <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
         <iframe 
@@ -183,7 +149,7 @@ export default function Landing() {
           }}
           allow="autoplay; encrypted-media"
           referrerPolicy="strict-origin-when-cross-origin"
-          loading="lazy"
+          loading="eager"
           title="Plastic Clever Schools Introduction Video"
         />
       </div>
