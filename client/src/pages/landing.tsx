@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,6 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
-import { lazy, Suspense } from "react";
 
 // Lazy load heavy components below the fold
 const InstagramCarousel = lazy(() => import("@/components/InstagramCarousel"));
