@@ -6,7 +6,40 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
-import InstagramCarousel from "@/components/InstagramCarousel";
+import { lazy, Suspense } from "react";
+
+// Lazy load heavy components below the fold
+const InstagramCarousel = lazy(() => import("@/components/InstagramCarousel"));
+
+// Optimized Image Component with modern formats support
+interface OptimizedImageProps {
+  src: string;
+  alt: string;
+  width: number;
+  height: number;
+  className?: string;
+  priority?: boolean;
+  sizes?: string;
+}
+
+function OptimizedImage({ src, alt, width, height, className = "", priority = false, sizes }: OptimizedImageProps) {
+  const loading = priority ? "eager" : "lazy";
+  const fetchPriority = priority ? "high" : "auto";
+  
+  return (
+    <img
+      src={src}
+      alt={alt}
+      width={width}
+      height={height}
+      className={className}
+      loading={loading}
+      decoding="async"
+      fetchPriority={fetchPriority}
+      sizes={sizes}
+    />
+  );
+}
 import logoUrl from "@assets/Logo_1757848498470.png";
 import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_1757854869723.png";
 import inspireIcon from "@assets/Inspire_1757862013793.png";
@@ -23,6 +56,7 @@ import studentImage from "@assets/emoji-a2ce9597-1802-41f9-90ac-02c0f6bc39c4_175
 import studentVideo from "@assets/a2ce9597-1802-41f9-90ac-02c0f6bc39c4_3511011f-41fb-4a9f-9a85-e3a6d7a6a50d_1757856002007.mp4";
 import booksImage from "@assets/generated_images/Kids_recycling_at_school_a7869617.png";
 import booksVideo from "@assets/animation-0b930b2b-aef0-4731-b7e3-320580204295_1757854892203.mp4";
+import heroPosterImage from "@assets/generated_images/Hero_poster_background_image_8557f95c.png";
 import { 
   School, 
   Trophy, 
@@ -58,7 +92,9 @@ interface SiteStats {
 
 export default function Landing() {
   const [showSignUp, setShowSignUp] = useState(false);
+  const [videoLoaded, setVideoLoaded] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
+  const heroVideoRef = useRef<HTMLDivElement>(null);
 
   const { data: stats } = useQuery<SiteStats>({
     queryKey: ['/api/stats'],
@@ -94,6 +130,61 @@ export default function Landing() {
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: 'smooth' });
   };
+
+  // Optimized Hero Video Component - Click to Play YouTube
+  function HeroVideo() {
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [isPlaying, setIsPlaying] = useState(false);
+    
+    const loadVideo = () => {
+      setIsLoaded(true);
+      setIsPlaying(true);
+    };
+    
+    if (!isLoaded) {
+      return (
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden group cursor-pointer" onClick={loadVideo}>
+          <img 
+            src={heroPosterImage}
+            alt="Plastic Clever Schools Hero Video"
+            className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            loading="eager"
+            fetchPriority="high"
+            width="1920"
+            height="1080"
+          />
+          {/* Play Button Overlay */}
+          <div className="absolute inset-0 flex items-center justify-center bg-black/10 group-hover:bg-black/5 transition-colors duration-300">
+            <div className="w-20 h-20 bg-white/90 rounded-full flex items-center justify-center group-hover:bg-white group-hover:scale-110 transition-all duration-300 shadow-2xl">
+              <Play className="w-8 h-8 text-navy ml-1" fill="currentColor" />
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+        <iframe 
+          src="https://www.youtube.com/embed/jyL1lt-72HQ?autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=1&end=29&enablejsapi=0"
+          className="absolute inset-0"
+          style={{ 
+            border: 'none',
+            width: '300%',
+            height: '300%',
+            left: '-100%',
+            top: '-100%',
+            transform: 'scale(0.5)',
+            transformOrigin: 'center center'
+          }}
+          allow="autoplay; encrypted-media"
+          referrerPolicy="strict-origin-when-cross-origin"
+          loading="lazy"
+          title="Plastic Clever Schools Introduction Video"
+        />
+      </div>
+    );
+  }
 
   // Safe HoverVideo component to handle play/pause without promise conflicts
   interface HoverVideoProps {
@@ -169,6 +260,10 @@ export default function Landing() {
           src={poster}
           alt={alt}
           className={`absolute inset-0 m-auto opacity-100 transition-opacity duration-300 group-hover:opacity-0 ${className}`}
+          loading="lazy"
+          decoding="async"
+          width="160"
+          height="160"
         />
         <video 
           ref={videoRef}
@@ -177,7 +272,9 @@ export default function Landing() {
           loop
           muted
           playsInline
-          preload="metadata"
+          preload="none"
+          width="160"
+          height="160"
         />
       </div>
     );
@@ -188,25 +285,8 @@ export default function Landing() {
 
       {/* Clean Hero Section - StreetSmart Inspired with Video Background */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
-        {/* YouTube Video Background - Ultra-fast loading */}
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-          <iframe 
-            src="https://www.youtube.com/embed/jyL1lt-72HQ?autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=1&end=29&enablejsapi=0"
-            className="absolute inset-0"
-            style={{ 
-              border: 'none',
-              width: '300%',
-              height: '300%',
-              left: '-100%',
-              top: '-100%',
-              transform: 'scale(0.5)',
-              transformOrigin: 'center center'
-            }}
-            allow="autoplay; encrypted-media"
-            referrerPolicy="strict-origin-when-cross-origin"
-            loading="eager"
-          />
-        </div>
+        {/* Optimized Hero Video - Click to Play */}
+        <HeroVideo />
         
         {/* Subtle Black Overlay for Text Contrast */}
         <div className="absolute inset-0 bg-black/25 z-10"></div>
@@ -271,7 +351,7 @@ export default function Landing() {
             {/* Key Callouts with Delightful Animations */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 scroll-reveal">
               <div className="text-center group cursor-pointer">
-                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200">
+                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200" style={{ minHeight: '128px' }}>
                   <HoverVideo 
                     src={animationVideo}
                     poster={emojiImage}
@@ -284,7 +364,7 @@ export default function Landing() {
                 <p className="body-text">Recognized for our effective approach to reducing waste.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200">
+                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200" style={{ minHeight: '128px' }}>
                   <HoverVideo 
                     src={studentVideo}
                     poster={studentImage}
@@ -297,7 +377,7 @@ export default function Landing() {
                 <p className="body-text">Kids are at the heart of every step, fostering a sense of ownership and responsibility.</p>
               </div>
               <div className="text-center group cursor-pointer">
-                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200">
+                <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200" style={{ minHeight: '128px' }}>
                   <HoverVideo 
                     src={booksVideo}
                     poster={booksImage}
@@ -335,7 +415,7 @@ export default function Landing() {
           </div>
           
           <div className="max-w-2xl mx-auto text-center mb-12">
-            <div className="text-6xl lg:text-8xl font-bold text-navy mb-4 scroll-reveal-scale" data-testid="stat-registered-schools">
+            <div className="text-6xl lg:text-8xl font-bold text-navy mb-4 scroll-reveal-scale" data-testid="stat-registered-schools" style={{ minHeight: '96px' }}>
               {stats?.totalSchools?.toLocaleString() || '1542'}+
             </div>
             <div className="text-xl lg:text-2xl text-gray-600 mb-8 scroll-reveal">Registered Schools So Far</div>
@@ -465,6 +545,10 @@ export default function Landing() {
                 src={commonSeasLogo} 
                 alt="Common Seas" 
                 className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
+                loading="lazy"
+                decoding="async"
+                width="120"
+                height="64"
               />
             </div>
             <div className="flex items-center justify-center">
@@ -472,6 +556,10 @@ export default function Landing() {
                 src={kidsAgainstPlasticLogo} 
                 alt="Kids Against Plastic" 
                 className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
+                loading="lazy"
+                decoding="async"
+                width="64"
+                height="64"
               />
             </div>
             <div className="flex items-center justify-center">
@@ -479,6 +567,10 @@ export default function Landing() {
                 src={riverCleanupLogo} 
                 alt="River Cleanup" 
                 className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
+                loading="lazy"
+                decoding="async"
+                width="128"
+                height="64"
               />
             </div>
           </div>
@@ -586,7 +678,13 @@ export default function Landing() {
           </div>
           
           <div className="scroll-reveal">
-            <InstagramCarousel />
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-16">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ocean-blue"></div>
+              </div>
+            }>
+              <InstagramCarousel />
+            </Suspense>
           </div>
           
           <div className="text-center mt-12 scroll-reveal">
