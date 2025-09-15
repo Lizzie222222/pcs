@@ -143,7 +143,11 @@ export default function Landing() {
     
     if (!isLoaded) {
       return (
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden group cursor-pointer" onClick={loadVideo}>
+        <button 
+          className="absolute inset-0 w-full h-full z-0 overflow-hidden group cursor-pointer bg-transparent border-none p-0" 
+          onClick={loadVideo}
+          aria-label="Play Plastic Clever Schools introduction video"
+        >
           <img 
             src={heroPosterImage}
             alt="Plastic Clever Schools Hero Video"
@@ -159,7 +163,7 @@ export default function Landing() {
               <Play className="w-8 h-8 text-navy ml-1" fill="currentColor" />
             </div>
           </div>
-        </div>
+        </button>
       );
     }
     

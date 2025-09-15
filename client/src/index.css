@@ -5,8 +5,8 @@
 :root {
   /* Essential Brand Colors Only */
   --navy: hsl(209, 77%, 21%);
-  --ocean-blue: hsl(199, 95%, 49%);
-  --teal: hsl(178, 97%, 37%);
+  --ocean-blue: hsl(199, 95%, 36.5%);
+  --teal: hsl(178, 97%, 26%);
   --coral: hsl(16, 84%, 60%);
   --yellow: hsl(45, 100%, 65%);
   
@@ -14,7 +14,7 @@
   --background: hsl(0 0% 100%);
   --foreground: hsl(210 25% 7.8431%);
   --border: hsl(214.3 31.8% 91.4%);
-  --primary: hsl(199, 95%, 49%);
+  --primary: hsl(199, 95%, 36.5%);
   --primary-foreground: hsl(0 0% 100%);
 }
 

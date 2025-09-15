@@ -182,6 +182,7 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
                   : "bg-gray-300 hover:bg-gray-400"
               }`}
               data-testid={`button-instagram-dot-${i}`}
+              aria-label={`Go to Instagram carousel slide ${i + 1} of ${totalSlides}`}
             />
           ))}
         </div>
@@ -272,10 +273,16 @@ function InstagramPost({ post }: InstagramPostProps) {
               }`}
             />
           </button>
-          <button className="transition-all duration-200 hover:scale-110">
+          <button 
+            className="transition-all duration-200 hover:scale-110"
+            aria-label={`Comment on ${post.username}'s post`}
+          >
             <MessageCircle className="w-6 h-6 text-gray-600 hover:text-ocean-blue transition-colors duration-300" />
           </button>
-          <button className="transition-all duration-200 hover:scale-110">
+          <button 
+            className="transition-all duration-200 hover:scale-110"
+            aria-label={`View ${post.username}'s full post on Instagram`}
+          >
             <ExternalLink className="w-5 h-5 text-gray-600 hover:text-teal transition-colors duration-300" />
           </button>
         </div>
@@ -294,6 +301,7 @@ function InstagramPost({ post }: InstagramPostProps) {
               <button
                 onClick={() => setShowFullCaption(!showFullCaption)}
                 className="text-gray-500 hover:text-gray-700 ml-1 font-medium transition-colors duration-200"
+                aria-label={showFullCaption ? "Show less of caption" : "Show more of caption"}
               >
                 {showFullCaption ? " show less" : " more"}
               </button>
