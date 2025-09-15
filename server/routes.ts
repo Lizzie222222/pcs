@@ -225,6 +225,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { country } = req.query;
       const schools = await storage.getSchools({
         country: country as string,
+        showOnMap: true, // Only show schools that have consented to be on the map
         limit: 1000, // Large limit for map display
       });
       
@@ -268,6 +269,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create school with user as primary contact
       const school = await storage.createSchool({
         ...schoolData,
+        showOnMap: req.body.showOnMap || false, // Include map consent from form
         primaryContactId: user.id,
       });
 

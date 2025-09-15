@@ -331,6 +331,7 @@ export class DatabaseStorage implements IStorage {
     country?: string;
     stage?: string;
     type?: string;
+    showOnMap?: boolean;
     limit?: number;
     offset?: number;
   } = {}): Promise<School[]> {
@@ -343,6 +344,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.type) {
       conditions.push(eq(schools.type, filters.type as any));
+    }
+    if (filters.showOnMap !== undefined) {
+      conditions.push(eq(schools.showOnMap, filters.showOnMap));
     }
     
     let query = db.select().from(schools);

@@ -83,6 +83,7 @@ export const schools = pgTable("schools", {
   actCompleted: boolean("act_completed").default(false),
   awardCompleted: boolean("award_completed").default(false),
   featuredSchool: boolean("featured_school").default(false),
+  showOnMap: boolean("show_on_map").default(false),
   primaryContactId: varchar("primary_contact_id").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),

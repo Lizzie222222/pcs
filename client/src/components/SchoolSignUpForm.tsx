@@ -9,9 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Check, ChevronsUpDown } from "lucide-react";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
 import { X, School, Mail, MapPin, Users } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useCountriesForRegistration } from "@/hooks/useCountries";
 
 const registrationSchema = z.object({
@@ -32,6 +36,7 @@ const registrationSchema = z.object({
   acceptTerms: z.boolean().refine(val => val === true, {
     message: "You must accept the terms and conditions",
   }),
+  showOnMap: z.boolean().default(false),
 });
 
 interface SchoolSignUpFormProps {
@@ -42,6 +47,7 @@ interface SchoolSignUpFormProps {
 export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSignUpFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [countryOpen, setCountryOpen] = useState(false);
 
   const { data: countries = [], isLoading: isLoadingCountries } = useCountriesForRegistration();
 
@@ -61,6 +67,7 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
         email: '',
       },
       acceptTerms: false,
+      showOnMap: false,
     },
   });
 
@@ -201,20 +208,58 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Country *</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-country">
-                              <SelectValue placeholder="Select country" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            {countries.map((country) => (
-                              <SelectItem key={country} value={country}>
-                                {country}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        <Popover open={countryOpen} onOpenChange={setCountryOpen}>
+                          <PopoverTrigger asChild>
+                            <FormControl>
+                              <Button
+                                variant="outline"
+                                role="combobox"
+                                aria-expanded={countryOpen}
+                                className={cn(
+                                  "w-full justify-between",
+                                  !field.value && "text-muted-foreground"
+                                )}
+                                data-testid="select-country"
+                              >
+                                {field.value
+                                  ? countries.find((country) => country === field.value)
+                                  : "Select country"}
+                                <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                              </Button>
+                            </FormControl>
+                          </PopoverTrigger>
+                          <PopoverContent className="w-[300px] p-0">
+                            <Command>
+                              <CommandInput placeholder="Search countries..." />
+                              <CommandList>
+                                <CommandEmpty>No country found.</CommandEmpty>
+                                <CommandGroup>
+                                  {countries.map((country) => (
+                                    <CommandItem
+                                      key={country}
+                                      value={country}
+                                      onSelect={(currentValue) => {
+                                        const selectedCountry = countries.find(
+                                          (c) => c.toLowerCase() === currentValue.toLowerCase()
+                                        );
+                                        field.onChange(selectedCountry === field.value ? "" : selectedCountry);
+                                        setCountryOpen(false);
+                                      }}
+                                    >
+                                      <Check
+                                        className={cn(
+                                          "mr-2 h-4 w-4",
+                                          field.value === country ? "opacity-100" : "opacity-0"
+                                        )}
+                                      />
+                                      {country}
+                                    </CommandItem>
+                                  ))}
+                                </CommandGroup>
+                              </CommandList>
+                            </Command>
+                          </PopoverContent>
+                        </Popover>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -256,7 +301,7 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                         />
                       </FormControl>
                       <FormDescription>
-                        Optional: Help us locate your school on our global map
+                        Optional: This information helps us better understand our community
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -365,6 +410,33 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                 )}
               />
 
+              {/* Show on Map Consent */}
+              <FormField
+                control={form.control}
+                name="showOnMap"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 bg-blue-50/50">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        data-testid="checkbox-show-on-map"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>
+                        Show our school on the public map (optional)
+                      </FormLabel>
+                      <FormDescription>
+                        Allow our school to be featured on the global schools map to inspire other educators. 
+                        You can change this setting later in your school dashboard.
+                      </FormDescription>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* Submit Button */}
               <div className="flex gap-4">
                 <Button
@@ -380,7 +452,7 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="flex-1 bg-coral hover:bg-coral/90"
+                  className="flex-1"
                   data-testid="button-submit-registration"
                 >
                   {isSubmitting ? 'Registering...' : 'Join the Program'}
