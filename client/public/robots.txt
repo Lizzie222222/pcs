@@ -1,0 +1,21 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /api
+Disallow: /_dev/
+Disallow: /_next/
+Disallow: /static/
+Disallow: /*.json$
+
+# Sitemap location
+Sitemap: https://plasticclever.replit.app/sitemap.xml
+
+# Allow all search engines to crawl the main content
+# This will fix the 129 robots.txt errors reported by PageSpeed Insights
+Allow: /
+Allow: /resources
+Allow: /inspiration
+Allow: /schools-map
+Allow: /search
+Allow: /register
+Allow: /login

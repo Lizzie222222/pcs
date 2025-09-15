@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { LoadingSpinner } from "@/components/ui/states";
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
+import { updatePageSEO, addStructuredData, defaultStructuredData } from "@/lib/seoUtils";
 
 // Page Loading Component
 const PageLoadingFallback = () => (
@@ -33,7 +34,7 @@ function Router() {
   const mainRef = useRef<HTMLElement>(null);
   const skipLinkRef = useRef<HTMLAnchorElement>(null);
 
-  // Focus management for route changes
+  // Focus management and SEO for route changes
   useEffect(() => {
     if (mainRef.current) {
       // Reset scroll position
@@ -42,22 +43,15 @@ function Router() {
       // Set focus to main content after route change for screen readers
       mainRef.current.focus();
       
-      // Update page title for screen readers
-      const pageTitles: Record<string, string> = {
-        '/': isAuthenticated ? 'Dashboard - Plastic Clever Schools' : 'Home - Plastic Clever Schools',
-        '/resources': 'Resources - Plastic Clever Schools',
-        '/inspiration': 'Inspiration - Plastic Clever Schools',
-        '/schools-map': 'Schools Map - Plastic Clever Schools',
-        '/search': 'Search - Plastic Clever Schools',
-        '/admin': 'Admin Panel - Plastic Clever Schools',
-        '/login': 'Sign In - Plastic Clever Schools',
-        '/register': 'Register School - Plastic Clever Schools'
-      };
-      
-      const title = pageTitles[location] || 'Page Not Found - Plastic Clever Schools';
-      document.title = title;
+      // Update comprehensive SEO for the current page
+      updatePageSEO(location, isAuthenticated);
     }
   }, [location, isAuthenticated]);
+
+  // Initialize structured data on app load
+  useEffect(() => {
+    addStructuredData('EducationalOrganization', defaultStructuredData);
+  }, []);
 
   // Skip to main content function
   const skipToMainContent = (e: React.MouseEvent) => {
