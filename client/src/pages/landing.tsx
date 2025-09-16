@@ -36,28 +36,14 @@ import booksImage from "@assets/emoji-87fc1963-3634-4869-8114-9e623ac4ab1b_17579
 import booksVideo from "@assets/animation-674499de-46d3-4335-b88b-1e2c39496eca_1757957380584.mp4";
 import heroPosterImage from "@assets/generated_images/Hero_poster_background_image_8557f95c.png";
 import { 
-  School, 
-  Trophy, 
-  Globe, 
-  Users, 
-  Lightbulb, 
-  Search, 
-  Target,
-  ChevronRight,
   Star,
   ArrowRight,
-  CheckCircle,
   Award,
   BookOpen,
-  Play,
   Recycle,
-  Leaf,
   Heart,
   MapPin,
-  Clock,
   TrendingUp,
-  Shield,
-  Zap,
   Instagram
 } from "lucide-react";
 
