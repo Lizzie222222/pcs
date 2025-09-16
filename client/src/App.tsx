@@ -8,6 +8,7 @@ import { LoadingSpinner } from "@/components/ui/states";
 import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
 import { updatePageSEO, addStructuredData, defaultStructuredData } from "@/lib/seoUtils";
+import { useTranslation } from "react-i18next";
 
 // Page Loading Component
 const PageLoadingFallback = () => (
@@ -29,6 +30,7 @@ const Register = lazy(() => import("@/pages/register"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
+  const { t } = useTranslation();
   const { isAuthenticated, isLoading, user } = useAuth();
   const [location] = useLocation();
   const mainRef = useRef<HTMLElement>(null);
@@ -83,7 +85,7 @@ function Router() {
         onClick={skipToMainContent}
         data-testid="link-skip-main"
       >
-        Skip to main content
+        {t('accessibility.skip_to_main_content')}
       </a>
       
       {/* Header with Navigation */}

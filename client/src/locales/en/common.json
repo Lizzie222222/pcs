@@ -87,6 +87,9 @@
     "change_language": "Change Language",
     "language_switcher_label": "Language / Γλώσσα"
   },
+  "accessibility": {
+    "skip_to_main_content": "Skip to main content"
+  },
   "general": {
     "search": "Search",
     "filter": "Filter",
