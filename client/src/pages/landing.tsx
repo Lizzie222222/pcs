@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useTranslation, Trans } from "react-i18next";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -90,6 +91,7 @@ interface SiteStats {
 }
 
 export default function Landing() {
+  const { t } = useTranslation('landing');
   const [showSignUp, setShowSignUp] = useState(false);
   const [videoLoaded, setVideoLoaded] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
@@ -149,7 +151,7 @@ export default function Landing() {
           allow="autoplay; encrypted-media"
           referrerPolicy="strict-origin-when-cross-origin"
           loading="eager"
-          title="Plastic Clever Schools Introduction Video"
+          title={t('accessibility.hero_video_title')}
         />
       </div>
     );
@@ -270,7 +272,7 @@ export default function Landing() {
               }}
               data-testid="text-hero-title"
             >
-              Empower Your School to Lead the Way in Reducing Plastic Waste
+              {t('hero.title')}
             </h1>
 
             {/* CTA Button with Enhanced Animation */}
@@ -280,7 +282,7 @@ export default function Landing() {
               onClick={() => window.location.href = '/register'}
               data-testid="button-register-school"
             >
-              Register Your School Now
+              {t('hero.cta_primary')}
               <ArrowRight className="icon-md ml-3 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
 
@@ -293,15 +295,15 @@ export default function Landing() {
             >
               <div className="flex items-center gap-2">
                 <BookOpen className="icon-sm text-white drop-shadow-lg" />
-                Curriculum Aligned
+                {t('hero.trust_indicators.curriculum_aligned')}
               </div>
               <div className="flex items-center gap-2">
                 <Recycle className="icon-sm text-white drop-shadow-lg" />
-                Proven Impact
+                {t('hero.trust_indicators.proven_impact')}
               </div>
               <div className="flex items-center gap-2">
                 <Heart className="icon-sm text-white drop-shadow-lg" />
-                Completely Free
+                {t('hero.trust_indicators.completely_free')}
               </div>
             </div>
           </div>
@@ -312,9 +314,17 @@ export default function Landing() {
       <section className="section-padding bg-white">
         <div className="container-width relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="heading-2 mb-8 scroll-reveal">What is a <span className="text-ocean-blue">Plastic Clever School</span>?</h2>
+            <h2 className="heading-2 mb-8 scroll-reveal">
+              <Trans 
+                i18nKey="what_is_section.title" 
+                ns="landing"
+                components={{
+                  span: <span className="text-ocean-blue" />
+                }}
+              />
+            </h2>
             <p className="body-large mb-12 max-w-3xl mx-auto scroll-reveal">
-              Plastic Clever Schools is an awards program designed to help schools reduce their single-use plastic consumption. We provide you with the tools and a simple 3-step framework to inspire change, investigate your school's plastic use, and act on solutions—all while empowering your students to become the next generation of environmental leaders.
+              {t('what_is_section.description')}
             </p>
             
             {/* Key Callouts with Delightful Animations */}
@@ -324,39 +334,39 @@ export default function Landing() {
                   <HoverVideo 
                     src={animationVideo}
                     poster={emojiImage}
-                    alt="Award trophy"
+                    alt={t('accessibility.award_trophy_alt')}
                     className="w-full h-full object-contain"
                     containerClassName="w-full h-full"
                   />
                 </div>
-                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-ocean-blue">Award-Winning Program</h3>
-                <p className="body-text">Recognized for our effective approach to reducing waste.</p>
+                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-ocean-blue">{t('what_is_section.award_winning.title')}</h3>
+                <p className="body-text">{t('what_is_section.award_winning.description')}</p>
               </div>
               <div className="text-center group cursor-pointer">
                 <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200" style={{ minHeight: '128px' }}>
                   <HoverVideo 
                     src={studentVideo}
                     poster={studentImage}
-                    alt="Student character"
+                    alt={t('accessibility.student_character_alt')}
                     className="w-full h-full object-contain"
                     containerClassName="w-full h-full"
                   />
                 </div>
-                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-teal">Student-Led Action</h3>
-                <p className="body-text">Kids are at the heart of every step, fostering a sense of ownership and responsibility.</p>
+                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-teal">{t('what_is_section.student_led.title')}</h3>
+                <p className="body-text">{t('what_is_section.student_led.description')}</p>
               </div>
               <div className="text-center group cursor-pointer">
                 <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200" style={{ minHeight: '128px' }}>
                   <HoverVideo 
                     src={booksVideo}
                     poster={booksImage}
-                    alt="Books and resources"
+                    alt={t('accessibility.books_resources_alt')}
                     className="w-full h-full object-contain"
                     containerClassName="w-full h-full"
                   />
                 </div>
-                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-navy">Free Resources</h3>
-                <p className="body-text">Access a full toolkit of guides, worksheets, and activities to make your journey simple and effective.</p>
+                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-navy">{t('what_is_section.free_resources.title')}</h3>
+                <p className="body-text">{t('what_is_section.free_resources.description')}</p>
               </div>
             </div>
             
@@ -366,7 +376,7 @@ export default function Landing() {
               data-testid="button-download-sample"
             >
               <span className="mr-2">📚</span>
-              Download a Sample Resource
+              {t('what_is_section.download_sample_cta')}
               <ArrowRight className="icon-md ml-2 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
           </div>
@@ -379,7 +389,7 @@ export default function Landing() {
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4">Join a <span className="text-ocean-blue">Growing Movement</span></h2>
             <p className="body-large max-w-3xl mx-auto">
-              More than {stats?.totalSchools?.toLocaleString() || '1,542'} schools have already registered for the Plastic Clever Schools program, making a collective impact on waste reduction and environmental education.
+              {t('social_proof.description', { count: stats?.totalSchools || 1542 })}
             </p>
           </div>
           
@@ -387,14 +397,14 @@ export default function Landing() {
             <div className="text-6xl lg:text-8xl font-bold text-navy mb-4 scroll-reveal-scale" data-testid="stat-registered-schools" style={{ minHeight: '96px' }}>
               {stats?.totalSchools?.toLocaleString() || '1542'}+
             </div>
-            <div className="text-xl lg:text-2xl text-gray-600 mb-8 scroll-reveal">Registered Schools So Far</div>
+            <div className="text-xl lg:text-2xl text-gray-600 mb-8 scroll-reveal">{t('social_proof.registered_schools_label')}</div>
             <Button 
               size="lg"
               className="btn-primary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300 scroll-reveal"
               data-testid="button-view-schools"
             >
               <MapPin className="icon-md mr-2 transition-transform duration-300 group-hover:rotate-12" />
-              View All Registered Schools
+              {t('social_proof.view_schools_cta')}
               <ArrowRight className="icon-md ml-2 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
           </div>
@@ -407,7 +417,7 @@ export default function Landing() {
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4 scroll-reveal">A Simple <span className="text-ocean-blue">3-Stage Journey</span> to a Plastic Clever School</h2>
             <p className="body-large max-w-3xl mx-auto scroll-reveal">
-              Our proven framework breaks down your school's transformation into three straightforward stages.
+              {t('three_stage_program.subtitle')}
             </p>
           </div>
 
@@ -418,7 +428,7 @@ export default function Landing() {
                 <HoverVideo 
                   src={inspireVideo}
                   poster={inspireIcon}
-                  alt="Inspire"
+                  alt={t('accessibility.inspire_stage_alt')}
                   className="w-30 h-30"
                   containerClassName="w-full h-full"
                 />
@@ -426,8 +436,8 @@ export default function Landing() {
               <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
-              <h3 className="heading-4 mb-4">INSPIRE</h3>
-              <p className="body-text mb-6">Engage and educate your school community about the impact of plastic pollution. Use our resources to inspire students, teachers, and staff to take part in this vital mission.</p>
+              <h3 className="heading-4 mb-4">{t('three_stage_program.stage_1_title')}</h3>
+              <p className="body-text mb-6">{t('three_stage_program.stage_1_description')}</p>
             </div>
 
             {/* Stage 2: Investigate */}
@@ -436,7 +446,7 @@ export default function Landing() {
                 <HoverVideo 
                   src={investigateVideo}
                   poster={investigateIcon}
-                  alt="Investigate"
+                  alt={t('accessibility.investigate_stage_alt')}
                   className="w-30 h-30"
                   containerClassName="w-full h-full"
                 />
@@ -444,8 +454,8 @@ export default function Landing() {
               <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">2</span>
               </div>
-              <h3 className="heading-4 mb-4">INVESTIGATE</h3>
-              <p className="body-text mb-6">Work together to identify the key single-use plastics in your school. Our tools will help you pinpoint problem areas and prepare a clear plan for effective action.</p>
+              <h3 className="heading-4 mb-4">{t('three_stage_program.stage_2_title')}</h3>
+              <p className="body-text mb-6">{t('three_stage_program.stage_2_description')}</p>
             </div>
 
             {/* Stage 3: Act */}
@@ -454,7 +464,7 @@ export default function Landing() {
                 <HoverVideo 
                   src={actVideo}
                   poster={actIcon}
-                  alt="Act"
+                  alt={t('accessibility.act_stage_alt')}
                   className="w-30 h-30"
                   containerClassName="w-full h-full"
                 />
@@ -462,16 +472,16 @@ export default function Landing() {
               <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">3</span>
               </div>
-              <h3 className="heading-4 mb-4">ACT</h3>
-              <p className="body-text mb-6">Implement sustainable 'swaps' and strategies to remove single-use plastics from your school environment. Celebrate your progress as you create lasting change.</p>
+              <h3 className="heading-4 mb-4">{t('three_stage_program.stage_3_title')}</h3>
+              <p className="body-text mb-6">{t('three_stage_program.stage_3_description')}</p>
             </div>
           </div>
 
           {/* Recognition Section */}
           <div className="mt-16 text-center bg-gray-50 rounded-xl p-12 scroll-reveal-scale">
-            <h3 className="heading-3 mb-4">Earn Recognition for Your Impact</h3>
+            <h3 className="heading-3 mb-4">{t('three_stage_program.recognition_title')}</h3>
             <p className="body-large mb-8 max-w-3xl mx-auto">
-              Complete each stage to earn digital badges and certificates that showcase your school's environmental leadership
+              {t('three_stage_program.recognition_description')}
             </p>
             
             <div className="flex flex-wrap justify-center gap-6">
@@ -479,19 +489,19 @@ export default function Landing() {
                 <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
                   <Star className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-ocean-blue">Digital Badges</span>
+                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-ocean-blue">{t('three_stage_program.digital_badges')}</span>
               </div>
               <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-2">
                 <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
                   <Award className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-teal">Certificates</span>
+                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-teal">{t('three_stage_program.certificates')}</span>
               </div>
               <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-3">
                 <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
                   <TrendingUp className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
-                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-navy">Progress Tracking</span>
+                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-navy">{t('three_stage_program.progress_tracking')}</span>
               </div>
             </div>
           </div>
@@ -504,7 +514,7 @@ export default function Landing() {
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4 scroll-reveal">Built on <span className="text-ocean-blue">Strong Partnerships</span></h2>
             <p className="body-large max-w-3xl mx-auto scroll-reveal">
-              Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education.
+              {t('partnership.description')}
             </p>
           </div>
           
@@ -512,7 +522,7 @@ export default function Landing() {
             <div className="flex items-center justify-center">
               <img 
                 src={commonSeasLogo} 
-                alt="Common Seas" 
+                alt={t('accessibility.common_seas_logo_alt')} 
                 className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
                 loading="lazy"
                 decoding="async"
@@ -523,7 +533,7 @@ export default function Landing() {
             <div className="flex items-center justify-center">
               <img 
                 src={kidsAgainstPlasticLogo} 
-                alt="Kids Against Plastic" 
+                alt={t('accessibility.kids_against_plastic_logo_alt')} 
                 className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
                 loading="lazy"
                 decoding="async"
@@ -534,7 +544,7 @@ export default function Landing() {
             <div className="flex items-center justify-center">
               <img 
                 src={riverCleanupLogo} 
-                alt="River Cleanup" 
+                alt={t('accessibility.river_cleanup_logo_alt')} 
                 className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
                 loading="lazy"
                 decoding="async"
@@ -552,7 +562,7 @@ export default function Landing() {
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4 scroll-reveal">Why <span className="text-ocean-blue">Schools Choose Us</span></h2>
             <p className="body-large max-w-3xl mx-auto scroll-reveal">
-              Hear from educators and students who have transformed their schools through our program
+              {t('testimonials.subtitle')}
             </p>
           </div>
 
@@ -565,15 +575,15 @@ export default function Landing() {
                 ))}
               </div>
               <p className="body-text italic mb-4">
-                "The structured approach made implementation seamless. Our students are now passionate environmental advocates!"
+                "{t('testimonials.testimonial_1.quote')}"
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-ocean-blue rounded-full flex items-center justify-center text-white font-bold">
                   SJ
                 </div>
                 <div>
-                  <div className="font-semibold text-navy">Sarah Johnson</div>
-                  <div className="caption">Green Valley Primary, UK</div>
+                  <div className="font-semibold text-navy">{t('testimonials.testimonial_1.name')}</div>
+                  <div className="caption">{t('testimonials.testimonial_1.school')}</div>
                 </div>
               </div>
             </div>
@@ -586,15 +596,15 @@ export default function Landing() {
                 ))}
               </div>
               <p className="body-text italic mb-4">
-                "We've reduced plastic waste by 60%! The whole school community is involved and excited about sustainability."
+                "{t('testimonials.testimonial_2.quote')}"
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-teal rounded-full flex items-center justify-center text-white font-bold">
                   MR
                 </div>
                 <div>
-                  <div className="font-semibold text-navy">Maria Rodriguez</div>
-                  <div className="caption">Sunshine Elementary, Australia</div>
+                  <div className="font-semibold text-navy">{t('testimonials.testimonial_2.name')}</div>
+                  <div className="caption">{t('testimonials.testimonial_2.school')}</div>
                 </div>
               </div>
             </div>
@@ -607,15 +617,15 @@ export default function Landing() {
                 ))}
               </div>
               <p className="body-text italic mb-4">
-                "Perfect for cross-curricular learning! We integrated it across science, geography, and citizenship classes."
+                "{t('testimonials.testimonial_3.quote')}"
               </p>
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-navy rounded-full flex items-center justify-center text-white font-bold">
                   DK
                 </div>
                 <div>
-                  <div className="font-semibold text-navy">David Kim</div>
-                  <div className="caption">Future Leaders High, Canada</div>
+                  <div className="font-semibold text-navy">{t('testimonials.testimonial_3.name')}</div>
+                  <div className="caption">{t('testimonials.testimonial_3.school')}</div>
                 </div>
               </div>
             </div>
@@ -630,7 +640,7 @@ export default function Landing() {
           <div className="text-center mb-16">
             <h2 className="heading-2 mb-4 scroll-reveal">Follow <span className="text-ocean-blue">Our Journey</span></h2>
             <p className="body-large max-w-3xl mx-auto scroll-reveal">
-              See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.
+              {t('instagram.description')}
             </p>
             <div className="flex justify-center mt-6">
               <a 
@@ -678,7 +688,7 @@ export default function Landing() {
             <div>
               <img 
                 src={logoUrl} 
-                alt="Plastic Clever Schools" 
+                alt={t('accessibility.plastic_clever_schools_logo_alt')} 
                 className="h-10 w-auto mb-4 brightness-0 invert" 
               />
               <p className="text-gray-300 text-sm">
