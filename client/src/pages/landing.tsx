@@ -132,27 +132,67 @@ export default function Landing() {
     element?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // YouTube Hero Video Component - Restored to auto-play
+  // Performance-optimized Hero Video Component with lazy loading
   function HeroVideo() {
+    const [showVideo, setShowVideo] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    
+    const handlePlayClick = () => {
+      setIsLoading(true);
+      setShowVideo(true);
+    };
+
+    if (showVideo) {
+      return (
+        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
+          {isLoading && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+            </div>
+          )}
+          <iframe 
+            src="https://www.youtube.com/embed/jyL1lt-72HQ?autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=1&end=29&enablejsapi=0"
+            className="absolute inset-0 w-full h-full"
+            style={{ border: 'none' }}
+            allow="autoplay; encrypted-media"
+            referrerPolicy="strict-origin-when-cross-origin"
+            title={t('accessibility.hero_video_title')}
+            onLoad={() => setIsLoading(false)}
+            data-testid="hero-video-iframe"
+          />
+        </div>
+      );
+    }
+
     return (
       <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-        <iframe 
-          src="https://www.youtube.com/embed/jyL1lt-72HQ?autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=1&end=29&enablejsapi=0"
-          className="absolute inset-0"
-          style={{ 
-            border: 'none',
-            width: '300%',
-            height: '300%',
-            left: '-100%',
-            top: '-100%',
-            transform: 'scale(0.5)',
-            transformOrigin: 'center center'
-          }}
-          allow="autoplay; encrypted-media"
-          referrerPolicy="strict-origin-when-cross-origin"
-          loading="eager"
-          title={t('accessibility.hero_video_title')}
+        {/* High-quality poster image that acts as video placeholder */}
+        <OptimizedImage
+          src="https://img.youtube.com/vi/jyL1lt-72HQ/maxresdefault.jpg"
+          alt={t('accessibility.hero_video_title')}
+          width={1920}
+          height={1080}
+          className="w-full h-full object-cover"
+          priority={true}
         />
+        {/* Play button overlay */}
+        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+          <button
+            onClick={handlePlayClick}
+            className="group flex items-center justify-center w-20 h-20 bg-white/90 hover:bg-white rounded-full transition-all duration-300 hover:scale-110"
+            aria-label={t('accessibility.play_hero_video')}
+            data-testid="button-play-hero-video"
+          >
+            <svg 
+              className="w-8 h-8 text-gray-800 ml-1 group-hover:text-gray-900" 
+              fill="currentColor" 
+              viewBox="0 0 24 24"
+              aria-hidden="true"
+            >
+              <path d="M8 5v14l11-7z"/>
+            </svg>
+          </button>
+        </div>
       </div>
     );
   }
