@@ -1,0 +1,50 @@
+{
+  "page": {
+    "title": "Παγκόσμιο Δίκτυο Σχολείων", 
+    "subtitle": "Εξερευνήστε την παγκόσμια κοινότητα σχολείων που συμμετέχουν στο πρόγραμμα Plastic Clever Schools"
+  },
+  "controls": {
+    "legend": {
+      "in_progress": "Σε Εξέλιξη",
+      "award_completed": "Βραβείο Ολοκληρώθηκε",
+      "featured_schools": "Προτεινόμενα Σχολεία"
+    },
+    "filters": {
+      "all_countries": "Όλες οι Χώρες",
+      "export_data": "Εξαγωγή Δεδομένων"
+    }
+  },
+  "map": {
+    "loading_map": "Φόρτωση χάρτη...",
+    "marker_popup": {
+      "completed": "Ολοκληρώθηκε",
+      "featured": "Προτεινόμενο"
+    }
+  },
+  "statistics": {
+    "countries": "Χώρες",
+    "total_schools": "Συνολικά Σχολεία", 
+    "awards_completed": "Βραβεία που Ολοκληρώθηκαν",
+    "featured": "Προτεινόμενα Σχολεία"
+  },
+  "regional_breakdown": {
+    "title": "Περιφερειακή Ανάλυση",
+    "schools": "σχολεία",
+    "completed": "ολοκληρώθηκαν",
+    "featured": "προτεινόμενα"
+  },
+  "loading": {
+    "skeleton_region": "Φόρτωση περιφερειακών δεδομένων..."
+  },
+  "stages": {
+    "inspire": "έμπνευση",
+    "investigate": "έρευνα", 
+    "act": "δράση"
+  },
+  "export": {
+    "button_text": "Εξαγωγή Δεδομένων",
+    "csv_filename": "plastic-clever-schools-data.csv",
+    "success_message": "Τα δεδομένα εξήχθησαν επιτυχώς",
+    "error_message": "Αποτυχία εξαγωγής δεδομένων"
+  }
+}

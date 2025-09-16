@@ -1,0 +1,69 @@
+{
+  "page": {
+    "title": "Εκπαιδευτικοί Πόροι",
+    "subtitle": "Υψηλής ποιότητας υλικά για να υποστηρίξουν το ταξίδι σας χωρίς πλαστικά μέσα από όλα τα τρία στάδια του προγράμματος"
+  },
+  "search": {
+    "title": "Αναζήτηση & Φιλτράρισμα Πόρων",
+    "placeholder": "Αναζήτηση πόρων...",
+    "all_stages": "Όλα τα Στάδια",
+    "all_countries": "Όλες οι Χώρες",
+    "all_languages": "Όλες οι Γλώσσες",
+    "all_status": "Όλες οι Καταστάσεις"
+  },
+  "filters": {
+    "stage": "Στάδιο",
+    "country": "Χώρα",
+    "language": "Γλώσσα",
+    "age_range": "Ηλικιακό Εύρος",
+    "file_type": "Τύπος Αρχείου",
+    "status": "Κατάσταση"
+  },
+  "stages": {
+    "inspire": "Έμπνευση",
+    "investigate": "Έρευνα", 
+    "act": "Δράση"
+  },
+  "languages": {
+    "english": "Αγγλικά",
+    "spanish": "Ισπανικά",
+    "french": "Γαλλικά",
+    "german": "Γερμανικά",
+    "other": "Άλλη"
+  },
+  "file_types": {
+    "pdf": "Έγγραφο PDF",
+    "video": "Βίντεο",
+    "image": "Εικόνα",
+    "presentation": "Παρουσίαση",
+    "worksheet": "Φύλλο Εργασίας"
+  },
+  "resource_card": {
+    "downloads": "Λήψεις",
+    "download_count": "{{count}} λήψεις",
+    "file_size": "Μέγεθος αρχείου",
+    "age_range": "Ηλικιακό εύρος",
+    "global": "Παγκόσμιο",
+    "download_resource": "Λήψη Πόρου"
+  },
+  "empty_state": {
+    "title": "Δεν Βρέθηκαν Πόροι",
+    "message": "Δοκιμάστε να προσαρμόσετε τα κριτήρια αναζήτησής σας ή ελέγξτε ξανά αργότερα για νέους πόρους.",
+    "clear_filters": "Καθαρισμός Φίλτρων"
+  },
+  "categories": {
+    "lesson_plans": "Σχέδια Μαθημάτων",
+    "worksheets": "Φύλλα Εργασίας", 
+    "presentations": "Παρουσιάσεις",
+    "videos": "Βίντεο",
+    "posters": "Αφίσες",
+    "assessment_tools": "Εργαλεία Αξιολόγησης",
+    "case_studies": "Μελέτες Περίπτωσης",
+    "research_materials": "Ερευνητικά Υλικά"
+  },
+  "accessibility": {
+    "download_started": "Η λήψη ξεκίνησε για {{title}}",
+    "resource_unavailable": "Αυτός ο πόρος δεν είναι διαθέσιμος αυτή τη στιγμή",
+    "large_file_warning": "Αυτό είναι ένα μεγάλο αρχείο ({{size}}). Η λήψη μπορεί να διαρκέσει λίγο."
+  }
+}

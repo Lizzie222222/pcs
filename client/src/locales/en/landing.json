@@ -1,0 +1,95 @@
+{
+  "hero": {
+    "title": "Empower Your School to Lead the Way in Reducing Plastic Waste",
+    "subtitle": "Join a global movement of schools creating lasting environmental change through education, investigation, and action.",
+    "cta_primary": "Register Your School Today",
+    "cta_secondary": "Explore the Program",
+    "watch_video": "Watch Introduction Video"
+  },
+  "stats": {
+    "schools_registered": "Schools Registered",
+    "students_impacted": "Students Impacted", 
+    "countries_participating": "Countries Participating",
+    "awards_completed": "Awards Completed"
+  },
+  "program": {
+    "title": "Our Three-Stage Program",
+    "subtitle": "Transform your school community through structured learning and action",
+    "stage_1": {
+      "title": "Inspire",
+      "description": "Build awareness and motivation around plastic pollution issues",
+      "details": "Engage students with compelling presentations, videos, and interactive activities that highlight the urgency of plastic pollution and inspire them to take action."
+    },
+    "stage_2": {
+      "title": "Investigate", 
+      "description": "Research and analyze plastic use in your school",
+      "details": "Conduct comprehensive plastic audits, collect data, and analyze patterns of plastic consumption to understand your school's environmental impact."
+    },
+    "stage_3": {
+      "title": "Act",
+      "description": "Create lasting change through practical solutions",
+      "details": "Implement sustainable alternatives, reduce plastic waste, and create long-term policies that make your school a model for environmental responsibility."
+    }
+  },
+  "benefits": {
+    "title": "Why Join Plastic Clever Schools?",
+    "subtitle": "Discover the transformative benefits for your educational community",
+    "comprehensive_curriculum": {
+      "title": "Comprehensive Curriculum",
+      "description": "Access expertly designed lesson plans and resources aligned with educational standards"
+    },
+    "global_network": {
+      "title": "Global Network",
+      "description": "Connect with schools worldwide and share best practices for environmental education"
+    },
+    "progress_tracking": {
+      "title": "Progress Tracking",
+      "description": "Monitor your school's journey with detailed analytics and achievement milestones"
+    },
+    "expert_support": {
+      "title": "Expert Support",
+      "description": "Get guidance from environmental educators and sustainability professionals"
+    },
+    "real_impact": {
+      "title": "Real Impact",
+      "description": "Make measurable differences in plastic waste reduction and environmental awareness"
+    },
+    "award_recognition": {
+      "title": "Award Recognition", 
+      "description": "Earn certificates and recognition for your school's environmental achievements"
+    }
+  },
+  "process": {
+    "title": "How It Works",
+    "subtitle": "Simple steps to transform your school into an environmental leader",
+    "step_1": {
+      "title": "Register",
+      "description": "Sign up your school and create your educator profile"
+    },
+    "step_2": {
+      "title": "Learn", 
+      "description": "Access curriculum materials and training resources"
+    },
+    "step_3": {
+      "title": "Implement",
+      "description": "Execute the three-stage program with your students"
+    },
+    "step_4": {
+      "title": "Share",
+      "description": "Document progress and share your success stories"
+    }
+  },
+  "partners": {
+    "title": "Our Trusted Partners",
+    "subtitle": "Working together to create a plastic-free future",
+    "description": "We collaborate with leading environmental organizations, educational institutions, and sustainability experts to deliver the highest quality resources and support for your school's journey."
+  },
+  "cta_section": {
+    "title": "Ready to Make a Difference?",
+    "subtitle": "Join thousands of schools worldwide in the fight against plastic pollution",
+    "description": "Your school can be part of the solution. Register today and start your journey toward becoming a Plastic Clever School.",
+    "register_now": "Register Your School Now",
+    "have_questions": "Have questions?",
+    "contact_support": "Contact our support team"
+  }
+}

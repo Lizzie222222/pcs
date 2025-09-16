@@ -1,0 +1,89 @@
+{
+  "welcome": {
+    "title": "Welcome to Your Dashboard",
+    "subtitle": "Track your school's progress through the Plastic Clever Schools program",
+    "loading_dashboard": "Loading your dashboard...",
+    "unauthorized_title": "Unauthorized",
+    "unauthorized_message": "You are logged out. Logging in again...",
+    "school_registration_required": "School Registration Required",
+    "school_registration_message": "Please complete your school registration to access the dashboard.",
+    "redirecting_title": "Setting up your account...",
+    "redirecting_message": "Redirecting you to complete school registration."
+  },
+  "school_info": {
+    "school_name": "School Name",
+    "current_stage": "Current Stage",
+    "progress_percentage": "Progress",
+    "students_impacted": "Students Impacted"
+  },
+  "progress": {
+    "title": "Program Progress",
+    "overall_progress": "Overall Progress",
+    "stages_completed": "Stages Completed",
+    "inspire": {
+      "title": "Inspire",
+      "description": "Build awareness and motivation",
+      "activities": {
+        "assembly_presentation": "Assembly presentation",
+        "student_engagement": "Student engagement", 
+        "evidence_submission": "Evidence submission"
+      }
+    },
+    "investigate": {
+      "title": "Investigate",
+      "description": "Research and analyze",
+      "activities": {
+        "plastic_audit": "Plastic audit conducted",
+        "data_collection": "Data collection",
+        "evidence_review": "Evidence review"
+      }
+    },
+    "act": {
+      "title": "Act", 
+      "description": "Create lasting change",
+      "activities": {
+        "action_plan": "Action plan development",
+        "implementation": "Implementation activities",
+        "impact_measurement": "Impact measurement"
+      }
+    },
+    "stage_locked": "Complete previous stage to unlock",
+    "stage_current": "Current Stage",
+    "stage_completed": "Completed"
+  },
+  "evidence": {
+    "title": "Evidence Submissions",
+    "recent_evidence": "Recent Evidence",
+    "submit_evidence": "Submit Evidence",
+    "no_evidence": "No evidence submitted yet",
+    "evidence_pending": "Evidence pending review",
+    "evidence_approved": "Evidence approved",
+    "evidence_rejected": "Evidence needs revision",
+    "upload_files": "Upload Files",
+    "submission_successful": "Evidence submitted successfully",
+    "submission_failed": "Failed to submit evidence"
+  },
+  "quick_actions": {
+    "title": "Quick Actions",
+    "submit_evidence": "Submit Evidence",
+    "view_resources": "View Resources", 
+    "track_progress": "Track Progress",
+    "view_analytics": "View Analytics"
+  },
+  "achievements": {
+    "title": "Achievements",
+    "no_achievements": "No achievements yet",
+    "inspire_completed": "Inspire Stage Completed",
+    "investigate_completed": "Investigate Stage Completed",
+    "act_completed": "Act Stage Completed",
+    "award_earned": "Plastic Clever School Award Earned"
+  },
+  "activity_feed": {
+    "title": "Recent Activity",
+    "no_activity": "No recent activity",
+    "evidence_submitted": "Evidence submitted for {{stage}} stage",
+    "evidence_approved": "Evidence approved for {{stage}} stage",
+    "stage_completed": "{{stage}} stage completed",
+    "welcome_message": "Welcome to Plastic Clever Schools!"
+  }
+}

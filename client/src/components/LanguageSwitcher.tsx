@@ -25,7 +25,7 @@ export function LanguageSwitcher() {
           data-testid="button-language-switcher"
         >
           <Globe className="h-4 w-4" />
-          <span className="sr-only">{t('language')}</span>
+          <span className="sr-only">{t('common:language.language')}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -33,13 +33,13 @@ export function LanguageSwitcher() {
           onClick={() => handleLanguageChange('en')}
           data-testid="language-option-en"
         >
-          {t('english')}
+          {t('common:language.english')}
         </DropdownMenuItem>
         <DropdownMenuItem 
           onClick={() => handleLanguageChange('el')}
           data-testid="language-option-el"
         >
-          {t('greek')}
+          {t('common:language.greek')}
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

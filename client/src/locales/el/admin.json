@@ -1,0 +1,151 @@
+{
+  "navigation": {
+    "overview": "Επισκόπηση",
+    "analytics": "Αναλύσεις",
+    "evidence": "Αναθεώρηση Αποδεικτικών",
+    "resources": "Διαχείριση Πόρων",
+    "schools": "Διαχείριση Σχολείων",
+    "admin_panel": "Πίνακας Διαχείρισης"
+  },
+  "overview": {
+    "title": "Επισκόπηση Διαχείρισης",
+    "subtitle": "Παρακολουθήστε τη δραστηριότητα και την απόδοση της πλατφόρμας",
+    "total_schools": "Συνολικά Σχολεία",
+    "total_students": "Συνολικά Μαθητές",
+    "pending_evidence": "Αποδεικτικά σε Αναμονή",
+    "resources_uploaded": "Πόροι που Μεταφορτώθηκαν"
+  },
+  "analytics": {
+    "title": "Αναλύσεις Πλατφόρμας",
+    "subtitle": "Ολοκληρωμένες γνώσεις για την αποτελεσματικότητα του προγράμματος",
+    "global_metrics": "Παγκόσμιες Μετρήσεις",
+    "enrollment_over_time": "Εγγραφές Σχολείων με τον Χρόνο",
+    "evidence_submissions": "Υποβολές Αποδεικτικών ανά Στάδιο",
+    "geographic_distribution": "Γεωγραφική Κατανομή",
+    "completion_rates": "Ποσοστά Ολοκλήρωσης Σταδίων",
+    "resource_downloads": "Στατιστικά Λήψης Πόρων",
+    "filter_by_period": "Φιλτράρισμα ανά Περίοδο",
+    "last_30_days": "Τελευταίες 30 Ημέρες",
+    "last_90_days": "Τελευταίες 90 Ημέρες",
+    "last_year": "Τελευταίος Χρόνος",
+    "all_time": "Όλος ο Χρόνος",
+    "export_report": "Εξαγωγή Αναφοράς",
+    "charts": {
+      "schools_by_country": "Σχολεία ανά Χώρα",
+      "completion_by_stage": "Ποσοστό Ολοκλήρωσης ανά Στάδιο",
+      "monthly_registrations": "Μηνιαίες Εγγραφές Σχολείων",
+      "evidence_status": "Κατάσταση Αναθεώρησης Αποδεικτικών"
+    }
+  },
+  "evidence": {
+    "title": "Αναθεώρηση Αποδεικτικών",
+    "subtitle": "Αναθεωρήστε και ελέγξτε τις υποβολές αποδεικτικών",
+    "pending_review": "Σε Αναμονή Αναθεώρησης",
+    "approved": "Εγκρίθηκαν",
+    "needs_revision": "Χρειάζονται Αναθεώρηση",
+    "filter_by_stage": "Φιλτράρισμα ανά Στάδιο",
+    "filter_by_status": "Φιλτράρισμα ανά Κατάσταση",
+    "sort_by": "Ταξινόμηση ανά",
+    "newest_first": "Νεότερα Πρώτα",
+    "oldest_first": "Παλαιότερα Πρώτα",
+    "school_name": "Όνομα Σχολείου",
+    "stage": "Στάδιο",
+    "submitted_date": "Ημερομηνία Υποβολής",
+    "review_evidence": "Αναθεώρηση Αποδεικτικών",
+    "approve_evidence": "Έγκριση Αποδεικτικών",
+    "request_revision": "Αίτημα Αναθεώρησης",
+    "add_feedback": "Προσθήκη Σχολίων",
+    "feedback_placeholder": "Παρέχετε σχόλια για το σχολείο...",
+    "approve_button": "Έγκριση",
+    "revision_button": "Αίτημα Αναθεώρησης",
+    "evidence_approved": "Τα αποδεικτικά εγκρίθηκαν επιτυχώς",
+    "evidence_revision_requested": "Η αναθεώρηση ζητήθηκε επιτυχώς",
+    "bulk_actions": "Μαζικές Ενέργειες",
+    "select_all": "Επιλογή Όλων",
+    "bulk_approve": "Μαζική Έγκριση",
+    "bulk_request_revision": "Μαζικό Αίτημα Αναθεώρησης"
+  },
+  "resources": {
+    "title": "Διαχείριση Πόρων",
+    "subtitle": "Μεταφορτώστε και διαχειριστείτε εκπαιδευτικούς πόρους",
+    "upload_resource": "Μεταφόρτωση Νέου Πόρου",
+    "resource_library": "Βιβλιοθήκη Πόρων",
+    "featured_resources": "Προτεινόμενοι Πόροι",
+    "upload_form": {
+      "title": "Μεταφόρτωση Νέου Πόρου",
+      "resource_title": "Τίτλος Πόρου",
+      "description": "Περιγραφή", 
+      "stage": "Στόχος Σταδίου",
+      "language": "Γλώσσα",
+      "age_range": "Ηλικιακό Εύρος",
+      "file_type": "Τύπος Αρχείου",
+      "visibility": "Ορατότητα",
+      "featured": "Προτεινόμενος Πόρος",
+      "featured_description": "Σημειώστε ως προτεινόμενο για να αναδείξετε αυτόν τον πόρο",
+      "upload_file": "Μεταφόρτωση Αρχείου",
+      "save_resource": "Αποθήκευση Πόρου",
+      "cancel": "Ακύρωση"
+    },
+    "resource_table": {
+      "title": "Τίτλος",
+      "type": "Τύπος",
+      "stage": "Στάδιο",
+      "downloads": "Λήψεις",
+      "status": "Κατάσταση",
+      "actions": "Ενέργειες",
+      "edit": "Επεξεργασία",
+      "delete": "Διαγραφή",
+      "feature": "Προτείνω",
+      "unfeature": "Αναίρεση Πρότασης"
+    },
+    "delete_confirmation": {
+      "title": "Διαγραφή Πόρου",
+      "message": "Είστε σίγουροι ότι θέλετε να διαγράψετε αυτόν τον πόρο; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.",
+      "delete": "Διαγραφή",
+      "cancel": "Ακύρωση"
+    },
+    "resource_uploaded": "Ο πόρος μεταφορτώθηκε επιτυχώς",
+    "resource_updated": "Ο πόρος ενημερώθηκε επιτυχώς",
+    "resource_deleted": "Ο πόρος διαγράφηκε επιτυχώς"
+  },
+  "schools": {
+    "title": "Διαχείριση Σχολείων",
+    "subtitle": "Διαχειριστείτε εγγεγραμμένα σχολεία και λογαριασμούς χρηστών",
+    "active_schools": "Ενεργά Σχολεία",
+    "pending_approval": "Σε Αναμονή Έγκρισης",
+    "search_schools": "Αναζήτηση σχολείων...",
+    "school_table": {
+      "school_name": "Όνομα Σχολείου",
+      "country": "Χώρα",
+      "contact": "Κύρια Επαφή",
+      "stage": "Τρέχον Στάδιο",
+      "registered_date": "Εγγράφηκε",
+      "status": "Κατάσταση",
+      "actions": "Ενέργειες"
+    },
+    "school_actions": {
+      "view_details": "Προβολή Λεπτομερειών",
+      "edit_school": "Επεξεργασία Σχολείου",
+      "deactivate": "Απενεργοποίηση",
+      "activate": "Ενεργοποίηση",
+      "delete": "Διαγραφή"
+    },
+    "school_status": {
+      "active": "Ενεργό",
+      "pending": "Σε Αναμονή Έγκρισης",
+      "inactive": "Ανενεργό",
+      "suspended": "Αναστολή"
+    },
+    "school_details": {
+      "basic_info": "Βασικές Πληροφορίες",
+      "contact_info": "Στοιχεία Επικοινωνίας",
+      "progress": "Πρόοδος Προγράμματος",
+      "evidence_history": "Ιστορικό Αποδεικτικών",
+      "last_activity": "Τελευταία Δραστηριότητα"
+    }
+  },
+  "permissions": {
+    "admin_only": "Απαιτείται πρόσβαση διαχειριστή",
+    "insufficient_permissions": "Ανεπαρκή δικαιώματα για πρόσβαση σε αυτή τη λειτουργία"
+  }
+}

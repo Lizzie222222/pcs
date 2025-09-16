@@ -1,0 +1,71 @@
+{
+  "signup": {
+    "title": "Συμμετέχετε στο Newsletter μας",
+    "title_hero": "Μείνετε Συνδεδεμένοι",
+    "title_compact": "Newsletter",
+    "description": "Μείνετε ενημερωμένοι με τους τελευταίους πόρους, ιστορίες επιτυχίας και συμβουλές για την αντιμετώπιση της πλαστικής ρύπανσης στα σχολεία.",
+    "description_hero": "Λάβετε τις τελευταίες ενημερώσεις για λύσεις πλαστικής ρύπανσης και εκπαιδευτικούς πόρους.",
+    "form": {
+      "first_name": "Όνομα",
+      "last_name": "Επώνυμο", 
+      "email": "Εισάγετε τη διεύθυνση email σας",
+      "email_compact": "Εισάγετε το email σας",
+      "subscribe_button": "Εγγραφή στο Newsletter",
+      "subscribe_button_compact": "Εγγραφή",
+      "subscribing": "Εγγραφή...",
+      "subscribing_compact": "..."
+    },
+    "success": {
+      "title": "Είστε έτοιμοι!",
+      "message": "Ευχαριστούμε που συμμετέχετε στην κοινότητά μας. Ελέγξτε το email σας για ενημερώσεις!",
+      "toast_title": "🎉 Καλώς ήρθατε στην κοινότητά μας!",
+      "toast_message": "Εγγραφήκατε επιτυχώς στο newsletter των Plastic Clever Schools."
+    },
+    "errors": {
+      "subscription_failed": "Η Εγγραφή Απέτυχε",
+      "generic_error": "Αποτυχία εγγραφής στο newsletter. Παρακαλώ προσπαθήστε ξανά.",
+      "email_required": "Απαιτείται Email",
+      "email_required_message": "Παρακαλώ εισάγετε τη διεύθυνση email σας.",
+      "invalid_email": "Παρακαλώ εισάγετε μια έγκυρη διεύθυνση email",
+      "network_error": "Σφάλμα δικτύου. Παρακαλώ ελέγξτε τη σύνδεσή σας και προσπαθήστε ξανά.",
+      "already_subscribed": "Έχετε ήδη εγγραφεί στο newsletter μας.",
+      "server_error": "Σφάλμα διακομιστή. Παρακαλώ προσπαθήστε ξανά αργότερα."
+    },
+    "privacy": {
+      "disclaimer": "Εγγραφόμενοι, συμφωνείτε να λαμβάνετε ενημερώσεις για τα Plastic Clever Schools. Μπορείτε να διαγραφείτε οποιαδήποτε στιγμή.",
+      "terms_link": "Όροι Υπηρεσίας",
+      "privacy_link": "Πολιτική Απορρήτου"
+    },
+    "tags": {
+      "newsletter_signup": "newsletter_signup",
+      "website_subscriber": "website_subscriber",
+      "teacher": "teacher",
+      "administrator": "administrator",
+      "coordinator": "coordinator"
+    }
+  },
+  "preferences": {
+    "title": "Προτιμήσεις Newsletter",
+    "frequency": "Συχνότητα Email",
+    "frequency_weekly": "Εβδομαδιαίες Ενημερώσεις",
+    "frequency_monthly": "Μηνιαία Σύνοψη",
+    "frequency_quarterly": "Τριμηνιαία Κυριότερα",
+    "content_types": "Τύποι Περιεχομένου",
+    "resources": "Νέοι Εκπαιδευτικοί Πόροι",
+    "success_stories": "Ιστορίες Επιτυχίας Σχολείων",
+    "program_updates": "Ενημερώσεις Προγράμματος",
+    "events": "Εκδηλώσεις και Webinars",
+    "save_preferences": "Αποθήκευση Προτιμήσεων",
+    "preferences_saved": "Οι προτιμήσεις σας αποθηκεύτηκαν επιτυχώς."
+  },
+  "unsubscribe": {
+    "title": "Διαγραφή",
+    "message": "Λυπούμαστε που φεύγετε! Διαγραφήκατε επιτυχώς από το newsletter μας.",
+    "feedback_title": "Βοηθήστε μας να βελτιωθούμε",
+    "feedback_message": "Θα μπορούσατε να μας πείτε γιατί διαγράφεστε;",
+    "feedback_placeholder": "Τα σχόλιά σας είναι πολύτιμα για εμάς...",
+    "submit_feedback": "Υποβολή Σχολίων",
+    "skip_feedback": "Παράλειψη",
+    "resubscribe": "Αλλάξατε γνώμη; Εγγραφείτε ξανά εδώ"
+  }
+}

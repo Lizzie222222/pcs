@@ -1,0 +1,89 @@
+{
+  "welcome": {
+    "title": "Καλώς ήρθατε στον Πίνακα Ελέγχου σας",
+    "subtitle": "Παρακολουθήστε την πρόοδο του σχολείου σας στο πρόγραμμα Plastic Clever Schools",
+    "loading_dashboard": "Φόρτωση του πίνακα ελέγχου...",
+    "unauthorized_title": "Μη εξουσιοδοτημένος",
+    "unauthorized_message": "Έχετε αποσυνδεθεί. Συνδέεστε ξανά...",
+    "school_registration_required": "Απαιτείται Εγγραφή Σχολείου",
+    "school_registration_message": "Παρακαλώ ολοκληρώστε την εγγραφή του σχολείου σας για πρόσβαση στον πίνακα ελέγχου.",
+    "redirecting_title": "Ρύθμιση του λογαριασμού σας...",
+    "redirecting_message": "Σας ανακατευθύνουμε για να ολοκληρώσετε την εγγραφή του σχολείου."
+  },
+  "school_info": {
+    "school_name": "Όνομα Σχολείου",
+    "current_stage": "Τρέχον Στάδιο",
+    "progress_percentage": "Πρόοδος",
+    "students_impacted": "Μαθητές που Επηρεάστηκαν"
+  },
+  "progress": {
+    "title": "Πρόοδος Προγράμματος",
+    "overall_progress": "Συνολική Πρόοδος",
+    "stages_completed": "Στάδια που Ολοκληρώθηκαν",
+    "inspire": {
+      "title": "Έμπνευση",
+      "description": "Αναπτύξτε ευαισθητοποίηση και κίνητρα",
+      "activities": {
+        "assembly_presentation": "Παρουσίαση συνέλευσης",
+        "student_engagement": "Συμμετοχή μαθητών", 
+        "evidence_submission": "Υποβολή αποδεικτικών"
+      }
+    },
+    "investigate": {
+      "title": "Έρευνα",
+      "description": "Ερευνήστε και αναλύστε",
+      "activities": {
+        "plastic_audit": "Διεξαγωγή ελέγχου πλαστικού",
+        "data_collection": "Συλλογή δεδομένων",
+        "evidence_review": "Αναθεώρηση αποδεικτικών"
+      }
+    },
+    "act": {
+      "title": "Δράση", 
+      "description": "Δημιουργήστε διαρκή αλλαγή",
+      "activities": {
+        "action_plan": "Ανάπτυξη σχεδίου δράσης",
+        "implementation": "Δραστηριότητες εφαρμογής",
+        "impact_measurement": "Μέτρηση αντίκτυπου"
+      }
+    },
+    "stage_locked": "Ολοκληρώστε το προηγούμενο στάδιο για ξεκλείδωμα",
+    "stage_current": "Τρέχον Στάδιο",
+    "stage_completed": "Ολοκληρώθηκε"
+  },
+  "evidence": {
+    "title": "Υποβολές Αποδεικτικών",
+    "recent_evidence": "Πρόσφατα Αποδεικτικά",
+    "submit_evidence": "Υποβολή Αποδεικτικών",
+    "no_evidence": "Δεν έχουν υποβληθεί αποδεικτικά ακόμη",
+    "evidence_pending": "Αποδεικτικά σε αναμονή αναθεώρησης",
+    "evidence_approved": "Αποδεικτικά εγκρίθηκαν",
+    "evidence_rejected": "Τα αποδεικτικά χρειάζονται αναθεώρηση",
+    "upload_files": "Μεταφόρτωση Αρχείων",
+    "submission_successful": "Τα αποδεικτικά υποβλήθηκαν με επιτυχία",
+    "submission_failed": "Αποτυχία υποβολής αποδεικτικών"
+  },
+  "quick_actions": {
+    "title": "Γρήγορες Ενέργειες",
+    "submit_evidence": "Υποβολή Αποδεικτικών",
+    "view_resources": "Προβολή Πόρων", 
+    "track_progress": "Παρακολούθηση Προόδου",
+    "view_analytics": "Προβολή Αναλύσεων"
+  },
+  "achievements": {
+    "title": "Επιτεύγματα",
+    "no_achievements": "Δεν υπάρχουν επιτεύγματα ακόμη",
+    "inspire_completed": "Το Στάδιο Έμπνευσης Ολοκληρώθηκε",
+    "investigate_completed": "Το Στάδιο Έρευνας Ολοκληρώθηκε",
+    "act_completed": "Το Στάδιο Δράσης Ολοκληρώθηκε",
+    "award_earned": "Κερδήθηκε το Βραβείο Plastic Clever School"
+  },
+  "activity_feed": {
+    "title": "Πρόσφατη Δραστηριότητα",
+    "no_activity": "Καμία πρόσφατη δραστηριότητα",
+    "evidence_submitted": "Υποβλήθηκαν αποδεικτικά για το στάδιο {{stage}}",
+    "evidence_approved": "Εγκρίθηκαν αποδεικτικά για το στάδιο {{stage}}",
+    "stage_completed": "Το στάδιο {{stage}} ολοκληρώθηκε",
+    "welcome_message": "Καλώς ήρθατε στα Plastic Clever Schools!"
+  }
+}
