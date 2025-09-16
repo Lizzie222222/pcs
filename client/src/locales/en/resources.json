@@ -9,7 +9,8 @@
     "all_stages": "All Stages",
     "all_countries": "All Countries",
     "all_languages": "All Languages",
-    "all_status": "All Status"
+    "all_status": "All Status",
+    "all_ages": "All Ages"
   },
   "filters": {
     "stage": "Stage",
@@ -31,6 +32,12 @@
     "german": "German",
     "other": "Other"
   },
+  "age_ranges": {
+    "5_7": "5-7 years",
+    "8_11": "8-11 years",
+    "12_16": "12-16 years",
+    "17_plus": "17+ years"
+  },
   "file_types": {
     "pdf": "PDF Document",
     "video": "Video",
@@ -40,11 +47,18 @@
   },
   "resource_card": {
     "downloads": "Downloads",
-    "download_count": "{{count}} downloads",
+    "download_count_one": "{{count}} download",
+    "download_count_other": "{{count}} downloads",
     "file_size": "File size",
     "age_range": "Age range",
     "global": "Global",
     "download_resource": "Download Resource"
+  },
+  "units": {
+    "bytes": "Bytes",
+    "kb": "KB",
+    "mb": "MB",
+    "gb": "GB"
   },
   "empty_state": {
     "title": "No Resources Found",
@@ -61,6 +75,7 @@
     "case_studies": "Case Studies",
     "research_materials": "Research Materials"
   },
+  "load_more_resources": "Load More Resources",
   "accessibility": {
     "download_started": "Download started for {{title}}",
     "resource_unavailable": "This resource is currently unavailable",

@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ interface Resource {
 }
 
 export default function Resources() {
+  const { t, i18n } = useTranslation('resources');
   const [filters, setFilters] = useState({
     search: '',
     country: '',
@@ -80,13 +82,26 @@ export default function Resources() {
     return <BookOpen className="h-4 w-4" />;
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  const getAgeRangeLabel = (ageRange: string) => {
+    const ageRangeMap: { [key: string]: string } = {
+      '5-7 years': t('age_ranges.5_7'),
+      '8-11 years': t('age_ranges.8_11'),
+      '12-16 years': t('age_ranges.12_16'),
+      '17+ years': t('age_ranges.17_plus'),
+    };
+    return ageRangeMap[ageRange] || ageRange;
   };
+
+  const formatFileSize = (bytes: number) => {
+    if (bytes === 0) return `0 ${t('units.bytes')}`;
+    const k = 1024;
+    const sizes = ['bytes', 'kb', 'mb', 'gb'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const formattedNumber = new Intl.NumberFormat(i18n.language, {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 0
+    }).format(bytes / Math.pow(k, i));
+    return `${formattedNumber} ${t(`units.${sizes[i]}`)}`;  };
 
   const handleDownload = async (resourceId: string, fileUrl: string, title: string) => {
     try {
@@ -111,10 +126,10 @@ export default function Resources() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-navy mb-4" data-testid="text-resources-title">
-            Educational Resources
+            {t('page.title')}
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            High-quality materials to support your plastic-free journey through all three program stages
+            {t('page.subtitle')}
           </p>
         </div>
 
@@ -123,7 +138,7 @@ export default function Resources() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Filter className="h-5 w-5" />
-              Search & Filter Resources
+              {t('search.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -132,7 +147,7 @@ export default function Resources() {
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
-                    placeholder="Search resources..."
+                    placeholder={t('search.placeholder')}
                     value={filters.search}
                     onChange={(e) => handleFilterChange('search', e.target.value)}
                     className="pl-10"
@@ -143,7 +158,7 @@ export default function Resources() {
               
               <Select value={filters.country} onValueChange={(value) => handleFilterChange('country', value)}>
                 <SelectTrigger data-testid="select-country">
-                  <SelectValue placeholder="All Countries" />
+                  <SelectValue placeholder={t('search.all_countries')} />
                 </SelectTrigger>
                 <SelectContent>
                   {countryOptions.map((option) => (
@@ -156,27 +171,27 @@ export default function Resources() {
               
               <Select value={filters.language} onValueChange={(value) => handleFilterChange('language', value)}>
                 <SelectTrigger data-testid="select-language">
-                  <SelectValue placeholder="All Languages" />
+                  <SelectValue placeholder={t('search.all_languages')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Languages</SelectItem>
-                  <SelectItem value="English">English</SelectItem>
-                  <SelectItem value="Spanish">Spanish</SelectItem>
-                  <SelectItem value="French">French</SelectItem>
-                  <SelectItem value="German">German</SelectItem>
+                  <SelectItem value="all">{t('search.all_languages')}</SelectItem>
+                  <SelectItem value="English">{t('languages.english')}</SelectItem>
+                  <SelectItem value="Spanish">{t('languages.spanish')}</SelectItem>
+                  <SelectItem value="French">{t('languages.french')}</SelectItem>
+                  <SelectItem value="German">{t('languages.german')}</SelectItem>
                 </SelectContent>
               </Select>
               
               <Select value={filters.ageRange} onValueChange={(value) => handleFilterChange('ageRange', value)}>
                 <SelectTrigger data-testid="select-age-range">
-                  <SelectValue placeholder="All Ages" />
+                  <SelectValue placeholder={t('search.all_ages')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Ages</SelectItem>
-                  <SelectItem value="5-7 years">5-7 years</SelectItem>
-                  <SelectItem value="8-11 years">8-11 years</SelectItem>
-                  <SelectItem value="12-16 years">12-16 years</SelectItem>
-                  <SelectItem value="17+ years">17+ years</SelectItem>
+                  <SelectItem value="all">{t('search.all_ages')}</SelectItem>
+                  <SelectItem value="5-7 years">{t('age_ranges.5_7')}</SelectItem>
+                  <SelectItem value="8-11 years">{t('age_ranges.8_11')}</SelectItem>
+                  <SelectItem value="12-16 years">{t('age_ranges.12_16')}</SelectItem>
+                  <SelectItem value="17+ years">{t('age_ranges.17_plus')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -187,28 +202,28 @@ export default function Resources() {
                 onClick={() => handleFilterChange('stage', '')}
                 data-testid="filter-all-stages"
               >
-                All Stages
+                {t('search.all_stages')}
               </Button>
               <Button
                 variant={filters.stage === 'inspire' ? 'default' : 'outline'}
                 onClick={() => handleFilterChange('stage', 'inspire')}
                 data-testid="filter-inspire"
               >
-                Inspire
+                {t('stages.inspire')}
               </Button>
               <Button
                 variant={filters.stage === 'investigate' ? 'default' : 'outline'}
                 onClick={() => handleFilterChange('stage', 'investigate')}
                 data-testid="filter-investigate"
               >
-                Investigate
+                {t('stages.investigate')}
               </Button>
               <Button
                 variant={filters.stage === 'act' ? 'default' : 'outline'}
                 onClick={() => handleFilterChange('stage', 'act')}
                 data-testid="filter-act"
               >
-                Act
+                {t('stages.act')}
               </Button>
             </div>
           </CardContent>
@@ -236,10 +251,10 @@ export default function Resources() {
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between mb-2">
                       <Badge className={getStageColor(resource.stage)}>
-                        {resource.stage}
+                        {t(`stages.${resource.stage}`)}
                       </Badge>
                       <Badge variant="outline">
-                        {resource.ageRange}
+                        {getAgeRangeLabel(resource.ageRange)}
                       </Badge>
                     </div>
                     <CardTitle className="text-lg text-navy line-clamp-2">
@@ -259,7 +274,7 @@ export default function Resources() {
                     </div>
                     <div className="flex items-center justify-between">
                       <span className="text-sm text-gray-500">
-                        {resource.downloadCount} downloads
+                        {t('resource_card.download_count', { count: resource.downloadCount })}
                       </span>
                       <Button
                         size="sm"
@@ -268,7 +283,7 @@ export default function Resources() {
                         data-testid={`button-download-${resource.id}`}
                       >
                         <Download className="h-4 w-4 mr-1 icon-interactive" />
-                        Download
+                        {t('resource_card.download_resource')}
                       </Button>
                     </div>
                   </CardContent>
@@ -285,7 +300,7 @@ export default function Resources() {
                   onClick={() => setPage(prev => prev + 1)}
                   data-testid="button-load-more"
                 >
-                  Load More Resources
+                  {t('load_more_resources')}
                 </Button>
               </div>
             )}
@@ -293,10 +308,10 @@ export default function Resources() {
             {resources && resources.length === 0 && (
               <EmptyState
                 icon={BookOpen}
-                title="No Resources Found"
-                description="Try adjusting your search criteria or filters to find more resources."
+                title={t('empty_state.title')}
+                description={t('empty_state.message')}
                 action={{
-                  label: "Clear Filters",
+                  label: t('empty_state.clear_filters'),
                   onClick: () => {
                     setFilters({
                       search: '',

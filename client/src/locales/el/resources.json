@@ -9,7 +9,8 @@
     "all_stages": "Όλα τα Στάδια",
     "all_countries": "Όλες οι Χώρες",
     "all_languages": "Όλες οι Γλώσσες",
-    "all_status": "Όλες οι Καταστάσεις"
+    "all_status": "Όλες οι Καταστάσεις",
+    "all_ages": "Όλες οι Ηλικίες"
   },
   "filters": {
     "stage": "Στάδιο",
@@ -31,6 +32,12 @@
     "german": "Γερμανικά",
     "other": "Άλλη"
   },
+  "age_ranges": {
+    "5_7": "5-7 χρόνια",
+    "8_11": "8-11 χρόνια",
+    "12_16": "12-16 χρόνια",
+    "17_plus": "17+ χρόνια"
+  },
   "file_types": {
     "pdf": "Έγγραφο PDF",
     "video": "Βίντεο",
@@ -40,11 +47,18 @@
   },
   "resource_card": {
     "downloads": "Λήψεις",
-    "download_count": "{{count}} λήψεις",
+    "download_count_one": "{{count}} λήψη",
+    "download_count_other": "{{count}} λήψεις",
     "file_size": "Μέγεθος αρχείου",
     "age_range": "Ηλικιακό εύρος",
     "global": "Παγκόσμιο",
     "download_resource": "Λήψη Πόρου"
+  },
+  "units": {
+    "bytes": "Bytes",
+    "kb": "KB",
+    "mb": "MB",
+    "gb": "GB"
   },
   "empty_state": {
     "title": "Δεν Βρέθηκαν Πόροι",
@@ -61,6 +75,7 @@
     "case_studies": "Μελέτες Περίπτωσης",
     "research_materials": "Ερευνητικά Υλικά"
   },
+  "load_more_resources": "Φόρτωση Περισσότερων Πόρων",
   "accessibility": {
     "download_started": "Η λήψη ξεκίνησε για {{title}}",
     "resource_unavailable": "Αυτός ο πόρος δεν είναι διαθέσιμος αυτή τη στιγμή",
