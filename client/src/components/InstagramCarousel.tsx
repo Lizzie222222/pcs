@@ -105,9 +105,10 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
 
   const handleMouseEnter = () => setIsAutoPlaying(false);
   const handleMouseLeave = () => setIsAutoPlaying(true);
+  const carouselRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div className={`w-full ${className}`} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <div ref={carouselRef} className={`w-full carousel-container ${className}`} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       <div className="relative">
         {/* Navigation Buttons */}
         <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20">

@@ -130,4 +130,31 @@
   .skip-link:focus {
     transform: translateY(0);
   }
+
+  /* Performance optimizations for scroll-blocking components */
+  .carousel-container {
+    /* Allow native vertical scrolling while handling horizontal gestures */
+    touch-action: pan-y;
+    /* Enable hardware acceleration */
+    will-change: transform;
+    /* Contain layout calculations */
+    contain: layout style;
+  }
+  
+  /* Optimize Embla carousel performance */
+  .embla {
+    touch-action: pan-y;
+  }
+  
+  /* Optimize toast performance */
+  .toast-viewport {
+    /* Allow vertical scrolling, prevent horizontal gestures conflict */
+    touch-action: pan-y;
+  }
+  
+  /* General performance improvements */
+  .instagram-post {
+    /* Contain repaints during hover animations */
+    contain: layout style paint;
+  }
 }

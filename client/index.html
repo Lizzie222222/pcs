@@ -336,11 +336,20 @@
       }
     </style>
     
-    <!-- Preload critical fonts with font-display: swap -->
+    <!-- Enhanced Performance Resource Hints -->
+    <!-- Preconnect to critical domains -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://img.youtube.com" crossorigin>
+    <link rel="dns-prefetch" href="//www.youtube.com">
+    
+    <!-- Load Google Fonts with display: swap for performance -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
     <noscript><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"></noscript>
+    
+    <!-- Preload critical images -->
+    <link rel="preload" href="/assets/Logo_1757848498470.png" as="image">
+    <link rel="preload" href="https://img.youtube.com/vi/jyL1lt-72HQ/maxresdefault.jpg" as="image">
     
     <title>Plastic Clever Schools - Reduce Plastic Waste in Schools</title>
   </head>

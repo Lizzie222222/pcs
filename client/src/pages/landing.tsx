@@ -182,6 +182,7 @@ export default function Landing() {
 
   function HoverVideo({ src, poster, alt, className = "", containerClassName = "" }: HoverVideoProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
+    const containerRef = useRef<HTMLDivElement>(null);
     const hoverId = useRef(0);
     const hovered = useRef(false);
     const prefersReducedMotion = useReducedMotion();
@@ -235,8 +236,10 @@ export default function Landing() {
       }
     };
 
+
     return (
       <div 
+        ref={containerRef}
         className={`group cursor-pointer relative overflow-hidden ${containerClassName}`}
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}

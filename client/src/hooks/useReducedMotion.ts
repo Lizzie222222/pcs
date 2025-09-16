@@ -22,8 +22,8 @@ export function useReducedMotion(): boolean {
       setPrefersReducedMotion(event.matches);
     };
 
-    // Listen for changes
-    mediaQuery.addEventListener('change', handleChange);
+    // Listen for changes with passive listener for better performance
+    mediaQuery.addEventListener('change', handleChange, { passive: true });
 
     // Cleanup
     return () => {
