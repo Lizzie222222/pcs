@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, X, Settings, LogOut } from "lucide-react";
 import logoUrl from "@assets/Logo_1757848498470.png";
+import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export default function Navigation() {
   const { isAuthenticated, user } = useAuth();
@@ -85,6 +86,7 @@ export default function Navigation() {
 
           {/* Desktop Auth */}
           <div className="hidden md:flex items-center space-x-4">
+            <LanguageSwitcher />
             {isAuthenticated ? (
               <>
                 <span className="text-gray-700 text-sm" data-testid="text-user-name">
@@ -175,8 +177,20 @@ export default function Navigation() {
                     );
                   })}
                   
-                  {/* Mobile Auth */}
+                  {/* Mobile Language Switcher */}
                   <div className="border-t border-gray-200 pt-4 mt-6">
+                    <div className="px-3 py-2">
+                      <div className="flex items-center gap-2 text-sm text-gray-700 mb-2" data-testid="mobile-language-switcher-label">
+                        Language / Γλώσσα
+                      </div>
+                      <div data-testid="mobile-language-switcher">
+                        <LanguageSwitcher />
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Mobile Auth */}
+                  <div className="border-t border-gray-200 pt-4 mt-2">
                     {isAuthenticated ? (
                       <>
                         <div className="px-3 py-2 text-sm text-gray-700" data-testid="mobile-text-user-name">
