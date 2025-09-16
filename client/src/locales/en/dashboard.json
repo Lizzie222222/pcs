@@ -1,6 +1,8 @@
 {
   "welcome": {
     "title": "Welcome to Your Dashboard",
+    "greeting": "Welcome back, {{name}}!",
+    "default_name": "Teacher",
     "subtitle": "Track your school's progress through the Plastic Clever Schools program",
     "loading_dashboard": "Loading your dashboard...",
     "unauthorized_title": "Unauthorized",
@@ -61,14 +63,16 @@
     "evidence_rejected": "Evidence needs revision",
     "upload_files": "Upload Files",
     "submission_successful": "Evidence submitted successfully",
-    "submission_failed": "Failed to submit evidence"
+    "submission_failed": "Failed to submit evidence",
+    "submitted_on": "Submitted {{date}}"
   },
   "quick_actions": {
     "title": "Quick Actions",
     "submit_evidence": "Submit Evidence",
     "view_resources": "View Resources", 
     "track_progress": "Track Progress",
-    "view_analytics": "View Analytics"
+    "view_analytics": "View Analytics",
+    "manage_team": "Manage Team"
   },
   "achievements": {
     "title": "Achievements",
@@ -82,8 +86,12 @@
     "title": "Recent Activity",
     "no_activity": "No recent activity",
     "evidence_submitted": "Evidence submitted for {{stage}} stage",
+    "submitted_on": "Submitted {{date}}",
     "evidence_approved": "Evidence approved for {{stage}} stage",
     "stage_completed": "{{stage}} stage completed",
     "welcome_message": "Welcome to Plastic Clever Schools!"
+  },
+  "errors": {
+    "unexpected_error": "An unexpected error occurred"
   }
 }

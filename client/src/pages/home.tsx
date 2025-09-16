@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -44,6 +45,7 @@ interface DashboardData {
 }
 
 export default function Home() {
+  const { t } = useTranslation('dashboard');
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
@@ -54,8 +56,8 @@ export default function Home() {
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
       toast({
-        title: "Unauthorized",
-        description: "You are logged out. Logging in again...",
+        title: t('welcome.unauthorized_title'),
+        description: t('welcome.unauthorized_message'),
         variant: "destructive",
       });
       setTimeout(() => {
@@ -78,8 +80,8 @@ export default function Home() {
       
       if (isUnauthorizedError(error as Error)) {
         toast({
-          title: "Unauthorized",
-          description: "You are logged out. Logging in again...",
+          title: t('welcome.unauthorized_title'),
+          description: t('welcome.unauthorized_message'),
           variant: "destructive",
         });
         setTimeout(() => {
@@ -90,8 +92,8 @@ export default function Home() {
         if (!isRedirecting) {
           setIsRedirecting(true);
           toast({
-            title: "School Registration Required",
-            description: "Please complete your school registration to access the dashboard.",
+            title: t('welcome.school_registration_required'),
+            description: t('welcome.school_registration_message'),
           });
           setTimeout(() => {
             setLocation("/register");
@@ -102,7 +104,7 @@ export default function Home() {
   }, [error, toast, isRedirecting, setLocation]);
 
   if (isLoading || isDashboardLoading) {
-    return <LoadingSpinner message="Loading your dashboard..." />;
+    return <LoadingSpinner message={t('welcome.loading_dashboard')} />;
   }
 
   // Handle case where user is being redirected to registration
@@ -114,10 +116,10 @@ export default function Home() {
             <CardContent className="p-6 text-center">
               <LoadingSpinner size="lg" className="mb-4" />
               <h2 className="text-xl font-semibold text-navy mb-2" data-testid="text-redirecting-title">
-                Setting up your account...
+                {t('welcome.redirecting_title')}
               </h2>
               <p className="text-gray-600" data-testid="text-redirecting-description">
-                Redirecting you to complete school registration.
+                {t('welcome.redirecting_message')}
               </p>
             </CardContent>
           </Card>
@@ -128,7 +130,7 @@ export default function Home() {
 
   // Handle general errors (excluding "No schools found for user" which is handled above)
   if (error) {
-    const errorMessage = (error as any)?.message || 'An unexpected error occurred';
+    const errorMessage = (error as any)?.message || t('errors.unexpected_error');
     // Don't show error state for "No schools found for user" since we handle that above
     if (errorMessage !== "No schools found for user") {
       return <ErrorState error={errorMessage} />;
@@ -137,7 +139,7 @@ export default function Home() {
 
   // Handle case where no data is available yet (still loading or error was "No schools found for user")
   if (!dashboardData) {
-    return <LoadingSpinner message="Loading your dashboard..." />;
+    return <LoadingSpinner message={t('welcome.loading_dashboard')} />;
   }
 
   const { school, recentEvidence } = dashboardData;
@@ -169,7 +171,7 @@ export default function Home() {
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-navy" data-testid="text-welcome">
-                  Welcome back, {user?.firstName || 'Teacher'}!
+                  {t('welcome.greeting', { name: user?.firstName ?? t('welcome.default_name') })}
                 </h1>
                 <p className="text-gray-600 mt-1" data-testid="text-school-info">
                   {school.name} • {school.country}
@@ -179,7 +181,7 @@ export default function Home() {
                 <div className="text-2xl font-bold text-pcs_blue" data-testid="text-progress-percentage">
                   {school.progressPercentage}%
                 </div>
-                <div className="text-sm text-gray-500">Overall Progress</div>
+                <div className="text-sm text-gray-500">{t('progress.overall_progress')}</div>
               </div>
             </div>
           </CardContent>
@@ -199,7 +201,7 @@ export default function Home() {
         {/* Quick Actions */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="text-navy">Quick Actions</CardTitle>
+            <CardTitle className="text-navy">{t('quick_actions.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -209,7 +211,7 @@ export default function Home() {
                 data-testid="button-upload-evidence"
               >
                 <Upload className="h-6 w-6" />
-                <span>Upload Evidence</span>
+                <span>{t('evidence.submit_evidence')}</span>
               </Button>
               
               <Button 
@@ -218,7 +220,7 @@ export default function Home() {
                 data-testid="button-view-resources"
               >
                 <BookOpen className="h-6 w-6" />
-                <span>View Resources</span>
+                <span>{t('quick_actions.view_resources')}</span>
               </Button>
               
               <Button 
@@ -226,7 +228,7 @@ export default function Home() {
                 data-testid="button-manage-team"
               >
                 <Users className="h-6 w-6" />
-                <span>Manage Team</span>
+                <span>{t('quick_actions.manage_team')}</span>
               </Button>
               
               <Button 
@@ -234,7 +236,7 @@ export default function Home() {
                 data-testid="button-view-progress"
               >
                 <BarChart3 className="h-6 w-6" />
-                <span>View Progress</span>
+                <span>{t('quick_actions.track_progress')}</span>
               </Button>
             </div>
           </CardContent>
@@ -243,18 +245,19 @@ export default function Home() {
         {/* Recent Activity */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-navy">Recent Activity</CardTitle>
+            <CardTitle className="text-navy">{t('activity_feed.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             {recentEvidence.length === 0 ? (
               <div className="text-center py-8 text-gray-500">
                 <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No recent activity. Start by uploading your first evidence!</p>
+                <p>{t('activity_feed.no_activity')}. {t('evidence.submit_evidence')}!</p>
                 <Button 
                   className="mt-4 bg-coral hover:bg-coral/90"
                   onClick={() => setShowEvidenceForm(true)}
+                  data-testid="button-upload-evidence-empty"
                 >
-                  Upload Evidence
+                  {t('evidence.submit_evidence')}
                 </Button>
               </div>
             ) : (
@@ -280,14 +283,14 @@ export default function Home() {
                       <div className="flex items-center gap-2 mb-1">
                         <h4 className="font-medium text-navy">{evidence.title}</h4>
                         <Badge className={getStageColor(evidence.stage)}>
-                          {evidence.stage}
+                          {t(`progress.${evidence.stage}.title`)}
                         </Badge>
                         <Badge variant="outline" className={getStatusColor(evidence.status)}>
-                          {evidence.status}
+                          {t(`evidence.evidence_${evidence.status}`)}
                         </Badge>
                       </div>
                       <p className="text-sm text-gray-600">
-                        Submitted {new Date(evidence.submittedAt).toLocaleDateString()}
+                        {t('evidence.submitted_on', { date: new Date(evidence.submittedAt).toLocaleDateString() })}
                       </p>
                     </div>
                   </div>

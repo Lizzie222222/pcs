@@ -1,6 +1,8 @@
 {
   "welcome": {
     "title": "Καλώς ήρθατε στον Πίνακα Ελέγχου σας",
+    "greeting": "Καλώς ήρθατε ξανά, {{name}}!",
+    "default_name": "Καθηγητής",
     "subtitle": "Παρακολουθήστε την πρόοδο του σχολείου σας στο πρόγραμμα Plastic Clever Schools",
     "loading_dashboard": "Φόρτωση του πίνακα ελέγχου...",
     "unauthorized_title": "Μη εξουσιοδοτημένος",
@@ -61,14 +63,16 @@
     "evidence_rejected": "Τα αποδεικτικά χρειάζονται αναθεώρηση",
     "upload_files": "Μεταφόρτωση Αρχείων",
     "submission_successful": "Τα αποδεικτικά υποβλήθηκαν με επιτυχία",
-    "submission_failed": "Αποτυχία υποβολής αποδεικτικών"
+    "submission_failed": "Αποτυχία υποβολής αποδεικτικών",
+    "submitted_on": "Υποβλήθηκε {{date}}"
   },
   "quick_actions": {
     "title": "Γρήγορες Ενέργειες",
     "submit_evidence": "Υποβολή Αποδεικτικών",
     "view_resources": "Προβολή Πόρων", 
     "track_progress": "Παρακολούθηση Προόδου",
-    "view_analytics": "Προβολή Αναλύσεων"
+    "view_analytics": "Προβολή Αναλύσεων",
+    "manage_team": "Διαχείριση Ομάδας"
   },
   "achievements": {
     "title": "Επιτεύγματα",
@@ -82,8 +86,12 @@
     "title": "Πρόσφατη Δραστηριότητα",
     "no_activity": "Καμία πρόσφατη δραστηριότητα",
     "evidence_submitted": "Υποβλήθηκαν αποδεικτικά για το στάδιο {{stage}}",
+    "submitted_on": "Υποβλήθηκε {{date}}",
     "evidence_approved": "Εγκρίθηκαν αποδεικτικά για το στάδιο {{stage}}",
     "stage_completed": "Το στάδιο {{stage}} ολοκληρώθηκε",
     "welcome_message": "Καλώς ήρθατε στα Plastic Clever Schools!"
+  },
+  "errors": {
+    "unexpected_error": "Προέκυψε απροσδόκητο σφάλμα"
   }
 }
