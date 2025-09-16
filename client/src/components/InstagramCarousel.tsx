@@ -119,8 +119,9 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
             className="w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm border-0 transition-all duration-300 hover:scale-110"
             disabled={currentIndex === 0}
             data-testid="button-instagram-prev"
+            aria-label="Previous Instagram posts"
           >
-            <ChevronLeft className="w-5 h-5 text-navy" />
+            <ChevronLeft className="w-5 h-5 text-navy" aria-hidden="true" />
           </Button>
         </div>
         
@@ -132,8 +133,9 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
             className="w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm border-0 transition-all duration-300 hover:scale-110"
             disabled={currentIndex >= maxIndex}
             data-testid="button-instagram-next"
+            aria-label="Next Instagram posts"
           >
-            <ChevronRight className="w-5 h-5 text-navy" />
+            <ChevronRight className="w-5 h-5 text-navy" aria-hidden="true" />
           </Button>
         </div>
 
@@ -224,7 +226,7 @@ function InstagramPost({ post }: InstagramPostProps) {
         <div className="aspect-square overflow-hidden bg-gray-100">
           <OptimizedImage
             src={post.image}
-            alt="Instagram post"
+            alt={`Instagram post by ${post.username}: ${post.caption.substring(0, 100)}${post.caption.length > 100 ? '...' : ''}`}
             width={400}
             height={400}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -270,6 +272,7 @@ function InstagramPost({ post }: InstagramPostProps) {
             onClick={handleLike}
             className="transition-all duration-200 hover:scale-110"
             data-testid={`button-like-${post.id}`}
+            aria-label={isLiked ? `Unlike ${post.username}'s post` : `Like ${post.username}'s post`}
           >
             <Heart
               className={`w-6 h-6 transition-colors duration-300 ${
@@ -277,6 +280,7 @@ function InstagramPost({ post }: InstagramPostProps) {
                   ? "text-red-500 fill-red-500"
                   : "text-gray-600 hover:text-red-500"
               }`}
+              aria-hidden="true"
             />
           </button>
           <button 

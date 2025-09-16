@@ -99,7 +99,7 @@ export default function Register() {
               <Card className="bg-white border border-gray-200 rounded-lg shadow-lg">
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-navy">{t('auth:register.form_title')}</h3>
+                    <h2 className="text-lg font-semibold text-navy">{t('auth:register.form_title')}</h2>
                     <Button
                       variant="outline"
                       size="sm"
