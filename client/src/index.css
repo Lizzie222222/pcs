@@ -9,6 +9,9 @@
   --teal: hsl(178, 97%, 26%);
   --coral: hsl(16, 84%, 60%);
   --yellow: hsl(45, 100%, 65%);
+  --pcs-blue: hsl(214, 91%, 56%);
+  --ocean-light: hsl(199, 95%, 85%);
+  --navy-light: hsl(209, 77%, 65%);
   
   /* Essential Theme Variables */
   --background: hsl(0 0% 100%);
@@ -52,100 +55,10 @@
   .text-yellow { color: var(--yellow); }
   .bg-yellow { background-color: var(--yellow); }
 
-  /* Essential Button Styles */
-  .btn-secondary {
-    background-color: white;
-    color: var(--ocean-blue);
-    font-weight: 700;
-    border: 2px solid var(--ocean-blue);
-    border-radius: 8px;
-    transition: all 0.2s ease;
-  }
 
-  .btn-secondary:hover {
-    background-color: var(--ocean-blue);
-    color: white;
-  }
 
-  .btn-accent {
-    background-color: var(--teal);
-    color: white;
-    border-color: var(--teal);
-    border-radius: 8px;
-    transition: all 0.2s ease;
-  }
 
-  .btn-accent:hover {
-    background-color: hsl(178, 97%, 33%);
-  }
 
-  /* Essential Card Styles */
-  .card-clean {
-    background-color: white;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.5rem;
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-  }
-
-  .card-hover {
-    transition: all 0.2s ease;
-  }
-
-  .card-hover:hover {
-    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-    transform: translateY(-0.25rem);
-  }
-
-  /* Essential Layout */
-  .section-padding {
-    padding-top: 4rem;
-    padding-bottom: 4rem;
-  }
-
-  @media (min-width: 1024px) {
-    .section-padding {
-      padding-top: 6rem;
-      padding-bottom: 6rem;
-    }
-  }
-
-  /* Essential Typography */
-  .heading-2 {
-    font-size: 1.875rem;
-    font-weight: 700;
-    color: var(--navy);
-    line-height: 1.25;
-  }
-
-  .heading-3 {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--navy);
-    line-height: 1.25;
-  }
-
-  .heading-4 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: var(--navy);
-  }
-
-  .body-large {
-    font-size: 1.125rem;
-    color: #4b5563;
-    line-height: 1.625;
-  }
-
-  .body-text {
-    font-size: 1rem;
-    color: #4b5563;
-    line-height: 1.625;
-  }
-
-  /* Icon Sizes */
-  .icon-sm { width: 1rem; height: 1rem; }
-  .icon-md { width: 1.25rem; height: 1.25rem; }
-  .icon-lg { width: 1.5rem; height: 1.5rem; }
 
   /* Accessibility */
   @media (prefers-reduced-motion: reduce) {

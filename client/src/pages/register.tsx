@@ -80,10 +80,10 @@ export default function Register() {
               className="h-20 w-auto"
             />
           </div>
-          <h1 className="heading-2 mb-2" data-testid="text-register-title">
+          <h1 className="text-3xl font-bold text-navy leading-tight mb-2" data-testid="text-register-title">
             {isAuthenticated ? t('auth:register.complete_registration_title') : t('auth:register.title')}
           </h1>
-          <p className="body-text text-gray-600" data-testid="text-register-description">
+          <p className="text-base text-gray-600 leading-relaxed" data-testid="text-register-description">
             {isAuthenticated 
               ? t('auth:register.complete_registration_subtitle')
               : t('auth:register.subtitle')
@@ -96,7 +96,7 @@ export default function Register() {
           <>
             {showEmailForm ? (
               /* Email Registration Form */
-              <Card className="card-clean shadow-lg border-0">
+              <Card className="bg-white border border-gray-200 rounded-lg shadow-lg">
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-navy">{t('auth:register.form_title')}</h3>
@@ -275,7 +275,7 @@ export default function Register() {
                             </>
                           ) : (
                             <>
-                              <UserPlus className="icon-sm mr-2" />
+                              <UserPlus className="h-4 w-4 mr-2" />
                               {t('auth:register.create_account_button')}
                             </>
                           )}
@@ -287,7 +287,7 @@ export default function Register() {
               </Card>
             ) : (
               /* Signup Methods Card */
-              <Card className="card-clean shadow-lg border-0">
+              <Card className="bg-white border border-gray-200 rounded-lg shadow-lg">
                 <CardContent className="space-y-4">
                   {/* Sign Up Buttons Together */}
                   <div className="space-y-3">
@@ -321,7 +321,7 @@ export default function Register() {
                           </svg>
                         </div>
                         <span className="font-semibold">{t('auth:register.sign_up_google')}</span>
-                        <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
+                        <ArrowRight className="h-4 w-4 ml-auto transition-transform duration-300 group-hover:translate-x-1" />
                       </div>
                     </Button>
 
@@ -334,9 +334,9 @@ export default function Register() {
                       disabled={isRegistering}
                     >
                       <div className="flex items-center justify-center gap-3">
-                        <Mail className="icon-md transition-transform duration-300 group-hover:scale-110" />
+                        <Mail className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
                         <span className="font-semibold">{t('auth:register.sign_up_email')}</span>
-                        <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
+                        <ArrowRight className="h-4 w-4 ml-auto transition-transform duration-300 group-hover:translate-x-1" />
                       </div>
                     </Button>
                   </div>
@@ -356,17 +356,17 @@ export default function Register() {
                   {/* Benefits */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
-                      <School className="icon-sm text-teal flex-shrink-0" />
+                      <School className="h-4 w-4 text-teal flex-shrink-0" />
                       <p className="text-sm text-gray-700">{t('auth:register.benefit_1')}</p>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <Globe className="icon-sm text-ocean-blue flex-shrink-0" />
+                      <Globe className="h-4 w-4 text-ocean-blue flex-shrink-0" />
                       <p className="text-sm text-gray-700">{t('auth:register.benefit_2')}</p>
                     </div>
                     
                     <div className="flex items-center gap-3">
-                      <Shield className="icon-sm text-navy flex-shrink-0" />
+                      <Shield className="h-4 w-4 text-navy flex-shrink-0" />
                       <p className="text-sm text-gray-700">{t('auth:register.benefit_3')}</p>
                     </div>
                   </div>
@@ -397,7 +397,7 @@ export default function Register() {
           <>
             {showSchoolForm ? (
               /* School Registration Form */
-              <Card className="card-clean shadow-lg border-0 max-w-2xl w-full">
+              <Card className="bg-white border border-gray-200 rounded-lg shadow-sm shadow-lg border-0 max-w-2xl w-full">
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -427,11 +427,11 @@ export default function Register() {
               </Card>
             ) : (
               /* Welcome Card */
-              <Card className="card-clean shadow-lg border-0">
+              <Card className="bg-white border border-gray-200 rounded-lg shadow-lg">
                 <CardHeader className="text-center pb-4">
                   <div className="flex items-center justify-center gap-2 mb-2">
-                    <User className="icon-md text-teal" />
-                    <CardTitle className="heading-4 text-navy">
+                    <User className="h-5 w-5 text-teal" />
+                    <CardTitle className="text-xl font-semibold text-navy">
                       {t('auth:register.welcome_user', { name: user?.firstName || 'Educator' })}
                     </CardTitle>
                   </div>
@@ -444,7 +444,7 @@ export default function Register() {
                   {/* User Info */}
                   {user?.email && (
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                      <Mail className="icon-sm text-ocean-blue" />
+                      <Mail className="h-4 w-4 text-ocean-blue" />
                       <div>
                         <p className="text-sm font-medium text-navy">{t('auth:register.signed_in_as')}</p>
                         <p className="text-xs text-gray-600" data-testid="text-user-email">{user.email}</p>
@@ -460,16 +460,16 @@ export default function Register() {
                     data-testid="button-start-school-registration"
                   >
                     <div className="flex items-center justify-center gap-3">
-                      <School className="icon-md transition-transform duration-300 group-hover:scale-110" />
+                      <School className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
                       <span className="font-semibold">{t('auth:register.register_school_button')}</span>
-                      <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
+                      <ArrowRight className="h-4 w-4 ml-auto transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                   </Button>
 
                   {/* Registration Benefits for Authenticated Users */}
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 p-3 bg-teal/10 rounded-lg">
-                      <School className="icon-sm text-teal flex-shrink-0" />
+                      <School className="h-4 w-4 text-teal flex-shrink-0" />
                       <div>
                         <p className="text-sm font-medium text-navy">{t('auth:register.complete_school_profile')}</p>
                         <p className="text-xs text-gray-600">{t('auth:register.complete_school_description')}</p>
@@ -477,7 +477,7 @@ export default function Register() {
                     </div>
                     
                     <div className="flex items-center gap-3 p-3 bg-ocean-blue/10 rounded-lg">
-                      <Globe className="icon-sm text-ocean-blue flex-shrink-0" />
+                      <Globe className="h-4 w-4 text-ocean-blue flex-shrink-0" />
                       <div>
                         <p className="text-sm font-medium text-navy">{t('auth:register.access_full_platform')}</p>
                         <p className="text-xs text-gray-600">{t('auth:register.access_full_description')}</p>
@@ -496,7 +496,7 @@ export default function Register() {
                       className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
                       data-testid="button-logout"
                     >
-                      <LogOut className="icon-xs" />
+                      <LogOut className="h-3 w-3" />
                       <span>{t('auth:register.sign_out')}</span>
                     </Button>
                     <Button

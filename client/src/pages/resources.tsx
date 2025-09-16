@@ -247,7 +247,7 @@ export default function Resources() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {resources?.map((resource) => (
-                <Card key={resource.id} className="card-interactive" data-testid={`resource-${resource.id}`}>
+                <Card key={resource.id} className="hover:shadow-lg transition-all duration-300 hover:scale-105" data-testid={`resource-${resource.id}`}>
                   <CardHeader className="pb-2">
                     <div className="flex items-center justify-between mb-2">
                       <Badge className={getStageColor(resource.stage)}>
@@ -282,7 +282,7 @@ export default function Resources() {
                         onClick={() => handleDownload(resource.id, resource.fileUrl, resource.title)}
                         data-testid={`button-download-${resource.id}`}
                       >
-                        <Download className="h-4 w-4 mr-1 icon-interactive" />
+                        <Download className="h-4 w-4 mr-1" />
                         {t('resource_card.download_resource')}
                       </Button>
                     </div>

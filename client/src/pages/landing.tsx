@@ -300,7 +300,7 @@ export default function Landing() {
               data-testid="button-register-school"
             >
               {t('hero.cta_primary')}
-              <ArrowRight className="icon-md ml-3 transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
 
             {/* Simple Trust Indicators with Text Shadow */}
@@ -311,15 +311,15 @@ export default function Landing() {
               }}
             >
               <div className="flex items-center gap-2">
-                <BookOpen className="icon-sm text-white drop-shadow-lg" />
+                <BookOpen className="w-4 h-4 text-white drop-shadow-lg" />
                 {t('hero.trust_indicators.curriculum_aligned')}
               </div>
               <div className="flex items-center gap-2">
-                <Recycle className="icon-sm text-white drop-shadow-lg" />
+                <Recycle className="w-4 h-4 text-white drop-shadow-lg" />
                 {t('hero.trust_indicators.proven_impact')}
               </div>
               <div className="flex items-center gap-2">
-                <Heart className="icon-sm text-white drop-shadow-lg" />
+                <Heart className="w-4 h-4 text-white drop-shadow-lg" />
                 {t('hero.trust_indicators.completely_free')}
               </div>
             </div>
@@ -328,10 +328,10 @@ export default function Landing() {
       </section>
 
       {/* What is a Plastic Clever School Section */}
-      <section className="section-padding bg-white">
+      <section className="py-16 lg:py-24 bg-white">
         <div className="container-width relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="heading-2 mb-8 scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-8 scroll-reveal">
               <Trans 
                 i18nKey="what_is_section.title" 
                 ns="landing"
@@ -340,7 +340,7 @@ export default function Landing() {
                 }}
               />
             </h2>
-            <p className="body-large mb-12 max-w-3xl mx-auto scroll-reveal">
+            <p className="text-lg text-gray-600 leading-relaxed mb-12 max-w-3xl mx-auto scroll-reveal">
               {t('what_is_section.description')}
             </p>
             
@@ -356,8 +356,8 @@ export default function Landing() {
                     containerClassName="w-full h-full"
                   />
                 </div>
-                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-ocean-blue">{t('what_is_section.award_winning.title')}</h3>
-                <p className="body-text">{t('what_is_section.award_winning.description')}</p>
+                <h3 className="text-xl font-semibold text-navy mb-3 transition-colors duration-300 group-hover:text-ocean-blue">{t('what_is_section.award_winning.title')}</h3>
+                <p className="text-base text-gray-600 leading-relaxed">{t('what_is_section.award_winning.description')}</p>
               </div>
               <div className="text-center group cursor-pointer">
                 <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200" style={{ minHeight: '128px' }}>
@@ -369,8 +369,8 @@ export default function Landing() {
                     containerClassName="w-full h-full"
                   />
                 </div>
-                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-teal">{t('what_is_section.student_led.title')}</h3>
-                <p className="body-text">{t('what_is_section.student_led.description')}</p>
+                <h3 className="text-xl font-semibold text-navy mb-3 transition-colors duration-300 group-hover:text-teal">{t('what_is_section.student_led.title')}</h3>
+                <p className="text-base text-gray-600 leading-relaxed">{t('what_is_section.student_led.description')}</p>
               </div>
               <div className="text-center group cursor-pointer">
                 <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200" style={{ minHeight: '128px' }}>
@@ -382,8 +382,8 @@ export default function Landing() {
                     containerClassName="w-full h-full"
                   />
                 </div>
-                <h3 className="heading-4 mb-3 transition-colors duration-300 group-hover:text-navy">{t('what_is_section.free_resources.title')}</h3>
-                <p className="body-text">{t('what_is_section.free_resources.description')}</p>
+                <h3 className="text-xl font-semibold text-navy mb-3 transition-colors duration-300 group-hover:text-navy">{t('what_is_section.free_resources.title')}</h3>
+                <p className="text-base text-gray-600 leading-relaxed">{t('what_is_section.free_resources.description')}</p>
               </div>
             </div>
             
@@ -394,18 +394,18 @@ export default function Landing() {
             >
               <span className="mr-2">📚</span>
               {t('what_is_section.download_sample_cta')}
-              <ArrowRight className="icon-md ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Social Proof & Impact Section */}
-      <section className="section-padding bg-gray-50">
+      <section className="py-16 lg:py-24 bg-gray-50">
         <div className="container-width relative z-10">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4">Join a <span className="text-ocean-blue">Growing Movement</span></h2>
-            <p className="body-large max-w-3xl mx-auto">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4">Join a <span className="text-ocean-blue">Growing Movement</span></h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
               {t('social_proof.description', { count: stats?.totalSchools || 1542 })}
             </p>
           </div>
@@ -420,27 +420,27 @@ export default function Landing() {
               className="btn-primary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300 scroll-reveal"
               data-testid="button-view-schools"
             >
-              <MapPin className="icon-md mr-2 transition-transform duration-300 group-hover:rotate-12" />
+              <MapPin className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
               {t('social_proof.view_schools_cta')}
-              <ArrowRight className="icon-md ml-2 transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight className="w-5 h-5 ml-2 transition-transform duration-300 group-hover:translate-x-1" />
             </Button>
           </div>
         </div>
       </section>
 
       {/* Three-Stage Program - Clean StreetSmart Cards with Fun Accent */}
-      <section id="how-it-works" className="section-padding bg-gradient-to-b from-white to-yellow/10">
+      <section id="how-it-works" className="py-16 lg:py-24 bg-gradient-to-b from-white to-yellow/10">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4 scroll-reveal">A Simple <span className="text-ocean-blue">3-Stage Journey</span> to a Plastic Clever School</h2>
-            <p className="body-large max-w-3xl mx-auto scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 scroll-reveal">A Simple <span className="text-ocean-blue">3-Stage Journey</span> to a Plastic Clever School</h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto scroll-reveal">
               {t('three_stage_program.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stage 1: Inspire */}
-            <div className="card-clean card-hover p-8 text-center scroll-reveal-left">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center scroll-reveal-left">
               <div className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <HoverVideo 
                   src={inspireVideo}
@@ -453,12 +453,12 @@ export default function Landing() {
               <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
-              <h3 className="heading-4 mb-4">{t('three_stage_program.stage_1_title')}</h3>
-              <p className="body-text mb-6">{t('three_stage_program.stage_1_description')}</p>
+              <h3 className="text-xl font-semibold text-navy mb-4">{t('three_stage_program.stage_1_title')}</h3>
+              <p className="text-base text-gray-600 leading-relaxed mb-6">{t('three_stage_program.stage_1_description')}</p>
             </div>
 
             {/* Stage 2: Investigate */}
-            <div className="card-clean card-hover p-8 text-center scroll-reveal">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center scroll-reveal">
               <div className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <HoverVideo 
                   src={investigateVideo}
@@ -471,12 +471,12 @@ export default function Landing() {
               <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">2</span>
               </div>
-              <h3 className="heading-4 mb-4">{t('three_stage_program.stage_2_title')}</h3>
-              <p className="body-text mb-6">{t('three_stage_program.stage_2_description')}</p>
+              <h3 className="text-xl font-semibold text-navy mb-4">{t('three_stage_program.stage_2_title')}</h3>
+              <p className="text-base text-gray-600 leading-relaxed mb-6">{t('three_stage_program.stage_2_description')}</p>
             </div>
 
             {/* Stage 3: Act */}
-            <div className="card-clean card-hover p-8 text-center scroll-reveal-right">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center scroll-reveal-right">
               <div className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <HoverVideo 
                   src={actVideo}
@@ -489,34 +489,34 @@ export default function Landing() {
               <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">3</span>
               </div>
-              <h3 className="heading-4 mb-4">{t('three_stage_program.stage_3_title')}</h3>
-              <p className="body-text mb-6">{t('three_stage_program.stage_3_description')}</p>
+              <h3 className="text-xl font-semibold text-navy mb-4">{t('three_stage_program.stage_3_title')}</h3>
+              <p className="text-base text-gray-600 leading-relaxed mb-6">{t('three_stage_program.stage_3_description')}</p>
             </div>
           </div>
 
           {/* Recognition Section */}
           <div className="mt-16 text-center bg-gray-50 rounded-xl p-12 scroll-reveal-scale">
-            <h3 className="heading-3 mb-4">{t('three_stage_program.recognition_title')}</h3>
-            <p className="body-large mb-8 max-w-3xl mx-auto">
+            <h3 className="text-2xl font-bold mb-4">{t('three_stage_program.recognition_title')}</h3>
+            <p className="text-lg text-gray-600 leading-relaxed mb-8 max-w-3xl mx-auto">
               {t('three_stage_program.recognition_description')}
             </p>
             
             <div className="flex flex-wrap justify-center gap-6">
               <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-1">
                 <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
-                  <Star className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
+                  <Star className="w-4 h-4 text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
                 <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-ocean-blue">{t('three_stage_program.digital_badges')}</span>
               </div>
               <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-2">
                 <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
-                  <Award className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
+                  <Award className="w-4 h-4 text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
                 <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-teal">{t('three_stage_program.certificates')}</span>
               </div>
               <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-3">
                 <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
-                  <TrendingUp className="icon-sm text-white transition-transform duration-300 group-hover:scale-110" />
+                  <TrendingUp className="w-4 h-4 text-white transition-transform duration-300 group-hover:scale-110" />
                 </div>
                 <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-navy">{t('three_stage_program.progress_tracking')}</span>
               </div>
@@ -526,11 +526,11 @@ export default function Landing() {
       </section>
 
       {/* Partnership & Endorsement Section - Clean White */}
-      <section className="section-padding bg-white">
+      <section className="py-16 lg:py-24 bg-white">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4 scroll-reveal">Built on <span className="text-ocean-blue">Strong Partnerships</span></h2>
-            <p className="body-large max-w-3xl mx-auto scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 scroll-reveal">Built on <span className="text-ocean-blue">Strong Partnerships</span></h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto scroll-reveal">
               {t('partnership.description')}
             </p>
           </div>
@@ -577,24 +577,24 @@ export default function Landing() {
       </section>
       
       {/* Why Schools Love Us - Testimonial Style - Light Grey Background */}
-      <section className="section-padding bg-gray-50">
+      <section className="py-16 lg:py-24 bg-gray-50">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4 scroll-reveal">Why <span className="text-ocean-blue">Schools Choose Us</span></h2>
-            <p className="body-large max-w-3xl mx-auto scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 scroll-reveal">Why <span className="text-ocean-blue">Schools Choose Us</span></h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto scroll-reveal">
               {t('testimonials.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Testimonial 1 */}
-            <div className="card-clean p-6 scroll-reveal-left">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 scroll-reveal-left">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="icon-sm text-yellow fill-current" />
+                  <Star key={i} className="w-4 h-4 text-yellow fill-current" />
                 ))}
               </div>
-              <p className="body-text italic mb-4">
+              <p className="text-base text-gray-600 leading-relaxed italic mb-4">
                 "{t('testimonials.testimonial_1.quote')}"
               </p>
               <div className="flex items-center gap-3">
@@ -609,13 +609,13 @@ export default function Landing() {
             </div>
 
             {/* Testimonial 2 */}
-            <div className="card-clean p-6 scroll-reveal">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 scroll-reveal">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="icon-sm text-yellow fill-current" />
+                  <Star key={i} className="w-4 h-4 text-yellow fill-current" />
                 ))}
               </div>
-              <p className="body-text italic mb-4">
+              <p className="text-base text-gray-600 leading-relaxed italic mb-4">
                 "{t('testimonials.testimonial_2.quote')}"
               </p>
               <div className="flex items-center gap-3">
@@ -630,13 +630,13 @@ export default function Landing() {
             </div>
 
             {/* Testimonial 3 */}
-            <div className="card-clean p-6 scroll-reveal-right">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 scroll-reveal-right">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="icon-sm text-yellow fill-current" />
+                  <Star key={i} className="w-4 h-4 text-yellow fill-current" />
                 ))}
               </div>
-              <p className="body-text italic mb-4">
+              <p className="text-base text-gray-600 leading-relaxed italic mb-4">
                 "{t('testimonials.testimonial_3.quote')}"
               </p>
               <div className="flex items-center gap-3">
@@ -655,11 +655,11 @@ export default function Landing() {
       </section>
 
       {/* Instagram Feed Section */}
-      <section className="section-padding bg-gradient-to-b from-teal/5 to-ocean-blue/5">
+      <section className="py-16 lg:py-24 bg-gradient-to-b from-teal/5 to-ocean-blue/5">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="heading-2 mb-4 scroll-reveal">Follow <span className="text-ocean-blue">Our Journey</span></h2>
-            <p className="body-large max-w-3xl mx-auto scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 scroll-reveal">Follow <span className="text-ocean-blue">Our Journey</span></h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto scroll-reveal">
               {t('instagram.description')}
             </p>
             <div className="flex justify-center mt-6">
@@ -687,7 +687,7 @@ export default function Landing() {
           </div>
           
           <div className="text-center mt-12 scroll-reveal">
-            <p className="body-text text-gray-600 mb-6">
+            <p className="text-base text-gray-600 leading-relaxed text-gray-600 mb-6">
               Join the conversation and share your school's plastic clever journey with <span className="font-semibold text-teal">#PlasticCleverSchools</span>
             </p>
             <div className="flex flex-wrap justify-center gap-4">

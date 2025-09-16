@@ -47,18 +47,18 @@ export default function Login() {
               className="h-20 w-auto"
             />
           </div>
-          <h1 className="heading-2 mb-2" data-testid="text-login-title">
+          <h1 className="text-3xl font-bold text-navy leading-tight mb-2" data-testid="text-login-title">
             {t('auth:login.title')}
           </h1>
-          <p className="body-text text-gray-600" data-testid="text-login-description">
+          <p className="text-base text-gray-600 leading-relaxed" data-testid="text-login-description">
             {t('auth:login.subtitle')}
           </p>
         </div>
 
         {/* Login Card */}
-        <Card className="card-clean shadow-lg border-0">
+        <Card className="bg-white border border-gray-200 rounded-lg shadow-lg">
           <CardHeader className="text-center pb-4">
-            <CardTitle className="heading-4 text-navy">
+            <CardTitle className="text-xl font-semibold text-navy">
               {t('auth:login.form_title')}
             </CardTitle>
             <p className="caption text-gray-500 mt-2">
@@ -141,7 +141,7 @@ export default function Login() {
                     </>
                   ) : (
                     <>
-                      <Mail className="icon-md mr-2" />
+                      <Mail className="h-5 w-5 mr-2" />
                       {t('auth:login.sign_in_button')}
                     </>
                   )}
@@ -191,7 +191,7 @@ export default function Login() {
                   </svg>
                 </div>
                 <span className="font-semibold">{t('auth:login.google_button')}</span>
-                <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
+                <ArrowRight className="h-4 w-4 ml-auto transition-transform duration-300 group-hover:translate-x-1" />
               </div>
             </Button>
 
