@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,6 +36,7 @@ interface AdvancedSearchProps {
 }
 
 export function AdvancedSearch({ className = "", defaultQuery = "", onResultsChange }: AdvancedSearchProps) {
+  const { t } = useTranslation(['search', 'common']);
   const [query, setQuery] = useState(defaultQuery);
   const [searchQuery, setSearchQuery] = useState("");
   const [contentTypes, setContentTypes] = useState<string[]>(['resources', 'schools', 'evidence', 'caseStudies']);
@@ -78,10 +80,10 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
   };
 
   const contentTypeOptions = [
-    { id: 'resources', label: 'Resources', icon: FileText, color: 'bg-blue-500' },
-    { id: 'schools', label: 'Schools', icon: School, color: 'bg-green-500' },
-    { id: 'evidence', label: 'Evidence', icon: ClipboardCheck, color: 'bg-orange-500' },
-    { id: 'caseStudies', label: 'Case Studies', icon: BookOpen, color: 'bg-purple-500' }
+    { id: 'resources', label: t('search:content_types.resources'), icon: FileText, color: 'bg-blue-500' },
+    { id: 'schools', label: t('search:content_types.schools'), icon: School, color: 'bg-green-500' },
+    { id: 'evidence', label: t('search:content_types.evidence'), icon: ClipboardCheck, color: 'bg-orange-500' },
+    { id: 'caseStudies', label: t('search:content_types.case_studies'), icon: BookOpen, color: 'bg-purple-500' }
   ];
 
   const getResultIcon = (type: string) => {
@@ -122,7 +124,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
           {resource.downloadCount && (
             <span className="flex items-center space-x-1">
               <TrendingUp className="w-3 h-3" />
-              <span>{resource.downloadCount} downloads</span>
+              <span>{t('search:result_cards.resource.downloads', { count: resource.downloadCount })}</span>
             </span>
           )}
         </div>
@@ -151,11 +153,11 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
       <CardContent className="pt-0">
         <div className="flex items-center space-x-4 text-sm text-gray-500">
           {school.studentCount && (
-            <span>{school.studentCount} students</span>
+            <span>{t('search:result_cards.school.students', { count: school.studentCount })}</span>
           )}
-          <span>{school.progressPercentage}% complete</span>
+          <span>{school.progressPercentage}% {t('search:result_cards.school.complete')}</span>
           {school.featuredSchool && (
-            <Badge variant="outline" className="text-xs">Featured</Badge>
+            <Badge variant="outline" className="text-xs">{t('common:status.featured')}</Badge>
           )}
         </div>
       </CardContent>
@@ -206,7 +208,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
             </div>
           </div>
           {caseStudy.featured && (
-            <Badge variant="default">Featured</Badge>
+            <Badge variant="default">{t('common:status.featured')}</Badge>
           )}
         </div>
       </CardHeader>
@@ -214,7 +216,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
         <div className="flex items-center space-x-4 text-sm text-gray-500">
           <Badge variant="outline" className="text-xs">{caseStudy.stage}</Badge>
           {caseStudy.impact && (
-            <span className="text-green-600 font-medium">High Impact</span>
+            <span className="text-green-600 font-medium">{t('search:result_cards.case_study.high_impact')}</span>
           )}
         </div>
       </CardContent>
@@ -228,17 +230,17 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
         <CardHeader>
           <CardTitle className="flex items-center space-x-2">
             <Search className="w-5 h-5" />
-            <span>Advanced Search</span>
+            <span>{t('search:advanced_search.title')}</span>
           </CardTitle>
           <CardDescription>
-            Search across all content types with advanced filters and relevance ranking
+            {t('search:advanced_search.description')}
           </CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSearch} className="space-y-4">
             <div className="flex space-x-2">
               <Input
-                placeholder="Enter your search query..."
+                placeholder={t('search:search_input.placeholder')}
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="flex-1"
@@ -254,7 +256,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
                 ) : (
                   <Search className="w-4 h-4" />
                 )}
-                Search
+                {t('search:search_input.search_button')}
               </Button>
             </div>
 
@@ -262,7 +264,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
             <div className="space-y-2">
               <Label className="flex items-center space-x-2">
                 <Filter className="w-4 h-4" />
-                <span>Content Types</span>
+                <span>{t('search:filters.content_type')}</span>
               </Label>
               <div className="flex flex-wrap gap-4">
                 {contentTypeOptions.map(option => {
@@ -295,7 +297,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
       {error && (
         <Card className="mb-6 border-red-200 bg-red-50">
           <CardContent className="pt-6">
-            <p className="text-red-600">Search failed. Please try again.</p>
+            <p className="text-red-600">{t('search:results.search_failed')}</p>
           </CardContent>
         </Card>
       )}
@@ -303,28 +305,28 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
       {searchResults && (
         <Card>
           <CardHeader>
-            <CardTitle>Search Results</CardTitle>
+            <CardTitle>{t('search:results.title')}</CardTitle>
             <CardDescription>
-              Found {searchResults.totalResults} results for "{searchQuery}"
+              {t('search:results.showing_results', { count: searchResults.totalResults, query: searchQuery })}
             </CardDescription>
           </CardHeader>
           <CardContent>
             <Tabs value={activeTab} onValueChange={setActiveTab}>
               <TabsList className="grid w-full grid-cols-5">
                 <TabsTrigger value="all" data-testid="tab-all-results">
-                  All ({searchResults.totalResults})
+                  {t('search:content_types.all')} ({searchResults.totalResults})
                 </TabsTrigger>
                 <TabsTrigger value="resources" data-testid="tab-resources">
-                  Resources ({searchResults.resources.length})
+                  {t('search:content_types.resources')} ({searchResults.resources.length})
                 </TabsTrigger>
                 <TabsTrigger value="schools" data-testid="tab-schools">
-                  Schools ({searchResults.schools.length})
+                  {t('search:content_types.schools')} ({searchResults.schools.length})
                 </TabsTrigger>
                 <TabsTrigger value="evidence" data-testid="tab-evidence">
-                  Evidence ({searchResults.evidence.length})
+                  {t('search:content_types.evidence')} ({searchResults.evidence.length})
                 </TabsTrigger>
                 <TabsTrigger value="caseStudies" data-testid="tab-case-studies">
-                  Case Studies ({searchResults.caseStudies.length})
+                  {t('search:content_types.case_studies')} ({searchResults.caseStudies.length})
                 </TabsTrigger>
               </TabsList>
 
@@ -333,7 +335,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
                   <div>
                     <h3 className="text-lg font-semibold mb-3 flex items-center space-x-2">
                       <FileText className="w-5 h-5 text-blue-500" />
-                      <span>Resources</span>
+                      <span>{t('search:content_types.resources')}</span>
                     </h3>
                     <div className="grid gap-4 md:grid-cols-2">
                       {searchResults.resources.slice(0, 4).map(renderResourceCard)}
@@ -345,7 +347,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
                   <div>
                     <h3 className="text-lg font-semibold mb-3 flex items-center space-x-2">
                       <School className="w-5 h-5 text-green-500" />
-                      <span>Schools</span>
+                      <span>{t('search:content_types.schools')}</span>
                     </h3>
                     <div className="grid gap-4 md:grid-cols-2">
                       {searchResults.schools.slice(0, 4).map(renderSchoolCard)}
@@ -357,7 +359,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
                   <div>
                     <h3 className="text-lg font-semibold mb-3 flex items-center space-x-2">
                       <ClipboardCheck className="w-5 h-5 text-orange-500" />
-                      <span>Evidence</span>
+                      <span>{t('search:content_types.evidence')}</span>
                     </h3>
                     <div className="grid gap-4 md:grid-cols-2">
                       {searchResults.evidence.slice(0, 4).map(renderEvidenceCard)}
@@ -369,7 +371,7 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
                   <div>
                     <h3 className="text-lg font-semibold mb-3 flex items-center space-x-2">
                       <BookOpen className="w-5 h-5 text-purple-500" />
-                      <span>Case Studies</span>
+                      <span>{t('search:content_types.case_studies')}</span>
                     </h3>
                     <div className="grid gap-4 md:grid-cols-2">
                       {searchResults.caseStudies.slice(0, 4).map(renderCaseStudyCard)}
@@ -410,9 +412,9 @@ export function AdvancedSearch({ className = "", defaultQuery = "", onResultsCha
         <Card className="border-gray-200 bg-gray-50">
           <CardContent className="pt-6 text-center">
             <Search className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-gray-600 mb-2">No Results Found</h3>
+            <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('search:results.no_results')}</h3>
             <p className="text-gray-500">
-              Try different search terms or adjust your content type filters.
+              {t('search:results.no_results_message')}
             </p>
           </CardContent>
         </Card>

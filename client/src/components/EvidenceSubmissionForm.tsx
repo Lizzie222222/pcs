@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -15,14 +16,15 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { X, Upload, File, Trash2, AlertCircle } from "lucide-react";
 import type { UploadResult } from "@uppy/core";
 
-const evidenceSchema = z.object({
-  title: z.string().min(1, "Title is required").max(200, "Title too long"),
-  description: z.string().min(10, "Description must be at least 10 characters"),
+// Factory function for translated schema
+const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.object({
+  title: z.string().min(1, t('forms:validation.required')).max(200, t('forms:validation.name_too_long', { max: 200 })),
+  description: z.string().min(10, t('forms:evidence_submission.description_min_length')),
   stage: z.enum(['inspire', 'investigate', 'act'], {
-    required_error: "Please select a program stage",
+    required_error: t('forms:validation.invalid_selection'),
   }),
   visibility: z.enum(['private', 'public'], {
-    required_error: "Please select visibility setting",
+    required_error: t('forms:validation.invalid_selection'),
   }),
 });
 
@@ -39,10 +41,13 @@ interface UploadedFile {
 }
 
 export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSubmissionFormProps) {
+  const { t } = useTranslation(['forms', 'common']);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  
+  const evidenceSchema = createEvidenceSchema(t);
 
   const form = useForm<z.infer<typeof evidenceSchema>>({
     resolver: zodResolver(evidenceSchema),
@@ -64,8 +69,8 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
     },
     onSuccess: () => {
       toast({
-        title: "Evidence Submitted",
-        description: "Your evidence has been submitted for review.",
+        title: t('forms:evidence_submission.success_title'),
+        description: t('forms:evidence_submission.success_message'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/evidence'] });
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
@@ -74,8 +79,8 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
     onError: (error) => {
       console.error("Evidence submission error:", error);
       toast({
-        title: "Submission Failed",
-        description: "Failed to submit evidence. Please try again.",
+        title: t('forms:evidence_submission.error_title'),
+        description: t('forms:evidence_submission.error_message'),
         variant: "destructive",
       });
     },
@@ -89,7 +94,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
       });
       
       if (!response.ok) {
-        throw new Error('Failed to get upload URL');
+        throw new Error(t('forms:evidence_submission.file_upload_error'));
       }
       
       const { uploadURL } = await response.json();
@@ -184,7 +189,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold text-navy" data-testid="text-evidence-form-title">
-              Submit Evidence
+              {t('forms:evidence_submission.title')}
             </h2>
             <Button 
               variant="ghost" 
@@ -204,17 +209,17 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                 name="stage"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Program Stage *</FormLabel>
+                    <FormLabel>{t('forms:evidence_submission.stage')} *</FormLabel>
                     <Select onValueChange={field.onChange} defaultValue={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-program-stage">
-                          <SelectValue placeholder="Select program stage" />
+                          <SelectValue placeholder={t('forms:evidence_submission.stage_placeholder')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="inspire">Stage 1: Inspire</SelectItem>
-                        <SelectItem value="investigate">Stage 2: Investigate</SelectItem>
-                        <SelectItem value="act">Stage 3: Act</SelectItem>
+                        <SelectItem value="inspire">{t('forms:evidence_submission.stage_inspire')}</SelectItem>
+                        <SelectItem value="investigate">{t('forms:evidence_submission.stage_investigate')}</SelectItem>
+                        <SelectItem value="act">{t('forms:evidence_submission.stage_act')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -228,10 +233,10 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                 name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Evidence Title *</FormLabel>
+                    <FormLabel>{t('forms:evidence_submission.evidence_title')} *</FormLabel>
                     <FormControl>
                       <Input 
-                        placeholder="Brief title for your evidence submission"
+                        placeholder={t('forms:evidence_submission.evidence_title_placeholder')}
                         {...field}
                         data-testid="input-evidence-title"
                       />
@@ -247,17 +252,17 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description *</FormLabel>
+                    <FormLabel>{t('forms:evidence_submission.description')} *</FormLabel>
                     <FormControl>
                       <Textarea 
-                        placeholder="Detailed description of your activities and their impact..."
+                        placeholder={t('forms:evidence_submission.description_placeholder')}
                         rows={4}
                         {...field}
                         data-testid="textarea-evidence-description"
                       />
                     </FormControl>
                     <FormDescription>
-                      Describe what you did, how you did it, and what impact it had.
+                      {t('forms:evidence_submission.description_help')}
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -266,7 +271,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
 
               {/* File Upload */}
               <div className="space-y-4">
-                <FormLabel>Evidence Files *</FormLabel>
+                <FormLabel>{t('forms:evidence_submission.files')} *</FormLabel>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                   <ObjectUploader
                     maxNumberOfFiles={5}
@@ -276,17 +281,17 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                     buttonClassName="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
                   >
                     <Upload className="h-5 w-5 mr-2" />
-                    {isUploading ? 'Processing...' : 'Upload Files'}
+                    {isUploading ? t('forms:evidence_submission.uploading') : t('forms:evidence_submission.upload_files')}
                   </ObjectUploader>
                   <p className="text-sm text-gray-500 mt-2">
-                    Support for photos (JPG, PNG), videos (MP4), and documents (PDF). Max 10MB each.
+                    {t('forms:evidence_submission.upload_help')}
                   </p>
                 </div>
 
                 {/* Uploaded Files Preview */}
                 {uploadedFiles.length > 0 && (
                   <div className="space-y-2">
-                    <h4 className="font-medium text-navy">Uploaded Files</h4>
+                    <h4 className="font-medium text-navy">{t('forms:evidence_submission.uploaded_files')}</h4>
                     {uploadedFiles.map((file, index) => (
                       <div 
                         key={index}
@@ -322,7 +327,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                 name="visibility"
                 render={({ field }) => (
                   <FormItem className="space-y-3">
-                    <FormLabel>Visibility Settings</FormLabel>
+                    <FormLabel>{t('forms:evidence_submission.visibility')}</FormLabel>
                     <FormControl>
                       <RadioGroup
                         onValueChange={field.onChange}
@@ -336,10 +341,10 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                               htmlFor="private"
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              Private
+                              {t('forms:evidence_submission.visibility_private_title')}
                             </label>
                             <p className="text-xs text-muted-foreground">
-                              Only visible to your school team and admin reviewers
+                              {t('forms:evidence_submission.visibility_private_description')}
                             </p>
                           </div>
                         </div>
@@ -350,10 +355,10 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                               htmlFor="public"
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              Public (after approval)
+                              {t('forms:evidence_submission.visibility_public_title')}
                             </label>
                             <p className="text-xs text-muted-foreground">
-                              May be featured in inspiration gallery after admin review
+                              {t('forms:evidence_submission.visibility_public_description')}
                             </p>
                           </div>
                         </div>
@@ -368,9 +373,9 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
               <div className="bg-yellow/10 border border-yellow rounded-lg p-4 flex items-start gap-3">
                 <AlertCircle className="h-5 w-5 text-yellow mt-0.5 flex-shrink-0" />
                 <div className="text-sm">
-                  <div className="font-medium text-yellow-800 mb-1">Review Process</div>
+                  <div className="font-medium text-yellow-800 mb-1">{t('forms:evidence_submission.review_process_title')}</div>
                   <div className="text-yellow-700">
-                    All evidence submissions are reviewed by our admin team. You'll receive an email notification once your evidence has been reviewed.
+                    {t('forms:evidence_submission.review_process_description')}
                   </div>
                 </div>
               </div>
@@ -384,7 +389,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                   className="flex-1"
                   data-testid="button-cancel-evidence"
                 >
-                  Cancel
+                  {t('common:buttons.cancel')}
                 </Button>
                 <Button
                   type="submit"
@@ -392,7 +397,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                   className="flex-1 bg-coral hover:bg-coral/90"
                   data-testid="button-submit-evidence"
                 >
-                  {submitEvidenceMutation.isPending ? 'Submitting...' : 'Submit for Review'}
+                  {submitEvidenceMutation.isPending ? t('forms:evidence_submission.submitting') : t('forms:evidence_submission.submit_button')}
                 </Button>
               </div>
             </form>

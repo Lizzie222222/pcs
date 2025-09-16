@@ -267,7 +267,31 @@ export const upsertUserSchema = createInsertSchema(users).omit({
   updatedAt: true,
 });
 
-// Authentication schemas
+// Type for translation function
+type TranslationFunction = (key: string, options?: any) => string;
+
+// Factory functions for translated schemas
+export const createLoginSchema = (t: TranslationFunction) => z.object({
+  email: z.string().email(t('forms:validation.email_invalid')),
+  password: z.string().min(8, t('forms:validation.password_too_short')),
+});
+
+export const createRegisterSchema = (t: TranslationFunction) => z.object({
+  email: z.string().email(t('forms:validation.email_invalid')),
+  password: z.string()
+    .min(8, t('forms:validation.password_too_short'))
+    .regex(/[A-Z]/, t('forms:validation.password_uppercase'))
+    .regex(/[a-z]/, t('forms:validation.password_lowercase'))
+    .regex(/\d/, t('forms:validation.password_number')),
+  confirmPassword: z.string(),
+  firstName: z.string().min(1, t('forms:validation.first_name_required')),
+  lastName: z.string().min(1, t('forms:validation.last_name_required')),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: t('forms:validation.passwords_dont_match'),
+  path: ["confirmPassword"],
+});
+
+// Default schemas with fallback English messages (for backward compatibility)
 export const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(8, "Password must be at least 8 characters long"),

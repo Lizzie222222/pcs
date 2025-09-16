@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -8,17 +9,20 @@ import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/states";
 import { Mail, Globe, Shield, ArrowRight, School, User, LogOut, Eye, EyeOff, UserPlus, X } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { registerSchema, type RegisterForm } from "@shared/schema";
+import { createRegisterSchema, type RegisterForm } from "@shared/schema";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import logoUrl from "@assets/Logo_1757848498470.png";
 
 export default function Register() {
+  const { t } = useTranslation(['auth', 'forms']);
   const { user, isLoading, isAuthenticated, register, isRegistering } = useAuth();
   const [showSignUpForm, setShowSignUpForm] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showSchoolForm, setShowSchoolForm] = useState(false);
+  
+  const registerSchema = createRegisterSchema(t);
   
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),
@@ -55,7 +59,7 @@ export default function Register() {
     return (
       <LoadingSpinner 
         size="xl" 
-        message="Loading registration page..." 
+        message={t('auth:register.loading_message')} 
         fullScreen={true}
         className="bg-gray-50"
       />
@@ -77,12 +81,12 @@ export default function Register() {
             />
           </div>
           <h1 className="heading-2 mb-2" data-testid="text-register-title">
-            {isAuthenticated ? 'Complete Your Registration' : 'Create Your Account'}
+            {isAuthenticated ? t('auth:register.complete_registration_title') : t('auth:register.title')}
           </h1>
           <p className="body-text text-gray-600" data-testid="text-register-description">
             {isAuthenticated 
-              ? 'You\'re successfully signed in! Now let\'s register your school to unlock all features and begin your sustainability journey.'
-              : 'Create an account to register your school for our sustainability program'
+              ? t('auth:register.complete_registration_subtitle')
+              : t('auth:register.subtitle')
             }
           </p>
         </div>
@@ -95,7 +99,7 @@ export default function Register() {
               <Card className="card-clean shadow-lg border-0">
                 <CardContent className="space-y-6">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-navy">Create Your Account</h3>
+                    <h3 className="text-lg font-semibold text-navy">{t('auth:register.form_title')}</h3>
                     <Button
                       variant="outline"
                       size="sm"
@@ -103,7 +107,7 @@ export default function Register() {
                       className="text-gray-500 hover:text-gray-700"
                       data-testid="button-back-to-signup-methods"
                     >
-                      ← Back
+                      {t('auth:register.back_to_methods')}
                     </Button>
                   </div>
                   
@@ -116,10 +120,10 @@ export default function Register() {
                           name="firstName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>First Name</FormLabel>
+                              <FormLabel>{t('auth:register.first_name_label')}</FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="First name"
+                                  placeholder={t('auth:register.first_name_placeholder')}
                                   {...field}
                                   data-testid="input-first-name"
                                   disabled={isRegistering}
@@ -135,10 +139,10 @@ export default function Register() {
                           name="lastName"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel>Last Name</FormLabel>
+                              <FormLabel>{t('auth:register.last_name_label')}</FormLabel>
                               <FormControl>
                                 <Input
-                                  placeholder="Last name"
+                                  placeholder={t('auth:register.last_name_placeholder')}
                                   {...field}
                                   data-testid="input-last-name"
                                   disabled={isRegistering}
@@ -155,11 +159,11 @@ export default function Register() {
                         name="email"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Email Address</FormLabel>
+                            <FormLabel>{t('auth:register.email_label')}</FormLabel>
                             <FormControl>
                               <Input
                                 type="email"
-                                placeholder="Enter your email address"
+                                placeholder={t('auth:register.email_placeholder')}
                                 {...field}
                                 data-testid="input-email"
                                 disabled={isRegistering}
@@ -175,12 +179,12 @@ export default function Register() {
                         name="password"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Password</FormLabel>
+                            <FormLabel>{t('auth:register.password_label')}</FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Input
                                   type={showPassword ? "text" : "password"}
-                                  placeholder="Create a strong password"
+                                  placeholder={t('auth:register.password_placeholder')}
                                   {...field}
                                   data-testid="input-password"
                                   disabled={isRegistering}
@@ -204,7 +208,7 @@ export default function Register() {
                             </FormControl>
                             <FormMessage data-testid="error-password" />
                             <p className="text-xs text-gray-600 mt-1">
-                              Must contain uppercase, lowercase, number, and be at least 8 characters
+                              {t('auth:register.password_requirements')}
                             </p>
                           </FormItem>
                         )}
@@ -215,12 +219,12 @@ export default function Register() {
                         name="confirmPassword"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Confirm Password</FormLabel>
+                            <FormLabel>{t('auth:register.confirm_password_label')}</FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Input
                                   type={showConfirmPassword ? "text" : "password"}
-                                  placeholder="Confirm your password"
+                                  placeholder={t('auth:register.confirm_password_placeholder')}
                                   {...field}
                                   data-testid="input-confirm-password"
                                   disabled={isRegistering}
@@ -256,7 +260,7 @@ export default function Register() {
                           data-testid="button-cancel-registration"
                           className="flex-1"
                         >
-                          Back
+                          {t('auth:register.back_to_methods')}
                         </Button>
                         <Button
                           type="submit"
@@ -267,12 +271,12 @@ export default function Register() {
                           {isRegistering ? (
                             <>
                               <LoadingSpinner size="sm" className="mr-2" />
-                              Creating Account...
+                              {t('auth:register.creating_account')}
                             </>
                           ) : (
                             <>
                               <UserPlus className="icon-sm mr-2" />
-                              Create Account
+                              {t('auth:register.create_account_button')}
                             </>
                           )}
                         </Button>
@@ -316,7 +320,7 @@ export default function Register() {
                             />
                           </svg>
                         </div>
-                        <span className="font-semibold">Sign Up with Google</span>
+                        <span className="font-semibold">{t('auth:register.sign_up_google')}</span>
                         <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
                       </div>
                     </Button>
@@ -331,7 +335,7 @@ export default function Register() {
                     >
                       <div className="flex items-center justify-center gap-3">
                         <Mail className="icon-md transition-transform duration-300 group-hover:scale-110" />
-                        <span className="font-semibold">Sign Up with Email</span>
+                        <span className="font-semibold">{t('auth:register.sign_up_email')}</span>
                         <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
                       </div>
                     </Button>
@@ -344,7 +348,7 @@ export default function Register() {
                     </div>
                     <div className="relative flex justify-center text-sm">
                       <span className="bg-white px-3 text-gray-600 font-medium">
-                        Why do I need an account?
+                        {t('auth:register.why_account_title')}
                       </span>
                     </div>
                   </div>
@@ -353,17 +357,17 @@ export default function Register() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-3">
                       <School className="icon-sm text-teal flex-shrink-0" />
-                      <p className="text-sm text-gray-700">School registration and dashboard tracking</p>
+                      <p className="text-sm text-gray-700">{t('auth:register.benefit_1')}</p>
                     </div>
                     
                     <div className="flex items-center gap-3">
                       <Globe className="icon-sm text-ocean-blue flex-shrink-0" />
-                      <p className="text-sm text-gray-700">Access educational resources and curriculum materials</p>
+                      <p className="text-sm text-gray-700">{t('auth:register.benefit_2')}</p>
                     </div>
                     
                     <div className="flex items-center gap-3">
                       <Shield className="icon-sm text-navy flex-shrink-0" />
-                      <p className="text-sm text-gray-700">Monitor impact and earn awards for sustainability efforts</p>
+                      <p className="text-sm text-gray-700">{t('auth:register.benefit_3')}</p>
                     </div>
                   </div>
 
@@ -374,17 +378,17 @@ export default function Register() {
             {/* Footer Information */}
             <div className="text-center mt-8 space-y-2">
               <p className="caption text-gray-500">
-                Already have an account?{" "}
+                {t('auth:register.already_have_account')}{" "}
                 <a 
                   href="/login" 
                   className="text-ocean-blue hover:text-navy font-medium transition-colors duration-200"
                   data-testid="link-login"
                 >
-                  Sign in here
+                  {t('auth:register.sign_in_link')}
                 </a>
               </p>
               <p className="caption text-gray-400">
-                By registering, you agree to our terms of service and privacy policy
+                {t('auth:register.terms_agreement')}
               </p>
             </div>
           </>
@@ -402,9 +406,9 @@ export default function Register() {
                       </div>
                       <div>
                         <h2 className="text-2xl font-bold text-navy" data-testid="text-signup-title">
-                          Join Plastic Clever Schools
+                          {t('forms:school_registration.title')}
                         </h2>
-                        <p className="text-gray-600">Register your school for the program</p>
+                        <p className="text-gray-600">{t('forms:school_registration.subtitle')}</p>
                       </div>
                     </div>
                     <Button
@@ -414,7 +418,7 @@ export default function Register() {
                       className="text-gray-500 hover:text-gray-700"
                       data-testid="button-back-to-welcome"
                     >
-                      ← Back
+                      {t('auth:register.back_to_methods')}
                     </Button>
                   </div>
                   
@@ -428,11 +432,11 @@ export default function Register() {
                   <div className="flex items-center justify-center gap-2 mb-2">
                     <User className="icon-md text-teal" />
                     <CardTitle className="heading-4 text-navy">
-                      Welcome, {user?.firstName || 'Educator'}!
+                      {t('auth:register.welcome_user', { name: user?.firstName || 'Educator' })}
                     </CardTitle>
                   </div>
                   <p className="caption text-gray-500">
-                    Great! You're signed in. Let's get your school registered to join the Plastic Clever Schools program.
+                    {t('auth:register.welcome_subtitle')}
                   </p>
                 </CardHeader>
                 
@@ -442,7 +446,7 @@ export default function Register() {
                     <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                       <Mail className="icon-sm text-ocean-blue" />
                       <div>
-                        <p className="text-sm font-medium text-navy">Signed in as</p>
+                        <p className="text-sm font-medium text-navy">{t('auth:register.signed_in_as')}</p>
                         <p className="text-xs text-gray-600" data-testid="text-user-email">{user.email}</p>
                       </div>
                     </div>
@@ -457,7 +461,7 @@ export default function Register() {
                   >
                     <div className="flex items-center justify-center gap-3">
                       <School className="icon-md transition-transform duration-300 group-hover:scale-110" />
-                      <span className="font-semibold">Register Your School</span>
+                      <span className="font-semibold">{t('auth:register.register_school_button')}</span>
                       <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
                     </div>
                   </Button>
@@ -467,16 +471,16 @@ export default function Register() {
                     <div className="flex items-center gap-3 p-3 bg-teal/10 rounded-lg">
                       <School className="icon-sm text-teal flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-navy">Complete School Profile</p>
-                        <p className="text-xs text-gray-600">Add your school details to join our global network</p>
+                        <p className="text-sm font-medium text-navy">{t('auth:register.complete_school_profile')}</p>
+                        <p className="text-xs text-gray-600">{t('auth:register.complete_school_description')}</p>
                       </div>
                     </div>
                     
                     <div className="flex items-center gap-3 p-3 bg-ocean-blue/10 rounded-lg">
                       <Globe className="icon-sm text-ocean-blue flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-medium text-navy">Access Full Platform</p>
-                        <p className="text-xs text-gray-600">Unlock all tools, resources, and progress tracking features</p>
+                        <p className="text-sm font-medium text-navy">{t('auth:register.access_full_platform')}</p>
+                        <p className="text-xs text-gray-600">{t('auth:register.access_full_description')}</p>
                       </div>
                     </div>
                   </div>
@@ -493,7 +497,7 @@ export default function Register() {
                       data-testid="button-logout"
                     >
                       <LogOut className="icon-xs" />
-                      <span>Sign Out</span>
+                      <span>{t('auth:register.sign_out')}</span>
                     </Button>
                     <Button
                       variant="outline"
@@ -502,7 +506,7 @@ export default function Register() {
                       className="flex items-center gap-2 text-gray-600 hover:text-gray-800 ml-auto"
                       data-testid="button-back-home"
                     >
-                      <span>Back to Home</span>
+                      <span>{t('auth:register.back_home')}</span>
                     </Button>
                   </div>
                 </CardContent>

@@ -25,7 +25,9 @@
     "clear_search": "Clear search"
   },
   "results": {
+    "title": "Search Results",
     "showing_results": "Showing {{count}} results for \"{{query}}\"",
+    "search_failed": "Search failed. Please try again.",
     "no_results": "No results found",
     "no_results_message": "Try adjusting your search terms or filters",
     "load_more": "Load More Results",
@@ -50,6 +52,7 @@
     "school": {
       "students": "{{count}} students",
       "stage": "Current stage: {{stage}}",
+      "complete": "complete",
       "view_profile": "View School Profile"
     },
     "evidence": {
@@ -59,11 +62,13 @@
     },
     "case_study": {
       "featured_school": "Featured School",
+      "high_impact": "High Impact",
       "read_story": "Read Full Story"
     }
   },
   "advanced_search": {
     "title": "Advanced Search",
+    "description": "Search across all content types with advanced filters and relevance ranking",
     "boolean_operators": "Boolean Operators",
     "search_tips": "Search Tips",
     "tip_quotes": "Use quotes for exact phrases",

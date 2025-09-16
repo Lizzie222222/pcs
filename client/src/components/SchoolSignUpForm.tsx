@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -18,23 +19,24 @@ import { X, School, Mail, MapPin, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCountriesForRegistration } from "@/hooks/useCountries";
 
-const registrationSchema = z.object({
+// Factory function for translated schema
+const createRegistrationSchema = (t: (key: string, options?: any) => string) => z.object({
   school: z.object({
-    name: z.string().min(1, "School name is required").max(200, "School name too long"),
+    name: z.string().min(1, t('forms:validation.required')).max(200, t('forms:validation.name_too_long', { max: 200 })),
     type: z.enum(['primary', 'secondary', 'high_school', 'international', 'other'], {
-      required_error: "Please select school type",
+      required_error: t('forms:validation.invalid_selection'),
     }),
-    country: z.string().min(1, "Country is required"),
+    country: z.string().min(1, t('forms:validation.required')),
     address: z.string().optional(),
-    studentCount: z.number().min(1, "Student count must be at least 1").max(10000, "Student count too high"),
+    studentCount: z.number().min(1, t('forms:school_registration.student_count_min')).max(10000, t('forms:school_registration.student_count_max')),
   }),
   user: z.object({
-    firstName: z.string().min(1, "First name is required").max(50, "First name too long"),
-    lastName: z.string().min(1, "Last name is required").max(50, "Last name too long"),
-    email: z.string().email("Invalid email address"),
+    firstName: z.string().min(1, t('forms:validation.first_name_required')).max(50, t('forms:validation.name_too_long', { max: 50 })),
+    lastName: z.string().min(1, t('forms:validation.last_name_required')).max(50, t('forms:validation.name_too_long', { max: 50 })),
+    email: z.string().email(t('forms:validation.email_invalid')),
   }),
   acceptTerms: z.boolean().refine(val => val === true, {
-    message: "You must accept the terms and conditions",
+    message: t('forms:school_registration.accept_terms_required'),
   }),
   showOnMap: z.boolean().default(false),
 });
@@ -45,11 +47,13 @@ interface SchoolSignUpFormProps {
 }
 
 export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSignUpFormProps) {
+  const { t } = useTranslation(['forms', 'common']);
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
 
   const { data: countries = [], isLoading: isLoadingCountries } = useCountriesForRegistration();
+  const registrationSchema = createRegistrationSchema(t);
 
   const form = useForm<z.infer<typeof registrationSchema>>({
     resolver: zodResolver(registrationSchema),
@@ -79,8 +83,8 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
     },
     onSuccess: () => {
       toast({
-        title: "Registration Successful!",
-        description: "Welcome to Plastic Clever Schools! Check your email for confirmation and login details.",
+        title: t('forms:school_registration.success_title'),
+        description: t('forms:school_registration.success_message'),
       });
       onClose();
       // Redirect to login after brief delay
@@ -90,16 +94,16 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
     },
     onError: (error: any) => {
       console.error("Registration error:", error);
-      let errorMessage = "Failed to register school. Please try again.";
+      let errorMessage = t('forms:school_registration.error_message');
       
       if (error.message?.includes('email')) {
-        errorMessage = "This email address is already registered. Please use a different email or contact support.";
+        errorMessage = t('forms:school_registration.error_email_exists');
       } else if (error.message?.includes('school')) {
-        errorMessage = "This school name is already registered. Please contact support if this is your school.";
+        errorMessage = t('forms:school_registration.error_school_exists');
       }
       
       toast({
-        title: "Registration Failed",
+        title: t('forms:school_registration.error_title'),
         description: errorMessage,
         variant: "destructive",
       });
@@ -114,11 +118,11 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
   };
 
   const schoolTypes = [
-    { value: 'primary', label: 'Primary School' },
-    { value: 'secondary', label: 'Secondary School' },
-    { value: 'high_school', label: 'High School' },
-    { value: 'international', label: 'International School' },
-    { value: 'other', label: 'Other' },
+    { value: 'primary', label: t('forms:school_registration.school_type_primary') },
+    { value: 'secondary', label: t('forms:school_registration.school_type_secondary') },
+    { value: 'high_school', label: t('forms:school_registration.school_type_high') },
+    { value: 'international', label: t('forms:school_registration.school_type_international') },
+    { value: 'other', label: t('forms:school_registration.school_type_other') },
   ];
 
   const formContent = (
@@ -131,9 +135,9 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
             </div>
             <div>
               <h2 className="text-2xl font-bold text-navy" data-testid="text-signup-title">
-                Join Plastic Clever Schools
+                {t('forms:school_registration.title')}
               </h2>
-              <p className="text-gray-600">Register your school for the program</p>
+              <p className="text-gray-600">{t('forms:school_registration.subtitle')}</p>
             </div>
           </div>
           <Button 
@@ -153,7 +157,7 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-lg font-semibold text-navy">
                   <School className="h-5 w-5" />
-                  School Information
+                  {t('forms:school_registration.school_section')}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -162,10 +166,10 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                     name="school.name"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>School Name *</FormLabel>
+                        <FormLabel>{t('forms:school_registration.school_name')}</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Your School Name"
+                            placeholder={t('forms:school_registration.school_name_placeholder')}
                             {...field}
                             data-testid="input-school-name"
                           />
@@ -180,11 +184,11 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                     name="school.type"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>School Type *</FormLabel>
+                        <FormLabel>{t('forms:school_registration.school_type')}</FormLabel>
                         <Select onValueChange={field.onChange} defaultValue={field.value}>
                           <FormControl>
                             <SelectTrigger data-testid="select-school-type">
-                              <SelectValue placeholder="Select school type" />
+                              <SelectValue placeholder={t('forms:school_registration.school_type_placeholder')} />
                             </SelectTrigger>
                           </FormControl>
                           <SelectContent>
@@ -207,7 +211,7 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                     name="school.country"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Country *</FormLabel>
+                        <FormLabel>{t('forms:school_registration.country')}</FormLabel>
                         <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                           <PopoverTrigger asChild>
                             <FormControl>
@@ -223,16 +227,16 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                               >
                                 {field.value
                                   ? countries.find((country) => country === field.value)
-                                  : "Select country"}
+                                  : t('forms:school_registration.country_placeholder')}
                                 <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                               </Button>
                             </FormControl>
                           </PopoverTrigger>
                           <PopoverContent className="w-[300px] p-0">
                             <Command>
-                              <CommandInput placeholder="Search countries..." />
+                              <CommandInput placeholder={t('forms:school_registration.country_search_placeholder')} />
                               <CommandList>
-                                <CommandEmpty>No country found.</CommandEmpty>
+                                <CommandEmpty>{t('forms:school_registration.country_not_found')}</CommandEmpty>
                                 <CommandGroup>
                                   {countries.map((country) => (
                                     <CommandItem
@@ -270,11 +274,11 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                     name="school.studentCount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Number of Students *</FormLabel>
+                        <FormLabel>{t('forms:school_registration.student_count')}</FormLabel>
                         <FormControl>
                           <Input 
                             type="number"
-                            placeholder="450"
+                            placeholder={t('forms:school_registration.student_count_placeholder')}
                             {...field}
                             onChange={(e) => field.onChange(e.target.value ? parseInt(e.target.value) : undefined)}
                             data-testid="input-student-count"
@@ -291,17 +295,17 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                   name="school.address"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>School Address</FormLabel>
+                      <FormLabel>{t('forms:school_registration.address')}</FormLabel>
                       <FormControl>
                         <Textarea 
-                          placeholder="123 Education Street, Learning City..."
+                          placeholder={t('forms:school_registration.address_placeholder')}
                           rows={3}
                           {...field}
                           data-testid="textarea-school-address"
                         />
                       </FormControl>
                       <FormDescription>
-                        Optional: This information helps us better understand our community
+                        {t('forms:school_registration.address_description')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -313,7 +317,7 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
               <div className="space-y-4">
                 <div className="flex items-center gap-2 text-lg font-semibold text-navy">
                   <Users className="h-5 w-5" />
-                  Primary Contact Information
+                  {t('forms:school_registration.contact_section')}
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -322,10 +326,10 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                     name="user.firstName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>First Name *</FormLabel>
+                        <FormLabel>{t('forms:school_registration.first_name')}</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Jane"
+                            placeholder={t('forms:school_registration.first_name_placeholder')}
                             {...field}
                             data-testid="input-first-name"
                           />
@@ -340,10 +344,10 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                     name="user.lastName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Last Name *</FormLabel>
+                        <FormLabel>{t('forms:school_registration.last_name')}</FormLabel>
                         <FormControl>
                           <Input 
-                            placeholder="Smith"
+                            placeholder={t('forms:school_registration.last_name_placeholder')}
                             {...field}
                             data-testid="input-last-name"
                           />
@@ -359,13 +363,13 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                   name="user.email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address *</FormLabel>
+                      <FormLabel>{t('forms:school_registration.email')}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                           <Input 
                             type="email"
-                            placeholder="teacher@school.edu"
+                            placeholder={t('forms:school_registration.email_placeholder')}
                             className="pl-10"
                             {...field}
                             data-testid="input-email"
@@ -373,7 +377,7 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                         </div>
                       </FormControl>
                       <FormDescription>
-                        This will be your login email and where we'll send program updates
+                        {t('forms:school_registration.email_description')}
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
@@ -396,13 +400,13 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>
-                        I agree to the Terms of Service and Privacy Policy *
+                        {t('forms:school_registration.accept_terms')}
                       </FormLabel>
                       <FormDescription>
-                        By joining, you agree to our{' '}
-                        <a href="#" className="text-pcs_blue hover:underline">Terms of Service</a>
-                        {' '}and{' '}
-                        <a href="#" className="text-pcs_blue hover:underline">Privacy Policy</a>
+                        {t('forms:school_registration.accept_terms_description_start')}{' '}
+                        <a href="#" className="text-pcs_blue hover:underline">{t('forms:school_registration.terms_of_service')}</a>
+                        {' '}{t('forms:school_registration.accept_terms_description_and')}{' '}
+                        <a href="#" className="text-pcs_blue hover:underline">{t('forms:school_registration.privacy_policy')}</a>
                       </FormDescription>
                     </div>
                     <FormMessage />
@@ -425,11 +429,10 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                     </FormControl>
                     <div className="space-y-1 leading-none">
                       <FormLabel>
-                        Show our school on the public map (optional)
+                        {t('forms:school_registration.show_on_map')}
                       </FormLabel>
                       <FormDescription>
-                        Allow our school to be featured on the global schools map to inspire other educators. 
-                        You can change this setting later in your school dashboard.
+                        {t('forms:school_registration.show_on_map_description')}
                       </FormDescription>
                     </div>
                     <FormMessage />
@@ -447,7 +450,7 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                   disabled={isSubmitting}
                   data-testid="button-cancel-signup"
                 >
-                  Cancel
+                  {t('common:cancel')}
                 </Button>
                 <Button
                   type="submit"
@@ -455,7 +458,7 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                   className="flex-1"
                   data-testid="button-submit-registration"
                 >
-                  {isSubmitting ? 'Registering...' : 'Join the Program'}
+                  {isSubmitting ? t('forms:school_registration.submitting') : t('forms:school_registration.submit_button')}
                 </Button>
               </div>
             </form>

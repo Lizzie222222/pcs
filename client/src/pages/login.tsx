@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -8,12 +9,15 @@ import { Input } from "@/components/ui/input";
 import { LoadingSpinner } from "@/components/ui/states";
 import { Mail, Globe, Shield, ArrowRight, School, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { loginSchema, type LoginForm } from "@shared/schema";
+import { createLoginSchema, type LoginForm } from "@shared/schema";
 import logoUrl from "@assets/Logo_1757848498470.png";
 
 export default function Login() {
+  const { t } = useTranslation(['auth', 'forms']);
   const [showPassword, setShowPassword] = useState(false);
   const { login, isLoggingIn } = useAuth();
+  
+  const loginSchema = createLoginSchema(t);
   
   const form = useForm<LoginForm>({
     resolver: zodResolver(loginSchema),
@@ -44,10 +48,10 @@ export default function Login() {
             />
           </div>
           <h1 className="heading-2 mb-2" data-testid="text-login-title">
-            Welcome to Plastic Clever Schools
+            {t('auth:login.title')}
           </h1>
           <p className="body-text text-gray-600" data-testid="text-login-description">
-            Sign in to access your school's sustainability dashboard and resources
+            {t('auth:login.subtitle')}
           </p>
         </div>
 
@@ -55,10 +59,10 @@ export default function Login() {
         <Card className="card-clean shadow-lg border-0">
           <CardHeader className="text-center pb-4">
             <CardTitle className="heading-4 text-navy">
-              Sign In to Your Account
+              {t('auth:login.form_title')}
             </CardTitle>
             <p className="caption text-gray-500 mt-2">
-              Choose your preferred sign-in method
+              {t('auth:login.form_subtitle')}
             </p>
           </CardHeader>
           
@@ -71,11 +75,11 @@ export default function Login() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel>{t('auth:login.email_label')}</FormLabel>
                       <FormControl>
                         <Input
                           type="email"
-                          placeholder="Enter your email address"
+                          placeholder={t('auth:login.email_placeholder')}
                           {...field}
                           data-testid="input-email"
                           disabled={isLoggingIn}
@@ -91,12 +95,12 @@ export default function Login() {
                   name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Password</FormLabel>
+                      <FormLabel>{t('auth:login.password_label')}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Input
                             type={showPassword ? "text" : "password"}
-                            placeholder="Enter your password"
+                            placeholder={t('auth:login.password_placeholder')}
                             {...field}
                             data-testid="input-password"
                             disabled={isLoggingIn}
@@ -133,12 +137,12 @@ export default function Login() {
                   {isLoggingIn ? (
                     <>
                       <LoadingSpinner size="sm" className="mr-2" />
-                      Signing in...
+                      {t('auth:login.signing_in')}
                     </>
                   ) : (
                     <>
                       <Mail className="icon-md mr-2" />
-                      Sign In
+                      {t('auth:login.sign_in_button')}
                     </>
                   )}
                 </Button>
@@ -152,7 +156,7 @@ export default function Login() {
               </div>
               <div className="relative flex justify-center text-xs uppercase">
                 <span className="bg-white px-2 text-gray-500 font-medium">
-                  Or continue with
+                  {t('auth:login.continue_with')}
                 </span>
               </div>
             </div>
@@ -186,7 +190,7 @@ export default function Login() {
                     />
                   </svg>
                 </div>
-                <span className="font-semibold">Continue with Google</span>
+                <span className="font-semibold">{t('auth:login.google_button')}</span>
                 <ArrowRight className="icon-sm ml-auto transition-transform duration-300 group-hover:translate-x-1" />
               </div>
             </Button>
@@ -197,27 +201,27 @@ export default function Login() {
         {/* Footer Information */}
         <div className="text-center mt-8 space-y-2">
           <p className="caption text-gray-500">
-            Don't have an account?{" "}
+            {t('auth:login.no_account')}{" "}
             <a 
               href="/register" 
               className="text-ocean-blue hover:text-navy font-medium transition-colors duration-200"
               data-testid="link-register"
             >
-              Register here
+              {t('auth:login.register_link')}
             </a>
           </p>
           <p className="caption text-gray-500">
-            New to Plastic Clever Schools?{" "}
+            {t('auth:login.new_to_platform')}{" "}
             <a 
               href="/" 
               className="text-ocean-blue hover:text-navy font-medium transition-colors duration-200"
               data-testid="link-learn-more"
             >
-              Learn more about our program
+              {t('auth:login.learn_more_link')}
             </a>
           </p>
           <p className="caption text-gray-400">
-            By signing in, you agree to our terms of service and privacy policy
+            {t('auth:login.terms_agreement')}
           </p>
         </div>
       </div>
