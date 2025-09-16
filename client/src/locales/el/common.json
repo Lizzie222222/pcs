@@ -10,7 +10,12 @@
     "register": "Εγγραφή Σχολείου",
     "logout": "Αποσύνδεση",
     "back_to_home": "Επιστροφή στην Αρχική",
-    "back": "Πίσω"
+    "back": "Πίσω",
+    "main_navigation": "Κύρια Πλοήγηση",
+    "go_to_homepage": "Plastic Clever Schools - Μετάβαση στην αρχική σελίδα",
+    "open_mobile_menu": "Άνοιγμα μενού κινητού",
+    "mobile_menu": "Μενού κινητού",
+    "mobile_menu_navigation": "Πλοήγηση μενού κινητού"
   },
   "buttons": {
     "save": "Αποθήκευση",
@@ -79,7 +84,8 @@
     "language": "Γλώσσα",
     "english": "Αγγλικά",
     "greek": "Ελληνικά",
-    "change_language": "Αλλαγή Γλώσσας"
+    "change_language": "Αλλαγή Γλώσσας",
+    "language_switcher_label": "Language / Γλώσσα"
   },
   "general": {
     "search": "Αναζήτηση",

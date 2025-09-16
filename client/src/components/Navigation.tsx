@@ -1,28 +1,43 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, X, Settings, LogOut } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import logoUrl from "@assets/Logo_1757848498470.png";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 
 export default function Navigation() {
+  const { t } = useTranslation('common');
   const { isAuthenticated, user } = useAuth();
   const [location, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  // Create stable key mapping for test IDs based on href values
+  const getStableKey = (href: string) => {
+    const keyMap: Record<string, string> = {
+      '/': 'home',
+      '/resources': 'resources',
+      '/inspiration': 'inspiration',
+      '/schools-map': 'schools-map',
+      '/search': 'search',
+      '/admin': 'admin'
+    };
+    return keyMap[href] || href.slice(1).replace(/\//g, '-');
+  };
+
   const navItems = [
-    { href: "/", label: "Home", public: false },
-    { href: "/resources", label: "Resources", public: true },
-    { href: "/inspiration", label: "Inspiration", public: true },
-    { href: "/schools-map", label: "Schools Map", public: true },
-    { href: "/search", label: "Search", public: true },
+    { href: "/", label: t('navigation.home'), public: false },
+    { href: "/resources", label: t('navigation.resources'), public: true },
+    { href: "/inspiration", label: t('navigation.inspiration'), public: true },
+    { href: "/schools-map", label: t('navigation.schools_map'), public: true },
+    { href: "/search", label: t('navigation.search'), public: true },
   ];
 
   // Add admin link if user is admin
   if (user?.isAdmin) {
-    navItems.push({ href: "/admin", label: "Admin", public: false });
+    navItems.push({ href: "/admin", label: t('navigation.admin'), public: false });
   }
 
   const handleNavClick = (href: string) => {
@@ -39,7 +54,7 @@ export default function Navigation() {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50" role="navigation" aria-label="Main Navigation">
+    <nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50" role="navigation" aria-label={t('navigation.main_navigation')}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -48,7 +63,7 @@ export default function Navigation() {
               onClick={() => handleNavClick('/')}
               className="flex items-center gap-2 hover:opacity-80 transition-opacity focus-visible:focus-visible"
               data-testid="button-logo"
-              aria-label="Plastic Clever Schools - Go to homepage"
+              aria-label={t('navigation.go_to_homepage')}
             >
               <img 
                 src={logoUrl} 
@@ -74,7 +89,7 @@ export default function Navigation() {
                         ? 'bg-ocean-blue text-white'
                         : 'text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline'
                     }`}
-                    data-testid={`nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                    data-testid={`nav-${getStableKey(item.href)}`}
                     aria-current={isActive ? 'page' : undefined}
                   >
                     {item.label}
@@ -100,7 +115,7 @@ export default function Navigation() {
                   data-testid="button-logout"
                 >
                   <LogOut className="h-4 w-4 mr-2" />
-                  Logout
+                  {t('navigation.logout')}
                 </Button>
               </>
             ) : (
@@ -110,14 +125,14 @@ export default function Navigation() {
                   onClick={handleAuth}
                   data-testid="button-login"
                 >
-                  Login
+                  {t('navigation.login')}
                 </button>
                 <Button
                   className="btn-primary"
                   onClick={() => setLocation('/register')}
                   data-testid="button-register"
                 >
-                  Register Your School
+                  {t('navigation.register')}
                 </Button>
               </>
             )}
@@ -132,7 +147,7 @@ export default function Navigation() {
                   size="icon"
                   className="text-gray-700 hover:bg-gray-100 focus-visible:focus-visible"
                   data-testid="button-mobile-menu"
-                  aria-label="Open mobile navigation menu"
+                  aria-label={t('navigation.open_mobile_menu')}
                   aria-expanded={isMobileMenuOpen}
                   aria-controls="mobile-menu"
                 >
@@ -143,7 +158,7 @@ export default function Navigation() {
                 side="right" 
                 className="bg-white text-gray-900 border-gray-200"
                 id="mobile-menu"
-                aria-label="Mobile navigation menu"
+                aria-label={t('navigation.mobile_menu')}
               >
                 <SheetHeader>
                   <SheetTitle className="text-gray-900 text-left flex items-center gap-2">
@@ -154,7 +169,7 @@ export default function Navigation() {
                     />
                   </SheetTitle>
                 </SheetHeader>
-                <div className="mt-8 space-y-4" aria-label="Mobile menu navigation">
+                <div className="mt-8 space-y-4" aria-label={t('navigation.mobile_menu_navigation')}>
                   {navItems.map((item) => {
                     if (!item.public && !isAuthenticated) return null;
                     
@@ -169,7 +184,7 @@ export default function Navigation() {
                             ? 'bg-ocean-blue text-white'
                             : 'text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline'
                         }`}
-                        data-testid={`mobile-nav-${item.label.toLowerCase().replace(' ', '-')}`}
+                        data-testid={`mobile-nav-${getStableKey(item.href)}`}
                         aria-current={isActive ? 'page' : undefined}
                       >
                         {item.label}
@@ -181,7 +196,7 @@ export default function Navigation() {
                   <div className="border-t border-gray-200 pt-4 mt-6">
                     <div className="px-3 py-2">
                       <div className="flex items-center gap-2 text-sm text-gray-700 mb-2" data-testid="mobile-language-switcher-label">
-                        Language / Γλώσσα
+                        {t('language.language_switcher_label')}
                       </div>
                       <div data-testid="mobile-language-switcher">
                         <LanguageSwitcher />
@@ -202,7 +217,7 @@ export default function Navigation() {
                           data-testid="mobile-button-logout"
                         >
                           <LogOut className="h-4 w-4 mr-2 inline" aria-hidden="true" />
-                          Logout
+                          {t('navigation.logout')}
                         </button>
                       </>
                     ) : (
@@ -212,14 +227,14 @@ export default function Navigation() {
                           onClick={handleAuth}
                           data-testid="mobile-button-login"
                         >
-                          Login
+                          {t('navigation.login')}
                         </button>
                         <Button
                           className="w-full btn-primary focus-visible:focus-visible btn-animate min-h-[44px]"
                           onClick={() => setLocation('/register')}
                           data-testid="mobile-button-register"
                         >
-                          Register Your School
+                          {t('navigation.register')}
                         </Button>
                       </div>
                     )}

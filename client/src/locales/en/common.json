@@ -10,7 +10,12 @@
     "register": "Register Your School",
     "logout": "Logout",
     "back_to_home": "Back to Home",
-    "back": "Back"
+    "back": "Back",
+    "main_navigation": "Main Navigation",
+    "go_to_homepage": "Plastic Clever Schools - Go to homepage",
+    "open_mobile_menu": "Open mobile navigation menu",
+    "mobile_menu": "Mobile navigation menu",
+    "mobile_menu_navigation": "Mobile menu navigation"
   },
   "buttons": {
     "save": "Save",
@@ -79,7 +84,8 @@
     "language": "Language",
     "english": "English",
     "greek": "Greek",
-    "change_language": "Change Language"
+    "change_language": "Change Language",
+    "language_switcher_label": "Language / Γλώσσα"
   },
   "general": {
     "search": "Search",
