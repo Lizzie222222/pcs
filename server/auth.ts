@@ -386,10 +386,14 @@ export async function setupAuth(app: Express) {
           return res.redirect('/?error=login_failed');
         }
         
-        // Redirect to returnTo URL or default to home
+        // Redirect to returnTo URL or default to home with auth success flag
         const returnTo = req.session.returnTo || '/';
         delete req.session.returnTo;
-        res.redirect(returnTo);
+        
+        // Add auth=success flag to signal successful OAuth to client
+        const redirectUrl = new URL(returnTo, `${req.protocol}://${req.get('host')}`);
+        redirectUrl.searchParams.set('auth', 'success');
+        res.redirect(redirectUrl.toString());
       });
     })(req, res, next);
   });

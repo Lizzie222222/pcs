@@ -3,14 +3,99 @@ import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { User, LoginForm, RegisterForm } from "@shared/schema";
 
+// Authentication state management to prevent unnecessary API calls
+const AUTH_HINT_KEY = 'pcs_auth_hint';
+const AUTH_CHECK_KEY = 'pcs_auth_check';
+
+// Safe sessionStorage wrapper with error handling
+function safeSessionStorage() {
+  try {
+    return {
+      getItem: (key: string) => sessionStorage.getItem(key),
+      setItem: (key: string, value: string) => sessionStorage.setItem(key, value),
+      removeItem: (key: string) => sessionStorage.removeItem(key),
+    };
+  } catch {
+    // Fallback for environments without sessionStorage or when disabled
+    return {
+      getItem: () => null,
+      setItem: () => {},
+      removeItem: () => {},
+    };
+  }
+}
+
+function getAuthHint(): boolean {
+  const storage = safeSessionStorage();
+  const hint = storage.getItem(AUTH_HINT_KEY);
+  return hint === 'true';
+}
+
+// Check if we should attempt authentication (e.g., after OAuth return)
+function shouldCheckAuth(): boolean {
+  try {
+    const url = new URL(window.location.href);
+    const storage = safeSessionStorage();
+    
+    // Check for OAuth return indicators including our custom auth flag
+    const hasOAuthParams = url.searchParams.has('code') || 
+                          url.searchParams.has('state') || 
+                          url.searchParams.has('auth') || // Our custom flag from server
+                          url.pathname.includes('/callback');
+    
+    // Check if we've already done an initial check this session
+    const hasChecked = storage.getItem(AUTH_CHECK_KEY) === 'true';
+    
+    // Only check auth if we have OAuth indicators (don't check on first load without them)
+    return hasOAuthParams && !hasChecked;
+  } catch {
+    // Fallback: don't check auth if we can't detect properly
+    return false;
+  }
+}
+
+function markAuthChecked() {
+  const storage = safeSessionStorage();
+  storage.setItem(AUTH_CHECK_KEY, 'true');
+}
+
+function setAuthHint(isAuthenticated: boolean) {
+  const storage = safeSessionStorage();
+  if (isAuthenticated) {
+    storage.setItem(AUTH_HINT_KEY, 'true');
+  } else {
+    storage.removeItem(AUTH_HINT_KEY);
+  }
+}
+
+function clearAuthHint() {
+  const storage = safeSessionStorage();
+  storage.removeItem(AUTH_HINT_KEY);
+}
+
 export function useAuth() {
   const { toast } = useToast();
+  const authHint = getAuthHint();
+  const shouldCheck = shouldCheckAuth();
 
-  const { data: user, isLoading } = useQuery<User | null>({
+  const { data: user, isLoading, refetch } = useQuery<User | null>({
     queryKey: ["/api/auth/user"],
     queryFn: getQueryFn({ on401: "returnNull" }),
     retry: false,
+    enabled: authHint || shouldCheck, // Run query if we have hint OR should check
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });
+
+  // Fallback mechanism: if we successfully get a user, set the auth hint
+  if (user && !authHint) {
+    setAuthHint(true);
+  }
+  
+  // Mark that we've done an initial auth check
+  if (shouldCheck && !isLoading) {
+    markAuthChecked();
+  }
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginForm) => {
@@ -24,7 +109,8 @@ export function useAuth() {
       return result.user;
     },
     onSuccess: (user: User) => {
-      // Update the user query cache
+      // Set authentication hint and update cache
+      setAuthHint(true);
       queryClient.setQueryData(["/api/auth/user"], user);
       toast({
         title: "Welcome back!",
@@ -66,7 +152,8 @@ export function useAuth() {
       return result.user;
     },
     onSuccess: (user: User) => {
-      // Update the user query cache
+      // Set authentication hint and update cache
+      setAuthHint(true);
       queryClient.setQueryData(["/api/auth/user"], user);
       toast({
         title: "Account created successfully!",
@@ -113,7 +200,8 @@ export function useAuth() {
       return result;
     },
     onSuccess: () => {
-      // Clear the user query cache
+      // Clear authentication hint and cache
+      clearAuthHint();
       queryClient.setQueryData(["/api/auth/user"], null);
       // Invalidate all queries to clear any user-specific data
       queryClient.invalidateQueries();
@@ -133,6 +221,12 @@ export function useAuth() {
     },
   });
 
+  // Method to manually check authentication status (for OAuth returns, etc.)
+  const checkAuthStatus = () => {
+    setAuthHint(true);
+    refetch();
+  };
+
   return {
     user,
     isLoading,
@@ -140,6 +234,7 @@ export function useAuth() {
     login: loginMutation.mutate,
     register: registerMutation.mutate,
     logout: logoutMutation.mutate,
+    checkAuthStatus,
     isLoggingIn: loginMutation.isPending,
     isRegistering: registerMutation.isPending,
     isLoggingOut: logoutMutation.isPending,

@@ -7,39 +7,17 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
+import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedImage";
 
 // Lazy load heavy components below the fold
 const InstagramCarousel = lazy(() => import("@/components/InstagramCarousel"));
 
-// Optimized Image Component with modern formats support
-interface OptimizedImageProps {
-  src: string;
-  alt: string;
-  width: number;
-  height: number;
-  className?: string;
-  priority?: boolean;
-  sizes?: string;
-}
-
-function OptimizedImage({ src, alt, width, height, className = "", priority = false, sizes }: OptimizedImageProps) {
-  const loading = priority ? "eager" : "lazy";
-  const fetchPriority = priority ? "high" : "auto";
-  
-  return (
-    <img
-      src={src}
-      alt={alt}
-      width={width}
-      height={height}
-      className={className}
-      loading={loading}
-      decoding="async"
-      ref={(el) => el?.setAttribute('fetchpriority', fetchPriority)}
-      sizes={sizes}
-    />
-  );
-}
+// Generate blur placeholders for large images
+const createBlurPlaceholder = (color: string) => generateBlurDataURL(`
+  <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100%" height="100%" fill="${color}"/>
+  </svg>
+`);
 import logoUrl from "@assets/Logo_1757848498470.png";
 import emojiImage from "@assets/emoji-038d00f1-9ce3-40c1-be35-0fa13277e57a_1757854869723.png";
 import inspireIcon from "@assets/Inspire_1757862013793.png";
@@ -174,6 +152,16 @@ export default function Landing() {
           height={1080}
           className="w-full h-full object-cover"
           priority={true}
+          responsive={true}
+          quality={85}
+          sizes="100vw"
+          placeholder="blur"
+          blurDataURL={createBlurPlaceholder('#2563eb')}
+          breakpoints={{
+            mobile: 640,
+            tablet: 1024,
+            desktop: 1920
+          }}
         />
         {/* Play button overlay */}
         <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
@@ -267,14 +255,17 @@ export default function Landing() {
         onMouseEnter={handleMouseEnter}
         onMouseLeave={handleMouseLeave}
       >
-        <img 
+        <OptimizedImage 
           src={poster}
           alt={alt}
+          width={160}
+          height={160}
           className={`absolute inset-0 m-auto opacity-100 transition-opacity duration-300 group-hover:opacity-0 ${className}`}
-          loading="lazy"
-          decoding="async"
-          width="160"
-          height="160"
+          responsive={true}
+          quality={80}
+          placeholder="blur"
+          blurDataURL={createBlurPlaceholder('#f3f4f6')}
+          sizes="(max-width: 640px) 120px, (max-width: 1024px) 140px, 160px"
         />
         <video 
           ref={videoRef}
@@ -560,36 +551,39 @@ export default function Landing() {
           
           <div className="flex flex-wrap justify-center items-center gap-12 scroll-reveal">
             <div className="flex items-center justify-center">
-              <img 
+              <OptimizedImage 
                 src={commonSeasLogo} 
                 alt={t('accessibility.common_seas_logo_alt')} 
+                width={120}
+                height={64}
                 className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
-                loading="lazy"
-                decoding="async"
-                width="120"
-                height="64"
+                responsive={false}
+                quality={90}
+                sizes="120px"
               />
             </div>
             <div className="flex items-center justify-center">
-              <img 
+              <OptimizedImage 
                 src={kidsAgainstPlasticLogo} 
                 alt={t('accessibility.kids_against_plastic_logo_alt')} 
+                width={64}
+                height={64}
                 className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
-                loading="lazy"
-                decoding="async"
-                width="64"
-                height="64"
+                responsive={false}
+                quality={90}
+                sizes="64px"
               />
             </div>
             <div className="flex items-center justify-center">
-              <img 
+              <OptimizedImage 
                 src={riverCleanupLogo} 
                 alt={t('accessibility.river_cleanup_logo_alt')} 
+                width={128}
+                height={64}
                 className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
-                loading="lazy"
-                decoding="async"
-                width="128"
-                height="64"
+                responsive={false}
+                quality={90}
+                sizes="128px"
               />
             </div>
           </div>
@@ -726,10 +720,15 @@ export default function Landing() {
         <div className="container-width">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 scroll-reveal">
             <div>
-              <img 
+              <OptimizedImage 
                 src={logoUrl} 
                 alt={t('accessibility.plastic_clever_schools_logo_alt')} 
+                width={120}
+                height={40}
                 className="h-10 w-auto mb-4 brightness-0 invert" 
+                responsive={false}
+                quality={90}
+                sizes="120px"
               />
               <p className="text-gray-300 text-sm">
                 Empowering schools worldwide to create plastic-free environments through education, investigation, and action.

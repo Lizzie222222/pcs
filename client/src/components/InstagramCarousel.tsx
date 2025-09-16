@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Heart, MessageCircle, Instagram, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 // Sample Instagram-style posts for demonstration
 const samplePosts = [
@@ -220,11 +221,15 @@ function InstagramPost({ post }: InstagramPostProps) {
       <div className="relative overflow-hidden">
         {/* Post Image */}
         <div className="aspect-square overflow-hidden bg-gray-100">
-          <img
+          <OptimizedImage
             src={post.image}
             alt="Instagram post"
+            width={400}
+            height={400}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-            loading="lazy"
+            responsive={true}
+            quality={80}
+            sizes="(max-width: 640px) 300px, (max-width: 1024px) 350px, 400px"
             data-testid={`img-instagram-post-${post.id}`}
           />
         </div>
