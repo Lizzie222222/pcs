@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
+import { useConnectionSpeed } from '@/hooks/useConnectionSpeed';
 
 interface OptimizedImageProps {
   src: string;
@@ -15,6 +16,7 @@ interface OptimizedImageProps {
   onLoad?: () => void;
   onError?: () => void;
   responsive?: boolean;
+  respectConnectionSpeed?: boolean; // New prop to enable/disable connection speed optimization
   breakpoints?: {
     mobile: number;
     tablet: number;
@@ -51,6 +53,7 @@ export function OptimizedImage({
   onLoad,
   onError,
   responsive = true,
+  respectConnectionSpeed = true,
   breakpoints = { mobile: 640, tablet: 1024, desktop: 1920 }
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -59,6 +62,18 @@ export function OptimizedImage({
   const [failedFormats, setFailedFormats] = useState<Set<string>>(new Set());
   const imgRef = useRef<HTMLImageElement>(null);
   const prefersReducedMotion = useReducedMotion();
+  const connectionSpeed = useConnectionSpeed();
+  
+  // Apply connection speed optimizations
+  const effectiveQuality = respectConnectionSpeed ? 
+    (quality !== 85 ? quality : connectionSpeed.recommendedImageQuality) : quality;
+  const effectiveResponsive = respectConnectionSpeed ? 
+    (responsive && connectionSpeed.shouldLoadHighQuality) : responsive;
+  const shouldUseLazyLoading = respectConnectionSpeed ? 
+    (!priority && (connectionSpeed.connectionInfo.isSlowConnection || connectionSpeed.connectionInfo.saveData)) : !priority;
+  const effectiveBreakpoints = respectConnectionSpeed && connectionSpeed.connectionInfo.isSlowConnection ? 
+    { mobile: Math.min(480, breakpoints.mobile), tablet: Math.min(768, breakpoints.tablet), desktop: Math.min(1280, breakpoints.desktop) } : 
+    breakpoints;
 
   // Generate different format URLs based on the original src
   const generateImageFormats = useCallback((originalSrc: string): ImageFormats => {
@@ -100,14 +115,14 @@ export function OptimizedImage({
 
   // Generate responsive srcset for different screen sizes
   const generateSrcSet = useCallback((formats: ImageFormats, targetWidth?: number): string => {
-    if (!responsive || !targetWidth) return '';
+    if (!effectiveResponsive || !targetWidth) return '';
 
-    const sizes = [
-      Math.round(targetWidth * 0.5), // 0.5x
-      targetWidth,                   // 1x  
-      Math.round(targetWidth * 1.5), // 1.5x
-      Math.round(targetWidth * 2)    // 2x
-    ];
+    // Adjust density multipliers based on connection speed
+    const densityMultipliers = respectConnectionSpeed && connectionSpeed.connectionInfo.isSlowConnection ? 
+      [0.5, 1] : // Only 0.5x and 1x for slow connections
+      [0.5, 1, 1.5, 2]; // Full range for fast connections
+
+    const sizes = densityMultipliers.map(multiplier => Math.round(targetWidth * multiplier));
 
     return sizes
       .map(size => {
@@ -115,8 +130,8 @@ export function OptimizedImage({
           // For external URLs like Unsplash, use their URL parameters
           const url = new URL(formats.original);
           url.searchParams.set('w', size.toString());
-          if (quality !== 85) {
-            url.searchParams.set('q', quality.toString());
+          if (effectiveQuality !== 85) {
+            url.searchParams.set('q', effectiveQuality.toString());
           }
           return `${url.toString()} ${size}w`;
         } else {
@@ -127,11 +142,15 @@ export function OptimizedImage({
         }
       })
       .join(', ');
-  }, [responsive, quality]);
+  }, [effectiveResponsive, effectiveQuality, respectConnectionSpeed, connectionSpeed.connectionInfo.isSlowConnection]);
 
-  // Intersection Observer for lazy loading
+  // Intersection Observer for lazy loading (respects connection speed)
   useEffect(() => {
-    if (priority || isInView) return;
+    if (!shouldUseLazyLoading || isInView) return;
+
+    // Adjust root margin based on connection speed - load closer to viewport on slow connections
+    const rootMargin = respectConnectionSpeed && connectionSpeed.connectionInfo.isSlowConnection ? 
+      '20px 0px' : '50px 0px';
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -141,7 +160,7 @@ export function OptimizedImage({
         }
       },
       {
-        rootMargin: '50px 0px', // Load 50px before entering viewport
+        rootMargin,
         threshold: 0.01
       }
     );
@@ -151,7 +170,7 @@ export function OptimizedImage({
     }
 
     return () => observer.disconnect();
-  }, [priority, isInView]);
+  }, [shouldUseLazyLoading, isInView, respectConnectionSpeed, connectionSpeed.connectionInfo.isSlowConnection]);
 
   const handleLoad = useCallback(() => {
     setIsLoaded(true);
@@ -165,17 +184,17 @@ export function OptimizedImage({
 
   // Handle source format failures
   const handleSourceError = useCallback((format: 'avif' | 'webp') => {
-    setFailedFormats(prev => new Set([...prev, format]));
+    setFailedFormats(prev => new Set(Array.from(prev).concat(format)));
   }, []);
 
   // Generate image formats and srcsets
   const formats = generateImageFormats(src);
   const srcSet = generateSrcSet(formats, width);
 
-  // Calculate sizes attribute for responsive images
-  const sizesAttribute = sizes || (responsive && width ? 
-    `(max-width: ${breakpoints.mobile}px) 100vw, ` +
-    `(max-width: ${breakpoints.tablet}px) 50vw, ` +
+  // Calculate sizes attribute for responsive images (respects connection speed)
+  const sizesAttribute = sizes || (effectiveResponsive && width ? 
+    `(max-width: ${effectiveBreakpoints.mobile}px) 100vw, ` +
+    `(max-width: ${effectiveBreakpoints.tablet}px) 50vw, ` +
     `${width}px`
     : undefined
   );

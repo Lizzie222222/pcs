@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
+import { useConnectionSpeed } from "@/hooks/useConnectionSpeed";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -8,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { NewsletterSignup } from "@/components/NewsletterSignup";
 import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedImage";
+import ConnectionSpeedControl from "@/components/ConnectionSpeedControl";
 
 // Lazy load heavy components below the fold
 const InstagramCarousel = lazy(() => import("@/components/InstagramCarousel"));
@@ -44,7 +46,10 @@ import {
   Heart,
   MapPin,
   TrendingUp,
-  Instagram
+  Instagram,
+  Wifi,
+  WifiOff,
+  Settings
 } from "lucide-react";
 
 interface SiteStats {
@@ -64,6 +69,9 @@ export default function Landing() {
   const { data: stats } = useQuery<SiteStats>({
     queryKey: ['/api/stats'],
   });
+
+  // Connection speed detection
+  const connectionSpeed = useConnectionSpeed();
 
   // Scroll animation setup
   useEffect(() => {
@@ -96,64 +104,140 @@ export default function Landing() {
     element?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Performance-optimized Hero Video Component with lazy loading
+  // Performance-optimized Hero Video Component with connection speed detection
   function HeroVideo() {
     const [showVideo, setShowVideo] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+    const [videoError, setVideoError] = useState(false);
+    const [iframeLoaded, setIframeLoaded] = useState(false);
+    const iframeRef = useRef<HTMLIFrameElement>(null);
     
     const handlePlayClick = () => {
       setIsLoading(true);
+      setVideoError(false);
       setShowVideo(true);
     };
+
+    // Handle iframe loading with better error detection
+    const handleIframeLoad = () => {
+      setIframeLoaded(true);
+      // Add a slight delay to ensure video is ready
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+    };
+
+    const handleIframeError = () => {
+      setVideoError(true);
+      setIsLoading(false);
+    };
+
+    // Auto-retry on error
+    useEffect(() => {
+      if (videoError && showVideo) {
+        const retryTimer = setTimeout(() => {
+          setVideoError(false);
+          setIsLoading(true);
+          // Force iframe reload
+          if (iframeRef.current) {
+            const currentSrc = iframeRef.current.src;
+            iframeRef.current.src = '';
+            setTimeout(() => {
+              if (iframeRef.current) {
+                iframeRef.current.src = currentSrc;
+              }
+            }, 100);
+          }
+        }, 3000);
+        return () => clearTimeout(retryTimer);
+      }
+    }, [videoError, showVideo]);
 
     if (showVideo) {
       return (
         <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-          {isLoading && (
+          {(isLoading || !iframeLoaded) && (
             <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-              <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin"></div>
+              <div className="text-center text-white">
+                <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+                <p className="text-sm">{isLoading ? 'Loading video...' : 'Preparing playback...'}</p>
+              </div>
+            </div>
+          )}
+          {videoError && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
+              <div className="text-center text-white p-6">
+                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <WifiOff className="w-8 h-8 text-red-300" />
+                </div>
+                <p className="text-lg mb-2">Video Loading Error</p>
+                <p className="text-sm text-gray-300 mb-4">Retrying automatically...</p>
+                <button 
+                  onClick={() => {
+                    setVideoError(false);
+                    setShowVideo(false);
+                  }}
+                  className="text-sm underline hover:no-underline"
+                  data-testid="button-close-video"
+                >
+                  Close Video
+                </button>
+              </div>
             </div>
           )}
           <iframe 
-            src="https://www.youtube.com/embed/jyL1lt-72HQ?autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=1&end=29&enablejsapi=0"
+            ref={iframeRef}
+            src="https://www.youtube.com/embed/jyL1lt-72HQ?autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=1&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=1&end=29&enablejsapi=1"
             className="absolute inset-0 w-full h-full"
             style={{ border: 'none' }}
-            allow="autoplay; encrypted-media"
+            allow="autoplay; encrypted-media; fullscreen"
             referrerPolicy="strict-origin-when-cross-origin"
             title={t('accessibility.hero_video_title')}
-            onLoad={() => setIsLoading(false)}
+            onLoad={handleIframeLoad}
+            onError={handleIframeError}
             data-testid="hero-video-iframe"
           />
         </div>
       );
     }
 
+    // Determine poster quality based on connection speed
+    const posterQuality = connectionSpeed.shouldLoadHighQuality ? 'maxresdefault' : 'hqdefault';
+    const posterUrl = `https://img.youtube.com/vi/jyL1lt-72HQ/${posterQuality}.jpg`;
+    
+    // Connection speed based image quality
+    const imageQuality = connectionSpeed.recommendedImageQuality;
+    
     return (
       <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-        {/* High-quality poster image that acts as video placeholder */}
+        {/* Connection speed optimized poster image */}
         <OptimizedImage
-          src="https://img.youtube.com/vi/jyL1lt-72HQ/maxresdefault.jpg"
+          src={posterUrl}
           alt={t('accessibility.hero_video_title')}
           width={1920}
           height={1080}
           className="w-full h-full object-cover"
           priority={true}
-          responsive={true}
-          quality={85}
+          responsive={connectionSpeed.shouldLoadHighQuality}
+          quality={imageQuality}
           sizes="100vw"
           placeholder="blur"
           blurDataURL={createBlurPlaceholder('#2563eb')}
-          breakpoints={{
+          breakpoints={connectionSpeed.shouldLoadHighQuality ? {
             mobile: 640,
             tablet: 1024,
             desktop: 1920
+          } : {
+            mobile: 480,
+            tablet: 768,
+            desktop: 1280
           }}
         />
-        {/* Play button overlay */}
-        <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
+        {/* Play button overlay with connection info */}
+        <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center">
           <button
             onClick={handlePlayClick}
-            className="group flex items-center justify-center w-20 h-20 bg-white/90 hover:bg-white rounded-full transition-all duration-300 hover:scale-110"
+            className="group flex items-center justify-center w-20 h-20 bg-white/90 hover:bg-white rounded-full transition-all duration-300 hover:scale-110 mb-4"
             aria-label={t('accessibility.play_hero_video')}
             data-testid="button-play-hero-video"
           >
@@ -166,6 +250,22 @@ export default function Landing() {
               <path d="M8 5v14l11-7z"/>
             </svg>
           </button>
+          
+          {/* Connection speed indicator */}
+          {!connectionSpeed.isLoading && (
+            <div className="flex items-center gap-2 text-white text-sm bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm">
+              {connectionSpeed.connectionInfo.isSlowConnection ? (
+                <WifiOff className="w-4 h-4 text-yellow-300" />
+              ) : (
+                <Wifi className="w-4 h-4 text-green-300" />
+              )}
+              <span className="text-xs">
+                {connectionSpeed.connectionInfo.effectiveType !== 'unknown' 
+                  ? `${connectionSpeed.connectionInfo.effectiveType.toUpperCase()} connection`
+                  : 'Detecting speed...'}
+              </span>
+            </div>
+          )}
         </div>
       </div>
     );
@@ -197,6 +297,11 @@ export default function Landing() {
 
     const handleMouseEnter = () => {
       if (prefersReducedMotion) return;
+      
+      // Respect connection speed for hover videos
+      if (connectionSpeed.connectionInfo.isSlowConnection && connectionSpeed.userPreference === 'auto') {
+        return; // Don't auto-play on slow connections unless user explicitly wants high quality
+      }
       
       hovered.current = true;
       const id = ++hoverId.current;
@@ -769,6 +874,9 @@ export default function Landing() {
       {showSignUp && (
         <SchoolSignUpForm onClose={() => setShowSignUp(false)} />
       )}
+
+      {/* Connection Speed Control */}
+      <ConnectionSpeedControl />
     </div>
   );
 }
