@@ -56,27 +56,44 @@ export function OptimizedImage({
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
   const [isInView, setIsInView] = useState(priority);
+  const [failedFormats, setFailedFormats] = useState<Set<string>>(new Set());
   const imgRef = useRef<HTMLImageElement>(null);
   const prefersReducedMotion = useReducedMotion();
 
   // Generate different format URLs based on the original src
   const generateImageFormats = useCallback((originalSrc: string): ImageFormats => {
-    // If it's an external URL (like Unsplash), return as-is since they handle optimization
+    // If it's an external URL, check if it's a service that supports modern formats
     if (originalSrc.startsWith('http')) {
+      // Services like Unsplash can generate WebP/AVIF on demand
+      if (originalSrc.includes('unsplash.com') || 
+          originalSrc.includes('images.unsplash.com') ||
+          originalSrc.includes('cloudinary.com')) {
+        const url = new URL(originalSrc);
+        return {
+          avif: url.toString() + (url.search ? '&' : '?') + 'fm=avif',
+          webp: url.toString() + (url.search ? '&' : '?') + 'fm=webp', 
+          original: originalSrc
+        };
+      }
+      // For other external URLs, return as-is
       return { original: originalSrc };
     }
 
-    // For local assets, generate WebP variants
-    const basePath = originalSrc.replace(/\.[^.]+$/, '');
-    const extension = originalSrc.split('.').pop()?.toLowerCase();
-    
-    if (extension === 'png' || extension === 'jpg' || extension === 'jpeg') {
-      return {
-        avif: `${basePath}.avif`,
-        webp: `${basePath}.webp`,
-        original: originalSrc
-      };
-    }
+    // For local assets, be conservative and only use the original format
+    // This prevents trying to load non-existent WebP/AVIF variants
+    // If you have pre-generated modern format versions, you can uncomment
+    // the code below and ensure those files exist:
+    //
+    // const basePath = originalSrc.replace(/\.[^.]+$/, '');
+    // const extension = originalSrc.split('.').pop()?.toLowerCase();
+    // 
+    // if (extension === 'png' || extension === 'jpg' || extension === 'jpeg') {
+    //   return {
+    //     avif: `${basePath}.avif`,
+    //     webp: `${basePath}.webp`,
+    //     original: originalSrc
+    //   };
+    // }
 
     return { original: originalSrc };
   }, []);
@@ -146,6 +163,11 @@ export function OptimizedImage({
     onError?.();
   }, [onError]);
 
+  // Handle source format failures
+  const handleSourceError = useCallback((format: 'avif' | 'webp') => {
+    setFailedFormats(prev => new Set([...prev, format]));
+  }, []);
+
   // Generate image formats and srcsets
   const formats = generateImageFormats(src);
   const srcSet = generateSrcSet(formats, width);
@@ -208,20 +230,22 @@ export function OptimizedImage({
       {/* Progressive enhancement with modern formats */}
       <picture>
         {/* AVIF format for maximum compression */}
-        {formats.avif && (
+        {formats.avif && !Array.from(failedFormats).includes('avif') && (
           <source
             srcSet={responsive ? generateSrcSet({ original: formats.avif }, width) : formats.avif}
             sizes={sizesAttribute}
             type="image/avif"
+            onError={() => handleSourceError('avif')}
           />
         )}
         
         {/* WebP format as fallback */}
-        {formats.webp && (
+        {formats.webp && !Array.from(failedFormats).includes('webp') && (
           <source
             srcSet={responsive ? generateSrcSet({ original: formats.webp }, width) : formats.webp}
             sizes={sizesAttribute}
             type="image/webp"
+            onError={() => handleSourceError('webp')}
           />
         )}
         
