@@ -17,6 +17,7 @@ interface OptimizedImageProps {
   onError?: () => void;
   responsive?: boolean;
   respectConnectionSpeed?: boolean; // New prop to enable/disable connection speed optimization
+  objectFit?: 'cover' | 'contain' | 'fill' | 'scale-down' | 'none'; // New prop to control object-fit
   breakpoints?: {
     mobile: number;
     tablet: number;
@@ -54,6 +55,7 @@ export function OptimizedImage({
   onError,
   responsive = true,
   respectConnectionSpeed = true,
+  objectFit = 'cover',
   breakpoints = { mobile: 640, tablet: 1024, desktop: 1920 }
 }: OptimizedImageProps) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -280,7 +282,7 @@ export function OptimizedImage({
           width={width}
           height={height}
           className={`
-            w-full h-full object-cover transition-opacity duration-300
+            w-full h-full object-${objectFit} transition-opacity duration-300
             ${isLoaded ? 'opacity-100' : 'opacity-0'}
             ${!prefersReducedMotion && isLoaded ? 'animate-in fade-in duration-300' : ''}
           `}

@@ -648,10 +648,11 @@ export default function Landing() {
                 alt={t('accessibility.common_seas_logo_alt')} 
                 width={120}
                 height={64}
-                className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
+                className="h-16 w-auto opacity-80 hover:opacity-100 transition-opacity duration-300"
                 responsive={false}
                 quality={90}
                 sizes="120px"
+                objectFit="contain"
               />
             </div>
             <div className="flex items-center justify-center">
@@ -660,10 +661,11 @@ export default function Landing() {
                 alt={t('accessibility.kids_against_plastic_logo_alt')} 
                 width={64}
                 height={64}
-                className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
+                className="h-16 w-auto opacity-80 hover:opacity-100 transition-opacity duration-300"
                 responsive={false}
                 quality={90}
                 sizes="64px"
+                objectFit="contain"
               />
             </div>
             <div className="flex items-center justify-center">
@@ -672,10 +674,11 @@ export default function Landing() {
                 alt={t('accessibility.river_cleanup_logo_alt')} 
                 width={128}
                 height={64}
-                className="h-16 w-auto object-contain opacity-80 hover:opacity-100 transition-opacity duration-300"
+                className="h-16 w-auto opacity-80 hover:opacity-100 transition-opacity duration-300"
                 responsive={false}
                 quality={90}
                 sizes="128px"
+                objectFit="contain"
               />
             </div>
           </div>
