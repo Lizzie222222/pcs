@@ -352,14 +352,12 @@ export default function Landing() {
         <OptimizedImage 
           src={poster}
           alt={alt}
-          width={160}
-          height={160}
-          className={`absolute inset-0 m-auto opacity-100 transition-opacity duration-300 group-hover:opacity-0 ${className}`}
+          className={`w-full h-full opacity-100 transition-opacity duration-300 group-hover:opacity-0 ${className}`}
           responsive={true}
           quality={80}
           placeholder="blur"
           blurDataURL={createBlurPlaceholder('#f3f4f6')}
-          sizes="(max-width: 640px) 120px, (max-width: 1024px) 140px, 160px"
+          sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 160px"
         />
         <video 
           ref={videoRef}
