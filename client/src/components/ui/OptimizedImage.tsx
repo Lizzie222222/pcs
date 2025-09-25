@@ -69,8 +69,10 @@ export function OptimizedImage({
     (quality !== 85 ? quality : connectionSpeed.recommendedImageQuality) : quality;
   const effectiveResponsive = respectConnectionSpeed ? 
     (responsive && connectionSpeed.shouldLoadHighQuality) : responsive;
+  // Disable lazy loading for small images (logos) or priority images
   const shouldUseLazyLoading = respectConnectionSpeed ? 
-    (!priority && (connectionSpeed.connectionInfo.isSlowConnection || connectionSpeed.connectionInfo.saveData)) : !priority;
+    (!priority && (connectionSpeed.connectionInfo.isSlowConnection || connectionSpeed.connectionInfo.saveData) && (width && width > 200)) : 
+    (!priority && (width && width > 200));
   const effectiveBreakpoints = respectConnectionSpeed && connectionSpeed.connectionInfo.isSlowConnection ? 
     { mobile: Math.min(480, breakpoints.mobile), tablet: Math.min(768, breakpoints.tablet), desktop: Math.min(1280, breakpoints.desktop) } : 
     breakpoints;
@@ -207,12 +209,12 @@ export function OptimizedImage({
     backgroundRepeat: 'no-repeat'
   } : {};
 
-  // Don't render anything until in view (for lazy loading)
-  if (!isInView) {
+  // Don't render anything until in view (for lazy loading) - but only if lazy loading is actually enabled
+  if (shouldUseLazyLoading && !isInView) {
     return (
       <div
         ref={imgRef}
-        className={`${className} bg-gray-100 animate-pulse`}
+        className={`${className} bg-gray-100`}
         style={{ 
           width: width ? `${width}px` : '100%', 
           height: height ? `${height}px` : 'auto',
@@ -243,7 +245,7 @@ export function OptimizedImage({
 
       {/* Loading placeholder */}
       {!isLoaded && !isError && placeholder === 'empty' && (
-        <div className="absolute inset-0 bg-gray-100 animate-pulse" />
+        <div className="absolute inset-0 bg-gray-100" />
       )}
 
       {/* Progressive enhancement with modern formats */}
