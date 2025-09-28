@@ -1,0 +1,43 @@
+The most common cause for Google Authentication failing on a Replit project is an incorrect **Authorized Redirect URI** in your **Google Cloud Console** settings.
+
+Since your Replit project is hosted on a dynamic server environment, you must ensure that your Google OAuth settings are configured to redirect back to the correct, publicly accessible URL of your running Repl.
+
+Here are the specific instructions for setting up the Google authentication credentials correctly:
+
+## 1. Get Your Replit URL
+
+You need to know the correct URL for your running Repl.
+
+* When your Repl is running (click the **Run** button), look at the URL in the web view (browser pane) inside Replit.
+* The format will typically be:
+    * `https://[Repl-Name].[Username].repl.co` (for older Repls)
+    * `https://[Deployment-Name].[Username].replit.app` (for newer deployments)
+* **Copy the base URL of your application.** For example: `https://my-project-auth.myusername.replit.app`
+
+## 2. Configure the Google Cloud Console
+
+Go to the **Google Cloud Console** where you created your OAuth 2.0 Client ID. This is typically under **APIs & Services** $\rightarrow$ **Credentials**.
+
+### Authorized JavaScript Origins
+
+* In the **Authorized JavaScript origins** field, enter your base Replit URL:
+    * Example: `https://my-project-auth.myusername.replit.app`
+
+### Authorized Redirect URIs (Crucial Step)
+
+* This is where Google sends the user back after they've successfully signed in.
+* You must provide the **full callback URL** that your application is configured to handle. If your code handles the callback at the path `/callback` (which is common), the URI should be:
+    * **Full URL:** `https://[Your-Repl-URL]/callback`
+    * Example: `https://my-project-auth.myusername.replit.app/callback`
+
+⚠️ **Important Notes on Replit URLs:**
+
+* **Make sure you use `https://`** as Google requires secure connections for OAuth flows.
+* The exact structure of the Replit URL can change, especially if you are using a **Deployment** versus a standard running Repl. Always verify the actual live URL your code will run on. If your app is deployed, use the deployment URL.
+* Some users have reported issues where Replit's infrastructure uses a temporary workspace URL (e.g., `https://workspace.xyz.replit.app`) during the OAuth redirect. If your primary URL is failing, and you see a different URL in your browser error, you may need to **temporarily add that problematic workspace URL** to your list of Authorized Redirect URIs for debugging, though the official Replit URL is usually the correct one to use.
+
+## 3. Check Other Settings
+
+* **Client ID and Secret:** Ensure the **Client ID** and **Client Secret** in your Replit project's code or **Secrets** panel exactly match the credentials generated in the Google Cloud Console.
+* **Environment Variables:** If you're using a web framework like Flask/Express and a library like `oauthlib`, you might need to set the environment variable **`OAUTHLIB_INSECURE_TRANSPORT`** to `'1'` in your Replit **Secrets** tab, especially if you are running the Repl in a non-deployed state that might be treated as HTTP by the library (though Replit's web view is typically HTTPS).
+* **Protocol Mismatch:** Ensure your application's code is correctly generating the redirect URL with `https://`. A common issue is the app generating an `http://` URL when it needs to be `https://`.
