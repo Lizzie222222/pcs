@@ -87,7 +87,7 @@ export default function Home() {
         setTimeout(() => {
           window.location.href = "/api/auth/google";
         }, 500);
-      } else if (errorMessage === "No schools found for user") {
+      } else if (errorMessage.includes("No schools found for user")) {
         // Handle specific case where user needs to register their school
         if (!isRedirecting) {
           setIsRedirecting(true);
