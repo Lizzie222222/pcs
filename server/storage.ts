@@ -8,6 +8,7 @@ import {
   emailLogs,
   mailchimpAudiences,
   mailchimpSubscriptions,
+  certificates,
   type User,
   type UpsertUser,
   type School,
@@ -26,6 +27,8 @@ import {
   type InsertMailchimpAudience,
   type MailchimpSubscription,
   type InsertMailchimpSubscription,
+  type Certificate,
+  type InsertCertificate,
   type CreatePasswordUser,
   type CreateOAuthUser,
 } from "@shared/schema";
@@ -132,6 +135,15 @@ export interface IStorage {
   deleteMailchimpSubscription(id: string): Promise<void>;
   getSubscriptionsBySchool(schoolId: string): Promise<MailchimpSubscription[]>;
   getSubscriptionsByUser(userId: string): Promise<MailchimpSubscription[]>;
+  
+  // Certificate operations
+  createCertificate(certificate: InsertCertificate): Promise<Certificate>;
+  getCertificates(): Promise<Certificate[]>;
+  getCertificate(id: string): Promise<(Certificate & { school: School }) | undefined>;
+  getCertificatesBySchool(schoolId: string): Promise<(Certificate & { school: School })[]>;
+  getCertificateByNumber(certificateNumber: string): Promise<(Certificate & { school: School }) | undefined>;
+  updateCertificate(id: string, updates: Partial<Certificate>): Promise<Certificate | undefined>;
+  deleteCertificate(id: string): Promise<void>;
   
   // Admin operations
   getAdminStats(): Promise<{
@@ -2044,6 +2056,75 @@ export class DatabaseStorage implements IStorage {
       console.error('Error in searchWithRankingFallback:', error);
       return [];
     }
+  }
+
+  // Certificate operations
+  async createCertificate(certificate: InsertCertificate): Promise<Certificate> {
+    const [newCertificate] = await db.insert(certificates).values(certificate).returning();
+    return newCertificate;
+  }
+
+  async getCertificates(): Promise<Certificate[]> {
+    return await db.select().from(certificates).where(eq(certificates.isActive, true)).orderBy(desc(certificates.issuedDate));
+  }
+
+  async getCertificate(id: string): Promise<(Certificate & { school: School }) | undefined> {
+    const [certificate] = await db
+      .select()
+      .from(certificates)
+      .innerJoin(schools, eq(certificates.schoolId, schools.id))
+      .where(and(eq(certificates.id, id), eq(certificates.isActive, true)));
+    
+    if (!certificate) return undefined;
+    
+    return {
+      ...certificate.certificates,
+      school: certificate.schools
+    };
+  }
+
+  async getCertificatesBySchool(schoolId: string): Promise<(Certificate & { school: School })[]> {
+    const results = await db
+      .select()
+      .from(certificates)
+      .innerJoin(schools, eq(certificates.schoolId, schools.id))
+      .where(and(eq(certificates.schoolId, schoolId), eq(certificates.isActive, true)))
+      .orderBy(desc(certificates.issuedDate));
+    
+    return results.map(result => ({
+      ...result.certificates,
+      school: result.schools
+    }));
+  }
+
+  async getCertificateByNumber(certificateNumber: string): Promise<(Certificate & { school: School }) | undefined> {
+    const [certificate] = await db
+      .select()
+      .from(certificates)
+      .innerJoin(schools, eq(certificates.schoolId, schools.id))
+      .where(and(eq(certificates.certificateNumber, certificateNumber), eq(certificates.isActive, true)));
+    
+    if (!certificate) return undefined;
+    
+    return {
+      ...certificate.certificates,
+      school: certificate.schools
+    };
+  }
+
+  async updateCertificate(id: string, updates: Partial<Certificate>): Promise<Certificate | undefined> {
+    const [updatedCertificate] = await db
+      .update(certificates)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(certificates.id, id))
+      .returning();
+    return updatedCertificate;
+  }
+
+  async deleteCertificate(id: string): Promise<void> {
+    await db.update(certificates)
+      .set({ isActive: false, updatedAt: new Date() })
+      .where(eq(certificates.id, id));
   }
 }
 
