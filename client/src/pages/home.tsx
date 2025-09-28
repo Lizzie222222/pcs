@@ -19,7 +19,8 @@ import {
   CheckCircle,
   Clock,
   Calendar,
-  Award
+  Award,
+  MapPin
 } from "lucide-react";
 import { useState } from "react";
 
@@ -163,29 +164,40 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Header */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-navy" data-testid="text-welcome">
-                  {t('welcome.greeting', { name: user?.firstName ?? t('welcome.default_name') })}
-                </h1>
-                <p className="text-gray-600 mt-1" data-testid="text-school-info">
-                  {school.name} • {school.country}
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="text-2xl font-bold text-pcs_blue" data-testid="text-progress-percentage">
-                  {school.progressPercentage}%
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 pt-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Enhanced Welcome Header */}
+        <div className="mb-12">
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300">
+            <CardContent className="p-8 lg:p-10">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+                <div className="flex-1">
+                  <h1 className="text-4xl lg:text-5xl font-bold text-navy mb-3 scroll-reveal" data-testid="text-welcome">
+                    {t('welcome.greeting', { name: user?.firstName ?? t('welcome.default_name') })}
+                  </h1>
+                  <p className="text-lg text-gray-600 mb-4 scroll-reveal" data-testid="text-school-info">
+                    {school.name} • {school.country}
+                  </p>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <MapPin className="h-4 w-4" />
+                    <span>Dashboard • {t('progress.current_stage')}: {school.currentStage}</span>
+                  </div>
                 </div>
-                <div className="text-sm text-gray-500">{t('progress.overall_progress')}</div>
+                <div className="text-center lg:text-right">
+                  <div className="relative inline-flex items-center justify-center w-24 h-24 mb-2">
+                    <div className="absolute inset-0 bg-gradient-to-r from-pcs_blue to-ocean-blue rounded-full animate-pulse"></div>
+                    <div className="relative bg-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg">
+                      <span className="text-2xl font-bold text-navy" data-testid="text-progress-percentage">
+                        {school.progressPercentage}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-sm font-medium text-gray-600">{t('progress.overall_progress')}</div>
+                </div>
               </div>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Progress Tracker */}
         <div className="mb-8">
@@ -198,107 +210,141 @@ export default function Home() {
           />
         </div>
 
-        {/* Quick Actions */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-navy">{t('quick_actions.title')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Button 
-                className="bg-coral hover:bg-coral/90 text-white p-4 h-auto flex-col gap-2"
-                onClick={() => setShowEvidenceForm(true)}
-                data-testid="button-upload-evidence"
-              >
-                <Upload className="h-6 w-6" />
-                <span>{t('evidence.submit_evidence')}</span>
-              </Button>
-              
-              <Button 
-                className="bg-pcs_blue hover:bg-pcs_blue/90 text-white p-4 h-auto flex-col gap-2"
-                onClick={() => window.location.href = '/resources'}
-                data-testid="button-view-resources"
-              >
-                <BookOpen className="h-6 w-6" />
-                <span>{t('quick_actions.view_resources')}</span>
-              </Button>
-              
-              <Button 
-                className="bg-teal hover:bg-teal/90 text-white p-4 h-auto flex-col gap-2"
-                data-testid="button-manage-team"
-              >
-                <Users className="h-6 w-6" />
-                <span>{t('quick_actions.manage_team')}</span>
-              </Button>
-              
-              <Button 
-                className="bg-yellow hover:bg-yellow/90 text-black p-4 h-auto flex-col gap-2"
-                data-testid="button-view-progress"
-              >
-                <BarChart3 className="h-6 w-6" />
-                <span>{t('quick_actions.track_progress')}</span>
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-navy">{t('activity_feed.title')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {recentEvidence.length === 0 ? (
-              <div className="text-center py-8 text-gray-500">
-                <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>{t('activity_feed.no_activity')}. {t('evidence.submit_evidence')}!</p>
+        {/* Enhanced Quick Actions */}
+        <div className="mb-12">
+          <div className="text-center mb-8">
+            <h2 className="text-2xl lg:text-3xl font-bold text-navy mb-3 scroll-reveal">{t('quick_actions.title')}</h2>
+            <p className="text-gray-600 scroll-reveal">Take action to advance your school's journey</p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm scroll-reveal">
+              <CardContent className="p-0">
                 <Button 
-                  className="mt-4 bg-coral hover:bg-coral/90"
+                  className="w-full h-full bg-gradient-to-br from-coral to-coral/80 hover:from-coral hover:to-coral/70 text-white p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
                   onClick={() => setShowEvidenceForm(true)}
-                  data-testid="button-upload-evidence-empty"
+                  data-testid="button-upload-evidence"
                 >
-                  {t('evidence.submit_evidence')}
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {recentEvidence.map((evidence) => (
-                  <div 
-                    key={evidence.id} 
-                    className="flex items-start gap-4 p-4 bg-gray-50 rounded-lg"
-                    data-testid={`activity-${evidence.id}`}
-                  >
-                    <div className={`p-2 rounded-full text-white ${
-                      evidence.status === 'approved' ? 'bg-green-500' :
-                      evidence.status === 'pending' ? 'bg-yellow' :
-                      'bg-red-500'
-                    }`}>
-                      {evidence.status === 'approved' ? (
-                        <CheckCircle className="h-4 w-4" />
-                      ) : (
-                        <Clock className="h-4 w-4" />
-                      )}
-                    </div>
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium text-navy">{evidence.title}</h4>
-                        <Badge className={getStageColor(evidence.stage)}>
-                          {t(`progress.${evidence.stage}.title`)}
-                        </Badge>
-                        <Badge variant="outline" className={getStatusColor(evidence.status)}>
-                          {t(`evidence.evidence_${evidence.status}`)}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-gray-600">
-                        {t('evidence.submitted_on', { date: new Date(evidence.submittedAt).toLocaleDateString() })}
-                      </p>
-                    </div>
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <Upload className="h-6 w-6" />
                   </div>
-                ))}
+                  <span className="font-semibold">{t('evidence.submit_evidence')}</span>
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm scroll-reveal">
+              <CardContent className="p-0">
+                <Button 
+                  className="w-full h-full bg-gradient-to-br from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
+                  onClick={() => window.location.href = '/resources'}
+                  data-testid="button-view-resources"
+                >
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <BookOpen className="h-6 w-6" />
+                  </div>
+                  <span className="font-semibold">{t('quick_actions.view_resources')}</span>
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm scroll-reveal">
+              <CardContent className="p-0">
+                <Button 
+                  className="w-full h-full bg-gradient-to-br from-teal to-teal/80 hover:from-teal hover:to-teal/70 text-white p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
+                  data-testid="button-manage-team"
+                >
+                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
+                    <Users className="h-6 w-6" />
+                  </div>
+                  <span className="font-semibold">{t('quick_actions.manage_team')}</span>
+                </Button>
+              </CardContent>
+            </Card>
+            
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm scroll-reveal">
+              <CardContent className="p-0">
+                <Button 
+                  className="w-full h-full bg-gradient-to-br from-yellow to-yellow/80 hover:from-yellow hover:to-yellow/70 text-navy p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
+                  data-testid="button-view-progress"
+                >
+                  <div className="w-12 h-12 bg-navy/20 rounded-full flex items-center justify-center group-hover:bg-navy/30 transition-colors">
+                    <BarChart3 className="h-6 w-6" />
+                  </div>
+                  <span className="font-semibold">{t('quick_actions.track_progress')}</span>
+                </Button>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Enhanced Recent Activity */}
+        <div>
+          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+            <CardHeader className="pb-4">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-2xl font-bold text-navy scroll-reveal">{t('activity_feed.title')}</CardTitle>
+                <Calendar className="h-6 w-6 text-gray-400" />
               </div>
-            )}
-          </CardContent>
-        </Card>
+            </CardHeader>
+            <CardContent>
+              {recentEvidence.length === 0 ? (
+                <div className="text-center py-12 px-6">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Calendar className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No Activity Yet</h3>
+                  <p className="text-gray-500 mb-6">{t('activity_feed.no_activity')}. Start by submitting your first evidence!</p>
+                  <Button 
+                    className="bg-gradient-to-r from-coral to-coral/80 hover:from-coral hover:to-coral/70 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
+                    onClick={() => setShowEvidenceForm(true)}
+                    data-testid="button-upload-evidence-empty"
+                  >
+                    <Upload className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                    {t('evidence.submit_evidence')}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {recentEvidence.map((evidence, index) => (
+                    <div 
+                      key={evidence.id} 
+                      className="group flex items-start gap-4 p-6 bg-gradient-to-r from-white to-gray-50/50 rounded-xl border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300 scroll-reveal"
+                      style={{ animationDelay: `${index * 0.1}s` }}
+                      data-testid={`activity-${evidence.id}`}
+                    >
+                      <div className={`p-3 rounded-full text-white shadow-lg ${
+                        evidence.status === 'approved' ? 'bg-gradient-to-r from-green-500 to-green-400' :
+                        evidence.status === 'pending' ? 'bg-gradient-to-r from-yellow to-yellow/80' :
+                        'bg-gradient-to-r from-red-500 to-red-400'
+                      } group-hover:scale-110 transition-transform duration-300`}>
+                        {evidence.status === 'approved' ? (
+                          <CheckCircle className="h-5 w-5" />
+                        ) : (
+                          <Clock className="h-5 w-5" />
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h4 className="font-semibold text-navy group-hover:text-ocean-blue transition-colors">{evidence.title}</h4>
+                          <Badge className={`${getStageColor(evidence.stage)} text-white shadow-sm`}>
+                            {t(`progress.${evidence.stage}.title`)}
+                          </Badge>
+                          <Badge variant="outline" className={`${getStatusColor(evidence.status)} text-white border-0 shadow-sm`}>
+                            {t(`evidence.evidence_${evidence.status}`)}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 flex items-center gap-2">
+                          <Calendar className="h-3 w-3" />
+                          {t('evidence.submitted_on', { date: new Date(evidence.submittedAt).toLocaleDateString() })}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
       </div>
 
       {/* Evidence Submission Form */}
