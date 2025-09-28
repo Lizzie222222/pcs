@@ -181,6 +181,23 @@ export const mailchimpSubscriptions = pgTable("mailchimp_subscriptions", {
   mergeFields: jsonb("merge_fields").default('{}'),
 });
 
+export const certificates = pgTable("certificates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
+  stage: programStageEnum("stage").notNull(),
+  issuedBy: varchar("issued_by").notNull().references(() => users.id),
+  certificateNumber: varchar("certificate_number").notNull().unique(),
+  completedDate: timestamp("completed_date").notNull(),
+  issuedDate: timestamp("issued_date").defaultNow(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  metadata: jsonb("metadata").default('{}'), // Store additional certificate data like achievements, stats
+  shareableUrl: varchar("shareable_url"),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   schoolUsers: many(schoolUsers),
@@ -189,6 +206,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   reviewedEvidence: many(evidence, { relationName: "reviewedEvidence" }),
   caseStudies: many(caseStudies),
   emailLogs: many(emailLogs),
+  issuedCertificates: many(certificates),
 }));
 
 export const schoolsRelations = relations(schools, ({ many, one }) => ({
@@ -199,6 +217,7 @@ export const schoolsRelations = relations(schools, ({ many, one }) => ({
   }),
   evidence: many(evidence),
   caseStudies: many(caseStudies),
+  certificates: many(certificates),
 }));
 
 export const schoolUsersRelations = relations(schoolUsers, ({ one }) => ({
@@ -241,6 +260,17 @@ export const caseStudiesRelations = relations(caseStudies, ({ one }) => ({
   }),
   createdBy: one(users, {
     fields: [caseStudies.createdBy],
+    references: [users.id],
+  }),
+}));
+
+export const certificatesRelations = relations(certificates, ({ one }) => ({
+  school: one(schools, {
+    fields: [certificates.schoolId],
+    references: [schools.id],
+  }),
+  issuedBy: one(users, {
+    fields: [certificates.issuedBy],
     references: [users.id],
   }),
 }));
@@ -391,6 +421,13 @@ export const insertMailchimpSubscriptionSchema = createInsertSchema(mailchimpSub
   subscribedAt: true,
 });
 
+export const insertCertificateSchema = createInsertSchema(certificates).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  issuedDate: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -410,6 +447,8 @@ export type MailchimpAudience = typeof mailchimpAudiences.$inferSelect;
 export type InsertMailchimpAudience = z.infer<typeof insertMailchimpAudienceSchema>;
 export type MailchimpSubscription = typeof mailchimpSubscriptions.$inferSelect;
 export type InsertMailchimpSubscription = z.infer<typeof insertMailchimpSubscriptionSchema>;
+export type Certificate = typeof certificates.$inferSelect;
+export type InsertCertificate = z.infer<typeof insertCertificateSchema>;
 
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;
