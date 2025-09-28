@@ -75,6 +75,32 @@ export default function ProgressTracker({
     return 0;
   };
 
+  const getStageGradientClasses = (color: string) => {
+    switch (color) {
+      case 'pcs_blue':
+        return 'bg-gradient-to-br from-blue-500 to-blue-600 text-white';
+      case 'teal':
+        return 'bg-gradient-to-br from-teal-500 to-teal-600 text-white';
+      case 'coral':
+        return 'bg-gradient-to-br from-orange-500 to-orange-600 text-white';
+      default:
+        return 'bg-gradient-to-br from-blue-500 to-blue-600 text-white';
+    }
+  };
+
+  const getStageBadgeClasses = (color: string) => {
+    switch (color) {
+      case 'pcs_blue':
+        return 'bg-gradient-to-r from-blue-500 to-blue-600';
+      case 'teal':
+        return 'bg-gradient-to-r from-teal-500 to-teal-600';
+      case 'coral':
+        return 'bg-gradient-to-r from-orange-500 to-orange-600';
+      default:
+        return 'bg-gradient-to-r from-blue-500 to-blue-600';
+    }
+  };
+
   const CircularProgress = ({ percentage, color, completed }: { percentage: number, color: string, completed: boolean }) => {
     const radius = 45;
     const circumference = 2 * Math.PI * radius;
@@ -170,7 +196,7 @@ export default function ProgressTracker({
                 <div className="relative inline-flex items-center justify-center mb-4">
                   <div className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 ${
                     status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-400 text-white' :
-                    status === 'current' ? `bg-gradient-to-br from-${stage.color} to-${stage.color}/80 text-white` :
+                    status === 'current' ? getStageGradientClasses(stage.color) :
                     'bg-gradient-to-br from-gray-300 to-gray-200 text-gray-600'
                   }`}>
                     <Icon className="h-8 w-8" />
@@ -195,7 +221,7 @@ export default function ProgressTracker({
                       </Badge>
                     )}
                     {status === 'current' && (
-                      <Badge className={`bg-gradient-to-r from-${stage.color} to-${stage.color}/80 text-white border-0 shadow-md`}>
+                      <Badge className={`${getStageBadgeClasses(stage.color)} text-white border-0 shadow-md`}>
                         In Progress
                       </Badge>
                     )}
