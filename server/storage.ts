@@ -455,12 +455,13 @@ export class DatabaseStorage implements IStorage {
         actCompleted: schools.actCompleted,
         awardCompleted: schools.awardCompleted,
         featuredSchool: schools.featuredSchool,
+        showOnMap: schools.showOnMap,
         primaryContactId: schools.primaryContactId,
         createdAt: schools.createdAt,
         updatedAt: schools.updatedAt,
       })
       .from(schools)
-      .innerJoin(schoolUsers, eq(schools.id, schoolUsers.schoolId))
+      .innerJoin(schoolUsers, eq(schoolUsers.schoolId, schools.id))
       .where(eq(schoolUsers.userId, userId));
   }
 
