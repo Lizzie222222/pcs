@@ -132,7 +132,7 @@ export default function Home() {
   if (error) {
     const errorMessage = (error as any)?.message || t('errors.unexpected_error');
     // Don't show error state for "No schools found for user" since we handle that above
-    if (errorMessage !== "No schools found for user") {
+    if (!errorMessage.includes("No schools found for user")) {
       return <ErrorState error={errorMessage} />;
     }
   }
