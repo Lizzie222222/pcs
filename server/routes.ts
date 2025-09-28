@@ -305,8 +305,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         role: 'admin',
       });
 
-      // Send welcome email
-      await sendWelcomeEmail(user.email!, school.name);
+      // Send welcome email (non-blocking)
+      try {
+        await sendWelcomeEmail(user.email!, school.name);
+      } catch (emailError) {
+        // Log but don't fail registration if email fails
+        console.warn('Welcome email failed to send:', emailError);
+      }
 
       // Add to Mailchimp automation (non-blocking)
       try {
