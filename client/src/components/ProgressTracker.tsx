@@ -173,7 +173,7 @@ export default function ProgressTracker({
         <p className="text-gray-600 scroll-reveal">Progress through the three stages of environmental action</p>
       </div>
       
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {stages.map((stage, index) => {
           const status = getStageStatus(stage);
           const percentage = getProgressPercentage(stage);
@@ -182,108 +182,118 @@ export default function ProgressTracker({
           return (
             <Card 
               key={stage.id} 
-              className={`group transition-all duration-500 hover:-translate-y-2 border-0 overflow-hidden scroll-reveal bg-white/90 backdrop-blur-sm ${
-                status === 'completed' ? 'shadow-2xl ring-2 ring-green-400/50 bg-gradient-to-br from-green-50 to-white' :
-                status === 'current' ? 'shadow-2xl ring-2 ring-blue-400/50 bg-gradient-to-br from-blue-50 to-white' :
-                'shadow-lg hover:shadow-xl opacity-80 hover:opacity-100 bg-gradient-to-br from-gray-50 to-white'
+              className={`group transition-all duration-300 hover:shadow-lg border overflow-hidden bg-white ${
+                status === 'completed' ? 'ring-2 ring-green-400/30 bg-green-50/30' :
+                status === 'current' ? 'ring-2 ring-blue-400/30 bg-blue-50/30' :
+                'hover:shadow-md bg-gray-50/30'
               }`}
-              style={{ animationDelay: `${index * 0.2}s` }}
               data-testid={`progress-stage-${stage.id}`}
             >
-            <CardContent className="p-8">
-              {/* Enhanced Header */}
-              <div className="text-center mb-6">
-                <div className="relative inline-flex items-center justify-center mb-4">
-                  <div className={`w-20 h-20 rounded-full flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 ${
-                    status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-400 text-white' :
+            <CardContent className="p-6 h-full flex flex-col">
+              {/* Header */}
+              <div className="text-center mb-4 flex-shrink-0">
+                <div className="relative inline-flex items-center justify-center mb-3">
+                  <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition-all duration-300 ${
+                    status === 'completed' ? 'bg-green-500 text-white' :
                     status === 'current' ? getStageGradientClasses(stage.color) :
-                    'bg-gradient-to-br from-gray-300 to-gray-200 text-gray-600'
+                    'bg-gray-300 text-gray-600'
                   }`}>
-                    <Icon className="h-8 w-8" />
+                    <Icon className="h-6 w-6" />
                   </div>
                   {status === 'completed' && (
-                    <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white shadow-lg">
-                      <CheckCircle className="h-4 w-4" />
+                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white">
+                      <CheckCircle className="h-3 w-3" />
                     </div>
                   )}
                 </div>
                 
-                <div className="space-y-2">
-                  <h3 className="text-xl font-bold text-navy group-hover:text-ocean-blue transition-colors">{stage.title}</h3>
-                  <p className="text-gray-600 text-sm">{stage.description}</p>
-                  
-                  {/* Status Badge */}
-                  <div className="flex justify-center">
-                    {status === 'completed' && (
-                      <Badge className="bg-gradient-to-r from-green-500 to-green-400 text-white border-0 shadow-md">
-                        <CheckCircle className="h-3 w-3 mr-1" />
-                        Complete
-                      </Badge>
-                    )}
-                    {status === 'current' && (
-                      <Badge className={`${getStageBadgeClasses(stage.color)} text-white border-0 shadow-md`}>
-                        In Progress
-                      </Badge>
-                    )}
-                    {status === 'locked' && (
-                      <Badge variant="secondary" className="text-gray-600 bg-gray-100 border-0">
-                        <Lock className="h-3 w-3 mr-1" />
-                        Locked
-                      </Badge>
-                    )}
+                <h3 className="text-lg font-bold text-navy mb-1">{stage.title}</h3>
+                <p className="text-gray-600 text-sm mb-2">{stage.description}</p>
+                
+                {/* Status Badge */}
+                {status === 'completed' && (
+                  <Badge className="bg-green-500 text-white text-xs">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Complete
+                  </Badge>
+                )}
+                {status === 'current' && (
+                  <Badge className={`${getStageBadgeClasses(stage.color)} text-white text-xs`}>
+                    In Progress
+                  </Badge>
+                )}
+                {status === 'locked' && (
+                  <Badge variant="secondary" className="text-gray-600 bg-gray-100 text-xs">
+                    <Lock className="h-3 w-3 mr-1" />
+                    Locked
+                  </Badge>
+                )}
+              </div>
+
+              {/* Progress Circle */}
+              <div className="flex justify-center mb-4 flex-shrink-0">
+                <div className="relative w-20 h-20">
+                  <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                    <circle
+                      strokeWidth="4"
+                      stroke="#e5e7eb"
+                      fill="transparent"
+                      r="36"
+                      cx="40"
+                      cy="40"
+                    />
+                    <circle
+                      strokeWidth="4"
+                      strokeDasharray={`${2 * Math.PI * 36}`}
+                      strokeDashoffset={`${2 * Math.PI * 36 * (1 - percentage / 100)}`}
+                      strokeLinecap="round"
+                      stroke={status === 'completed' ? '#10b981' : status === 'current' ? '#3b82f6' : '#6b7280'}
+                      fill="transparent"
+                      r="36"
+                      cx="40"
+                      cy="40"
+                      className="transition-all duration-500"
+                    />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className={`text-lg font-bold ${status === 'completed' ? 'text-green-500' : 'text-navy'}`}>
+                      {percentage}%
+                    </span>
                   </div>
                 </div>
               </div>
 
-              <CircularProgress 
-                percentage={percentage} 
-                color={stage.color}
-                completed={stage.completed}
-              />
-
-              {/* Enhanced Activities List */}
-              <div className="space-y-3 mb-6">
+              {/* Activities List */}
+              <div className="space-y-2 flex-grow">
                 {stage.activities.map((activity, activityIndex) => (
                   <div 
                     key={activityIndex}
-                    className={`flex items-center gap-3 p-3 rounded-lg transition-all duration-300 ${
-                      activity.completed ? 'bg-green-50 border border-green-200' :
-                      status === 'current' ? 'bg-blue-50 border border-blue-200' :
-                      'bg-gray-50 border border-gray-200'
+                    className={`flex items-center gap-2 p-2 rounded text-sm ${
+                      activity.completed ? 'bg-green-50 text-green-700' :
+                      status === 'current' ? 'bg-blue-50 text-blue-700' :
+                      'bg-gray-50 text-gray-500'
                     }`}
                     data-testid={`activity-${stage.id}-${activityIndex}`}
                   >
                     <div className="flex-shrink-0">
                       {activity.completed ? (
-                        <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                          <CheckCircle className="h-4 w-4 text-white" />
-                        </div>
+                        <CheckCircle className="h-4 w-4 text-green-500" />
                       ) : status === 'locked' ? (
-                        <div className="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-                          <Lock className="h-3 w-3 text-gray-500" />
-                        </div>
+                        <Lock className="h-4 w-4 text-gray-400" />
                       ) : (
-                        <div className="w-6 h-6 border-2 border-gray-300 rounded-full flex items-center justify-center">
-                          <Circle className="h-3 w-3 text-gray-400" />
-                        </div>
+                        <Circle className="h-4 w-4 text-gray-400" />
                       )}
                     </div>
-                    <span className={`text-sm font-medium ${
-                      activity.completed ? 'text-green-700' :
-                      status === 'locked' ? 'text-gray-400' :
-                      'text-gray-700'
-                    }`}>
-                      {activity.name}
-                    </span>
+                    <span className="font-medium">{activity.name}</span>
                   </div>
                 ))}
               </div>
 
               {status === 'locked' && (
-                <div className="text-center py-4">
-                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-full">
-                    <Lock className="h-4 w-4 text-gray-500" />
-                    <span className="text-xs text-gray-600 font-medium">Complete previous stage to unlock</span>
+                <div className="text-center mt-4 pt-4 border-t flex-shrink-0">
+                  <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full">
+                    <Lock className="h-3 w-3 text-gray-500" />
+                    <span className="text-xs text-gray-600">Complete previous stage</span>
                   </div>
                 </div>
               )}
