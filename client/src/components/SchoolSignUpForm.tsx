@@ -6,6 +6,7 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -52,6 +53,7 @@ interface SchoolSignUpFormProps {
 export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSignUpFormProps) {
   const { t } = useTranslation(['forms', 'common']);
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [countryOpen, setCountryOpen] = useState(false);
 
@@ -91,9 +93,15 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
         description: t('forms:school_registration.success_message'),
       });
       onClose();
-      // Redirect to login after brief delay
+      // Redirect based on user's authentication method after brief delay
       setTimeout(() => {
-        window.location.href = "/api/auth/google";
+        // If user has googleId, they used Google auth and should complete OAuth flow
+        if (user?.googleId) {
+          window.location.href = "/api/auth/google";
+        } else {
+          // If user doesn't have googleId, they used email/password and should go to dashboard
+          window.location.href = "/dashboard";
+        }
       }, 2000);
     },
     onError: (error: any) => {
