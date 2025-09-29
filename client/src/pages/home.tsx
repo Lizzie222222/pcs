@@ -213,11 +213,11 @@ export default function Home() {
         {/* Enhanced Quick Actions */}
         <div className="mb-12">
           <div className="text-center mb-8">
-            <h2 className="text-2xl lg:text-3xl font-bold text-navy mb-3 scroll-reveal">{t('quick_actions.title')}</h2>
-            <p className="text-gray-600 scroll-reveal">{t('quick_actions.subtitle')}</p>
+            <h2 className="text-2xl lg:text-3xl font-bold text-navy mb-3">{t('quick_actions.title')}</h2>
+            <p className="text-gray-600">{t('quick_actions.subtitle')}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm scroll-reveal">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm">
               <CardContent className="p-0">
                 <Button 
                   className="w-full h-full bg-gradient-to-br from-coral to-coral/80 hover:from-coral hover:to-coral/70 text-white p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
@@ -232,7 +232,7 @@ export default function Home() {
               </CardContent>
             </Card>
             
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm scroll-reveal">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm">
               <CardContent className="p-0">
                 <Button 
                   className="w-full h-full bg-gradient-to-br from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
@@ -247,7 +247,7 @@ export default function Home() {
               </CardContent>
             </Card>
             
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm scroll-reveal">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm">
               <CardContent className="p-0">
                 <Button 
                   className="w-full h-full bg-gradient-to-br from-teal to-teal/80 hover:from-teal hover:to-teal/70 text-white p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
@@ -261,7 +261,7 @@ export default function Home() {
               </CardContent>
             </Card>
             
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm scroll-reveal">
+            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm">
               <CardContent className="p-0">
                 <Button 
                   className="w-full h-full bg-gradient-to-br from-yellow to-yellow/80 hover:from-yellow hover:to-yellow/70 text-navy p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
@@ -282,7 +282,7 @@ export default function Home() {
           <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
             <CardHeader className="pb-4">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-bold text-navy scroll-reveal">{t('activity_feed.title')}</CardTitle>
+                <CardTitle className="text-2xl font-bold text-navy">{t('activity_feed.title')}</CardTitle>
                 <Calendar className="h-6 w-6 text-gray-400" />
               </div>
             </CardHeader>
@@ -308,7 +308,7 @@ export default function Home() {
                   {recentEvidence.map((evidence, index) => (
                     <div 
                       key={evidence.id} 
-                      className="group flex items-start gap-4 p-6 bg-gradient-to-r from-white to-gray-50/50 rounded-xl border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300 scroll-reveal"
+                      className="group flex items-start gap-4 p-6 bg-gradient-to-r from-white to-gray-50/50 rounded-xl border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300"
                       style={{ animationDelay: `${index * 0.1}s` }}
                       data-testid={`activity-${evidence.id}`}
                     >
