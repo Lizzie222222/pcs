@@ -69,6 +69,7 @@
   },
   "quick_actions": {
     "title": "Quick Actions",
+    "subtitle": "Take action to advance your school's journey",
     "submit_evidence": "Submit Evidence",
     "view_resources": "View Resources", 
     "track_progress": "Track Progress",
@@ -86,6 +87,8 @@
   "activity_feed": {
     "title": "Recent Activity",
     "no_activity": "No recent activity",
+    "no_activity_title": "No Activity Yet",
+    "no_activity_description": "No recent activity. Start by submitting your first evidence!",
     "evidence_submitted": "Evidence submitted for {{stage}} stage",
     "submitted_on": "Submitted {{date}}",
     "evidence_approved": "Evidence approved for {{stage}} stage",

@@ -214,7 +214,7 @@ export default function Home() {
         <div className="mb-12">
           <div className="text-center mb-8">
             <h2 className="text-2xl lg:text-3xl font-bold text-navy mb-3 scroll-reveal">{t('quick_actions.title')}</h2>
-            <p className="text-gray-600 scroll-reveal">Take action to advance your school's journey</p>
+            <p className="text-gray-600 scroll-reveal">{t('quick_actions.subtitle')}</p>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm scroll-reveal">
@@ -292,8 +292,8 @@ export default function Home() {
                   <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
                     <Calendar className="h-8 w-8 text-gray-400" />
                   </div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">No Activity Yet</h3>
-                  <p className="text-gray-500 mb-6">{t('activity_feed.no_activity')}. Start by submitting your first evidence!</p>
+                  <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('activity_feed.no_activity_title')}</h3>
+                  <p className="text-gray-500 mb-6">{t('activity_feed.no_activity_description')}</p>
                   <Button 
                     className="bg-gradient-to-r from-coral to-coral/80 hover:from-coral hover:to-coral/70 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
                     onClick={() => setShowEvidenceForm(true)}
