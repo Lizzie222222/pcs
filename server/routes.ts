@@ -244,6 +244,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get global movement data for landing page
+  app.get('/api/landing/global-movement', async (req, res) => {
+    try {
+      const globalMovementData = await storage.getGlobalMovementData();
+      res.json(globalMovementData);
+    } catch (error) {
+      console.error("Error fetching global movement data:", error);
+      res.status(500).json({ message: "Failed to fetch global movement data" });
+    }
+  });
+
   // Get schools for map
   app.get('/api/schools/map', async (req, res) => {
     try {

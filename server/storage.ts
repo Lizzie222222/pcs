@@ -117,6 +117,14 @@ export interface IStorage {
     offset?: number;
   }): Promise<CaseStudy[]>;
   updateCaseStudyFeatured(id: string, featured: boolean): Promise<CaseStudy | undefined>;
+  getGlobalMovementData(): Promise<{
+    featuredCaseStudies: CaseStudy[];
+    statistics: {
+      totalSchools: number;
+      studentsEngaged: number;
+      countriesInvolved: number;
+    };
+  }>;
   
   // Email operations
   logEmail(emailLog: InsertEmailLog): Promise<EmailLog>;
@@ -694,6 +702,33 @@ export class DatabaseStorage implements IStorage {
       .where(eq(caseStudies.id, id))
       .returning();
     return caseStudy;
+  }
+
+  async getGlobalMovementData(): Promise<{
+    featuredCaseStudies: CaseStudy[];
+    statistics: {
+      totalSchools: number;
+      studentsEngaged: number;
+      countriesInvolved: number;
+    };
+  }> {
+    // Get featured case studies, ordered by priority and newest first
+    const featuredCaseStudies = await this.getCaseStudies({ 
+      featured: true, 
+      limit: 3 
+    });
+
+    // Get overall statistics using existing method
+    const stats = await this.getSchoolStats();
+
+    return {
+      featuredCaseStudies,
+      statistics: {
+        totalSchools: stats.totalSchools,
+        studentsEngaged: stats.studentsImpacted,
+        countriesInvolved: stats.countries,
+      },
+    };
   }
 
   // Email operations
