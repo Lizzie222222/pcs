@@ -20,7 +20,8 @@
   },
   "progress": {
     "title": "Πρόοδος Προγράμματος",
-    "overall_progress": "Συνολική Πρόοδος",
+    "overall_progress": "Συνολική Πρόοδος", 
+    "current_stage": "Τρέχον Στάδιο",
     "stages_completed": "Στάδια που Ολοκληρώθηκαν",
     "inspire": {
       "title": "Έμπνευση",

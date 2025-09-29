@@ -166,28 +166,28 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        {/* Enhanced Welcome Header */}
-        <div className="mb-12">
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl hover:shadow-2xl transition-all duration-300">
-            <CardContent className="p-8 lg:p-10">
+        {/* Welcome Header */}
+        <div className="mb-8">
+          <Card className="bg-white shadow-lg border">
+            <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                <div className="flex-1">
-                  <h1 className="text-4xl lg:text-5xl font-bold text-navy mb-3 scroll-reveal" data-testid="text-welcome">
+                <div className="flex-1 space-y-2">
+                  <h1 className="text-3xl font-bold text-navy" data-testid="text-welcome">
                     {t('welcome.greeting', { name: user?.firstName ?? t('welcome.default_name') })}
                   </h1>
-                  <p className="text-lg text-gray-600 mb-4 scroll-reveal" data-testid="text-school-info">
+                  <p className="text-lg text-gray-600" data-testid="text-school-info">
                     {school.name} • {school.country}
                   </p>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <MapPin className="h-4 w-4" />
-                    <span>Dashboard • {t('progress.current_stage')}: {school.currentStage}</span>
+                    <span>{t('progress.current_stage')}: {school.currentStage}</span>
                   </div>
                 </div>
-                <div className="text-center lg:text-right">
-                  <div className="relative inline-flex items-center justify-center w-24 h-24 mb-2">
-                    <div className="absolute inset-0 bg-gradient-to-r from-pcs_blue to-ocean-blue rounded-full animate-pulse"></div>
-                    <div className="relative bg-white rounded-full w-20 h-20 flex items-center justify-center shadow-lg">
-                      <span className="text-2xl font-bold text-navy" data-testid="text-progress-percentage">
+                <div className="text-center">
+                  <div className="relative inline-flex items-center justify-center w-20 h-20 mb-2">
+                    <div className="absolute inset-0 bg-blue-500 rounded-full opacity-20"></div>
+                    <div className="relative bg-white rounded-full w-16 h-16 flex items-center justify-center shadow border">
+                      <span className="text-xl font-bold text-navy" data-testid="text-progress-percentage">
                         {school.progressPercentage}%
                       </span>
                     </div>
