@@ -35,7 +35,9 @@ import {
   Plus,
   X,
   Edit,
-  Trash2
+  Trash2,
+  Calendar,
+  MapPin
 } from "lucide-react";
 
 import { 
@@ -1074,12 +1076,26 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'analytics' | 'resources'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'analytics' | 'resources' | 'case-studies'>('overview');
   const [schoolFilters, setSchoolFilters] = useState({
     search: '',
     country: '',
     stage: '',
   });
+  const [caseStudyFilters, setCaseStudyFilters] = useState({
+    search: '',
+    country: '',
+    stage: '',
+    featured: '',
+  });
+  const [createCaseStudyData, setCreateCaseStudyData] = useState<{
+    evidenceId: string;
+    title: string;
+    description: string;
+    impact: string;
+    imageUrl: string;
+    featured: boolean;
+  } | null>(null);
   const [reviewData, setReviewData] = useState<{
     evidenceId: string;
     action: 'approved' | 'rejected';
@@ -1150,9 +1166,16 @@ export default function Admin() {
     retry: false,
   });
 
+  // Case studies query
+  const { data: caseStudies = [], error: caseStudiesError } = useQuery<any[]>({
+    queryKey: ['/api/admin/case-studies', cleanFilters(caseStudyFilters)],
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'case-studies'),
+    retry: false,
+  });
+
   // Handle unauthorized errors
   useEffect(() => {
-    const errors = [statsError, evidenceError, schoolsError].filter(Boolean);
+    const errors = [statsError, evidenceError, schoolsError, caseStudiesError].filter(Boolean);
     for (const error of errors) {
       if (isUnauthorizedError(error as Error)) {
         toast({
@@ -1311,6 +1334,57 @@ export default function Admin() {
       toast({
         title: "Bulk Delete Failed",
         description: "Failed to delete schools. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Case study mutations
+  const createCaseStudyFromEvidenceMutation = useMutation({
+    mutationFn: async (data: {
+      evidenceId: string;
+      title: string;
+      description: string;
+      impact: string;
+      imageUrl: string;
+      featured: boolean;
+    }) => {
+      await apiRequest('POST', '/api/admin/case-studies/from-evidence', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Case Study Created",
+        description: "Case study has been successfully created from evidence.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      setCreateCaseStudyData(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Creation Failed",
+        description: "Failed to create case study. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateCaseStudyFeaturedMutation = useMutation({
+    mutationFn: async ({ id, featured }: { id: string; featured: boolean }) => {
+      await apiRequest('PUT', `/api/admin/case-studies/${id}/featured`, { featured });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Case Study Updated",
+        description: "Case study featured status has been updated.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Update Failed",
+        description: "Failed to update case study. Please try again.",
         variant: "destructive",
       });
     },
@@ -1709,6 +1783,17 @@ export default function Admin() {
             data-testid="tab-resources"
           >
             Resources
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'case-studies' 
+                ? 'bg-white text-navy shadow-sm' 
+                : 'text-gray-600 hover:text-navy'
+            }`}
+            onClick={() => setActiveTab('case-studies')}
+            data-testid="tab-case-studies"
+          >
+            Case Studies
           </button>
         </div>
 
@@ -2129,6 +2214,145 @@ export default function Admin() {
         {activeTab === 'resources' && (
           <ResourcesManagement />
         )}
+
+        {/* Case Studies Tab */}
+        {activeTab === 'case-studies' && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Star className="h-5 w-5" />
+                  Case Studies Management
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {/* Filters */}
+                <div className="flex gap-4 mb-6">
+                  <Input
+                    placeholder="Search case studies..."
+                    value={caseStudyFilters.search}
+                    onChange={(e) => setCaseStudyFilters(prev => ({ ...prev, search: e.target.value }))}
+                    className="max-w-sm"
+                    data-testid="input-case-study-search"
+                  />
+                  <Select
+                    value={caseStudyFilters.stage}
+                    onValueChange={(value) => setCaseStudyFilters(prev => ({ ...prev, stage: value }))}
+                  >
+                    <SelectTrigger className="w-[180px]" data-testid="select-case-study-stage">
+                      <SelectValue placeholder="Stage" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Stages</SelectItem>
+                      <SelectItem value="inspire">Inspire</SelectItem>
+                      <SelectItem value="investigate">Investigate</SelectItem>
+                      <SelectItem value="act">Act</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Select
+                    value={caseStudyFilters.featured}
+                    onValueChange={(value) => setCaseStudyFilters(prev => ({ ...prev, featured: value }))}
+                  >
+                    <SelectTrigger className="w-[180px]" data-testid="select-case-study-featured">
+                      <SelectValue placeholder="Featured Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="true">Featured</SelectItem>
+                      <SelectItem value="false">Not Featured</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={() => setCreateCaseStudyData({
+                      evidenceId: '',
+                      title: '',
+                      description: '',
+                      impact: '',
+                      imageUrl: '',
+                      featured: false
+                    })}
+                    className="bg-pcs_blue hover:bg-pcs_blue/90"
+                    data-testid="button-create-case-study"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create from Evidence
+                  </Button>
+                </div>
+
+                {/* Case Studies List */}
+                <div className="space-y-4">
+                  {caseStudies?.map((caseStudy: any) => (
+                    <Card key={caseStudy.id} className="border-l-4 border-l-pcs_blue">
+                      <CardContent className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-navy" data-testid={`case-study-title-${caseStudy.id}`}>
+                                {caseStudy.title}
+                              </h3>
+                              <Badge 
+                                className={caseStudy.stage === 'inspire' ? 'bg-pcs_blue text-white' :
+                                         caseStudy.stage === 'investigate' ? 'bg-teal text-white' :
+                                         'bg-coral text-white'}
+                                data-testid={`case-study-stage-${caseStudy.id}`}
+                              >
+                                {caseStudy.stage.charAt(0).toUpperCase() + caseStudy.stage.slice(1)}
+                              </Badge>
+                              {caseStudy.featured && (
+                                <Badge className="bg-yellow-500 text-white" data-testid={`case-study-featured-${caseStudy.id}`}>
+                                  <Star className="h-3 w-3 mr-1" />
+                                  Featured
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-gray-600 text-sm mb-2" data-testid={`case-study-description-${caseStudy.id}`}>
+                              {caseStudy.description}
+                            </p>
+                            <div className="flex items-center gap-4 text-sm text-gray-500">
+                              <span data-testid={`case-study-school-${caseStudy.id}`}>
+                                <School className="h-4 w-4 inline mr-1" />
+                                {caseStudy.schoolName}
+                              </span>
+                              <span data-testid={`case-study-country-${caseStudy.id}`}>
+                                <MapPin className="h-4 w-4 inline mr-1" />
+                                {caseStudy.schoolCountry}
+                              </span>
+                              <span data-testid={`case-study-date-${caseStudy.id}`}>
+                                <Calendar className="h-4 w-4 inline mr-1" />
+                                {new Date(caseStudy.createdAt).toLocaleDateString()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-2">
+                            <Button
+                              size="sm"
+                              variant={caseStudy.featured ? "default" : "outline"}
+                              onClick={() => updateCaseStudyFeaturedMutation.mutate({
+                                id: caseStudy.id,
+                                featured: !caseStudy.featured
+                              })}
+                              disabled={updateCaseStudyFeaturedMutation.isPending}
+                              data-testid={`button-toggle-featured-${caseStudy.id}`}
+                            >
+                              <Star className="h-4 w-4 mr-1" />
+                              {caseStudy.featured ? 'Unfeature' : 'Feature'}
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+
+                  {caseStudies?.length === 0 && (
+                    <div className="text-center py-8 text-gray-500" data-testid="no-case-studies">
+                      No case studies found. Create one from approved evidence submissions.
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
 
       {/* Review Modal */}
@@ -2360,6 +2584,117 @@ export default function Admin() {
                   data-testid="button-confirm-bulk-school-operation"
                 >
                   {(bulkSchoolUpdateMutation.isPending || bulkSchoolDeleteMutation.isPending) ? 'Processing...' : 'Confirm'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Create Case Study Dialog */}
+      {createCaseStudyData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <h3 className="text-lg font-bold text-navy mb-4">
+              Create Case Study from Evidence
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Evidence ID <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  value={createCaseStudyData.evidenceId}
+                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, evidenceId: e.target.value } : null)}
+                  placeholder="Enter evidence ID..."
+                  data-testid="input-evidence-id"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Case Study Title <span className="text-red-500">*</span>
+                </label>
+                <Input
+                  value={createCaseStudyData.title}
+                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, title: e.target.value } : null)}
+                  placeholder="Enter compelling case study title..."
+                  data-testid="input-case-study-title"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Description
+                </label>
+                <Textarea
+                  value={createCaseStudyData.description}
+                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, description: e.target.value } : null)}
+                  placeholder="Describe the case study (will use evidence description if left empty)..."
+                  rows={3}
+                  data-testid="textarea-case-study-description"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Impact Statement
+                </label>
+                <Textarea
+                  value={createCaseStudyData.impact}
+                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, impact: e.target.value } : null)}
+                  placeholder="Describe the impact and outcomes achieved..."
+                  rows={3}
+                  data-testid="textarea-case-study-impact"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Image URL
+                </label>
+                <Input
+                  value={createCaseStudyData.imageUrl}
+                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, imageUrl: e.target.value } : null)}
+                  placeholder="Enter image URL for the case study..."
+                  data-testid="input-case-study-image"
+                />
+              </div>
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="featured"
+                  checked={createCaseStudyData.featured}
+                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, featured: e.target.checked } : null)}
+                  data-testid="checkbox-case-study-featured"
+                />
+                <label htmlFor="featured" className="text-sm font-medium text-gray-700">
+                  Mark as featured for Global Movement section
+                </label>
+              </div>
+              
+              <div className="flex gap-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setCreateCaseStudyData(null)}
+                  className="flex-1"
+                  data-testid="button-cancel-case-study"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="flex-1 bg-pcs_blue hover:bg-pcs_blue/90"
+                  onClick={() => {
+                    if (!createCaseStudyData.evidenceId.trim() || !createCaseStudyData.title.trim()) {
+                      toast({
+                        title: "Required Fields Missing",
+                        description: "Please provide evidence ID and title.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    createCaseStudyFromEvidenceMutation.mutate(createCaseStudyData);
+                  }}
+                  disabled={createCaseStudyFromEvidenceMutation.isPending}
+                  data-testid="button-create-case-study-confirm"
+                >
+                  {createCaseStudyFromEvidenceMutation.isPending ? 'Creating...' : 'Create Case Study'}
                 </Button>
               </div>
             </div>

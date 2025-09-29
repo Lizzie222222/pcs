@@ -799,6 +799,86 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin Case Study Management Routes
+  
+  // Get all case studies for admin management
+  app.get('/api/admin/case-studies', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { stage, country, featured, search, limit, offset } = req.query;
+      const caseStudies = await storage.getCaseStudies({
+        stage: stage as string,
+        country: country as string,
+        featured: featured === 'true' ? true : featured === 'false' ? false : undefined,
+        search: search as string,
+        limit: limit ? parseInt(limit as string) : 50,
+        offset: offset ? parseInt(offset as string) : 0,
+      });
+      res.json(caseStudies);
+    } catch (error) {
+      console.error("Error fetching case studies:", error);
+      res.status(500).json({ message: "Failed to fetch case studies" });
+    }
+  });
+
+  // Create case study from evidence
+  app.post('/api/admin/case-studies/from-evidence', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { evidenceId, title, description, impact, imageUrl, featured = false, priority = 0 } = req.body;
+      const userId = req.user.id;
+
+      if (!evidenceId || !title) {
+        return res.status(400).json({ message: "Evidence ID and title are required" });
+      }
+
+      // Get the evidence to verify it exists and get school info
+      const evidence = await storage.getEvidence(evidenceId);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+
+      // Create case study with link to original evidence
+      const caseStudy = await storage.createCaseStudy({
+        evidenceId: evidenceId,
+        schoolId: evidence.schoolId,
+        title,
+        description: description || evidence.description,
+        stage: evidence.stage,
+        impact,
+        imageUrl,
+        featured,
+        priority,
+        createdBy: userId,
+      });
+
+      res.status(201).json(caseStudy);
+    } catch (error) {
+      console.error("Error creating case study from evidence:", error);
+      res.status(500).json({ message: "Failed to create case study" });
+    }
+  });
+
+  // Update case study featured status
+  app.put('/api/admin/case-studies/:id/featured', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { featured } = req.body;
+      
+      if (typeof featured !== 'boolean') {
+        return res.status(400).json({ message: "Featured must be a boolean value" });
+      }
+
+      const caseStudy = await storage.updateCaseStudyFeatured(req.params.id, featured);
+      
+      if (!caseStudy) {
+        return res.status(404).json({ message: "Case study not found" });
+      }
+
+      res.json(caseStudy);
+    } catch (error) {
+      console.error("Error updating case study featured status:", error);
+      res.status(500).json({ message: "Failed to update case study" });
+    }
+  });
+
   // Bulk school update endpoint
   app.post('/api/admin/schools/bulk-update', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
