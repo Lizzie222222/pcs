@@ -100,7 +100,7 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
           window.location.href = "/api/auth/google";
         } else {
           // If user doesn't have googleId, they used email/password and should go to dashboard
-          window.location.href = "/dashboard";
+          window.location.href = "/";
         }
       }, 2000);
     },
