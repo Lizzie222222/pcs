@@ -1,6 +1,7 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { CheckCircle, Circle, Lock, Lightbulb, Search, Hand } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface ProgressTrackerProps {
   inspireCompleted: boolean;
@@ -17,44 +18,45 @@ export default function ProgressTracker({
   awardCompleted,
   currentStage,
 }: ProgressTrackerProps) {
+  const { t } = useTranslation('dashboard');
   const stages = [
     {
       id: 'inspire',
-      title: 'Inspire',
-      description: 'Build awareness and motivation',
+      title: t('progress.inspire.title'),
+      description: t('progress.inspire.description'),
       icon: Lightbulb,
       completed: inspireCompleted,
       color: 'pcs_blue',
       activities: [
-        { name: 'Assembly presentation', completed: inspireCompleted },
-        { name: 'Student engagement', completed: inspireCompleted },
-        { name: 'Evidence submission', completed: inspireCompleted },
+        { name: t('progress.inspire.activities.assembly_presentation'), completed: inspireCompleted },
+        { name: t('progress.inspire.activities.student_engagement'), completed: inspireCompleted },
+        { name: t('progress.inspire.activities.evidence_submission'), completed: inspireCompleted },
       ],
     },
     {
       id: 'investigate',
-      title: 'Investigate', 
-      description: 'Research and analyze',
+      title: t('progress.investigate.title'), 
+      description: t('progress.investigate.description'),
       icon: Search,
       completed: investigateCompleted,
       color: 'teal',
       activities: [
-        { name: 'Plastic audit conducted', completed: investigateCompleted },
-        { name: 'Data collection', completed: investigateCompleted },
-        { name: 'Evidence review', completed: investigateCompleted },
+        { name: t('progress.investigate.activities.plastic_audit'), completed: investigateCompleted },
+        { name: t('progress.investigate.activities.data_collection'), completed: investigateCompleted },
+        { name: t('progress.investigate.activities.evidence_review'), completed: investigateCompleted },
       ],
     },
     {
       id: 'act',
-      title: 'Act',
-      description: 'Create lasting change',
+      title: t('progress.act.title'),
+      description: t('progress.act.description'),
       icon: Hand,
       completed: actCompleted,
       color: 'coral',
       activities: [
-        { name: 'Action plan development', completed: actCompleted },
-        { name: 'Implementation activities', completed: actCompleted },
-        { name: 'Impact measurement', completed: actCompleted },
+        { name: t('progress.act.activities.action_plan'), completed: actCompleted },
+        { name: t('progress.act.activities.implementation'), completed: actCompleted },
+        { name: t('progress.act.activities.impact_measurement'), completed: actCompleted },
       ],
     },
   ];
@@ -169,8 +171,8 @@ export default function ProgressTracker({
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <h2 className="text-2xl lg:text-3xl font-bold text-navy mb-3 scroll-reveal">Your Learning Journey</h2>
-        <p className="text-gray-600 scroll-reveal">Progress through the three stages of environmental action</p>
+        <h2 className="text-2xl lg:text-3xl font-bold text-navy mb-3">{t('progress.title')}</h2>
+        <p className="text-gray-600">{t('progress.journey_description')}</p>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -214,18 +216,18 @@ export default function ProgressTracker({
                 {status === 'completed' && (
                   <Badge className="bg-green-500 text-white text-xs">
                     <CheckCircle className="h-3 w-3 mr-1" />
-                    Complete
+                    {t('progress.stage_completed')}
                   </Badge>
                 )}
                 {status === 'current' && (
                   <Badge className={`${getStageBadgeClasses(stage.color)} text-white text-xs`}>
-                    In Progress
+                    {t('progress.stage_current')}
                   </Badge>
                 )}
                 {status === 'locked' && (
                   <Badge variant="secondary" className="text-gray-600 bg-gray-100 text-xs">
                     <Lock className="h-3 w-3 mr-1" />
-                    Locked
+                    {t('progress.stage_locked')}
                   </Badge>
                 )}
               </div>
@@ -293,7 +295,7 @@ export default function ProgressTracker({
                 <div className="text-center mt-4 pt-4 border-t flex-shrink-0">
                   <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full">
                     <Lock className="h-3 w-3 text-gray-500" />
-                    <span className="text-xs text-gray-600">Complete previous stage</span>
+                    <span className="text-xs text-gray-600">{t('progress.stage_locked')}</span>
                   </div>
                 </div>
               )}
