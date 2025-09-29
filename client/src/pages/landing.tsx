@@ -70,6 +70,19 @@ export default function Landing() {
     queryKey: ['/api/stats'],
   });
 
+  // Global movement data query
+  const { data: globalMovement } = useQuery<{
+    caseStudies: any[];
+    stats: {
+      totalSchools: number;
+      totalCountries: number;
+      plasticSaved: number;
+      studentsImpacted: number;
+    };
+  }>({
+    queryKey: ['/api/landing/global-movement'],
+  });
+
   // Connection speed detection
   const connectionSpeed = useConnectionSpeed();
 
@@ -760,6 +773,145 @@ export default function Landing() {
             </div>
           </div>
 
+        </div>
+      </section>
+
+      {/* The Global Movement Section */}
+      <section className="py-16 lg:py-24 bg-gradient-to-b from-white to-ocean-blue/5">
+        <div className="container-width">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 scroll-reveal">
+              The <span className="text-ocean-blue">Global Movement</span>
+            </h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto scroll-reveal">
+              Schools worldwide are making real impact in the fight against plastic pollution. Discover inspiring stories and see how your school can join this growing movement.
+            </p>
+          </div>
+
+          {/* Global Statistics */}
+          {globalMovement?.stats && (
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16 scroll-reveal">
+              <div className="text-center">
+                <div className="text-4xl lg:text-5xl font-bold text-ocean-blue mb-2" data-testid="stat-global-schools">
+                  {globalMovement.stats.totalSchools.toLocaleString()}+
+                </div>
+                <div className="text-sm text-gray-600 font-medium">Schools Participating</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl lg:text-5xl font-bold text-teal mb-2" data-testid="stat-global-countries">
+                  {globalMovement.stats.totalCountries}+
+                </div>
+                <div className="text-sm text-gray-600 font-medium">Countries Involved</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl lg:text-5xl font-bold text-yellow mb-2" data-testid="stat-plastic-saved">
+                  {globalMovement.stats.plasticSaved.toLocaleString()}kg
+                </div>
+                <div className="text-sm text-gray-600 font-medium">Plastic Waste Reduced</div>
+              </div>
+              <div className="text-center">
+                <div className="text-4xl lg:text-5xl font-bold text-navy mb-2" data-testid="stat-students-impacted">
+                  {globalMovement.stats.studentsImpacted.toLocaleString()}+
+                </div>
+                <div className="text-sm text-gray-600 font-medium">Students Impacted</div>
+              </div>
+            </div>
+          )}
+
+          {/* Featured Case Studies */}
+          {globalMovement?.caseStudies && globalMovement.caseStudies.length > 0 && (
+            <div className="space-y-4 mb-12">
+              <h3 className="text-2xl font-bold text-navy text-center mb-8 scroll-reveal">Featured Success Stories</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {globalMovement.caseStudies.slice(0, 3).map((caseStudy, index) => (
+                  <Card key={caseStudy.id} className="bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 hover:scale-105 scroll-reveal-left overflow-hidden">
+                    {caseStudy.imageUrl && (
+                      <div className="h-48 overflow-hidden">
+                        <OptimizedImage
+                          src={caseStudy.imageUrl}
+                          alt={caseStudy.title}
+                          width={400}
+                          height={200}
+                          className="w-full h-full object-cover hover:scale-110 transition-transform duration-300"
+                          quality={80}
+                          sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                        />
+                      </div>
+                    )}
+                    <CardContent className="p-6">
+                      <div className="flex items-center gap-2 mb-3">
+                        <MapPin className="w-4 h-4 text-ocean-blue" />
+                        <span className="text-sm text-gray-600">{caseStudy.location}</span>
+                        <div className="flex items-center gap-1 ml-auto">
+                          <Star className="w-4 h-4 text-yellow fill-current" />
+                          <span className="text-sm font-medium text-gray-700">Featured</span>
+                        </div>
+                      </div>
+                      <h4 className="text-lg font-semibold text-navy mb-3 line-clamp-2">{caseStudy.title}</h4>
+                      <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">
+                        {caseStudy.description}
+                      </p>
+                      {caseStudy.impact && (
+                        <div className="bg-gradient-to-r from-ocean-blue/10 to-teal/10 p-3 rounded-lg mb-4">
+                          <div className="flex items-center gap-2 mb-2">
+                            <TrendingUp className="w-4 h-4 text-ocean-blue" />
+                            <span className="text-sm font-medium text-navy">Impact Achieved</span>
+                          </div>
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            {caseStudy.impact}
+                          </p>
+                        </div>
+                      )}
+                      {caseStudy.evidenceLink && (
+                        <a 
+                          href={caseStudy.evidenceLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-sm text-ocean-blue hover:text-ocean-blue/80 transition-colors"
+                          data-testid={`link-evidence-${caseStudy.id}`}
+                        >
+                          <BookOpen className="w-4 h-4" />
+                          View Original Evidence
+                          <ArrowRight className="w-3 h-3" />
+                        </a>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Call to Action */}
+          <div className="text-center scroll-reveal">
+            <div className="bg-gradient-to-r from-ocean-blue to-teal p-8 rounded-2xl text-white">
+              <h3 className="text-2xl font-bold mb-4">Ready to Make Your Mark?</h3>
+              <p className="text-lg mb-6 opacity-90">
+                Join thousands of schools worldwide creating positive environmental change. Your school's story could be featured next.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button 
+                  size="lg"
+                  className="bg-white text-ocean-blue hover:bg-gray-100 px-8 py-3 text-lg font-semibold transition-all duration-300 hover:scale-105"
+                  onClick={() => window.location.href = '/register'}
+                  data-testid="button-join-movement"
+                >
+                  Join the Movement
+                  <ArrowRight className="w-5 h-5 ml-2" />
+                </Button>
+                <Button 
+                  size="lg"
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-ocean-blue px-8 py-3 text-lg font-semibold transition-all duration-300"
+                  onClick={() => window.location.href = '/inspiration'}
+                  data-testid="button-view-all-stories"
+                >
+                  View All Stories
+                  <BookOpen className="w-5 h-5 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
