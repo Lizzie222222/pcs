@@ -53,6 +53,14 @@ export default function Home() {
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
 
+  // Redirect admins to admin dashboard
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user?.isAdmin) {
+      setLocation("/admin");
+      return;
+    }
+  }, [isAuthenticated, isLoading, user, setLocation]);
+
   // Redirect to home if not authenticated
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {

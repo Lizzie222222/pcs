@@ -116,8 +116,12 @@ export function useAuth() {
         title: "Welcome back!",
         description: `Successfully signed in as ${user.firstName || user.email}`,
       });
-      // Redirect to home page
-      window.location.href = "/";
+      // Redirect based on user role
+      if (user.isAdmin) {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/";
+      }
     },
     onError: (error: Error) => {
       let errorMessage = "Login failed. Please try again.";
@@ -159,8 +163,12 @@ export function useAuth() {
         title: "Account created successfully!",
         description: `Welcome to Plastic Clever Schools, ${user.firstName}!`,
       });
-      // Redirect to register page for school signup or home
-      window.location.href = "/register";
+      // Redirect based on user role
+      if (user.isAdmin) {
+        window.location.href = "/admin";
+      } else {
+        window.location.href = "/register";
+      }
     },
     onError: (error: Error) => {
       let errorMessage = "Registration failed. Please try again.";

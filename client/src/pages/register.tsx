@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -16,6 +17,7 @@ import logoUrl from "@assets/Logo_1757848498470.png";
 export default function Register() {
   const { t } = useTranslation(['auth', 'forms']);
   const { user, isLoading, isAuthenticated, register, isRegistering } = useAuth();
+  const [, setLocation] = useLocation();
   const [showSignUpForm, setShowSignUpForm] = useState(false);
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -23,6 +25,13 @@ export default function Register() {
   const [showSchoolForm, setShowSchoolForm] = useState(false);
   
   const registerSchema = createRegisterSchema(t);
+
+  // Redirect admins to admin dashboard
+  useEffect(() => {
+    if (!isLoading && isAuthenticated && user?.isAdmin) {
+      setLocation("/admin");
+    }
+  }, [isLoading, isAuthenticated, user, setLocation]);
   
   const form = useForm<RegisterForm>({
     resolver: zodResolver(registerSchema),

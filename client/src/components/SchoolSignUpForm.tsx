@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -71,15 +71,24 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
         studentCount: undefined,
       },
       user: {
-        firstName: '',
-        lastName: '',
-        email: '',
+        firstName: user?.firstName || '',
+        lastName: user?.lastName || '',
+        email: user?.email || '',
       },
       acceptTerms: false,
       showOnMap: false,
       gdprConsent: false,
     },
   });
+
+  // Update form when user data loads
+  useEffect(() => {
+    if (user) {
+      form.setValue('user.firstName', user.firstName || '');
+      form.setValue('user.lastName', user.lastName || '');
+      form.setValue('user.email', user.email || '');
+    }
+  }, [user, form]);
 
   const registrationMutation = useMutation({
     mutationFn: async (data: z.infer<typeof registrationSchema>) => {
@@ -343,6 +352,9 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                           <Input 
                             placeholder={t('forms:school_registration.first_name_placeholder')}
                             {...field}
+                            readOnly={!!user}
+                            disabled={!!user}
+                            className={user ? "bg-gray-50" : ""}
                             data-testid="input-first-name"
                           />
                         </FormControl>
@@ -361,6 +373,9 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                           <Input 
                             placeholder={t('forms:school_registration.last_name_placeholder')}
                             {...field}
+                            readOnly={!!user}
+                            disabled={!!user}
+                            className={user ? "bg-gray-50" : ""}
                             data-testid="input-last-name"
                           />
                         </FormControl>
@@ -382,14 +397,19 @@ export default function SchoolSignUpForm({ onClose, inline = false }: SchoolSign
                           <Input 
                             type="email"
                             placeholder={t('forms:school_registration.email_placeholder')}
-                            className="pl-10"
+                            className={cn("pl-10", user && "bg-gray-50")}
                             {...field}
+                            readOnly={!!user}
+                            disabled={!!user}
                             data-testid="input-email"
                           />
                         </div>
                       </FormControl>
                       <FormDescription>
-                        {t('forms:school_registration.email_description')}
+                        {user 
+                          ? t('forms:school_registration.email_description_readonly')
+                          : t('forms:school_registration.email_description')
+                        }
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
