@@ -80,7 +80,18 @@ export function useAuth() {
 
   const { data: user, isLoading, refetch } = useQuery<User | null>({
     queryKey: ["/api/auth/user"],
-    queryFn: getQueryFn({ on401: "returnNull" }),
+    queryFn: async () => {
+      const res = await fetch("/api/auth/user", { credentials: "include" });
+      if (res.status === 401) {
+        return null;
+      }
+      if (!res.ok) {
+        throw new Error(`${res.status}: ${await res.text()}`);
+      }
+      const data = await res.json();
+      // Extract user from the response wrapper
+      return data.user || null;
+    },
     retry: false,
     enabled: authHint || shouldCheck, // Run query if we have hint OR should check
     staleTime: 5 * 60 * 1000, // 5 minutes
