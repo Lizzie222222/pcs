@@ -53,6 +53,7 @@
     "country_not_found": "No country found.",
     "address_description": "Optional: This information helps us better understand our community",
     "email_description": "This will be your login email and where we'll send program updates",
+    "email_description_readonly": "This email is linked to your account and cannot be changed",
     "show_on_map": "Show school on public map (optional)",
     "show_on_map_description": "Allow our school to be featured on the global schools map to inspire other educators. You can change this setting later in your school dashboard.",
     "accept_terms": "I agree to the Terms of Service and Privacy Policy *",

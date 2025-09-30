@@ -316,48 +316,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...userData,
       });
       
-      // Create school with user as primary contact
-      const school = await storage.createSchool({
-        ...schoolData,
-        showOnMap: req.body.showOnMap || false, // Include map consent from form
-        primaryContactId: user.id,
-      });
+      // Log the user in to establish a session
+      req.login(user, async (err) => {
+        if (err) {
+          console.error("Error logging in user after registration:", err);
+          return res.status(500).json({ message: "User created but failed to establish session" });
+        }
 
-      // Add user to school
-      await storage.addUserToSchool({
-        schoolId: school.id,
-        userId: user.id,
-        role: 'admin',
-      });
+        try {
+          // Create school with user as primary contact
+          const school = await storage.createSchool({
+            ...schoolData,
+            showOnMap: req.body.showOnMap || false, // Include map consent from form
+            primaryContactId: user.id,
+          });
 
-      // Send welcome email (non-blocking)
-      try {
-        await sendWelcomeEmail(user.email!, school.name);
-      } catch (emailError) {
-        // Log but don't fail registration if email fails
-        console.warn('Welcome email failed to send:', emailError);
-      }
+          // Add user to school
+          await storage.addUserToSchool({
+            schoolId: school.id,
+            userId: user.id,
+            role: 'admin',
+          });
 
-      // Add to Mailchimp automation (non-blocking)
-      try {
-        await mailchimpService.setupSchoolSignupAutomation({
-          email: user.email!,
-          firstName: user.firstName || '',
-          lastName: user.lastName || '',
-          schoolName: school.name,
-          schoolCountry: school.country,
-          role: 'teacher',
-          tags: ['new_school_signup', 'teacher', school.currentStage || 'inspire'],
-        });
-      } catch (mailchimpError) {
-        // Log but don't fail registration if Mailchimp fails
-        console.warn('Mailchimp automation failed for school signup:', mailchimpError);
-      }
+          // Send welcome email (non-blocking)
+          try {
+            await sendWelcomeEmail(user.email!, school.name);
+          } catch (emailError) {
+            // Log but don't fail registration if email fails
+            console.warn('Welcome email failed to send:', emailError);
+          }
 
-      res.status(201).json({ 
-        message: "School registered successfully",
-        school: school,
-        user: user 
+          // Add to Mailchimp automation (non-blocking)
+          try {
+            await mailchimpService.setupSchoolSignupAutomation({
+              email: user.email!,
+              firstName: user.firstName || '',
+              lastName: user.lastName || '',
+              schoolName: school.name,
+              schoolCountry: school.country,
+              role: 'teacher',
+              tags: ['new_school_signup', 'teacher', school.currentStage || 'inspire'],
+            });
+          } catch (mailchimpError) {
+            // Log but don't fail registration if Mailchimp fails
+            console.warn('Mailchimp automation failed for school signup:', mailchimpError);
+          }
+
+          // Ensure session is saved before sending response
+          req.session.save((saveErr) => {
+            if (saveErr) {
+              console.error("Error saving session:", saveErr);
+              return res.status(500).json({ message: "Registration successful but session save failed" });
+            }
+
+            res.status(201).json({ 
+              message: "School registered successfully",
+              school: school,
+              user: user 
+            });
+          });
+        } catch (schoolError) {
+          console.error("Error creating school after user login:", schoolError);
+          return res.status(500).json({ message: "User created and logged in, but school creation failed" });
+        }
       });
     } catch (error) {
       console.error("Error registering school:", error);
