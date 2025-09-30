@@ -1185,6 +1185,17 @@ export default function Admin() {
   // Schools query
   const { data: schools, error: schoolsError } = useQuery<SchoolData[]>({
     queryKey: ['/api/admin/schools', cleanFilters(schoolFilters)],
+    queryFn: async () => {
+      const filters = cleanFilters(schoolFilters);
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+      const url = `/api/admin/schools${params.toString() ? `?${params.toString()}` : ''}`;
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      return res.json();
+    },
     enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'schools'),
     retry: false,
   });
@@ -1192,6 +1203,17 @@ export default function Admin() {
   // Case studies query
   const { data: caseStudies = [], error: caseStudiesError } = useQuery<any[]>({
     queryKey: ['/api/admin/case-studies', cleanFilters(caseStudyFilters)],
+    queryFn: async () => {
+      const filters = cleanFilters(caseStudyFilters);
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+      const url = `/api/admin/case-studies${params.toString() ? `?${params.toString()}` : ''}`;
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      return res.json();
+    },
     enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'case-studies'),
     retry: false,
   });
