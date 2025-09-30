@@ -1125,13 +1125,28 @@ export default function Admin() {
 
   // Redirect if not authenticated or not admin (but only after loading completes)
   useEffect(() => {
+    console.log('Admin page - access check:', {
+      isLoading,
+      isAuthenticated,
+      user: user ? { id: user.id, email: user.email, role: user.role, isAdmin: user.isAdmin } : null,
+      hasAdminAccess: user?.role === 'admin' || user?.isAdmin
+    });
+    
     // Only check access after auth state is fully loaded
     if (isLoading) {
+      console.log('Admin page: Still loading auth state, waiting...');
+      return;
+    }
+    
+    // Wait for user object to be present (even if authenticated)
+    if (isAuthenticated && !user) {
+      console.log('Admin page: Authenticated but user object not yet loaded, waiting...');
       return;
     }
     
     // Now check if user has admin access
     if (!isAuthenticated || !(user?.role === 'admin' || user?.isAdmin)) {
+      console.log('Admin page: Access denied, redirecting to /');
       toast({
         title: "Access Denied",
         description: "Admin access required",
@@ -1142,6 +1157,8 @@ export default function Admin() {
       }, 1000);
       return;
     }
+    
+    console.log('Admin page: Access granted');
   }, [isAuthenticated, isLoading, user, toast]);
 
   // Admin stats query

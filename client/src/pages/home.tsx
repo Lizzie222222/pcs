@@ -55,7 +55,16 @@ export default function Home() {
 
   // Redirect admins to admin dashboard
   useEffect(() => {
+    console.log('Home component - admin redirect check:', {
+      isLoading,
+      isAuthenticated,
+      userIsAdmin: user?.isAdmin,
+      userRole: user?.role,
+      willRedirect: !isLoading && isAuthenticated && user?.isAdmin
+    });
+    
     if (!isLoading && isAuthenticated && user?.isAdmin) {
+      console.log('Home: Admin detected, redirecting to /admin');
       setLocation("/admin");
       return;
     }

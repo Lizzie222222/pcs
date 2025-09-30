@@ -119,10 +119,13 @@ function Router() {
               <>
                 <Route path="/">
                   {() => {
+                    console.log('Route "/" matched - user:', { isAdmin: user?.isAdmin, role: user?.role, email: user?.email });
                     if (user?.isAdmin) {
+                      console.log('Admin user on "/" - redirecting to /admin');
                       window.location.href = "/admin";
                       return null;
                     }
+                    console.log('Non-admin user on "/" - rendering Home component');
                     return <Home />;
                   }}
                 </Route>
@@ -133,7 +136,12 @@ function Router() {
                 <Route path="/case-study/:id" component={CaseStudyDetail} />
                 <Route path="/schools-map" component={SchoolsMap} />
                 <Route path="/search" component={Search} />
-                <Route path="/admin" component={Admin} />
+                <Route path="/admin">
+                  {() => {
+                    console.log('Route "/admin" matched - user:', { isAdmin: user?.isAdmin, role: user?.role, email: user?.email });
+                    return <Admin />;
+                  }}
+                </Route>
               </>
             )}
             <Route component={NotFound} />
