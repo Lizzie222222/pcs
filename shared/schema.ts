@@ -122,6 +122,7 @@ export const schoolUsers = pgTable("school_users", {
   verifiedAt: timestamp("verified_at"),
   verificationMethod: varchar("verification_method"),
   createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
   index("idx_school_users_school_role").on(table.schoolId, table.role),
 ]);

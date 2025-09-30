@@ -9,6 +9,8 @@ import {
   mailchimpAudiences,
   mailchimpSubscriptions,
   certificates,
+  teacherInvitations,
+  verificationRequests,
   type User,
   type UpsertUser,
   type School,
@@ -29,6 +31,10 @@ import {
   type InsertMailchimpSubscription,
   type Certificate,
   type InsertCertificate,
+  type TeacherInvitation,
+  type InsertTeacherInvitation,
+  type VerificationRequest,
+  type InsertVerificationRequest,
   type CreatePasswordUser,
   type CreateOAuthUser,
 } from "@shared/schema";
@@ -77,6 +83,27 @@ export interface IStorage {
   addUserToSchool(schoolUser: InsertSchoolUser): Promise<SchoolUser>;
   getSchoolUsers(schoolId: string): Promise<SchoolUser[]>;
   getUserSchools(userId: string): Promise<School[]>;
+  
+  // School User role management
+  getSchoolUser(schoolId: string, userId: string): Promise<SchoolUser | undefined>;
+  updateSchoolUserRole(schoolId: string, userId: string, role: 'head_teacher' | 'teacher' | 'pending_teacher'): Promise<SchoolUser | undefined>;
+  removeUserFromSchool(schoolId: string, userId: string): Promise<SchoolUser | undefined>;
+  getSchoolUsersWithDetails(schoolId: string, filters?: { role?: string; limit?: number; offset?: number }): Promise<Array<SchoolUser & { user: User | null }>>;
+
+  // Teacher invitation operations  
+  createTeacherInvitation(invitation: InsertTeacherInvitation): Promise<TeacherInvitation>;
+  getTeacherInvitationByToken(token: string): Promise<TeacherInvitation | undefined>;
+  getSchoolInvitations(schoolId: string): Promise<TeacherInvitation[]>;
+  acceptTeacherInvitation(token: string): Promise<TeacherInvitation | undefined>;
+  expireTeacherInvitation(token: string): Promise<TeacherInvitation | undefined>;
+
+  // Verification request operations
+  createVerificationRequest(request: InsertVerificationRequest): Promise<VerificationRequest>;
+  getVerificationRequest(id: string): Promise<VerificationRequest | undefined>;
+  getSchoolVerificationRequests(schoolId: string): Promise<VerificationRequest[]>;
+  getPendingVerificationRequests(): Promise<VerificationRequest[]>;
+  approveVerificationRequest(id: string, reviewedBy: string, reviewNotes?: string): Promise<VerificationRequest | undefined>;
+  rejectVerificationRequest(id: string, reviewedBy: string, reviewNotes?: string): Promise<VerificationRequest | undefined>;
   
   // Resource operations
   createResource(resource: InsertResource): Promise<Resource>;
@@ -497,6 +524,212 @@ export class DatabaseStorage implements IStorage {
       .from(schools)
       .innerJoin(schoolUsers, eq(schoolUsers.schoolId, schools.id))
       .where(eq(schoolUsers.userId, userId));
+  }
+
+  // School User role management
+  async getSchoolUser(schoolId: string, userId: string): Promise<SchoolUser | undefined> {
+    const [schoolUser] = await db
+      .select()
+      .from(schoolUsers)
+      .where(and(eq(schoolUsers.schoolId, schoolId), eq(schoolUsers.userId, userId)));
+    return schoolUser;
+  }
+
+  async updateSchoolUserRole(
+    schoolId: string,
+    userId: string,
+    role: 'head_teacher' | 'teacher' | 'pending_teacher'
+  ): Promise<SchoolUser | undefined> {
+    const [schoolUser] = await db
+      .update(schoolUsers)
+      .set({ 
+        role: role as 'head_teacher' | 'teacher' | 'pending_teacher',
+        updatedAt: sql`NOW()`
+      })
+      .where(and(eq(schoolUsers.schoolId, schoolId), eq(schoolUsers.userId, userId)))
+      .returning();
+    return schoolUser;
+  }
+
+  async removeUserFromSchool(schoolId: string, userId: string): Promise<SchoolUser | undefined> {
+    try {
+      const [deletedRecord] = await db
+        .delete(schoolUsers)
+        .where(and(eq(schoolUsers.schoolId, schoolId), eq(schoolUsers.userId, userId)))
+        .returning();
+      return deletedRecord;
+    } catch (error) {
+      console.error("Error removing user from school:", error);
+      return undefined;
+    }
+  }
+
+  async getSchoolUsersWithDetails(
+    schoolId: string, 
+    filters?: { role?: string; limit?: number; offset?: number }
+  ): Promise<Array<SchoolUser & { user: User | null }>> {
+    let query = db
+      .select({
+        id: schoolUsers.id,
+        schoolId: schoolUsers.schoolId,
+        userId: schoolUsers.userId,
+        role: schoolUsers.role,
+        isVerified: schoolUsers.isVerified,
+        invitedBy: schoolUsers.invitedBy,
+        invitedAt: schoolUsers.invitedAt,
+        verifiedAt: schoolUsers.verifiedAt,
+        verificationMethod: schoolUsers.verificationMethod,
+        createdAt: schoolUsers.createdAt,
+        updatedAt: schoolUsers.updatedAt,
+        user: users,
+      })
+      .from(schoolUsers)
+      .leftJoin(users, eq(schoolUsers.userId, users.id))
+      .$dynamic();
+
+    const conditions = [eq(schoolUsers.schoolId, schoolId)];
+    if (filters?.role) {
+      conditions.push(eq(schoolUsers.role, filters.role as any));
+    }
+    
+    query = query.where(and(...conditions));
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit);
+    }
+    if (filters?.offset) {
+      query = query.offset(filters.offset);
+    }
+
+    return await query;
+  }
+
+  // Teacher invitation operations
+  async createTeacherInvitation(invitationData: InsertTeacherInvitation): Promise<TeacherInvitation> {
+    const [invitation] = await db
+      .insert(teacherInvitations)
+      .values(invitationData)
+      .returning();
+    return invitation;
+  }
+
+  async getTeacherInvitationByToken(token: string): Promise<TeacherInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(teacherInvitations)
+      .where(eq(teacherInvitations.token, token));
+    return invitation;
+  }
+
+  async getSchoolInvitations(schoolId: string): Promise<TeacherInvitation[]> {
+    return await db
+      .select()
+      .from(teacherInvitations)
+      .where(eq(teacherInvitations.schoolId, schoolId))
+      .orderBy(desc(teacherInvitations.createdAt));
+  }
+
+  async acceptTeacherInvitation(token: string): Promise<TeacherInvitation | undefined> {
+    const [invitation] = await db
+      .update(teacherInvitations)
+      .set({
+        status: 'accepted' as any,
+        acceptedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(teacherInvitations.token, token),
+          eq(teacherInvitations.status, 'pending'),
+          sql`${teacherInvitations.expiresAt} > NOW()`
+        )
+      )
+      .returning();
+    return invitation;
+  }
+
+  async expireTeacherInvitation(token: string): Promise<TeacherInvitation | undefined> {
+    const [invitation] = await db
+      .update(teacherInvitations)
+      .set({
+        status: 'expired' as any,
+      })
+      .where(
+        and(
+          eq(teacherInvitations.token, token),
+          eq(teacherInvitations.status, 'pending')
+        )
+      )
+      .returning();
+    return invitation;
+  }
+
+  // Verification request operations
+  async createVerificationRequest(requestData: InsertVerificationRequest): Promise<VerificationRequest> {
+    const [request] = await db
+      .insert(verificationRequests)
+      .values(requestData)
+      .returning();
+    return request;
+  }
+
+  async getVerificationRequest(id: string): Promise<VerificationRequest | undefined> {
+    const [request] = await db
+      .select()
+      .from(verificationRequests)
+      .where(eq(verificationRequests.id, id));
+    return request;
+  }
+
+  async getSchoolVerificationRequests(schoolId: string): Promise<VerificationRequest[]> {
+    return await db
+      .select()
+      .from(verificationRequests)
+      .where(eq(verificationRequests.schoolId, schoolId))
+      .orderBy(desc(verificationRequests.createdAt));
+  }
+
+  async getPendingVerificationRequests(): Promise<VerificationRequest[]> {
+    return await db
+      .select()
+      .from(verificationRequests)
+      .where(eq(verificationRequests.status, 'pending'))
+      .orderBy(desc(verificationRequests.createdAt));
+  }
+
+  async approveVerificationRequest(
+    id: string,
+    reviewedBy: string,
+    reviewNotes?: string
+  ): Promise<VerificationRequest | undefined> {
+    const [request] = await db
+      .update(verificationRequests)
+      .set({
+        status: 'approved' as any,
+        reviewedBy,
+        reviewedAt: new Date(),
+        reviewNotes,
+      })
+      .where(eq(verificationRequests.id, id))
+      .returning();
+    return request;
+  }
+
+  async rejectVerificationRequest(
+    id: string,
+    reviewedBy: string,
+    reviewNotes?: string
+  ): Promise<VerificationRequest | undefined> {
+    const [request] = await db
+      .update(verificationRequests)
+      .set({
+        status: 'rejected' as any,
+        reviewedBy,
+        reviewedAt: new Date(),
+        reviewNotes,
+      })
+      .where(eq(verificationRequests.id, id))
+      .returning();
+    return request;
   }
 
   // Resource operations
