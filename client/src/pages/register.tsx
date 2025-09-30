@@ -296,8 +296,8 @@ export default function Register() {
               </Card>
             ) : (
               /* Signup Methods Card */
-              <Card className="bg-white border border-gray-200 rounded-lg shadow-lg">
-                <CardContent className="space-y-4">
+              <Card className="bg-white rounded-lg shadow-lg border-0">
+                <CardContent className="space-y-4 pt-6">
                   {/* Sign Up Buttons Together */}
                   <div className="space-y-3">
                     {/* Continue with Google Button */}

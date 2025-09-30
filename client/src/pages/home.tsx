@@ -197,7 +197,7 @@ export default function Home() {
                   </p>
                   <div className="flex items-center gap-2 text-sm text-gray-500">
                     <MapPin className="h-4 w-4" />
-                    <span>{t('progress.current_stage')}: {school.currentStage}</span>
+                    <span>{t('progress.current_stage')}: {t(`progress.${school.currentStage}.title`)}</span>
                   </div>
                 </div>
                 <div className="text-center">

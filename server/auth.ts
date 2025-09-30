@@ -298,7 +298,7 @@ export async function setupAuth(app: Express) {
     })(req, res, next);
   });
 
-  // POST /api/auth/logout - Logout and destroy session
+  // POST /api/auth/logout - Logout and destroy session (for API calls)
   app.post("/api/auth/logout", (req, res) => {
     req.logout((err) => {
       if (err) {
@@ -323,6 +323,25 @@ export async function setupAuth(app: Express) {
           success: true, 
           message: "Logout successful" 
         });
+      });
+    });
+  });
+
+  // GET /api/auth/logout - Logout and redirect to landing page (for direct navigation)
+  app.get("/api/auth/logout", (req, res) => {
+    req.logout((err) => {
+      if (err) {
+        console.error('Logout error:', err);
+        return res.redirect('/?error=logout_failed');
+      }
+      
+      req.session.destroy((err) => {
+        if (err) {
+          console.error('Session destroy error:', err);
+        }
+        
+        res.clearCookie('connect.sid');
+        res.redirect('/');
       });
     });
   });
