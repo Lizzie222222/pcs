@@ -6,10 +6,10 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema } from "@shared/schema";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
-import { randomUUID } from 'crypto';
+import { randomUUID, randomBytes } from 'crypto';
 
 // CSV generation helper with proper escaping
 function generateCSV(data: any[], type: string): string {
@@ -335,7 +335,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await storage.addUserToSchool({
             schoolId: school.id,
             userId: user.id,
-            role: 'admin',
+            role: 'head_teacher',
           });
 
           // Send welcome email (non-blocking)
@@ -390,6 +390,518 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Protected routes (require authentication)
+
+  // TEACHER INVITATION ROUTES
+  
+  // POST /api/schools/:schoolId/invite-teacher - Invite a teacher to join a school
+  app.post('/api/schools/:schoolId/invite-teacher', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+      
+      // Validate request body
+      const inviteSchema = z.object({
+        email: z.string().email("Valid email is required"),
+      });
+      const { email } = inviteSchema.parse(req.body);
+      
+      console.log(`[Teacher Invitation] User ${userId} inviting ${email} to school ${schoolId}`);
+      
+      // Check if user is head teacher of this school (will add middleware in next task)
+      const schoolUser = await storage.getSchoolUser(schoolId, userId);
+      if (!schoolUser || schoolUser.role !== 'head_teacher') {
+        console.log(`[Teacher Invitation] Access denied - user is not head teacher`);
+        return res.status(403).json({ message: "Only head teachers can invite teachers" });
+      }
+      
+      // Generate invitation token
+      const token = randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+      
+      // Create invitation
+      const invitation = await storage.createTeacherInvitation({
+        schoolId,
+        invitedBy: userId,
+        email,
+        token,
+        expiresAt,
+      });
+      
+      console.log(`[Teacher Invitation] Created invitation ${invitation.id} for ${email}`);
+      
+      // Get school details for email
+      const school = await storage.getSchool(schoolId);
+      const inviter = await storage.getUser(userId);
+      
+      // Send invitation email
+      if (school) {
+        const inviteUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/invitations/${token}`;
+        await sendEmail({
+          to: email,
+          from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+          subject: `You're invited to join ${school.name} on Plastic Clever Schools`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2>You've been invited to join ${school.name}!</h2>
+              <p>${inviter?.firstName || 'A colleague'} has invited you to join their school team on Plastic Clever Schools.</p>
+              <p><strong>School:</strong> ${school.name}</p>
+              <p><strong>Country:</strong> ${school.country}</p>
+              <p>Click the link below to accept this invitation:</p>
+              <a href="${inviteUrl}" style="background: #02BBB4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Accept Invitation</a>
+              <p style="color: #666; margin-top: 20px;">This invitation will expire in 7 days.</p>
+            </div>
+          `,
+        });
+        console.log(`[Teacher Invitation] Sent invitation email to ${email}`);
+      }
+      
+      res.status(201).json({ 
+        message: "Invitation sent successfully",
+        invitation: {
+          id: invitation.id,
+          email: invitation.email,
+          expiresAt: invitation.expiresAt,
+        }
+      });
+    } catch (error) {
+      console.error("[Teacher Invitation] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to send invitation" });
+    }
+  });
+  
+  // GET /api/schools/:schoolId/invitations - Get all invitations for a school
+  app.get('/api/schools/:schoolId/invitations', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+      
+      console.log(`[Teacher Invitations] User ${userId} fetching invitations for school ${schoolId}`);
+      
+      // Check if user is head teacher of this school
+      const schoolUser = await storage.getSchoolUser(schoolId, userId);
+      if (!schoolUser || schoolUser.role !== 'head_teacher') {
+        console.log(`[Teacher Invitations] Access denied - user is not head teacher`);
+        return res.status(403).json({ message: "Only head teachers can view invitations" });
+      }
+      
+      const invitations = await storage.getSchoolInvitations(schoolId);
+      console.log(`[Teacher Invitations] Found ${invitations.length} invitations`);
+      
+      res.json(invitations);
+    } catch (error) {
+      console.error("[Teacher Invitations] Error:", error);
+      res.status(500).json({ message: "Failed to fetch invitations" });
+    }
+  });
+  
+  // POST /api/invitations/:token/accept - Accept a teacher invitation
+  app.post('/api/invitations/:token/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      const { token } = req.params;
+      const userId = req.user.id;
+      
+      console.log(`[Accept Invitation] User ${userId} accepting invitation with token ${token}`);
+      
+      // Accept the invitation
+      const invitation = await storage.acceptTeacherInvitation(token);
+      
+      if (!invitation) {
+        console.log(`[Accept Invitation] Invitation not found or expired`);
+        return res.status(404).json({ message: "Invitation not found or has expired" });
+      }
+      
+      // Verify the email matches the authenticated user
+      const user = await storage.getUser(userId);
+      if (user?.email !== invitation.email) {
+        console.log(`[Accept Invitation] Email mismatch - invitation for ${invitation.email}, user is ${user?.email}`);
+        return res.status(403).json({ message: "This invitation is for a different email address" });
+      }
+      
+      // Add user to school
+      await storage.addUserToSchool({
+        schoolId: invitation.schoolId,
+        userId: userId,
+        role: 'teacher',
+        invitedBy: invitation.invitedBy,
+        invitedAt: invitation.createdAt,
+      });
+      
+      console.log(`[Accept Invitation] User ${userId} added to school ${invitation.schoolId}`);
+      
+      // Get school info to return
+      const school = await storage.getSchool(invitation.schoolId);
+      
+      res.json({ 
+        message: "Invitation accepted successfully",
+        school
+      });
+    } catch (error) {
+      console.error("[Accept Invitation] Error:", error);
+      res.status(500).json({ message: "Failed to accept invitation" });
+    }
+  });
+  
+  // VERIFICATION REQUEST ROUTES
+  
+  // POST /api/schools/:schoolId/request-access - Request access to a school
+  app.post('/api/schools/:schoolId/request-access', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+      
+      // Validate request body
+      const requestSchema = z.object({
+        evidence: z.string().min(1, "Evidence is required"),
+      });
+      const { evidence } = requestSchema.parse(req.body);
+      
+      console.log(`[Access Request] User ${userId} requesting access to school ${schoolId}`);
+      
+      // Create verification request
+      const verificationRequest = await storage.createVerificationRequest({
+        userId,
+        schoolId,
+        evidence,
+      });
+      
+      console.log(`[Access Request] Created verification request ${verificationRequest.id}`);
+      
+      // Get school and user info for email
+      const school = await storage.getSchool(schoolId);
+      const user = await storage.getUser(userId);
+      
+      // Send notification email to head teacher
+      if (school && school.primaryContactId) {
+        const headTeacher = await storage.getUser(school.primaryContactId);
+        if (headTeacher?.email) {
+          await sendEmail({
+            to: headTeacher.email,
+            from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+            subject: `New access request for ${school.name}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <h2>New Access Request</h2>
+                <p>${user?.firstName || 'A teacher'} ${user?.lastName || ''} has requested to join ${school.name}.</p>
+                <p><strong>Email:</strong> ${user?.email}</p>
+                <p><strong>Evidence provided:</strong></p>
+                <p style="background: #f5f5f5; padding: 12px; border-left: 3px solid #02BBB4;">${evidence}</p>
+                <p>Please review this request in your dashboard.</p>
+              </div>
+            `,
+          });
+          console.log(`[Access Request] Sent notification to head teacher ${headTeacher.email}`);
+        }
+      }
+      
+      res.status(201).json({ 
+        message: "Access request submitted successfully",
+        verificationRequest: {
+          id: verificationRequest.id,
+          status: verificationRequest.status,
+        }
+      });
+    } catch (error) {
+      console.error("[Access Request] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to submit access request" });
+    }
+  });
+  
+  // GET /api/schools/:schoolId/verification-requests - Get verification requests for a school
+  app.get('/api/schools/:schoolId/verification-requests', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+      
+      console.log(`[Verification Requests] User ${userId} fetching requests for school ${schoolId}`);
+      
+      // Check if user is head teacher of this school
+      const schoolUser = await storage.getSchoolUser(schoolId, userId);
+      if (!schoolUser || schoolUser.role !== 'head_teacher') {
+        console.log(`[Verification Requests] Access denied - user is not head teacher`);
+        return res.status(403).json({ message: "Only head teachers can view verification requests" });
+      }
+      
+      const requests = await storage.getSchoolVerificationRequests(schoolId);
+      console.log(`[Verification Requests] Found ${requests.length} requests`);
+      
+      res.json(requests);
+    } catch (error) {
+      console.error("[Verification Requests] Error:", error);
+      res.status(500).json({ message: "Failed to fetch verification requests" });
+    }
+  });
+  
+  // PUT /api/verification-requests/:id/approve - Approve a verification request
+  app.put('/api/verification-requests/:id/approve', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      
+      // Validate request body
+      const approveSchema = z.object({
+        reviewNotes: z.string().optional(),
+      });
+      const { reviewNotes } = approveSchema.parse(req.body);
+      
+      console.log(`[Approve Request] User ${userId} approving verification request ${id}`);
+      
+      // Get the verification request first
+      const request = await storage.getVerificationRequest(id);
+      if (!request) {
+        return res.status(404).json({ message: "Verification request not found" });
+      }
+      
+      // Check if user is head teacher or admin
+      const schoolUser = await storage.getSchoolUser(request.schoolId, userId);
+      const user = await storage.getUser(userId);
+      if ((!schoolUser || schoolUser.role !== 'head_teacher') && !user?.isAdmin) {
+        console.log(`[Approve Request] Access denied - user is not head teacher or admin`);
+        return res.status(403).json({ message: "Only head teachers or admins can approve requests" });
+      }
+      
+      // Approve the request
+      const approvedRequest = await storage.approveVerificationRequest(id, userId, reviewNotes);
+      
+      if (!approvedRequest) {
+        return res.status(404).json({ message: "Failed to approve request" });
+      }
+      
+      // Add user to school
+      await storage.addUserToSchool({
+        schoolId: approvedRequest.schoolId,
+        userId: approvedRequest.userId,
+        role: 'teacher',
+        verificationMethod: 'manual_approval',
+      });
+      
+      console.log(`[Approve Request] User ${approvedRequest.userId} added to school ${approvedRequest.schoolId}`);
+      
+      // Send approval email to requester
+      const requester = await storage.getUser(approvedRequest.userId);
+      const school = await storage.getSchool(approvedRequest.schoolId);
+      
+      if (requester?.email && school) {
+        await sendEmail({
+          to: requester.email,
+          from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+          subject: `Access approved for ${school.name}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2>Access Approved!</h2>
+              <p>Your request to join ${school.name} has been approved.</p>
+              ${reviewNotes ? `<p><strong>Notes from reviewer:</strong> ${reviewNotes}</p>` : ''}
+              <p>You can now access the school dashboard and collaborate with your team.</p>
+              <a href="${process.env.FRONTEND_URL || 'http://localhost:5000'}/dashboard" style="background: #02BBB4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Go to Dashboard</a>
+            </div>
+          `,
+        });
+        console.log(`[Approve Request] Sent approval email to ${requester.email}`);
+      }
+      
+      res.json({ 
+        message: "Verification request approved successfully",
+        verificationRequest: approvedRequest
+      });
+    } catch (error) {
+      console.error("[Approve Request] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to approve verification request" });
+    }
+  });
+  
+  // PUT /api/verification-requests/:id/reject - Reject a verification request
+  app.put('/api/verification-requests/:id/reject', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      
+      // Validate request body
+      const rejectSchema = z.object({
+        reviewNotes: z.string().optional(),
+      });
+      const { reviewNotes } = rejectSchema.parse(req.body);
+      
+      console.log(`[Reject Request] User ${userId} rejecting verification request ${id}`);
+      
+      // Get the verification request first
+      const request = await storage.getVerificationRequest(id);
+      if (!request) {
+        return res.status(404).json({ message: "Verification request not found" });
+      }
+      
+      // Check if user is head teacher or admin
+      const schoolUser = await storage.getSchoolUser(request.schoolId, userId);
+      const user = await storage.getUser(userId);
+      if ((!schoolUser || schoolUser.role !== 'head_teacher') && !user?.isAdmin) {
+        console.log(`[Reject Request] Access denied - user is not head teacher or admin`);
+        return res.status(403).json({ message: "Only head teachers or admins can reject requests" });
+      }
+      
+      // Reject the request
+      const rejectedRequest = await storage.rejectVerificationRequest(id, userId, reviewNotes);
+      
+      if (!rejectedRequest) {
+        return res.status(404).json({ message: "Failed to reject request" });
+      }
+      
+      console.log(`[Reject Request] Verification request ${id} rejected`);
+      
+      // Send rejection email to requester
+      const requester = await storage.getUser(rejectedRequest.userId);
+      const school = await storage.getSchool(rejectedRequest.schoolId);
+      
+      if (requester?.email && school) {
+        await sendEmail({
+          to: requester.email,
+          from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+          subject: `Access request update for ${school.name}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <h2>Access Request Update</h2>
+              <p>Your request to join ${school.name} has been reviewed.</p>
+              ${reviewNotes ? `<p><strong>Notes from reviewer:</strong> ${reviewNotes}</p>` : ''}
+              <p>If you believe this was in error, please contact the school directly or submit a new request with additional evidence.</p>
+            </div>
+          `,
+        });
+        console.log(`[Reject Request] Sent rejection email to ${requester.email}`);
+      }
+      
+      res.json({ 
+        message: "Verification request rejected",
+        verificationRequest: rejectedRequest
+      });
+    } catch (error) {
+      console.error("[Reject Request] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to reject verification request" });
+    }
+  });
+  
+  // TEAM MANAGEMENT ROUTES
+  
+  // GET /api/schools/:schoolId/team - Get school team members
+  app.get('/api/schools/:schoolId/team', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+      const { limit, offset } = req.query;
+      
+      console.log(`[School Team] User ${userId} fetching team for school ${schoolId}`);
+      
+      // Check if user is a member of this school
+      const schoolUser = await storage.getSchoolUser(schoolId, userId);
+      if (!schoolUser) {
+        console.log(`[School Team] Access denied - user is not a school member`);
+        return res.status(403).json({ message: "You must be a school member to view the team" });
+      }
+      
+      // Get team members with pagination
+      const teamMembers = await storage.getSchoolUsersWithDetails(schoolId, {
+        limit: limit ? parseInt(limit as string) : 50,
+        offset: offset ? parseInt(offset as string) : 0,
+      });
+      
+      console.log(`[School Team] Found ${teamMembers.length} team members`);
+      
+      res.json(teamMembers);
+    } catch (error) {
+      console.error("[School Team] Error:", error);
+      res.status(500).json({ message: "Failed to fetch team members" });
+    }
+  });
+  
+  // DELETE /api/schools/:schoolId/teachers/:userId - Remove a teacher from school
+  app.delete('/api/schools/:schoolId/teachers/:userId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId, userId: teacherUserId } = req.params;
+      const userId = req.user.id;
+      
+      console.log(`[Remove Teacher] User ${userId} removing teacher ${teacherUserId} from school ${schoolId}`);
+      
+      // Check if user is head teacher of this school
+      const schoolUser = await storage.getSchoolUser(schoolId, userId);
+      if (!schoolUser || schoolUser.role !== 'head_teacher') {
+        console.log(`[Remove Teacher] Access denied - user is not head teacher`);
+        return res.status(403).json({ message: "Only head teachers can remove teachers" });
+      }
+      
+      // Cannot remove yourself
+      if (userId === teacherUserId) {
+        return res.status(400).json({ message: "You cannot remove yourself from the school" });
+      }
+      
+      // Remove the teacher
+      const removed = await storage.removeUserFromSchool(schoolId, teacherUserId);
+      
+      if (!removed) {
+        return res.status(404).json({ message: "Teacher not found in this school" });
+      }
+      
+      console.log(`[Remove Teacher] Teacher ${teacherUserId} removed from school ${schoolId}`);
+      
+      res.json({ message: "Teacher removed successfully" });
+    } catch (error) {
+      console.error("[Remove Teacher] Error:", error);
+      res.status(500).json({ message: "Failed to remove teacher" });
+    }
+  });
+  
+  // PUT /api/schools/:schoolId/teachers/:userId/role - Update a teacher's role
+  app.put('/api/schools/:schoolId/teachers/:userId/role', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId, userId: teacherUserId } = req.params;
+      const userId = req.user.id;
+      
+      // Validate request body
+      const roleSchema = z.object({
+        role: z.enum(['head_teacher', 'teacher'], {
+          errorMap: () => ({ message: "Role must be 'head_teacher' or 'teacher'" })
+        }),
+      });
+      const { role } = roleSchema.parse(req.body);
+      
+      console.log(`[Update Role] User ${userId} updating role for teacher ${teacherUserId} in school ${schoolId} to ${role}`);
+      
+      // Check if user is head teacher of this school
+      const schoolUser = await storage.getSchoolUser(schoolId, userId);
+      if (!schoolUser || schoolUser.role !== 'head_teacher') {
+        console.log(`[Update Role] Access denied - user is not head teacher`);
+        return res.status(403).json({ message: "Only head teachers can update roles" });
+      }
+      
+      // Update the role
+      const updated = await storage.updateSchoolUserRole(schoolId, teacherUserId, role);
+      
+      if (!updated) {
+        return res.status(404).json({ message: "Teacher not found in this school" });
+      }
+      
+      console.log(`[Update Role] Teacher ${teacherUserId} role updated to ${role}`);
+      
+      res.json({ 
+        message: "Role updated successfully",
+        schoolUser: updated
+      });
+    } catch (error) {
+      console.error("[Update Role] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update role" });
+    }
+  });
 
   // Get user's school dashboard data
   app.get('/api/dashboard', isAuthenticated, async (req: any, res) => {
