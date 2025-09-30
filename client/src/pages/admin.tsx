@@ -141,8 +141,547 @@ interface Resource {
   updatedAt: string;
 }
 
+interface VerificationRequest {
+  id: string;
+  schoolId: string;
+  schoolName: string;
+  userId: string;
+  userName: string;
+  userEmail: string;
+  evidence: string;
+  status: 'pending' | 'approved' | 'rejected';
+  createdAt: string;
+}
+
+interface SchoolTeacher {
+  userId: string;
+  name: string;
+  email: string;
+  role: 'head_teacher' | 'teacher';
+  isVerified: boolean;
+  joinedAt: string;
+}
+
+interface SchoolWithTeachers {
+  id: string;
+  name: string;
+  country: string;
+  teachers: SchoolTeacher[];
+}
+
 // Color palette for charts
 const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
+
+function AssignTeacherForm() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedSchool, setSelectedSchool] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+  const [role, setRole] = useState<'head_teacher' | 'teacher'>('teacher');
+
+  const { data: schools = [], isLoading } = useQuery<SchoolData[]>({
+    queryKey: ['/api/admin/schools'],
+  });
+
+  const assignTeacherMutation = useMutation({
+    mutationFn: async ({ schoolId, userEmail, role }: { schoolId: string; userEmail: string; role: string }) => {
+      await apiRequest('POST', `/api/admin/schools/${schoolId}/assign-teacher`, {
+        userEmail,
+        role,
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Teacher Assigned",
+        description: "Teacher has been successfully assigned to the school.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/school-teachers'] });
+      setSelectedSchool('');
+      setUserEmail('');
+      setRole('teacher');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Assignment Failed",
+        description: error.message || "Failed to assign teacher. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedSchool || !userEmail) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a school and enter a user email.",
+        variant: "destructive",
+      });
+      return;
+    }
+    assignTeacherMutation.mutate({ schoolId: selectedSchool, userEmail, role });
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner message="Loading schools..." />;
+  }
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            School *
+          </label>
+          <Select value={selectedSchool} onValueChange={setSelectedSchool}>
+            <SelectTrigger data-testid="select-school">
+              <SelectValue placeholder="Select school" />
+            </SelectTrigger>
+            <SelectContent>
+              {schools.map((school) => (
+                <SelectItem key={school.id} value={school.id}>
+                  {school.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            User Email *
+          </label>
+          <Input
+            type="email"
+            value={userEmail}
+            onChange={(e) => setUserEmail(e.target.value)}
+            placeholder="teacher@example.com"
+            data-testid="input-user-email"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Role *
+          </label>
+          <div className="flex items-center gap-4 pt-2">
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="head_teacher"
+                checked={role === 'head_teacher'}
+                onChange={(e) => setRole(e.target.value as 'head_teacher' | 'teacher')}
+                className="text-pcs_blue"
+                data-testid="radio-head-teacher"
+              />
+              <span className="text-sm">Head Teacher</span>
+            </label>
+            <label className="flex items-center gap-2">
+              <input
+                type="radio"
+                value="teacher"
+                checked={role === 'teacher'}
+                onChange={(e) => setRole(e.target.value as 'head_teacher' | 'teacher')}
+                className="text-pcs_blue"
+                data-testid="radio-teacher"
+              />
+              <span className="text-sm">Teacher</span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="flex justify-end">
+        <Button
+          type="submit"
+          disabled={assignTeacherMutation.isPending || !selectedSchool || !userEmail}
+          className="bg-pcs_blue hover:bg-blue-600"
+          data-testid="button-assign-teacher"
+        >
+          {assignTeacherMutation.isPending ? 'Assigning...' : 'Assign Teacher'}
+        </Button>
+      </div>
+    </form>
+  );
+}
+
+function SchoolTeachersList() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [expandedSchoolId, setExpandedSchoolId] = useState<string | null>(null);
+  const [removingTeacher, setRemovingTeacher] = useState<{ schoolId: string; userId: string; userName: string } | null>(null);
+
+  const { data: schoolsWithTeachers = [], isLoading } = useQuery<SchoolWithTeachers[]>({
+    queryKey: ['/api/admin/school-teachers'],
+  });
+
+  const removeTeacherMutation = useMutation({
+    mutationFn: async ({ schoolId, userId }: { schoolId: string; userId: string }) => {
+      await apiRequest('DELETE', `/api/admin/schools/${schoolId}/teachers/${userId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Teacher Removed",
+        description: "Teacher has been successfully removed from the school.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/school-teachers'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      setRemovingTeacher(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Removal Failed",
+        description: error.message || "Failed to remove teacher. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  if (isLoading) {
+    return <LoadingSpinner message="Loading teachers..." />;
+  }
+
+  if (schoolsWithTeachers.length === 0) {
+    return (
+      <EmptyState
+        icon={Users}
+        title="No Teachers Assigned"
+        description="No teachers have been assigned to any schools yet."
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {schoolsWithTeachers.map((school) => (
+        <div key={school.id} className="border rounded-lg overflow-hidden">
+          <button
+            onClick={() => setExpandedSchoolId(expandedSchoolId === school.id ? null : school.id)}
+            className="w-full p-4 flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition-colors"
+            data-testid={`button-expand-school-${school.id}`}
+          >
+            <div className="flex items-center gap-3">
+              <School className="h-5 w-5 text-gray-600" />
+              <div className="text-left">
+                <h3 className="font-semibold text-navy">{school.name}</h3>
+                <p className="text-sm text-gray-600">{school.country}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3">
+              <Badge variant="outline" data-testid={`text-teacher-count-${school.id}`}>
+                {school.teachers.length} {school.teachers.length === 1 ? 'teacher' : 'teachers'}
+              </Badge>
+              <svg
+                className={`h-5 w-5 text-gray-600 transition-transform ${expandedSchoolId === school.id ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </button>
+
+          {expandedSchoolId === school.id && (
+            <div className="p-4 border-t">
+              {school.teachers.length === 0 ? (
+                <p className="text-sm text-gray-500 text-center py-4">No teachers assigned to this school.</p>
+              ) : (
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b bg-gray-50">
+                      <th className="text-left p-2 text-sm font-medium text-gray-700">Name</th>
+                      <th className="text-left p-2 text-sm font-medium text-gray-700">Email</th>
+                      <th className="text-left p-2 text-sm font-medium text-gray-700">Role</th>
+                      <th className="text-left p-2 text-sm font-medium text-gray-700">Verified</th>
+                      <th className="text-left p-2 text-sm font-medium text-gray-700">Joined</th>
+                      <th className="text-left p-2 text-sm font-medium text-gray-700">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {school.teachers.map((teacher) => (
+                      <tr key={teacher.userId} className="border-b hover:bg-gray-50" data-testid={`teacher-row-${teacher.userId}`}>
+                        <td className="p-2 text-sm text-gray-700" data-testid={`text-teacher-name-${teacher.userId}`}>
+                          {teacher.name}
+                        </td>
+                        <td className="p-2 text-sm text-gray-600" data-testid={`text-teacher-email-${teacher.userId}`}>
+                          {teacher.email}
+                        </td>
+                        <td className="p-2 text-sm">
+                          <Badge variant="outline" data-testid={`text-teacher-role-${teacher.userId}`}>
+                            {teacher.role === 'head_teacher' ? 'Head Teacher' : 'Teacher'}
+                          </Badge>
+                        </td>
+                        <td className="p-2 text-sm" data-testid={`text-teacher-verified-${teacher.userId}`}>
+                          {teacher.isVerified ? (
+                            <Badge className="bg-green-500 text-white">Verified</Badge>
+                          ) : (
+                            <Badge variant="outline">Not Verified</Badge>
+                          )}
+                        </td>
+                        <td className="p-2 text-sm text-gray-600">
+                          {new Date(teacher.joinedAt).toLocaleDateString()}
+                        </td>
+                        <td className="p-2">
+                          <Button
+                            size="sm"
+                            variant="destructive"
+                            onClick={() => setRemovingTeacher({ 
+                              schoolId: school.id, 
+                              userId: teacher.userId, 
+                              userName: teacher.name 
+                            })}
+                            data-testid={`button-remove-teacher-${teacher.userId}`}
+                          >
+                            <Trash2 className="h-3 w-3 mr-1" />
+                            Remove
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+        </div>
+      ))}
+
+      {/* Remove Teacher Confirmation Dialog */}
+      <AlertDialog open={!!removingTeacher} onOpenChange={(open) => !open && setRemovingTeacher(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Teacher</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove {removingTeacher?.userName} from this school? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-remove">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (removingTeacher) {
+                  removeTeacherMutation.mutate({
+                    schoolId: removingTeacher.schoolId,
+                    userId: removingTeacher.userId,
+                  });
+                }
+              }}
+              className="bg-coral hover:bg-coral/90"
+              data-testid="button-confirm-remove"
+            >
+              Remove Teacher
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </div>
+  );
+}
+
+function VerificationRequestsList() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [selectedRequest, setSelectedRequest] = useState<VerificationRequest | null>(null);
+  const [actionType, setActionType] = useState<'approve' | 'reject' | null>(null);
+  const [notes, setNotes] = useState('');
+
+  const { data: verificationRequests = [], isLoading } = useQuery<VerificationRequest[]>({
+    queryKey: ['/api/admin/verification-requests'],
+  });
+
+  const updateVerificationMutation = useMutation({
+    mutationFn: async ({ id, action, notes }: { id: string; action: 'approve' | 'reject'; notes: string }) => {
+      await apiRequest('PUT', `/api/admin/verification-requests/${id}/${action}`, { notes });
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: `Request ${variables.action === 'approve' ? 'Approved' : 'Rejected'}`,
+        description: `Verification request has been successfully ${variables.action === 'approve' ? 'approved' : 'rejected'}.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/verification-requests'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/school-teachers'] });
+      setSelectedRequest(null);
+      setActionType(null);
+      setNotes('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Action Failed",
+        description: error.message || "Failed to process verification request. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleAction = () => {
+    if (!selectedRequest || !actionType) return;
+    updateVerificationMutation.mutate({
+      id: selectedRequest.id,
+      action: actionType,
+      notes,
+    });
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner message="Loading verification requests..." />;
+  }
+
+  const pendingRequests = verificationRequests.filter(req => req.status === 'pending');
+
+  if (pendingRequests.length === 0) {
+    return (
+      <EmptyState
+        icon={CheckCircle}
+        title="No Pending Requests"
+        description="There are no pending verification requests at the moment."
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="overflow-x-auto">
+        <table className="w-full border-collapse">
+          <thead>
+            <tr className="border-b bg-gray-50">
+              <th className="text-left p-3 font-medium text-gray-700">School</th>
+              <th className="text-left p-3 font-medium text-gray-700">Requester</th>
+              <th className="text-left p-3 font-medium text-gray-700">Email</th>
+              <th className="text-left p-3 font-medium text-gray-700">Evidence</th>
+              <th className="text-left p-3 font-medium text-gray-700">Request Date</th>
+              <th className="text-left p-3 font-medium text-gray-700">Status</th>
+              <th className="text-left p-3 font-medium text-gray-700">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {pendingRequests.map((request) => (
+              <tr key={request.id} className="border-b hover:bg-gray-50" data-testid={`verification-request-${request.id}`}>
+                <td className="p-3 font-medium text-navy" data-testid={`text-school-name-${request.id}`}>
+                  {request.schoolName}
+                </td>
+                <td className="p-3 text-gray-700" data-testid={`text-requester-name-${request.id}`}>
+                  {request.userName}
+                </td>
+                <td className="p-3 text-gray-600" data-testid={`text-requester-email-${request.id}`}>
+                  {request.userEmail}
+                </td>
+                <td className="p-3 text-gray-600 max-w-xs truncate" data-testid={`text-evidence-${request.id}`}>
+                  {request.evidence}
+                </td>
+                <td className="p-3 text-gray-600">
+                  {new Date(request.createdAt).toLocaleDateString()}
+                </td>
+                <td className="p-3">
+                  <Badge variant="outline" className="bg-yellow-100 text-yellow-800" data-testid={`text-status-${request.id}`}>
+                    {request.status}
+                  </Badge>
+                </td>
+                <td className="p-3">
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      className="bg-green-500 hover:bg-green-600"
+                      onClick={() => {
+                        setSelectedRequest(request);
+                        setActionType('approve');
+                      }}
+                      data-testid={`button-approve-request-${request.id}`}
+                    >
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      Approve
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="bg-coral hover:bg-coral/90"
+                      onClick={() => {
+                        setSelectedRequest(request);
+                        setActionType('reject');
+                      }}
+                      data-testid={`button-reject-request-${request.id}`}
+                    >
+                      <XCircle className="h-3 w-3 mr-1" />
+                      Reject
+                    </Button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      {/* Approve/Reject Dialog */}
+      <Dialog open={!!selectedRequest && !!actionType} onOpenChange={(open) => {
+        if (!open) {
+          setSelectedRequest(null);
+          setActionType(null);
+          setNotes('');
+        }
+      }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {actionType === 'approve' ? 'Approve' : 'Reject'} Verification Request
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <p className="text-sm text-gray-600 mb-2">
+                You are about to {actionType === 'approve' ? 'approve' : 'reject'} the verification request from:
+              </p>
+              <div className="bg-gray-50 p-3 rounded-lg space-y-1">
+                <p className="text-sm"><strong>School:</strong> {selectedRequest?.schoolName}</p>
+                <p className="text-sm"><strong>Requester:</strong> {selectedRequest?.userName} ({selectedRequest?.userEmail})</p>
+                <p className="text-sm"><strong>Evidence:</strong> {selectedRequest?.evidence}</p>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Notes {actionType === 'reject' ? '(required)' : '(optional)'}
+              </label>
+              <Textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder={actionType === 'approve' 
+                  ? 'Add any notes about this approval...' 
+                  : 'Please provide a reason for rejection...'}
+                rows={3}
+                data-testid="textarea-verification-notes"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setSelectedRequest(null);
+                  setActionType(null);
+                  setNotes('');
+                }}
+                data-testid="button-cancel-action"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAction}
+                disabled={updateVerificationMutation.isPending || (actionType === 'reject' && !notes.trim())}
+                className={actionType === 'approve' ? 'bg-green-500 hover:bg-green-600' : 'bg-coral hover:bg-coral/90'}
+                data-testid="button-confirm-action"
+              >
+                {updateVerificationMutation.isPending 
+                  ? 'Processing...' 
+                  : actionType === 'approve' ? 'Approve Request' : 'Reject Request'}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
 
 function ResourcesManagement() {
   const { toast } = useToast();
@@ -1199,7 +1738,7 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'analytics' | 'resources' | 'case-studies'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'teams' | 'resources' | 'case-studies'>('overview');
   const [schoolFilters, setSchoolFilters] = useState({
     search: '',
     country: '',
@@ -1960,6 +2499,17 @@ export default function Admin() {
           </button>
           <button
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'teams' 
+                ? 'bg-white text-navy shadow-sm' 
+                : 'text-gray-600 hover:text-navy'
+            }`}
+            onClick={() => setActiveTab('teams')}
+            data-testid="tab-teams"
+          >
+            Teams
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'resources' 
                 ? 'bg-white text-navy shadow-sm' 
                 : 'text-gray-600 hover:text-navy'
@@ -2338,6 +2888,49 @@ export default function Admin() {
           </Card>
         )}
 
+        {/* Teams Tab */}
+        {activeTab === 'teams' && (
+          <div className="space-y-6">
+            {/* Section A: Assign Teacher to School */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Users className="h-5 w-5" />
+                  Assign Teacher to School
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <AssignTeacherForm />
+              </CardContent>
+            </Card>
+
+            {/* Section B: School Teacher Lists */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <School className="h-5 w-5" />
+                  School Teachers
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <SchoolTeachersList />
+              </CardContent>
+            </Card>
+
+            {/* Section C: Verification Requests Management */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CheckCircle className="h-5 w-5" />
+                  Verification Requests
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <VerificationRequestsList />
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         {/* Resources Tab */}
         {activeTab === 'resources' && (
