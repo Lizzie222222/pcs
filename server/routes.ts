@@ -4,9 +4,9 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, type VerificationRequest } from "@shared/schema";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
@@ -2147,6 +2147,311 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to send test email",
         error: error.message,
       });
+    }
+  });
+
+  // ============= ADMIN TEAM MANAGEMENT ROUTES =============
+
+  // POST /api/admin/schools/:schoolId/assign-teacher - Admin assigns a teacher to a school
+  app.post('/api/admin/schools/:schoolId/assign-teacher', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const assignTeacherSchema = z.object({
+        email: z.string().email("Please provide a valid email address"),
+        role: z.enum(['head_teacher', 'teacher'], {
+          errorMap: () => ({ message: "Role must be 'head_teacher' or 'teacher'" })
+        }),
+      });
+      const { email, role } = assignTeacherSchema.parse(req.body);
+
+      console.log(`[Admin Assign Teacher] Admin assigning ${email} as ${role} to school ${schoolId}`);
+
+      // Check if school exists
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      // Get or create user
+      const allUsers = await storage.getAllUsers();
+      let user = allUsers.find(u => u.email === email);
+      
+      if (!user) {
+        // Create new user account with OAuth (minimal data)
+        user = await storage.createUserWithOAuth({
+          email,
+          firstName: email.split('@')[0],
+          lastName: '',
+          googleId: `admin-created-${Date.now()}`, // Placeholder Google ID
+          emailVerified: true,
+        });
+        console.log(`[Admin Assign Teacher] Created new user ${user.id} for ${email}`);
+      }
+
+      // Check if already assigned to this school
+      const existing = await storage.getSchoolUser(schoolId, user.id);
+      if (existing) {
+        return res.status(400).json({ 
+          message: "User is already assigned to this school",
+          currentRole: existing.role 
+        });
+      }
+
+      // Add user to school as verified member
+      await storage.addUserToSchool({
+        schoolId,
+        userId: user.id,
+        role,
+        isVerified: true,
+      });
+      
+      console.log(`[Admin Assign Teacher] Successfully assigned ${email} to school ${schoolId} as ${role}`);
+
+      // Send notification email (non-blocking)
+      try {
+        await sendEmail({
+          to: email,
+          from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+          subject: `You've been added to ${school.name} on Plastic Clever Schools`,
+          html: `
+            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+              <div style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
+                <h1 style="color: white; margin: 0; font-size: 28px;">Welcome to ${school.name}!</h1>
+              </div>
+              <div style="padding: 40px 20px; background: #f9f9f9;">
+                <h2 style="color: #0B3D5D;">You've Been Added to a School</h2>
+                <p style="color: #666; line-height: 1.6;">
+                  A platform administrator has added you to <strong>${school.name}</strong> as a ${role === 'head_teacher' ? 'Head Teacher' : 'Teacher'}.
+                </p>
+                <p style="color: #666; line-height: 1.6;">
+                  You can now access your school dashboard and participate in the Plastic Clever Schools program.
+                </p>
+                <div style="text-align: center; margin: 30px 0;">
+                  <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}/dashboard" 
+                     style="background: #02BBB4; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
+                    Go to Dashboard
+                  </a>
+                </div>
+              </div>
+              <div style="background: #0B3D5D; color: white; padding: 20px; text-align: center; font-size: 14px;">
+                <p>© 2024 Plastic Clever Schools. Together for a plastic-free future.</p>
+              </div>
+            </div>
+          `,
+        });
+      } catch (emailError) {
+        console.warn('[Admin Assign Teacher] Email notification failed:', emailError);
+      }
+
+      res.json({ 
+        message: "Teacher assigned successfully",
+        user: {
+          id: user.id,
+          email: user.email,
+          firstName: user.firstName,
+          lastName: user.lastName,
+        },
+        role,
+      });
+    } catch (error) {
+      console.error("[Admin Assign Teacher] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to assign teacher" });
+    }
+  });
+
+  // DELETE /api/admin/schools/:schoolId/teachers/:userId - Admin removes a teacher from a school
+  app.delete('/api/admin/schools/:schoolId/teachers/:userId', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { schoolId, userId } = req.params;
+
+      console.log(`[Admin Remove Teacher] Admin removing teacher ${userId} from school ${schoolId}`);
+
+      // Check if school exists
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      // Check if user is assigned to this school
+      const schoolUser = await storage.getSchoolUser(schoolId, userId);
+      if (!schoolUser) {
+        return res.status(404).json({ message: "Teacher not found in this school" });
+      }
+
+      // Remove user from school
+      const removed = await storage.removeUserFromSchool(schoolId, userId);
+      
+      if (!removed) {
+        return res.status(500).json({ message: "Failed to remove teacher" });
+      }
+
+      console.log(`[Admin Remove Teacher] Successfully removed teacher ${userId} from school ${schoolId}`);
+
+      // Send notification email (non-blocking)
+      try {
+        const user = await storage.getUser(userId);
+        if (user?.email) {
+          await sendEmail({
+            to: user.email,
+            from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+            subject: `Update: Your Access to ${school.name}`,
+            html: `
+              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+                <div style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
+                  <h1 style="color: white; margin: 0; font-size: 28px;">School Access Update</h1>
+                </div>
+                <div style="padding: 40px 20px; background: #f9f9f9;">
+                  <h2 style="color: #0B3D5D;">Access Removed</h2>
+                  <p style="color: #666; line-height: 1.6;">
+                    Your access to <strong>${school.name}</strong> has been removed by a platform administrator.
+                  </p>
+                  <p style="color: #666; line-height: 1.6;">
+                    If you believe this is an error, please contact support for assistance.
+                  </p>
+                </div>
+                <div style="background: #0B3D5D; color: white; padding: 20px; text-align: center; font-size: 14px;">
+                  <p>© 2024 Plastic Clever Schools. Together for a plastic-free future.</p>
+                </div>
+              </div>
+            `,
+          });
+        }
+      } catch (emailError) {
+        console.warn('[Admin Remove Teacher] Email notification failed:', emailError);
+      }
+
+      res.json({ message: "Teacher removed successfully" });
+    } catch (error) {
+      console.error("[Admin Remove Teacher] Error:", error);
+      res.status(500).json({ message: "Failed to remove teacher" });
+    }
+  });
+
+  // GET /api/admin/verification-requests - Admin views all verification requests across all schools
+  app.get('/api/admin/verification-requests', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      console.log('[Admin Verification Requests] Fetching all verification requests');
+
+      // Get all pending verification requests
+      const requests = await storage.getPendingVerificationRequests();
+
+      // Enrich with user and school data
+      const enrichedRequests = await Promise.all(
+        requests.map(async (request: VerificationRequest) => {
+          const user = await storage.getUser(request.userId);
+          const school = await storage.getSchool(request.schoolId);
+          return {
+            ...request,
+            user: user ? {
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+            } : null,
+            school: school ? {
+              id: school.id,
+              name: school.name,
+              country: school.country,
+            } : null,
+          };
+        })
+      );
+
+      console.log(`[Admin Verification Requests] Found ${enrichedRequests.length} requests`);
+      res.json(enrichedRequests);
+    } catch (error) {
+      console.error("[Admin Verification Requests] Error:", error);
+      res.status(500).json({ message: "Failed to fetch verification requests" });
+    }
+  });
+
+  // PUT /api/admin/verification-requests/:id/:action - Admin approves or rejects a verification request
+  app.put('/api/admin/verification-requests/:id/:action', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id, action } = req.params;
+      const { notes } = req.body;
+
+      if (!['approve', 'reject'].includes(action)) {
+        return res.status(400).json({ message: "Action must be 'approve' or 'reject'" });
+      }
+
+      console.log(`[Admin Verification ${action}] Admin ${action}ing request ${id}`);
+
+      // Get the verification request
+      const request = await storage.getVerificationRequest(id);
+      if (!request) {
+        return res.status(404).json({ message: "Verification request not found" });
+      }
+
+      if (request.status !== 'pending') {
+        return res.status(400).json({ message: "This request has already been reviewed" });
+      }
+
+      // Get user and school info for email
+      const user = await storage.getUser(request.userId);
+      const school = await storage.getSchool(request.schoolId);
+
+      if (!user || !school) {
+        return res.status(404).json({ message: "User or school not found" });
+      }
+
+      if (action === 'approve') {
+        // Approve the request
+        await storage.approveVerificationRequest(id, req.user.id, notes);
+
+        // Add user to school as verified teacher
+        await storage.addUserToSchool({
+          schoolId: request.schoolId,
+          userId: request.userId,
+          role: 'teacher',
+          isVerified: true,
+        });
+
+        // Send approval email
+        if (user.email) {
+          await sendVerificationApprovalEmail(
+            user.email,
+            school.name,
+            notes || undefined
+          );
+        }
+
+        console.log(`[Admin Verification approve] Request ${id} approved, user ${request.userId} added to school ${request.schoolId}`);
+        
+        res.json({ 
+          message: "Verification request approved successfully",
+          status: 'approved'
+        });
+      } else {
+        // Reject the request
+        if (!notes || notes.trim() === '') {
+          return res.status(400).json({ message: "Rejection notes are required" });
+        }
+
+        await storage.rejectVerificationRequest(id, req.user.id, notes);
+
+        // Send rejection email
+        if (user.email) {
+          await sendVerificationRejectionEmail(
+            user.email,
+            school.name,
+            notes
+          );
+        }
+
+        console.log(`[Admin Verification reject] Request ${id} rejected with notes`);
+        
+        res.json({ 
+          message: "Verification request rejected",
+          status: 'rejected'
+        });
+      }
+    } catch (error) {
+      console.error(`[Admin Verification ${req.params.action}] Error:`, error);
+      res.status(500).json({ message: `Failed to ${req.params.action} verification request` });
     }
   });
 
