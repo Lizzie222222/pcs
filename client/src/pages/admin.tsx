@@ -1268,6 +1268,7 @@ export default function Admin() {
   // Bulk operations state
   const [selectedEvidence, setSelectedEvidence] = useState<string[]>([]);
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
+  const [viewingSchool, setViewingSchool] = useState<SchoolData | null>(null);
   const [bulkEvidenceDialogOpen, setBulkEvidenceDialogOpen] = useState(false);
   const [bulkSchoolDialogOpen, setBulkSchoolDialogOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState<{
@@ -1962,17 +1963,6 @@ export default function Admin() {
           </button>
           <button
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'analytics' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('analytics')}
-            data-testid="tab-analytics"
-          >
-            Analytics
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'resources' 
                 ? 'bg-white text-navy shadow-sm' 
                 : 'text-gray-600 hover:text-navy'
@@ -1995,75 +1985,10 @@ export default function Admin() {
           </button>
         </div>
 
-        {/* Overview Tab */}
+        {/* Overview Tab (Analytics Content) */}
         {activeTab === 'overview' && (
-          <div className="space-y-8">
-            {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-pcs_blue text-white rounded-full p-3">
-                      <School className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-navy" data-testid="stat-total-schools">
-                        {stats?.totalSchools || 0}
-                      </div>
-                      <div className="text-gray-600 text-sm">Total Schools</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-yellow text-black rounded-full p-3">
-                      <Clock className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-navy" data-testid="stat-pending-reviews">
-                        {stats?.pendingEvidence || 0}
-                      </div>
-                      <div className="text-gray-600 text-sm">Pending Reviews</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-teal text-white rounded-full p-3">
-                      <Star className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-navy" data-testid="stat-case-studies">
-                        {stats?.featuredCaseStudies || 0}
-                      </div>
-                      <div className="text-gray-600 text-sm">Case Studies</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardContent className="p-6">
-                  <div className="flex items-center gap-4">
-                    <div className="bg-coral text-white rounded-full p-3">
-                      <Users className="h-6 w-6" />
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-navy" data-testid="stat-active-users">
-                        {stats?.activeUsers || 0}
-                      </div>
-                      <div className="text-gray-600 text-sm">Active Users</div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+          <div className="space-y-6">
+            <AnalyticsContent />
           </div>
         )}
 
@@ -2386,6 +2311,7 @@ export default function Admin() {
                           <Button 
                             size="sm" 
                             variant="outline"
+                            onClick={() => setViewingSchool(school)}
                             data-testid={`button-view-${school.id}`}
                           >
                             <Eye className="h-3 w-3 mr-1" />
@@ -2401,12 +2327,6 @@ export default function Admin() {
           </Card>
         )}
 
-        {/* Analytics Tab */}
-        {activeTab === 'analytics' && (
-          <div className="space-y-6">
-            <AnalyticsContent />
-          </div>
-        )}
 
         {/* Resources Tab */}
         {activeTab === 'resources' && (
@@ -2958,6 +2878,87 @@ export default function Admin() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* School Detail Dialog */}
+      {viewingSchool && (
+        <Dialog open={!!viewingSchool} onOpenChange={() => setViewingSchool(null)}>
+          <DialogContent className="max-w-2xl" data-testid={`dialog-school-detail-${viewingSchool.id}`}>
+            <DialogHeader>
+              <DialogTitle className="text-2xl" data-testid={`text-school-name-${viewingSchool.id}`}>
+                {viewingSchool.name}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Country</label>
+                  <p className="text-base" data-testid={`text-country-${viewingSchool.id}`}>
+                    {viewingSchool.country}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">School Type</label>
+                  <p className="text-base capitalize" data-testid={`text-type-${viewingSchool.id}`}>
+                    {viewingSchool.type}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Current Stage</label>
+                  <Badge 
+                    className={getStageColor(viewingSchool.currentStage)}
+                    data-testid={`badge-stage-${viewingSchool.id}`}
+                  >
+                    {viewingSchool.currentStage}
+                  </Badge>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Progress</label>
+                  <div className="flex items-center gap-2 mt-1" data-testid={`progress-${viewingSchool.id}`}>
+                    <div className="flex-1 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className="bg-teal h-2 rounded-full transition-all"
+                        style={{ width: `${viewingSchool.progressPercentage}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-sm">{viewingSchool.progressPercentage}%</span>
+                  </div>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Student Count</label>
+                  <p className="text-base" data-testid={`text-students-${viewingSchool.id}`}>
+                    {viewingSchool.studentCount || 'N/A'}
+                  </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Joined</label>
+                  <p className="text-base" data-testid={`text-joined-${viewingSchool.id}`}>
+                    {new Date(viewingSchool.createdAt).toLocaleDateString()}
+                  </p>
+                </div>
+              </div>
+              
+              {viewingSchool.address && (
+                <div>
+                  <label className="text-sm font-medium text-gray-600">Address</label>
+                  <p className="text-base" data-testid={`text-address-${viewingSchool.id}`}>
+                    {viewingSchool.address}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 pt-4">
+                <Button 
+                  variant="outline" 
+                  onClick={() => setViewingSchool(null)}
+                  data-testid="button-close-school-detail"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
