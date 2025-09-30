@@ -3,7 +3,7 @@ import { storage } from "./storage";
 async function seedAdmin() {
   try {
     // Check if admin user already exists
-    const existingAdmin = await storage.findUserByEmail("admin@plasticclever.schools");
+    const existingAdmin = await storage.findUserByEmail("admin@admin.com");
     
     if (existingAdmin) {
       console.log("Admin user already exists!");
@@ -15,7 +15,7 @@ async function seedAdmin() {
 
     // Create admin user
     const adminUser = await storage.createUserWithPassword({
-      email: "admin@plasticclever.schools",
+      email: "admin@admin.com",
       passwordHash,
       emailVerified: true,
       firstName: "Admin",
@@ -26,7 +26,7 @@ async function seedAdmin() {
     });
 
     console.log("✅ Admin user created successfully!");
-    console.log("Email: admin@plasticclever.schools");
+    console.log("Email: admin@admin.com");
     console.log("Password: admin1234");
     console.log("User ID:", adminUser.id);
     
