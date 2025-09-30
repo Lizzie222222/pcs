@@ -459,3 +459,88 @@ export const isAdmin: RequestHandler = (req, res, next) => {
     message: "Admin access required" 
   });
 };
+
+// Head Teacher middleware - checks if user is head teacher of a specific school
+export const isHeadTeacher: RequestHandler = async (req, res, next) => {
+  if (!req.isAuthenticated() || !req.user) {
+    return res.status(401).json({ 
+      success: false, 
+      message: "Authentication required" 
+    });
+  }
+  
+  const schoolId = req.params.schoolId;
+  if (!schoolId) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "School ID required" 
+    });
+  }
+  
+  try {
+    const schoolUser = await storage.getSchoolUser(schoolId, req.user.id);
+    if (schoolUser && schoolUser.role === 'head_teacher' && schoolUser.isVerified) {
+      return next();
+    }
+    
+    // Also allow platform admins
+    if (req.user.isAdmin) {
+      return next();
+    }
+    
+    return res.status(403).json({ 
+      success: false, 
+      message: "Head teacher access required" 
+    });
+  } catch (error) {
+    console.error("Error checking head teacher status:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Failed to verify head teacher status" 
+    });
+  }
+};
+
+// School Member middleware - checks if user is a verified member of a school
+export const isSchoolMember: RequestHandler = async (req, res, next) => {
+  if (!req.isAuthenticated() || !req.user) {
+    return res.status(401).json({ 
+      success: false, 
+      message: "Authentication required" 
+    });
+  }
+  
+  const schoolId = req.params.schoolId;
+  if (!schoolId) {
+    return res.status(400).json({ 
+      success: false, 
+      message: "School ID required" 
+    });
+  }
+  
+  try {
+    const schoolUser = await storage.getSchoolUser(schoolId, req.user.id);
+    if (schoolUser && schoolUser.isVerified) {
+      // Attach school role to request for use in route handlers
+      (req as any).schoolRole = schoolUser.role;
+      return next();
+    }
+    
+    // Also allow platform admins
+    if (req.user.isAdmin) {
+      (req as any).schoolRole = 'admin';
+      return next();
+    }
+    
+    return res.status(403).json({ 
+      success: false, 
+      message: "School membership required" 
+    });
+  } catch (error) {
+    console.error("Error checking school membership:", error);
+    return res.status(500).json({ 
+      success: false, 
+      message: "Failed to verify school membership" 
+    });
+  }
+};
