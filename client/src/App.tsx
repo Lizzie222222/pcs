@@ -117,7 +117,15 @@ function Router() {
               </>
             ) : (
               <>
-                <Route path="/" component={Home} />
+                <Route path="/">
+                  {() => {
+                    if (user?.isAdmin) {
+                      window.location.href = "/admin";
+                      return null;
+                    }
+                    return <Home />;
+                  }}
+                </Route>
                 <Route path="/login" component={Login} />
                 <Route path="/register" component={Register} />
                 <Route path="/resources" component={Resources} />
