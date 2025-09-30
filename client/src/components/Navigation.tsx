@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, LogOut } from "lucide-react";
 import logoUrl from "@assets/Logo_1757848498470.png";
@@ -40,6 +41,7 @@ export default function Navigation() {
   const getStableKey = (href: string) => {
     const keyMap: Record<string, string> = {
       '/': 'home',
+      '/dashboard': 'dashboard',
       '/resources': 'resources',
       '/inspiration': 'inspiration',
       '/schools-map': 'schools-map',
@@ -51,16 +53,21 @@ export default function Navigation() {
   };
 
   const navItems = [
-    { href: "/", label: t('navigation.home'), public: false },
+    { href: "/", label: t('navigation.home'), public: true },
     { href: "/resources", label: t('navigation.resources'), public: true },
     { href: "/inspiration", label: t('navigation.inspiration'), public: true },
     { href: "/schools-map", label: t('navigation.schools_map'), public: true },
     { href: "/search", label: t('navigation.search'), public: true },
   ];
 
+  // Add dashboard link if user is authenticated
+  if (isAuthenticated) {
+    navItems.splice(1, 0, { href: "/dashboard", label: "Dashboard", public: false });
+  }
+
   // Add team management link if user is head teacher
   if (isHeadTeacher) {
-    navItems.splice(1, 0, { href: "/dashboard/team-management", label: "Team Management", public: false });
+    navItems.splice(2, 0, { href: "/dashboard/team-management", label: "Team Management", public: false });
   }
 
   // Add admin link if user is admin
@@ -143,6 +150,22 @@ export default function Navigation() {
                     {user?.firstName || user?.email}
                   </span>
                 </div>
+                {user?.isAdmin ? (
+                  <Badge className="bg-pcs_blue text-white" data-testid="badge-role-admin">
+                    Admin
+                  </Badge>
+                ) : (
+                  <>
+                    <Badge className="bg-teal text-white" data-testid="badge-role-teacher">
+                      Teacher
+                    </Badge>
+                    {dashboardData?.school?.name && (
+                      <Badge variant="outline" className="border-teal text-teal" data-testid="badge-school-name">
+                        {dashboardData.school.name}
+                      </Badge>
+                    )}
+                  </>
+                )}
                 <Button
                   variant="outline"
                   size="sm"
@@ -254,6 +277,24 @@ export default function Navigation() {
                           <span className="text-sm text-gray-700" data-testid="mobile-text-user-name">
                             {user?.firstName || user?.email}
                           </span>
+                        </div>
+                        <div className="flex gap-2 px-3 py-2">
+                          {user?.isAdmin ? (
+                            <Badge className="bg-pcs_blue text-white" data-testid="mobile-badge-role-admin">
+                              Admin
+                            </Badge>
+                          ) : (
+                            <>
+                              <Badge className="bg-teal text-white" data-testid="mobile-badge-role-teacher">
+                                Teacher
+                              </Badge>
+                              {dashboardData?.school?.name && (
+                                <Badge variant="outline" className="border-teal text-teal" data-testid="mobile-badge-school-name">
+                                  {dashboardData.school.name}
+                                </Badge>
+                              )}
+                            </>
+                          )}
                         </div>
                         <button
                           className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"

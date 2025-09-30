@@ -358,11 +358,11 @@ export default function TeamManagement() {
                     <table className="w-full" data-testid="table-team-members">
                       <thead>
                         <tr className="border-b bg-gray-50">
-                          <th className="text-left p-3 font-medium text-gray-700">Name</th>
-                          <th className="text-left p-3 font-medium text-gray-700">Email</th>
-                          <th className="text-left p-3 font-medium text-gray-700">Role</th>
-                          <th className="text-left p-3 font-medium text-gray-700">Join Date</th>
-                          <th className="text-left p-3 font-medium text-gray-700">Actions</th>
+                          <th className="text-left p-3 font-medium text-gray-900">Name</th>
+                          <th className="text-left p-3 font-medium text-gray-900">Email</th>
+                          <th className="text-left p-3 font-medium text-gray-900">Role</th>
+                          <th className="text-left p-3 font-medium text-gray-900">Join Date</th>
+                          <th className="text-left p-3 font-medium text-gray-900">Actions</th>
                         </tr>
                       </thead>
                       <tbody>

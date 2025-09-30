@@ -106,47 +106,28 @@ function Router() {
       >
         <Suspense fallback={<PageLoadingFallback />}>
           <Switch>
-            {!isAuthenticated ? (
+            <Route path="/" component={Landing} />
+            <Route path="/login" component={Login} />
+            <Route path="/register" component={Register} />
+            <Route path="/invitations/:token" component={InvitationAccept} />
+            <Route path="/resources" component={Resources} />
+            <Route path="/inspiration" component={Inspiration} />
+            <Route path="/case-study/:id" component={CaseStudyDetail} />
+            <Route path="/schools-map" component={SchoolsMap} />
+            <Route path="/search" component={Search} />
+            {isAuthenticated && (
               <>
-                <Route path="/" component={Landing} />
-                <Route path="/login" component={Login} />
-                <Route path="/register" component={Register} />
-                <Route path="/invitations/:token" component={InvitationAccept} />
-                <Route path="/resources" component={Resources} />
-                <Route path="/inspiration" component={Inspiration} />
-                <Route path="/case-study/:id" component={CaseStudyDetail} />
-                <Route path="/schools-map" component={SchoolsMap} />
-                <Route path="/search" component={Search} />
-              </>
-            ) : (
-              <>
-                <Route path="/">
+                <Route path="/dashboard">
                   {() => {
-                    console.log('Route "/" matched - user:', { isAdmin: user?.isAdmin, role: user?.role, email: user?.email });
                     if (user?.isAdmin) {
-                      console.log('Admin user on "/" - redirecting to /admin');
                       window.location.href = "/admin";
                       return null;
                     }
-                    console.log('Non-admin user on "/" - rendering Home component');
                     return <Home />;
                   }}
                 </Route>
-                <Route path="/login" component={Login} />
-                <Route path="/register" component={Register} />
-                <Route path="/invitations/:token" component={InvitationAccept} />
-                <Route path="/resources" component={Resources} />
-                <Route path="/inspiration" component={Inspiration} />
-                <Route path="/case-study/:id" component={CaseStudyDetail} />
-                <Route path="/schools-map" component={SchoolsMap} />
-                <Route path="/search" component={Search} />
                 <Route path="/dashboard/team-management" component={TeamManagement} />
-                <Route path="/admin">
-                  {() => {
-                    console.log('Route "/admin" matched - user:', { isAdmin: user?.isAdmin, role: user?.role, email: user?.email });
-                    return <Admin />;
-                  }}
-                </Route>
+                <Route path="/admin" component={Admin} />
               </>
             )}
             <Route component={NotFound} />
