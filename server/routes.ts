@@ -498,6 +498,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // GET /api/invitations/:token - Get invitation details by token
+  app.get('/api/invitations/:token', async (req, res) => {
+    try {
+      const { token } = req.params;
+      
+      console.log(`[Get Invitation] Fetching invitation details for token ${token}`);
+      
+      // Get invitation by token
+      const invitation = await storage.getTeacherInvitationByToken(token);
+      
+      if (!invitation) {
+        console.log(`[Get Invitation] Invitation not found`);
+        return res.status(404).json({ message: "Invitation not found or has expired" });
+      }
+      
+      // Check if invitation is expired
+      if (new Date() > new Date(invitation.expiresAt)) {
+        console.log(`[Get Invitation] Invitation expired`);
+        return res.status(410).json({ message: "This invitation has expired" });
+      }
+      
+      // Check if already accepted
+      if (invitation.status === 'accepted') {
+        console.log(`[Get Invitation] Invitation already accepted`);
+        return res.status(410).json({ message: "This invitation has already been accepted" });
+      }
+      
+      // Get school and inviter details
+      const school = await storage.getSchool(invitation.schoolId);
+      const inviter = await storage.getUser(invitation.invitedBy);
+      
+      console.log(`[Get Invitation] Returning invitation details for ${invitation.email}`);
+      
+      res.json({
+        email: invitation.email,
+        schoolName: school?.name || 'Unknown School',
+        schoolCountry: school?.country,
+        inviterName: inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : 'A colleague',
+        expiresAt: invitation.expiresAt,
+        status: invitation.status,
+      });
+    } catch (error) {
+      console.error("[Get Invitation] Error:", error);
+      res.status(500).json({ message: "Failed to fetch invitation details" });
+    }
+  });
+  
   // POST /api/invitations/:token/accept - Accept a teacher invitation
   app.post('/api/invitations/:token/accept', isAuthenticated, async (req: any, res) => {
     try {

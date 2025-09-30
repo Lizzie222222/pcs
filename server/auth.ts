@@ -434,6 +434,79 @@ export async function setupAuth(app: Express) {
       });
     })(req, res, next);
   });
+
+  // TEST-ONLY: Authentication bypass for Playwright E2E tests
+  // This endpoint allows tests to authenticate without external OAuth providers
+  if (process.env.NODE_ENV === 'development' || process.env.REPLIT_CONTEXT === 'testing') {
+    app.post('/api/test-auth/login', async (req, res) => {
+      try {
+        const { email, firstName, lastName, sub, isAdmin } = req.body;
+        
+        if (!email || !firstName || !lastName || !sub) {
+          return res.status(400).json({ error: 'Missing required fields: email, firstName, lastName, sub' });
+        }
+        
+        console.log(`[Test Auth] Logging in test user: ${email}`);
+        
+        // Find or create user using OAuth profile pattern
+        let user = await storage.findUserByEmail(email);
+        
+        if (!user) {
+          console.log(`[Test Auth] Creating new user: ${email}`);
+          user = await storage.createUserWithOAuth({
+            email,
+            firstName,
+            lastName,
+            googleId: sub,
+            emailVerified: true,
+            role: 'teacher',
+            isAdmin: isAdmin || false,
+            profileImageUrl: null,
+          });
+        } else {
+          // Set isAdmin if specified and different from current value
+          if (isAdmin && !user.isAdmin) {
+            // Import db and users at top if not already imported
+            const { db } = await import('./db');
+            const { users } = await import('@shared/schema');
+            const { eq } = await import('drizzle-orm');
+            
+            const [updatedUser] = await db
+              .update(users)
+              .set({ isAdmin: true, updatedAt: new Date() })
+              .where(eq(users.id, user.id))
+              .returning();
+            user = updatedUser;
+          }
+        }
+        
+        // Use Passport's login method to establish session
+        req.login(user, (err) => {
+          if (err) {
+            console.error('[Test Auth] Login failed:', err);
+            return res.status(500).json({ error: 'Failed to establish session' });
+          }
+          
+          console.log(`[Test Auth] Session established for user: ${user.id}`);
+          res.json({ 
+            success: true,
+            user: {
+              id: user.id,
+              email: user.email,
+              firstName: user.firstName,
+              lastName: user.lastName,
+              isAdmin: user.isAdmin
+            }
+          });
+        });
+      } catch (error) {
+        console.error('[Test Auth] Error:', error);
+        res.status(500).json({ error: 'Authentication failed' });
+      }
+    });
+    
+    console.log('[Test Auth] Test-only authentication endpoint enabled at POST /api/test-auth/login');
+  }
 }
 
 // Authentication middleware

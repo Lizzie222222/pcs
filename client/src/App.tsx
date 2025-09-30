@@ -29,6 +29,7 @@ const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
 const Admin = lazy(() => import("@/pages/admin"));
 const Login = lazy(() => import("@/pages/login"));
 const Register = lazy(() => import("@/pages/register"));
+const InvitationAccept = lazy(() => import("@/pages/InvitationAccept"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
@@ -110,6 +111,7 @@ function Router() {
                 <Route path="/" component={Landing} />
                 <Route path="/login" component={Login} />
                 <Route path="/register" component={Register} />
+                <Route path="/invitations/:token" component={InvitationAccept} />
                 <Route path="/resources" component={Resources} />
                 <Route path="/inspiration" component={Inspiration} />
                 <Route path="/case-study/:id" component={CaseStudyDetail} />
@@ -132,6 +134,7 @@ function Router() {
                 </Route>
                 <Route path="/login" component={Login} />
                 <Route path="/register" component={Register} />
+                <Route path="/invitations/:token" component={InvitationAccept} />
                 <Route path="/resources" component={Resources} />
                 <Route path="/inspiration" component={Inspiration} />
                 <Route path="/case-study/:id" component={CaseStudyDetail} />
