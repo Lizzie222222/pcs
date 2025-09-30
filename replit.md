@@ -70,6 +70,7 @@ Preferred communication style: Simple, everyday language.
 - **Design System**: shadcn/ui for consistent styling
 - **CSS Framework**: Tailwind CSS with custom theme configuration
 - **Icons**: Lucide React for consistent iconography
+- **Avatars**: DiceBear thumbs style for user profile pictures (deterministic generation based on email)
 
 ### Form and Validation
 - **Form Library**: React Hook Form for performant form handling
