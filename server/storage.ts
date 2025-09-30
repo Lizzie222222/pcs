@@ -370,22 +370,47 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(schools.showOnMap, filters.showOnMap));
     }
     
-    let query = db.select().from(schools);
+    const baseQuery = db
+      .select({
+        id: schools.id,
+        name: schools.name,
+        type: schools.type,
+        country: schools.country,
+        address: schools.address,
+        studentCount: schools.studentCount,
+        latitude: schools.latitude,
+        longitude: schools.longitude,
+        currentStage: schools.currentStage,
+        progressPercentage: schools.progressPercentage,
+        inspireCompleted: schools.inspireCompleted,
+        investigateCompleted: schools.investigateCompleted,
+        actCompleted: schools.actCompleted,
+        awardCompleted: schools.awardCompleted,
+        featuredSchool: schools.featuredSchool,
+        showOnMap: schools.showOnMap,
+        primaryContactId: schools.primaryContactId,
+        createdAt: schools.createdAt,
+        updatedAt: schools.updatedAt,
+        primaryContactEmail: users.email,
+      })
+      .from(schools)
+      .leftJoin(users, eq(schools.primaryContactId, users.id))
+      .$dynamic();
     
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      baseQuery.where(and(...conditions));
     }
     
-    query = query.orderBy(desc(schools.createdAt));
+    baseQuery.orderBy(desc(schools.createdAt));
     
     if (filters.limit) {
-      query = query.limit(filters.limit);
+      baseQuery.limit(filters.limit);
     }
     if (filters.offset) {
-      query = query.offset(filters.offset);
+      baseQuery.offset(filters.offset);
     }
     
-    return await query;
+    return await baseQuery;
   }
 
   async updateSchool(id: string, updates: Partial<School>): Promise<School | undefined> {

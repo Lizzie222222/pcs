@@ -13,6 +13,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useCountries } from "@/hooks/useCountries";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { 
   School, 
   Clock, 
   Users, 
@@ -77,6 +87,7 @@ interface SchoolData {
   studentCount: number;
   createdAt: string;
   primaryContactId: string;
+  primaryContactEmail: string | null;
 }
 
 // Analytics interfaces
@@ -716,27 +727,21 @@ function ResourceForm({ resource, onClose, onSuccess }: {
 }
 
 function AnalyticsContent() {
-  const [selectedTab, setSelectedTab] = useState('overview');
-
-  // Analytics queries
+  // Analytics queries - all enabled
   const overviewQuery = useQuery<AnalyticsOverview>({
-    queryKey: ['/api/admin/analytics/overview'],
-    enabled: true
+    queryKey: ['/api/admin/analytics/overview']
   });
 
   const schoolProgressQuery = useQuery<SchoolProgressAnalytics>({
-    queryKey: ['/api/admin/analytics/school-progress'],
-    enabled: selectedTab === 'schools'
+    queryKey: ['/api/admin/analytics/school-progress']
   });
 
   const evidenceQuery = useQuery<EvidenceAnalytics>({
-    queryKey: ['/api/admin/analytics/evidence'],
-    enabled: selectedTab === 'evidence'
+    queryKey: ['/api/admin/analytics/evidence']
   });
 
   const userEngagementQuery = useQuery<UserEngagementAnalytics>({
-    queryKey: ['/api/admin/analytics/user-engagement'],
-    enabled: selectedTab === 'users'
+    queryKey: ['/api/admin/analytics/user-engagement']
   });
 
   const exportAnalytics = async (format: 'csv' | 'excel') => {
@@ -850,376 +855,341 @@ function AnalyticsContent() {
         </div>
       )}
 
-      {/* Detailed Analytics Tabs */}
-      <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="overview" data-testid="analytics-tab-overview">Overview</TabsTrigger>
-          <TabsTrigger value="schools" data-testid="analytics-tab-schools">Schools</TabsTrigger>
-          <TabsTrigger value="evidence" data-testid="analytics-tab-evidence">Evidence</TabsTrigger>
-          <TabsTrigger value="users" data-testid="analytics-tab-users">Users</TabsTrigger>
-        </TabsList>
+      {/* Key Metrics Summary */}
+      {overviewQuery.data && (
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-gray-600 font-medium">Total Schools</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.totalSchools}</div>
+              <p className="text-xs text-gray-500 mt-1">Participating schools</p>
+            </CardContent>
+          </Card>
 
-        <TabsContent value="overview">
-          <div className="space-y-6">
-            {/* Key Metrics Summary */}
-            {overviewQuery.data && (
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm text-gray-600 font-medium">Total Schools</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.totalSchools}</div>
-                    <p className="text-xs text-gray-500 mt-1">Participating schools</p>
-                  </CardContent>
-                </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-gray-600 font-medium">Total Evidence</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-teal">{overviewQuery.data.totalEvidence}</div>
+              <p className="text-xs text-gray-500 mt-1">Submissions received</p>
+            </CardContent>
+          </Card>
 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm text-gray-600 font-medium">Total Evidence</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-teal">{overviewQuery.data.totalEvidence}</div>
-                    <p className="text-xs text-gray-500 mt-1">Submissions received</p>
-                  </CardContent>
-                </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-gray-600 font-medium">Awards Completed</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-coral">{overviewQuery.data.completedAwards}</div>
+              <p className="text-xs text-gray-500 mt-1">Schools with awards</p>
+            </CardContent>
+          </Card>
 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm text-gray-600 font-medium">Awards Completed</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-coral">{overviewQuery.data.completedAwards}</div>
-                    <p className="text-xs text-gray-500 mt-1">Schools with awards</p>
-                  </CardContent>
-                </Card>
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-sm text-gray-600 font-medium">Students Impacted</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.studentsImpacted.toLocaleString()}</div>
+              <p className="text-xs text-gray-500 mt-1">Lives changed</p>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-                <Card>
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-sm text-gray-600 font-medium">Students Impacted</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.studentsImpacted.toLocaleString()}</div>
-                    <p className="text-xs text-gray-500 mt-1">Lives changed</p>
-                  </CardContent>
-                </Card>
-              </div>
-            )}
+      {/* School Analytics */}
+      {schoolProgressQuery.data && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Schools by Stage */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <PieChartIcon className="w-5 h-5 mr-2 text-pcs_blue" />
+                Schools by Stage
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={schoolProgressQuery.data.stageDistribution}
+                    dataKey="count"
+                    nameKey="stage"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={80}
+                    label={(entry) => `${entry.stage}: ${entry.count}`}
+                  >
+                    {schoolProgressQuery.data.stageDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* School Progress Distribution */}
-              {schoolProgressQuery.data && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <PieChartIcon className="w-5 h-5 mr-2 text-pcs_blue" />
-                      Schools by Stage
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={250}>
-                      <PieChart>
-                        <Pie
-                          data={schoolProgressQuery.data.stageDistribution}
-                          dataKey="count"
-                          nameKey="stage"
-                          cx="50%"
-                          cy="50%"
-                          outerRadius={80}
-                          label={(entry) => `${entry.stage}: ${entry.count}`}
-                        >
-                          {schoolProgressQuery.data.stageDistribution.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              )}
+          {/* Monthly School Registrations */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <TrendingUp className="w-5 h-5 mr-2 text-pcs_teal" />
+                Monthly School Registrations
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <LineChart data={schoolProgressQuery.data.monthlyRegistrations}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="month" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="count" stroke="#019ADE" strokeWidth={2} />
+                </LineChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-              {/* Monthly Registration Trend */}
-              {schoolProgressQuery.data && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <TrendingUp className="w-5 h-5 mr-2 text-pcs_teal" />
-                      Monthly School Registrations
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={250}>
-                      <LineChart data={schoolProgressQuery.data.monthlyRegistrations}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="month" />
-                        <YAxis />
-                        <Tooltip />
-                        <Line type="monotone" dataKey="count" stroke="#019ADE" strokeWidth={2} />
-                      </LineChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+          {/* Progress Distribution */}
+          <Card>
+            <CardHeader>
+              <CardTitle>School Progress Distribution</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={schoolProgressQuery.data.progressRanges}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="range" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="count" fill="#019ADE" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-            {/* User Engagement and Evidence Stats */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* User Role Distribution */}
-              {userEngagementQuery.data && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Users className="w-5 h-5 mr-2 text-coral" />
-                      User Distribution
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={250}>
-                      <BarChart data={userEngagementQuery.data.roleDistribution}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="role" />
-                        <YAxis />
-                        <Tooltip />
-                        <Bar dataKey="count" fill="#FF595A" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              )}
+          {/* Monthly Registrations - Alternative View */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Completion Rates</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={schoolProgressQuery.data.completionRates}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="metric" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="rate" fill="#02BBB4" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
-              {/* Evidence Submissions Overview */}
-              {evidenceQuery.data && evidenceQuery.data.stageBreakdown && (
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="flex items-center">
-                      <Trophy className="w-5 h-5 mr-2 text-pcs_blue" />
-                      Evidence by Stage
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={250}>
-                      <BarChart data={evidenceQuery.data.stageBreakdown}>
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="stage" />
-                        <YAxis />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="approved" fill="#10B981" name="Approved" />
-                        <Bar dataKey="pending" fill="#FFC557" name="Pending" />
-                        <Bar dataKey="rejected" fill="#FF595A" name="Rejected" />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
+      {/* Evidence Analytics */}
+      {evidenceQuery.data && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Evidence by Stage */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Trophy className="w-5 h-5 mr-2 text-pcs_blue" />
+                Evidence by Stage
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={evidenceQuery.data.stageBreakdown}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="stage" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Bar dataKey="approved" fill="#10B981" name="Approved" />
+                  <Bar dataKey="pending" fill="#FFC557" name="Pending" />
+                  <Bar dataKey="rejected" fill="#FF595A" name="Rejected" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-            {/* Top Schools Table */}
-            {evidenceQuery.data && evidenceQuery.data.topSubmitters && evidenceQuery.data.topSubmitters.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center">
-                    <Award className="w-5 h-5 mr-2 text-gold" />
-                    Top Performing Schools
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="border-b">
-                          <th className="text-left py-3 px-4">School Name</th>
-                          <th className="text-center py-3 px-4">Submissions</th>
-                          <th className="text-center py-3 px-4">Approval Rate</th>
-                          <th className="text-center py-3 px-4">Performance</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {evidenceQuery.data.topSubmitters.slice(0, 5).map((school: any, index: number) => (
-                          <tr key={index} className="border-b hover:bg-gray-50">
-                            <td className="py-3 px-4 font-medium">{school.schoolName}</td>
-                            <td className="text-center py-3 px-4">{school.submissions}</td>
-                            <td className="text-center py-3 px-4">{school.approvalRate}%</td>
-                            <td className="text-center py-3 px-4">
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div 
-                                  className="bg-pcs_blue h-2 rounded-full" 
-                                  style={{ width: `${school.approvalRate}%` }}
-                                />
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </TabsContent>
+          {/* Review Turnaround Time */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Review Turnaround Time</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={evidenceQuery.data.reviewTurnaround}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="count"
+                  >
+                    {evidenceQuery.data.reviewTurnaround.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-        <TabsContent value="schools">
-          {schoolProgressQuery.data && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Stage Distribution */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>School Stage Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={schoolProgressQuery.data.stageDistribution}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name}: ${value}`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="count"
-                      >
-                        {schoolProgressQuery.data.stageDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              {/* Progress Ranges */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Progress Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={schoolProgressQuery.data.progressRanges}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="range" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="count" fill="#019ADE" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
+          {/* Submission Trends */}
+          {evidenceQuery.data.submissionTrends && (
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>Evidence Submission Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={evidenceQuery.data.submissionTrends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="submissions" stroke="#0B3D5D" strokeWidth={2} name="Submissions" />
+                    <Line type="monotone" dataKey="approvals" stroke="#10B981" strokeWidth={2} name="Approvals" />
+                    <Line type="monotone" dataKey="rejections" stroke="#FF595A" strokeWidth={2} name="Rejections" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
           )}
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="evidence">
-          {evidenceQuery.data && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Stage Breakdown */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Evidence by Stage</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={evidenceQuery.data.stageBreakdown}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="stage" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="approved" stackId="a" fill="#02BBB4" name="Approved" />
-                      <Bar dataKey="pending" stackId="a" fill="#FFC557" name="Pending" />
-                      <Bar dataKey="rejected" stackId="a" fill="#FF595A" name="Rejected" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+      {/* User Engagement Analytics */}
+      {userEngagementQuery.data && (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* User Role Distribution */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Users className="w-5 h-5 mr-2 text-coral" />
+                User Role Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <PieChart>
+                  <Pie
+                    data={userEngagementQuery.data.roleDistribution}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, value }) => `${name}: ${value}`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="count"
+                  >
+                    {userEngagementQuery.data.roleDistribution.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
 
-              {/* Review Turnaround */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Review Turnaround Time</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={evidenceQuery.data.reviewTurnaround}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name}: ${value}`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="count"
-                      >
-                        {evidenceQuery.data.reviewTurnaround.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
+          {/* Active Users by Period */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Active Users by Period</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ResponsiveContainer width="100%" height={250}>
+                <BarChart data={userEngagementQuery.data.activeUsers}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="period" />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="active" fill="#0B3D5D" />
+                </BarChart>
+              </ResponsiveContainer>
+            </CardContent>
+          </Card>
+
+          {/* User Registration Trends */}
+          {userEngagementQuery.data.registrationTrends && (
+            <Card className="lg:col-span-2">
+              <CardHeader>
+                <CardTitle>User Registration Trends</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ResponsiveContainer width="100%" height={250}>
+                  <LineChart data={userEngagementQuery.data.registrationTrends}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="month" />
+                    <YAxis />
+                    <Tooltip />
+                    <Legend />
+                    <Line type="monotone" dataKey="teachers" stroke="#019ADE" strokeWidth={2} name="Teachers" />
+                    <Line type="monotone" dataKey="admins" stroke="#FF595A" strokeWidth={2} name="Admins" />
+                  </LineChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
           )}
-        </TabsContent>
+        </div>
+      )}
 
-        <TabsContent value="users">
-          {userEngagementQuery.data && (
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Role Distribution */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>User Role Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                      <Pie
-                        data={userEngagementQuery.data.roleDistribution}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name}: ${value}`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="count"
-                      >
-                        {userEngagementQuery.data.roleDistribution.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              {/* Active Users */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Active Users by Period</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={userEngagementQuery.data.activeUsers}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="period" />
-                      <YAxis />
-                      <Tooltip />
-                      <Bar dataKey="active" fill="#0B3D5D" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
+      {/* Top Performing Schools Table */}
+      {evidenceQuery.data && evidenceQuery.data.topSubmitters && evidenceQuery.data.topSubmitters.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <Award className="w-5 h-5 mr-2 text-gold" />
+              Top Performing Schools
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b">
+                    <th className="text-left py-3 px-4">School Name</th>
+                    <th className="text-center py-3 px-4">Submissions</th>
+                    <th className="text-center py-3 px-4">Approval Rate</th>
+                    <th className="text-center py-3 px-4">Performance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {evidenceQuery.data.topSubmitters.slice(0, 5).map((school: any, index: number) => (
+                    <tr key={index} className="border-b hover:bg-gray-50">
+                      <td className="py-3 px-4 font-medium">{school.schoolName}</td>
+                      <td className="text-center py-3 px-4">{school.submissions}</td>
+                      <td className="text-center py-3 px-4">{school.approvalRate}%</td>
+                      <td className="text-center py-3 px-4">
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-pcs_blue h-2 rounded-full" 
+                            style={{ width: `${school.approvalRate}%` }}
+                          />
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
-          )}
-        </TabsContent>
-      </Tabs>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
@@ -1269,6 +1239,7 @@ export default function Admin() {
   const [selectedEvidence, setSelectedEvidence] = useState<string[]>([]);
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
   const [viewingSchool, setViewingSchool] = useState<SchoolData | null>(null);
+  const [deletingSchool, setDeletingSchool] = useState<SchoolData | null>(null);
   const [bulkEvidenceDialogOpen, setBulkEvidenceDialogOpen] = useState(false);
   const [bulkSchoolDialogOpen, setBulkSchoolDialogOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState<{
@@ -1535,6 +1506,32 @@ export default function Admin() {
         description: "Failed to delete schools. Please try again.",
         variant: "destructive",
       });
+    },
+  });
+
+  // Individual school delete mutation
+  const deleteSchoolMutation = useMutation({
+    mutationFn: async (schoolId: string) => {
+      await apiRequest('DELETE', `/api/admin/schools/${schoolId}`);
+    },
+    onSuccess: (_, schoolId) => {
+      toast({
+        title: "School Deleted",
+        description: "The school has been successfully deleted.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/overview'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/school-progress'] });
+      setDeletingSchool(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete school. Please try again.",
+        variant: "destructive",
+      });
+      setDeletingSchool(null);
     },
   });
 
@@ -2259,6 +2256,7 @@ export default function Admin() {
                       <th className="text-left p-3 font-semibold text-navy">Stage</th>
                       <th className="text-left p-3 font-semibold text-navy">Progress</th>
                       <th className="text-left p-3 font-semibold text-navy">Students</th>
+                      <th className="text-left p-3 font-semibold text-navy">Primary Contact</th>
                       <th className="text-left p-3 font-semibold text-navy">Joined</th>
                       <th className="text-left p-3 font-semibold text-navy">Actions</th>
                     </tr>
@@ -2304,19 +2302,32 @@ export default function Admin() {
                           </div>
                         </td>
                         <td className="p-3 text-gray-600">{school.studentCount}</td>
+                        <td className="p-3 text-gray-600" data-testid={`text-primary-contact-${school.id}`}>
+                          {school.primaryContactEmail || 'N/A'}
+                        </td>
                         <td className="p-3 text-gray-600">
                           {new Date(school.createdAt).toLocaleDateString()}
                         </td>
                         <td className="p-3">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => setViewingSchool(school)}
-                            data-testid={`button-view-${school.id}`}
-                          >
-                            <Eye className="h-3 w-3 mr-1" />
-                            View
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => setViewingSchool(school)}
+                              data-testid={`button-view-${school.id}`}
+                            >
+                              <Eye className="h-3 w-3 mr-1" />
+                              View
+                            </Button>
+                            <Button 
+                              size="sm" 
+                              variant="destructive"
+                              onClick={() => setDeletingSchool(school)}
+                              data-testid={`button-delete-${school.id}`}
+                            >
+                              <Trash2 className="h-3 w-3" />
+                            </Button>
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -2960,6 +2971,31 @@ export default function Admin() {
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Delete School Confirmation Dialog */}
+      <AlertDialog open={!!deletingSchool} onOpenChange={(open) => !open && setDeletingSchool(null)}>
+        <AlertDialogContent data-testid="dialog-delete-school-confirmation">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete School</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{deletingSchool?.name}</strong>? This action cannot be undone and will permanently remove the school and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete-school">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingSchool && deleteSchoolMutation.mutate(deletingSchool.id)}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={deleteSchoolMutation.isPending}
+              data-testid="button-confirm-delete-school"
+            >
+              {deleteSchoolMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

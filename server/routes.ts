@@ -1014,6 +1014,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete school
+  app.delete('/api/admin/schools/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const schoolId = req.params.id;
+      const deleted = await storage.deleteSchool(schoolId);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "School not found or already deleted" });
+      }
+
+      res.json({ message: "School deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting school:", error);
+      res.status(500).json({ message: "Failed to delete school" });
+    }
+  });
+
   // Export analytics data as CSV/Excel (MUST come before the general export endpoint)
   app.get('/api/admin/export/analytics', isAuthenticated, requireAdmin, async (req, res) => {
     try {
