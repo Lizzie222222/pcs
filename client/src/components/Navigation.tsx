@@ -7,6 +7,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { Menu, LogOut } from "lucide-react";
 import logoUrl from "@assets/Logo_1757848498470.png";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import Avatar from "./Avatar";
 
 export default function Navigation() {
   const { t } = useTranslation('common');
@@ -104,9 +105,17 @@ export default function Navigation() {
             <LanguageSwitcher />
             {isAuthenticated ? (
               <>
-                <span className="text-gray-700 text-sm" data-testid="text-user-name">
-                  {user?.firstName || user?.email}
-                </span>
+                <div className="flex items-center gap-2" data-testid="container-user-profile">
+                  <Avatar 
+                    seed={user?.email || ''} 
+                    size={32}
+                    dataTestId="img-avatar-desktop"
+                    alt={`${user?.firstName || user?.email}'s avatar`}
+                  />
+                  <span className="text-gray-700 text-sm" data-testid="text-user-name">
+                    {user?.firstName || user?.email}
+                  </span>
+                </div>
                 <Button
                   variant="outline"
                   size="sm"
@@ -208,8 +217,16 @@ export default function Navigation() {
                   <div className="border-t border-gray-200 pt-4 mt-2">
                     {isAuthenticated ? (
                       <>
-                        <div className="px-3 py-2 text-sm text-gray-700" data-testid="mobile-text-user-name">
-                          {user?.firstName || user?.email}
+                        <div className="flex items-center gap-2 px-3 py-2" data-testid="mobile-container-user-profile">
+                          <Avatar 
+                            seed={user?.email || ''} 
+                            size={32}
+                            dataTestId="img-avatar-mobile"
+                            alt={`${user?.firstName || user?.email}'s avatar`}
+                          />
+                          <span className="text-sm text-gray-700" data-testid="mobile-text-user-name">
+                            {user?.firstName || user?.email}
+                          </span>
                         </div>
                         <button
                           className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
