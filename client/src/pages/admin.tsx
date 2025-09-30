@@ -860,51 +860,204 @@ function AnalyticsContent() {
         </TabsList>
 
         <TabsContent value="overview">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <TrendingUp className="w-5 h-5 mr-2 text-pcs_blue" />
-                  Platform Growth Overview
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="text-center py-8 text-gray-500">
-                  Select a specific analytics tab to view detailed charts and insights
-                </div>
-              </CardContent>
-            </Card>
+          <div className="space-y-6">
+            {/* Key Metrics Summary */}
+            {overviewQuery.data && (
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium">Total Schools</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.totalSchools}</div>
+                    <p className="text-xs text-gray-500 mt-1">Participating schools</p>
+                  </CardContent>
+                </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <BarChart3 className="w-5 h-5 mr-2 text-pcs_teal" />
-                  Key Performance Indicators
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {overviewQuery.data && (
-                    <>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Program Completion Rate</span>
-                        <span className="font-semibold">
-                          {Math.round((overviewQuery.data.completedAwards / overviewQuery.data.totalSchools) * 100)}%
-                        </span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Average Progress</span>
-                        <span className="font-semibold">{Math.round(overviewQuery.data.averageProgress)}%</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="text-sm text-gray-600">Students Impacted</span>
-                        <span className="font-semibold">{overviewQuery.data.studentsImpacted.toLocaleString()}</span>
-                      </div>
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium">Total Evidence</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-teal">{overviewQuery.data.totalEvidence}</div>
+                    <p className="text-xs text-gray-500 mt-1">Submissions received</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium">Awards Completed</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-coral">{overviewQuery.data.completedAwards}</div>
+                    <p className="text-xs text-gray-500 mt-1">Schools with awards</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium">Students Impacted</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.studentsImpacted.toLocaleString()}</div>
+                    <p className="text-xs text-gray-500 mt-1">Lives changed</p>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* School Progress Distribution */}
+              {schoolProgressQuery.data && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <PieChartIcon className="w-5 h-5 mr-2 text-pcs_blue" />
+                      Schools by Stage
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={schoolProgressQuery.data.stageDistribution}
+                          dataKey="count"
+                          nameKey="stage"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          label={(entry) => `${entry.stage}: ${entry.count}`}
+                        >
+                          {schoolProgressQuery.data.stageDistribution.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Monthly Registration Trend */}
+              {schoolProgressQuery.data && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <TrendingUp className="w-5 h-5 mr-2 text-pcs_teal" />
+                      Monthly School Registrations
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <LineChart data={schoolProgressQuery.data.monthlyRegistrations}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="month" />
+                        <YAxis />
+                        <Tooltip />
+                        <Line type="monotone" dataKey="count" stroke="#019ADE" strokeWidth={2} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* User Engagement and Evidence Stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* User Role Distribution */}
+              {userEngagementQuery.data && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Users className="w-5 h-5 mr-2 text-coral" />
+                      User Distribution
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={userEngagementQuery.data.roleDistribution}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="role" />
+                        <YAxis />
+                        <Tooltip />
+                        <Bar dataKey="count" fill="#FF595A" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Evidence Submissions Overview */}
+              {evidenceQuery.data && evidenceQuery.data.stageBreakdown && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center">
+                      <Trophy className="w-5 h-5 mr-2 text-pcs_blue" />
+                      Evidence by Stage
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <ResponsiveContainer width="100%" height={250}>
+                      <BarChart data={evidenceQuery.data.stageBreakdown}>
+                        <CartesianGrid strokeDasharray="3 3" />
+                        <XAxis dataKey="stage" />
+                        <YAxis />
+                        <Tooltip />
+                        <Legend />
+                        <Bar dataKey="approved" fill="#10B981" name="Approved" />
+                        <Bar dataKey="pending" fill="#FFC557" name="Pending" />
+                        <Bar dataKey="rejected" fill="#FF595A" name="Rejected" />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Top Schools Table */}
+            {evidenceQuery.data && evidenceQuery.data.topSubmitters && evidenceQuery.data.topSubmitters.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Award className="w-5 h-5 mr-2 text-gold" />
+                    Top Performing Schools
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="text-left py-3 px-4">School Name</th>
+                          <th className="text-center py-3 px-4">Submissions</th>
+                          <th className="text-center py-3 px-4">Approval Rate</th>
+                          <th className="text-center py-3 px-4">Performance</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {evidenceQuery.data.topSubmitters.slice(0, 5).map((school: any, index: number) => (
+                          <tr key={index} className="border-b hover:bg-gray-50">
+                            <td className="py-3 px-4 font-medium">{school.schoolName}</td>
+                            <td className="text-center py-3 px-4">{school.submissions}</td>
+                            <td className="text-center py-3 px-4">{school.approvalRate}%</td>
+                            <td className="text-center py-3 px-4">
+                              <div className="w-full bg-gray-200 rounded-full h-2">
+                                <div 
+                                  className="bg-pcs_blue h-2 rounded-full" 
+                                  style={{ width: `${school.approvalRate}%` }}
+                                />
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </TabsContent>
 
