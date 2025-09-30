@@ -386,12 +386,18 @@ export async function setupAuth(app: Express) {
           return res.redirect('/?error=login_failed');
         }
         
-        // Redirect to returnTo URL or default to home with auth success flag
-        const returnTo = req.session.returnTo || '/';
+        // Redirect based on user role (same logic as login)
+        // Admin users go directly to admin dashboard, others to returnTo or home
+        let redirectPath = req.session.returnTo || '/';
         delete req.session.returnTo;
         
+        // Override redirect for admin users
+        if (user.isAdmin || user.role === 'admin') {
+          redirectPath = '/admin';
+        }
+        
         // Add auth=success flag to signal successful OAuth to client
-        const redirectUrl = new URL(returnTo, `${req.protocol}://${req.get('host')}`);
+        const redirectUrl = new URL(redirectPath, `${req.protocol}://${req.get('host')}`);
         redirectUrl.searchParams.set('auth', 'success');
         res.redirect(redirectUrl.toString());
       });
