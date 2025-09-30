@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLocation, Link } from "wouter";
 import { useTranslation } from "react-i18next";
+import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -9,11 +10,31 @@ import logoUrl from "@assets/Logo_1757848498470.png";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import Avatar from "./Avatar";
 
+interface DashboardData {
+  school: {
+    id: string;
+    name: string;
+  };
+  schoolUser?: {
+    role: 'head_teacher' | 'teacher';
+  };
+}
+
 export default function Navigation() {
   const { t } = useTranslation('common');
   const { isAuthenticated, user } = useAuth();
   const [location, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  // Query dashboard to get user's school role
+  const { data: dashboardData } = useQuery<DashboardData>({
+    queryKey: ['/api/dashboard'],
+    enabled: isAuthenticated && !user?.isAdmin,
+    retry: false,
+  });
+
+  // Check if user is a head teacher
+  const isHeadTeacher = dashboardData?.schoolUser?.role === 'head_teacher';
 
   // Create stable key mapping for test IDs based on href values
   const getStableKey = (href: string) => {
@@ -23,6 +44,7 @@ export default function Navigation() {
       '/inspiration': 'inspiration',
       '/schools-map': 'schools-map',
       '/search': 'search',
+      '/dashboard/team-management': 'team-management',
       '/admin': 'admin'
     };
     return keyMap[href] || href.slice(1).replace(/\//g, '-');
@@ -35,6 +57,11 @@ export default function Navigation() {
     { href: "/schools-map", label: t('navigation.schools_map'), public: true },
     { href: "/search", label: t('navigation.search'), public: true },
   ];
+
+  // Add team management link if user is head teacher
+  if (isHeadTeacher) {
+    navItems.splice(1, 0, { href: "/dashboard/team-management", label: "Team Management", public: false });
+  }
 
   // Add admin link if user is admin
   if (user?.isAdmin) {

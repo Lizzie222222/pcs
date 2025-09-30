@@ -919,9 +919,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get recent evidence for this school
       const evidence = await storage.getSchoolEvidence(school.id);
       
+      // Get user's role in this school
+      const schoolUser = await storage.getSchoolUser(school.id, userId);
+      
       res.json({
         school,
         recentEvidence: evidence.slice(0, 5), // Latest 5 submissions
+        schoolUser: schoolUser ? {
+          role: schoolUser.role,
+          isVerified: schoolUser.isVerified,
+        } : null,
       });
     } catch (error) {
       console.error("Error fetching dashboard:", error);
