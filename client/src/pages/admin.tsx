@@ -2647,14 +2647,74 @@ export default function Admin() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Image URL
+                  Case Study Image
                 </label>
-                <Input
-                  value={createCaseStudyData.imageUrl}
-                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, imageUrl: e.target.value } : null)}
-                  placeholder="Enter image URL for the case study..."
-                  data-testid="input-case-study-image"
-                />
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-xs text-gray-500 mb-1">Upload Image</label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (file) {
+                          const formData = new FormData();
+                          formData.append('file', file);
+                          formData.append('directory', 'public');
+                          
+                          try {
+                            const response = await fetch('/api/object-storage/upload', {
+                              method: 'POST',
+                              body: formData,
+                            });
+                            
+                            if (response.ok) {
+                              const data = await response.json();
+                              setCreateCaseStudyData(prev => prev ? { ...prev, imageUrl: data.url } : null);
+                              toast({
+                                title: "Image Uploaded",
+                                description: "Image uploaded successfully!",
+                              });
+                            } else {
+                              throw new Error('Upload failed');
+                            }
+                          } catch (error) {
+                            toast({
+                              title: "Upload Error",
+                              description: "Failed to upload image. Please try again.",
+                              variant: "destructive",
+                            });
+                          }
+                        }
+                      }}
+                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-pcs_blue file:text-white hover:file:bg-pcs_blue/90"
+                      data-testid="input-case-study-image-upload"
+                    />
+                  </div>
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t border-gray-200" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-gray-500">Or enter URL</span>
+                    </div>
+                  </div>
+                  <Input
+                    value={createCaseStudyData.imageUrl}
+                    onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, imageUrl: e.target.value } : null)}
+                    placeholder="Enter image URL..."
+                    data-testid="input-case-study-image-url"
+                  />
+                  {createCaseStudyData.imageUrl && (
+                    <div className="mt-2">
+                      <img 
+                        src={createCaseStudyData.imageUrl} 
+                        alt="Preview" 
+                        className="w-full h-32 object-cover rounded-md border border-gray-200"
+                      />
+                    </div>
+                  )}
+                </div>
               </div>
               <div className="flex items-center space-x-2">
                 <input

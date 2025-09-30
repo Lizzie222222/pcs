@@ -108,6 +108,7 @@ export interface IStorage {
   
   // Case Study operations
   createCaseStudy(caseStudy: InsertCaseStudy): Promise<CaseStudy>;
+  getCaseStudyById(id: string): Promise<CaseStudy | undefined>;
   getCaseStudies(filters?: {
     stage?: string;
     country?: string;
@@ -627,6 +628,46 @@ export class DatabaseStorage implements IStorage {
       .values(caseStudyData)
       .returning();
     return caseStudy;
+  }
+
+  async getCaseStudyById(id: string): Promise<CaseStudy | undefined> {
+    const result = await db
+      .select({
+        id: caseStudies.id,
+        title: caseStudies.title,
+        description: caseStudies.description,
+        stage: caseStudies.stage,
+        impact: caseStudies.impact,
+        imageUrl: caseStudies.imageUrl,
+        featured: caseStudies.featured,
+        evidenceId: caseStudies.evidenceId,
+        evidenceLink: evidence.fileUrl,
+        schoolId: caseStudies.schoolId,
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        location: caseStudies.location,
+        createdAt: caseStudies.createdAt,
+        createdBy: caseStudies.createdBy,
+        firstName: users.firstName,
+        lastName: users.lastName,
+      })
+      .from(caseStudies)
+      .leftJoin(schools, eq(caseStudies.schoolId, schools.id))
+      .leftJoin(evidence, eq(caseStudies.evidenceId, evidence.id))
+      .leftJoin(users, eq(caseStudies.createdBy, users.id))
+      .where(eq(caseStudies.id, id))
+      .limit(1);
+
+    const row = result[0];
+    if (!row) return undefined;
+
+    // Compute createdByName in JavaScript for database compatibility
+    return {
+      ...row,
+      createdByName: row.firstName && row.lastName 
+        ? `${row.firstName} ${row.lastName}` 
+        : 'Unknown',
+    } as any;
   }
 
   async getCaseStudies(filters: {

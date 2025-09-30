@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useTranslation, Trans } from "react-i18next";
+import { Link } from "wouter";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useConnectionSpeed } from "@/hooks/useConnectionSpeed";
 import { useQuery } from "@tanstack/react-query";
@@ -862,19 +863,17 @@ export default function Landing() {
                           </p>
                         </div>
                       )}
-                      {caseStudy.evidenceLink && (
-                        <a 
-                          href={caseStudy.evidenceLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-2 text-sm text-ocean-blue hover:text-ocean-blue/80 transition-colors"
-                          data-testid={`link-evidence-${caseStudy.id}`}
+                      <Link href={`/case-study/${caseStudy.id}`}>
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          className="w-full mt-2"
+                          data-testid={`button-view-case-study-${caseStudy.id}`}
                         >
-                          <BookOpen className="w-4 h-4" />
-                          View Original Evidence
-                          <ArrowRight className="w-3 h-3" />
-                        </a>
-                      )}
+                          View Full Story
+                          <ArrowRight className="w-3 h-3 ml-2" />
+                        </Button>
+                      </Link>
                     </CardContent>
                   </Card>
                 ))}

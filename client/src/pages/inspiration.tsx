@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -156,13 +157,15 @@ export default function Inspiration() {
                       <span>{caseStudies[0].schoolName}</span>
                     </div>
                   </div>
-                  <Button 
-                    className="bg-white text-pcs_blue hover:bg-gray-100"
-                    data-testid="button-read-featured"
-                  >
-                    Read Full Story
-                    <ChevronRight className="ml-2 h-4 w-4" />
-                  </Button>
+                  <Link href={`/case-study/${caseStudies[0].id}`}>
+                    <Button 
+                      className="bg-white text-pcs_blue hover:bg-gray-100"
+                      data-testid="button-read-featured"
+                    >
+                      Read Full Story
+                      <ChevronRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Link>
                 </div>
                 {caseStudies[0].imageUrl && (
                   <div className="lg:text-right">
@@ -235,15 +238,17 @@ export default function Inspiration() {
                       <span className="text-xs text-gray-500">
                         {new Date(caseStudy.createdAt).toLocaleDateString()}
                       </span>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="text-pcs_blue hover:bg-pcs_blue hover:text-white"
-                        data-testid={`button-read-more-${caseStudy.id}`}
-                      >
-                        Read More
-                        <ChevronRight className="ml-1 h-3 w-3" />
-                      </Button>
+                      <Link href={`/case-study/${caseStudy.id}`}>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-pcs_blue hover:bg-pcs_blue hover:text-white"
+                          data-testid={`button-read-more-${caseStudy.id}`}
+                        >
+                          Read More
+                          <ChevronRight className="ml-1 h-3 w-3" />
+                        </Button>
+                      </Link>
                     </div>
                   </CardContent>
                 </Card>

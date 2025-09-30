@@ -244,6 +244,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get single case study by ID
+  app.get('/api/case-studies/:id', async (req, res) => {
+    try {
+      const caseStudy = await storage.getCaseStudyById(req.params.id);
+      if (!caseStudy) {
+        return res.status(404).json({ message: "Case study not found" });
+      }
+      res.json(caseStudy);
+    } catch (error) {
+      console.error("Error fetching case study:", error);
+      res.status(500).json({ message: "Failed to fetch case study" });
+    }
+  });
+
   // Get global movement data for landing page
   app.get('/api/landing/global-movement', async (req, res) => {
     try {
