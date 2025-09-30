@@ -67,6 +67,28 @@ export const visibilityEnum = pgEnum('visibility', [
   'public'
 ]);
 
+export const schoolRoleEnum = pgEnum('school_role', [
+  'head_teacher',
+  'teacher',
+  'pending_teacher'
+]);
+
+export const invitationStatusEnum = pgEnum('invitation_status', [
+  'pending',
+  'accepted',
+  'expired'
+]);
+
+export const verificationStatusEnum = pgEnum('verification_status', [
+  'pending',
+  'approved',
+  'rejected'
+]);
+
+export const requestTypeEnum = pgEnum('request_type', [
+  'join_school'
+]);
+
 export const schools = pgTable("schools", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name").notNull(),
@@ -93,7 +115,39 @@ export const schoolUsers = pgTable("school_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
-  role: varchar("role").default("teacher"),
+  role: schoolRoleEnum("role").default("teacher"),
+  isVerified: boolean("is_verified").default(false),
+  invitedBy: varchar("invited_by").references(() => users.id),
+  invitedAt: timestamp("invited_at"),
+  verifiedAt: timestamp("verified_at"),
+  verificationMethod: varchar("verification_method"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_school_users_school_role").on(table.schoolId, table.role),
+]);
+
+export const teacherInvitations = pgTable("teacher_invitations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
+  invitedBy: varchar("invited_by").notNull().references(() => users.id),
+  email: varchar("email").notNull(),
+  token: varchar("token").notNull().unique(),
+  status: invitationStatusEnum("status").default('pending'),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  acceptedAt: timestamp("accepted_at"),
+});
+
+export const verificationRequests = pgTable("verification_requests", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
+  requestType: requestTypeEnum("request_type").default('join_school'),
+  status: verificationStatusEnum("status").default('pending'),
+  evidence: text("evidence").notNull(),
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -207,6 +261,10 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   caseStudies: many(caseStudies),
   emailLogs: many(emailLogs),
   issuedCertificates: many(certificates),
+  sentInvitations: many(teacherInvitations),
+  invitedSchoolUsers: many(schoolUsers, { relationName: "invitedBy" }),
+  verificationRequests: many(verificationRequests, { relationName: "userVerificationRequests" }),
+  reviewedVerificationRequests: many(verificationRequests, { relationName: "reviewedVerificationRequests" }),
 }));
 
 export const schoolsRelations = relations(schools, ({ many, one }) => ({
@@ -218,6 +276,8 @@ export const schoolsRelations = relations(schools, ({ many, one }) => ({
   evidence: many(evidence),
   caseStudies: many(caseStudies),
   certificates: many(certificates),
+  teacherInvitations: many(teacherInvitations),
+  verificationRequests: many(verificationRequests),
 }));
 
 export const schoolUsersRelations = relations(schoolUsers, ({ one }) => ({
@@ -228,6 +288,11 @@ export const schoolUsersRelations = relations(schoolUsers, ({ one }) => ({
   user: one(users, {
     fields: [schoolUsers.userId],
     references: [users.id],
+  }),
+  inviter: one(users, {
+    fields: [schoolUsers.invitedBy],
+    references: [users.id],
+    relationName: "invitedBy",
   }),
 }));
 
@@ -281,6 +346,34 @@ export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   recipient: one(users, {
     fields: [emailLogs.recipientId],
     references: [users.id],
+  }),
+}));
+
+export const teacherInvitationsRelations = relations(teacherInvitations, ({ one }) => ({
+  school: one(schools, {
+    fields: [teacherInvitations.schoolId],
+    references: [schools.id],
+  }),
+  inviter: one(users, {
+    fields: [teacherInvitations.invitedBy],
+    references: [users.id],
+  }),
+}));
+
+export const verificationRequestsRelations = relations(verificationRequests, ({ one }) => ({
+  user: one(users, {
+    fields: [verificationRequests.userId],
+    references: [users.id],
+    relationName: "userVerificationRequests",
+  }),
+  school: one(schools, {
+    fields: [verificationRequests.schoolId],
+    references: [schools.id],
+  }),
+  reviewer: one(users, {
+    fields: [verificationRequests.reviewedBy],
+    references: [users.id],
+    relationName: "reviewedVerificationRequests",
   }),
 }));
 
@@ -428,6 +521,20 @@ export const insertCertificateSchema = createInsertSchema(certificates).omit({
   issuedDate: true,
 });
 
+export const insertTeacherInvitationSchema = createInsertSchema(teacherInvitations).omit({
+  id: true,
+  createdAt: true,
+  acceptedAt: true,
+});
+
+export const insertVerificationRequestSchema = createInsertSchema(verificationRequests).omit({
+  id: true,
+  createdAt: true,
+  reviewedAt: true,
+  reviewedBy: true,
+  reviewNotes: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -449,6 +556,10 @@ export type MailchimpSubscription = typeof mailchimpSubscriptions.$inferSelect;
 export type InsertMailchimpSubscription = z.infer<typeof insertMailchimpSubscriptionSchema>;
 export type Certificate = typeof certificates.$inferSelect;
 export type InsertCertificate = z.infer<typeof insertCertificateSchema>;
+export type TeacherInvitation = typeof teacherInvitations.$inferSelect;
+export type InsertTeacherInvitation = z.infer<typeof insertTeacherInvitationSchema>;
+export type VerificationRequest = typeof verificationRequests.$inferSelect;
+export type InsertVerificationRequest = z.infer<typeof insertVerificationRequestSchema>;
 
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;
