@@ -386,6 +386,14 @@ export async function setupAuth(app: Express) {
           return res.redirect('/?error=login_failed');
         }
         
+        // DEBUG: Log user details
+        console.log('OAuth user logged in:', {
+          id: user.id,
+          email: user.email,
+          role: user.role,
+          isAdmin: user.isAdmin
+        });
+        
         // Redirect based on user role (same logic as login)
         // Admin users go directly to admin dashboard, others to returnTo or home
         let redirectPath = req.session.returnTo || '/';
@@ -393,12 +401,16 @@ export async function setupAuth(app: Express) {
         
         // Override redirect for admin users
         if (user.isAdmin || user.role === 'admin') {
+          console.log('Admin user detected, redirecting to /admin');
           redirectPath = '/admin';
+        } else {
+          console.log('Non-admin user, redirecting to:', redirectPath);
         }
         
         // Add auth=success flag to signal successful OAuth to client
         const redirectUrl = new URL(redirectPath, `${req.protocol}://${req.get('host')}`);
         redirectUrl.searchParams.set('auth', 'success');
+        console.log('Final redirect URL:', redirectUrl.toString());
         res.redirect(redirectUrl.toString());
       });
     })(req, res, next);
