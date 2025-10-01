@@ -1714,6 +1714,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get teachers for a specific school (for expandable rows)
+  app.get('/api/admin/schools/:schoolId/teachers', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { schoolId } = req.params;
+      
+      // Get school users with details
+      const schoolUsers = await storage.getSchoolUsersWithDetails(schoolId);
+      
+      // Transform to match expected format
+      const teachers = schoolUsers.map(su => ({
+        userId: su.userId,
+        name: su.user ? `${su.user.firstName} ${su.user.lastName}` : 'Unknown',
+        email: su.user?.email || 'N/A',
+        role: su.role,
+        isVerified: su.isVerified,
+        joinedAt: su.createdAt,
+      }));
+      
+      res.json(teachers);
+    } catch (error) {
+      console.error("Error fetching school teachers:", error);
+      res.status(500).json({ message: "Failed to fetch school teachers" });
+    }
+  });
+
   // Export analytics data as CSV/Excel (MUST come before the general export endpoint)
   app.get('/api/admin/export/analytics', isAuthenticated, requireAdmin, async (req, res) => {
     try {
@@ -2441,17 +2466,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const school = await storage.getSchool(request.schoolId);
           return {
             ...request,
-            user: user ? {
-              id: user.id,
-              email: user.email,
-              firstName: user.firstName,
-              lastName: user.lastName,
-            } : null,
-            school: school ? {
-              id: school.id,
-              name: school.name,
-              country: school.country,
-            } : null,
+            schoolName: school?.name || 'Unknown School',
+            userName: user ? `${user.firstName} ${user.lastName}`.trim() : 'Unknown User',
+            userEmail: user?.email || 'N/A',
           };
         })
       );

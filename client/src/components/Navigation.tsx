@@ -70,11 +70,6 @@ export default function Navigation() {
     navItems.splice(2, 0, { href: "/dashboard/team-management", label: "Team Management", public: false });
   }
 
-  // Add admin link if user is admin
-  if (user?.isAdmin) {
-    navItems.push({ href: "/admin", label: t('navigation.admin'), public: false });
-  }
-
   const handleNavClick = (href: string) => {
     setLocation(href);
     setIsMobileMenuOpen(false);
@@ -88,8 +83,14 @@ export default function Navigation() {
     }
   };
 
+  const isAdminPage = location === '/admin';
+  
   return (
-    <nav className="bg-white shadow-sm border-b border-gray-200 fixed top-0 left-0 right-0 z-50" role="navigation" aria-label={t('navigation.main_navigation')}>
+    <nav className={`shadow-sm border-b fixed top-0 left-0 right-0 z-50 transition-colors ${
+      isAdminPage 
+        ? 'bg-pcs_blue/5 border-pcs_blue/20' 
+        : 'bg-white border-gray-200'
+    }`} role="navigation" aria-label={t('navigation.main_navigation')}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -151,9 +152,14 @@ export default function Navigation() {
                   </span>
                 </div>
                 {user?.isAdmin ? (
-                  <Badge className="bg-pcs_blue text-white" data-testid="badge-role-admin">
-                    Admin
-                  </Badge>
+                  <Link 
+                    href="/admin"
+                    data-testid="badge-role-admin"
+                  >
+                    <Badge className="bg-pcs_blue text-white hover:bg-pcs_blue/90 cursor-pointer transition-colors">
+                      Admin
+                    </Badge>
+                  </Link>
                 ) : (
                   <>
                     <Badge className="bg-teal text-white" data-testid="badge-role-teacher">
@@ -280,9 +286,15 @@ export default function Navigation() {
                         </div>
                         <div className="flex gap-2 px-3 py-2">
                           {user?.isAdmin ? (
-                            <Badge className="bg-pcs_blue text-white" data-testid="mobile-badge-role-admin">
-                              Admin
-                            </Badge>
+                            <Link 
+                              href="/admin"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              data-testid="mobile-badge-role-admin"
+                            >
+                              <Badge className="bg-pcs_blue text-white hover:bg-pcs_blue/90 cursor-pointer transition-colors">
+                                Admin
+                              </Badge>
+                            </Link>
                           ) : (
                             <>
                               <Badge className="bg-teal text-white" data-testid="mobile-badge-role-teacher">
