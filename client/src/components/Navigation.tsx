@@ -111,16 +111,19 @@ export default function Navigation() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:block flex-1">
-            <div className="ml-4 flex items-baseline space-x-2">
+            <div className="ml-4 flex items-baseline space-x-1 lg:space-x-2">
               {navItems.map((item) => {
                 if (!item.public && !isAuthenticated) return null;
                 
                 const isActive = location === item.href;
+                const isLowPriority = item.href === '/schools-map' || item.href === '/search';
+                const responsiveClasses = isLowPriority ? 'hidden md:hidden lg:inline-block' : '';
+                
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`px-2 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate relative overflow-hidden whitespace-nowrap ${
+                    className={`px-2 py-2 rounded-md text-xs lg:text-sm font-medium transition-colors focus-visible:focus-visible btn-animate relative overflow-hidden whitespace-nowrap ${responsiveClasses} ${
                       isActive
                         ? 'bg-ocean-blue text-white'
                         : 'text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline'
