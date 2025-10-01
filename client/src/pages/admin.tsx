@@ -2192,56 +2192,37 @@ function EmailManagementSection({
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-medium text-blue-900 mb-2">SendGrid Template Configuration</h3>
-            <div className="text-sm text-blue-800 space-y-1">
-              <p>📧 <strong>Template ID:</strong> d-67435cbdbfbf42d5b3b3167a7efa2e1c</p>
-              <p className="mt-2"><strong>⚠️ Important:</strong> Template ID must start with "d-"</p>
-              <p className="mt-2"><strong>How to find the correct Template ID:</strong></p>
-              <ol className="list-decimal list-inside ml-4 space-y-1">
-                <li>Go to SendGrid → Email API → Dynamic Templates</li>
-                <li>Click on your welcome template</li>
-                <li>Copy the Template ID (format: d-xxxxx...)</li>
-              </ol>
-              <p className="mt-2"><strong>Common Issues:</strong></p>
-              <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>API key needs "Mail Send" permissions</li>
-                <li>FROM_EMAIL must be verified in SendGrid</li>
-                <li>Template must be published/active</li>
-              </ul>
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Recipient Email
+              </label>
+              <Input
+                type="email"
+                placeholder="test@example.com"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                data-testid="input-test-email"
+              />
             </div>
-          </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Recipient Email Address
-            </label>
-            <Input
-              type="email"
-              placeholder="test@example.com"
-              value={testEmail}
-              onChange={(e) => setTestEmail(e.target.value)}
-              data-testid="input-test-email"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              School Name (template variable)
-            </label>
-            <Input
-              type="text"
-              placeholder="Test School"
-              value={schoolName}
-              onChange={(e) => setSchoolName(e.target.value)}
-              data-testid="input-school-name"
-            />
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                School Name
+              </label>
+              <Input
+                type="text"
+                placeholder="Test School"
+                value={schoolName}
+                onChange={(e) => setSchoolName(e.target.value)}
+                data-testid="input-school-name"
+              />
+            </div>
           </div>
 
           <Button
             onClick={handleSendTestEmail}
             disabled={isSending || !testEmail}
-            className="w-full"
             data-testid="button-send-test-email"
           >
             {isSending ? (
@@ -2258,7 +2239,7 @@ function EmailManagementSection({
           </Button>
 
           {lastResult && (
-            <div className={`p-4 rounded-lg ${lastResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+            <div className={`p-3 rounded-lg ${lastResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
               <p className={`text-sm font-medium ${lastResult.success ? 'text-green-900' : 'text-red-900'}`}>
                 {lastResult.success ? '✅ Success' : '❌ Error'}
               </p>
