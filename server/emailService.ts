@@ -69,40 +69,11 @@ export async function sendWelcomeEmail(userEmail: string, schoolName: string): P
     to: userEmail,
     from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
     subject: `Welcome to Plastic Clever Schools - ${schoolName}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">🌱 Welcome to Plastic Clever Schools!</h1>
-        </div>
-        <div style="padding: 40px 20px; background: #f9f9f9;">
-          <h2 style="color: #0B3D5D;">Congratulations on joining our global movement!</h2>
-          <p style="color: #666; line-height: 1.6;">
-            Thank you for registering <strong>${schoolName}</strong> with the Plastic Clever Schools program. 
-            You're now part of a worldwide community of educators and students working together to tackle plastic pollution.
-          </p>
-          <p style="color: #666; line-height: 1.6;">
-            Your school's journey will take you through three exciting stages:
-          </p>
-          <ul style="color: #666; line-height: 1.8;">
-            <li><strong>Inspire:</strong> Build awareness about plastic pollution</li>
-            <li><strong>Investigate:</strong> Conduct research and audits</li>
-            <li><strong>Act:</strong> Implement solutions and create lasting change</li>
-          </ul>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}" 
-               style="background: #FF595A; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-              Access Your Dashboard
-            </a>
-          </div>
-          <p style="color: #666; line-height: 1.6;">
-            If you have any questions, our support team is here to help. Simply reply to this email or visit our help center.
-          </p>
-        </div>
-        <div style="background: #0B3D5D; color: white; padding: 20px; text-align: center; font-size: 14px;">
-          <p>© 2024 Plastic Clever Schools. Making waves for a plastic-free future.</p>
-        </div>
-      </div>
-    `,
+    templateId: '67435cbdbfbf42d5b3b3167a7efa2e1c',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      dashboardUrl: process.env.FRONTEND_URL || 'https://plasticclever.org',
+    },
   });
 }
 

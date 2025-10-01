@@ -2109,12 +2109,150 @@ function AnalyticsContent() {
   );
 }
 
+function EmailTestingSection() {
+  const { toast } = useToast();
+  const [testEmail, setTestEmail] = useState('');
+  const [schoolName, setSchoolName] = useState('Test School');
+  const [isSending, setIsSending] = useState(false);
+  const [lastResult, setLastResult] = useState<{ success: boolean; message: string } | null>(null);
+
+  const handleSendTestEmail = async () => {
+    if (!testEmail) {
+      toast({
+        title: "Email Required",
+        description: "Please enter an email address to send the test to.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSending(true);
+    setLastResult(null);
+
+    try {
+      const response = await fetch('/api/admin/test-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        credentials: 'include',
+        body: JSON.stringify({
+          email: testEmail,
+          schoolName: schoolName,
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setLastResult({ success: true, message: `Test email sent successfully to ${testEmail}` });
+        toast({
+          title: "Test Email Sent",
+          description: `Welcome email sent to ${testEmail}`,
+        });
+      } else {
+        setLastResult({ success: false, message: result.message || result.error || 'Failed to send email' });
+        toast({
+          title: "Failed to Send Test Email",
+          description: result.message || result.error || 'An error occurred while sending the test email.',
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error occurred';
+      setLastResult({ success: false, message: errorMsg });
+      toast({
+        title: "Error",
+        description: "Failed to send test email. Please check the console for details.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSending(false);
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <h3 className="font-medium text-blue-900 mb-2">SendGrid Configuration Status</h3>
+        <div className="text-sm text-blue-800 space-y-1">
+          <p>✅ Template ID: 67435cbdbfbf42d5b3b3167a7efa2e1c</p>
+          <p className="mt-2"><strong>Common Issues:</strong></p>
+          <ul className="list-disc list-inside ml-4 space-y-1">
+            <li>API key needs "Mail Send" permissions in SendGrid</li>
+            <li>Sender email (FROM_EMAIL) must be verified in SendGrid</li>
+            <li>Template must be published/active in SendGrid</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            Recipient Email Address
+          </label>
+          <Input
+            type="email"
+            placeholder="test@example.com"
+            value={testEmail}
+            onChange={(e) => setTestEmail(e.target.value)}
+            data-testid="input-test-email"
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-2">
+            School Name (for template)
+          </label>
+          <Input
+            type="text"
+            placeholder="Test School"
+            value={schoolName}
+            onChange={(e) => setSchoolName(e.target.value)}
+            data-testid="input-school-name"
+          />
+        </div>
+
+        <Button
+          onClick={handleSendTestEmail}
+          disabled={isSending || !testEmail}
+          className="w-full"
+          data-testid="button-send-test-email"
+        >
+          {isSending ? (
+            <>
+              <LoadingSpinner className="mr-2" />
+              Sending...
+            </>
+          ) : (
+            <>
+              <Mail className="h-4 w-4 mr-2" />
+              Send Test Email
+            </>
+          )}
+        </Button>
+
+        {lastResult && (
+          <div className={`p-4 rounded-lg ${lastResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+            <p className={`text-sm font-medium ${lastResult.success ? 'text-green-900' : 'text-red-900'}`}>
+              {lastResult.success ? '✅ Success' : '❌ Error'}
+            </p>
+            <p className={`text-sm mt-1 ${lastResult.success ? 'text-green-800' : 'text-red-800'}`}>
+              {lastResult.message}
+            </p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test'>('overview');
   const [schoolFilters, setSchoolFilters] = useState({
     search: '',
     country: '',
@@ -2933,6 +3071,17 @@ export default function Admin() {
           >
             User Management
           </button>
+          <button
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'email-test' 
+                ? 'bg-white text-navy shadow-sm' 
+                : 'text-gray-600 hover:text-navy'
+            }`}
+            onClick={() => setActiveTab('email-test')}
+            data-testid="tab-email-test"
+          >
+            Email Testing
+          </button>
         </div>
 
         {/* Overview Tab (Analytics Content) */}
@@ -3364,6 +3513,21 @@ export default function Admin() {
         {/* User Management Tab */}
         {activeTab === 'users' && (
           <UserManagementTab />
+        )}
+
+        {/* Email Testing Tab */}
+        {activeTab === 'email-test' && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Mail className="h-5 w-5" />
+                Email Testing
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EmailTestingSection />
+            </CardContent>
+          </Card>
         )}
 
         {/* Case Studies Tab */}

@@ -2568,6 +2568,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test email endpoint (protected - admin only)
+  app.post('/api/admin/test-email', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { email, schoolName } = req.body;
+      
+      if (!email || !schoolName) {
+        return res.status(400).json({ message: "Email and schoolName are required" });
+      }
+      
+      console.log(`[Test Email] Sending welcome email to ${email} for school ${schoolName}`);
+      
+      const success = await sendWelcomeEmail(email, schoolName);
+      
+      if (success) {
+        console.log(`[Test Email] Email sent successfully to ${email}`);
+        res.json({ 
+          success: true,
+          message: "Test email sent successfully",
+          recipient: email
+        });
+      } else {
+        console.error(`[Test Email] Failed to send email to ${email}`);
+        res.status(500).json({ 
+          success: false,
+          message: "Failed to send test email"
+        });
+      }
+    } catch (error) {
+      console.error("[Test Email] Error:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Error sending test email",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
