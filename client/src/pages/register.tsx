@@ -66,6 +66,11 @@ export default function Register() {
     setShowSchoolForm(false);
   };
 
+  const handleRequestJoinInstead = () => {
+    setShowSchoolForm(false);
+    setShowJoinSchoolFlow(true);
+  };
+
   if (isLoading) {
     return (
       <LoadingSpinner 
@@ -440,7 +445,11 @@ export default function Register() {
                     </Button>
                   </div>
                   
-                  <SchoolSignUpForm onClose={handleCloseSchoolForm} inline={true} />
+                  <SchoolSignUpForm 
+                    onClose={handleCloseSchoolForm} 
+                    inline={true}
+                    onRequestJoinInstead={handleRequestJoinInstead}
+                  />
                 </CardContent>
               </Card>
             ) : (

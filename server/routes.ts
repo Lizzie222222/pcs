@@ -326,6 +326,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Check email domain for existing schools (public)
+  app.get('/api/schools/check-domain', async (req, res) => {
+    try {
+      const { email } = req.query;
+      
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({ 
+          message: "Email parameter is required" 
+        });
+      }
+      
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ 
+          message: "Invalid email format" 
+        });
+      }
+      
+      const domain = email.split('@')[1].toLowerCase();
+      
+      const publicDomains = [
+        'gmail.com', 'yahoo.com', 'outlook.com', 'hotmail.com',
+        'icloud.com', 'aol.com', 'protonmail.com', 'mail.com',
+        'yandex.com', 'zoho.com', 'gmx.com', 'live.com',
+        'msn.com', 'qq.com', '163.com', 'sina.com'
+      ];
+      
+      if (publicDomains.includes(domain)) {
+        return res.json({ 
+          matchingSchools: [],
+          note: "Public email provider detected. Schools cannot be suggested for generic email domains."
+        });
+      }
+      
+      const schoolsWithDomain = await storage.findSchoolsByEmailDomain(domain);
+      
+      const maskEmail = (email: string): string => {
+        const [username, domain] = email.split('@');
+        if (username.length <= 2) {
+          return `${username[0]}***@${domain}`;
+        }
+        return `${username[0]}***@${domain}`;
+      };
+      
+      const matchingSchools = schoolsWithDomain.map(school => ({
+        school: {
+          id: school.id,
+          name: school.name,
+          country: school.country,
+          type: school.type,
+          currentStage: school.currentStage,
+          studentCount: school.studentCount,
+        },
+        matchCount: school.userEmails.length,
+        sampleEmails: school.userEmails.slice(0, 3).map(maskEmail),
+      }));
+      
+      console.log(`Email domain check for ${domain}: Found ${matchingSchools.length} school(s)`);
+      
+      res.json({ matchingSchools });
+    } catch (error) {
+      console.error("Error checking email domain:", error);
+      res.status(500).json({ message: "Failed to check email domain" });
+    }
+  });
+
   // School registration (public)
   app.post('/api/schools/register', async (req, res) => {
     try {

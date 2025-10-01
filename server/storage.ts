@@ -78,6 +78,7 @@ export interface IStorage {
     studentsImpacted: number;
   }>;
   getUniqueCountries(): Promise<string[]>;
+  findSchoolsByEmailDomain(domain: string): Promise<Array<School & { userEmails: string[] }>>;
   
   // School User operations
   addUserToSchool(schoolUser: InsertSchoolUser): Promise<SchoolUser>;
@@ -480,6 +481,77 @@ export class DatabaseStorage implements IStorage {
       .orderBy(asc(schools.country));
     
     return result.map(row => row.country).filter(Boolean);
+  }
+
+  async findSchoolsByEmailDomain(domain: string): Promise<Array<School & { userEmails: string[] }>> {
+    const normalizedDomain = domain.toLowerCase().trim();
+    
+    const results = await db
+      .select({
+        id: schools.id,
+        name: schools.name,
+        type: schools.type,
+        country: schools.country,
+        address: schools.address,
+        studentCount: schools.studentCount,
+        latitude: schools.latitude,
+        longitude: schools.longitude,
+        currentStage: schools.currentStage,
+        progressPercentage: schools.progressPercentage,
+        inspireCompleted: schools.inspireCompleted,
+        investigateCompleted: schools.investigateCompleted,
+        actCompleted: schools.actCompleted,
+        awardCompleted: schools.awardCompleted,
+        featuredSchool: schools.featuredSchool,
+        showOnMap: schools.showOnMap,
+        primaryContactId: schools.primaryContactId,
+        createdAt: schools.createdAt,
+        updatedAt: schools.updatedAt,
+        userEmail: users.email,
+      })
+      .from(schools)
+      .innerJoin(schoolUsers, eq(schoolUsers.schoolId, schools.id))
+      .innerJoin(users, eq(users.id, schoolUsers.userId))
+      .where(
+        sql`LOWER(SUBSTRING(${users.email} FROM POSITION('@' IN ${users.email}) + 1)) = ${normalizedDomain}`
+      );
+
+    const schoolMap = new Map<string, School & { userEmails: string[] }>();
+    
+    for (const row of results) {
+      const schoolId = row.id;
+      
+      if (!schoolMap.has(schoolId)) {
+        schoolMap.set(schoolId, {
+          id: row.id,
+          name: row.name,
+          type: row.type,
+          country: row.country,
+          address: row.address,
+          studentCount: row.studentCount,
+          latitude: row.latitude,
+          longitude: row.longitude,
+          currentStage: row.currentStage,
+          progressPercentage: row.progressPercentage,
+          inspireCompleted: row.inspireCompleted,
+          investigateCompleted: row.investigateCompleted,
+          actCompleted: row.actCompleted,
+          awardCompleted: row.awardCompleted,
+          featuredSchool: row.featuredSchool,
+          showOnMap: row.showOnMap,
+          primaryContactId: row.primaryContactId,
+          createdAt: row.createdAt,
+          updatedAt: row.updatedAt,
+          userEmails: [],
+        });
+      }
+      
+      if (row.userEmail) {
+        schoolMap.get(schoolId)!.userEmails.push(row.userEmail);
+      }
+    }
+    
+    return Array.from(schoolMap.values()).filter(school => school.userEmails.length >= 2);
   }
 
   // School User operations

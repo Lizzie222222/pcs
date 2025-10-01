@@ -76,7 +76,13 @@
     "student_count_max": "Student count too high (maximum 10,000)",
     "gdpr_consent": "I consent to data processing in accordance with GDPR",
     "gdpr_consent_description": "I understand that my personal data will be processed in accordance with the General Data Protection Regulation (GDPR) and our Privacy Policy. I can withdraw this consent at any time by contacting support.",
-    "gdpr_consent_required": "You must consent to data processing to register"
+    "gdpr_consent_required": "You must consent to data processing to register",
+    "domain_match_title": "Your school may already be registered",
+    "domain_match_message": "We found {{count}} school(s) with users who have similar email domains (@{{domain}})",
+    "domain_match_users": "users",
+    "domain_match_more": "+ {{count}} more",
+    "domain_match_join_button": "Request to Join Existing School",
+    "domain_match_dismiss": "Continue Registration"
   },
   "evidence_submission": {
     "title": "Submit Evidence",
