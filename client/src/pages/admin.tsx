@@ -2109,7 +2109,17 @@ function AnalyticsContent() {
   );
 }
 
-function EmailTestingSection() {
+function EmailManagementSection({ 
+  emailForm, 
+  setEmailForm, 
+  handleSendBulkEmail,
+  schoolFilters 
+}: { 
+  emailForm: any;
+  setEmailForm: any;
+  handleSendBulkEmail: () => Promise<void>;
+  schoolFilters: any;
+}) {
   const { toast } = useToast();
   const [testEmail, setTestEmail] = useState('');
   const [schoolName, setSchoolName] = useState('Test School');
@@ -2173,76 +2183,177 @@ function EmailTestingSection() {
 
   return (
     <div className="space-y-6">
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-medium text-blue-900 mb-2">SendGrid Configuration Status</h3>
-        <div className="text-sm text-blue-800 space-y-1">
-          <p>✅ Template ID: 67435cbdbfbf42d5b3b3167a7efa2e1c</p>
-          <p className="mt-2"><strong>Common Issues:</strong></p>
-          <ul className="list-disc list-inside ml-4 space-y-1">
-            <li>API key needs "Mail Send" permissions in SendGrid</li>
-            <li>Sender email (FROM_EMAIL) must be verified in SendGrid</li>
-            <li>Template must be published/active in SendGrid</li>
-          </ul>
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            Recipient Email Address
-          </label>
-          <Input
-            type="email"
-            placeholder="test@example.com"
-            value={testEmail}
-            onChange={(e) => setTestEmail(e.target.value)}
-            data-testid="input-test-email"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium mb-2">
-            School Name (for template)
-          </label>
-          <Input
-            type="text"
-            placeholder="Test School"
-            value={schoolName}
-            onChange={(e) => setSchoolName(e.target.value)}
-            data-testid="input-school-name"
-          />
-        </div>
-
-        <Button
-          onClick={handleSendTestEmail}
-          disabled={isSending || !testEmail}
-          className="w-full"
-          data-testid="button-send-test-email"
-        >
-          {isSending ? (
-            <>
-              <LoadingSpinner className="mr-2" />
-              Sending...
-            </>
-          ) : (
-            <>
-              <Mail className="h-4 w-4 mr-2" />
-              Send Test Email
-            </>
-          )}
-        </Button>
-
-        {lastResult && (
-          <div className={`p-4 rounded-lg ${lastResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-            <p className={`text-sm font-medium ${lastResult.success ? 'text-green-900' : 'text-red-900'}`}>
-              {lastResult.success ? '✅ Success' : '❌ Error'}
-            </p>
-            <p className={`text-sm mt-1 ${lastResult.success ? 'text-green-800' : 'text-red-800'}`}>
-              {lastResult.message}
-            </p>
+      {/* Test Email Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Test Welcome Email
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h3 className="font-medium text-blue-900 mb-2">SendGrid Template Configuration</h3>
+            <div className="text-sm text-blue-800 space-y-1">
+              <p>📧 <strong>Template ID:</strong> 67435cbdbfbf42d5b3b3167a7efa2e1c</p>
+              <p className="mt-2"><strong>Common Setup Issues:</strong></p>
+              <ul className="list-disc list-inside ml-4 space-y-1">
+                <li>API key needs "Mail Send" permissions in SendGrid</li>
+                <li>Sender email (FROM_EMAIL) must be verified in SendGrid</li>
+                <li>Template must be published/active in SendGrid</li>
+              </ul>
+            </div>
           </div>
-        )}
-      </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              Recipient Email Address
+            </label>
+            <Input
+              type="email"
+              placeholder="test@example.com"
+              value={testEmail}
+              onChange={(e) => setTestEmail(e.target.value)}
+              data-testid="input-test-email"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">
+              School Name (template variable)
+            </label>
+            <Input
+              type="text"
+              placeholder="Test School"
+              value={schoolName}
+              onChange={(e) => setSchoolName(e.target.value)}
+              data-testid="input-school-name"
+            />
+          </div>
+
+          <Button
+            onClick={handleSendTestEmail}
+            disabled={isSending || !testEmail}
+            className="w-full"
+            data-testid="button-send-test-email"
+          >
+            {isSending ? (
+              <>
+                <LoadingSpinner className="mr-2" />
+                Sending...
+              </>
+            ) : (
+              <>
+                <Mail className="h-4 w-4 mr-2" />
+                Send Test Email
+              </>
+            )}
+          </Button>
+
+          {lastResult && (
+            <div className={`p-4 rounded-lg ${lastResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
+              <p className={`text-sm font-medium ${lastResult.success ? 'text-green-900' : 'text-red-900'}`}>
+                {lastResult.success ? '✅ Success' : '❌ Error'}
+              </p>
+              <p className={`text-sm mt-1 ${lastResult.success ? 'text-green-800' : 'text-red-800'}`}>
+                {lastResult.message}
+              </p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Bulk Email Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Mail className="h-5 w-5" />
+            Send Bulk Emails
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium mb-2">Recipients</label>
+            <Select 
+              value={emailForm.recipientType} 
+              onValueChange={(value) => setEmailForm((prev: any) => ({ ...prev, recipientType: value }))}
+            >
+              <SelectTrigger data-testid="select-recipient-type">
+                <SelectValue placeholder="Select recipients" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all_teachers">All Teachers</SelectItem>
+                <SelectItem value="schools">Schools (with current filters)</SelectItem>
+                <SelectItem value="custom">Custom List</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium mb-2">Email Template</label>
+            <Select 
+              value={emailForm.template} 
+              onValueChange={(value) => setEmailForm((prev: any) => ({ ...prev, template: value }))}
+            >
+              <SelectTrigger data-testid="select-email-template">
+                <SelectValue placeholder="Select template" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="announcement">Announcement</SelectItem>
+                <SelectItem value="reminder">Reminder</SelectItem>
+                <SelectItem value="invitation">Invitation</SelectItem>
+                <SelectItem value="newsletter">Newsletter</SelectItem>
+                <SelectItem value="custom">Custom</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {emailForm.recipientType === 'custom' && (
+            <div>
+              <label className="block text-sm font-medium mb-2">Email Addresses</label>
+              <Textarea
+                placeholder="Enter email addresses (one per line or comma separated)"
+                value={emailForm.recipients}
+                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, recipients: e.target.value }))}
+                rows={4}
+                data-testid="textarea-custom-recipients"
+              />
+            </div>
+          )}
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Subject</label>
+            <Input
+              placeholder="Email subject"
+              value={emailForm.subject}
+              onChange={(e) => setEmailForm((prev: any) => ({ ...prev, subject: e.target.value }))}
+              data-testid="input-email-subject"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-2">Content</label>
+            <Textarea
+              placeholder="Email content"
+              value={emailForm.content}
+              onChange={(e) => setEmailForm((prev: any) => ({ ...prev, content: e.target.value }))}
+              rows={6}
+              data-testid="textarea-email-content"
+            />
+          </div>
+
+          <Button
+            onClick={handleSendBulkEmail}
+            disabled={!emailForm.subject || !emailForm.content || 
+              (emailForm.recipientType === 'custom' && !emailForm.recipients.trim())}
+            className="w-full bg-coral hover:bg-coral/90"
+            data-testid="button-send-bulk-email"
+          >
+            <Mail className="h-4 w-4 mr-2" />
+            Send Bulk Email
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   );
 }
@@ -2876,117 +2987,6 @@ export default function Admin() {
                     </div>
                   </DialogContent>
                 </Dialog>
-                <Dialog open={emailDialogOpen} onOpenChange={setEmailDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button className="bg-coral hover:bg-coral/90" data-testid="button-send-emails">
-                      <Mail className="h-4 w-4 mr-2" />
-                      Send Emails
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-2xl">
-                    <DialogHeader>
-                      <DialogTitle>Send Bulk Email</DialogTitle>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Recipients</label>
-                        <Select 
-                          value={emailForm.recipientType} 
-                          onValueChange={(value) => setEmailForm(prev => ({ ...prev, recipientType: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select recipients" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all_teachers">All Teachers</SelectItem>
-                            <SelectItem value="schools">Schools (with current filters)</SelectItem>
-                            <SelectItem value="custom">Custom List</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Email Template</label>
-                        <Select 
-                          value={emailForm.template} 
-                          onValueChange={(value) => setEmailForm(prev => ({ ...prev, template: value }))}
-                        >
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select template" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="announcement">Announcement</SelectItem>
-                            <SelectItem value="reminder">Reminder</SelectItem>
-                            <SelectItem value="invitation">Invitation</SelectItem>
-                            <SelectItem value="newsletter">Newsletter</SelectItem>
-                            <SelectItem value="custom">Custom</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      {emailForm.recipientType === 'custom' && (
-                        <div>
-                          <label className="block text-sm font-medium mb-2">Custom Recipients</label>
-                          <Textarea
-                            className="w-full p-2 border rounded-md h-24"
-                            placeholder="Enter email addresses, one per line or separated by commas...\nexample@school.edu\nteacher@domain.com"
-                            value={emailForm.recipients}
-                            onChange={(e) => setEmailForm(prev => ({ ...prev, recipients: e.target.value }))}
-                            data-testid="textarea-custom-recipients"
-                          />
-                          <p className="text-xs text-gray-500 mt-1">
-                            Enter email addresses separated by commas or new lines.
-                          </p>
-                        </div>
-                      )}
-
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Subject</label>
-                        <input
-                          type="text"
-                          className="w-full p-2 border rounded-md"
-                          placeholder="Enter email subject"
-                          value={emailForm.subject}
-                          onChange={(e) => setEmailForm(prev => ({ ...prev, subject: e.target.value }))}
-                          data-testid="input-email-subject"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium mb-2">Email Content</label>
-                        <textarea
-                          className="w-full p-2 border rounded-md h-32"
-                          placeholder="Enter your email content here..."
-                          value={emailForm.content}
-                          onChange={(e) => setEmailForm(prev => ({ ...prev, content: e.target.value }))}
-                          data-testid="textarea-email-content"
-                        />
-                        <p className="text-xs text-gray-500 mt-1">
-                          Content will be wrapped in the selected template design.
-                        </p>
-                      </div>
-
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          onClick={() => setEmailDialogOpen(false)}
-                          data-testid="button-cancel-email"
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          onClick={handleSendBulkEmail}
-                          disabled={!emailForm.subject || !emailForm.content || 
-            (emailForm.recipientType === 'custom' && !emailForm.recipients.trim())}
-                          className="bg-coral hover:bg-coral/90"
-                          data-testid="button-send-bulk-email"
-                        >
-                          Send Email
-                        </Button>
-                      </div>
-                    </div>
-                  </DialogContent>
-                </Dialog>
               </div>
             </div>
           </CardContent>
@@ -3080,7 +3080,7 @@ export default function Admin() {
             onClick={() => setActiveTab('email-test')}
             data-testid="tab-email-test"
           >
-            Email Testing
+            Email Management
           </button>
         </div>
 
@@ -3515,19 +3515,16 @@ export default function Admin() {
           <UserManagementTab />
         )}
 
-        {/* Email Testing Tab */}
+        {/* Email Management Tab */}
         {activeTab === 'email-test' && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Mail className="h-5 w-5" />
-                Email Testing
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <EmailTestingSection />
-            </CardContent>
-          </Card>
+          <div className="space-y-6">
+            <EmailManagementSection 
+              emailForm={emailForm}
+              setEmailForm={setEmailForm}
+              handleSendBulkEmail={handleSendBulkEmail}
+              schoolFilters={schoolFilters}
+            />
+          </div>
         )}
 
         {/* Case Studies Tab */}

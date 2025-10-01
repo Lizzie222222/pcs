@@ -49,8 +49,13 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
     });
 
     return true;
-  } catch (error) {
+  } catch (error: any) {
     console.error('SendGrid email error:', error);
+    
+    // Log detailed error information
+    if (error.response && error.response.body && error.response.body.errors) {
+      console.error('SendGrid error details:', JSON.stringify(error.response.body.errors, null, 2));
+    }
     
     // Log failed email
     await storage.logEmail({
