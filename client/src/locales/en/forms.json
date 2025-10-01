@@ -131,6 +131,25 @@
     "error_title": "Send Failed",
     "error_message": "Failed to send message. Please try again."
   },
+  "join_school": {
+    "title": "Join Existing School",
+    "subtitle": "Request to join a school already in the network",
+    "search_placeholder": "Search schools by name or country...",
+    "loading_schools": "Loading schools...",
+    "no_schools_title": "No Schools Found",
+    "no_schools_description": "No schools match your search. Try different keywords or register your school.",
+    "request_to_join": "Request to Join",
+    "requesting_to_join": "Requesting to join",
+    "evidence_label": "Why should you be added to this school?",
+    "evidence_placeholder": "Please explain your connection to this school and why you should be granted access. For example: your role at the school, subjects you teach, or how you're involved in the school's environmental initiatives.",
+    "evidence_hint": "Your request will be reviewed by the school's administrators.",
+    "evidence_min_length": "Please provide at least 10 characters explaining your connection to the school.",
+    "submit_request": "Submit Request",
+    "success_title": "Request Submitted",
+    "success_message": "Your request to join the school has been submitted. You'll receive an email notification once it's been reviewed.",
+    "error_title": "Request Failed",
+    "error_message": "Failed to submit join request. Please try again."
+  },
   "placeholders": {
     "search": "Search...",
     "select_option": "Select an option",

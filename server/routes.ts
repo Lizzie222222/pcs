@@ -298,6 +298,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all schools (for join school flow)
+  app.get('/api/schools', async (req, res) => {
+    try {
+      const { country, type, search, limit, offset } = req.query;
+      const schools = await storage.getSchools({
+        country: country as string,
+        type: type as string,
+        limit: limit ? parseInt(limit as string) : 50,
+        offset: offset ? parseInt(offset as string) : 0,
+      });
+      
+      // Filter by search term if provided
+      let filteredSchools = schools;
+      if (search && typeof search === 'string') {
+        const searchLower = search.toLowerCase();
+        filteredSchools = schools.filter(school => 
+          school.name.toLowerCase().includes(searchLower) ||
+          school.country.toLowerCase().includes(searchLower)
+        );
+      }
+      
+      res.json(filteredSchools);
+    } catch (error) {
+      console.error("Error fetching schools:", error);
+      res.status(500).json({ message: "Failed to fetch schools" });
+    }
+  });
+
   // School registration (public)
   app.post('/api/schools/register', async (req, res) => {
     try {
