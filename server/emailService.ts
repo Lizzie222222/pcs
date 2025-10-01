@@ -74,7 +74,7 @@ export async function sendWelcomeEmail(userEmail: string, schoolName: string): P
     to: userEmail,
     from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
     subject: `Welcome to Plastic Clever Schools - ${schoolName}`,
-    templateId: '67435cbdbfbf42d5b3b3167a7efa2e1c',
+    templateId: 'd-67435cbdbfbf42d5b3b3167a7efa2e1c',
     dynamicTemplateData: {
       schoolName: schoolName,
       dashboardUrl: process.env.FRONTEND_URL || 'https://plasticclever.org',

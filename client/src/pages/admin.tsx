@@ -2195,12 +2195,19 @@ function EmailManagementSection({
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
             <h3 className="font-medium text-blue-900 mb-2">SendGrid Template Configuration</h3>
             <div className="text-sm text-blue-800 space-y-1">
-              <p>📧 <strong>Template ID:</strong> 67435cbdbfbf42d5b3b3167a7efa2e1c</p>
-              <p className="mt-2"><strong>Common Setup Issues:</strong></p>
+              <p>📧 <strong>Template ID:</strong> d-67435cbdbfbf42d5b3b3167a7efa2e1c</p>
+              <p className="mt-2"><strong>⚠️ Important:</strong> Template ID must start with "d-"</p>
+              <p className="mt-2"><strong>How to find the correct Template ID:</strong></p>
+              <ol className="list-decimal list-inside ml-4 space-y-1">
+                <li>Go to SendGrid → Email API → Dynamic Templates</li>
+                <li>Click on your welcome template</li>
+                <li>Copy the Template ID (format: d-xxxxx...)</li>
+              </ol>
+              <p className="mt-2"><strong>Common Issues:</strong></p>
               <ul className="list-disc list-inside ml-4 space-y-1">
-                <li>API key needs "Mail Send" permissions in SendGrid</li>
-                <li>Sender email (FROM_EMAIL) must be verified in SendGrid</li>
-                <li>Template must be published/active in SendGrid</li>
+                <li>API key needs "Mail Send" permissions</li>
+                <li>FROM_EMAIL must be verified in SendGrid</li>
+                <li>Template must be published/active</li>
               </ul>
             </div>
           </div>
