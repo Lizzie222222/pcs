@@ -45,12 +45,14 @@ import { format } from "date-fns";
 interface TeamMember {
   id: string;
   userId: string;
-  email: string;
-  firstName: string | null;
-  lastName: string | null;
   role: 'head_teacher' | 'teacher';
   createdAt: string;
   isVerified: boolean;
+  user: {
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+  } | null;
 }
 
 interface VerificationRequest {
@@ -370,13 +372,13 @@ export default function TeamManagement() {
                           <tr key={member.id} className="border-b hover:bg-gray-50" data-testid={`row-member-${member.userId}`}>
                             <td className="p-3" data-testid={`text-member-name-${member.userId}`}>
                               <div className="font-medium text-navy">
-                                {member.firstName && member.lastName
-                                  ? `${member.firstName} ${member.lastName}`
-                                  : member.email}
+                                {member.user?.firstName && member.user?.lastName
+                                  ? `${member.user.firstName} ${member.user.lastName}`
+                                  : member.user?.email || 'Unknown User'}
                               </div>
                             </td>
                             <td className="p-3 text-gray-600" data-testid={`text-member-email-${member.userId}`}>
-                              {member.email}
+                              {member.user?.email || 'N/A'}
                             </td>
                             <td className="p-3">
                               <Badge 
@@ -592,9 +594,9 @@ export default function TeamManagement() {
               <AlertDialogDescription>
                 Are you sure you want to remove{' '}
                 <strong>
-                  {selectedMember?.firstName && selectedMember?.lastName
-                    ? `${selectedMember.firstName} ${selectedMember.lastName}`
-                    : selectedMember?.email}
+                  {selectedMember?.user?.firstName && selectedMember?.user?.lastName
+                    ? `${selectedMember.user.firstName} ${selectedMember.user.lastName}`
+                    : selectedMember?.user?.email || 'this user'}
                 </strong>{' '}
                 from your school? This action cannot be undone.
               </AlertDialogDescription>
