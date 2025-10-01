@@ -169,6 +169,23 @@ interface SchoolWithTeachers {
   teachers: SchoolTeacher[];
 }
 
+interface UserWithSchools {
+  user: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    role: string;
+    isAdmin: boolean;
+    createdAt: string;
+  };
+  schools: Array<{
+    id: string;
+    name: string;
+    role: string;
+  }>;
+}
+
 // Color palette for charts
 const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
 
@@ -680,6 +697,253 @@ function VerificationRequestsList() {
         </DialogContent>
       </Dialog>
     </div>
+  );
+}
+
+function UserManagementTab() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterStatus, setFilterStatus] = useState<'all' | 'with-schools' | 'without-schools'>('all');
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [selectedUserEmail, setSelectedUserEmail] = useState('');
+
+  const { data: usersWithSchools = [], isLoading } = useQuery<UserWithSchools[]>({
+    queryKey: ['/api/admin/users'],
+  });
+
+  const filteredUsers = usersWithSchools.filter((item) => {
+    const user = item.user;
+    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase();
+    const email = user.email?.toLowerCase() || '';
+    const matchesSearch = fullName.includes(searchQuery.toLowerCase()) || email.includes(searchQuery.toLowerCase());
+
+    if (filterStatus === 'with-schools') {
+      return matchesSearch && item.schools.length > 0;
+    } else if (filterStatus === 'without-schools') {
+      return matchesSearch && item.schools.length === 0;
+    }
+    return matchesSearch;
+  });
+
+  const handleAssignToSchool = (userEmail: string) => {
+    setSelectedUserEmail(userEmail);
+    setAssignDialogOpen(true);
+  };
+
+  if (isLoading) {
+    return <LoadingSpinner message="Loading users..." />;
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Users className="h-5 w-5" />
+          User Management
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-6">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="flex-1">
+              <Input
+                placeholder="Search by name or email..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full"
+                data-testid="input-user-search"
+              />
+            </div>
+            <div className="flex gap-2">
+              <Button
+                variant={filterStatus === 'all' ? 'default' : 'outline'}
+                onClick={() => setFilterStatus('all')}
+                className={filterStatus === 'all' ? 'bg-pcs_blue hover:bg-pcs_blue/90' : ''}
+                data-testid="button-filter-all"
+              >
+                All Users
+              </Button>
+              <Button
+                variant={filterStatus === 'with-schools' ? 'default' : 'outline'}
+                onClick={() => setFilterStatus('with-schools')}
+                className={filterStatus === 'with-schools' ? 'bg-pcs_blue hover:bg-pcs_blue/90' : ''}
+                data-testid="button-filter-with-schools"
+              >
+                With Schools
+              </Button>
+              <Button
+                variant={filterStatus === 'without-schools' ? 'default' : 'outline'}
+                onClick={() => setFilterStatus('without-schools')}
+                className={filterStatus === 'without-schools' ? 'bg-pcs_blue hover:bg-pcs_blue/90' : ''}
+                data-testid="button-filter-without-schools"
+              >
+                Without Schools
+              </Button>
+            </div>
+          </div>
+
+          <div className="text-sm text-gray-600">
+            Showing <strong>{filteredUsers.length}</strong> of <strong>{usersWithSchools.length}</strong> users
+          </div>
+
+          {filteredUsers.length === 0 ? (
+            <EmptyState
+              icon={Users}
+              title="No Users Found"
+              description={
+                searchQuery
+                  ? "No users match your search criteria."
+                  : filterStatus === 'without-schools'
+                  ? "All users are assigned to at least one school."
+                  : "No users found in the system."
+              }
+            />
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-gray-200 bg-gray-50">
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">Name</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">Email</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">Role</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">School Status</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredUsers.map((item) => {
+                    const user = item.user;
+                    const schoolCount = item.schools.length;
+                    return (
+                      <tr 
+                        key={user.id} 
+                        className="border-b border-gray-200 hover:bg-gray-50"
+                        data-testid={`user-row-${user.id}`}
+                      >
+                        <td className="p-3 text-sm" data-testid={`text-user-name-${user.id}`}>
+                          <div className="font-medium text-gray-900">
+                            {user.firstName} {user.lastName}
+                          </div>
+                          {user.isAdmin && (
+                            <Badge className="mt-1 bg-purple-500 text-white text-xs">Admin</Badge>
+                          )}
+                        </td>
+                        <td className="p-3 text-sm text-gray-600" data-testid={`text-user-email-${user.id}`}>
+                          {user.email}
+                        </td>
+                        <td className="p-3 text-sm">
+                          <Badge variant="outline" data-testid={`text-user-role-${user.id}`}>
+                            {user.role}
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-sm" data-testid={`text-user-school-status-${user.id}`}>
+                          {schoolCount === 0 ? (
+                            <Badge variant="outline" className="text-red-600 border-red-300">
+                              No School
+                            </Badge>
+                          ) : schoolCount === 1 ? (
+                            <Badge className="bg-green-500 text-white">
+                              1 School
+                            </Badge>
+                          ) : (
+                            <Badge className="bg-blue-500 text-white">
+                              {schoolCount} Schools
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="p-3 text-sm">
+                          <div className="flex gap-2">
+                            {schoolCount === 0 ? (
+                              <Button
+                                size="sm"
+                                onClick={() => handleAssignToSchool(user.email || '')}
+                                className="bg-pcs_blue hover:bg-pcs_blue/90"
+                                data-testid={`button-assign-to-school-${user.id}`}
+                              >
+                                <Plus className="h-3 w-3 mr-1" />
+                                Assign to School
+                              </Button>
+                            ) : (
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    data-testid={`button-view-schools-${user.id}`}
+                                  >
+                                    <Eye className="h-3 w-3 mr-1" />
+                                    View Schools
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent data-testid={`dialog-user-schools-${user.id}`}>
+                                  <DialogHeader>
+                                    <DialogTitle>
+                                      Schools for {user.firstName} {user.lastName}
+                                    </DialogTitle>
+                                  </DialogHeader>
+                                  <div className="space-y-3">
+                                    {item.schools.map((school) => (
+                                      <div 
+                                        key={school.id} 
+                                        className="p-3 border rounded-lg flex items-center justify-between"
+                                        data-testid={`school-item-${school.id}`}
+                                      >
+                                        <div>
+                                          <div className="font-medium">{school.name}</div>
+                                          <div className="text-sm text-gray-600">
+                                            Role: {school.role === 'head_teacher' ? 'Head Teacher' : 'Teacher'}
+                                          </div>
+                                        </div>
+                                        <School className="h-5 w-5 text-gray-400" />
+                                      </div>
+                                    ))}
+                                    <Button
+                                      onClick={() => handleAssignToSchool(user.email || '')}
+                                      variant="outline"
+                                      className="w-full mt-2"
+                                      data-testid={`button-assign-another-school-${user.id}`}
+                                    >
+                                      <Plus className="h-4 w-4 mr-2" />
+                                      Assign to Another School
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
+          <DialogContent className="max-w-2xl" data-testid="dialog-assign-teacher">
+            <DialogHeader>
+              <DialogTitle>Assign User to School</DialogTitle>
+            </DialogHeader>
+            <div className="mt-4">
+              <AssignTeacherForm />
+              {selectedUserEmail && (
+                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                  <p className="text-sm text-blue-800">
+                    <strong>Pre-filled email:</strong> {selectedUserEmail}
+                  </p>
+                  <p className="text-xs text-blue-600 mt-1">
+                    Enter this email in the form above to assign this user to a school.
+                  </p>
+                </div>
+              )}
+            </div>
+          </DialogContent>
+        </Dialog>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -1738,7 +2002,7 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'teams' | 'resources' | 'case-studies'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users'>('overview');
   const [schoolFilters, setSchoolFilters] = useState({
     search: '',
     country: '',
@@ -2530,6 +2794,17 @@ export default function Admin() {
           >
             Case Studies
           </button>
+          <button
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'users' 
+                ? 'bg-white text-navy shadow-sm' 
+                : 'text-gray-600 hover:text-navy'
+            }`}
+            onClick={() => setActiveTab('users')}
+            data-testid="tab-users"
+          >
+            User Management
+          </button>
         </div>
 
         {/* Overview Tab (Analytics Content) */}
@@ -2935,6 +3210,11 @@ export default function Admin() {
         {/* Resources Tab */}
         {activeTab === 'resources' && (
           <ResourcesManagement />
+        )}
+
+        {/* User Management Tab */}
+        {activeTab === 'users' && (
+          <UserManagementTab />
         )}
 
         {/* Case Studies Tab */}

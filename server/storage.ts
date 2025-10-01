@@ -189,6 +189,11 @@ export interface IStorage {
     featuredCaseStudies: number;
     activeUsers: number;
   }>;
+  
+  getAllUsersWithSchools(): Promise<Array<{ 
+    user: User; 
+    schools: Array<School & { role: string }> 
+  }>>;
 
   // Analytics operations
   getAnalyticsOverview(): Promise<{
@@ -1239,6 +1244,49 @@ export class DatabaseStorage implements IStorage {
       featuredCaseStudies: caseStudyStats.featuredCaseStudies,
       activeUsers: userStats.activeUsers,
     };
+  }
+
+  async getAllUsersWithSchools(): Promise<Array<{ 
+    user: User; 
+    schools: Array<School & { role: string }> 
+  }>> {
+    const allUsers = await db
+      .select()
+      .from(users)
+      .orderBy(asc(users.firstName), asc(users.lastName));
+
+    const usersWithSchools = await Promise.all(
+      allUsers.map(async (user) => {
+        const userSchools = await db
+          .select({
+            id: schools.id,
+            name: schools.name,
+            type: schools.type,
+            country: schools.country,
+            address: schools.address,
+            studentCount: schools.studentCount,
+            currentStage: schools.currentStage,
+            progressPercentage: schools.progressPercentage,
+            latitude: schools.latitude,
+            longitude: schools.longitude,
+            showOnMap: schools.showOnMap,
+            primaryContactId: schools.primaryContactId,
+            createdAt: schools.createdAt,
+            updatedAt: schools.updatedAt,
+            role: schoolUsers.role,
+          })
+          .from(schools)
+          .innerJoin(schoolUsers, eq(schoolUsers.schoolId, schools.id))
+          .where(eq(schoolUsers.userId, user.id));
+
+        return {
+          user,
+          schools: userSchools,
+        };
+      })
+    );
+
+    return usersWithSchools;
   }
 
   // Analytics implementations

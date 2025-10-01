@@ -362,14 +362,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const schoolsWithDomain = await storage.findSchoolsByEmailDomain(domain);
       
-      const maskEmail = (email: string): string => {
-        const [username, domain] = email.split('@');
-        if (username.length <= 2) {
-          return `${username[0]}***@${domain}`;
-        }
-        return `${username[0]}***@${domain}`;
-      };
-      
       const matchingSchools = schoolsWithDomain.map(school => ({
         school: {
           id: school.id,
@@ -380,7 +372,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
           studentCount: school.studentCount,
         },
         matchCount: school.userEmails.length,
-        sampleEmails: school.userEmails.slice(0, 3).map(maskEmail),
       }));
       
       console.log(`Email domain check for ${domain}: Found ${matchingSchools.length} school(s)`);
@@ -1657,6 +1648,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in bulk school delete:", error);
       res.status(500).json({ message: "Failed to perform bulk delete" });
+    }
+  });
+
+  // Get all users with their school associations for admin management
+  app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const usersWithSchools = await storage.getAllUsersWithSchools();
+      res.json(usersWithSchools);
+    } catch (error) {
+      console.error("Error fetching users with schools:", error);
+      res.status(500).json({ message: "Failed to fetch users" });
     }
   });
 

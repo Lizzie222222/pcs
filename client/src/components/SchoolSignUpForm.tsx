@@ -31,7 +31,6 @@ interface DomainCheckResponse {
       type: string;
     };
     matchCount: number;
-    sampleEmails: string[];
   }>;
 }
 
@@ -82,9 +81,15 @@ export default function SchoolSignUpForm({ onClose, inline = false, onRequestJoi
 
   const { data: domainCheckData, isLoading: domainCheckLoading } = useQuery<DomainCheckResponse>({
     queryKey: ['/api/schools/check-domain', emailToCheck],
+    queryFn: async () => {
+      const response = await fetch(`/api/schools/check-domain?email=${encodeURIComponent(emailToCheck)}`);
+      if (!response.ok) throw new Error('Domain check failed');
+      return response.json();
+    },
     enabled: !!emailToCheck && emailToCheck.includes('@'),
     retry: false,
     refetchOnWindowFocus: false,
+    staleTime: 30000,
   });
 
   const form = useForm<z.infer<typeof registrationSchema>>({
