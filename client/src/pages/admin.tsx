@@ -1350,7 +1350,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
     stage: resource?.stage || 'inspire',
     ageRange: resource?.ageRange || '',
     language: resource?.language || 'English',
-    country: resource?.country || '',
+    country: resource?.country || 'global',
     fileUrl: resource?.fileUrl || '',
     fileType: resource?.fileType || '',
     fileSize: resource?.fileSize || 0,
@@ -1390,12 +1390,17 @@ function ResourceForm({ resource, onClose, onSuccess }: {
       const endpoint = resource ? `/api/resources/${resource.id}` : '/api/resources';
       const method = resource ? 'PUT' : 'POST';
 
+      const submitData = {
+        ...formData,
+        country: formData.country === 'global' ? null : formData.country,
+      };
+
       const response = await fetch(endpoint, {
         method,
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(submitData),
       });
 
       if (!response.ok) {
@@ -1535,7 +1540,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
                     <SelectValue placeholder="Global (all countries)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">Global (all countries)</SelectItem>
+                    <SelectItem value="global">Global (all countries)</SelectItem>
                     {countryOptions.map((country) => (
                       <SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>
                     ))}
