@@ -110,8 +110,8 @@ export default function Navigation() {
           </div>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:block">
-            <div className="ml-10 flex items-baseline space-x-4">
+          <div className="hidden md:block flex-1">
+            <div className="ml-4 flex items-baseline space-x-2">
               {navItems.map((item) => {
                 if (!item.public && !isAuthenticated) return null;
                 
@@ -120,7 +120,7 @@ export default function Navigation() {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`px-3 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate relative overflow-hidden ${
+                    className={`px-2 py-2 rounded-md text-sm font-medium transition-colors focus-visible:focus-visible btn-animate relative overflow-hidden whitespace-nowrap ${
                       isActive
                         ? 'bg-ocean-blue text-white'
                         : 'text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline'
@@ -136,14 +136,14 @@ export default function Navigation() {
           </div>
 
           {/* Desktop Auth */}
-          <div className="hidden md:flex items-center space-x-4">
+          <div className="hidden md:flex items-center space-x-2 flex-shrink-0">
             <LanguageSwitcher />
             {isAuthenticated ? (
               <>
-                <div className="flex items-center gap-2" data-testid="container-user-profile">
+                <div className="flex items-center gap-1.5" data-testid="container-user-profile">
                   <Avatar 
                     seed={user?.email || ''} 
-                    size={32}
+                    size={28}
                     dataTestId="img-avatar-desktop"
                     alt={`${user?.firstName || user?.email}'s avatar`}
                   />
@@ -156,17 +156,17 @@ export default function Navigation() {
                     href="/admin"
                     data-testid="badge-role-admin"
                   >
-                    <Badge className="bg-pcs_blue text-white hover:bg-pcs_blue/90 cursor-pointer transition-colors">
+                    <Badge className="bg-pcs_blue text-white hover:bg-pcs_blue/90 cursor-pointer transition-colors text-xs">
                       Admin
                     </Badge>
                   </Link>
                 ) : (
                   <>
-                    <Badge className="bg-teal text-white" data-testid="badge-role-teacher">
+                    <Badge className="bg-teal text-white text-xs px-2 py-0.5" data-testid="badge-role-teacher">
                       Teacher
                     </Badge>
                     {dashboardData?.school?.name && (
-                      <Badge variant="outline" className="border-teal text-teal" data-testid="badge-school-name">
+                      <Badge variant="outline" className="border-teal text-teal text-xs px-2 py-0.5" data-testid="badge-school-name">
                         {dashboardData.school.name}
                       </Badge>
                     )}
@@ -175,12 +175,12 @@ export default function Navigation() {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50"
+                  className="border-gray-300 text-gray-700 hover:bg-gray-50 h-8 px-2"
                   onClick={handleAuth}
                   data-testid="button-logout"
                 >
-                  <LogOut className="h-4 w-4 mr-2" />
-                  {t('navigation.logout')}
+                  <LogOut className="h-3.5 w-3.5 mr-1" />
+                  <span className="text-xs">{t('navigation.logout')}</span>
                 </Button>
               </>
             ) : (

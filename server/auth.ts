@@ -414,8 +414,8 @@ export async function setupAuth(app: Express) {
         });
         
         // Redirect based on user role (same logic as login)
-        // Admin users go directly to admin dashboard, others to returnTo or home
-        let redirectPath = req.session.returnTo || '/';
+        // Admin users go directly to admin dashboard, teachers to their dashboard
+        let redirectPath = req.session.returnTo || '/dashboard';
         delete req.session.returnTo;
         
         // Override redirect for admin users
