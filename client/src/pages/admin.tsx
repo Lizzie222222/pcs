@@ -2217,7 +2217,10 @@ function EmailManagementSection({
         credentials: 'include',
         body: JSON.stringify({
           subject: emailForm.subject,
-          htmlContent: emailForm.content,
+          preheader: emailForm.preheader,
+          title: emailForm.title,
+          preTitle: emailForm.preTitle,
+          messageContent: emailForm.messageContent,
           testEmail: testEmail,
         }),
       });
@@ -2759,40 +2762,85 @@ function EmailManagementSection({
           {/* Email Content */}
           <div className="space-y-4">
             <h3 className="text-sm font-semibold text-gray-700">Email Content</h3>
+            <p className="text-xs text-gray-500">
+              These fields will be passed to your SendGrid template. Make sure your template is set up with the corresponding variables.
+            </p>
             
             <div>
               <label className="block text-sm font-medium mb-2">Subject *</label>
               <Input
-                placeholder="Email subject"
+                placeholder="Email subject line"
                 value={emailForm.subject}
                 onChange={(e) => setEmailForm((prev: any) => ({ ...prev, subject: e.target.value }))}
                 data-testid="input-email-subject"
                 maxLength={200}
               />
               <p className="text-xs text-gray-500 mt-1">
-                {emailForm.subject.length}/200 characters
+                {emailForm.subject.length}/200 characters • The main subject line for the email
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Preheader</label>
+              <Input
+                placeholder="Preview text shown in email clients (optional)"
+                value={emailForm.preheader}
+                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, preheader: e.target.value }))}
+                data-testid="input-email-preheader"
+                maxLength={100}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {emailForm.preheader.length}/100 characters • Optional preview text that appears in email inbox
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Title *</label>
+              <Input
+                placeholder="Large heading inside the email"
+                value={emailForm.title}
+                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, title: e.target.value }))}
+                data-testid="input-email-title"
+                maxLength={200}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {emailForm.title.length}/200 characters • The main heading displayed in the email body
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium mb-2">Pre-title (Subtitle)</label>
+              <Input
+                placeholder="Subtitle under the title (optional)"
+                value={emailForm.preTitle}
+                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, preTitle: e.target.value }))}
+                data-testid="input-email-pretitle"
+                maxLength={200}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {emailForm.preTitle.length}/200 characters • Optional subtitle text below the title
               </p>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium">HTML Content *</label>
+                <label className="block text-sm font-medium">Message Content *</label>
                 <span className="text-xs text-gray-500">Supports HTML formatting</span>
               </div>
               <Textarea
-                placeholder="Enter HTML content for the email body. You can use HTML tags for formatting."
-                value={emailForm.content}
-                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, content: e.target.value }))}
+                placeholder="Enter the main message content. HTML tags are supported for formatting."
+                value={emailForm.messageContent}
+                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, messageContent: e.target.value }))}
                 rows={10}
                 data-testid="textarea-email-content"
                 className="font-mono text-sm"
               />
               <div className="flex items-center justify-between mt-1">
                 <p className="text-xs text-gray-500">
-                  {emailForm.content.length}/10,000 characters
+                  {emailForm.messageContent.length}/10,000 characters
                 </p>
                 <p className="text-xs text-gray-500">
-                  ~{Math.ceil(emailForm.content.split(/\s+/).filter((w: string) => w).length / 200)} min read
+                  ~{Math.ceil(emailForm.messageContent.split(/\s+/).filter((w: string) => w).length / 200)} min read
                 </p>
               </div>
             </div>
@@ -2806,7 +2854,7 @@ function EmailManagementSection({
               <Button
                 variant="outline"
                 onClick={() => setPreviewDialogOpen(true)}
-                disabled={!emailForm.subject || !emailForm.content}
+                disabled={!emailForm.subject || !emailForm.title || !emailForm.messageContent}
                 data-testid="button-preview-email"
                 className="flex-1 min-w-[150px]"
               >
@@ -2826,7 +2874,7 @@ function EmailManagementSection({
                 <Button
                   variant="outline"
                   onClick={handleSendTestEmail}
-                  disabled={!emailForm.subject || !emailForm.content || !testEmail.trim() || testEmailSending}
+                  disabled={!emailForm.subject || !emailForm.title || !emailForm.messageContent || !testEmail.trim() || testEmailSending}
                   data-testid="button-send-test-email"
                 >
                   {testEmailSending ? (
@@ -2848,7 +2896,7 @@ function EmailManagementSection({
           {/* Send Bulk Email Button */}
           <Button
             onClick={() => setBulkEmailConfirmOpen(true)}
-            disabled={!emailForm.subject || !emailForm.content || 
+            disabled={!emailForm.subject || !emailForm.title || !emailForm.messageContent || 
               (emailForm.recipientType === 'custom' && !emailForm.recipients.trim())}
             className="w-full bg-coral hover:bg-coral/90 h-12 text-base"
             data-testid="button-send-bulk-email"
@@ -2870,16 +2918,30 @@ function EmailManagementSection({
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <div className="border-b pb-4">
-              <p className="text-sm text-gray-500 mb-1">Subject:</p>
+            <div className="border-b pb-3">
+              <p className="text-xs text-gray-500 mb-1">Subject:</p>
               <p className="text-lg font-semibold" data-testid="text-preview-subject">{emailForm.subject}</p>
             </div>
-            <div className="border rounded-lg p-6 bg-white min-h-[300px]">
-              <div 
-                dangerouslySetInnerHTML={{ __html: emailForm.content }}
-                data-testid="preview-html-content"
-                className="prose prose-sm max-w-none"
-              />
+            {emailForm.preheader && (
+              <div className="border-b pb-3">
+                <p className="text-xs text-gray-500 mb-1">Preheader:</p>
+                <p className="text-sm text-gray-600" data-testid="text-preview-preheader">{emailForm.preheader}</p>
+              </div>
+            )}
+            <div className="border rounded-lg p-6 bg-gradient-to-b from-gray-50 to-white">
+              <div className="space-y-4">
+                <div className="border-b pb-4">
+                  <h2 className="text-2xl font-bold text-navy" data-testid="text-preview-title">{emailForm.title}</h2>
+                  {emailForm.preTitle && (
+                    <p className="text-base text-gray-600 mt-2" data-testid="text-preview-pretitle">{emailForm.preTitle}</p>
+                  )}
+                </div>
+                <div 
+                  dangerouslySetInnerHTML={{ __html: emailForm.messageContent }}
+                  data-testid="preview-html-content"
+                  className="prose prose-sm max-w-none"
+                />
+              </div>
             </div>
           </div>
         </DialogContent>
@@ -2960,7 +3022,10 @@ export default function Admin() {
   const [emailForm, setEmailForm] = useState({
     recipientType: 'all_teachers',
     subject: '',
-    content: '',
+    preheader: '',
+    title: '',
+    preTitle: '',
+    messageContent: '',
     template: 'announcement',
     recipients: ''
   });
@@ -3427,7 +3492,10 @@ export default function Admin() {
       setEmailForm({
         recipientType: 'all_teachers',
         subject: '',
-        content: '',
+        preheader: '',
+        title: '',
+        preTitle: '',
+        messageContent: '',
         template: 'announcement',
         recipients: ''
       });

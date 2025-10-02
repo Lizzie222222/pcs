@@ -1882,7 +1882,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       errorMap: () => ({ message: "Invalid recipient type. Must be 'all_teachers', 'schools', or 'custom'" })
     }),
     subject: z.string().min(1, "Subject is required").max(200, "Subject must be less than 200 characters"),
-    content: z.string().min(1, "Content is required").max(10000, "Content must be less than 10,000 characters"),
+    preheader: z.string().max(100, "Preheader must be less than 100 characters").optional(),
+    title: z.string().min(1, "Title is required").max(200, "Title must be less than 200 characters"),
+    preTitle: z.string().max(200, "Pre-title must be less than 200 characters").optional(),
+    messageContent: z.string().min(1, "Message content is required").max(10000, "Message content must be less than 10,000 characters"),
     template: z.enum(['announcement', 'reminder', 'invitation', 'newsletter', 'custom'], {
       errorMap: () => ({ message: "Invalid template type" })
     }).default('custom'),
@@ -1930,10 +1933,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Send test bulk email to a single recipient
   app.post('/api/admin/bulk-email/test', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const { subject, htmlContent, testEmail } = req.body;
+      const { subject, preheader, title, preTitle, messageContent, testEmail } = req.body;
       
-      if (!subject || !htmlContent || !testEmail) {
-        return res.status(400).json({ message: "Subject, HTML content, and test email are required" });
+      if (!subject || !title || !messageContent || !testEmail) {
+        return res.status(400).json({ message: "Subject, title, message content, and test email are required" });
       }
 
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -1941,14 +1944,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid email format" });
       }
 
-      const success = await sendEmail({
-        to: testEmail,
-        from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+      const results = await sendBulkEmail({
+        recipients: [testEmail],
         subject: `[TEST] ${subject}`,
-        html: htmlContent,
+        preheader: preheader || '',
+        title,
+        preTitle: preTitle || '',
+        messageContent,
       });
 
-      if (success) {
+      if (results.sent > 0) {
         res.json({
           message: "Test email sent successfully",
           recipient: testEmail,
@@ -1977,7 +1982,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { recipients, subject, content, template, recipientType, filters } = validationResult.data;
+      const { recipients, subject, preheader, title, preTitle, messageContent, template, recipientType, filters } = validationResult.data;
 
       let emailList: string[] = [];
 
@@ -2013,14 +2018,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No valid email recipients found" });
       }
 
-      const bulkEmailParams: BulkEmailParams = {
+      const results = await sendBulkEmail({
         recipients: emailList,
         subject,
-        content,
-        template: template || 'custom',
-      };
-
-      const results = await sendBulkEmail(bulkEmailParams);
+        preheader: preheader || '',
+        title,
+        preTitle: preTitle || '',
+        messageContent,
+      });
 
       res.json({
         message: "Bulk email sent successfully",
