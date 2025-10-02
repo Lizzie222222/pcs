@@ -10,6 +10,22 @@ if (process.env.SENDGRID_API_KEY) {
   mailService.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
+function getBaseUrl(): string {
+  if (process.env.REPLIT_DEV_DOMAIN) {
+    return `https://${process.env.REPLIT_DEV_DOMAIN}`;
+  }
+  
+  if (process.env.FRONTEND_URL) {
+    const url = process.env.FRONTEND_URL;
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
+    }
+    return `https://${url}`;
+  }
+  
+  return 'https://plasticclever.org';
+}
+
 interface EmailParams {
   to: string;
   from: string;
@@ -77,7 +93,7 @@ export async function sendWelcomeEmail(userEmail: string, schoolName: string): P
     templateId: 'd-67435cbdbfbf42d5b3b3167a7efa2e1c',
     dynamicTemplateData: {
       schoolName: schoolName,
-      dashboardUrl: process.env.FRONTEND_URL || 'https://plasticclever.org',
+      dashboardUrl: getBaseUrl(),
     },
   });
 }
@@ -95,7 +111,7 @@ export async function sendEvidenceApprovalEmail(
     dynamicTemplateData: {
       schoolName: schoolName,
       evidenceTitle: evidenceTitle,
-      dashboardUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}`,
+      dashboardUrl: getBaseUrl(),
     },
   });
 }
@@ -115,7 +131,7 @@ export async function sendEvidenceRejectionEmail(
       schoolName: schoolName,
       evidenceTitle: evidenceTitle,
       feedback: feedback,
-      dashboardUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}`,
+      dashboardUrl: getBaseUrl(),
     },
   });
 }
@@ -135,7 +151,7 @@ export async function sendTeacherInvitationEmail(
     dynamicTemplateData: {
       schoolName: schoolName,
       inviterName: inviterName,
-      invitationUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/invitations/${token}`,
+      invitationUrl: `${getBaseUrl()}/invitations/${token}`,
       expiresInDays: expiresInDays,
     },
   });
@@ -154,7 +170,7 @@ export async function sendAdminInvitationEmail(
     templateId: 'd-5a83080c87b648cb9b14e44f23633c9e',
     dynamicTemplateData: {
       inviterName: inviterName,
-      invitationUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/admin-invitations/${token}`,
+      invitationUrl: `${getBaseUrl()}/admin-invitations/${token}`,
       expiresInDays: expiresInDays,
     },
   });
@@ -177,7 +193,7 @@ export async function sendVerificationRequestEmail(
       requesterName: requesterName,
       requesterEmail: requesterEmail,
       evidence: evidence,
-      reviewUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/dashboard/team-management?tab=requests`,
+      reviewUrl: `${getBaseUrl()}/dashboard/team-management?tab=requests`,
     },
   });
 }
@@ -196,7 +212,7 @@ export async function sendVerificationApprovalEmail(
     dynamicTemplateData: {
       schoolName: schoolName,
       reviewerName: reviewerName,
-      dashboardUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/dashboard`,
+      dashboardUrl: `${getBaseUrl()}/dashboard`,
       reviewNotes: reviewNotes || '',
     },
   });
@@ -217,7 +233,7 @@ export async function sendVerificationRejectionEmail(
       schoolName: schoolName,
       reviewerName: reviewerName,
       reviewNotes: reviewNotes || '',
-      helpCenterUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/help`,
+      helpCenterUrl: `${getBaseUrl()}/help`,
     },
   });
 }
@@ -238,7 +254,7 @@ export async function sendEvidenceSubmissionEmail(
       schoolName: schoolName,
       evidenceTitle: evidenceTitle,
       stage: stage,
-      dashboardUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}`,
+      dashboardUrl: getBaseUrl(),
     },
   });
 }
@@ -260,7 +276,7 @@ export async function sendAdminNewEvidenceEmail(
       evidenceTitle: evidenceTitle,
       stage: stage,
       submitterName: submitterName,
-      adminUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/admin`,
+      adminUrl: `${getBaseUrl()}/admin`,
     },
   });
 }
