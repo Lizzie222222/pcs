@@ -27,8 +27,9 @@ Preferred communication style: Simple, everyday language.
 ### Authentication & Authorization
 -   **Identity**: Local password and Google OAuth.
 -   **Roles**: Teacher, Head Teacher, Pending Teacher, Platform Admin.
--   **Permissions**: Role-Based Access Control (RBAC) with protected routes and middleware (`isHeadTeacher`, `isSchoolMember`).
+-   **Permissions**: Role-Based Access Control (RBAC) with protected routes and middleware (`isHeadTeacher`, `isSchoolMember`, `requireAdmin`).
 -   **School Team Management**: Hierarchical user management allowing Head Teachers to invite teachers and manage their school's team, with workflows for invitations, self-requests, and admin assignments.
+-   **Admin Invitations**: Token-based email invitation system allowing existing admins to invite new admins, with 7-day expiration and email verification.
 
 ### Key Data Models
 -   **Users**: Teachers linked to schools with roles.
@@ -38,12 +39,13 @@ Preferred communication style: Simple, everyday language.
 -   **Case Studies**: Approved evidence for public display.
 -   **SchoolUsers**: Junction table for user-school relationships with roles (`head_teacher`, `teacher`, `pending_teacher`) and verification status.
 -   **TeacherInvitations**: Stores invitation details, tokens, and status.
+-   **AdminInvitations**: Token-based admin invitation system with inviter tracking, expiration, and acceptance status.
 -   **VerificationRequests**: Stores teacher requests to join schools with evidence and review status.
 
 ### UI/UX Decisions
 -   **Color Schemes**: Custom palette aligned with Plastic Clever Schools brand.
 -   **Design Approach**: Component-based using Radix UI and shadcn/ui for consistency and accessibility.
--   **Page Structure**: Public routes for general access (`/`, `/resources`, `/inspiration`, `/schools-map`, `/invitations/:token`) and authenticated routes for specific user roles (`/register`, `/dashboard/team-management`, `/admin`).
+-   **Page Structure**: Public routes for general access (`/`, `/resources`, `/inspiration`, `/schools-map`, `/invitations/:token`, `/admin-invitations/:token`) and authenticated routes for specific user roles (`/register`, `/dashboard/team-management`, `/admin`).
 
 ## External Dependencies
 ### Core Infrastructure
