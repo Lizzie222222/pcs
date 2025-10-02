@@ -2128,6 +2128,7 @@ function EmailManagementSection({
   const [testEmail, setTestEmail] = useState('');
   const [testEmailSending, setTestEmailSending] = useState(false);
   const [bulkEmailConfirmOpen, setBulkEmailConfirmOpen] = useState(false);
+  const [selectedEmailType, setSelectedEmailType] = useState('welcome');
   
   const [formData, setFormData] = useState({
     welcome: { recipientEmail: '', schoolName: 'Test School' },
@@ -2273,20 +2274,29 @@ function EmailManagementSection({
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <Tabs defaultValue="welcome" className="w-full">
-            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-6">
-              <TabsTrigger value="welcome" data-testid="tab-welcome">Welcome</TabsTrigger>
-              <TabsTrigger value="invitation" data-testid="tab-invitation">Invitation</TabsTrigger>
-              <TabsTrigger value="joinRequest" data-testid="tab-join-request">Join Request</TabsTrigger>
-              <TabsTrigger value="joinApproved" data-testid="tab-join-approved">Approved</TabsTrigger>
-              <TabsTrigger value="evidenceSubmitted" data-testid="tab-evidence-submitted">Submitted</TabsTrigger>
-              <TabsTrigger value="evidenceApproved" data-testid="tab-evidence-approved">Approved</TabsTrigger>
-              <TabsTrigger value="evidenceRevision" data-testid="tab-evidence-revision">Revision</TabsTrigger>
-              <TabsTrigger value="newEvidence" data-testid="tab-new-evidence">New</TabsTrigger>
-            </TabsList>
+          <div className="w-full">
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Select Email Type</label>
+              <Select value={selectedEmailType} onValueChange={setSelectedEmailType}>
+                <SelectTrigger data-testid="select-email-type">
+                  <SelectValue placeholder="Select email type to test" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="welcome">Welcome Email</SelectItem>
+                  <SelectItem value="invitation">Teacher Invitation</SelectItem>
+                  <SelectItem value="joinRequest">Join Request</SelectItem>
+                  <SelectItem value="joinApproved">Join Request Approved</SelectItem>
+                  <SelectItem value="evidenceSubmitted">Evidence Submitted</SelectItem>
+                  <SelectItem value="evidenceApproved">Evidence Approved</SelectItem>
+                  <SelectItem value="evidenceRevision">Evidence Needs Revision</SelectItem>
+                  <SelectItem value="newEvidence">New Evidence for Admin</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
 
             {/* Welcome Email */}
-            <TabsContent value="welcome" className="space-y-4">
+            {selectedEmailType === 'welcome' && (
+            <div className="space-y-4">
               <h3 className="font-semibold text-lg">Welcome Email</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -2322,10 +2332,12 @@ function EmailManagementSection({
                 {loadingStates.welcome ? 'Sending...' : 'Send Welcome Email'}
               </Button>
               <ResultMessage type="welcome" />
-            </TabsContent>
+            </div>
+            )}
 
             {/* Teacher Invitation */}
-            <TabsContent value="invitation" className="space-y-4">
+            {selectedEmailType === 'invitation' && (
+            <div className="space-y-4">
               <h3 className="font-semibold text-lg">Teacher Invitation</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -2371,10 +2383,12 @@ function EmailManagementSection({
                 {loadingStates.invitation ? 'Sending...' : 'Send Invitation'}
               </Button>
               <ResultMessage type="invitation" />
-            </TabsContent>
+            </div>
+            )}
 
             {/* Join Request */}
-            <TabsContent value="joinRequest" className="space-y-4">
+            {selectedEmailType === 'joinRequest' && (
+            <div className="space-y-4">
               <h3 className="font-semibold text-lg">Join Request (to Head Teacher)</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -2429,10 +2443,12 @@ function EmailManagementSection({
                 {loadingStates.joinRequest ? 'Sending...' : 'Send Join Request'}
               </Button>
               <ResultMessage type="joinRequest" />
-            </TabsContent>
+            </div>
+            )}
 
             {/* Join Approved */}
-            <TabsContent value="joinApproved" className="space-y-4">
+            {selectedEmailType === 'joinApproved' && (
+            <div className="space-y-4">
               <h3 className="font-semibold text-lg">Join Request Approved</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -2478,10 +2494,12 @@ function EmailManagementSection({
                 {loadingStates.joinApproved ? 'Sending...' : 'Send Approval Email'}
               </Button>
               <ResultMessage type="joinApproved" />
-            </TabsContent>
+            </div>
+            )}
 
             {/* Evidence Submitted */}
-            <TabsContent value="evidenceSubmitted" className="space-y-4">
+            {selectedEmailType === 'evidenceSubmitted' && (
+            <div className="space-y-4">
               <h3 className="font-semibold text-lg">Evidence Submitted</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -2534,10 +2552,12 @@ function EmailManagementSection({
                 {loadingStates.evidenceSubmitted ? 'Sending...' : 'Send Submission Confirmation'}
               </Button>
               <ResultMessage type="evidenceSubmitted" />
-            </TabsContent>
+            </div>
+            )}
 
             {/* Evidence Approved */}
-            <TabsContent value="evidenceApproved" className="space-y-4">
+            {selectedEmailType === 'evidenceApproved' && (
+            <div className="space-y-4">
               <h3 className="font-semibold text-lg">Evidence Approved</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -2574,10 +2594,12 @@ function EmailManagementSection({
                 {loadingStates.evidenceApproved ? 'Sending...' : 'Send Approval Email'}
               </Button>
               <ResultMessage type="evidenceApproved" />
-            </TabsContent>
+            </div>
+            )}
 
             {/* Evidence Revision */}
-            <TabsContent value="evidenceRevision" className="space-y-4">
+            {selectedEmailType === 'evidenceRevision' && (
+            <div className="space-y-4">
               <h3 className="font-semibold text-lg">Evidence Needs Revision</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -2623,10 +2645,12 @@ function EmailManagementSection({
                 {loadingStates.evidenceRevision ? 'Sending...' : 'Send Revision Request'}
               </Button>
               <ResultMessage type="evidenceRevision" />
-            </TabsContent>
+            </div>
+            )}
 
             {/* New Evidence for Admin */}
-            <TabsContent value="newEvidence" className="space-y-4">
+            {selectedEmailType === 'newEvidence' && (
+            <div className="space-y-4">
               <h3 className="font-semibold text-lg">New Evidence for Admin</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
@@ -2687,8 +2711,9 @@ function EmailManagementSection({
                 {loadingStates.newEvidence ? 'Sending...' : 'Send Admin Notification'}
               </Button>
               <ResultMessage type="newEvidence" />
-            </TabsContent>
-          </Tabs>
+            </div>
+            )}
+          </div>
         </CardContent>
       </Card>
 
