@@ -91,28 +91,12 @@ export async function sendEvidenceApprovalEmail(
     to: userEmail,
     from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
     subject: `Evidence Approved - ${evidenceTitle}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #02BBB4 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">🎉 Evidence Approved!</h1>
-        </div>
-        <div style="padding: 40px 20px; background: #f9f9f9;">
-          <h2 style="color: #0B3D5D;">Great work, ${schoolName}!</h2>
-          <p style="color: #666; line-height: 1.6;">
-            Your evidence submission "<strong>${evidenceTitle}</strong>" has been reviewed and approved by our team.
-          </p>
-          <p style="color: #666; line-height: 1.6;">
-            This brings you one step closer to completing your current program stage. Keep up the excellent work!
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}" 
-               style="background: #02BBB4; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-              View Your Progress
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
+    templateId: 'd-3349376322ca47c79729d04b402372c6',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      evidenceTitle: evidenceTitle,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}`,
+    },
   });
 }
 
@@ -126,32 +110,13 @@ export async function sendEvidenceRejectionEmail(
     to: userEmail,
     from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
     subject: `Evidence Feedback - ${evidenceTitle}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #FFC557 0%, #FF595A 100%); padding: 40px 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">📝 Evidence Feedback</h1>
-        </div>
-        <div style="padding: 40px 20px; background: #f9f9f9;">
-          <h2 style="color: #0B3D5D;">Feedback for ${schoolName}</h2>
-          <p style="color: #666; line-height: 1.6;">
-            Your evidence submission "<strong>${evidenceTitle}</strong>" has been reviewed by our team.
-          </p>
-          <div style="background: white; padding: 20px; border-left: 4px solid #FFC557; margin: 20px 0;">
-            <h3 style="color: #0B3D5D; margin-top: 0;">Reviewer Feedback:</h3>
-            <p style="color: #666; line-height: 1.6;">${feedback}</p>
-          </div>
-          <p style="color: #666; line-height: 1.6;">
-            Please review the feedback and feel free to resubmit your evidence with any necessary improvements.
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}" 
-               style="background: #019ADE; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-              Resubmit Evidence
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
+    templateId: 'd-df7b17c32ee04fc78db7dc888f6849da',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      evidenceTitle: evidenceTitle,
+      feedback: feedback,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}`,
+    },
   });
 }
 
@@ -166,47 +131,13 @@ export async function sendTeacherInvitationEmail(
     to: recipientEmail,
     from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
     subject: `You've been invited to join ${schoolName} on Plastic Clever Schools`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">✉️ You've been invited!</h1>
-        </div>
-        <div style="padding: 40px 20px; background: #f9f9f9;">
-          <h2 style="color: #0B3D5D;">Join ${schoolName} on Plastic Clever Schools</h2>
-          <p style="color: #666; line-height: 1.6;">
-            <strong>${inviterName}</strong> has invited you to join <strong>${schoolName}</strong> on Plastic Clever Schools.
-          </p>
-          <p style="color: #666; line-height: 1.6;">
-            Plastic Clever Schools is a global program that empowers schools to tackle plastic pollution through education and action. 
-            By joining your school's team, you'll be able to:
-          </p>
-          <ul style="color: #666; line-height: 1.8;">
-            <li>Collaborate with colleagues on reducing plastic waste</li>
-            <li>Access educational resources and lesson plans</li>
-            <li>Track your school's progress through three program stages</li>
-            <li>Submit evidence and earn recognition for your achievements</li>
-            <li>Join a worldwide community of eco-conscious educators</li>
-          </ul>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}/invitations/${token}" 
-               style="background: #019ADE; color: white; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">
-              Accept Invitation
-            </a>
-          </div>
-          <div style="background: #FFF3E0; border-left: 4px solid #FFC557; padding: 15px; margin: 20px 0;">
-            <p style="color: #666; margin: 0; line-height: 1.6;">
-              ⏰ <strong>Note:</strong> This invitation expires in ${expiresInDays} days.
-            </p>
-          </div>
-          <p style="color: #666; line-height: 1.6;">
-            If you have any questions, feel free to reply to this email or contact your school administrator.
-          </p>
-        </div>
-        <div style="background: #0B3D5D; color: white; padding: 20px; text-align: center; font-size: 14px;">
-          <p>© 2024 Plastic Clever Schools. Making waves for a plastic-free future.</p>
-        </div>
-      </div>
-    `,
+    templateId: 'd-0940098ba7ec4188824e4b14274e668c',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      inviterName: inviterName,
+      invitationUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/invitations/${token}`,
+      expiresInDays: expiresInDays,
+    },
   });
 }
 
@@ -221,44 +152,14 @@ export async function sendVerificationRequestEmail(
     to: headTeacherEmail,
     from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
     subject: `New Teacher Verification Request for ${schoolName}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #019ADE 0%, #02BBB4 100%); padding: 40px 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">👥 New Team Member Request</h1>
-        </div>
-        <div style="padding: 40px 20px; background: #f9f9f9;">
-          <h2 style="color: #0B3D5D;">Verification Request for ${schoolName}</h2>
-          <p style="color: #666; line-height: 1.6;">
-            <strong>${requesterName}</strong> (<a href="mailto:${requesterEmail}" style="color: #019ADE;">${requesterEmail}</a>) has requested to join ${schoolName} on Plastic Clever Schools.
-          </p>
-          <div style="background: white; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="color: #0B3D5D; margin-top: 0;">Evidence/Reason Provided:</h3>
-            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${evidence}</p>
-          </div>
-          <div style="background: #E3F2FD; border-left: 4px solid #019ADE; padding: 15px; margin: 20px 0;">
-            <h4 style="color: #0B3D5D; margin: 0 0 10px 0;">📋 What you need to do:</h4>
-            <ul style="color: #666; margin: 0; line-height: 1.6;">
-              <li>Review the request and verify the teacher's identity</li>
-              <li>Check if they are affiliated with your school</li>
-              <li>Approve to grant them access to your school's dashboard</li>
-              <li>Reject if you don't recognize them or need more information</li>
-            </ul>
-          </div>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}/dashboard/team-management?tab=requests" 
-               style="background: #019ADE; color: white; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">
-              Review Request
-            </a>
-          </div>
-          <p style="color: #666; line-height: 1.6; text-align: center; font-size: 14px;">
-            You can approve or reject this request from your school's dashboard.
-          </p>
-        </div>
-        <div style="background: #0B3D5D; color: white; padding: 20px; text-align: center; font-size: 14px;">
-          <p>© 2024 Plastic Clever Schools. Making waves for a plastic-free future.</p>
-        </div>
-      </div>
-    `,
+    templateId: 'd-19393590bcaf43e091737b69c49139ac',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      requesterName: requesterName,
+      requesterEmail: requesterEmail,
+      evidence: evidence,
+      reviewUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/dashboard/team-management?tab=requests`,
+    },
   });
 }
 
@@ -272,47 +173,13 @@ export async function sendVerificationApprovalEmail(
     to: requesterEmail,
     from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
     subject: `Welcome to ${schoolName} on Plastic Clever Schools!`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #4CAF50 0%, #02BBB4 100%); padding: 40px 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">✅ Request Approved!</h1>
-        </div>
-        <div style="padding: 40px 20px; background: #f9f9f9;">
-          <h2 style="color: #0B3D5D;">Welcome to the team!</h2>
-          <p style="color: #666; line-height: 1.6;">
-            Great news! <strong>${reviewerName}</strong> has approved your request to join <strong>${schoolName}</strong> on Plastic Clever Schools.
-          </p>
-          ${reviewNotes ? `
-          <div style="background: white; padding: 20px; border-left: 4px solid #4CAF50; margin: 20px 0;">
-            <h3 style="color: #0B3D5D; margin-top: 0;">Message from ${reviewerName}:</h3>
-            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${reviewNotes}</p>
-          </div>
-          ` : ''}
-          <div style="background: #E8F5E9; border-left: 4px solid #4CAF50; padding: 15px; margin: 20px 0;">
-            <h4 style="color: #2E7D32; margin: 0 0 10px 0;">🎯 What you can do now:</h4>
-            <ul style="color: #666; margin: 0; line-height: 1.6;">
-              <li>Access your school's dashboard and view progress</li>
-              <li>Collaborate with your team on plastic reduction initiatives</li>
-              <li>Submit evidence for program stages</li>
-              <li>Access resources and educational materials</li>
-              <li>Track your school's journey to becoming plastic clever</li>
-            </ul>
-          </div>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}/dashboard" 
-               style="background: #4CAF50; color: white; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">
-              Access Your Dashboard
-            </a>
-          </div>
-          <p style="color: #666; line-height: 1.6;">
-            We're excited to have you on board. Together, we can make a real difference in tackling plastic pollution!
-          </p>
-        </div>
-        <div style="background: #0B3D5D; color: white; padding: 20px; text-align: center; font-size: 14px;">
-          <p>© 2024 Plastic Clever Schools. Making waves for a plastic-free future.</p>
-        </div>
-      </div>
-    `,
+    templateId: 'd-adcb01d8edd5403490263da8ab97f402',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      reviewerName: reviewerName,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/dashboard`,
+      reviewNotes: reviewNotes || '',
+    },
   });
 }
 
@@ -380,37 +247,13 @@ export async function sendEvidenceSubmissionEmail(
     to: userEmail,
     from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
     subject: `Evidence Submitted Successfully - ${evidenceTitle}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #02BBB4 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">📤 Evidence Submitted!</h1>
-        </div>
-        <div style="padding: 40px 20px; background: #f9f9f9;">
-          <h2 style="color: #0B3D5D;">Thank you, ${schoolName}!</h2>
-          <p style="color: #666; line-height: 1.6;">
-            Your evidence submission "<strong>${evidenceTitle}</strong>" for the <strong>${stage}</strong> stage has been successfully submitted and is now under review.
-          </p>
-          <div style="background: #fff; border-left: 4px solid #02BBB4; padding: 20px; margin: 20px 0;">
-            <h3 style="color: #02BBB4; margin-top: 0;">What happens next?</h3>
-            <ul style="color: #666; margin-bottom: 0;">
-              <li>Our team will review your submission within 5-7 business days</li>
-              <li>You'll receive an email notification with the review outcome</li>
-              <li>If approved, your progress will be updated automatically</li>
-              <li>If revisions are needed, we'll provide detailed feedback</li>
-            </ul>
-          </div>
-          <p style="color: #666; line-height: 1.6;">
-            Keep up the excellent work on your plastic-free journey!
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}" 
-               style="background: #02BBB4; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-              View Your Progress
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
+    templateId: 'd-2a045eb4f5a0477689d385a315dc2938',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      evidenceTitle: evidenceTitle,
+      stage: stage,
+      dashboardUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}`,
+    },
   });
 }
 
@@ -425,37 +268,14 @@ export async function sendAdminNewEvidenceEmail(
     to: adminEmail,
     from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
     subject: `New Evidence Submission - ${evidenceTitle}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">🔔 New Evidence Submission</h1>
-        </div>
-        <div style="padding: 40px 20px; background: #f9f9f9;">
-          <h2 style="color: #0B3D5D;">Review Required</h2>
-          <p style="color: #666; line-height: 1.6;">
-            A new evidence submission has been received and requires admin review.
-          </p>
-          <div style="background: #fff; border: 1px solid #ddd; border-radius: 8px; padding: 20px; margin: 20px 0;">
-            <h3 style="color: #0B3D5D; margin-top: 0;">Submission Details:</h3>
-            <ul style="color: #666; margin-bottom: 0; list-style: none; padding: 0;">
-              <li style="margin-bottom: 8px;"><strong>Title:</strong> ${evidenceTitle}</li>
-              <li style="margin-bottom: 8px;"><strong>School:</strong> ${schoolName}</li>
-              <li style="margin-bottom: 8px;"><strong>Stage:</strong> ${stage}</li>
-              <li style="margin-bottom: 8px;"><strong>Submitted by:</strong> ${submitterName}</li>
-            </ul>
-          </div>
-          <p style="color: #666; line-height: 1.6;">
-            Please review this submission and provide feedback to help the school continue their progress.
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}/admin" 
-               style="background: #0B3D5D; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-              Review Evidence
-            </a>
-          </div>
-        </div>
-      </div>
-    `,
+    templateId: 'd-cf5207c6e0734984bc8008f5285fcef4',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      evidenceTitle: evidenceTitle,
+      stage: stage,
+      submitterName: submitterName,
+      adminUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/admin`,
+    },
   });
 }
 

@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, type VerificationRequest } from "@shared/schema";
 import { z } from "zod";
@@ -1907,6 +1907,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
     path: ["recipients"],
   });
 
+  // Preview bulk email HTML content
+  app.post('/api/admin/bulk-email/preview', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { subject, htmlContent } = req.body;
+      
+      if (!subject || !htmlContent) {
+        return res.status(400).json({ message: "Subject and HTML content are required" });
+      }
+
+      res.json({
+        subject,
+        htmlContent,
+        preview: htmlContent,
+      });
+    } catch (error) {
+      console.error("Error previewing email:", error);
+      res.status(500).json({ message: "Failed to generate preview" });
+    }
+  });
+
+  // Send test bulk email to a single recipient
+  app.post('/api/admin/bulk-email/test', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { subject, htmlContent, testEmail } = req.body;
+      
+      if (!subject || !htmlContent || !testEmail) {
+        return res.status(400).json({ message: "Subject, HTML content, and test email are required" });
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(testEmail)) {
+        return res.status(400).json({ message: "Invalid email format" });
+      }
+
+      const success = await sendEmail({
+        to: testEmail,
+        from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+        subject: `[TEST] ${subject}`,
+        html: htmlContent,
+      });
+
+      if (success) {
+        res.json({
+          message: "Test email sent successfully",
+          recipient: testEmail,
+        });
+      } else {
+        res.status(500).json({ message: "Failed to send test email" });
+      }
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      res.status(500).json({ message: "Failed to send test email" });
+    }
+  });
+
   // Bulk email API for admin
   app.post('/api/admin/send-bulk-email', isAuthenticated, requireAdmin, async (req, res) => {
     try {
@@ -2568,7 +2623,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Test email endpoint (protected - admin only)
+  // Test email endpoints (protected - admin only)
+  
+  // Test welcome email
   app.post('/api/admin/test-email', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const { email, schoolName } = req.body;
@@ -2602,6 +2659,218 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Error sending test email",
         error: error instanceof Error ? error.message : String(error)
       });
+    }
+  });
+
+  // Test teacher invitation email
+  app.post('/api/admin/test-email/teacher-invitation', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        recipientEmail: z.string().email(),
+        schoolName: z.string().min(1),
+        inviterName: z.string().min(1),
+        expiresInDays: z.number().int().positive().default(7),
+      });
+      
+      const { recipientEmail, schoolName, inviterName, expiresInDays } = schema.parse(req.body);
+      
+      console.log(`[Test Email] Sending teacher invitation to ${recipientEmail}`);
+      
+      const token = randomBytes(32).toString('hex');
+      const success = await sendTeacherInvitationEmail(recipientEmail, schoolName, inviterName, token, expiresInDays);
+      
+      if (success) {
+        res.json({ success: true, message: "Teacher invitation email sent successfully", recipient: recipientEmail });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send teacher invitation email" });
+      }
+    } catch (error) {
+      console.error("[Test Email - Teacher Invitation] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ success: false, message: "Invalid input data", errors: error.errors });
+      }
+      res.status(500).json({ success: false, message: "Error sending teacher invitation email" });
+    }
+  });
+
+  // Test join request email (to head teacher)
+  app.post('/api/admin/test-email/join-request', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        recipientEmail: z.string().email(),
+        schoolName: z.string().min(1),
+        requesterName: z.string().min(1),
+        requesterEmail: z.string().email(),
+        evidence: z.string().min(1),
+      });
+      
+      const { recipientEmail, schoolName, requesterName, requesterEmail, evidence } = schema.parse(req.body);
+      
+      console.log(`[Test Email] Sending join request to ${recipientEmail}`);
+      
+      const success = await sendVerificationRequestEmail(recipientEmail, schoolName, requesterName, requesterEmail, evidence);
+      
+      if (success) {
+        res.json({ success: true, message: "Join request email sent successfully", recipient: recipientEmail });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send join request email" });
+      }
+    } catch (error) {
+      console.error("[Test Email - Join Request] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ success: false, message: "Invalid input data", errors: error.errors });
+      }
+      res.status(500).json({ success: false, message: "Error sending join request email" });
+    }
+  });
+
+  // Test join request approved email
+  app.post('/api/admin/test-email/join-approved', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        recipientEmail: z.string().email(),
+        schoolName: z.string().min(1),
+        reviewerName: z.string().min(1),
+        reviewNotes: z.string().optional(),
+      });
+      
+      const { recipientEmail, schoolName, reviewerName, reviewNotes } = schema.parse(req.body);
+      
+      console.log(`[Test Email] Sending join approved email to ${recipientEmail}`);
+      
+      const success = await sendVerificationApprovalEmail(recipientEmail, schoolName, reviewerName, reviewNotes);
+      
+      if (success) {
+        res.json({ success: true, message: "Join approved email sent successfully", recipient: recipientEmail });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send join approved email" });
+      }
+    } catch (error) {
+      console.error("[Test Email - Join Approved] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ success: false, message: "Invalid input data", errors: error.errors });
+      }
+      res.status(500).json({ success: false, message: "Error sending join approved email" });
+    }
+  });
+
+  // Test evidence submitted email
+  app.post('/api/admin/test-email/evidence-submitted', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        recipientEmail: z.string().email(),
+        schoolName: z.string().min(1),
+        evidenceTitle: z.string().min(1),
+        stage: z.enum(['Stage 1', 'Stage 2', 'Stage 3']),
+      });
+      
+      const { recipientEmail, schoolName, evidenceTitle, stage } = schema.parse(req.body);
+      
+      console.log(`[Test Email] Sending evidence submitted email to ${recipientEmail}`);
+      
+      const success = await sendEvidenceSubmissionEmail(recipientEmail, schoolName, evidenceTitle, stage);
+      
+      if (success) {
+        res.json({ success: true, message: "Evidence submitted email sent successfully", recipient: recipientEmail });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send evidence submitted email" });
+      }
+    } catch (error) {
+      console.error("[Test Email - Evidence Submitted] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ success: false, message: "Invalid input data", errors: error.errors });
+      }
+      res.status(500).json({ success: false, message: "Error sending evidence submitted email" });
+    }
+  });
+
+  // Test evidence approved email
+  app.post('/api/admin/test-email/evidence-approved', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        recipientEmail: z.string().email(),
+        schoolName: z.string().min(1),
+        evidenceTitle: z.string().min(1),
+      });
+      
+      const { recipientEmail, schoolName, evidenceTitle } = schema.parse(req.body);
+      
+      console.log(`[Test Email] Sending evidence approved email to ${recipientEmail}`);
+      
+      const success = await sendEvidenceApprovalEmail(recipientEmail, schoolName, evidenceTitle);
+      
+      if (success) {
+        res.json({ success: true, message: "Evidence approved email sent successfully", recipient: recipientEmail });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send evidence approved email" });
+      }
+    } catch (error) {
+      console.error("[Test Email - Evidence Approved] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ success: false, message: "Invalid input data", errors: error.errors });
+      }
+      res.status(500).json({ success: false, message: "Error sending evidence approved email" });
+    }
+  });
+
+  // Test evidence needs revision email
+  app.post('/api/admin/test-email/evidence-revision', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        recipientEmail: z.string().email(),
+        schoolName: z.string().min(1),
+        evidenceTitle: z.string().min(1),
+        feedback: z.string().min(1),
+      });
+      
+      const { recipientEmail, schoolName, evidenceTitle, feedback } = schema.parse(req.body);
+      
+      console.log(`[Test Email] Sending evidence revision email to ${recipientEmail}`);
+      
+      const success = await sendEvidenceRejectionEmail(recipientEmail, schoolName, evidenceTitle, feedback);
+      
+      if (success) {
+        res.json({ success: true, message: "Evidence revision email sent successfully", recipient: recipientEmail });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send evidence revision email" });
+      }
+    } catch (error) {
+      console.error("[Test Email - Evidence Revision] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ success: false, message: "Invalid input data", errors: error.errors });
+      }
+      res.status(500).json({ success: false, message: "Error sending evidence revision email" });
+    }
+  });
+
+  // Test new evidence for admin email
+  app.post('/api/admin/test-email/new-evidence', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const schema = z.object({
+        recipientEmail: z.string().email(),
+        schoolName: z.string().min(1),
+        evidenceTitle: z.string().min(1),
+        stage: z.enum(['Stage 1', 'Stage 2', 'Stage 3']),
+        submitterName: z.string().min(1),
+      });
+      
+      const { recipientEmail, schoolName, evidenceTitle, stage, submitterName } = schema.parse(req.body);
+      
+      console.log(`[Test Email] Sending new evidence notification to ${recipientEmail}`);
+      
+      const success = await sendAdminNewEvidenceEmail(recipientEmail, schoolName, evidenceTitle, stage, submitterName);
+      
+      if (success) {
+        res.json({ success: true, message: "New evidence notification email sent successfully", recipient: recipientEmail });
+      } else {
+        res.status(500).json({ success: false, message: "Failed to send new evidence notification email" });
+      }
+    } catch (error) {
+      console.error("[Test Email - New Evidence] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ success: false, message: "Invalid input data", errors: error.errors });
+      }
+      res.status(500).json({ success: false, message: "Error sending new evidence notification email" });
     }
   });
 

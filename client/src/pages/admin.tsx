@@ -2121,133 +2121,570 @@ function EmailManagementSection({
   schoolFilters: any;
 }) {
   const { toast } = useToast();
+  
+  const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
+  const [results, setResults] = useState<Record<string, { success: boolean; message: string } | null>>({});
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const [testEmail, setTestEmail] = useState('');
-  const [schoolName, setSchoolName] = useState('Test School');
-  const [isSending, setIsSending] = useState(false);
-  const [lastResult, setLastResult] = useState<{ success: boolean; message: string } | null>(null);
+  const [testEmailSending, setTestEmailSending] = useState(false);
+  const [bulkEmailConfirmOpen, setBulkEmailConfirmOpen] = useState(false);
+  
+  const [formData, setFormData] = useState({
+    welcome: { recipientEmail: '', schoolName: 'Test School' },
+    invitation: { recipientEmail: '', schoolName: 'Test School', inviterName: 'John Doe', expiresInDays: 7 },
+    joinRequest: { recipientEmail: '', schoolName: 'Test School', requesterName: 'Jane Smith', requesterEmail: 'jane@example.com', evidence: 'I am a teacher at this school.' },
+    joinApproved: { recipientEmail: '', schoolName: 'Test School', reviewerName: 'Head Teacher', reviewNotes: '' },
+    evidenceSubmitted: { recipientEmail: '', schoolName: 'Test School', evidenceTitle: 'Recycling Program', stage: 'Stage 1' },
+    evidenceApproved: { recipientEmail: '', schoolName: 'Test School', evidenceTitle: 'Recycling Program' },
+    evidenceRevision: { recipientEmail: '', schoolName: 'Test School', evidenceTitle: 'Recycling Program', feedback: 'Please add more details about student participation.' },
+    newEvidence: { recipientEmail: '', schoolName: 'Test School', evidenceTitle: 'Recycling Program', stage: 'Stage 1', submitterName: 'Jane Smith' },
+  });
 
-  const handleSendTestEmail = async () => {
-    if (!testEmail) {
+  const handleSendEmail = async (type: string, endpoint: string, data: any) => {
+    if (!data.recipientEmail) {
       toast({
         title: "Email Required",
-        description: "Please enter an email address to send the test to.",
+        description: "Please enter a recipient email address.",
         variant: "destructive",
       });
       return;
     }
 
-    setIsSending(true);
-    setLastResult(null);
+    setLoadingStates(prev => ({ ...prev, [type]: true }));
+    setResults(prev => ({ ...prev, [type]: null }));
 
     try {
-      const response = await fetch('/api/admin/test-email', {
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (response.ok && result.success) {
+        setResults(prev => ({ ...prev, [type]: { success: true, message: `Email sent successfully to ${data.recipientEmail}` } }));
+        toast({
+          title: "Test Email Sent",
+          description: result.message || `Email sent to ${data.recipientEmail}`,
+        });
+      } else {
+        setResults(prev => ({ ...prev, [type]: { success: false, message: result.message || 'Failed to send email' } }));
+        toast({
+          title: "Failed to Send Email",
+          description: result.message || 'An error occurred while sending the email.',
+          variant: "destructive",
+        });
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : 'Unknown error occurred';
+      setResults(prev => ({ ...prev, [type]: { success: false, message: errorMsg } }));
+      toast({
+        title: "Error",
+        description: "Failed to send email. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingStates(prev => ({ ...prev, [type]: false }));
+    }
+  };
+
+  const updateFormData = (type: string, field: string, value: any) => {
+    setFormData(prev => ({
+      ...prev,
+      [type]: { ...prev[type as keyof typeof prev], [field]: value }
+    }));
+  };
+
+  const handleSendTestEmail = async () => {
+    if (!testEmail.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter a test email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setTestEmailSending(true);
+    try {
+      const response = await fetch('/api/admin/bulk-email/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
         body: JSON.stringify({
-          email: testEmail,
-          schoolName: schoolName,
+          subject: emailForm.subject,
+          htmlContent: emailForm.content,
+          testEmail: testEmail,
         }),
       });
 
-      const result = await response.json();
-
-      if (response.ok && result.success) {
-        setLastResult({ success: true, message: `Test email sent successfully to ${testEmail}` });
-        toast({
-          title: "Test Email Sent",
-          description: `Welcome email sent to ${testEmail}`,
-        });
-      } else {
-        setLastResult({ success: false, message: result.message || result.error || 'Failed to send email' });
-        toast({
-          title: "Failed to Send Test Email",
-          description: result.message || result.error || 'An error occurred while sending the test email.',
-          variant: "destructive",
-        });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to send test email');
       }
-    } catch (error) {
-      const errorMsg = error instanceof Error ? error.message : 'Unknown error occurred';
-      setLastResult({ success: false, message: errorMsg });
+
       toast({
-        title: "Error",
-        description: "Failed to send test email. Please check the console for details.",
+        title: "Test Email Sent",
+        description: `Test email sent successfully to ${testEmail}`,
+      });
+      setTestEmail('');
+    } catch (error: any) {
+      toast({
+        title: "Failed to Send Test Email",
+        description: error.message || "There was an error sending the test email.",
         variant: "destructive",
       });
     } finally {
-      setIsSending(false);
+      setTestEmailSending(false);
     }
+  };
+
+  const ResultMessage = ({ type }: { type: string }) => {
+    const result = results[type];
+    if (!result) return null;
+    
+    return (
+      <div className={`p-3 rounded-lg ${result.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`} data-testid={`result-${type}`}>
+        <p className={`text-sm font-medium ${result.success ? 'text-green-900' : 'text-red-900'}`}>
+          {result.success ? '✅ Success' : '❌ Error'}
+        </p>
+        <p className={`text-sm mt-1 ${result.success ? 'text-green-800' : 'text-red-800'}`}>
+          {result.message}
+        </p>
+      </div>
+    );
   };
 
   return (
     <div className="space-y-6">
-      {/* Test Email Section */}
+      {/* Test Email Forms */}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Mail className="h-5 w-5" />
-            Test Welcome Email
+            Test Email Templates
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Recipient Email
-              </label>
-              <Input
-                type="email"
-                placeholder="test@example.com"
-                value={testEmail}
-                onChange={(e) => setTestEmail(e.target.value)}
-                data-testid="input-test-email"
-              />
-            </div>
+        <CardContent>
+          <Tabs defaultValue="welcome" className="w-full">
+            <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8 mb-6">
+              <TabsTrigger value="welcome" data-testid="tab-welcome">Welcome</TabsTrigger>
+              <TabsTrigger value="invitation" data-testid="tab-invitation">Invitation</TabsTrigger>
+              <TabsTrigger value="joinRequest" data-testid="tab-join-request">Join Request</TabsTrigger>
+              <TabsTrigger value="joinApproved" data-testid="tab-join-approved">Approved</TabsTrigger>
+              <TabsTrigger value="evidenceSubmitted" data-testid="tab-evidence-submitted">Submitted</TabsTrigger>
+              <TabsTrigger value="evidenceApproved" data-testid="tab-evidence-approved">Approved</TabsTrigger>
+              <TabsTrigger value="evidenceRevision" data-testid="tab-evidence-revision">Revision</TabsTrigger>
+              <TabsTrigger value="newEvidence" data-testid="tab-new-evidence">New</TabsTrigger>
+            </TabsList>
 
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                School Name
-              </label>
-              <Input
-                type="text"
-                placeholder="Test School"
-                value={schoolName}
-                onChange={(e) => setSchoolName(e.target.value)}
-                data-testid="input-school-name"
-              />
-            </div>
-          </div>
+            {/* Welcome Email */}
+            <TabsContent value="welcome" className="space-y-4">
+              <h3 className="font-semibold text-lg">Welcome Email</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Recipient Email *</label>
+                  <Input
+                    type="email"
+                    placeholder="teacher@example.com"
+                    value={formData.welcome.recipientEmail}
+                    onChange={(e) => updateFormData('welcome', 'recipientEmail', e.target.value)}
+                    data-testid="input-welcome-email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">School Name *</label>
+                  <Input
+                    type="text"
+                    placeholder="Test School"
+                    value={formData.welcome.schoolName}
+                    onChange={(e) => updateFormData('welcome', 'schoolName', e.target.value)}
+                    data-testid="input-welcome-school"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={() => handleSendEmail('welcome', '/api/admin/test-email', {
+                  email: formData.welcome.recipientEmail,
+                  schoolName: formData.welcome.schoolName
+                })}
+                disabled={loadingStates.welcome}
+                data-testid="button-send-welcome"
+              >
+                {loadingStates.welcome ? 'Sending...' : 'Send Welcome Email'}
+              </Button>
+              <ResultMessage type="welcome" />
+            </TabsContent>
 
-          <Button
-            onClick={handleSendTestEmail}
-            disabled={isSending || !testEmail}
-            data-testid="button-send-test-email"
-          >
-            {isSending ? (
-              <>
-                <LoadingSpinner className="mr-2" />
-                Sending...
-              </>
-            ) : (
-              <>
-                <Mail className="h-4 w-4 mr-2" />
-                Send Test Email
-              </>
-            )}
-          </Button>
+            {/* Teacher Invitation */}
+            <TabsContent value="invitation" className="space-y-4">
+              <h3 className="font-semibold text-lg">Teacher Invitation</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Recipient Email *</label>
+                  <Input
+                    type="email"
+                    value={formData.invitation.recipientEmail}
+                    onChange={(e) => updateFormData('invitation', 'recipientEmail', e.target.value)}
+                    data-testid="input-invitation-email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">School Name *</label>
+                  <Input
+                    value={formData.invitation.schoolName}
+                    onChange={(e) => updateFormData('invitation', 'schoolName', e.target.value)}
+                    data-testid="input-invitation-school"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Inviter Name *</label>
+                  <Input
+                    value={formData.invitation.inviterName}
+                    onChange={(e) => updateFormData('invitation', 'inviterName', e.target.value)}
+                    data-testid="input-invitation-inviter"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Expires In Days</label>
+                  <Input
+                    type="number"
+                    value={formData.invitation.expiresInDays}
+                    onChange={(e) => updateFormData('invitation', 'expiresInDays', parseInt(e.target.value))}
+                    data-testid="input-invitation-expires"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={() => handleSendEmail('invitation', '/api/admin/test-email/teacher-invitation', formData.invitation)}
+                disabled={loadingStates.invitation}
+                data-testid="button-send-invitation"
+              >
+                {loadingStates.invitation ? 'Sending...' : 'Send Invitation'}
+              </Button>
+              <ResultMessage type="invitation" />
+            </TabsContent>
 
-          {lastResult && (
-            <div className={`p-3 rounded-lg ${lastResult.success ? 'bg-green-50 border border-green-200' : 'bg-red-50 border border-red-200'}`}>
-              <p className={`text-sm font-medium ${lastResult.success ? 'text-green-900' : 'text-red-900'}`}>
-                {lastResult.success ? '✅ Success' : '❌ Error'}
-              </p>
-              <p className={`text-sm mt-1 ${lastResult.success ? 'text-green-800' : 'text-red-800'}`}>
-                {lastResult.message}
-              </p>
-            </div>
-          )}
+            {/* Join Request */}
+            <TabsContent value="joinRequest" className="space-y-4">
+              <h3 className="font-semibold text-lg">Join Request (to Head Teacher)</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Recipient Email (Head Teacher) *</label>
+                  <Input
+                    type="email"
+                    value={formData.joinRequest.recipientEmail}
+                    onChange={(e) => updateFormData('joinRequest', 'recipientEmail', e.target.value)}
+                    data-testid="input-join-request-email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">School Name *</label>
+                  <Input
+                    value={formData.joinRequest.schoolName}
+                    onChange={(e) => updateFormData('joinRequest', 'schoolName', e.target.value)}
+                    data-testid="input-join-request-school"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Requester Name *</label>
+                  <Input
+                    value={formData.joinRequest.requesterName}
+                    onChange={(e) => updateFormData('joinRequest', 'requesterName', e.target.value)}
+                    data-testid="input-join-request-requester"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Requester Email *</label>
+                  <Input
+                    type="email"
+                    value={formData.joinRequest.requesterEmail}
+                    onChange={(e) => updateFormData('joinRequest', 'requesterEmail', e.target.value)}
+                    data-testid="input-join-request-requester-email"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Evidence *</label>
+                <Textarea
+                  value={formData.joinRequest.evidence}
+                  onChange={(e) => updateFormData('joinRequest', 'evidence', e.target.value)}
+                  rows={3}
+                  data-testid="textarea-join-request-evidence"
+                />
+              </div>
+              <Button
+                onClick={() => handleSendEmail('joinRequest', '/api/admin/test-email/join-request', formData.joinRequest)}
+                disabled={loadingStates.joinRequest}
+                data-testid="button-send-join-request"
+              >
+                {loadingStates.joinRequest ? 'Sending...' : 'Send Join Request'}
+              </Button>
+              <ResultMessage type="joinRequest" />
+            </TabsContent>
+
+            {/* Join Approved */}
+            <TabsContent value="joinApproved" className="space-y-4">
+              <h3 className="font-semibold text-lg">Join Request Approved</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Recipient Email *</label>
+                  <Input
+                    type="email"
+                    value={formData.joinApproved.recipientEmail}
+                    onChange={(e) => updateFormData('joinApproved', 'recipientEmail', e.target.value)}
+                    data-testid="input-join-approved-email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">School Name *</label>
+                  <Input
+                    value={formData.joinApproved.schoolName}
+                    onChange={(e) => updateFormData('joinApproved', 'schoolName', e.target.value)}
+                    data-testid="input-join-approved-school"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-2">Reviewer Name *</label>
+                  <Input
+                    value={formData.joinApproved.reviewerName}
+                    onChange={(e) => updateFormData('joinApproved', 'reviewerName', e.target.value)}
+                    data-testid="input-join-approved-reviewer"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Review Notes (Optional)</label>
+                <Textarea
+                  value={formData.joinApproved.reviewNotes}
+                  onChange={(e) => updateFormData('joinApproved', 'reviewNotes', e.target.value)}
+                  rows={3}
+                  data-testid="textarea-join-approved-notes"
+                />
+              </div>
+              <Button
+                onClick={() => handleSendEmail('joinApproved', '/api/admin/test-email/join-approved', formData.joinApproved)}
+                disabled={loadingStates.joinApproved}
+                data-testid="button-send-join-approved"
+              >
+                {loadingStates.joinApproved ? 'Sending...' : 'Send Approval Email'}
+              </Button>
+              <ResultMessage type="joinApproved" />
+            </TabsContent>
+
+            {/* Evidence Submitted */}
+            <TabsContent value="evidenceSubmitted" className="space-y-4">
+              <h3 className="font-semibold text-lg">Evidence Submitted</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Recipient Email *</label>
+                  <Input
+                    type="email"
+                    value={formData.evidenceSubmitted.recipientEmail}
+                    onChange={(e) => updateFormData('evidenceSubmitted', 'recipientEmail', e.target.value)}
+                    data-testid="input-evidence-submitted-email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">School Name *</label>
+                  <Input
+                    value={formData.evidenceSubmitted.schoolName}
+                    onChange={(e) => updateFormData('evidenceSubmitted', 'schoolName', e.target.value)}
+                    data-testid="input-evidence-submitted-school"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Evidence Title *</label>
+                  <Input
+                    value={formData.evidenceSubmitted.evidenceTitle}
+                    onChange={(e) => updateFormData('evidenceSubmitted', 'evidenceTitle', e.target.value)}
+                    data-testid="input-evidence-submitted-title"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Stage *</label>
+                  <Select
+                    value={formData.evidenceSubmitted.stage}
+                    onValueChange={(value) => updateFormData('evidenceSubmitted', 'stage', value)}
+                  >
+                    <SelectTrigger data-testid="select-evidence-submitted-stage">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Stage 1">Stage 1</SelectItem>
+                      <SelectItem value="Stage 2">Stage 2</SelectItem>
+                      <SelectItem value="Stage 3">Stage 3</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Button
+                onClick={() => handleSendEmail('evidenceSubmitted', '/api/admin/test-email/evidence-submitted', formData.evidenceSubmitted)}
+                disabled={loadingStates.evidenceSubmitted}
+                data-testid="button-send-evidence-submitted"
+              >
+                {loadingStates.evidenceSubmitted ? 'Sending...' : 'Send Submission Confirmation'}
+              </Button>
+              <ResultMessage type="evidenceSubmitted" />
+            </TabsContent>
+
+            {/* Evidence Approved */}
+            <TabsContent value="evidenceApproved" className="space-y-4">
+              <h3 className="font-semibold text-lg">Evidence Approved</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Recipient Email *</label>
+                  <Input
+                    type="email"
+                    value={formData.evidenceApproved.recipientEmail}
+                    onChange={(e) => updateFormData('evidenceApproved', 'recipientEmail', e.target.value)}
+                    data-testid="input-evidence-approved-email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">School Name *</label>
+                  <Input
+                    value={formData.evidenceApproved.schoolName}
+                    onChange={(e) => updateFormData('evidenceApproved', 'schoolName', e.target.value)}
+                    data-testid="input-evidence-approved-school"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-2">Evidence Title *</label>
+                  <Input
+                    value={formData.evidenceApproved.evidenceTitle}
+                    onChange={(e) => updateFormData('evidenceApproved', 'evidenceTitle', e.target.value)}
+                    data-testid="input-evidence-approved-title"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={() => handleSendEmail('evidenceApproved', '/api/admin/test-email/evidence-approved', formData.evidenceApproved)}
+                disabled={loadingStates.evidenceApproved}
+                data-testid="button-send-evidence-approved"
+              >
+                {loadingStates.evidenceApproved ? 'Sending...' : 'Send Approval Email'}
+              </Button>
+              <ResultMessage type="evidenceApproved" />
+            </TabsContent>
+
+            {/* Evidence Revision */}
+            <TabsContent value="evidenceRevision" className="space-y-4">
+              <h3 className="font-semibold text-lg">Evidence Needs Revision</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Recipient Email *</label>
+                  <Input
+                    type="email"
+                    value={formData.evidenceRevision.recipientEmail}
+                    onChange={(e) => updateFormData('evidenceRevision', 'recipientEmail', e.target.value)}
+                    data-testid="input-evidence-revision-email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">School Name *</label>
+                  <Input
+                    value={formData.evidenceRevision.schoolName}
+                    onChange={(e) => updateFormData('evidenceRevision', 'schoolName', e.target.value)}
+                    data-testid="input-evidence-revision-school"
+                  />
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-2">Evidence Title *</label>
+                  <Input
+                    value={formData.evidenceRevision.evidenceTitle}
+                    onChange={(e) => updateFormData('evidenceRevision', 'evidenceTitle', e.target.value)}
+                    data-testid="input-evidence-revision-title"
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-sm font-medium mb-2">Feedback *</label>
+                <Textarea
+                  value={formData.evidenceRevision.feedback}
+                  onChange={(e) => updateFormData('evidenceRevision', 'feedback', e.target.value)}
+                  rows={3}
+                  data-testid="textarea-evidence-revision-feedback"
+                />
+              </div>
+              <Button
+                onClick={() => handleSendEmail('evidenceRevision', '/api/admin/test-email/evidence-revision', formData.evidenceRevision)}
+                disabled={loadingStates.evidenceRevision}
+                data-testid="button-send-evidence-revision"
+              >
+                {loadingStates.evidenceRevision ? 'Sending...' : 'Send Revision Request'}
+              </Button>
+              <ResultMessage type="evidenceRevision" />
+            </TabsContent>
+
+            {/* New Evidence for Admin */}
+            <TabsContent value="newEvidence" className="space-y-4">
+              <h3 className="font-semibold text-lg">New Evidence for Admin</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium mb-2">Recipient Email (Admin) *</label>
+                  <Input
+                    type="email"
+                    value={formData.newEvidence.recipientEmail}
+                    onChange={(e) => updateFormData('newEvidence', 'recipientEmail', e.target.value)}
+                    data-testid="input-new-evidence-email"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">School Name *</label>
+                  <Input
+                    value={formData.newEvidence.schoolName}
+                    onChange={(e) => updateFormData('newEvidence', 'schoolName', e.target.value)}
+                    data-testid="input-new-evidence-school"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Evidence Title *</label>
+                  <Input
+                    value={formData.newEvidence.evidenceTitle}
+                    onChange={(e) => updateFormData('newEvidence', 'evidenceTitle', e.target.value)}
+                    data-testid="input-new-evidence-title"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-2">Stage *</label>
+                  <Select
+                    value={formData.newEvidence.stage}
+                    onValueChange={(value) => updateFormData('newEvidence', 'stage', value)}
+                  >
+                    <SelectTrigger data-testid="select-new-evidence-stage">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Stage 1">Stage 1</SelectItem>
+                      <SelectItem value="Stage 2">Stage 2</SelectItem>
+                      <SelectItem value="Stage 3">Stage 3</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="col-span-2">
+                  <label className="block text-sm font-medium mb-2">Submitter Name *</label>
+                  <Input
+                    value={formData.newEvidence.submitterName}
+                    onChange={(e) => updateFormData('newEvidence', 'submitterName', e.target.value)}
+                    data-testid="input-new-evidence-submitter"
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={() => handleSendEmail('newEvidence', '/api/admin/test-email/new-evidence', formData.newEvidence)}
+                disabled={loadingStates.newEvidence}
+                data-testid="button-send-new-evidence"
+              >
+                {loadingStates.newEvidence ? 'Sending...' : 'Send Admin Notification'}
+              </Button>
+              <ResultMessage type="newEvidence" />
+            </TabsContent>
+          </Tabs>
         </CardContent>
       </Card>
 
@@ -2259,89 +2696,230 @@ function EmailManagementSection({
             Send Bulk Emails
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium mb-2">Recipients</label>
-            <Select 
-              value={emailForm.recipientType} 
-              onValueChange={(value) => setEmailForm((prev: any) => ({ ...prev, recipientType: value }))}
-            >
-              <SelectTrigger data-testid="select-recipient-type">
-                <SelectValue placeholder="Select recipients" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all_teachers">All Teachers</SelectItem>
-                <SelectItem value="schools">Schools (with current filters)</SelectItem>
-                <SelectItem value="custom">Custom List</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium mb-2">Email Template</label>
-            <Select 
-              value={emailForm.template} 
-              onValueChange={(value) => setEmailForm((prev: any) => ({ ...prev, template: value }))}
-            >
-              <SelectTrigger data-testid="select-email-template">
-                <SelectValue placeholder="Select template" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="announcement">Announcement</SelectItem>
-                <SelectItem value="reminder">Reminder</SelectItem>
-                <SelectItem value="invitation">Invitation</SelectItem>
-                <SelectItem value="newsletter">Newsletter</SelectItem>
-                <SelectItem value="custom">Custom</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          {emailForm.recipientType === 'custom' && (
-            <div>
-              <label className="block text-sm font-medium mb-2">Email Addresses</label>
-              <Textarea
-                placeholder="Enter email addresses (one per line or comma separated)"
-                value={emailForm.recipients}
-                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, recipients: e.target.value }))}
-                rows={4}
-                data-testid="textarea-custom-recipients"
-              />
+        <CardContent className="space-y-6">
+          {/* Recipient Selection */}
+          <div className="space-y-4 p-4 bg-gray-50 rounded-lg">
+            <h3 className="text-sm font-semibold text-gray-700">Recipient Selection</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">Recipients *</label>
+                <Select 
+                  value={emailForm.recipientType} 
+                  onValueChange={(value) => setEmailForm((prev: any) => ({ ...prev, recipientType: value }))}
+                >
+                  <SelectTrigger data-testid="select-recipient-type">
+                    <SelectValue placeholder="Select recipients" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all_teachers">All Teachers</SelectItem>
+                    <SelectItem value="schools">Schools (with current filters)</SelectItem>
+                    <SelectItem value="custom">Custom List</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium mb-2">Email Template</label>
+                <Select 
+                  value={emailForm.template} 
+                  onValueChange={(value) => setEmailForm((prev: any) => ({ ...prev, template: value }))}
+                >
+                  <SelectTrigger data-testid="select-email-template">
+                    <SelectValue placeholder="Select template" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="announcement">Announcement</SelectItem>
+                    <SelectItem value="reminder">Reminder</SelectItem>
+                    <SelectItem value="invitation">Invitation</SelectItem>
+                    <SelectItem value="newsletter">Newsletter</SelectItem>
+                    <SelectItem value="custom">Custom</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
-          )}
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Subject</label>
-            <Input
-              placeholder="Email subject"
-              value={emailForm.subject}
-              onChange={(e) => setEmailForm((prev: any) => ({ ...prev, subject: e.target.value }))}
-              data-testid="input-email-subject"
-            />
+            {emailForm.recipientType === 'custom' && (
+              <div>
+                <label className="block text-sm font-medium mb-2">Email Addresses *</label>
+                <Textarea
+                  placeholder="Enter email addresses (one per line or comma separated)"
+                  value={emailForm.recipients}
+                  onChange={(e) => setEmailForm((prev: any) => ({ ...prev, recipients: e.target.value }))}
+                  rows={4}
+                  data-testid="textarea-custom-recipients"
+                  className="font-mono text-sm"
+                />
+                <p className="text-xs text-gray-500 mt-1">
+                  {emailForm.recipients.split(/[,\n]/).filter((e: string) => e.trim()).length} email(s)
+                </p>
+              </div>
+            )}
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Content</label>
-            <Textarea
-              placeholder="Email content"
-              value={emailForm.content}
-              onChange={(e) => setEmailForm((prev: any) => ({ ...prev, content: e.target.value }))}
-              rows={6}
-              data-testid="textarea-email-content"
-            />
+          {/* Email Content */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-gray-700">Email Content</h3>
+            
+            <div>
+              <label className="block text-sm font-medium mb-2">Subject *</label>
+              <Input
+                placeholder="Email subject"
+                value={emailForm.subject}
+                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, subject: e.target.value }))}
+                data-testid="input-email-subject"
+                maxLength={200}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                {emailForm.subject.length}/200 characters
+              </p>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium">HTML Content *</label>
+                <span className="text-xs text-gray-500">Supports HTML formatting</span>
+              </div>
+              <Textarea
+                placeholder="Enter HTML content for the email body. You can use HTML tags for formatting."
+                value={emailForm.content}
+                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, content: e.target.value }))}
+                rows={10}
+                data-testid="textarea-email-content"
+                className="font-mono text-sm"
+              />
+              <div className="flex items-center justify-between mt-1">
+                <p className="text-xs text-gray-500">
+                  {emailForm.content.length}/10,000 characters
+                </p>
+                <p className="text-xs text-gray-500">
+                  ~{Math.ceil(emailForm.content.split(/\s+/).filter((w: string) => w).length / 200)} min read
+                </p>
+              </div>
+            </div>
           </div>
 
+          {/* Preview and Test Section */}
+          <div className="space-y-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h3 className="text-sm font-semibold text-gray-700">Preview & Test</h3>
+            
+            <div className="flex flex-wrap gap-3">
+              <Button
+                variant="outline"
+                onClick={() => setPreviewDialogOpen(true)}
+                disabled={!emailForm.subject || !emailForm.content}
+                data-testid="button-preview-email"
+                className="flex-1 min-w-[150px]"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Preview Email
+              </Button>
+              
+              <div className="flex-1 min-w-[300px] flex gap-2">
+                <Input
+                  placeholder="test@example.com"
+                  value={testEmail}
+                  onChange={(e) => setTestEmail(e.target.value)}
+                  data-testid="input-test-email"
+                  type="email"
+                  className="flex-1"
+                />
+                <Button
+                  variant="outline"
+                  onClick={handleSendTestEmail}
+                  disabled={!emailForm.subject || !emailForm.content || !testEmail.trim() || testEmailSending}
+                  data-testid="button-send-test-email"
+                >
+                  {testEmailSending ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600 mr-2"></div>
+                      Sending...
+                    </>
+                  ) : (
+                    <>
+                      <Mail className="h-4 w-4 mr-2" />
+                      Send Test
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          </div>
+
+          {/* Send Bulk Email Button */}
           <Button
-            onClick={handleSendBulkEmail}
+            onClick={() => setBulkEmailConfirmOpen(true)}
             disabled={!emailForm.subject || !emailForm.content || 
               (emailForm.recipientType === 'custom' && !emailForm.recipients.trim())}
-            className="w-full bg-coral hover:bg-coral/90"
+            className="w-full bg-coral hover:bg-coral/90 h-12 text-base"
             data-testid="button-send-bulk-email"
           >
-            <Mail className="h-4 w-4 mr-2" />
-            Send Bulk Email
+            <Mail className="h-5 w-5 mr-2" />
+            Send Bulk Email to {emailForm.recipientType === 'all_teachers' ? 'All Teachers' : 
+              emailForm.recipientType === 'schools' ? 'Filtered Schools' : 'Custom Recipients'}
           </Button>
         </CardContent>
       </Card>
+
+      {/* Preview Dialog */}
+      <Dialog open={previewDialogOpen} onOpenChange={setPreviewDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto" data-testid="dialog-email-preview">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Email Preview
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="border-b pb-4">
+              <p className="text-sm text-gray-500 mb-1">Subject:</p>
+              <p className="text-lg font-semibold" data-testid="text-preview-subject">{emailForm.subject}</p>
+            </div>
+            <div className="border rounded-lg p-6 bg-white min-h-[300px]">
+              <div 
+                dangerouslySetInnerHTML={{ __html: emailForm.content }}
+                data-testid="preview-html-content"
+                className="prose prose-sm max-w-none"
+              />
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Bulk Email Confirmation Dialog */}
+      <AlertDialog open={bulkEmailConfirmOpen} onOpenChange={setBulkEmailConfirmOpen}>
+        <AlertDialogContent data-testid="dialog-confirm-bulk-email">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Bulk Email Send</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-2">
+              <p>Are you sure you want to send this email to:</p>
+              <p className="font-semibold text-gray-900">
+                {emailForm.recipientType === 'all_teachers' ? 'All Teachers' : 
+                  emailForm.recipientType === 'schools' ? 'Teachers in Filtered Schools' : 
+                  `${emailForm.recipients.split(/[,\n]/).filter((e: string) => e.trim()).length} Custom Recipients`}
+              </p>
+              <p className="text-sm">Subject: <span className="font-medium">{emailForm.subject}</span></p>
+              <p className="text-amber-600 mt-3">This action cannot be undone. Make sure you've tested the email first.</p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-bulk-send">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={async () => {
+                try {
+                  await handleSendBulkEmail();
+                  setBulkEmailConfirmOpen(false);
+                } catch (error) {
+                  // Error already handled in handleSendBulkEmail
+                }
+              }}
+              className="bg-coral hover:bg-coral/90"
+              data-testid="button-confirm-bulk-send"
+            >
+              Send Bulk Email
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -2846,7 +3424,6 @@ export default function Admin() {
 
       const result = await response.json();
       
-      setEmailDialogOpen(false);
       setEmailForm({
         recipientType: 'all_teachers',
         subject: '',
@@ -2859,12 +3436,15 @@ export default function Admin() {
         title: "Emails Sent Successfully",
         description: `${result.results.sent} emails sent successfully${result.results.failed > 0 ? `, ${result.results.failed} failed` : ''}.`,
       });
+      
+      return result;
     } catch (error) {
       toast({
         title: "Failed to Send Emails",
         description: "There was an error sending the bulk emails. Please try again.",
         variant: "destructive",
       });
+      throw error;
     }
   };
 
