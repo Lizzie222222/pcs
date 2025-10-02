@@ -2312,6 +2312,7 @@ function EmailManagementSection({
               </div>
               <Button
                 onClick={() => handleSendEmail('welcome', '/api/admin/test-email', {
+                  recipientEmail: formData.welcome.recipientEmail,
                   email: formData.welcome.recipientEmail,
                   schoolName: formData.welcome.schoolName
                 })}
