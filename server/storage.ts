@@ -10,6 +10,7 @@ import {
   mailchimpSubscriptions,
   certificates,
   teacherInvitations,
+  adminInvitations,
   verificationRequests,
   type User,
   type UpsertUser,
@@ -33,6 +34,8 @@ import {
   type InsertCertificate,
   type TeacherInvitation,
   type InsertTeacherInvitation,
+  type AdminInvitation,
+  type InsertAdminInvitation,
   type VerificationRequest,
   type InsertVerificationRequest,
   type CreatePasswordUser,
@@ -97,6 +100,13 @@ export interface IStorage {
   getSchoolInvitations(schoolId: string): Promise<TeacherInvitation[]>;
   acceptTeacherInvitation(token: string): Promise<TeacherInvitation | undefined>;
   expireTeacherInvitation(token: string): Promise<TeacherInvitation | undefined>;
+
+  // Admin invitation operations
+  createAdminInvitation(invitation: InsertAdminInvitation): Promise<AdminInvitation>;
+  getAdminInvitationByToken(token: string): Promise<AdminInvitation | undefined>;
+  getAllAdminInvitations(): Promise<AdminInvitation[]>;
+  acceptAdminInvitation(token: string): Promise<AdminInvitation | undefined>;
+  expireAdminInvitation(token: string): Promise<AdminInvitation | undefined>;
 
   // Verification request operations
   createVerificationRequest(request: InsertVerificationRequest): Promise<VerificationRequest>;
@@ -734,6 +744,64 @@ export class DatabaseStorage implements IStorage {
         and(
           eq(teacherInvitations.token, token),
           eq(teacherInvitations.status, 'pending')
+        )
+      )
+      .returning();
+    return invitation;
+  }
+
+  // Admin invitation operations
+  async createAdminInvitation(invitationData: InsertAdminInvitation): Promise<AdminInvitation> {
+    const [invitation] = await db
+      .insert(adminInvitations)
+      .values(invitationData)
+      .returning();
+    return invitation;
+  }
+
+  async getAdminInvitationByToken(token: string): Promise<AdminInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(adminInvitations)
+      .where(eq(adminInvitations.token, token));
+    return invitation;
+  }
+
+  async getAllAdminInvitations(): Promise<AdminInvitation[]> {
+    return await db
+      .select()
+      .from(adminInvitations)
+      .orderBy(desc(adminInvitations.createdAt));
+  }
+
+  async acceptAdminInvitation(token: string): Promise<AdminInvitation | undefined> {
+    const [invitation] = await db
+      .update(adminInvitations)
+      .set({
+        status: 'accepted' as any,
+        acceptedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(adminInvitations.token, token),
+          eq(adminInvitations.status, 'pending'),
+          sql`${adminInvitations.expiresAt} > NOW()`
+        )
+      )
+      .returning();
+    return invitation;
+  }
+
+  async expireAdminInvitation(token: string): Promise<AdminInvitation | undefined> {
+    const [invitation] = await db
+      .update(adminInvitations)
+      .set({
+        status: 'expired' as any,
+      })
+      .where(
+        and(
+          eq(adminInvitations.token, token),
+          eq(adminInvitations.status, 'pending')
         )
       )
       .returning();

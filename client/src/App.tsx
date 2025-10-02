@@ -30,6 +30,8 @@ const Admin = lazy(() => import("@/pages/admin"));
 const Login = lazy(() => import("@/pages/login"));
 const Register = lazy(() => import("@/pages/register"));
 const InvitationAccept = lazy(() => import("@/pages/InvitationAccept"));
+const AdminInvitationAccept = lazy(() => import("@/pages/AdminInvitationAccept"));
+const TestLogin = lazy(() => import("@/pages/TestLogin"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
@@ -110,6 +112,8 @@ function Router() {
             <Route path="/login" component={Login} />
             <Route path="/register" component={Register} />
             <Route path="/invitations/:token" component={InvitationAccept} />
+            <Route path="/admin-invitations/:token" component={AdminInvitationAccept} />
+            {import.meta.env.DEV && <Route path="/test-login" component={TestLogin} />}
             <Route path="/resources" component={Resources} />
             <Route path="/inspiration" component={Inspiration} />
             <Route path="/case-study/:id" component={CaseStudyDetail} />

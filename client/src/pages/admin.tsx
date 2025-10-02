@@ -49,7 +49,8 @@ import {
   Calendar,
   MapPin,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  UserPlus
 } from "lucide-react";
 
 import { 
@@ -814,9 +815,33 @@ function UserManagementTab() {
   const [filterStatus, setFilterStatus] = useState<'all' | 'with-schools' | 'without-schools'>('all');
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedUserEmail, setSelectedUserEmail] = useState('');
+  const [inviteAdminDialogOpen, setInviteAdminDialogOpen] = useState(false);
+  const [inviteAdminEmail, setInviteAdminEmail] = useState('');
 
   const { data: usersWithSchools = [], isLoading } = useQuery<UserWithSchools[]>({
     queryKey: ['/api/admin/users'],
+  });
+
+  const inviteAdminMutation = useMutation({
+    mutationFn: async (email: string) => {
+      await apiRequest('POST', '/api/admin/invite-admin', { email });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Invitation Sent",
+        description: "Admin invitation has been sent successfully.",
+      });
+      setInviteAdminDialogOpen(false);
+      setInviteAdminEmail('');
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Invitation Failed",
+        description: error.message || "Failed to send admin invitation. Please try again.",
+        variant: "destructive",
+      });
+    },
   });
 
   const filteredUsers = usersWithSchools.filter((item) => {
@@ -842,13 +867,77 @@ function UserManagementTab() {
     return <LoadingSpinner message="Loading users..." />;
   }
 
+  const handleInviteAdmin = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteAdminEmail.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter an email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+    inviteAdminMutation.mutate(inviteAdminEmail);
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Users className="h-5 w-5" />
-          User Management
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            User Management
+          </CardTitle>
+          <Dialog open={inviteAdminDialogOpen} onOpenChange={setInviteAdminDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="default" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-invite-admin">
+                <UserPlus className="h-4 w-4 mr-2" />
+                Invite Admin
+              </Button>
+            </DialogTrigger>
+            <DialogContent data-testid="dialog-invite-admin">
+              <DialogHeader>
+                <DialogTitle>Invite New Administrator</DialogTitle>
+              </DialogHeader>
+              <form onSubmit={handleInviteAdmin} className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Email Address *
+                  </label>
+                  <Input
+                    type="email"
+                    value={inviteAdminEmail}
+                    onChange={(e) => setInviteAdminEmail(e.target.value)}
+                    placeholder="admin@example.com"
+                    data-testid="input-admin-email"
+                    required
+                  />
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => {
+                      setInviteAdminDialogOpen(false);
+                      setInviteAdminEmail('');
+                    }}
+                    data-testid="button-cancel-invite"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={inviteAdminMutation.isPending}
+                    className="bg-pcs_blue hover:bg-pcs_blue/90"
+                    data-testid="button-send-admin-invite"
+                  >
+                    {inviteAdminMutation.isPending ? 'Sending...' : 'Send Invitation'}
+                  </Button>
+                </div>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-6">

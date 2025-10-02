@@ -4,12 +4,14 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, type VerificationRequest } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, type VerificationRequest, users } from "@shared/schema";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
+import { db } from "./db";
+import { eq } from "drizzle-orm";
 
 // CSV generation helper with proper escaping
 function generateCSV(data: any[], type: string): string {
@@ -2328,6 +2330,164 @@ export async function registerRoutes(app: Express): Promise<Server> {
         message: "Failed to send test email",
         error: error.message,
       });
+    }
+  });
+
+  // ============= ADMIN INVITATION ROUTES =============
+
+  // POST /api/admin/invite-admin - Invite a user to be an admin
+  app.post('/api/admin/invite-admin', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Validate request body
+      const inviteSchema = z.object({
+        email: z.string().email("Valid email is required"),
+      });
+      const { email } = inviteSchema.parse(req.body);
+      
+      console.log(`[Admin Invitation] Admin ${userId} inviting ${email} to be an admin`);
+      
+      // Generate invitation token
+      const token = randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+      
+      // Create invitation
+      const invitation = await storage.createAdminInvitation({
+        invitedBy: userId,
+        email,
+        token,
+        expiresAt,
+      });
+      
+      console.log(`[Admin Invitation] Created invitation ${invitation.id} for ${email}`);
+      
+      // Get inviter details for email
+      const inviter = await storage.getUser(userId);
+      
+      // Send invitation email
+      await sendAdminInvitationEmail(
+        email,
+        inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : 'An administrator',
+        token,
+        7
+      );
+      
+      console.log(`[Admin Invitation] Sent invitation email to ${email}`);
+      
+      res.status(201).json({ 
+        message: "Invitation sent successfully",
+        invitation: {
+          id: invitation.id,
+          email: invitation.email,
+          expiresAt: invitation.expiresAt,
+        }
+      });
+    } catch (error) {
+      console.error("[Admin Invitation] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to send invitation" });
+    }
+  });
+
+  // GET /api/admin/invitations - Get all admin invitations
+  app.get('/api/admin/invitations', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      console.log(`[Admin Invitations] Admin ${userId} fetching all admin invitations`);
+      
+      const invitations = await storage.getAllAdminInvitations();
+      console.log(`[Admin Invitations] Found ${invitations.length} invitations`);
+      
+      res.json(invitations);
+    } catch (error) {
+      console.error("[Admin Invitations] Error:", error);
+      res.status(500).json({ message: "Failed to fetch invitations" });
+    }
+  });
+
+  // GET /api/admin-invitations/:token - Get admin invitation details by token (public)
+  app.get('/api/admin-invitations/:token', async (req, res) => {
+    try {
+      const { token } = req.params;
+      
+      console.log(`[Get Admin Invitation] Fetching invitation details for token ${token}`);
+      
+      // Get invitation by token
+      const invitation = await storage.getAdminInvitationByToken(token);
+      
+      if (!invitation) {
+        console.log(`[Get Admin Invitation] Invitation not found`);
+        return res.status(404).json({ message: "Invitation not found or has expired" });
+      }
+      
+      // Check if invitation is expired
+      if (new Date() > new Date(invitation.expiresAt)) {
+        console.log(`[Get Admin Invitation] Invitation expired`);
+        return res.status(410).json({ message: "This invitation has expired" });
+      }
+      
+      // Check if already accepted
+      if (invitation.status === 'accepted') {
+        console.log(`[Get Admin Invitation] Invitation already accepted`);
+        return res.status(410).json({ message: "This invitation has already been accepted" });
+      }
+      
+      // Get inviter details
+      const inviter = await storage.getUser(invitation.invitedBy);
+      
+      console.log(`[Get Admin Invitation] Returning invitation details for ${invitation.email}`);
+      
+      res.json({
+        email: invitation.email,
+        inviterName: inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : 'An administrator',
+        expiresAt: invitation.expiresAt,
+        status: invitation.status,
+      });
+    } catch (error) {
+      console.error("[Get Admin Invitation] Error:", error);
+      res.status(500).json({ message: "Failed to fetch invitation details" });
+    }
+  });
+
+  // POST /api/admin-invitations/:token/accept - Accept an admin invitation
+  app.post('/api/admin-invitations/:token/accept', isAuthenticated, async (req: any, res) => {
+    try {
+      const { token } = req.params;
+      const userId = req.user.id;
+      
+      console.log(`[Accept Admin Invitation] User ${userId} accepting invitation with token ${token}`);
+      
+      // Accept the invitation
+      const invitation = await storage.acceptAdminInvitation(token);
+      
+      if (!invitation) {
+        console.log(`[Accept Admin Invitation] Invitation not found or expired`);
+        return res.status(404).json({ message: "Invitation not found or has expired" });
+      }
+      
+      // Verify the email matches the authenticated user
+      const user = await storage.getUser(userId);
+      if (user?.email !== invitation.email) {
+        console.log(`[Accept Admin Invitation] Email mismatch - invitation for ${invitation.email}, user is ${user?.email}`);
+        return res.status(403).json({ message: "This invitation is for a different email address" });
+      }
+      
+      // Update user's isAdmin to true
+      await db.update(users).set({ isAdmin: true }).where(eq(users.id, userId));
+      
+      console.log(`[Accept Admin Invitation] User ${userId} is now an admin`);
+      
+      res.json({ 
+        message: "Admin invitation accepted successfully. You are now an administrator.",
+      });
+    } catch (error) {
+      console.error("[Accept Admin Invitation] Error:", error);
+      res.status(500).json({ message: "Failed to accept invitation" });
     }
   });
 

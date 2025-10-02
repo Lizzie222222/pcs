@@ -139,6 +139,17 @@ export const teacherInvitations = pgTable("teacher_invitations", {
   acceptedAt: timestamp("accepted_at"),
 });
 
+export const adminInvitations = pgTable("admin_invitations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  invitedBy: varchar("invited_by").notNull().references(() => users.id),
+  email: varchar("email").notNull(),
+  token: varchar("token").notNull().unique(),
+  status: invitationStatusEnum("status").default('pending'),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+  acceptedAt: timestamp("accepted_at"),
+});
+
 export const verificationRequests = pgTable("verification_requests", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -263,6 +274,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   emailLogs: many(emailLogs),
   issuedCertificates: many(certificates),
   sentInvitations: many(teacherInvitations),
+  sentAdminInvitations: many(adminInvitations),
   invitedSchoolUsers: many(schoolUsers, { relationName: "invitedBy" }),
   verificationRequests: many(verificationRequests, { relationName: "userVerificationRequests" }),
   reviewedVerificationRequests: many(verificationRequests, { relationName: "reviewedVerificationRequests" }),
@@ -357,6 +369,13 @@ export const teacherInvitationsRelations = relations(teacherInvitations, ({ one 
   }),
   inviter: one(users, {
     fields: [teacherInvitations.invitedBy],
+    references: [users.id],
+  }),
+}));
+
+export const adminInvitationsRelations = relations(adminInvitations, ({ one }) => ({
+  inviter: one(users, {
+    fields: [adminInvitations.invitedBy],
     references: [users.id],
   }),
 }));
@@ -528,6 +547,12 @@ export const insertTeacherInvitationSchema = createInsertSchema(teacherInvitatio
   acceptedAt: true,
 });
 
+export const insertAdminInvitationSchema = createInsertSchema(adminInvitations).omit({
+  id: true,
+  createdAt: true,
+  acceptedAt: true,
+});
+
 export const insertVerificationRequestSchema = createInsertSchema(verificationRequests).omit({
   id: true,
   createdAt: true,
@@ -559,6 +584,8 @@ export type Certificate = typeof certificates.$inferSelect;
 export type InsertCertificate = z.infer<typeof insertCertificateSchema>;
 export type TeacherInvitation = typeof teacherInvitations.$inferSelect;
 export type InsertTeacherInvitation = z.infer<typeof insertTeacherInvitationSchema>;
+export type AdminInvitation = typeof adminInvitations.$inferSelect;
+export type InsertAdminInvitation = z.infer<typeof insertAdminInvitationSchema>;
 export type VerificationRequest = typeof verificationRequests.$inferSelect;
 export type InsertVerificationRequest = z.infer<typeof insertVerificationRequestSchema>;
 
