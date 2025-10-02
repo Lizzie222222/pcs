@@ -193,46 +193,13 @@ export async function sendVerificationRejectionEmail(
     to: requesterEmail,
     from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
     subject: `Update on Your Request to Join ${schoolName}`,
-    html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #607D8B 0%, #455A64 100%); padding: 40px 20px; text-align: center;">
-          <h1 style="color: white; margin: 0; font-size: 28px;">📋 Request Status Update</h1>
-        </div>
-        <div style="padding: 40px 20px; background: #f9f9f9;">
-          <h2 style="color: #0B3D5D;">Update on Your Verification Request</h2>
-          <p style="color: #666; line-height: 1.6;">
-            <strong>${reviewerName}</strong> has reviewed your request to join <strong>${schoolName}</strong> on Plastic Clever Schools.
-          </p>
-          ${reviewNotes ? `
-          <div style="background: white; padding: 20px; border-left: 4px solid #607D8B; margin: 20px 0;">
-            <h3 style="color: #0B3D5D; margin-top: 0;">Feedback from ${reviewerName}:</h3>
-            <p style="color: #666; line-height: 1.6; white-space: pre-wrap;">${reviewNotes}</p>
-          </div>
-          ` : `
-          <p style="color: #666; line-height: 1.6;">
-            Unfortunately, your request was not approved at this time.
-          </p>
-          `}
-          <div style="background: #ECEFF1; border-left: 4px solid #607D8B; padding: 15px; margin: 20px 0;">
-            <p style="color: #666; margin: 0; line-height: 1.6;">
-              💡 <strong>What to do next:</strong> If you believe this is an error, please contact ${schoolName} directly to verify your affiliation and resolve any concerns.
-            </p>
-          </div>
-          <p style="color: #666; line-height: 1.6;">
-            If you have questions about the Plastic Clever Schools program or need assistance, our support team is here to help.
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}/help" 
-               style="background: #607D8B; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold;">
-              Visit Help Center
-            </a>
-          </div>
-        </div>
-        <div style="background: #0B3D5D; color: white; padding: 20px; text-align: center; font-size: 14px;">
-          <p>© 2024 Plastic Clever Schools. Making waves for a plastic-free future.</p>
-        </div>
-      </div>
-    `,
+    templateId: 'd-6df35ffa36604ed9a62e919f5fa48962',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      reviewerName: reviewerName,
+      reviewNotes: reviewNotes || '',
+      helpCenterUrl: `${process.env.FRONTEND_URL || 'https://plasticclever.org'}/help`,
+    },
   });
 }
 
