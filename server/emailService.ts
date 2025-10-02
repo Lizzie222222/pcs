@@ -292,7 +292,7 @@ export async function sendAdminNewEvidenceEmail(
 // Once you have created the template in SendGrid, replace 'BULK_EMAIL_TEMPLATE_ID' 
 // with your actual template ID (e.g., 'd-1234567890abcdef1234567890abcdef').
 
-const BULK_EMAIL_TEMPLATE_ID = 'BULK_EMAIL_TEMPLATE_ID';
+const BULK_EMAIL_TEMPLATE_ID = 'd-b546db54234145adaf87db5db37b3edc';
 
 export interface BulkEmailParams {
   recipients: string[];
