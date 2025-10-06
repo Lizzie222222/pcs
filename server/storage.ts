@@ -141,7 +141,8 @@ export interface IStorage {
   getEvidence(id: string): Promise<Evidence | undefined>;
   getSchoolEvidence(schoolId: string): Promise<Evidence[]>;
   getPendingEvidence(): Promise<Evidence[]>;
-  getAllEvidence(): Promise<Evidence[]>;
+  getAllEvidence(statusFilter?: 'pending' | 'approved' | 'rejected'): Promise<Evidence[]>;
+  getApprovedPublicEvidence(): Promise<Evidence[]>;
   updateEvidenceStatus(
     id: string, 
     status: 'approved' | 'rejected',
@@ -1009,10 +1010,30 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(evidence.submittedAt));
   }
 
-  async getAllEvidence(): Promise<Evidence[]> {
+  async getAllEvidence(statusFilter?: 'pending' | 'approved' | 'rejected'): Promise<Evidence[]> {
+    if (statusFilter) {
+      return await db
+        .select()
+        .from(evidence)
+        .where(eq(evidence.status, statusFilter))
+        .orderBy(desc(evidence.submittedAt));
+    }
     return await db
       .select()
       .from(evidence)
+      .orderBy(desc(evidence.submittedAt));
+  }
+
+  async getApprovedPublicEvidence(): Promise<Evidence[]> {
+    return await db
+      .select()
+      .from(evidence)
+      .where(
+        and(
+          eq(evidence.status, 'approved'),
+          eq(evidence.visibility, 'public')
+        )
+      )
       .orderBy(desc(evidence.submittedAt));
   }
 

@@ -1365,7 +1365,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get pending evidence for review
+  // Get evidence with optional status filter
+  app.get('/api/admin/evidence', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const status = req.query.status as 'pending' | 'approved' | 'rejected' | undefined;
+      const evidence = await storage.getAllEvidence(status);
+      res.json(evidence);
+    } catch (error) {
+      console.error("Error fetching evidence:", error);
+      res.status(500).json({ message: "Failed to fetch evidence" });
+    }
+  });
+
+  // Get pending evidence for review (kept for backward compatibility)
   app.get('/api/admin/evidence/pending', isAuthenticated, requireAdmin, async (req, res) => {
     try {
       const evidence = await storage.getPendingEvidence();
@@ -1373,6 +1385,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching pending evidence:", error);
       res.status(500).json({ message: "Failed to fetch pending evidence" });
+    }
+  });
+
+  // Get approved and public evidence for case studies
+  app.get('/api/admin/evidence/approved-public', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const evidence = await storage.getApprovedPublicEvidence();
+      res.json(evidence);
+    } catch (error) {
+      console.error("Error fetching approved public evidence:", error);
+      res.status(500).json({ message: "Failed to fetch approved public evidence" });
     }
   });
 
