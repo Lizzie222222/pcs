@@ -263,45 +263,70 @@ export default function Landing() {
       </section>
 
       {/* Teacher Testimonial & Video Section */}
-      <section className="py-16 lg:py-24 bg-white">
+      <section className="py-16 lg:py-24 bg-gradient-to-br from-ocean-blue/5 via-white to-teal/5">
         <div className="container-width">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-            {/* Teacher Testimonial */}
-            <div className="space-y-6" data-testid="section-teacher-testimonial">
-              <div className="flex items-center gap-1 mb-4">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-5 h-5 text-yellow fill-current" />
-                ))}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+            {/* Teacher Testimonial - Enhanced Card */}
+            <div className="relative" data-testid="section-teacher-testimonial">
+              {/* Decorative Quote Mark */}
+              <div className="absolute -top-4 -left-4 text-ocean-blue/10 text-9xl font-serif leading-none select-none" aria-hidden="true">
+                "
               </div>
-              <blockquote className="text-2xl lg:text-3xl font-bold text-navy leading-tight mb-6">
-                "PLASTIC CLEVER SCHOOLS IS THE BEST..."
-              </blockquote>
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  JS
+              
+              {/* Testimonial Card */}
+              <div className="relative bg-white rounded-2xl p-8 lg:p-10 shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+                {/* Star Rating */}
+                <div className="flex items-center gap-1 mb-6">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} className="w-6 h-6 text-yellow fill-current" />
+                  ))}
                 </div>
-                <div>
-                  <p className="font-semibold text-navy text-lg">Teacher name</p>
-                  <p className="text-gray-600">School name</p>
+                
+                {/* Quote Text */}
+                <blockquote className="text-2xl lg:text-3xl font-bold text-navy leading-tight mb-8 relative">
+                  PLASTIC CLEVER SCHOOLS IS THE BEST...
+                </blockquote>
+                
+                {/* Author Info */}
+                <div className="flex items-center gap-4 pt-6 border-t border-gray-200">
+                  <div className="w-14 h-14 bg-gradient-to-br from-ocean-blue to-teal rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                    JS
+                  </div>
+                  <div>
+                    <p className="font-semibold text-navy text-lg">Teacher name</p>
+                    <p className="text-gray-600 text-sm">School name</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* What is Plastic Clever Schools Video */}
-            <div className="space-y-4" data-testid="section-intro-video">
-              <h3 className="text-2xl font-bold text-navy">What is Plastic Clever Schools?</h3>
-              <div className="aspect-video rounded-lg overflow-hidden shadow-lg bg-gray-100">
-                <iframe
-                  className="w-full h-full"
-                  src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
-                  title="What is Plastic Clever Schools?"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  data-testid="iframe-intro-video"
-                ></iframe>
+            {/* What is Plastic Clever Schools Video - Enhanced */}
+            <div className="space-y-6" data-testid="section-intro-video">
+              {/* Heading */}
+              <div className="space-y-2">
+                <h3 className="text-3xl lg:text-4xl font-bold text-navy leading-tight">
+                  What is Plastic Clever Schools?
+                </h3>
+                <div className="w-20 h-1 bg-ocean-blue rounded-full"></div>
               </div>
-              <p className="text-sm text-gray-600 italic">
-                [Opening quote from teacher to introduce the video - image as placeholder for lazy loading]
+              
+              {/* Video Container */}
+              <div className="group relative">
+                <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black border-4 border-white ring-2 ring-ocean-blue/20 hover:ring-ocean-blue/40 transition-all duration-300">
+                  <iframe
+                    className="w-full h-full"
+                    src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+                    title="What is Plastic Clever Schools?"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    data-testid="iframe-intro-video"
+                  ></iframe>
+                </div>
+              </div>
+              
+              {/* Caption */}
+              <p className="text-sm text-gray-500 italic pl-4 border-l-4 border-ocean-blue/30">
+                Opening quote from teacher to introduce the video - image as placeholder for lazy loading
               </p>
             </div>
           </div>
