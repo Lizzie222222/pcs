@@ -139,12 +139,12 @@ export function OptimizedImage({
           }
           return `${url.toString()} ${size}w`;
         } else {
-          // For local assets, assume we have different sizes available
-          const basePath = formats.original.replace(/\.[^.]+$/, '');
-          const extension = formats.original.split('.').pop();
-          return `${basePath}-${size}w.${extension} ${size}w`;
+          // For local assets, don't generate srcset since we don't have pre-generated sizes
+          // Just return empty string to use the original image
+          return '';
         }
       })
+      .filter(s => s !== '')
       .join(', ');
   }, [effectiveResponsive, effectiveQuality, respectConnectionSpeed, connectionSpeed.connectionInfo.isSlowConnection]);
 
