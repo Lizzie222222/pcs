@@ -26,21 +26,13 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table (supports email/password + Google OAuth)
-export const users = pgTable("users", {
-  id: varchar("id").primaryKey(),
-  email: varchar("email").unique(),
-  emailVerified: boolean("email_verified").default(false),
-  passwordHash: varchar("password_hash"), // nullable for Google OAuth users
-  googleId: varchar("google_id").unique(), // nullable, unique when not null
-  firstName: varchar("first_name"),
-  lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
-  role: varchar("role").default("teacher"),
-  isAdmin: boolean("is_admin").default(false),
-  createdAt: timestamp("created_at").defaultNow(),
-  updatedAt: timestamp("updated_at").defaultNow(),
-});
+// Define enums before tables
+export const userRoleEnum = pgEnum('user_role', [
+  'teacher',
+  'admin',
+  'partner',
+  'school'
+]);
 
 export const schoolTypeEnum = pgEnum('school_type', [
   'primary',
@@ -72,6 +64,22 @@ export const schoolRoleEnum = pgEnum('school_role', [
   'teacher',
   'pending_teacher'
 ]);
+
+// User storage table (supports email/password + Google OAuth)
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey(),
+  email: varchar("email").unique(),
+  emailVerified: boolean("email_verified").default(false),
+  passwordHash: varchar("password_hash"), // nullable for Google OAuth users
+  googleId: varchar("google_id").unique(), // nullable, unique when not null
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  role: varchar("role").default("teacher"), // Supports: teacher, admin, partner, school
+  isAdmin: boolean("is_admin").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
 
 export const invitationStatusEnum = pgEnum('invitation_status', [
   'pending',
@@ -144,6 +152,7 @@ export const adminInvitations = pgTable("admin_invitations", {
   invitedBy: varchar("invited_by").notNull().references(() => users.id),
   email: varchar("email").notNull(),
   token: varchar("token").notNull().unique(),
+  role: varchar("role").default('admin'), // 'admin' or 'partner'
   status: invitationStatusEnum("status").default('pending'),
   expiresAt: timestamp("expires_at").notNull(),
   createdAt: timestamp("created_at").defaultNow(),

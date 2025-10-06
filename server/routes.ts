@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, type VerificationRequest, users } from "@shared/schema";
 import { z } from "zod";
@@ -1241,6 +1241,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   };
 
+  // Middleware to allow both admin and partner roles
+  const requireAdminOrPartner = async (req: any, res: any, next: any) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || (!user.isAdmin && user.role !== 'partner')) {
+        return res.status(403).json({ message: "Admin or Partner access required" });
+      }
+
+      // Attach user to request for later checks
+      req.adminUser = user;
+      next();
+    } catch (error) {
+      console.error("Error checking admin/partner status:", error);
+      res.status(500).json({ message: "Failed to verify access status" });
+    }
+  };
+
+  // Middleware to block partners from specific actions (role assignment, data downloads)
+  const requireFullAdmin = async (req: any, res: any, next: any) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Unauthorized" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin || user.role === 'partner') {
+        return res.status(403).json({ message: "Full admin access required. Partners cannot perform this action." });
+      }
+
+      next();
+    } catch (error) {
+      console.error("Error checking full admin status:", error);
+      res.status(500).json({ message: "Failed to verify admin status" });
+    }
+  };
+
   // Get admin dashboard stats
   app.get('/api/admin/stats', isAuthenticated, requireAdmin, async (req, res) => {
     try {
@@ -1664,8 +1706,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update user (role, isAdmin, etc.)
-  app.patch('/api/admin/users/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Update user (role, isAdmin, etc.) - Partners cannot perform this action
+  app.patch('/api/admin/users/:id', isAuthenticated, requireFullAdmin, async (req: any, res) => {
     try {
       const { id } = req.params;
       const adminUserId = req.user.id;
@@ -1807,8 +1849,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Export analytics data as CSV/Excel (MUST come before the general export endpoint)
-  app.get('/api/admin/export/analytics', isAuthenticated, requireAdmin, async (req, res) => {
+  // Export analytics data as CSV/Excel (MUST come before the general export endpoint) - Partners cannot download data
+  app.get('/api/admin/export/analytics', isAuthenticated, requireFullAdmin, async (req, res) => {
     try {
       const { format = 'csv' } = req.query;
 
@@ -1875,8 +1917,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Export data as CSV/Excel with filtering support
-  app.get('/api/admin/export/:type', isAuthenticated, requireAdmin, async (req, res) => {
+  // Export data as CSV/Excel with filtering support - Partners cannot download data
+  app.get('/api/admin/export/:type', isAuthenticated, requireFullAdmin, async (req, res) => {
     try {
       const { type } = req.params;
       const { format = 'csv', ...filters } = req.query;
@@ -2401,8 +2443,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ============= ADMIN INVITATION ROUTES =============
 
+  // POST /api/admin/invite-partner - Invite a user to be a partner
+  app.post('/api/admin/invite-partner', isAuthenticated, requireFullAdmin, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Validate request body
+      const inviteSchema = z.object({
+        email: z.string().email("Valid email is required"),
+      });
+      const { email } = inviteSchema.parse(req.body);
+      
+      console.log(`[Partner Invitation] Admin ${userId} inviting ${email} to be a partner`);
+      
+      // Generate invitation token
+      const token = randomBytes(32).toString('hex');
+      const expiresAt = new Date();
+      expiresAt.setDate(expiresAt.getDate() + 7); // 7 days from now
+      
+      // Create invitation with partner role
+      const invitation = await storage.createAdminInvitation({
+        invitedBy: userId,
+        email,
+        token,
+        expiresAt,
+        role: 'partner', // Set as partner instead of admin
+      });
+      
+      console.log(`[Partner Invitation] Created invitation ${invitation.id} for ${email}`);
+      
+      // Get inviter details for email
+      const inviter = await storage.getUser(userId);
+      
+      // Send partner invitation email
+      await sendPartnerInvitationEmail(
+        email,
+        inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : 'An administrator',
+        token,
+        7
+      );
+      
+      console.log(`[Partner Invitation] Sent invitation email to ${email}`);
+      
+      res.status(201).json({ 
+        message: "Partner invitation sent successfully",
+        invitation: {
+          id: invitation.id,
+          email: invitation.email,
+          expiresAt: invitation.expiresAt,
+        }
+      });
+    } catch (error) {
+      console.error("[Partner Invitation] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to send partner invitation" });
+    }
+  });
+
   // POST /api/admin/invite-admin - Invite a user to be an admin
-  app.post('/api/admin/invite-admin', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.post('/api/admin/invite-admin', isAuthenticated, requireFullAdmin, async (req: any, res) => {
     try {
       const userId = req.user.id;
       
@@ -2543,14 +2644,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "This invitation is for a different email address" });
       }
       
-      // Update user's isAdmin to true
-      await db.update(users).set({ isAdmin: true }).where(eq(users.id, userId));
-      
-      console.log(`[Accept Admin Invitation] User ${userId} is now an admin`);
-      
-      res.json({ 
-        message: "Admin invitation accepted successfully. You are now an administrator.",
-      });
+      // Update user's role and admin status based on invitation
+      const invitationRole = invitation.role || 'admin';
+      if (invitationRole === 'partner') {
+        await db.update(users).set({ role: 'partner', isAdmin: false }).where(eq(users.id, userId));
+        console.log(`[Accept Admin Invitation] User ${userId} is now a partner`);
+        res.json({ 
+          message: "Partner invitation accepted successfully. You are now a partner.",
+        });
+      } else {
+        await db.update(users).set({ role: 'admin', isAdmin: true }).where(eq(users.id, userId));
+        console.log(`[Accept Admin Invitation] User ${userId} is now an admin`);
+        res.json({ 
+          message: "Admin invitation accepted successfully. You are now an administrator.",
+        });
+      }
     } catch (error) {
       console.error("[Accept Admin Invitation] Error:", error);
       res.status(500).json({ message: "Failed to accept invitation" });

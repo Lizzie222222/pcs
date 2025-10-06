@@ -311,11 +311,16 @@ function AssignTeacherForm() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedSchool, setSelectedSchool] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  const [selectedUserId, setSelectedUserId] = useState('');
   const [role, setRole] = useState<'head_teacher' | 'teacher'>('teacher');
+  const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: schools = [], isLoading } = useQuery<SchoolData[]>({
+  const { data: schools = [], isLoading: schoolsLoading } = useQuery<SchoolData[]>({
     queryKey: ['/api/admin/schools'],
+  });
+
+  const { data: usersWithSchools = [], isLoading: usersLoading } = useQuery<UserWithSchools[]>({
+    queryKey: ['/api/admin/users'],
   });
 
   const assignTeacherMutation = useMutation({
@@ -333,8 +338,9 @@ function AssignTeacherForm() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/school-teachers'] });
       setSelectedSchool('');
-      setUserEmail('');
+      setSelectedUserId('');
       setRole('teacher');
+      setSearchQuery('');
     },
     onError: (error: any) => {
       toast({
@@ -347,10 +353,13 @@ function AssignTeacherForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const selectedUser = usersWithSchools.find(u => u.user.id === selectedUserId);
+    const userEmail = selectedUser?.user.email;
+    
     if (!selectedSchool || !userEmail) {
       toast({
         title: "Missing Information",
-        description: "Please select a school and enter a user email.",
+        description: "Please select a school and a user.",
         variant: "destructive",
       });
       return;
@@ -358,8 +367,14 @@ function AssignTeacherForm() {
     assignTeacherMutation.mutate({ schoolId: selectedSchool, userEmail, role });
   };
 
-  if (isLoading) {
-    return <LoadingSpinner message="Loading schools..." />;
+  const filteredUsers = usersWithSchools.filter(item => {
+    const fullName = `${item.user.firstName || ''} ${item.user.lastName || ''}`.toLowerCase();
+    const email = item.user.email?.toLowerCase() || '';
+    return fullName.includes(searchQuery.toLowerCase()) || email.includes(searchQuery.toLowerCase());
+  });
+
+  if (schoolsLoading || usersLoading) {
+    return <LoadingSpinner message="Loading data..." />;
   }
 
   return (
@@ -385,15 +400,33 @@ function AssignTeacherForm() {
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            User Email *
+            User *
           </label>
-          <Input
-            type="email"
-            value={userEmail}
-            onChange={(e) => setUserEmail(e.target.value)}
-            placeholder="teacher@example.com"
-            data-testid="input-user-email"
-          />
+          <Select value={selectedUserId} onValueChange={setSelectedUserId}>
+            <SelectTrigger data-testid="select-user">
+              <SelectValue placeholder="Select user" />
+            </SelectTrigger>
+            <SelectContent>
+              <div className="px-2 pb-2">
+                <Input
+                  placeholder="Search users..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="h-8"
+                  data-testid="input-search-users"
+                />
+              </div>
+              {filteredUsers.length === 0 ? (
+                <div className="px-2 py-4 text-sm text-gray-500 text-center">No users found</div>
+              ) : (
+                filteredUsers.map((item) => (
+                  <SelectItem key={item.user.id} value={item.user.id}>
+                    {item.user.firstName} {item.user.lastName} ({item.user.email})
+                  </SelectItem>
+                ))
+              )}
+            </SelectContent>
+          </Select>
         </div>
 
         <div>
@@ -430,7 +463,7 @@ function AssignTeacherForm() {
       <div className="flex justify-end">
         <Button
           type="submit"
-          disabled={assignTeacherMutation.isPending || !selectedSchool || !userEmail}
+          disabled={assignTeacherMutation.isPending || !selectedSchool || !selectedUserId}
           className="bg-pcs_blue hover:bg-blue-600"
           data-testid="button-assign-teacher"
         >
@@ -827,6 +860,8 @@ function UserManagementTab() {
   const [selectedUserEmail, setSelectedUserEmail] = useState('');
   const [inviteAdminDialogOpen, setInviteAdminDialogOpen] = useState(false);
   const [inviteAdminEmail, setInviteAdminEmail] = useState('');
+  const [invitePartnerDialogOpen, setInvitePartnerDialogOpen] = useState(false);
+  const [invitePartnerEmail, setInvitePartnerEmail] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUserToDelete, setSelectedUserToDelete] = useState<{ id: string; name: string } | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
@@ -853,6 +888,28 @@ function UserManagementTab() {
       toast({
         title: "Invitation Failed",
         description: error.message || "Failed to send admin invitation. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const invitePartnerMutation = useMutation({
+    mutationFn: async (email: string) => {
+      await apiRequest('POST', '/api/admin/invite-partner', { email });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Invitation Sent",
+        description: "Partner invitation has been sent successfully.",
+      });
+      setInvitePartnerDialogOpen(false);
+      setInvitePartnerEmail('');
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Invitation Failed",
+        description: error.message || "Failed to send partner invitation. Please try again.",
         variant: "destructive",
       });
     },
@@ -938,6 +995,19 @@ function UserManagementTab() {
     inviteAdminMutation.mutate(inviteAdminEmail);
   };
 
+  const handleInvitePartner = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!invitePartnerEmail.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter an email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+    invitePartnerMutation.mutate(invitePartnerEmail);
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -946,13 +1016,68 @@ function UserManagementTab() {
             <Users className="h-5 w-5" />
             User Management
           </CardTitle>
-          <Dialog open={inviteAdminDialogOpen} onOpenChange={setInviteAdminDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="default" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-invite-admin">
-                <UserPlus className="h-4 w-4 mr-2" />
-                Invite Admin
-              </Button>
-            </DialogTrigger>
+          <div className="flex gap-2">
+            {!isPartner && (
+              <>
+                <Dialog open={invitePartnerDialogOpen} onOpenChange={setInvitePartnerDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="outline" data-testid="button-invite-partner">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Invite Partner
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent data-testid="dialog-invite-partner">
+                    <DialogHeader>
+                      <DialogTitle>Invite New Partner</DialogTitle>
+                    </DialogHeader>
+                    <form onSubmit={handleInvitePartner} className="space-y-4">
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-2">
+                          Email Address *
+                        </label>
+                        <Input
+                          type="email"
+                          value={invitePartnerEmail}
+                          onChange={(e) => setInvitePartnerEmail(e.target.value)}
+                          placeholder="partner@example.com"
+                          data-testid="input-partner-email"
+                          required
+                        />
+                        <p className="text-xs text-gray-500 mt-2">
+                          Partners have admin-like access but cannot assign roles or download school data.
+                        </p>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => {
+                            setInvitePartnerDialogOpen(false);
+                            setInvitePartnerEmail('');
+                          }}
+                          data-testid="button-cancel-partner-invite"
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          type="submit"
+                          disabled={invitePartnerMutation.isPending}
+                          className="bg-blue-500 hover:bg-blue-600"
+                          data-testid="button-send-partner-invite"
+                        >
+                          {invitePartnerMutation.isPending ? 'Sending...' : 'Send Invitation'}
+                        </Button>
+                      </div>
+                    </form>
+                  </DialogContent>
+                </Dialog>
+                <Dialog open={inviteAdminDialogOpen} onOpenChange={setInviteAdminDialogOpen}>
+                  <DialogTrigger asChild>
+                    <Button variant="default" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-invite-admin">
+                      <UserPlus className="h-4 w-4 mr-2" />
+                      Invite Admin
+                    </Button>
+                  </DialogTrigger>
             <DialogContent data-testid="dialog-invite-admin">
               <DialogHeader>
                 <DialogTitle>Invite New Administrator</DialogTitle>
@@ -994,7 +1119,10 @@ function UserManagementTab() {
                 </div>
               </form>
             </DialogContent>
-          </Dialog>
+                </Dialog>
+              </>
+            )}
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -1079,8 +1207,14 @@ function UserManagementTab() {
                           <div className="font-medium text-gray-900">
                             {user.firstName} {user.lastName}
                           </div>
-                          {user.isAdmin && (
+                          {user.isAdmin && user.role === 'admin' && (
                             <Badge className="mt-1 bg-purple-500 text-white text-xs">Admin</Badge>
+                          )}
+                          {user.role === 'partner' && (
+                            <Badge className="mt-1 bg-blue-500 text-white text-xs">Partner</Badge>
+                          )}
+                          {user.role === 'school' && (
+                            <Badge className="mt-1 bg-green-500 text-white text-xs">School</Badge>
                           )}
                         </td>
                         <td className="p-3 text-sm text-gray-600" data-testid={`text-user-email-${user.id}`}>
@@ -1088,7 +1222,10 @@ function UserManagementTab() {
                         </td>
                         <td className="p-3 text-sm">
                           <Badge variant="outline" data-testid={`text-user-role-${user.id}`}>
-                            {user.role}
+                            {user.role === 'admin' && user.isAdmin ? 'Admin' : 
+                             user.role === 'partner' ? 'Partner' : 
+                             user.role === 'school' ? 'School' :
+                             user.role === 'teacher' ? 'Teacher' : user.role}
                           </Badge>
                         </td>
                         <td className="p-3 text-sm" data-testid={`text-user-school-status-${user.id}`}>
@@ -1165,21 +1302,23 @@ function UserManagementTab() {
                                     </DialogContent>
                                   </Dialog>
                                 )}
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setSelectedUserForRole({
-                                      id: user.id,
-                                      name: `${user.firstName} ${user.lastName}`,
-                                      isAdmin: user.isAdmin,
-                                      role: user.role,
-                                    });
-                                    setRoleDialogOpen(true);
-                                  }}
-                                  data-testid={`menu-change-role-${user.id}`}
-                                >
-                                  <Shield className="h-4 w-4 mr-2" />
-                                  Change Role
-                                </DropdownMenuItem>
+                                {!isPartner && (
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      setSelectedUserForRole({
+                                        id: user.id,
+                                        name: `${user.firstName} ${user.lastName}`,
+                                        isAdmin: user.isAdmin,
+                                        role: user.role,
+                                      });
+                                      setRoleDialogOpen(true);
+                                    }}
+                                    data-testid={`menu-change-role-${user.id}`}
+                                  >
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    Change Role
+                                  </DropdownMenuItem>
+                                )}
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
                                   onClick={() => {
@@ -1266,39 +1405,42 @@ function UserManagementTab() {
               </p>
               
               <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 border rounded-lg">
-                  <div>
-                    <p className="font-medium">Admin Privileges</p>
-                    <p className="text-sm text-gray-500">Grant administrative access to this user</p>
-                  </div>
-                  <Button
-                    variant={selectedUserForRole?.isAdmin ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => {
-                      if (selectedUserForRole) {
-                        updateUserRoleMutation.mutate({
-                          userId: selectedUserForRole.id,
-                          updates: { isAdmin: !selectedUserForRole.isAdmin }
-                        });
-                      }
-                    }}
-                    disabled={updateUserRoleMutation.isPending}
-                    data-testid="button-toggle-admin"
-                  >
-                    {selectedUserForRole?.isAdmin ? 'Remove Admin' : 'Make Admin'}
-                  </Button>
-                </div>
-
                 <div className="p-3 border rounded-lg">
-                  <label className="block text-sm font-medium mb-2">User Role</label>
+                  <label className="block text-sm font-medium mb-2">Platform Role</label>
+                  <p className="text-xs text-gray-500 mb-3">Select the user's role and permissions</p>
                   <Select
-                    value={selectedUserForRole?.role || 'teacher'}
+                    value={
+                      selectedUserForRole?.isAdmin && selectedUserForRole?.role === 'admin' 
+                        ? 'admin' 
+                        : selectedUserForRole?.role === 'partner' 
+                          ? 'partner'
+                          : selectedUserForRole?.role === 'school'
+                            ? 'school'
+                            : 'teacher'
+                    }
                     onValueChange={(value) => {
                       if (selectedUserForRole) {
-                        updateUserRoleMutation.mutate({
-                          userId: selectedUserForRole.id,
-                          updates: { role: value }
-                        });
+                        if (value === 'admin') {
+                          updateUserRoleMutation.mutate({
+                            userId: selectedUserForRole.id,
+                            updates: { role: 'admin', isAdmin: true }
+                          });
+                        } else if (value === 'partner') {
+                          updateUserRoleMutation.mutate({
+                            userId: selectedUserForRole.id,
+                            updates: { role: 'partner', isAdmin: false }
+                          });
+                        } else if (value === 'school') {
+                          updateUserRoleMutation.mutate({
+                            userId: selectedUserForRole.id,
+                            updates: { role: 'school', isAdmin: false }
+                          });
+                        } else {
+                          updateUserRoleMutation.mutate({
+                            userId: selectedUserForRole.id,
+                            updates: { role: 'teacher', isAdmin: false }
+                          });
+                        }
                       }
                     }}
                     disabled={updateUserRoleMutation.isPending}
@@ -1308,10 +1450,22 @@ function UserManagementTab() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="teacher">Teacher</SelectItem>
-                      <SelectItem value="coordinator">Coordinator</SelectItem>
-                      <SelectItem value="manager">Manager</SelectItem>
+                      <SelectItem value="school">School (Head Teacher)</SelectItem>
+                      <SelectItem value="partner">Partner</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
                     </SelectContent>
                   </Select>
+                  <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
+                    {selectedUserForRole?.isAdmin && selectedUserForRole?.role === 'admin' ? (
+                      <p className="text-gray-600"><strong>Admin:</strong> Full platform access including role assignment and data downloads</p>
+                    ) : selectedUserForRole?.role === 'partner' ? (
+                      <p className="text-gray-600"><strong>Partner:</strong> Admin-like access but cannot assign roles or download school data</p>
+                    ) : selectedUserForRole?.role === 'school' ? (
+                      <p className="text-gray-600"><strong>School:</strong> Head teacher role with school management permissions</p>
+                    ) : (
+                      <p className="text-gray-600"><strong>Teacher:</strong> Standard user with school-level permissions</p>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
@@ -2381,12 +2535,16 @@ function EmailManagementSection({
   emailForm, 
   setEmailForm, 
   handleSendBulkEmail,
-  schoolFilters 
+  schoolFilters,
+  setSchoolFilters,
+  countryOptions
 }: { 
   emailForm: any;
   setEmailForm: any;
   handleSendBulkEmail: () => Promise<void>;
   schoolFilters: any;
+  setSchoolFilters: any;
+  countryOptions: any[];
 }) {
   const { toast } = useToast();
   
@@ -3034,6 +3192,63 @@ function EmailManagementSection({
                 </Select>
               </div>
             </div>
+
+            {emailForm.recipientType === 'schools' && (
+              <div className="space-y-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h4 className="text-sm font-semibold text-gray-700">School Filters</h4>
+                <p className="text-xs text-gray-600">
+                  Configure filters to target specific schools. Emails will be sent to all teachers at filtered schools.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Search Schools</label>
+                    <Input
+                      placeholder="Search by name..."
+                      value={schoolFilters.search}
+                      onChange={(e) => setSchoolFilters((prev: any) => ({ ...prev, search: e.target.value }))}
+                      data-testid="input-school-filter-search"
+                      className="h-9"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Country</label>
+                    <Select
+                      value={schoolFilters.country}
+                      onValueChange={(value) => setSchoolFilters((prev: any) => ({ ...prev, country: value }))}
+                    >
+                      <SelectTrigger className="h-9" data-testid="select-school-filter-country">
+                        <SelectValue placeholder="All countries" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Countries</SelectItem>
+                        {countryOptions.map((country: any) => (
+                          <SelectItem key={country.value} value={country.value}>
+                            {country.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Stage</label>
+                    <Select
+                      value={schoolFilters.stage}
+                      onValueChange={(value) => setSchoolFilters((prev: any) => ({ ...prev, stage: value }))}
+                    >
+                      <SelectTrigger className="h-9" data-testid="select-school-filter-stage">
+                        <SelectValue placeholder="All stages" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="">All Stages</SelectItem>
+                        <SelectItem value="Stage 1">Stage 1</SelectItem>
+                        <SelectItem value="Stage 2">Stage 2</SelectItem>
+                        <SelectItem value="Stage 3">Stage 3</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {emailForm.recipientType === 'custom' && (
               <div>
@@ -3843,9 +4058,11 @@ export default function Admin() {
     );
   }
 
-  if (!isAuthenticated || !(user?.role === 'admin' || user?.isAdmin)) {
+  if (!isAuthenticated || !(user?.role === 'admin' || user?.role === 'partner' || user?.isAdmin)) {
     return null; // Will redirect in useEffect
   }
+
+  const isPartner = user?.role === 'partner';
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
@@ -3863,13 +4080,14 @@ export default function Admin() {
                 </p>
               </div>
               <div className="flex gap-4">
-                <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline" data-testid="button-export-data">
-                      <Download className="h-4 w-4 mr-2" />
-                      Export Data
-                    </Button>
-                  </DialogTrigger>
+                {!isPartner && (
+                  <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline" data-testid="button-export-data">
+                        <Download className="h-4 w-4 mr-2" />
+                        Export Data
+                      </Button>
+                    </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
                       <DialogTitle>Export Data</DialogTitle>
@@ -3917,6 +4135,7 @@ export default function Admin() {
                     </div>
                   </DialogContent>
                 </Dialog>
+                )}
               </div>
             </div>
           </CardContent>
@@ -4453,6 +4672,8 @@ export default function Admin() {
               setEmailForm={setEmailForm}
               handleSendBulkEmail={handleSendBulkEmail}
               schoolFilters={schoolFilters}
+              setSchoolFilters={setSchoolFilters}
+              countryOptions={countryOptions}
             />
           </div>
         )}
