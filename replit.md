@@ -30,6 +30,19 @@ This project is a comprehensive web application for the Plastic Clever Schools p
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+## Testing Instructions
+### Admin Test Account
+For testing admin features and evidence file thumbnails:
+- **Email**: admin@admin.com
+- **Password**: admin1234
+
+**Important**: When testing the admin panel, always use this email/password login instead of Google OAuth. The test account is pre-configured with admin privileges.
+
+To recreate the test admin account if needed:
+```bash
+npx tsx scripts/setup-test-admin.ts
+```
+
 ## System Architecture
 ### Frontend
 -   **Framework**: React with TypeScript (Vite)
