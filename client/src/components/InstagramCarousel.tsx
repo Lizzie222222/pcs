@@ -4,6 +4,54 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
+// Custom hook to determine posts per view based on screen size
+function useResponsivePostsPerView() {
+  const [postsPerView, setPostsPerView] = useState(() => {
+    if (typeof window === 'undefined') return 3;
+    const width = window.innerWidth;
+    if (width < 640) return 1;
+    if (width < 1024) return 2;
+    return 3;
+  });
+
+  useEffect(() => {
+    const updatePostsPerView = () => {
+      const width = window.innerWidth;
+      if (width < 640) {
+        setPostsPerView(1);
+      } else if (width < 1024) {
+        setPostsPerView(2);
+      } else {
+        setPostsPerView(3);
+      }
+    };
+
+    window.addEventListener('resize', updatePostsPerView);
+    return () => window.removeEventListener('resize', updatePostsPerView);
+  }, []);
+
+  return postsPerView;
+}
+
+// Custom hook to detect if we're on mobile
+function useIsMobileView() {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.innerWidth < 640;
+  });
+
+  useEffect(() => {
+    const updateIsMobile = () => {
+      setIsMobile(window.innerWidth < 640);
+    };
+
+    window.addEventListener('resize', updateIsMobile);
+    return () => window.removeEventListener('resize', updateIsMobile);
+  }, []);
+
+  return isMobile;
+}
+
 // Sample Instagram-style posts for demonstration
 const samplePosts = [
   {
@@ -69,12 +117,24 @@ interface InstagramCarouselProps {
 export default function InstagramCarousel({ className = "" }: InstagramCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(false);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const postsPerView = 3;
+  const carouselRef = useRef<HTMLDivElement>(null);
+  
+  const postsPerView = useResponsivePostsPerView();
+  const isMobile = useIsMobileView();
 
   // Calculate total pages (slides) - showing postsPerView posts per slide
   const totalSlides = Math.ceil(samplePosts.length / postsPerView);
   const maxIndex = Math.max(0, totalSlides - 1);
+
+  // Reset to first slide when postsPerView changes to avoid showing empty slides
+  useEffect(() => {
+    if (currentIndex > maxIndex) {
+      setCurrentIndex(0);
+    }
+  }, [postsPerView, currentIndex, maxIndex]);
 
   // Auto-scroll functionality
   useEffect(() => {
@@ -92,7 +152,7 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
   const scrollToIndex = (index: number) => {
     setCurrentIndex(index);
     setIsAutoPlaying(false);
-    setTimeout(() => setIsAutoPlaying(true), 8000); // Resume auto-play after 8s
+    setTimeout(() => setIsAutoPlaying(true), 8000);
   };
 
   const nextSlide = () => {
@@ -105,39 +165,77 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
 
   const handleMouseEnter = () => setIsAutoPlaying(false);
   const handleMouseLeave = () => setIsAutoPlaying(true);
-  const carouselRef = useRef<HTMLDivElement>(null);
+
+  // Touch gesture handlers for mobile swiping
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+
+  const handleTouchEnd = () => {
+    if (!touchStart || !touchEnd) return;
+    
+    const distance = touchStart - touchEnd;
+    const minSwipeDistance = 50;
+    
+    if (Math.abs(distance) > minSwipeDistance) {
+      if (distance > 0) {
+        nextSlide();
+      } else {
+        prevSlide();
+      }
+    }
+    
+    setTouchStart(0);
+    setTouchEnd(0);
+  };
 
   return (
-    <div ref={carouselRef} className={`w-full carousel-container ${className}`} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <div 
+      ref={carouselRef} 
+      className={`w-full carousel-container ${className}`} 
+      onMouseEnter={handleMouseEnter} 
+      onMouseLeave={handleMouseLeave}
+      onTouchStart={handleTouchStart}
+      onTouchMove={handleTouchMove}
+      onTouchEnd={handleTouchEnd}
+    >
       <div className="relative">
-        {/* Navigation Buttons */}
-        <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={prevSlide}
-            className="w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm border-0 transition-all duration-300 hover:scale-110"
-            disabled={currentIndex === 0}
-            data-testid="button-instagram-prev"
-            aria-label="Previous Instagram posts"
-          >
-            <ChevronLeft className="w-5 h-5 text-navy" aria-hidden="true" />
-          </Button>
-        </div>
-        
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={nextSlide}
-            className="w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm border-0 transition-all duration-300 hover:scale-110"
-            disabled={currentIndex >= maxIndex}
-            data-testid="button-instagram-next"
-            aria-label="Next Instagram posts"
-          >
-            <ChevronRight className="w-5 h-5 text-navy" aria-hidden="true" />
-          </Button>
-        </div>
+        {/* Navigation Buttons - Hidden on mobile */}
+        {!isMobile && (
+          <>
+            <div className="absolute left-4 top-1/2 -translate-y-1/2 z-20">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={prevSlide}
+                className="w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm border-0 transition-all duration-300 hover:scale-110"
+                disabled={currentIndex === 0}
+                data-testid="button-instagram-prev"
+                aria-label="Previous Instagram posts"
+              >
+                <ChevronLeft className="w-5 h-5 text-navy" aria-hidden="true" />
+              </Button>
+            </div>
+            
+            <div className="absolute right-4 top-1/2 -translate-y-1/2 z-20">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={nextSlide}
+                className="w-12 h-12 rounded-full bg-white/90 hover:bg-white shadow-lg backdrop-blur-sm border-0 transition-all duration-300 hover:scale-110"
+                disabled={currentIndex >= maxIndex}
+                data-testid="button-instagram-next"
+                aria-label="Next Instagram posts"
+              >
+                <ChevronRight className="w-5 h-5 text-navy" aria-hidden="true" />
+              </Button>
+            </div>
+          </>
+        )}
 
         {/* Posts Container */}
         <div 
@@ -146,7 +244,9 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
           data-testid="instagram-carousel-container"
         >
           <div 
-            className="flex transition-transform duration-500 ease-out gap-6 px-4"
+            className={`flex transition-transform duration-500 ease-out ${
+              isMobile ? 'gap-4 px-2' : 'gap-6 px-4'
+            }`}
             style={{ 
               transform: `translateX(-${currentIndex * 100}%)`,
               width: `${totalSlides * 100}%`
@@ -155,7 +255,7 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
             {Array.from({ length: totalSlides }, (_, slideIndex) => (
               <div
                 key={slideIndex}
-                className="flex gap-6"
+                className={`flex ${isMobile ? 'gap-4' : 'gap-6'}`}
                 style={{ width: `${100 / totalSlides}%` }}
               >
                 {samplePosts
@@ -220,7 +320,7 @@ function InstagramPost({ post }: InstagramPostProps) {
   };
 
   return (
-    <Card className="instagram-post overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 group">
+    <Card className="instagram-post overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-1 bg-white border-0 group h-full">
       <div className="relative overflow-hidden">
         {/* Post Image */}
         <div className="aspect-square overflow-hidden bg-gray-100">
@@ -232,7 +332,7 @@ function InstagramPost({ post }: InstagramPostProps) {
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
             responsive={true}
             quality={80}
-            sizes="(max-width: 640px) 300px, (max-width: 1024px) 350px, 400px"
+            sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
             data-testid={`img-instagram-post-${post.id}`}
           />
         </div>

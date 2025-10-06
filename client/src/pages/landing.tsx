@@ -2,6 +2,7 @@ import { useState, useRef, lazy, Suspense } from "react";
 import { useTranslation } from "react-i18next";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useConnectionSpeed } from "@/hooks/useConnectionSpeed";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import SchoolSignUpForm from "@/components/SchoolSignUpForm";
@@ -46,6 +47,7 @@ interface SiteStats {
 export default function Landing() {
   const { t } = useTranslation('landing');
   const [showSignUp, setShowSignUp] = useState(false);
+  const isMobile = useIsMobile();
 
   const { data: stats } = useQuery<SiteStats>({
     queryKey: ['/api/stats'],
@@ -80,6 +82,9 @@ export default function Landing() {
 
     const handleMouseEnter = () => {
       if (prefersReducedMotion) return;
+      
+      // Disable video hover on mobile to save bandwidth
+      if (isMobile) return;
       
       // Respect connection speed for hover videos
       if (connectionSpeed.connectionInfo.isSlowConnection && connectionSpeed.userPreference === 'auto') {
@@ -137,10 +142,13 @@ export default function Landing() {
           alt={alt}
           className={`w-full h-full opacity-100 transition-opacity duration-300 group-hover:opacity-0 ${className}`}
           responsive={true}
-          quality={80}
+          quality={75}
           placeholder="blur"
           blurDataURL={createBlurPlaceholder('#f3f4f6')}
           sizes="(max-width: 640px) 128px, (max-width: 1024px) 160px, 160px"
+          priority={false}
+          width={160}
+          height={160}
         />
         <video 
           ref={videoRef}
@@ -172,16 +180,16 @@ export default function Landing() {
             className="w-full h-full object-cover"
             priority={true}
             responsive={true}
-            quality={85}
-            sizes="100vw"
+            quality={75}
+            sizes="(max-width: 640px) 640px, (max-width: 750px) 750px, (max-width: 828px) 828px, (max-width: 1080px) 1080px, (max-width: 1920px) 1920px, 100vw"
             placeholder="blur"
             blurDataURL={createBlurPlaceholder('#f3f4f6')}
           />
         </div>
 
-        {/* Post-it Note Style News/Events Popup */}
-        <div className="absolute top-4 right-4 md:top-8 md:right-8 z-30 max-w-xs">
-          <div className="bg-yellow-300 border-l-4 border-yellow-500 p-5 shadow-xl transform rotate-1 hover:rotate-0 transition-transform duration-200" 
+        {/* Post-it Note Style News/Events Popup - Hidden on very small screens (< 375px) */}
+        <div className="hidden min-[375px]:block absolute top-3 right-3 sm:top-4 sm:right-4 md:top-8 md:right-8 z-30 max-w-[180px] sm:max-w-xs">
+          <div className="bg-yellow-300 border-l-4 border-yellow-500 p-3 sm:p-5 shadow-xl transform rotate-1 hover:rotate-0 transition-transform duration-200" 
                style={{ 
                  boxShadow: '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10)',
                  fontFamily: '"Segoe Print", "Comic Sans MS", cursive',
@@ -189,31 +197,31 @@ export default function Landing() {
                }}
                data-testid="popup-news-event">
             <div className="flex items-start gap-2">
-              <Star className="w-5 h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
+              <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-bold text-gray-900 mb-1">Latest News!</p>
-                <p className="text-xs font-medium text-gray-800">Join our growing community of Plastic Clever Schools</p>
+                <p className="text-xs sm:text-sm font-bold text-gray-900 mb-1">Latest News!</p>
+                <p className="text-[10px] sm:text-xs font-medium text-gray-800 leading-tight">Join our growing community</p>
               </div>
             </div>
           </div>
         </div>
         
-        <div className="container-width relative z-20 py-20">
-          <div className="max-w-4xl mx-auto text-center">
+        <div className="container-width relative z-20 py-12 sm:py-16 md:py-20">
+          <div className="max-w-4xl mx-auto text-center px-4">
             {/* Hero Text Box with Semi-transparent Background */}
-            <div className="bg-white/90 backdrop-blur-sm rounded-lg px-8 py-10 md:px-12 md:py-12 inline-block">
-              {/* Hero Heading */}
+            <div className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-6 sm:px-8 sm:py-10 md:px-12 md:py-12 inline-block">
+              {/* Hero Heading - Improved mobile scaling */}
               <h1 
-                className="text-4xl lg:text-5xl xl:text-6xl font-bold mb-8 text-navy leading-tight"
+                className="text-3xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold mb-6 sm:mb-8 text-navy leading-tight"
                 data-testid="text-hero-title"
               >
                 {t('hero.title')}
               </h1>
 
-              {/* CTA Button with Enhanced Animation */}
+              {/* CTA Button with Enhanced Animation - Minimum 44x44px touch target */}
               <Button 
                 size="lg"
-                className="btn-primary px-8 py-4 text-xl mb-8 group"
+                className="btn-primary px-6 py-3 sm:px-8 sm:py-4 text-lg sm:text-xl mb-6 sm:mb-8 group min-h-[44px] min-w-[44px]"
                 onClick={() => window.location.href = '/register'}
                 data-testid="button-register-school"
               >
@@ -221,19 +229,22 @@ export default function Landing() {
                 <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
               </Button>
 
-              {/* Simple Trust Indicators */}
-              <div className="flex flex-wrap justify-center items-center gap-6 text-base text-gray-700 font-medium">
+              {/* Simple Trust Indicators - Mobile optimized text size (min 14px) */}
+              <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-6 text-sm sm:text-base text-gray-700 font-medium">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-4 h-4 text-ocean-blue" />
-                  {t('hero.trust_indicators.curriculum_aligned')}
+                  <span className="hidden sm:inline">{t('hero.trust_indicators.curriculum_aligned')}</span>
+                  <span className="sm:hidden">Curriculum Aligned</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Recycle className="w-4 h-4 text-teal" />
-                  {t('hero.trust_indicators.proven_impact')}
+                  <span className="hidden sm:inline">{t('hero.trust_indicators.proven_impact')}</span>
+                  <span className="sm:hidden">Proven Impact</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Heart className="w-4 h-4 text-coral" />
-                  {t('hero.trust_indicators.completely_free')}
+                  <span className="hidden sm:inline">{t('hero.trust_indicators.completely_free')}</span>
+                  <span className="sm:hidden">Free</span>
                 </div>
               </div>
             </div>
@@ -244,19 +255,19 @@ export default function Landing() {
       {/* Impact Ribbon - Database-driven stats */}
       <section className="py-6 bg-navy">
         <div className="container-width">
-          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 text-white text-center">
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 text-white text-center px-4">
             <div className="flex items-center gap-2" data-testid="impact-ribbon-schools">
-              <span className="text-2xl md:text-3xl font-bold">{stats?.totalSchools?.toLocaleString() || '0'}</span>
+              <span className="text-xl sm:text-2xl md:text-3xl font-bold">{stats?.totalSchools?.toLocaleString() || '0'}</span>
               <span className="text-sm md:text-base">schools</span>
             </div>
             <div className="hidden md:block text-2xl text-white/50">|</div>
             <div className="flex items-center gap-2" data-testid="impact-ribbon-countries">
-              <span className="text-2xl md:text-3xl font-bold">{stats?.countries?.toLocaleString() || '0'}</span>
+              <span className="text-xl sm:text-2xl md:text-3xl font-bold">{stats?.countries?.toLocaleString() || '0'}</span>
               <span className="text-sm md:text-base">countries</span>
             </div>
             <div className="hidden md:block text-2xl text-white/50">|</div>
             <div className="flex items-center gap-2" data-testid="impact-ribbon-actions">
-              <span className="text-2xl md:text-3xl font-bold">{stats?.completedAwards?.toLocaleString() || '0'}</span>
+              <span className="text-xl sm:text-2xl md:text-3xl font-bold">{stats?.completedAwards?.toLocaleString() || '0'}</span>
               <span className="text-sm md:text-base">actions taken</span>
             </div>
           </div>
@@ -269,13 +280,11 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Teacher Testimonial - Enhanced Card */}
             <div className="relative" data-testid="section-teacher-testimonial">
-              {/* Decorative Quote Mark */}
-              <div className="absolute -top-8 -left-6 text-ocean-blue/20 text-[120px] font-serif leading-none select-none pointer-events-none" aria-hidden="true">
-                "
-              </div>
+              {/* Decorative Quote Mark - CSS only, hidden on mobile */}
+              <div className="hidden md:block absolute -top-8 -left-6 text-ocean-blue/20 font-serif leading-none select-none pointer-events-none before:content-['\201C'] before:text-8xl lg:before:text-9xl" aria-hidden="true"></div>
               
               {/* Testimonial Card */}
-              <div className="relative bg-gradient-to-br from-white to-ocean-blue/5 rounded-3xl p-8 lg:p-12 shadow-2xl border-2 border-ocean-blue/20 hover:border-ocean-blue/40 hover:shadow-3xl transition-all duration-500 group">
+              <div className="relative bg-gradient-to-br from-white to-ocean-blue/5 rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl border-2 border-ocean-blue/20 hover:border-ocean-blue/40 hover:shadow-3xl transition-all duration-500 group">
                 {/* Decorative Corner Element */}
                 <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-teal/10 to-ocean-blue/10 rounded-bl-[100px] rounded-tr-3xl -z-0"></div>
                 
@@ -286,8 +295,8 @@ export default function Landing() {
                   ))}
                 </div>
                 
-                {/* Quote Text */}
-                <blockquote className="text-xl lg:text-2xl font-semibold text-navy leading-relaxed mb-8 relative z-10 italic">
+                {/* Quote Text - Mobile optimized */}
+                <blockquote className="text-base sm:text-xl lg:text-2xl font-semibold text-navy leading-relaxed mb-8 relative z-10 italic">
                   "Plastic Clever Schools has transformed how we approach sustainability. Our students are now passionate environmental advocates!"
                 </blockquote>
                 
@@ -308,7 +317,7 @@ export default function Landing() {
             <div className="space-y-6" data-testid="section-intro-video">
               {/* Heading */}
               <div className="space-y-2">
-                <h3 className="text-3xl lg:text-4xl font-bold text-navy leading-tight">
+                <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
                   What is Plastic Clever Schools?
                 </h3>
                 <div className="w-20 h-1 bg-ocean-blue rounded-full"></div>
@@ -341,15 +350,15 @@ export default function Landing() {
       <section id="how-it-works" className="py-16 lg:py-24 bg-gradient-to-b from-white to-yellow/10">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 ">A Simple <span className="text-ocean-blue">3-Stage Journey</span> to a Plastic Clever School</h2>
-            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto ">
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4">A Simple <span className="text-ocean-blue">3-Stage Journey</span> to a Plastic Clever School</h2>
+            <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
               {t('three_stage_program.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stage 1: Inspire */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center -left">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-6 sm:p-8 text-center -left">
               <div className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <HoverVideo 
                   src={inspireVideo}
@@ -358,16 +367,17 @@ export default function Landing() {
                   className="w-30 h-30"
                   containerClassName="w-full h-full"
                 />
+                {/* Stage icon loaded lazily */}
               </div>
               <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">1</span>
               </div>
-              <h3 className="text-xl font-semibold text-navy mb-4">{t('three_stage_program.stage_1_title')}</h3>
-              <p className="text-base text-gray-600 leading-relaxed mb-6">{t('three_stage_program.stage_1_description')}</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-navy mb-4">{t('three_stage_program.stage_1_title')}</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-6">{t('three_stage_program.stage_1_description')}</p>
             </div>
 
             {/* Stage 2: Investigate */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center ">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-6 sm:p-8 text-center ">
               <div className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <HoverVideo 
                   src={investigateVideo}
@@ -380,12 +390,12 @@ export default function Landing() {
               <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">2</span>
               </div>
-              <h3 className="text-xl font-semibold text-navy mb-4">{t('three_stage_program.stage_2_title')}</h3>
-              <p className="text-base text-gray-600 leading-relaxed mb-6">{t('three_stage_program.stage_2_description')}</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-navy mb-4">{t('three_stage_program.stage_2_title')}</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-6">{t('three_stage_program.stage_2_description')}</p>
             </div>
 
             {/* Stage 3: Act */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center -right">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-6 sm:p-8 text-center -right">
               <div className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <HoverVideo 
                   src={actVideo}
@@ -398,8 +408,8 @@ export default function Landing() {
               <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">3</span>
               </div>
-              <h3 className="text-xl font-semibold text-navy mb-4">{t('three_stage_program.stage_3_title')}</h3>
-              <p className="text-base text-gray-600 leading-relaxed mb-6">{t('three_stage_program.stage_3_description')}</p>
+              <h3 className="text-lg sm:text-xl font-semibold text-navy mb-4">{t('three_stage_program.stage_3_title')}</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed mb-6">{t('three_stage_program.stage_3_description')}</p>
             </div>
           </div>
         </div>
@@ -408,15 +418,15 @@ export default function Landing() {
       {/* Ready to Make a Difference CTA */}
       <section className="py-16 lg:py-24 bg-pcs_blue">
         <div className="container-width text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6" data-testid="text-cta-heading">
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6" data-testid="text-cta-heading">
             Ready to Make a Difference?
           </h2>
-          <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg text-white/90 mb-8 max-w-2xl mx-auto">
             Join thousands of schools worldwide in creating a plastic-clever future
           </p>
           <Button 
             size="lg"
-            className="bg-white text-pcs_blue hover:bg-gray-100 px-8 py-4 text-xl font-semibold group transition-all duration-300 hover:scale-105"
+            className="bg-white text-pcs_blue hover:bg-gray-100 px-6 py-3 sm:px-8 sm:py-4 text-lg sm:text-xl font-semibold group transition-all duration-300 hover:scale-105 min-h-[44px]"
             onClick={() => window.location.href = '/register'}
             data-testid="button-cta-register"
           >
@@ -430,8 +440,8 @@ export default function Landing() {
       <section className="py-16 lg:py-24 bg-gradient-to-b from-teal/5 to-ocean-blue/5">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 ">Follow <span className="text-ocean-blue">Our Journey</span></h2>
-            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto ">
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4">Follow <span className="text-ocean-blue">Our Journey</span></h2>
+            <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
               {t('instagram.description')}
             </p>
             <div className="flex justify-center mt-6">
@@ -439,11 +449,12 @@ export default function Landing() {
                 href="https://instagram.com/plasticclever.schools" 
                 target="_blank" 
                 rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl min-h-[44px]"
                 data-testid="button-follow-instagram"
               >
                 <Instagram className="w-5 h-5" />
-                Follow @plasticclever.schools
+                <span className="hidden sm:inline">Follow @plasticclever.schools</span>
+                <span className="sm:hidden">Follow Us</span>
               </a>
             </div>
           </div>
@@ -487,8 +498,9 @@ export default function Landing() {
                 responsive={false}
                 quality={90}
                 sizes="120px"
+                priority={false}
               />
-              <p className="text-gray-300 text-sm">
+              <p className="text-gray-300 text-sm sm:text-base">
                 Empowering schools worldwide to create plastic-free environments through education, investigation, and action.
               </p>
             </div>
