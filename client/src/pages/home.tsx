@@ -92,6 +92,40 @@ export default function Home() {
     retry: false,
   });
 
+  // Show toast notification for recent status updates (once per session)
+  useEffect(() => {
+    if (dashboardData && !sessionStorage.getItem('notificationsShown')) {
+      const now = new Date();
+      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      
+      const recentApproved = dashboardData.recentEvidence.filter(e => 
+        e.status === 'approved' && new Date(e.submittedAt) > sevenDaysAgo
+      );
+      const recentRejected = dashboardData.recentEvidence.filter(e => 
+        e.status === 'rejected' && new Date(e.submittedAt) > sevenDaysAgo
+      );
+      
+      if (recentApproved.length > 0 || recentRejected.length > 0) {
+        let message = '';
+        if (recentApproved.length > 0 && recentRejected.length > 0) {
+          message = `${recentApproved.length} approved, ${recentRejected.length} need attention`;
+        } else if (recentApproved.length > 0) {
+          message = `${recentApproved.length} ${recentApproved.length === 1 ? 'submission' : 'submissions'} approved!`;
+        } else {
+          message = `${recentRejected.length} ${recentRejected.length === 1 ? 'submission needs' : 'submissions need'} your attention`;
+        }
+        
+        toast({
+          title: "Evidence Updates",
+          description: message,
+          duration: 5000,
+        });
+        
+        sessionStorage.setItem('notificationsShown', 'true');
+      }
+    }
+  }, [dashboardData, toast]);
+
   // Handle errors (unauthorized and no school registration)
   useEffect(() => {
     if (error) {
