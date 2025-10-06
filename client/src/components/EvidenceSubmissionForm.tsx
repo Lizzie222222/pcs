@@ -275,7 +275,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                   <ObjectUploader
                     maxNumberOfFiles={5}
-                    maxFileSize={10485760} // 10MB
+                    maxFileSize={157286400}
                     onGetUploadParameters={handleGetUploadParameters}
                     onComplete={handleUploadComplete}
                     buttonClassName="bg-pcs_blue hover:bg-pcs_blue/90 text-white"

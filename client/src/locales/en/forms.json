@@ -101,7 +101,7 @@
     "files_description": "Upload photos, documents, or other evidence (optional)",
     "description_help": "Describe what you did, how you did it, and what impact it had.",
     "upload_files": "Upload Files",
-    "upload_help": "Support for photos (JPG, PNG), videos (MP4), and documents (PDF). Max 10MB each.",
+    "upload_help": "Support for photos (JPG, PNG), videos (MP4), and documents (PDF). Max 150MB each.",
     "uploaded_files": "Uploaded Files",
     "add_files": "Add Files",
     "file_selected": "{{filename}} has been selected for upload",
