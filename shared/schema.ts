@@ -199,6 +199,7 @@ export const evidence = pgTable("evidence", {
   status: evidenceStatusEnum("status").default('pending'),
   visibility: visibilityEnum("visibility").default('private'),
   files: jsonb("files").default('[]'),
+  videoLinks: text("video_links"),
   reviewedBy: varchar("reviewed_by").references(() => users.id),
   reviewedAt: timestamp("reviewed_at"),
   reviewNotes: text("review_notes"),

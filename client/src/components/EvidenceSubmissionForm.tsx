@@ -23,6 +23,7 @@ const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.ob
   stage: z.enum(['inspire', 'investigate', 'act'], {
     required_error: t('forms:validation.invalid_selection'),
   }),
+  videoLinks: z.string().optional(),
   visibility: z.enum(['private', 'public'], {
     required_error: t('forms:validation.invalid_selection'),
   }),
@@ -55,6 +56,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
       title: '',
       description: '',
       stage: undefined,
+      videoLinks: '',
       visibility: 'private',
     },
   });
@@ -168,10 +170,10 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
   };
 
   const onSubmit = (data: z.infer<typeof evidenceSchema>) => {
-    if (uploadedFiles.length === 0) {
+    if (uploadedFiles.length === 0 && !data.videoLinks?.trim()) {
       toast({
-        title: "Files Required",
-        description: "Please upload at least one file as evidence.",
+        title: "Evidence Required",
+        description: "Please upload at least one file or provide a video link.",
         variant: "destructive",
       });
       return;
@@ -279,9 +281,32 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                 )}
               />
 
+              {/* Video Links */}
+              <FormField
+                control={form.control}
+                name="videoLinks"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>{t('forms:evidence_submission.video_links')}</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder={t('forms:evidence_submission.video_links_placeholder')}
+                        rows={3}
+                        {...field}
+                        data-testid="textarea-video-links"
+                      />
+                    </FormControl>
+                    <FormDescription className="text-xs">
+                      {t('forms:evidence_submission.video_links_help')}
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
               {/* File Upload */}
               <div className="space-y-4">
-                <FormLabel>{t('forms:evidence_submission.files')} *</FormLabel>
+                <FormLabel>{t('forms:evidence_submission.files')}</FormLabel>
                 <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                   <ObjectUploader
                     maxNumberOfFiles={5}
