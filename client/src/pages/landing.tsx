@@ -262,6 +262,52 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Teacher Testimonial & Video Section */}
+      <section className="py-16 lg:py-24 bg-white">
+        <div className="container-width">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            {/* Teacher Testimonial */}
+            <div className="space-y-6" data-testid="section-teacher-testimonial">
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(5)].map((_, i) => (
+                  <Star key={i} className="w-5 h-5 text-yellow fill-current" />
+                ))}
+              </div>
+              <blockquote className="text-2xl lg:text-3xl font-bold text-navy leading-tight mb-6">
+                "PLASTIC CLEVER SCHOOLS IS THE BEST..."
+              </blockquote>
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-ocean-blue rounded-full flex items-center justify-center text-white font-bold text-xl">
+                  JS
+                </div>
+                <div>
+                  <p className="font-semibold text-navy text-lg">Teacher name</p>
+                  <p className="text-gray-600">School name</p>
+                </div>
+              </div>
+            </div>
+
+            {/* What is Plastic Clever Schools Video */}
+            <div className="space-y-4" data-testid="section-intro-video">
+              <h3 className="text-2xl font-bold text-navy">What is Plastic Clever Schools?</h3>
+              <div className="aspect-video rounded-lg overflow-hidden shadow-lg bg-gray-100">
+                <iframe
+                  className="w-full h-full"
+                  src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+                  title="What is Plastic Clever Schools?"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                  data-testid="iframe-intro-video"
+                ></iframe>
+              </div>
+              <p className="text-sm text-gray-600 italic">
+                [Opening quote from teacher to introduce the video - image as placeholder for lazy loading]
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Three-Stage Program - Clean StreetSmart Cards with Fun Accent */}
       <section id="how-it-works" className="py-16 lg:py-24 bg-gradient-to-b from-white to-yellow/10">
         <div className="container-width">
@@ -356,6 +402,27 @@ export default function Landing() {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Ready to Make a Difference CTA */}
+      <section className="py-16 lg:py-24 bg-pcs_blue">
+        <div className="container-width text-center">
+          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-6" data-testid="text-cta-heading">
+            Ready to Make a Difference?
+          </h2>
+          <p className="text-lg text-white/90 mb-8 max-w-2xl mx-auto">
+            Join thousands of schools worldwide in creating a plastic-clever future
+          </p>
+          <Button 
+            size="lg"
+            className="bg-white text-pcs_blue hover:bg-gray-100 px-8 py-4 text-xl font-semibold group transition-all duration-300 hover:scale-105"
+            onClick={() => window.location.href = '/register'}
+            data-testid="button-cta-register"
+          >
+            Register Your School
+            <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
+          </Button>
         </div>
       </section>
 
