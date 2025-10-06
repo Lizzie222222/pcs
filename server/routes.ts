@@ -2491,6 +2491,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ============= TESTIMONIALS ROUTES =============
+
+  // GET /api/testimonials - Get active testimonials for public display
+  app.get('/api/testimonials', async (req, res) => {
+    try {
+      const testimonials = await storage.getTestimonials({ isActive: true });
+      res.json(testimonials);
+    } catch (error) {
+      console.error("Error fetching testimonials:", error);
+      res.status(500).json({ message: "Failed to fetch testimonials" });
+    }
+  });
+
+  // GET /api/admin/testimonials - Get all testimonials (admin only)
+  app.get('/api/admin/testimonials', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const testimonials = await storage.getTestimonials();
+      res.json(testimonials);
+    } catch (error) {
+      console.error("Error fetching all testimonials:", error);
+      res.status(500).json({ message: "Failed to fetch testimonials" });
+    }
+  });
+
+  // POST /api/admin/testimonials - Create a new testimonial (admin only)
+  app.post('/api/admin/testimonials', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const testimonialSchema = z.object({
+        quote: z.string().min(1, "Quote is required"),
+        authorName: z.string().min(1, "Author name is required"),
+        authorRole: z.string().min(1, "Author role is required"),
+        schoolName: z.string().min(1, "School name is required"),
+        rating: z.number().min(1).max(5).optional(),
+        isActive: z.boolean().optional(),
+        displayOrder: z.number().optional(),
+      });
+
+      const testimonialData = testimonialSchema.parse(req.body);
+      const testimonial = await storage.createTestimonial(testimonialData);
+      res.status(201).json(testimonial);
+    } catch (error) {
+      console.error("Error creating testimonial:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create testimonial" });
+    }
+  });
+
+  // PATCH /api/admin/testimonials/:id - Update a testimonial (admin only)
+  app.patch('/api/admin/testimonials/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updateSchema = z.object({
+        quote: z.string().min(1).optional(),
+        authorName: z.string().min(1).optional(),
+        authorRole: z.string().min(1).optional(),
+        schoolName: z.string().min(1).optional(),
+        rating: z.number().min(1).max(5).optional(),
+        isActive: z.boolean().optional(),
+        displayOrder: z.number().optional(),
+      });
+
+      const updates = updateSchema.parse(req.body);
+      const testimonial = await storage.updateTestimonial(id, updates);
+      
+      if (!testimonial) {
+        return res.status(404).json({ message: "Testimonial not found" });
+      }
+
+      res.json(testimonial);
+    } catch (error) {
+      console.error("Error updating testimonial:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update testimonial" });
+    }
+  });
+
+  // DELETE /api/admin/testimonials/:id - Delete a testimonial (admin only)
+  app.delete('/api/admin/testimonials/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      await storage.deleteTestimonial(id);
+      res.json({ message: "Testimonial deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting testimonial:", error);
+      res.status(500).json({ message: "Failed to delete testimonial" });
+    }
+  });
+
   // ============= ADMIN TEAM MANAGEMENT ROUTES =============
 
   // POST /api/admin/schools/:schoolId/assign-teacher - Admin assigns a teacher to a school
