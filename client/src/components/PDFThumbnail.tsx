@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 
-pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
 
 interface PDFThumbnailProps {
   url: string;
@@ -21,18 +21,25 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
         setLoading(true);
         setError(false);
 
-        const loadingTask = pdfjsLib.getDocument(url);
+        const loadingTask = pdfjsLib.getDocument({
+          url,
+          withCredentials: false,
+        });
         const pdf = await loadingTask.promise;
         const page = await pdf.getPage(1);
 
         const canvas = canvasRef.current;
         const context = canvas.getContext('2d');
-        if (!context) return;
+        if (!context) {
+          setError(true);
+          setLoading(false);
+          return;
+        }
 
         const viewport = page.getViewport({ scale: 1 });
         const scale = Math.min(
-          canvas.width / viewport.width,
-          canvas.height / viewport.height
+          300 / viewport.width,
+          300 / viewport.height
         );
 
         const scaledViewport = page.getViewport({ scale });
@@ -40,12 +47,11 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
         canvas.width = scaledViewport.width;
         canvas.height = scaledViewport.height;
 
-        const renderContext: any = {
+        await page.render({
           canvasContext: context,
           viewport: scaledViewport,
-        };
-        
-        await page.render(renderContext).promise;
+          canvas: canvas,
+        }).promise;
 
         setLoading(false);
       } catch (err) {
@@ -60,8 +66,8 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
 
   if (error) {
     return (
-      <div className={`flex items-center justify-center bg-gray-100 ${className}`}>
-        <div className="text-center text-gray-500 text-xs">PDF Preview Error</div>
+      <div className={`flex items-center justify-center bg-gray-100 dark:bg-gray-800 ${className}`}>
+        <div className="text-center text-gray-500 dark:text-gray-400 text-xs">PDF Preview Error</div>
       </div>
     );
   }
@@ -69,8 +75,8 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
   return (
     <div className={`relative ${className}`}>
       {loading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-gray-100">
-          <div className="text-gray-500 text-xs">Loading...</div>
+        <div className="absolute inset-0 flex items-center justify-center bg-gray-100 dark:bg-gray-800">
+          <div className="text-gray-500 dark:text-gray-400 text-xs">Loading...</div>
         </div>
       )}
       <canvas
