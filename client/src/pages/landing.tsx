@@ -181,17 +181,18 @@ export default function Landing() {
 
         {/* Post-it Note Style News/Events Popup */}
         <div className="absolute top-4 right-4 md:top-8 md:right-8 z-30 max-w-xs">
-          <div className="bg-yellow-100 border-l-4 border-yellow-400 p-4 shadow-lg transform rotate-1 hover:rotate-0 transition-transform duration-200" 
+          <div className="bg-yellow-300 border-l-4 border-yellow-500 p-5 shadow-xl transform rotate-1 hover:rotate-0 transition-transform duration-200" 
                style={{ 
                  boxShadow: '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10)',
-                 fontFamily: '"Segoe Print", "Comic Sans MS", cursive'
+                 fontFamily: '"Segoe Print", "Comic Sans MS", cursive',
+                 backgroundColor: '#ffd966'
                }}
                data-testid="popup-news-event">
             <div className="flex items-start gap-2">
-              <Star className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <Star className="w-5 h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm font-semibold text-gray-800 mb-1">Latest News!</p>
-                <p className="text-xs text-gray-700">Join our growing community of Plastic Clever Schools</p>
+                <p className="text-sm font-bold text-gray-900 mb-1">Latest News!</p>
+                <p className="text-xs font-medium text-gray-800">Join our growing community of Plastic Clever Schools</p>
               </div>
             </div>
           </div>
