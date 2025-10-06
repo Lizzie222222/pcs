@@ -177,7 +177,7 @@ export default function Landing() {
             alt="Students holding Plastic Clever Schools reusable water bottles"
             width={1920}
             height={1080}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover object-[center_30%]"
             priority={true}
             responsive={true}
             quality={75}
@@ -188,7 +188,7 @@ export default function Landing() {
         </div>
 
         {/* Post-it Note Style News/Events Popup - Hidden on very small screens (< 375px) */}
-        <div className="hidden min-[375px]:block absolute top-3 right-3 sm:top-4 sm:right-4 md:top-8 md:right-8 z-30 max-w-[180px] sm:max-w-xs">
+        <div className="hidden min-[375px]:block absolute top-3 right-3 sm:top-4 sm:right-4 md:top-8 md:right-8 z-30 max-w-[240px] sm:max-w-sm md:max-w-md">
           <div className="bg-yellow-300 border-l-4 border-yellow-500 p-3 sm:p-5 shadow-xl transform rotate-1 hover:rotate-0 transition-transform duration-200" 
                style={{ 
                  boxShadow: '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10)',
