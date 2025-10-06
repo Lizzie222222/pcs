@@ -145,6 +145,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
         const aclResponse = await apiRequest('PUT', '/api/evidence-files', {
           fileURL: uploadURL.split('?')[0],
           visibility: form.getValues('visibility'),
+          filename: file.name,
         });
         const { objectPath } = await aclResponse.json();
         
@@ -222,6 +223,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
         const aclResponse = await apiRequest('PUT', '/api/evidence-files', {
           fileURL: uploadURL.split('?')[0],
           visibility: 'private',
+          filename: file.name,
         });
         const { objectPath } = await aclResponse.json();
         

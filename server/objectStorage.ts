@@ -209,7 +209,8 @@ export class ObjectStorageService {
   // Tries to set the ACL policy for the object entity and return the normalized path.
   async trySetObjectEntityAclPolicy(
     rawPath: string,
-    aclPolicy: ObjectAclPolicy
+    aclPolicy: ObjectAclPolicy,
+    filename?: string
   ): Promise<string> {
     const normalizedPath = this.normalizeObjectEntityPath(rawPath);
     if (!normalizedPath.startsWith("/")) {
@@ -218,6 +219,15 @@ export class ObjectStorageService {
 
     const objectFile = await this.getObjectEntityFile(normalizedPath);
     await setObjectAclPolicy(objectFile, aclPolicy);
+    
+    if (filename) {
+      await objectFile.setMetadata({
+        metadata: {
+          filename: filename,
+        },
+      });
+    }
+    
     return normalizedPath;
   }
 

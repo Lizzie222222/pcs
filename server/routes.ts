@@ -1162,6 +1162,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
     const userId = req.user?.id;
     const objectStorageService = new ObjectStorageService();
+    const shouldDownload = req.query.download === 'true';
+    
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
       const canAccess = await objectStorageService.canAccessObjectEntity({
@@ -1172,6 +1174,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!canAccess) {
         return res.sendStatus(401);
       }
+      
+      if (shouldDownload) {
+        const [metadata] = await objectFile.getMetadata();
+        const filename = metadata.metadata?.filename || req.path.split('/').pop() || 'download';
+        res.set('Content-Disposition', `attachment; filename="${filename}"`);
+      }
+      
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {
       console.error("Error checking object access:", error);
@@ -1202,6 +1211,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     const userId = req.user?.id;
     const visibility = req.body.visibility || 'private';
+    const filename = req.body.filename;
 
     try {
       const objectStorageService = new ObjectStorageService();
@@ -1211,6 +1221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           owner: userId,
           visibility: visibility,
         },
+        filename,
       );
 
       res.status(200).json({ objectPath });
