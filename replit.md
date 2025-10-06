@@ -3,6 +3,16 @@
 ## Overview
 This project is a comprehensive web application for the Plastic Clever Schools program, aiming to reduce plastic usage in schools. It features a public-facing website and an integrated CRM system. The platform guides schools through a three-stage plastic reduction program (Inspire, Investigate, Act), offering educational resources, evidence submission tracking, case study showcasing, and administrative tools for managing school participation and progress. The business vision is to empower schools to become environmentally responsible and to scale the program's reach and impact.
 
+## Recent Changes (October 2025)
+### Landing Page Improvements
+-   **Brand Alignment**: Updated to exact PCS brand specifications including precise hex colors and typography standards.
+-   **Hero Section**: Replaced YouTube video with static student image, added semi-transparent text box backgrounds for improved readability.
+-   **Post-it Note Popup**: Added yellow post-it style popup component for news/events announcements.
+-   **Impact Ribbon**: Updated to display "X schools | Y countries | Z actions taken" format with database-driven statistics.
+-   **Three-Stage Program**: Updated descriptions to exact stakeholder feedback wording for INSPIRE, INVESTIGATE, and ACT stages.
+-   **Animation Updates**: Disabled scroll-reveal animations while preserving button hover/interaction effects per accessibility feedback.
+-   **Future Enhancements**: Translation expansion to Dutch, French, and Indonesian marked for future iteration (i18n infrastructure already supports multi-language).
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
@@ -43,9 +53,11 @@ Preferred communication style: Simple, everyday language.
 -   **VerificationRequests**: Stores teacher requests to join schools with evidence and review status.
 
 ### UI/UX Decisions
--   **Color Schemes**: Custom palette aligned with Plastic Clever Schools brand.
+-   **Color Schemes**: Exact PCS brand colors - PCS Navy #204969, PCS Blue #009ADE, Inspire Green #00BBB4, Investigate Yellow #FFC557, Act Red #FF595A.
+-   **Typography**: Gilroy Bold for headers with -12 letter spacing (fallbacks: -apple-system, BlinkMacSystemFont, Segoe UI, Helvetica Neue, Arial, sans-serif); Century Gothic Regular for body text (fallbacks: Futura, Apple Gothic, Trebuchet MS, sans-serif).
 -   **Design Approach**: Component-based using Radix UI and shadcn/ui for consistency and accessibility.
 -   **Page Structure**: Public routes for general access (`/`, `/resources`, `/inspiration`, `/schools-map`, `/invitations/:token`, `/admin-invitations/:token`) and authenticated routes for specific user roles (`/register`, `/dashboard/team-management`, `/admin`).
+-   **Animations**: Scroll-reveal animations disabled per stakeholder feedback; button hover/press interactions preserved for user feedback.
 
 ## External Dependencies
 ### Core Infrastructure
