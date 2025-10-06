@@ -188,8 +188,8 @@ export default function Landing() {
         </div>
 
         {/* Post-it Note Style News/Events Popup - Hidden on very small screens (< 375px) */}
-        <div className="hidden min-[375px]:block absolute top-3 right-3 sm:top-4 sm:right-4 md:top-8 md:right-8 z-30 max-w-[240px] sm:max-w-sm md:max-w-md">
-          <div className="bg-yellow-300 border-l-4 border-yellow-500 p-3 sm:p-5 shadow-xl transform rotate-1 hover:rotate-0 transition-transform duration-200" 
+        <div className="hidden min-[375px]:block absolute top-3 right-3 sm:top-4 sm:right-4 md:top-8 md:right-8 z-30 max-w-[320px] sm:max-w-sm md:max-w-md">
+          <div className="bg-yellow-300 border-l-4 border-yellow-500 p-5 sm:p-5 shadow-xl transform rotate-1 hover:rotate-0 transition-transform duration-200" 
                style={{ 
                  boxShadow: '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10)',
                  fontFamily: '"Segoe Print", "Comic Sans MS", cursive',
@@ -197,10 +197,10 @@ export default function Landing() {
                }}
                data-testid="popup-news-event">
             <div className="flex items-start gap-2">
-              <Star className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
+              <Star className="w-5 h-5 sm:w-5 sm:h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-xs sm:text-sm font-bold text-gray-900 mb-1">Latest News!</p>
-                <p className="text-[10px] sm:text-xs font-medium text-gray-800 leading-tight">Join our growing community</p>
+                <p className="text-sm sm:text-sm font-bold text-gray-900 mb-1">Latest News!</p>
+                <p className="text-xs sm:text-xs font-medium text-gray-800 leading-tight">Join our growing community</p>
               </div>
             </div>
           </div>
