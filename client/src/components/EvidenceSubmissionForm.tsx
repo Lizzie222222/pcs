@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -6,7 +6,6 @@ import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ObjectUploader } from "@/components/ObjectUploader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -14,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { X, Upload, File, Trash2, AlertCircle } from "lucide-react";
-import type { UploadResult } from "@uppy/core";
 
 // Factory function for translated schema
 const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.object({
@@ -47,6 +45,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
   const queryClient = useQueryClient();
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const evidenceSchema = createEvidenceSchema(t);
 
@@ -88,65 +87,75 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
     },
   });
 
-  const handleGetUploadParameters = async () => {
-    try {
-      const response = await fetch('/api/objects/upload', {
-        method: 'POST',
-        credentials: 'include',
-      });
-      
-      if (!response.ok) {
-        throw new Error(t('forms:evidence_submission.file_upload_error'));
-      }
-      
-      const { uploadURL } = await response.json();
-      return {
-        method: 'PUT' as const,
-        url: uploadURL,
-      };
-    } catch (error) {
-      console.error('Upload URL error:', error);
-      throw error;
-    }
-  };
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-  const handleUploadComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    setIsUploading(true);
+    
     try {
-      setIsUploading(true);
-      const successful = result.successful || [];
-      
-      for (const file of successful) {
-        const fileData = {
-          name: file.name || 'Unknown file',
-          url: file.uploadURL || '',
-          size: file.size || 0,
-          type: file.type || '',
-        };
-        
-        // Set ACL policy for the uploaded file
-        if (fileData.url) {
-          await apiRequest('PUT', '/api/evidence-files', {
-            fileURL: fileData.url,
-            visibility: form.getValues('visibility'),
+      for (const file of files) {
+        if (file.size > 157286400) {
+          toast({
+            title: "File Too Large",
+            description: `${file.name} exceeds 150MB limit.`,
+            variant: "destructive",
           });
+          continue;
+        }
+
+        const uploadResponse = await fetch('/api/objects/upload', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to get upload URL');
         }
         
-        setUploadedFiles(prev => [...prev, fileData]);
+        const { uploadURL } = await uploadResponse.json();
+        
+        const uploadFileResponse = await fetch(uploadURL, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type || 'application/octet-stream',
+          },
+        });
+        
+        if (!uploadFileResponse.ok) {
+          throw new Error('Failed to upload file');
+        }
+        
+        await apiRequest('PUT', '/api/evidence-files', {
+          fileURL: uploadURL.split('?')[0],
+          visibility: form.getValues('visibility'),
+        });
+        
+        setUploadedFiles(prev => [...prev, {
+          name: file.name,
+          url: uploadURL.split('?')[0],
+          size: file.size,
+          type: file.type,
+        }]);
       }
       
       toast({
-        title: "Files Uploaded",
-        description: `${successful.length} file(s) uploaded successfully.`,
+        title: "Success",
+        description: `${files.length} file(s) uploaded successfully.`,
       });
     } catch (error) {
-      console.error('File processing error:', error);
+      console.error('Upload error:', error);
       toast({
-        title: "Upload Error",
-        description: "Files uploaded but failed to process. Please try again.",
+        title: "Upload Failed",
+        description: "Failed to upload files. Please try again.",
         variant: "destructive",
       });
     } finally {
       setIsUploading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -188,7 +197,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
   return (
     <div 
       className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      onMouseDown={(e) => {
+      onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
@@ -196,7 +205,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
     >
       <div 
         className="bg-white rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto"
-        onMouseDown={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
       >
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
@@ -307,20 +316,35 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
               {/* File Upload */}
               <div className="space-y-4">
                 <FormLabel>{t('forms:evidence_submission.files')}</FormLabel>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <ObjectUploader
-                    maxNumberOfFiles={5}
-                    maxFileSize={157286400}
-                    onGetUploadParameters={handleGetUploadParameters}
-                    onComplete={handleUploadComplete}
-                    buttonClassName="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
-                  >
-                    <Upload className="h-5 w-5 mr-2" />
-                    {isUploading ? t('forms:evidence_submission.uploading') : t('forms:evidence_submission.upload_files')}
-                  </ObjectUploader>
-                  <p className="text-sm text-gray-500 mt-2">
-                    {t('forms:evidence_submission.upload_help')}
-                  </p>
+                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    multiple
+                    accept="image/*,video/*,.pdf"
+                    onChange={handleFileSelect}
+                    className="hidden"
+                    disabled={isUploading}
+                    id="file-upload"
+                  />
+                  <label htmlFor="file-upload" className="cursor-pointer block text-center">
+                    <Button
+                      type="button"
+                      className="bg-pcs_blue hover:bg-pcs_blue/90 text-white mb-2"
+                      disabled={isUploading}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        fileInputRef.current?.click();
+                      }}
+                      data-testid="button-upload-files"
+                    >
+                      <Upload className="h-5 w-5 mr-2" />
+                      {isUploading ? t('forms:evidence_submission.uploading') : t('forms:evidence_submission.upload_files')}
+                    </Button>
+                    <p className="text-sm text-gray-500">
+                      {t('forms:evidence_submission.upload_help')}
+                    </p>
+                  </label>
                 </div>
 
                 {/* Uploaded Files Preview */}
