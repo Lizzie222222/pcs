@@ -4,6 +4,13 @@
 This project is a comprehensive web application for the Plastic Clever Schools program, aiming to reduce plastic usage in schools. It features a public-facing website and an integrated CRM system. The platform guides schools through a three-stage plastic reduction program (Inspire, Investigate, Act), offering educational resources, evidence submission tracking, case study showcasing, and administrative tools for managing school participation and progress. The business vision is to empower schools to become environmentally responsible and to scale the program's reach and impact.
 
 ## Recent Changes (October 2025)
+### File Thumbnail and Download Fixes (October 6, 2025)
+-   **Thumbnail Display**: Fixed "Access Denied" errors for evidence file thumbnails by ensuring files are served through authenticated backend endpoint (`/objects/*`)
+-   **Video Thumbnails**: Implemented HTML5 video element with `preload="metadata"` to display first frame of videos as thumbnails instead of generic placeholders
+-   **Download Functionality**: Added `?download=true` query parameter to trigger proper download behavior with `Content-Disposition: attachment` header
+-   **Filename Metadata**: Implemented filename storage in object metadata for accurate download filenames
+-   **Resource Downloads**: Updated resource download handler to support object storage files with proper download headers
+
 ### Landing Page Restructuring (October 6, 2025)
 -   **Page Simplification**: Removed extra sections to match exact document specification - eliminated "What is a Plastic Clever School" cards, "Social Proof", "Partnership", "Why Schools Choose Us" testimonials, and "Global Movement" sections.
 -   **New Content Structure**: 
