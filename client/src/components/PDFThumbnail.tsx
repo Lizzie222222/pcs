@@ -23,7 +23,7 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
 
         const loadingTask = pdfjsLib.getDocument({
           url,
-          withCredentials: false,
+          withCredentials: true,
         });
         const pdf = await loadingTask.promise;
         const page = await pdf.getPage(1);
