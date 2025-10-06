@@ -15,6 +15,14 @@ import {
   School,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
+
+interface EvidenceFile {
+  name: string;
+  url: string;
+  size: number;
+  type: string;
+}
 
 interface CaseStudy {
   id: string;
@@ -25,6 +33,7 @@ interface CaseStudy {
   imageUrl: string;
   featured: boolean;
   evidenceLink: string | null;
+  evidenceFiles: EvidenceFile[] | null;
   schoolId: string;
   schoolName: string;
   schoolCountry: string;
@@ -193,8 +202,28 @@ export default function CaseStudyDetail() {
           </Card>
         )}
 
-        {/* Original Evidence Link */}
-        {caseStudy.evidenceLink && (
+        {/* Original Evidence Files */}
+        {caseStudy.evidenceFiles && caseStudy.evidenceFiles.length > 0 && (
+          <Card className="mb-8">
+            <CardContent className="p-6">
+              <div className="flex items-center gap-3 mb-4">
+                <BookOpen className="w-5 h-5 text-ocean-blue" />
+                <div>
+                  <h3 className="font-semibold text-navy">Original Evidence</h3>
+                  <p className="text-sm text-gray-600">
+                    View the original submission files that inspired this case study
+                  </p>
+                </div>
+              </div>
+              <EvidenceFilesGallery 
+                files={caseStudy.evidenceFiles} 
+              />
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Legacy Evidence Link (for old case studies without files array) */}
+        {caseStudy.evidenceLink && (!caseStudy.evidenceFiles || caseStudy.evidenceFiles.length === 0) && (
           <Card className="mb-8">
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
