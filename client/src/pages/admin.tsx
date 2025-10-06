@@ -3504,6 +3504,7 @@ export default function Admin() {
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
   const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test'>('overview');
+  const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [schoolFilters, setSchoolFilters] = useState({
     search: '',
     country: '',
@@ -3603,9 +3604,9 @@ export default function Admin() {
     retry: false,
   });
 
-  // Pending evidence query
+  // Evidence query with status filter
   const { data: pendingEvidence, error: evidenceError } = useQuery<PendingEvidence[]>({
-    queryKey: ['/api/admin/evidence/pending'],
+    queryKey: ['/api/admin/evidence', evidenceStatusFilter === 'all' ? undefined : evidenceStatusFilter],
     enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'evidence'),
     retry: false,
   });
@@ -3688,7 +3689,7 @@ export default function Admin() {
         title: "Evidence Reviewed",
         description: "Evidence has been successfully reviewed and email notification sent.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
       setReviewData(null);
     },
@@ -3719,7 +3720,7 @@ export default function Admin() {
         title: "Bulk Review Complete",
         description: `${variables.evidenceIds.length} evidence submissions have been ${variables.status} and email notifications sent.`,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
       setSelectedEvidence([]);
       setBulkEvidenceDialogOpen(false);
@@ -3746,7 +3747,7 @@ export default function Admin() {
         title: "Bulk Delete Complete",
         description: `${evidenceIds.length} evidence submissions have been deleted.`,
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
       setSelectedEvidence([]);
       setBulkEvidenceDialogOpen(false);
@@ -4306,6 +4307,55 @@ export default function Admin() {
                   </div>
                 )}
               </div>
+              
+              {/* Status Filter Tabs */}
+              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mt-4">
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStatusFilter === 'all'
+                      ? 'bg-white text-navy shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStatusFilter('all')}
+                  data-testid="filter-evidence-all"
+                >
+                  All
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStatusFilter === 'pending'
+                      ? 'bg-white text-navy shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStatusFilter('pending')}
+                  data-testid="filter-evidence-pending"
+                >
+                  Pending
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStatusFilter === 'approved'
+                      ? 'bg-white text-navy shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStatusFilter('approved')}
+                  data-testid="filter-evidence-approved"
+                >
+                  Approved
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStatusFilter === 'rejected'
+                      ? 'bg-white text-navy shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStatusFilter('rejected')}
+                  data-testid="filter-evidence-rejected"
+                >
+                  Rejected
+                </button>
+              </div>
+
               {pendingEvidence && pendingEvidence.length > 0 && (
                 <div className="flex items-center gap-2">
                   <input
