@@ -852,6 +852,7 @@ function VerificationRequestsList() {
 }
 
 function UserManagementTab() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
@@ -866,6 +867,8 @@ function UserManagementTab() {
   const [selectedUserToDelete, setSelectedUserToDelete] = useState<{ id: string; name: string } | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [selectedUserForRole, setSelectedUserForRole] = useState<{ id: string; name: string; isAdmin: boolean; role: string } | null>(null);
+
+  const isPartner = user?.role === 'partner';
 
   const { data: usersWithSchools = [], isLoading } = useQuery<UserWithSchools[]>({
     queryKey: ['/api/admin/users'],
