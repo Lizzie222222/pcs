@@ -269,32 +269,35 @@ export default function Landing() {
             {/* Teacher Testimonial - Enhanced Card */}
             <div className="relative" data-testid="section-teacher-testimonial">
               {/* Decorative Quote Mark */}
-              <div className="absolute -top-4 -left-4 text-ocean-blue/10 text-9xl font-serif leading-none select-none" aria-hidden="true">
+              <div className="absolute -top-8 -left-6 text-ocean-blue/20 text-[120px] font-serif leading-none select-none pointer-events-none" aria-hidden="true">
                 "
               </div>
               
               {/* Testimonial Card */}
-              <div className="relative bg-white rounded-2xl p-8 lg:p-10 shadow-xl border border-gray-100 hover:shadow-2xl transition-shadow duration-300">
+              <div className="relative bg-gradient-to-br from-white to-ocean-blue/5 rounded-3xl p-8 lg:p-12 shadow-2xl border-2 border-ocean-blue/20 hover:border-ocean-blue/40 hover:shadow-3xl transition-all duration-500 group">
+                {/* Decorative Corner Element */}
+                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-teal/10 to-ocean-blue/10 rounded-bl-[100px] rounded-tr-3xl -z-0"></div>
+                
                 {/* Star Rating */}
-                <div className="flex items-center gap-1 mb-6">
+                <div className="flex items-center gap-1 mb-6 relative z-10">
                   {[...Array(5)].map((_, i) => (
-                    <Star key={i} className="w-6 h-6 text-yellow fill-current" />
+                    <Star key={i} className="w-7 h-7 text-yellow fill-current drop-shadow-sm transition-transform duration-300 group-hover:scale-110" style={{ transitionDelay: `${i * 50}ms` }} />
                   ))}
                 </div>
                 
                 {/* Quote Text */}
-                <blockquote className="text-2xl lg:text-3xl font-bold text-navy leading-tight mb-8 relative">
-                  PLASTIC CLEVER SCHOOLS IS THE BEST...
+                <blockquote className="text-xl lg:text-2xl font-semibold text-navy leading-relaxed mb-8 relative z-10 italic">
+                  "Plastic Clever Schools has transformed how we approach sustainability. Our students are now passionate environmental advocates!"
                 </blockquote>
                 
                 {/* Author Info */}
-                <div className="flex items-center gap-4 pt-6 border-t border-gray-200">
-                  <div className="w-14 h-14 bg-gradient-to-br from-ocean-blue to-teal rounded-full flex items-center justify-center text-white font-bold text-lg shadow-md">
+                <div className="flex items-center gap-4 pt-6 border-t-2 border-ocean-blue/20 relative z-10">
+                  <div className="w-16 h-16 bg-gradient-to-br from-ocean-blue to-teal rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg ring-4 ring-white group-hover:scale-105 transition-transform duration-300">
                     JS
                   </div>
                   <div>
-                    <p className="font-semibold text-navy text-lg">Teacher name</p>
-                    <p className="text-gray-600 text-sm">School name</p>
+                    <p className="font-bold text-navy text-lg">Jane Smith</p>
+                    <p className="text-ocean-blue text-sm font-medium">Head Teacher, Greenfield Primary</p>
                   </div>
                 </div>
               </div>
