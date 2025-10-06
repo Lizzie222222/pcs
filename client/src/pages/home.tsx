@@ -43,6 +43,7 @@ interface DashboardData {
     stage: string;
     status: string;
     submittedAt: string;
+    reviewedAt?: string;
   }>;
 }
 
@@ -99,10 +100,10 @@ export default function Home() {
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       
       const recentApproved = dashboardData.recentEvidence.filter(e => 
-        e.status === 'approved' && new Date(e.submittedAt) > sevenDaysAgo
+        e.status === 'approved' && e.reviewedAt && new Date(e.reviewedAt) > sevenDaysAgo
       );
       const recentRejected = dashboardData.recentEvidence.filter(e => 
-        e.status === 'rejected' && new Date(e.submittedAt) > sevenDaysAgo
+        e.status === 'rejected' && e.reviewedAt && new Date(e.reviewedAt) > sevenDaysAgo
       );
       
       if (recentApproved.length > 0 || recentRejected.length > 0) {
@@ -257,10 +258,10 @@ export default function Home() {
           const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
           
           const recentApproved = recentEvidence.filter(e => 
-            e.status === 'approved' && new Date(e.submittedAt) > sevenDaysAgo
+            e.status === 'approved' && e.reviewedAt && new Date(e.reviewedAt) > sevenDaysAgo
           );
           const recentRejected = recentEvidence.filter(e => 
-            e.status === 'rejected' && new Date(e.submittedAt) > sevenDaysAgo
+            e.status === 'rejected' && e.reviewedAt && new Date(e.reviewedAt) > sevenDaysAgo
           );
           
           const hasNotifications = recentApproved.length > 0 || recentRejected.length > 0;
