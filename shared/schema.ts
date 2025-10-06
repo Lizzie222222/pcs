@@ -264,6 +264,19 @@ export const certificates = pgTable("certificates", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const testimonials = pgTable("testimonials", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quote: text("quote").notNull(),
+  authorName: varchar("author_name").notNull(),
+  authorRole: varchar("author_role").notNull(),
+  schoolName: varchar("school_name").notNull(),
+  rating: integer("rating").default(5),
+  isActive: boolean("is_active").default(true),
+  displayOrder: integer("display_order").default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   schoolUsers: many(schoolUsers),
@@ -561,6 +574,12 @@ export const insertVerificationRequestSchema = createInsertSchema(verificationRe
   reviewNotes: true,
 });
 
+export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -588,6 +607,8 @@ export type AdminInvitation = typeof adminInvitations.$inferSelect;
 export type InsertAdminInvitation = z.infer<typeof insertAdminInvitationSchema>;
 export type VerificationRequest = typeof verificationRequests.$inferSelect;
 export type InsertVerificationRequest = z.infer<typeof insertVerificationRequestSchema>;
+export type Testimonial = typeof testimonials.$inferSelect;
+export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;
