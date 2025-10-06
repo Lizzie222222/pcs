@@ -37,7 +37,7 @@ import studentImage from "@assets/emoji-a2ce9597-1802-41f9-90ac-02c0f6bc39c4_175
 import studentVideo from "@assets/a2ce9597-1802-41f9-90ac-02c0f6bc39c4_3511011f-41fb-4a9f-9a85-e3a6d7a6a50d_1757856002007.mp4";
 import booksImage from "@assets/emoji-87fc1963-3634-4869-8114-9e623ac4ab1b_1757957388936.png";
 import booksVideo from "@assets/animation-674499de-46d3-4335-b88b-1e2c39496eca_1757957380584.mp4";
-import heroPosterImage from "@assets/generated_images/Hero_poster_background_image_8557f95c.png";
+import heroImage from "@assets/1W0A3542_1759747398974.jpg";
 import { 
   Star,
   ArrowRight,
@@ -48,8 +48,6 @@ import {
   MapPin,
   TrendingUp,
   Instagram,
-  Wifi,
-  WifiOff,
   Settings
 } from "lucide-react";
 
@@ -63,9 +61,7 @@ interface SiteStats {
 export default function Landing() {
   const { t } = useTranslation('landing');
   const [showSignUp, setShowSignUp] = useState(false);
-  const [videoLoaded, setVideoLoaded] = useState(false);
   const observerRef = useRef<IntersectionObserver | null>(null);
-  const heroVideoRef = useRef<HTMLDivElement>(null);
 
   const { data: stats } = useQuery<SiteStats>({
     queryKey: ['/api/stats'],
@@ -87,203 +83,36 @@ export default function Landing() {
   // Connection speed detection
   const connectionSpeed = useConnectionSpeed();
 
-  // Scroll animation setup
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
+  // Scroll animations disabled per feedback - only button press indications allowed
+  // useEffect(() => {
+  //   const observerOptions = {
+  //     threshold: 0.1,
+  //     rootMargin: '0px 0px -50px 0px'
+  //   };
 
-    observerRef.current = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('revealed');
-        }
-      });
-    }, observerOptions);
+  //   observerRef.current = new IntersectionObserver((entries) => {
+  //     entries.forEach((entry) => {
+  //       if (entry.isIntersecting) {
+  //         entry.target.classList.add('revealed');
+  //       }
+  //     });
+  //   }, observerOptions);
 
-    // Observe all scroll-reveal elements
-    const revealElements = document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale');
-    revealElements.forEach((el) => {
-      observerRef.current?.observe(el);
-    });
+  //   // Observe all  elements
+  //   const revealElements = document.querySelectorAll('., .-left, .-right, .-scale');
+  //   revealElements.forEach((el) => {
+  //     observerRef.current?.observe(el);
+  //   });
 
-    return () => {
-      observerRef.current?.disconnect();
-    };
-  }, []);
+  //   return () => {
+  //     observerRef.current?.disconnect();
+  //   };
+  // }, []);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
     element?.scrollIntoView({ behavior: 'smooth' });
   };
-
-  // Performance-optimized Hero Video Component with connection speed detection
-  function HeroVideo() {
-    const [showVideo, setShowVideo] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
-    const [videoError, setVideoError] = useState(false);
-    const [iframeLoaded, setIframeLoaded] = useState(false);
-    const iframeRef = useRef<HTMLIFrameElement>(null);
-    
-    const handlePlayClick = () => {
-      setIsLoading(true);
-      setVideoError(false);
-      setShowVideo(true);
-    };
-
-    // Handle iframe loading with better error detection
-    const handleIframeLoad = () => {
-      setIframeLoaded(true);
-      // Add a slight delay to ensure video is ready
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 500);
-    };
-
-    const handleIframeError = () => {
-      setVideoError(true);
-      setIsLoading(false);
-    };
-
-    // Auto-retry on error
-    useEffect(() => {
-      if (videoError && showVideo) {
-        const retryTimer = setTimeout(() => {
-          setVideoError(false);
-          setIsLoading(true);
-          // Force iframe reload
-          if (iframeRef.current) {
-            const currentSrc = iframeRef.current.src;
-            iframeRef.current.src = '';
-            setTimeout(() => {
-              if (iframeRef.current) {
-                iframeRef.current.src = currentSrc;
-              }
-            }, 100);
-          }
-        }, 3000);
-        return () => clearTimeout(retryTimer);
-      }
-    }, [videoError, showVideo]);
-
-    if (showVideo) {
-      return (
-        <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-          {(isLoading || !iframeLoaded) && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-              <div className="text-center text-white">
-                <div className="w-12 h-12 border-4 border-white border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-                <p className="text-sm">{isLoading ? 'Loading video...' : 'Preparing playback...'}</p>
-              </div>
-            </div>
-          )}
-          {videoError && (
-            <div className="absolute inset-0 bg-black/50 flex items-center justify-center z-10">
-              <div className="text-center text-white p-6">
-                <div className="w-16 h-16 bg-red-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <WifiOff className="w-8 h-8 text-red-300" />
-                </div>
-                <p className="text-lg mb-2">Video Loading Error</p>
-                <p className="text-sm text-gray-300 mb-4">Retrying automatically...</p>
-                <button 
-                  onClick={() => {
-                    setVideoError(false);
-                    setShowVideo(false);
-                  }}
-                  className="text-sm underline hover:no-underline"
-                  data-testid="button-close-video"
-                >
-                  Close Video
-                </button>
-              </div>
-            </div>
-          )}
-          <iframe 
-            ref={iframeRef}
-            src="https://www.youtube.com/embed/jyL1lt-72HQ?autoplay=1&mute=1&loop=1&playlist=jyL1lt-72HQ&controls=1&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=1&end=29&enablejsapi=1"
-            className="absolute inset-0 w-full h-full"
-            style={{ border: 'none' }}
-            allow="autoplay; encrypted-media; fullscreen"
-            referrerPolicy="strict-origin-when-cross-origin"
-            title={t('accessibility.hero_video_title')}
-            onLoad={handleIframeLoad}
-            onError={handleIframeError}
-            data-testid="hero-video-iframe"
-          />
-        </div>
-      );
-    }
-
-    // Determine poster quality based on connection speed
-    const posterQuality = connectionSpeed.shouldLoadHighQuality ? 'maxresdefault' : 'hqdefault';
-    const posterUrl = `https://img.youtube.com/vi/jyL1lt-72HQ/${posterQuality}.jpg`;
-    
-    // Connection speed based image quality
-    const imageQuality = connectionSpeed.recommendedImageQuality;
-    
-    return (
-      <div className="absolute inset-0 w-full h-full z-0 overflow-hidden">
-        {/* Connection speed optimized poster image */}
-        <OptimizedImage
-          src={posterUrl}
-          alt={t('accessibility.hero_video_title')}
-          width={1920}
-          height={1080}
-          className="w-full h-full object-cover"
-          priority={true}
-          responsive={connectionSpeed.shouldLoadHighQuality}
-          quality={imageQuality}
-          sizes="100vw"
-          placeholder="blur"
-          blurDataURL={createBlurPlaceholder('#2563eb')}
-          breakpoints={connectionSpeed.shouldLoadHighQuality ? {
-            mobile: 640,
-            tablet: 1024,
-            desktop: 1920
-          } : {
-            mobile: 480,
-            tablet: 768,
-            desktop: 1280
-          }}
-        />
-        {/* Play button overlay with connection info */}
-        <div className="absolute inset-0 bg-black/20 flex flex-col items-center justify-center">
-          <button
-            onClick={handlePlayClick}
-            className="group flex items-center justify-center w-20 h-20 bg-white/90 hover:bg-white rounded-full transition-all duration-300 hover:scale-110 mb-4"
-            aria-label={t('accessibility.play_hero_video')}
-            data-testid="button-play-hero-video"
-          >
-            <svg 
-              className="w-8 h-8 text-gray-800 ml-1 group-hover:text-gray-900" 
-              fill="currentColor" 
-              viewBox="0 0 24 24"
-              aria-hidden="true"
-            >
-              <path d="M8 5v14l11-7z"/>
-            </svg>
-          </button>
-          
-          {/* Connection speed indicator */}
-          {!connectionSpeed.isLoading && (
-            <div className="flex items-center gap-2 text-white text-sm bg-black/40 px-3 py-1 rounded-full backdrop-blur-sm">
-              {connectionSpeed.connectionInfo.isSlowConnection ? (
-                <WifiOff className="w-4 h-4 text-yellow-300" />
-              ) : (
-                <Wifi className="w-4 h-4 text-green-300" />
-              )}
-              <span className="text-xs">
-                {connectionSpeed.connectionInfo.effectiveType !== 'unknown' 
-                  ? `${connectionSpeed.connectionInfo.effectiveType.toUpperCase()} connection`
-                  : 'Detecting speed...'}
-              </span>
-            </div>
-          )}
-        </div>
-      </div>
-    );
-  }
 
   // Safe HoverVideo component to handle play/pause without promise conflicts
   interface HoverVideoProps {
@@ -391,57 +220,103 @@ export default function Landing() {
   return (
     <div className="min-h-screen bg-white pt-16">
 
-      {/* Clean Hero Section - StreetSmart Inspired with Video Background */}
+      {/* Clean Hero Section with Student Image */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
-        {/* Optimized Hero Video - Click to Play */}
-        <HeroVideo />
-        
-        {/* Subtle Black Overlay for Text Contrast */}
-        <div className="absolute inset-0 bg-black/25 z-10"></div>
+        {/* Optimized Hero Image */}
+        <div className="absolute inset-0 w-full h-full z-0">
+          <OptimizedImage
+            src={heroImage}
+            alt="Students holding Plastic Clever Schools reusable water bottles"
+            width={1920}
+            height={1080}
+            className="w-full h-full object-cover"
+            priority={true}
+            responsive={true}
+            quality={85}
+            sizes="100vw"
+            placeholder="blur"
+            blurDataURL={createBlurPlaceholder('#f3f4f6')}
+          />
+        </div>
+
+        {/* Post-it Note Style News/Events Popup */}
+        <div className="absolute top-4 right-4 md:top-8 md:right-8 z-30 max-w-xs">
+          <div className="bg-yellow-100 border-l-4 border-yellow-400 p-4 shadow-lg transform rotate-1 hover:rotate-0 transition-transform duration-200" 
+               style={{ 
+                 boxShadow: '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10)',
+                 fontFamily: '"Segoe Print", "Comic Sans MS", cursive'
+               }}
+               data-testid="popup-news-event">
+            <div className="flex items-start gap-2">
+              <Star className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+              <div>
+                <p className="text-sm font-semibold text-gray-800 mb-1">Latest News!</p>
+                <p className="text-xs text-gray-700">Join our growing community of Plastic Clever Schools</p>
+              </div>
+            </div>
+          </div>
+        </div>
         
         <div className="container-width relative z-20 py-20">
           <div className="max-w-4xl mx-auto text-center">
-            {/* Hero Heading with Text Shadow */}
-            <h1 
-              className="text-4xl lg:text-5xl xl:text-6xl font-bold mb-8 text-white leading-tight"
-              style={{ 
-                textShadow: '2px 2px 8px rgba(0,0,0,0.8), 0px 0px 16px rgba(0,0,0,0.6)' 
-              }}
-              data-testid="text-hero-title"
-            >
-              {t('hero.title')}
-            </h1>
+            {/* Hero Text Box with Semi-transparent Background */}
+            <div className="bg-white/90 backdrop-blur-sm rounded-lg px-8 py-10 md:px-12 md:py-12 inline-block">
+              {/* Hero Heading */}
+              <h1 
+                className="text-4xl lg:text-5xl xl:text-6xl font-bold mb-8 text-navy leading-tight"
+                data-testid="text-hero-title"
+              >
+                {t('hero.title')}
+              </h1>
 
-            {/* CTA Button with Enhanced Animation */}
-            <Button 
-              size="lg"
-              className="btn-primary px-8 py-4 text-xl mb-8 group"
-              onClick={() => window.location.href = '/register'}
-              data-testid="button-register-school"
-            >
-              {t('hero.cta_primary')}
-              <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
-            </Button>
+              {/* CTA Button with Enhanced Animation */}
+              <Button 
+                size="lg"
+                className="btn-primary px-8 py-4 text-xl mb-8 group"
+                onClick={() => window.location.href = '/register'}
+                data-testid="button-register-school"
+              >
+                {t('hero.cta_primary')}
+                <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
+              </Button>
 
-            {/* Simple Trust Indicators with Text Shadow */}
-            <div 
-              className="flex flex-wrap justify-center items-center gap-6 text-base text-white font-medium"
-              style={{ 
-                textShadow: '1px 1px 4px rgba(0,0,0,0.8)' 
-              }}
-            >
-              <div className="flex items-center gap-2">
-                <BookOpen className="w-4 h-4 text-white drop-shadow-lg" />
-                {t('hero.trust_indicators.curriculum_aligned')}
+              {/* Simple Trust Indicators */}
+              <div className="flex flex-wrap justify-center items-center gap-6 text-base text-gray-700 font-medium">
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-4 h-4 text-ocean-blue" />
+                  {t('hero.trust_indicators.curriculum_aligned')}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Recycle className="w-4 h-4 text-teal" />
+                  {t('hero.trust_indicators.proven_impact')}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Heart className="w-4 h-4 text-coral" />
+                  {t('hero.trust_indicators.completely_free')}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Recycle className="w-4 h-4 text-white drop-shadow-lg" />
-                {t('hero.trust_indicators.proven_impact')}
-              </div>
-              <div className="flex items-center gap-2">
-                <Heart className="w-4 h-4 text-white drop-shadow-lg" />
-                {t('hero.trust_indicators.completely_free')}
-              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Impact Ribbon - Database-driven stats */}
+      <section className="py-6 bg-navy">
+        <div className="container-width">
+          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 text-white text-center">
+            <div className="flex items-center gap-2" data-testid="impact-ribbon-schools">
+              <span className="text-2xl md:text-3xl font-bold">{stats?.totalSchools?.toLocaleString() || '0'}</span>
+              <span className="text-sm md:text-base">schools</span>
+            </div>
+            <div className="hidden md:block text-2xl text-white/50">|</div>
+            <div className="flex items-center gap-2" data-testid="impact-ribbon-countries">
+              <span className="text-2xl md:text-3xl font-bold">{stats?.countries?.toLocaleString() || '0'}</span>
+              <span className="text-sm md:text-base">countries</span>
+            </div>
+            <div className="hidden md:block text-2xl text-white/50">|</div>
+            <div className="flex items-center gap-2" data-testid="impact-ribbon-actions">
+              <span className="text-2xl md:text-3xl font-bold">{stats?.completedAwards?.toLocaleString() || '0'}</span>
+              <span className="text-sm md:text-base">actions taken</span>
             </div>
           </div>
         </div>
@@ -451,7 +326,7 @@ export default function Landing() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container-width relative z-10">
           <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold text-navy leading-tight mb-8 scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-8">
               <Trans 
                 i18nKey="what_is_section.title" 
                 ns="landing"
@@ -460,12 +335,12 @@ export default function Landing() {
                 }}
               />
             </h2>
-            <p className="text-lg text-gray-600 leading-relaxed mb-12 max-w-3xl mx-auto scroll-reveal">
+            <p className="text-lg text-gray-600 leading-relaxed mb-12 max-w-3xl mx-auto ">
               {t('what_is_section.description')}
             </p>
             
             {/* Key Callouts with Delightful Animations */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 scroll-reveal">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 ">
               <div className="text-center group cursor-pointer">
                 <div className="w-32 h-32 md:w-40 md:h-40 flex items-center justify-center mx-auto mb-4 transition-all duration-200" style={{ minHeight: '128px' }}>
                   <HoverVideo 
@@ -531,13 +406,13 @@ export default function Landing() {
           </div>
           
           <div className="max-w-2xl mx-auto text-center mb-12">
-            <div className="text-6xl lg:text-8xl font-bold text-navy mb-4 scroll-reveal-scale" data-testid="stat-registered-schools" style={{ minHeight: '96px' }}>
+            <div className="text-6xl lg:text-8xl font-bold text-navy mb-4 -scale" data-testid="stat-registered-schools" style={{ minHeight: '96px' }}>
               {stats?.totalSchools?.toLocaleString() || '1542'}+
             </div>
-            <div className="text-xl lg:text-2xl text-gray-600 mb-8 scroll-reveal">{t('social_proof.registered_schools_label')}</div>
+            <div className="text-xl lg:text-2xl text-gray-600 mb-8 ">{t('social_proof.registered_schools_label')}</div>
             <Button 
               size="lg"
-              className="btn-primary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300 scroll-reveal"
+              className="btn-primary px-8 py-3 text-lg font-semibold group hover:scale-105 transition-all duration-300 "
               data-testid="button-view-schools"
             >
               <MapPin className="w-5 h-5 mr-2 transition-transform duration-300 group-hover:rotate-12" />
@@ -552,15 +427,15 @@ export default function Landing() {
       <section id="how-it-works" className="py-16 lg:py-24 bg-gradient-to-b from-white to-yellow/10">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 scroll-reveal">A Simple <span className="text-ocean-blue">3-Stage Journey</span> to a Plastic Clever School</h2>
-            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 ">A Simple <span className="text-ocean-blue">3-Stage Journey</span> to a Plastic Clever School</h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto ">
               {t('three_stage_program.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stage 1: Inspire */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center scroll-reveal-left">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center -left">
               <div className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <HoverVideo 
                   src={inspireVideo}
@@ -578,7 +453,7 @@ export default function Landing() {
             </div>
 
             {/* Stage 2: Investigate */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center scroll-reveal">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center ">
               <div className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <HoverVideo 
                   src={investigateVideo}
@@ -596,7 +471,7 @@ export default function Landing() {
             </div>
 
             {/* Stage 3: Act */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center scroll-reveal-right">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-8 text-center -right">
               <div className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6">
                 <HoverVideo 
                   src={actVideo}
@@ -615,7 +490,7 @@ export default function Landing() {
           </div>
 
           {/* Recognition Section */}
-          <div className="mt-16 text-center bg-gray-50 rounded-xl p-12 scroll-reveal-scale">
+          <div className="mt-16 text-center bg-gray-50 rounded-xl p-12 -scale">
             <h3 className="text-2xl font-bold mb-4">{t('three_stage_program.recognition_title')}</h3>
             <p className="text-lg text-gray-600 leading-relaxed mb-8 max-w-3xl mx-auto">
               {t('three_stage_program.recognition_description')}
@@ -649,13 +524,13 @@ export default function Landing() {
       <section className="py-16 lg:py-24 bg-white">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 scroll-reveal">Built on <span className="text-ocean-blue">Strong Partnerships</span></h2>
-            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 ">Built on <span className="text-ocean-blue">Strong Partnerships</span></h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto ">
               {t('partnership.description')}
             </p>
           </div>
           
-          <div className="flex flex-wrap justify-center items-center gap-12 scroll-reveal">
+          <div className="flex flex-wrap justify-center items-center gap-12 ">
             <div className="flex items-center justify-center">
               <OptimizedImage 
                 src={commonSeasLogo} 
@@ -703,15 +578,15 @@ export default function Landing() {
       <section className="py-16 lg:py-24 bg-gray-50">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 scroll-reveal">Why <span className="text-ocean-blue">Schools Choose Us</span></h2>
-            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 ">Why <span className="text-ocean-blue">Schools Choose Us</span></h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto ">
               {t('testimonials.subtitle')}
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {/* Testimonial 1 */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 scroll-reveal-left">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 -left">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 text-yellow fill-current" />
@@ -732,7 +607,7 @@ export default function Landing() {
             </div>
 
             {/* Testimonial 2 */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 scroll-reveal">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 ">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 text-yellow fill-current" />
@@ -753,7 +628,7 @@ export default function Landing() {
             </div>
 
             {/* Testimonial 3 */}
-            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 scroll-reveal-right">
+            <div className="bg-white border border-gray-200 rounded-lg shadow-sm p-6 -right">
               <div className="flex items-center gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
                   <Star key={i} className="w-4 h-4 text-yellow fill-current" />
@@ -781,17 +656,17 @@ export default function Landing() {
       <section className="py-16 lg:py-24 bg-gradient-to-b from-white to-ocean-blue/5">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 ">
               The <span className="text-ocean-blue">Global Movement</span>
             </h2>
-            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto scroll-reveal">
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto ">
               Schools worldwide are making real impact in the fight against plastic pollution. Discover inspiring stories and see how your school can join this growing movement.
             </p>
           </div>
 
           {/* Global Statistics */}
           {globalMovement?.stats && (
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16 scroll-reveal">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-8 mb-16 ">
               <div className="text-center">
                 <div className="text-4xl lg:text-5xl font-bold text-ocean-blue mb-2" data-testid="stat-global-schools">
                   {globalMovement.stats.totalSchools.toLocaleString()}+
@@ -822,10 +697,10 @@ export default function Landing() {
           {/* Featured Case Studies */}
           {globalMovement?.caseStudies && globalMovement.caseStudies.length > 0 && (
             <div className="space-y-4 mb-12">
-              <h3 className="text-2xl font-bold text-navy text-center mb-8 scroll-reveal">Featured Success Stories</h3>
+              <h3 className="text-2xl font-bold text-navy text-center mb-8 ">Featured Success Stories</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 {globalMovement.caseStudies.slice(0, 3).map((caseStudy, index) => (
-                  <Card key={caseStudy.id} className="bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 hover:scale-105 scroll-reveal-left overflow-hidden">
+                  <Card key={caseStudy.id} className="bg-white border border-gray-200 hover:shadow-lg transition-all duration-300 hover:scale-105 -left overflow-hidden">
                     {caseStudy.imageUrl && (
                       <div className="h-48 overflow-hidden">
                         <OptimizedImage
@@ -882,7 +757,7 @@ export default function Landing() {
           )}
 
           {/* Call to Action */}
-          <div className="text-center scroll-reveal">
+          <div className="text-center ">
             <div className="bg-gradient-to-r from-ocean-blue to-teal p-8 rounded-2xl text-white">
               <h3 className="text-2xl font-bold mb-4">Ready to Make Your Mark?</h3>
               <p className="text-lg mb-6 opacity-90">
@@ -918,8 +793,8 @@ export default function Landing() {
       <section className="py-16 lg:py-24 bg-gradient-to-b from-teal/5 to-ocean-blue/5">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 scroll-reveal">Follow <span className="text-ocean-blue">Our Journey</span></h2>
-            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto scroll-reveal">
+            <h2 className="text-3xl font-bold text-navy leading-tight mb-4 ">Follow <span className="text-ocean-blue">Our Journey</span></h2>
+            <p className="text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto ">
               {t('instagram.description')}
             </p>
             <div className="flex justify-center mt-6">
@@ -936,7 +811,7 @@ export default function Landing() {
             </div>
           </div>
           
-          <div className="scroll-reveal">
+          <div className="">
             <Suspense fallback={
               <div className="flex items-center justify-center py-16">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ocean-blue"></div>
@@ -946,7 +821,7 @@ export default function Landing() {
             </Suspense>
           </div>
           
-          <div className="text-center mt-12 scroll-reveal">
+          <div className="text-center mt-12 ">
             <p className="text-base text-gray-600 leading-relaxed text-gray-600 mb-6">
               Join the conversation and share your school's plastic clever journey with <span className="font-semibold text-teal">#PlasticCleverSchools</span>
             </p>
@@ -964,7 +839,7 @@ export default function Landing() {
       {/* Clean Professional Footer */}
       <footer className="bg-navy text-white py-12">
         <div className="container-width">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 scroll-reveal">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 ">
             <div>
               <OptimizedImage 
                 src={logoUrl} 
@@ -1012,7 +887,7 @@ export default function Landing() {
             </div>
           </div>
           
-          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400 scroll-reveal">
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400 ">
             <p>
               &copy; 2024 Plastic Clever Schools. All rights reserved. | 
               <a href="#" className="hover:text-teal transition-colors ml-1">Privacy</a> | 
