@@ -108,9 +108,10 @@ export default function Resources() {
       // Track download
       await fetch(`/api/resources/${resourceId}/download`, { method: 'GET' });
       
-      // Trigger download
+      // Trigger download - add ?download=true for object storage files
+      const downloadUrl = fileUrl.startsWith('/objects/') ? `${fileUrl}?download=true` : fileUrl;
       const link = document.createElement('a');
-      link.href = fileUrl;
+      link.href = downloadUrl;
       link.download = title;
       document.body.appendChild(link);
       link.click();
