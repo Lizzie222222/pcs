@@ -4,14 +4,28 @@
 This project is a comprehensive web application for the Plastic Clever Schools program, aiming to reduce plastic usage in schools. It features a public-facing website and an integrated CRM system. The platform guides schools through a three-stage plastic reduction program (Inspire, Investigate, Act), offering educational resources, evidence submission tracking, case study showcasing, and administrative tools for managing school participation and progress. The business vision is to empower schools to become environmentally responsible and to scale the program's reach and impact.
 
 ## Recent Changes (October 2025)
-### Landing Page Improvements
+### Landing Page Restructuring (October 6, 2025)
+-   **Page Simplification**: Removed extra sections to match exact document specification - eliminated "What is a Plastic Clever School" cards, "Social Proof", "Partnership", "Why Schools Choose Us" testimonials, and "Global Movement" sections.
+-   **New Content Structure**: 
+    - Hero section with student image and text box overlay
+    - Impact Ribbon with database-driven statistics
+    - Two-column section: Teacher testimonial (left) | "What is Plastic Clever Schools?" video (right)
+    - Three-Stage Program (INSPIRE, INVESTIGATE, ACT)
+    - "Ready to Make a Difference?" CTA with blue background
+    - Instagram feed section
+    - Footer
+-   **Placeholder Content**: Teacher testimonial text and YouTube video ID need final content replacement before launch.
+
+### Previous Landing Page Improvements
 -   **Brand Alignment**: Updated to exact PCS brand specifications including precise hex colors and typography standards.
 -   **Hero Section**: Replaced YouTube video with static student image, added semi-transparent text box backgrounds for improved readability.
 -   **Post-it Note Popup**: Added yellow post-it style popup component for news/events announcements.
 -   **Impact Ribbon**: Updated to display "X schools | Y countries | Z actions taken" format with database-driven statistics.
 -   **Three-Stage Program**: Updated descriptions to exact stakeholder feedback wording for INSPIRE, INVESTIGATE, and ACT stages.
 -   **Animation Updates**: Disabled scroll-reveal animations while preserving button hover/interaction effects per accessibility feedback.
--   **Future Enhancements**: Translation expansion to Dutch, French, and Indonesian marked for future iteration (i18n infrastructure already supports multi-language).
+
+### Registration Flow Simplification (October 6, 2025)
+-   **Removed Join Existing School Button**: Simplified authenticated registration flow to show only "Register School" option, removing the "Join Existing School" button per requirements.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
