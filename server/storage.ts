@@ -149,6 +149,7 @@ export interface IStorage {
     reviewedBy: string,
     reviewNotes?: string
   ): Promise<Evidence | undefined>;
+  updateEvidenceFiles(id: string, files: any[]): Promise<Evidence | undefined>;
   deleteEvidence(id: string): Promise<boolean>;
   deleteSchool(id: string): Promise<boolean>;
   
@@ -1050,6 +1051,18 @@ export class DatabaseStorage implements IStorage {
         reviewedBy,
         reviewedAt: new Date(),
         reviewNotes,
+        updatedAt: new Date(),
+      })
+      .where(eq(evidence.id, id))
+      .returning();
+    return evidenceRecord;
+  }
+
+  async updateEvidenceFiles(id: string, files: any[]): Promise<Evidence | undefined> {
+    const [evidenceRecord] = await db
+      .update(evidence)
+      .set({
+        files: files as any,
         updatedAt: new Date(),
       })
       .where(eq(evidence.id, id))

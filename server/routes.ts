@@ -1410,6 +1410,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Migration endpoint: Normalize evidence file URLs
+  app.post('/api/admin/evidence/migrate-urls', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const allEvidence = await storage.getAllEvidence();
+      let updatedCount = 0;
+
+      for (const evidenceItem of allEvidence) {
+        if (evidenceItem.files && Array.isArray(evidenceItem.files) && evidenceItem.files.length > 0) {
+          let hasChanges = false;
+          const updatedFiles = evidenceItem.files.map((file: any) => {
+            if (file.url && file.url.startsWith('https://storage.googleapis.com/')) {
+              const normalizedUrl = objectStorageService.normalizeObjectEntityPath(file.url);
+              if (normalizedUrl !== file.url) {
+                hasChanges = true;
+                return { ...file, url: normalizedUrl };
+              }
+            }
+            return file;
+          });
+
+          if (hasChanges) {
+            await storage.updateEvidenceFiles(evidenceItem.id, updatedFiles);
+            updatedCount++;
+          }
+        }
+      }
+
+      res.json({ 
+        success: true, 
+        message: `Successfully normalized URLs for ${updatedCount} evidence records`,
+        updatedCount 
+      });
+    } catch (error) {
+      console.error("Error migrating evidence URLs:", error);
+      res.status(500).json({ message: "Failed to migrate evidence URLs" });
+    }
+  });
+
   // Review evidence (approve/reject)
   app.put('/api/admin/evidence/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {

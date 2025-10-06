@@ -192,18 +192,31 @@ export class ObjectStorageService {
     const url = new URL(rawPath);
     const rawObjectPath = url.pathname;
   
+    // The URL pathname is in format: /{bucketName}/{objectPath}
+    // We need to extract the uploads path after /.private/uploads/ or /public/
+    const privateUploadsMatch = rawObjectPath.match(/\/.private\/uploads\/(.+)$/);
+    if (privateUploadsMatch) {
+      return `/objects/uploads/${privateUploadsMatch[1]}`;
+    }
+    
+    const publicMatch = rawObjectPath.match(/\/public\/(.+)$/);
+    if (publicMatch) {
+      return `/objects/public/${publicMatch[1]}`;
+    }
+  
+    // Fallback to original logic for backwards compatibility
     let objectEntityDir = this.getPrivateObjectDir();
     if (!objectEntityDir.endsWith("/")) {
       objectEntityDir = `${objectEntityDir}/`;
     }
   
-    if (!rawObjectPath.startsWith(objectEntityDir)) {
-      return rawObjectPath;
+    if (rawObjectPath.includes(objectEntityDir)) {
+      const index = rawObjectPath.indexOf(objectEntityDir);
+      const entityId = rawObjectPath.slice(index + objectEntityDir.length);
+      return `/objects/${entityId}`;
     }
   
-    // Extract the entity ID from the path
-    const entityId = rawObjectPath.slice(objectEntityDir.length);
-    return `/objects/${entityId}`;
+    return rawObjectPath;
   }
 
   // Tries to set the ACL policy for the object entity and return the normalized path.
