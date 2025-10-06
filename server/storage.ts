@@ -1102,6 +1102,7 @@ export class DatabaseStorage implements IStorage {
         featured: caseStudies.featured,
         evidenceId: caseStudies.evidenceId,
         evidenceLink: evidence.fileUrl,
+        evidenceFiles: evidence.files,
         schoolId: caseStudies.schoolId,
         schoolName: schools.name,
         schoolCountry: schools.country,
