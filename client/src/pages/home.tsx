@@ -20,7 +20,8 @@ import {
   Clock,
   Calendar,
   Award,
-  MapPin
+  MapPin,
+  AlertCircle
 } from "lucide-react";
 import { useState } from "react";
 
@@ -215,6 +216,73 @@ export default function Home() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Status Notifications */}
+        {(() => {
+          const now = new Date();
+          const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+          
+          const recentApproved = recentEvidence.filter(e => 
+            e.status === 'approved' && new Date(e.submittedAt) > sevenDaysAgo
+          );
+          const recentRejected = recentEvidence.filter(e => 
+            e.status === 'rejected' && new Date(e.submittedAt) > sevenDaysAgo
+          );
+          
+          const hasNotifications = recentApproved.length > 0 || recentRejected.length > 0;
+          
+          if (!hasNotifications) return null;
+          
+          return (
+            <div className="mb-8 space-y-3" data-testid="notifications-section">
+              {recentApproved.length > 0 && (
+                <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg shadow-sm animate-fade-in" data-testid="notification-approved">
+                  <div className="flex items-start gap-3">
+                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-green-900 mb-1">
+                        🎉 Evidence Approved!
+                      </h3>
+                      <p className="text-sm text-green-800">
+                        {recentApproved.length} {recentApproved.length === 1 ? 'submission has' : 'submissions have'} been approved in the last 7 days. Great work!
+                      </p>
+                      <div className="mt-2 space-y-1">
+                        {recentApproved.map(evidence => (
+                          <div key={evidence.id} className="text-xs text-green-700 font-medium">
+                            ✓ {evidence.title}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+              
+              {recentRejected.length > 0 && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm animate-fade-in" data-testid="notification-rejected">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-red-900 mb-1">
+                        Action Required
+                      </h3>
+                      <p className="text-sm text-red-800">
+                        {recentRejected.length} {recentRejected.length === 1 ? 'submission needs' : 'submissions need'} your attention. Please review feedback and resubmit.
+                      </p>
+                      <div className="mt-2 space-y-1">
+                        {recentRejected.map(evidence => (
+                          <div key={evidence.id} className="text-xs text-red-700 font-medium">
+                            ✗ {evidence.title}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })()}
 
         {/* Progress Tracker */}
         <div className="mb-8">
