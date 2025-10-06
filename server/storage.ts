@@ -65,6 +65,10 @@ export interface IStorage {
   verifyPassword(password: string, passwordHash: string): Promise<boolean>;
   hashPassword(password: string): Promise<string>;
   
+  // User management (admin operations)
+  updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
+  deleteUser(id: string): Promise<boolean>;
+  
   // School operations
   createSchool(school: InsertSchool): Promise<School>;
   getSchool(id: string): Promise<School | undefined>;
@@ -357,6 +361,28 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error('Error hashing password:', error);
       throw new Error('Password hashing failed');
+    }
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async deleteUser(id: string): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(users)
+        .where(eq(users.id, id))
+        .returning();
+      return result.length > 0;
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      return false;
     }
   }
 
