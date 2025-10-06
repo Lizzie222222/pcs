@@ -402,35 +402,6 @@ export default function Landing() {
               <p className="text-base text-gray-600 leading-relaxed mb-6">{t('three_stage_program.stage_3_description')}</p>
             </div>
           </div>
-
-          {/* Recognition Section */}
-          <div className="mt-16 text-center bg-gray-50 rounded-xl p-12 -scale">
-            <h3 className="text-2xl font-bold mb-4">{t('three_stage_program.recognition_title')}</h3>
-            <p className="text-lg text-gray-600 leading-relaxed mb-8 max-w-3xl mx-auto">
-              {t('three_stage_program.recognition_description')}
-            </p>
-            
-            <div className="flex flex-wrap justify-center gap-6">
-              <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-1">
-                <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
-                  <Star className="w-4 h-4 text-white transition-transform duration-300 group-hover:scale-110" />
-                </div>
-                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-ocean-blue">{t('three_stage_program.digital_badges')}</span>
-              </div>
-              <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-2">
-                <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
-                  <Award className="w-4 h-4 text-white transition-transform duration-300 group-hover:scale-110" />
-                </div>
-                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-teal">{t('three_stage_program.certificates')}</span>
-              </div>
-              <div className="flex items-center gap-3 bg-white rounded-lg px-6 py-3 shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 group cursor-pointer stagger-delay-3">
-                <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center transition-all duration-300 group-hover:rotate-12">
-                  <TrendingUp className="w-4 h-4 text-white transition-transform duration-300 group-hover:scale-110" />
-                </div>
-                <span className="font-semibold text-navy transition-colors duration-300 group-hover:text-navy">{t('three_stage_program.progress_tracking')}</span>
-              </div>
-            </div>
-          </div>
         </div>
       </section>
 
