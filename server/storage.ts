@@ -12,6 +12,7 @@ import {
   teacherInvitations,
   adminInvitations,
   verificationRequests,
+  testimonials,
   type User,
   type UpsertUser,
   type School,
@@ -38,6 +39,8 @@ import {
   type InsertAdminInvitation,
   type VerificationRequest,
   type InsertVerificationRequest,
+  type Testimonial,
+  type InsertTestimonial,
   type CreatePasswordUser,
   type CreateOAuthUser,
 } from "@shared/schema";
@@ -191,6 +194,13 @@ export interface IStorage {
   getCertificateByNumber(certificateNumber: string): Promise<(Certificate & { school: School }) | undefined>;
   updateCertificate(id: string, updates: Partial<Certificate>): Promise<Certificate | undefined>;
   deleteCertificate(id: string): Promise<void>;
+  
+  // Testimonial operations
+  createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial>;
+  getTestimonials(filters?: { isActive?: boolean }): Promise<Testimonial[]>;
+  getTestimonial(id: string): Promise<Testimonial | undefined>;
+  updateTestimonial(id: string, updates: Partial<Testimonial>): Promise<Testimonial | undefined>;
+  deleteTestimonial(id: string): Promise<void>;
   
   // Admin operations
   getAdminStats(): Promise<{
@@ -2648,6 +2658,39 @@ export class DatabaseStorage implements IStorage {
     await db.update(certificates)
       .set({ isActive: false, updatedAt: new Date() })
       .where(eq(certificates.id, id));
+  }
+
+  // Testimonial operations
+  async createTestimonial(testimonial: InsertTestimonial): Promise<Testimonial> {
+    const [newTestimonial] = await db.insert(testimonials).values(testimonial).returning();
+    return newTestimonial;
+  }
+
+  async getTestimonials(filters?: { isActive?: boolean }): Promise<Testimonial[]> {
+    let query = db.select().from(testimonials);
+    
+    if (filters?.isActive !== undefined) {
+      query = query.where(eq(testimonials.isActive, filters.isActive)) as any;
+    }
+    
+    return await query.orderBy(asc(testimonials.displayOrder), desc(testimonials.createdAt));
+  }
+
+  async getTestimonial(id: string): Promise<Testimonial | undefined> {
+    const [testimonial] = await db.select().from(testimonials).where(eq(testimonials.id, id));
+    return testimonial;
+  }
+
+  async updateTestimonial(id: string, updates: Partial<Testimonial>): Promise<Testimonial | undefined> {
+    const [updatedTestimonial] = await db.update(testimonials)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(testimonials.id, id))
+      .returning();
+    return updatedTestimonial;
+  }
+
+  async deleteTestimonial(id: string): Promise<void> {
+    await db.delete(testimonials).where(eq(testimonials.id, id));
   }
 }
 
