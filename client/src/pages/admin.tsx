@@ -70,6 +70,7 @@ import {
 } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
+import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 
 interface AdminStats {
   totalSchools: number;
@@ -4444,11 +4445,17 @@ export default function Admin() {
                             })()}
                           </div>
                           <p className="text-gray-600 mb-3">{evidence.description}</p>
-                          <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                             <span>School ID: {evidence.schoolId}</span>
                             <span>Submitted: {new Date(evidence.submittedAt).toLocaleDateString()}</span>
                             <span>Files: {evidence.files?.length || 0}</span>
                           </div>
+                          {evidence.files && evidence.files.length > 0 && (
+                            <EvidenceFilesGallery 
+                              files={evidence.files} 
+                              className="mt-3"
+                            />
+                          )}
                         </div>
                         
                         <div className="flex flex-col gap-2">
