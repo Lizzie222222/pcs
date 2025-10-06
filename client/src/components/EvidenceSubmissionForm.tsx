@@ -142,14 +142,14 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
           throw new Error('Failed to upload file');
         }
         
-        await apiRequest('PUT', '/api/evidence-files', {
+        const aclResponse = await apiRequest('PUT', '/api/evidence-files', {
           fileURL: uploadURL.split('?')[0],
           visibility: form.getValues('visibility'),
         });
         
         setUploadedFiles(prev => [...prev, {
           name: file.name,
-          url: uploadURL.split('?')[0],
+          url: aclResponse.objectPath,
           size: file.size,
           type: file.type,
         }]);
@@ -218,14 +218,14 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
           throw new Error('Failed to upload file');
         }
         
-        await apiRequest('PUT', '/api/evidence-files', {
+        const aclResponse = await apiRequest('PUT', '/api/evidence-files', {
           fileURL: uploadURL.split('?')[0],
           visibility: 'private',
         });
         
         setConsentFiles(prev => [...prev, {
           name: file.name,
-          url: uploadURL.split('?')[0],
+          url: aclResponse.objectPath,
           size: file.size,
           type: file.type,
         }]);
