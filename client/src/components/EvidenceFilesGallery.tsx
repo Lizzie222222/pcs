@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, Download, ChevronLeft, ChevronRight, FileText, Film, Image as ImageIcon } from "lucide-react";
+import { PDFThumbnail } from "./PDFThumbnail";
 
 interface EvidenceFile {
   name: string;
@@ -50,6 +51,7 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
 
   const isImage = (type: string) => type.includes('image');
   const isVideo = (type: string) => type.includes('video');
+  const isPDF = (type: string) => type.includes('pdf');
 
   if (!files || files.length === 0) {
     return null;
@@ -79,6 +81,11 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
                 preload="metadata"
                 className="w-full h-full object-cover"
                 muted
+              />
+            ) : isPDF(file.type) ? (
+              <PDFThumbnail 
+                url={file.url}
+                className="w-full h-full"
               />
             ) : (
               <div className="w-full h-full bg-gray-100 flex items-center justify-center">
@@ -154,6 +161,13 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
                       controls
                       className="max-w-full max-h-full"
                       data-testid="video-preview"
+                    />
+                  ) : isPDF(selectedFile.type) ? (
+                    <iframe
+                      src={selectedFile.url}
+                      className="w-full h-full"
+                      data-testid="pdf-preview"
+                      title={selectedFile.name}
                     />
                   ) : (
                     <div className="text-center p-8">
