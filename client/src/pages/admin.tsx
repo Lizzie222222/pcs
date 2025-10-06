@@ -3606,7 +3606,17 @@ export default function Admin() {
 
   // Evidence query with status filter
   const { data: pendingEvidence, error: evidenceError } = useQuery<PendingEvidence[]>({
-    queryKey: ['/api/admin/evidence', evidenceStatusFilter === 'all' ? undefined : evidenceStatusFilter],
+    queryKey: ['/api/admin/evidence', evidenceStatusFilter],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (evidenceStatusFilter && evidenceStatusFilter !== 'all') {
+        params.append('status', evidenceStatusFilter);
+      }
+      const url = `/api/admin/evidence${params.toString() ? `?${params.toString()}` : ''}`;
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      return res.json();
+    },
     enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'evidence'),
     retry: false,
   });
