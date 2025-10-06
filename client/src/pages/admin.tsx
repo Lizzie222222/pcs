@@ -4158,7 +4158,7 @@ export default function Admin() {
             Overview
           </button>
           <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-4 py-2 rounded-lg font-medium transition-colors relative ${
               activeTab === 'evidence' 
                 ? 'bg-white text-navy shadow-sm' 
                 : 'text-gray-600 hover:text-navy'
@@ -4167,6 +4167,14 @@ export default function Admin() {
             data-testid="tab-evidence"
           >
             Evidence Review
+            {stats && stats.pendingEvidence > 0 && (
+              <span 
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
+                data-testid="badge-pending-evidence-count"
+              >
+                {stats.pendingEvidence}
+              </span>
+            )}
           </button>
           <button
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
