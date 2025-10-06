@@ -3611,6 +3611,13 @@ export default function Admin() {
     retry: false,
   });
 
+  // Approved public evidence query for case study creation
+  const { data: approvedPublicEvidence = [] } = useQuery<PendingEvidence[]>({
+    queryKey: ['/api/admin/evidence/approved-public'],
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && createCaseStudyData !== null),
+    retry: false,
+  });
+
   // Clean filters for API (convert "all" values to empty strings)
   const cleanFilters = (filters: typeof schoolFilters) => {
     return Object.fromEntries(
@@ -5135,14 +5142,58 @@ export default function Admin() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Evidence ID <span className="text-red-500">*</span>
+                  Select Evidence <span className="text-red-500">*</span>
                 </label>
-                <Input
-                  value={createCaseStudyData.evidenceId}
-                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, evidenceId: e.target.value } : null)}
-                  placeholder="Enter evidence ID..."
-                  data-testid="input-evidence-id"
-                />
+                <p className="text-sm text-gray-500 mb-3">
+                  Choose from approved public evidence submissions
+                </p>
+                {approvedPublicEvidence.length === 0 ? (
+                  <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
+                    <p>No approved public evidence available</p>
+                    <p className="text-sm mt-1">Evidence must be approved and set to public visibility</p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-64 overflow-y-auto border rounded-lg p-3">
+                    {approvedPublicEvidence.map((evidence) => (
+                      <div
+                        key={evidence.id}
+                        className={`relative cursor-pointer border-2 rounded-lg overflow-hidden transition-all ${
+                          createCaseStudyData.evidenceId === evidence.id
+                            ? 'border-pcs_blue ring-2 ring-pcs_blue'
+                            : 'border-gray-200 hover:border-pcs_blue'
+                        }`}
+                        onClick={() => setCreateCaseStudyData(prev => prev ? { ...prev, evidenceId: evidence.id } : null)}
+                        data-testid={`evidence-thumbnail-${evidence.id}`}
+                      >
+                        <div className="aspect-video bg-gray-100 flex items-center justify-center">
+                          {evidence.files && evidence.files.length > 0 && evidence.files[0].type?.includes('image') ? (
+                            <img
+                              src={evidence.files[0].url}
+                              alt={evidence.title}
+                              className="w-full h-full object-cover"
+                            />
+                          ) : (
+                            <div className="text-gray-400 text-center p-2">
+                              <span className="text-2xl">📄</span>
+                              <p className="text-xs mt-1">No image</p>
+                            </div>
+                          )}
+                        </div>
+                        <div className="p-2 bg-white">
+                          <p className="text-xs font-medium text-navy line-clamp-2">{evidence.title}</p>
+                          <p className="text-xs text-gray-500">{evidence.stage}</p>
+                        </div>
+                        {createCaseStudyData.evidenceId === evidence.id && (
+                          <div className="absolute top-1 right-1 bg-pcs_blue text-white rounded-full p-1">
+                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                            </svg>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
