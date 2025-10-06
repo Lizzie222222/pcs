@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 import { X, Upload, File, Trash2, AlertCircle } from "lucide-react";
 
 // Factory function for translated schema
@@ -25,6 +26,15 @@ const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.ob
   visibility: z.enum(['private', 'public'], {
     required_error: t('forms:validation.invalid_selection'),
   }),
+  hasChildren: z.boolean().default(false),
+}).refine((data) => {
+  if (data.hasChildren) {
+    return true;
+  }
+  return true;
+}, {
+  message: "Parental consent required when images contain children",
+  path: ["hasChildren"],
 });
 
 interface EvidenceSubmissionFormProps {
@@ -44,8 +54,11 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
+  const [consentFiles, setConsentFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadingConsent, setIsUploadingConsent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const consentInputRef = useRef<HTMLInputElement>(null);
   
   const evidenceSchema = createEvidenceSchema(t);
 
@@ -57,15 +70,17 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
       stage: undefined,
       videoLinks: '',
       visibility: 'private',
+      hasChildren: false,
     },
   });
 
   const submitEvidenceMutation = useMutation({
-    mutationFn: async (data: z.infer<typeof evidenceSchema> & { files: UploadedFile[] }) => {
+    mutationFn: async (data: z.infer<typeof evidenceSchema> & { files: UploadedFile[]; parentalConsentFiles: UploadedFile[] }) => {
       await apiRequest('POST', '/api/evidence', {
         ...data,
         schoolId,
         files: data.files,
+        parentalConsentFiles: data.parentalConsentFiles,
       });
     },
     onSuccess: () => {
@@ -163,6 +178,82 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
     setUploadedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const handleConsentFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
+
+    setIsUploadingConsent(true);
+    
+    try {
+      for (const file of files) {
+        if (file.size > 157286400) {
+          toast({
+            title: "File Too Large",
+            description: `${file.name} exceeds 150MB limit.`,
+            variant: "destructive",
+          });
+          continue;
+        }
+
+        const uploadResponse = await fetch('/api/objects/upload', {
+          method: 'POST',
+          credentials: 'include',
+        });
+        
+        if (!uploadResponse.ok) {
+          throw new Error('Failed to get upload URL');
+        }
+        
+        const { uploadURL } = await uploadResponse.json();
+        
+        const uploadFileResponse = await fetch(uploadURL, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type || 'application/octet-stream',
+          },
+        });
+        
+        if (!uploadFileResponse.ok) {
+          throw new Error('Failed to upload file');
+        }
+        
+        await apiRequest('PUT', '/api/evidence-files', {
+          fileURL: uploadURL.split('?')[0],
+          visibility: 'private',
+        });
+        
+        setConsentFiles(prev => [...prev, {
+          name: file.name,
+          url: uploadURL.split('?')[0],
+          size: file.size,
+          type: file.type,
+        }]);
+      }
+      
+      toast({
+        title: "Success",
+        description: `${files.length} consent file(s) uploaded successfully.`,
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload consent files. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingConsent(false);
+      if (consentInputRef.current) {
+        consentInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeConsentFile = (index: number) => {
+    setConsentFiles(prev => prev.filter((_, i) => i !== index));
+  };
+
   const formatFileSize = (bytes: number) => {
     if (bytes === 0) return '0 Bytes';
     const k = 1024;
@@ -188,9 +279,19 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
       return;
     }
 
+    if (data.hasChildren && consentFiles.length === 0) {
+      toast({
+        title: "Parental Consent Required",
+        description: "Please upload parental consent documentation when images contain children.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     submitEvidenceMutation.mutate({
       ...data,
       files: uploadedFiles,
+      parentalConsentFiles: consentFiles,
     });
   };
 
@@ -427,6 +528,106 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
                   </FormItem>
                 )}
               />
+
+              {/* Child Permission Tracking */}
+              <FormField
+                control={form.control}
+                name="hasChildren"
+                render={({ field }) => (
+                  <FormItem className="space-y-3 border rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <FormControl>
+                        <Checkbox
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          data-testid="checkbox-has-children"
+                        />
+                      </FormControl>
+                      <div className="grid gap-1.5 leading-none flex-1">
+                        <FormLabel className="text-sm font-medium">
+                          Does this evidence contain images of children?
+                        </FormLabel>
+                        <FormDescription className="text-xs">
+                          If your evidence includes photographs or videos of children, you must provide parental consent documentation
+                        </FormDescription>
+                      </div>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Conditional Parental Consent Upload */}
+              {form.watch('hasChildren') && (
+                <div className="space-y-4 border-l-4 border-coral pl-4">
+                  <FormLabel className="text-coral font-semibold">Parental Consent Required *</FormLabel>
+                  <p className="text-sm text-gray-600">
+                    Please upload signed parental consent forms for all children shown in the evidence.
+                  </p>
+                  <div className="border-2 border-dashed border-coral/30 rounded-lg p-6 bg-coral/5">
+                    <input
+                      ref={consentInputRef}
+                      type="file"
+                      multiple
+                      accept=".pdf,image/*"
+                      onChange={handleConsentFileSelect}
+                      className="hidden"
+                      disabled={isUploadingConsent}
+                      id="consent-upload"
+                    />
+                    <label htmlFor="consent-upload" className="cursor-pointer block text-center">
+                      <Button
+                        type="button"
+                        className="bg-coral hover:bg-coral/90 text-white mb-2"
+                        disabled={isUploadingConsent}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          consentInputRef.current?.click();
+                        }}
+                        data-testid="button-upload-consent"
+                      >
+                        <Upload className="h-5 w-5 mr-2" />
+                        {isUploadingConsent ? "Uploading..." : "Upload Consent Forms"}
+                      </Button>
+                      <p className="text-sm text-gray-500">
+                        PDF or image files (max 150MB each)
+                      </p>
+                    </label>
+                  </div>
+
+                  {/* Consent Files Preview */}
+                  {consentFiles.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="font-medium text-navy">Uploaded Consent Documents</h4>
+                      {consentFiles.map((file, index) => (
+                        <div 
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-gray-50 rounded-lg"
+                          data-testid={`consent-file-${index}`}
+                        >
+                          <div className="flex items-center gap-3">
+                            <span className="text-lg">{getFileIcon(file.type)}</span>
+                            <div>
+                              <div className="font-medium text-navy">{file.name}</div>
+                              <div className="text-sm text-gray-500">{formatFileSize(file.size)}</div>
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeConsentFile(index)}
+                            className="text-red-500 hover:text-red-700 hover:bg-red-50"
+                            data-testid={`button-remove-consent-${index}`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Info Banner */}
               <div className="bg-yellow/10 border border-yellow rounded-lg p-4 flex items-start gap-3">
