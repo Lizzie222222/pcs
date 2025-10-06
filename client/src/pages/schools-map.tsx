@@ -310,18 +310,18 @@ export default function SchoolsMap() {
             ) : (
               <div className="space-y-3">
                 {getRegionStats().map((region: any) => (
-                  <div key={region.name} className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                  <div key={region.name} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 rounded-lg gap-3">
                     <div className="flex items-center gap-3">
-                      <MapPin className="h-4 w-4 text-gray-500" />
+                      <MapPin className="h-5 w-5 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
                       <span className="font-medium text-navy">{region.name}</span>
                     </div>
-                    <div className="flex items-center gap-4 text-sm text-gray-600">
-                      <div className="flex items-center gap-1">
-                        <School className="h-3 w-3" />
+                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-600 ml-8 sm:ml-0">
+                      <div className="flex items-center gap-1.5">
+                        <School className="h-4 w-4 sm:h-3 sm:w-3 flex-shrink-0" />
                         <span>{region.total} schools</span>
                       </div>
-                      <div className="flex items-center gap-1">
-                        <Award className="h-3 w-3" />
+                      <div className="flex items-center gap-1.5">
+                        <Award className="h-4 w-4 sm:h-3 sm:w-3 flex-shrink-0" />
                         <span>{region.completed} completed</span>
                       </div>
                       {region.featured > 0 && (
