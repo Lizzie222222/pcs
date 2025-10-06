@@ -146,10 +146,11 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
           fileURL: uploadURL.split('?')[0],
           visibility: form.getValues('visibility'),
         });
+        const { objectPath } = await aclResponse.json();
         
         setUploadedFiles(prev => [...prev, {
           name: file.name,
-          url: aclResponse.objectPath,
+          url: objectPath,
           size: file.size,
           type: file.type,
         }]);
@@ -222,10 +223,11 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
           fileURL: uploadURL.split('?')[0],
           visibility: 'private',
         });
+        const { objectPath } = await aclResponse.json();
         
         setConsentFiles(prev => [...prev, {
           name: file.name,
-          url: aclResponse.objectPath,
+          url: objectPath,
           size: file.size,
           type: file.type,
         }]);
