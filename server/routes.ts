@@ -1664,6 +1664,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user (role, isAdmin, etc.)
+  app.patch('/api/admin/users/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const adminUserId = req.user.id;
+      
+      // Prevent admin from modifying their own admin status
+      if (id === adminUserId && req.body.isAdmin === false) {
+        return res.status(400).json({ message: "You cannot remove your own admin privileges" });
+      }
+
+      // Validate request body
+      const updateSchema = z.object({
+        role: z.string().optional(),
+        isAdmin: z.boolean().optional(),
+        firstName: z.string().optional(),
+        lastName: z.string().optional(),
+      });
+      const updates = updateSchema.parse(req.body);
+      
+      console.log(`[Update User] Admin ${adminUserId} updating user ${id}`, updates);
+      
+      const user = await storage.updateUser(id, updates);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      console.log(`[Update User] Successfully updated user ${id}`);
+      res.json(user);
+    } catch (error) {
+      console.error("[Update User] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update user" });
+    }
+  });
+
+  // Delete user
+  app.delete('/api/admin/users/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const adminUserId = req.user.id;
+      
+      // Prevent admin from deleting themselves
+      if (id === adminUserId) {
+        return res.status(400).json({ message: "You cannot delete your own account" });
+      }
+
+      console.log(`[Delete User] Admin ${adminUserId} deleting user ${id}`);
+      
+      const deleted = await storage.deleteUser(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "User not found or already deleted" });
+      }
+
+      console.log(`[Delete User] Successfully deleted user ${id}`);
+      res.json({ message: "User deleted successfully" });
+    } catch (error) {
+      console.error("[Delete User] Error:", error);
+      res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
   // Get all schools for admin management
   app.get('/api/admin/schools', isAuthenticated, requireAdmin, async (req, res) => {
     try {
