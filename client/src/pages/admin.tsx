@@ -4365,6 +4365,16 @@ export default function Admin() {
                                 Public
                               </Badge>
                             )}
+                            {(() => {
+                              const submittedDate = new Date(evidence.submittedAt);
+                              const now = new Date();
+                              const hoursSinceSubmission = (now.getTime() - submittedDate.getTime()) / (1000 * 60 * 60);
+                              return hoursSinceSubmission < 48 ? (
+                                <Badge className="bg-pcs_coral text-white animate-pulse" data-testid={`badge-new-evidence-${evidence.id}`}>
+                                  NEW
+                                </Badge>
+                              ) : null;
+                            })()}
                           </div>
                           <p className="text-gray-600 mb-3">{evidence.description}</p>
                           <div className="flex items-center gap-4 text-sm text-gray-500">
