@@ -204,6 +204,8 @@ export const evidence = pgTable("evidence", {
   reviewedAt: timestamp("reviewed_at"),
   reviewNotes: text("review_notes"),
   isFeatured: boolean("is_featured").default(false),
+  hasChildren: boolean("has_children").default(false),
+  parentalConsentFiles: jsonb("parental_consent_files").default('[]'),
   submittedAt: timestamp("submitted_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
