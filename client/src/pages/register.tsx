@@ -494,21 +494,6 @@ export default function Register() {
                         <ArrowRight className="h-4 w-4 ml-auto transition-transform duration-300 group-hover:translate-x-1" />
                       </div>
                     </Button>
-
-                    {/* Join Existing School Button */}
-                    <Button
-                      size="lg"
-                      variant="outline"
-                      className="w-full border-2 border-ocean-blue text-ocean-blue hover:bg-ocean-blue hover:text-white transition-all duration-300 group"
-                      onClick={() => setShowJoinSchoolFlow(true)}
-                      data-testid="button-join-existing-school"
-                    >
-                      <div className="flex items-center justify-center gap-3">
-                        <Users className="h-5 w-5 transition-transform duration-300 group-hover:scale-110" />
-                        <span className="font-semibold">{t('auth:register.join_school_button')}</span>
-                        <ArrowRight className="h-4 w-4 ml-auto transition-transform duration-300 group-hover:translate-x-1" />
-                      </div>
-                    </Button>
                   </div>
 
                   {/* Registration Benefits for Authenticated Users */}
