@@ -74,12 +74,12 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
                 className="w-full h-full object-cover"
               />
             ) : isVideo(file.type) ? (
-              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                <div className="text-center">
-                  <Film className="w-8 h-8 text-gray-400 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500">Video</p>
-                </div>
-              </div>
+              <video
+                src={file.url}
+                preload="metadata"
+                className="w-full h-full object-cover"
+                muted
+              />
             ) : (
               <div className="w-full h-full bg-gray-100 flex items-center justify-center">
                 <div className="text-center">
@@ -115,7 +115,7 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
               <div className="flex items-center gap-2">
                 {selectedFile && (
                   <a
-                    href={selectedFile.url}
+                    href={`${selectedFile.url}?download=true`}
                     download={selectedFile.name}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -160,7 +160,7 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
                       <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600 mb-4">Preview not available for this file type</p>
                       <a
-                        href={selectedFile.url}
+                        href={`${selectedFile.url}?download=true`}
                         download={selectedFile.name}
                         target="_blank"
                         rel="noopener noreferrer"
