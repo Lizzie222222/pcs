@@ -177,11 +177,11 @@ export default function Landing() {
             alt="Students holding Plastic Clever Schools reusable water bottles"
             width={1920}
             height={1080}
-            className="w-full h-full object-cover object-[center_30%]"
+            className="w-full h-full object-cover object-center md:object-[center_30%]"
             priority={true}
             responsive={true}
-            quality={75}
-            sizes="(max-width: 640px) 640px, (max-width: 750px) 750px, (max-width: 828px) 828px, (max-width: 1080px) 1080px, (max-width: 1920px) 1920px, 100vw"
+            quality={60}
+            sizes="(max-width: 480px) 480px, (max-width: 640px) 640px, (max-width: 828px) 828px, (max-width: 1080px) 1080px, (max-width: 1920px) 1920px, 100vw"
             placeholder="blur"
             blurDataURL={createBlurPlaceholder('#f3f4f6')}
           />
