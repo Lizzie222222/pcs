@@ -249,15 +249,18 @@ export class ObjectStorageService {
     userId,
     objectFile,
     requestedPermission,
+    isAdmin = false,
   }: {
     userId?: string;
     objectFile: File;
     requestedPermission?: ObjectPermission;
+    isAdmin?: boolean;
   }): Promise<boolean> {
     return canAccessObject({
       userId,
       objectFile,
       requestedPermission: requestedPermission ?? ObjectPermission.READ,
+      isAdmin,
     });
   }
 }

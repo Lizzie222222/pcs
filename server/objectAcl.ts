@@ -136,11 +136,18 @@ export async function canAccessObject({
   userId,
   objectFile,
   requestedPermission,
+  isAdmin = false,
 }: {
   userId?: string;
   objectFile: File;
   requestedPermission: ObjectPermission;
+  isAdmin?: boolean;
 }): Promise<boolean> {
+  // Admins have access to all objects
+  if (isAdmin && userId) {
+    return true;
+  }
+
   // When this function is called, the acl policy is required.
   const aclPolicy = await getObjectAclPolicy(objectFile);
   if (!aclPolicy) {

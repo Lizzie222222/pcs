@@ -55,7 +55,12 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
 
         setLoading(false);
       } catch (err) {
-        console.error('Error loading PDF:', err);
+        console.error('PDF Loading Error Details:', {
+          error: err,
+          message: (err as Error).message,
+          url: url,
+          stack: (err as Error).stack
+        });
         setError(true);
         setLoading(false);
       }

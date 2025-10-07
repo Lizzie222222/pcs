@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
-import { ObjectPermission } from "./objectAcl";
+import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, type VerificationRequest, users } from "@shared/schema";
@@ -1158,21 +1158,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Object storage routes for evidence files
   
-  // Serve private objects with ACL check
-  app.get("/objects/:objectPath(*)", isAuthenticated, async (req: any, res) => {
-    const userId = req.user?.id;
+  // Serve objects with ACL check (both public and private)
+  app.get("/objects/:objectPath(*)", async (req: any, res) => {
     const objectStorageService = new ObjectStorageService();
     const shouldDownload = req.query.download === 'true';
     
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      
+      // Check if object is public first (fast path for public objects)
+      const aclPolicy = await getObjectAclPolicy(objectFile);
+      if (aclPolicy?.visibility === 'public') {
+        // Public objects are accessible to everyone
+        if (shouldDownload) {
+          const [metadata] = await objectFile.getMetadata();
+          const filename = metadata.metadata?.filename || req.path.split('/').pop() || 'download';
+          res.set('Content-Disposition', `attachment; filename="${filename}"`);
+        }
+        return objectStorageService.downloadObject(objectFile, res);
+      }
+      
+      // For private objects, require authentication
+      if (!req.isAuthenticated() || !req.user) {
+        return res.sendStatus(401);
+      }
+      
+      // Check access with user credentials and admin status
+      const userId = req.user.id;
+      const isAdmin = req.user.isAdmin || false;
+      
       const canAccess = await objectStorageService.canAccessObjectEntity({
         objectFile,
         userId: userId,
         requestedPermission: ObjectPermission.READ,
+        isAdmin: isAdmin,
       });
+      
       if (!canAccess) {
-        return res.sendStatus(401);
+        return res.sendStatus(403);
       }
       
       if (shouldDownload) {
