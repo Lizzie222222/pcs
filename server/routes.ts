@@ -1083,6 +1083,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
         submittedBy: userId,
       });
 
+      // Get school to check stage lock status
+      const school = await storage.getSchool(evidenceData.schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      // Check if stage is unlocked
+      const isStageUnlocked = (stage: string): boolean => {
+        if (stage === 'inspire') return true;
+        if (stage === 'investigate') return school.inspireCompleted === true;
+        if (stage === 'act') return school.investigateCompleted === true;
+        return false;
+      };
+
+      if (!isStageUnlocked(evidenceData.stage)) {
+        return res.status(403).json({ 
+          message: "Cannot submit evidence to locked stage. Complete the previous stage first." 
+        });
+      }
+
       const evidence = await storage.createEvidence(evidenceData);
 
       // Send email notifications (non-blocking)
