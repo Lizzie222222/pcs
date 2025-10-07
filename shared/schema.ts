@@ -192,10 +192,22 @@ export const resources = pgTable("resources", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const evidenceRequirements = pgTable("evidence_requirements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  stage: programStageEnum("stage").notNull(),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  orderIndex: integer("order_index").notNull(),
+  resourceUrl: varchar("resource_url"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 export const evidence = pgTable("evidence", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
   submittedBy: varchar("submitted_by").notNull().references(() => users.id),
+  evidenceRequirementId: varchar("evidence_requirement_id").references(() => evidenceRequirements.id),
   title: varchar("title").notNull(),
   description: text("description"),
   stage: programStageEnum("stage").notNull(),
@@ -354,6 +366,10 @@ export const evidenceRelations = relations(evidence, ({ one }) => ({
     references: [users.id],
     relationName: "reviewedEvidence",
   }),
+  evidenceRequirement: one(evidenceRequirements, {
+    fields: [evidence.evidenceRequirementId],
+    references: [evidenceRequirements.id],
+  }),
   caseStudy: one(caseStudies),
 }));
 
@@ -384,6 +400,10 @@ export const certificatesRelations = relations(certificates, ({ one }) => ({
 }));
 
 export const resourcesRelations = relations(resources, ({ one }) => ({}));
+
+export const evidenceRequirementsRelations = relations(evidenceRequirements, ({ many }) => ({
+  evidence: many(evidence),
+}));
 
 export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   recipient: one(users, {
@@ -597,6 +617,12 @@ export const insertTestimonialSchema = createInsertSchema(testimonials).omit({
   updatedAt: true,
 });
 
+export const insertEvidenceRequirementSchema = createInsertSchema(evidenceRequirements).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -626,6 +652,8 @@ export type VerificationRequest = typeof verificationRequests.$inferSelect;
 export type InsertVerificationRequest = z.infer<typeof insertVerificationRequestSchema>;
 export type Testimonial = typeof testimonials.$inferSelect;
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
+export type EvidenceRequirement = typeof evidenceRequirements.$inferSelect;
+export type InsertEvidenceRequirement = z.infer<typeof insertEvidenceRequirementSchema>;
 
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;
