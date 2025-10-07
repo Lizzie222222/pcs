@@ -1056,6 +1056,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get user's role in this school
       const schoolUser = await storage.getSchoolUser(school.id, userId);
       
+      // Get evidence counts with progression info
+      const evidenceCounts = await storage.getSchoolEvidenceCounts(school.id);
+      
       res.json({
         school,
         recentEvidence: evidence.slice(0, 5), // Latest 5 submissions
@@ -1063,6 +1066,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           role: schoolUser.role,
           isVerified: schoolUser.isVerified,
         } : null,
+        evidenceCounts,
       });
     } catch (error) {
       console.error("Error fetching dashboard:", error);
@@ -1153,6 +1157,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching evidence:", error);
       res.status(500).json({ message: "Failed to fetch evidence" });
+    }
+  });
+
+  // Start a new round for the school
+  app.post('/api/schools/:schoolId/start-round', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+
+      // Verify user has access to this school
+      const schools = await storage.getUserSchools(userId);
+      const hasAccess = schools.some(s => s.id === schoolId);
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "You don't have access to this school" });
+      }
+
+      // Get school to check if round is complete
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      if (!school.awardCompleted) {
+        return res.status(400).json({ 
+          message: "Current round must be completed before starting a new round" 
+        });
+      }
+
+      // Start new round
+      const updatedSchool = await storage.startNewRound(schoolId);
+      
+      if (!updatedSchool) {
+        return res.status(500).json({ message: "Failed to start new round" });
+      }
+
+      res.json(updatedSchool);
+    } catch (error) {
+      console.error("Error starting new round:", error);
+      res.status(500).json({ message: "Failed to start new round" });
     }
   });
 

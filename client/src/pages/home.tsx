@@ -36,6 +36,8 @@ interface DashboardData {
     investigateCompleted: boolean;
     actCompleted: boolean;
     awardCompleted: boolean;
+    currentRound?: number;
+    roundsCompleted?: number;
   };
   recentEvidence: Array<{
     id: string;
@@ -45,6 +47,11 @@ interface DashboardData {
     submittedAt: string;
     reviewedAt?: string;
   }>;
+  evidenceCounts: {
+    inspire: { total: number; approved: number };
+    investigate: { total: number; approved: number; hasQuiz: boolean };
+    act: { total: number; approved: number };
+  };
 }
 
 export default function Home() {
@@ -196,7 +203,7 @@ export default function Home() {
     return <LoadingSpinner message={t('welcome.loading_dashboard')} />;
   }
 
-  const { school, recentEvidence } = dashboardData;
+  const { school, recentEvidence, evidenceCounts } = dashboardData;
 
   const getStageColor = (stage: string) => {
     switch (stage) {
@@ -225,9 +232,23 @@ export default function Home() {
             <CardContent className="p-6">
               <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
                 <div className="flex-1 space-y-2">
-                  <h1 className="text-3xl font-bold text-navy" data-testid="text-welcome">
-                    {t('welcome.greeting', { name: user?.firstName ?? t('welcome.default_name') })}
-                  </h1>
+                  <div className="flex items-center gap-3">
+                    <h1 className="text-3xl font-bold text-navy" data-testid="text-welcome">
+                      {t('welcome.greeting', { name: user?.firstName ?? t('welcome.default_name') })}
+                    </h1>
+                    {school.currentRound && (
+                      <Badge 
+                        className={`${
+                          school.currentRound === 1 ? 'bg-blue-500' :
+                          school.currentRound === 2 ? 'bg-purple-500' :
+                          'bg-green-600'
+                        } text-white text-sm px-3 py-1`}
+                        data-testid="text-current-round"
+                      >
+                        Round {school.currentRound}
+                      </Badge>
+                    )}
+                  </div>
                   <p className="text-lg text-gray-600" data-testid="text-school-info">
                     {school.name} • {school.country}
                   </p>
@@ -235,6 +256,14 @@ export default function Home() {
                     <MapPin className="h-4 w-4" />
                     <span>{t('progress.current_stage')}: {t(`progress.${school.currentStage}.title`)}</span>
                   </div>
+                  {school.roundsCompleted && school.roundsCompleted > 0 && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <Award className="h-4 w-4 text-yellow-500" />
+                      <span className="text-gray-600">
+                        {school.roundsCompleted} {school.roundsCompleted === 1 ? 'round' : 'rounds'} completed
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="text-center">
                   <div className="relative inline-flex items-center justify-center w-20 h-20 mb-2">
@@ -328,6 +357,205 @@ export default function Home() {
             awardCompleted={school.awardCompleted}
             currentStage={school.currentStage}
           />
+        </div>
+
+        {/* Round Completion Celebration */}
+        {school.awardCompleted && (
+          <div className="mb-8">
+            <Card className={`${
+              school.currentRound === 1 ? 'bg-gradient-to-br from-blue-50 via-white to-blue-50' :
+              school.currentRound === 2 ? 'bg-gradient-to-br from-purple-50 via-white to-purple-50' :
+              'bg-gradient-to-br from-green-50 via-white to-green-50'
+            } border-4 ${
+              school.currentRound === 1 ? 'border-blue-300' :
+              school.currentRound === 2 ? 'border-purple-300' :
+              'border-green-300'
+            } shadow-2xl`} data-testid="round-completion-card">
+              <CardContent className="p-8 text-center">
+                <div className="mb-6">
+                  <div className="w-24 h-24 mx-auto bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-xl animate-bounce">
+                    <Award className="h-14 w-14 text-white" />
+                  </div>
+                </div>
+                <h2 className="text-3xl font-bold text-navy mb-3">
+                  🎉 Congratulations!
+                </h2>
+                <p className="text-xl text-gray-700 mb-6">
+                  You've completed Round {school.currentRound}!
+                </p>
+                <div className="space-y-4">
+                  <div className="bg-white/80 backdrop-blur rounded-lg p-4 inline-block">
+                    <p className="text-sm text-gray-600 mb-2">Your school has successfully:</p>
+                    <div className="flex items-center gap-2 text-green-600 font-semibold">
+                      <CheckCircle className="h-5 w-5" />
+                      <span>Completed all 3 stages (Inspire → Investigate → Act)</span>
+                    </div>
+                  </div>
+                  <div className="pt-4">
+                    <Button
+                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                      onClick={async () => {
+                        try {
+                          const response = await fetch(`/api/schools/${school.id}/start-round`, {
+                            method: 'POST',
+                            credentials: 'include',
+                          });
+                          if (response.ok) {
+                            window.location.reload();
+                          } else {
+                            toast({
+                              title: "Error",
+                              description: "Failed to start new round",
+                              variant: "destructive",
+                            });
+                          }
+                        } catch (error) {
+                          toast({
+                            title: "Error",
+                            description: "Failed to start new round",
+                            variant: "destructive",
+                          });
+                        }
+                      }}
+                      data-testid="button-start-new-round"
+                    >
+                      Start Round {(school.currentRound || 1) + 1} →
+                    </Button>
+                    <p className="text-xs text-gray-500 mt-3">
+                      Starting a new round will reset your progress and begin fresh
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Evidence Tracking Display */}
+        <div className="mb-8">
+          <Card className="bg-white shadow-lg border">
+            <CardHeader>
+              <CardTitle className="text-xl font-bold text-navy">Evidence Progress</CardTitle>
+              <p className="text-sm text-gray-600">Track your evidence submissions and approvals for each stage</p>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Inspire Stage */}
+                <div className="p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-200" data-testid="evidence-inspire">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-10 h-10 bg-pcs_blue rounded-full flex items-center justify-center text-white font-bold">
+                      I
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-navy">Inspire</h3>
+                      <p className="text-xs text-gray-600">Need 3 approved</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Submitted:</span>
+                      <span className="font-semibold text-navy" data-testid="inspire-total">{evidenceCounts.inspire.total}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Approved:</span>
+                      <span className={`font-bold text-lg ${evidenceCounts.inspire.approved >= 3 ? 'text-green-600' : 'text-yellow-600'}`} data-testid="inspire-approved">
+                        {evidenceCounts.inspire.approved} / 3
+                      </span>
+                    </div>
+                    {evidenceCounts.inspire.approved >= 3 ? (
+                      <div className="flex items-center gap-2 text-green-600 text-sm font-medium bg-green-50 p-2 rounded">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>Stage Complete!</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-yellow-600 text-sm bg-yellow-50 p-2 rounded">
+                        <Clock className="h-4 w-4" />
+                        <span>{3 - evidenceCounts.inspire.approved} more needed</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Investigate Stage */}
+                <div className="p-4 bg-gradient-to-br from-teal-50 to-white rounded-lg border border-teal-200" data-testid="evidence-investigate">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-10 h-10 bg-teal rounded-full flex items-center justify-center text-white font-bold">
+                      In
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-navy">Investigate</h3>
+                      <p className="text-xs text-gray-600">Need 2 approved (1 quiz)</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Submitted:</span>
+                      <span className="font-semibold text-navy" data-testid="investigate-total">{evidenceCounts.investigate.total}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Approved:</span>
+                      <span className={`font-bold text-lg ${evidenceCounts.investigate.approved >= 2 ? 'text-green-600' : 'text-yellow-600'}`} data-testid="investigate-approved">
+                        {evidenceCounts.investigate.approved} / 2
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Audit Quiz:</span>
+                      <span className={`font-semibold ${evidenceCounts.investigate.hasQuiz ? 'text-green-600' : 'text-red-600'}`} data-testid="investigate-quiz">
+                        {evidenceCounts.investigate.hasQuiz ? '✓ Complete' : '✗ Required'}
+                      </span>
+                    </div>
+                    {evidenceCounts.investigate.approved >= 2 && evidenceCounts.investigate.hasQuiz ? (
+                      <div className="flex items-center gap-2 text-green-600 text-sm font-medium bg-green-50 p-2 rounded">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>Stage Complete!</span>
+                      </div>
+                    ) : (
+                      <div className="text-yellow-600 text-xs bg-yellow-50 p-2 rounded">
+                        {!evidenceCounts.investigate.hasQuiz && <div>• Audit quiz required</div>}
+                        {evidenceCounts.investigate.approved < 2 && <div>• {2 - evidenceCounts.investigate.approved} more evidence needed</div>}
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Act Stage */}
+                <div className="p-4 bg-gradient-to-br from-coral-50 to-white rounded-lg border border-coral-200" data-testid="evidence-act">
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="w-10 h-10 bg-coral rounded-full flex items-center justify-center text-white font-bold">
+                      A
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-navy">Act</h3>
+                      <p className="text-xs text-gray-600">Need 3 approved</p>
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Submitted:</span>
+                      <span className="font-semibold text-navy" data-testid="act-total">{evidenceCounts.act.total}</span>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-gray-600">Approved:</span>
+                      <span className={`font-bold text-lg ${evidenceCounts.act.approved >= 3 ? 'text-green-600' : 'text-yellow-600'}`} data-testid="act-approved">
+                        {evidenceCounts.act.approved} / 3
+                      </span>
+                    </div>
+                    {evidenceCounts.act.approved >= 3 ? (
+                      <div className="flex items-center gap-2 text-green-600 text-sm font-medium bg-green-50 p-2 rounded">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>Stage Complete!</span>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-yellow-600 text-sm bg-yellow-50 p-2 rounded">
+                        <Clock className="h-4 w-4" />
+                        <span>{3 - evidenceCounts.act.approved} more needed</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Enhanced Quick Actions */}
