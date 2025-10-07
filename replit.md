@@ -4,6 +4,19 @@
 This project is a comprehensive web application for the Plastic Clever Schools program, aiming to reduce plastic usage in schools. It features a public-facing website and an integrated CRM system. The platform guides schools through a three-stage plastic reduction program (Inspire, Investigate, Act), offering educational resources, evidence submission tracking, case study showcasing, and administrative tools for managing school participation and progress. The business vision is to empower schools to become environmentally responsible and to scale the program's reach and impact.
 
 ## Recent Changes (October 2025)
+### Evidence Requirements Checklist System (October 7, 2025)
+-   **Admin-Configurable Evidence Requirements**: Implemented structured evidence checklist system where admins can define specific evidence requirements for each program stage (title, description, resource links, display order)
+-   **Evidence Requirements Table**: Added `evidenceRequirements` table with fields for stage, title, description, orderIndex, and resourceUrl; updated `evidence` table with `evidenceRequirementId` foreign key to link submissions to specific requirements
+-   **Admin Management UI**: Created comprehensive admin interface at `/admin/evidence-requirements` for CRUD operations on evidence requirements (add, edit, delete, reorder with up/down arrows)
+-   **Dynamic ProgressTracker**: Updated ProgressTracker component to display requirements as individual checklist items with:
+    - Number badges (#1, #2, #3) and requirement title/description
+    - Status indicators: Gray circle (not started), Yellow clock ⏳ (pending), Green check ✓ (approved), Red X ✗ (rejected)
+    - Submit buttons for each requirement (or "Resubmit" for rejected)
+    - Resource links when available
+-   **Dynamic Progress Calculation**: Progress percentages now automatically adapt when admins add/remove requirements - no hard-coded counts
+-   **Evidence Submission Updates**: Evidence submission form now links submissions to specific requirements via `evidenceRequirementId`
+-   **Seed Data**: Seeded 8 initial evidence requirements (3 for Inspire: School Assembly, Litter Audit, Evidence Display; 2 for Investigate: Data Analysis, Action Implementation; 3 for Act: Impact Monitoring, Stakeholder Engagement, Sustainability Plan)
+
 ### Evidence Deletion and Stage Lock Fixes (October 7, 2025)
 -   **Evidence Deletion Feature**: Added ability for schools to delete pending evidence submissions with proper authorization
 -   **Delete Endpoint**: Implemented DELETE /api/evidence/:id endpoint with school membership validation (any school member can delete pending evidence, not just the submitter)
@@ -100,7 +113,8 @@ npx tsx scripts/setup-test-admin.ts
 ### Key Data Models
 -   **Users**: Teachers linked to schools with roles.
 -   **Schools**: Program progress tracking.
--   **Evidence**: Stage-specific file submissions with approval workflows.
+-   **Evidence**: Stage-specific file submissions with approval workflows, linked to specific evidence requirements.
+-   **EvidenceRequirements**: Admin-configurable checklist of required evidence per stage (title, description, orderIndex, resourceUrl).
 -   **Resources**: Educational materials with filtering.
 -   **Case Studies**: Approved evidence for public display.
 -   **SchoolUsers**: Junction table for user-school relationships with roles (`head_teacher`, `teacher`, `pending_teacher`) and verification status.
