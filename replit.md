@@ -4,6 +4,14 @@
 This project is a comprehensive web application for the Plastic Clever Schools program, aiming to reduce plastic usage in schools. It features a public-facing website and an integrated CRM system. The platform guides schools through a three-stage plastic reduction program (Inspire, Investigate, Act), offering educational resources, evidence submission tracking, case study showcasing, and administrative tools for managing school participation and progress. The business vision is to empower schools to become environmentally responsible and to scale the program's reach and impact.
 
 ## Recent Changes (October 2025)
+### Dashboard Evidence Progress Integration (October 7, 2025)
+-   **Unified Progress Display**: Integrated evidence tracking directly into Program Progress stage cards, removing the redundant separate "Evidence Progress" section
+-   **Evidence Metrics**: Each stage card now shows submitted count, approved/required ratio, and remaining evidence needed
+-   **Accurate Progress Calculation**: Progress percentage now reflects actual evidence submission progress (approved/required ratio) instead of completion flags
+-   **Stage-Specific Requirements**: Implemented correct evidence requirements per stage (Inspire: 3 approved, Investigate: 2 approved + quiz, Act: 3 approved)
+-   **Internationalization**: All evidence tracking text fully internationalized with English and Greek translations
+-   **Robust Error Handling**: Added data guards and type safety to prevent runtime errors with missing or incomplete evidence data
+
 ### PDF Preview and Authentication Fixes (October 7, 2025)
 -   **CORS Configuration**: Added secure CORS middleware using `cors` package to allow credentials from approved origins (REPLIT_DOMAINS for dev, ALLOWED_ORIGINS for production)
 -   **Admin ACL Bypass**: Enhanced ACL system with admin permissions - platform admins can now access all private objects regardless of ownership
