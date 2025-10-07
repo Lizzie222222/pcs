@@ -311,54 +311,58 @@ export default function Home() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {/* Welcome Header */}
-        <div className="mb-8">
-          <Card className="bg-white shadow-lg border">
-            <CardContent className="p-6">
-              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-center gap-3">
-                    <h1 className="text-3xl font-bold text-navy" data-testid="text-welcome">
+        <div className="mb-10">
+          <Card className="bg-gradient-to-br from-white via-blue-50/30 to-white shadow-xl border-0 overflow-hidden relative transition-all duration-300 hover:shadow-2xl">
+            {/* Decorative Background Elements */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-pcs_blue/10 to-transparent rounded-full blur-3xl"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-gradient-to-tr from-teal/10 to-transparent rounded-full blur-2xl"></div>
+            
+            <CardContent className="p-8 relative z-10">
+              <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-8">
+                <div className="flex-1 space-y-3">
+                  <div className="flex items-center gap-3 flex-wrap">
+                    <h1 className="text-4xl lg:text-5xl font-bold text-navy tracking-tight" data-testid="text-welcome">
                       {t('welcome.greeting', { name: user?.firstName ?? t('welcome.default_name') })}
                     </h1>
                     {school.currentRound && (
                       <Badge 
                         className={`${
-                          school.currentRound === 1 ? 'bg-blue-500' :
-                          school.currentRound === 2 ? 'bg-purple-500' :
-                          'bg-green-600'
-                        } text-white text-sm px-3 py-1`}
+                          school.currentRound === 1 ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
+                          school.currentRound === 2 ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
+                          'bg-gradient-to-r from-green-600 to-green-700'
+                        } text-white text-sm px-4 py-1.5 shadow-lg animate-pulse`}
                         data-testid="text-current-round"
                       >
                         Round {school.currentRound}
                       </Badge>
                     )}
                   </div>
-                  <p className="text-lg text-gray-600" data-testid="text-school-info">
-                    {school.name} • {school.country}
+                  <p className="text-xl font-semibold text-gray-700" data-testid="text-school-info">
+                    {school.name} • <span className="text-pcs_blue">{school.country}</span>
                   </p>
-                  <div className="flex items-center gap-2 text-sm text-gray-500">
-                    <MapPin className="h-4 w-4" />
-                    <span>{t('progress.current_stage')}: {t(`progress.${school.currentStage}.title`)}</span>
+                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <MapPin className="h-5 w-5 text-pcs_blue" />
+                    <span className="font-medium">{t('progress.current_stage')}: <span className="text-navy font-semibold">{t(`progress.${school.currentStage}.title`)}</span></span>
                   </div>
                   {school.roundsCompleted && school.roundsCompleted > 0 && (
                     <div className="flex items-center gap-2 text-sm">
-                      <Award className="h-4 w-4 text-yellow-500" />
-                      <span className="text-gray-600">
+                      <Award className="h-5 w-5 text-yellow-500" />
+                      <span className="text-gray-700 font-medium">
                         {school.roundsCompleted} {school.roundsCompleted === 1 ? 'round' : 'rounds'} completed
                       </span>
                     </div>
                   )}
                 </div>
                 <div className="text-center">
-                  <div className="relative inline-flex items-center justify-center w-20 h-20 mb-2">
-                    <div className="absolute inset-0 bg-blue-500 rounded-full opacity-20"></div>
-                    <div className="relative bg-white rounded-full w-16 h-16 flex items-center justify-center shadow border">
-                      <span className="text-xl font-bold text-navy" data-testid="text-progress-percentage">
+                  <div className="relative inline-flex items-center justify-center w-28 h-28 mb-3">
+                    <div className="absolute inset-0 bg-gradient-to-br from-pcs_blue to-teal rounded-full opacity-20 animate-pulse"></div>
+                    <div className="relative bg-white rounded-full w-24 h-24 flex items-center justify-center shadow-xl border-4 border-white">
+                      <span className="text-2xl font-bold text-navy" data-testid="text-progress-percentage">
                         {school.progressPercentage}%
                       </span>
                     </div>
                   </div>
-                  <div className="text-sm font-medium text-gray-600">{t('progress.overall_progress')}</div>
+                  <div className="text-sm font-semibold text-gray-700">{t('progress.overall_progress')}</div>
                 </div>
               </div>
             </CardContent>
@@ -366,42 +370,58 @@ export default function Home() {
         </div>
 
         {/* Tab Navigation */}
-        <div className="mb-8">
-          <div className="bg-white rounded-lg shadow-md p-2 flex gap-2">
+        <div className="mb-10">
+          <div className="bg-white rounded-xl shadow-lg p-3 flex gap-3 border border-gray-100">
             <Button
               variant={activeTab === 'progress' ? 'default' : 'ghost'}
-              className={`flex-1 ${activeTab === 'progress' ? 'bg-pcs_blue text-white' : 'text-gray-600'}`}
+              className={`flex-1 transition-all duration-300 font-semibold ${
+                activeTab === 'progress' 
+                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
+              }`}
               onClick={() => setActiveTab('progress')}
               data-testid="tab-progress"
             >
-              <BarChart3 className="h-4 w-4 mr-2" />
+              <BarChart3 className="h-5 w-5 mr-2" />
               Progress
             </Button>
             <Button
               variant={activeTab === 'analytics' ? 'default' : 'ghost'}
-              className={`flex-1 ${activeTab === 'analytics' ? 'bg-pcs_blue text-white' : 'text-gray-600'}`}
+              className={`flex-1 transition-all duration-300 font-semibold ${
+                activeTab === 'analytics' 
+                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
+              }`}
               onClick={() => setActiveTab('analytics')}
               data-testid="tab-analytics"
             >
-              <BarChart3 className="h-4 w-4 mr-2" />
+              <BarChart3 className="h-5 w-5 mr-2" />
               Analytics
             </Button>
             <Button
               variant={activeTab === 'resources' ? 'default' : 'ghost'}
-              className={`flex-1 ${activeTab === 'resources' ? 'bg-pcs_blue text-white' : 'text-gray-600'}`}
+              className={`flex-1 transition-all duration-300 font-semibold ${
+                activeTab === 'resources' 
+                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
+              }`}
               onClick={() => setActiveTab('resources')}
               data-testid="tab-resources"
             >
-              <BookOpen className="h-4 w-4 mr-2" />
+              <BookOpen className="h-5 w-5 mr-2" />
               Resources
             </Button>
             <Button
               variant={activeTab === 'team' ? 'default' : 'ghost'}
-              className={`flex-1 ${activeTab === 'team' ? 'bg-pcs_blue text-white' : 'text-gray-600'}`}
+              className={`flex-1 transition-all duration-300 font-semibold ${
+                activeTab === 'team' 
+                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
+              }`}
               onClick={() => setActiveTab('team')}
               data-testid="tab-team"
             >
-              <Users className="h-4 w-4 mr-2" />
+              <Users className="h-5 w-5 mr-2" />
               Team
             </Button>
           </div>
@@ -500,7 +520,7 @@ export default function Home() {
             })()}
 
             {/* Progress Tracker */}
-            <div className="mb-8">
+            <div className="mb-10">
               <ProgressTracker 
                 inspireCompleted={school.inspireCompleted}
                 investigateCompleted={school.investigateCompleted}
@@ -718,11 +738,32 @@ export default function Home() {
 
         {/* Analytics Tab Content */}
         {activeTab === 'analytics' && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {analyticsLoading ? (
-              <LoadingSpinner />
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  {[...Array(4)].map((_, i) => (
+                    <Card key={i} className="shadow-lg border-0">
+                      <CardContent className="p-6">
+                        <div className="animate-pulse space-y-3">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+                <Card className="shadow-lg border-0">
+                  <CardContent className="p-6">
+                    <div className="animate-pulse space-y-4">
+                      <div className="h-6 bg-gray-200 rounded w-1/3"></div>
+                      <div className="h-64 bg-gray-100 rounded"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             ) : !analyticsData ? (
-              <Card>
+              <Card className="shadow-lg border-0">
                 <CardContent className="p-12 text-center">
                   <p className="text-gray-600">No analytics data available</p>
                 </CardContent>
@@ -730,47 +771,60 @@ export default function Home() {
             ) : (
               <>
                 {/* Overview Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-sm text-gray-600">Total Submissions</div>
-                      <div className="text-2xl font-bold text-navy">{analyticsData.reviewStats.approvedCount + analyticsData.reviewStats.pendingCount + analyticsData.reviewStats.rejectedCount}</div>
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                  <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-blue-50/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <CardContent className="p-6">
+                      <div className="text-sm font-semibold text-gray-600 mb-2">Total Submissions</div>
+                      <div className="text-3xl font-bold text-navy">{analyticsData.reviewStats.approvedCount + analyticsData.reviewStats.pendingCount + analyticsData.reviewStats.rejectedCount}</div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-sm text-gray-600">Approved</div>
-                      <div className="text-2xl font-bold text-green-600">{analyticsData.reviewStats.approvedCount}</div>
+                  <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-green-50/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <CardContent className="p-6">
+                      <div className="text-sm font-semibold text-gray-600 mb-2">Approved</div>
+                      <div className="text-3xl font-bold text-green-600">{analyticsData.reviewStats.approvedCount}</div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-sm text-gray-600">Pending Review</div>
-                      <div className="text-2xl font-bold text-yellow-600">{analyticsData.reviewStats.pendingCount}</div>
+                  <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-yellow-50/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <CardContent className="p-6">
+                      <div className="text-sm font-semibold text-gray-600 mb-2">Pending Review</div>
+                      <div className="text-3xl font-bold text-yellow-600">{analyticsData.reviewStats.pendingCount}</div>
                     </CardContent>
                   </Card>
-                  <Card>
-                    <CardContent className="p-4">
-                      <div className="text-sm text-gray-600">Avg Review Time</div>
-                      <div className="text-2xl font-bold text-pcs_blue">{Math.round(analyticsData.reviewStats.averageReviewTimeHours)}h</div>
+                  <Card className="shadow-lg border-0 bg-gradient-to-br from-white to-blue-50/30 hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
+                    <CardContent className="p-6">
+                      <div className="text-sm font-semibold text-gray-600 mb-2">Avg Review Time</div>
+                      <div className="text-3xl font-bold text-pcs_blue">{Math.round(analyticsData.reviewStats.averageReviewTimeHours)}h</div>
                     </CardContent>
                   </Card>
                 </div>
 
                 {/* Submission Trends Chart */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Submission Trends</CardTitle>
+                <Card className="shadow-lg border-0">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-2xl font-bold text-navy">Submission Trends</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="h-64">
+                  <CardContent className="pt-2">
+                    <div className="h-72">
                       <ResponsiveContainer width="100%" height="100%">
                         <BarChart data={analyticsData.submissionTrends}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="month" />
-                          <YAxis />
-                          <Tooltip />
-                          <Bar dataKey="count" fill="#009ADE" />
+                          <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+                          <XAxis dataKey="month" stroke="#6b7280" />
+                          <YAxis stroke="#6b7280" />
+                          <Tooltip 
+                            contentStyle={{ 
+                              backgroundColor: 'white', 
+                              border: '1px solid #e5e7eb',
+                              borderRadius: '0.5rem',
+                              boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                            }}
+                          />
+                          <Bar dataKey="count" fill="url(#colorGradient)" radius={[8, 8, 0, 0]} />
+                          <defs>
+                            <linearGradient id="colorGradient" x1="0" y1="0" x2="0" y2="1">
+                              <stop offset="0%" stopColor="#009ADE" stopOpacity={1}/>
+                              <stop offset="100%" stopColor="#00BBB4" stopOpacity={1}/>
+                            </linearGradient>
+                          </defs>
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
@@ -778,20 +832,20 @@ export default function Home() {
                 </Card>
 
                 {/* Team Contributions */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Team Contributions</CardTitle>
+                <Card className="shadow-lg border-0">
+                  <CardHeader className="pb-4">
+                    <CardTitle className="text-2xl font-bold text-navy">Team Contributions</CardTitle>
                   </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
+                  <CardContent className="pt-2">
+                    <div className="space-y-4">
                       {analyticsData.teamContributions.map(member => (
-                        <div key={member.userId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div key={member.userId} className="flex items-center justify-between p-4 bg-gradient-to-r from-gray-50 to-white rounded-xl border border-gray-100 hover:shadow-md transition-all duration-300 hover:border-pcs_blue/30">
                           <div className="flex-1">
-                            <div className="font-medium text-navy">{member.userName}</div>
-                            <div className="text-sm text-gray-600">{member.submissionCount} submissions</div>
+                            <div className="font-semibold text-navy text-lg">{member.userName}</div>
+                            <div className="text-sm text-gray-600 font-medium">{member.submissionCount} submissions</div>
                           </div>
                           <div className="text-right">
-                            <div className="text-green-600 font-semibold">{member.approvedCount} approved</div>
+                            <div className="text-green-600 font-bold text-lg">{member.approvedCount} approved</div>
                           </div>
                         </div>
                       ))}
@@ -859,64 +913,64 @@ export default function Home() {
 
         {/* Resources Tab Content */}
         {activeTab === 'resources' && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Quick Access Resources */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/resources'} data-testid="card-browse-resources">
-                <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-pcs_blue/10 rounded-lg flex items-center justify-center mb-4">
-                    <BookOpen className="h-6 w-6 text-pcs_blue" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              <Card className="shadow-lg border-0 hover:shadow-2xl transition-all duration-300 cursor-pointer hover:-translate-y-2 group h-full" onClick={() => window.location.href = '/resources'} data-testid="card-browse-resources">
+                <CardContent className="p-8 h-full flex flex-col">
+                  <div className="w-16 h-16 bg-gradient-to-br from-pcs_blue to-teal rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <BookOpen className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="font-bold text-navy mb-2">Browse All Resources</h3>
-                  <p className="text-sm text-gray-600">Access our complete library of educational materials and guides</p>
-                  <Button className="w-full mt-4 bg-pcs_blue hover:bg-pcs_blue/90 text-white">
+                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-pcs_blue transition-colors">Browse All Resources</h3>
+                  <p className="text-sm text-gray-600 mb-6 flex-grow">Access our complete library of educational materials and guides</p>
+                  <Button className="w-full bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white shadow-lg font-semibold">
                     View Resources →
                   </Button>
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-inspire_green/10 rounded-lg flex items-center justify-center mb-4">
-                    <Lightbulb className="h-6 w-6 text-inspire_green" />
+              <Card className="shadow-lg border-0 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group h-full">
+                <CardContent className="p-8 h-full flex flex-col">
+                  <div className="w-16 h-16 bg-gradient-to-br from-teal to-green-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <Lightbulb className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="font-bold text-navy mb-2">Evidence Guides</h3>
-                  <p className="text-sm text-gray-600 mb-4">Learn how to submit quality evidence for each stage</p>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-pcs_blue rounded-full"></div>
+                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-teal transition-colors">Evidence Guides</h3>
+                  <p className="text-sm text-gray-600 mb-6">Learn how to submit quality evidence for each stage</p>
+                  <ul className="space-y-3 text-sm flex-grow">
+                    <li className="flex items-center gap-3 text-gray-700 font-medium">
+                      <div className="w-2 h-2 bg-pcs_blue rounded-full"></div>
                       Photo & video guidelines
                     </li>
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-pcs_blue rounded-full"></div>
+                    <li className="flex items-center gap-3 text-gray-700 font-medium">
+                      <div className="w-2 h-2 bg-pcs_blue rounded-full"></div>
                       Documentation tips
                     </li>
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-pcs_blue rounded-full"></div>
+                    <li className="flex items-center gap-3 text-gray-700 font-medium">
+                      <div className="w-2 h-2 bg-pcs_blue rounded-full"></div>
                       Best practices
                     </li>
                   </ul>
                 </CardContent>
               </Card>
 
-              <Card className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="w-12 h-12 bg-coral/10 rounded-lg flex items-center justify-center mb-4">
-                    <Award className="h-6 w-6 text-coral" />
+              <Card className="shadow-lg border-0 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group h-full">
+                <CardContent className="p-8 h-full flex flex-col">
+                  <div className="w-16 h-16 bg-gradient-to-br from-coral to-red-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                    <Award className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="font-bold text-navy mb-2">Program Stages</h3>
-                  <p className="text-sm text-gray-600 mb-4">Understand each stage of the program</p>
-                  <ul className="space-y-2 text-sm">
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-inspire_green rounded-full"></div>
+                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-coral transition-colors">Program Stages</h3>
+                  <p className="text-sm text-gray-600 mb-6">Understand each stage of the program</p>
+                  <ul className="space-y-3 text-sm flex-grow">
+                    <li className="flex items-center gap-3 text-gray-700 font-medium">
+                      <div className="w-2 h-2 bg-teal rounded-full"></div>
                       Inspire: Build awareness
                     </li>
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-yellow rounded-full"></div>
+                    <li className="flex items-center gap-3 text-gray-700 font-medium">
+                      <div className="w-2 h-2 bg-yellow rounded-full"></div>
                       Investigate: Research
                     </li>
-                    <li className="flex items-center gap-2 text-gray-700">
-                      <div className="w-1.5 h-1.5 bg-coral rounded-full"></div>
+                    <li className="flex items-center gap-3 text-gray-700 font-medium">
+                      <div className="w-2 h-2 bg-coral rounded-full"></div>
                       Act: Create change
                     </li>
                   </ul>

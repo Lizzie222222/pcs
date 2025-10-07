@@ -167,13 +167,13 @@ export default function ProgressTracker({
 
   return (
     <>
-      <div className="space-y-8">
+      <div className="space-y-10">
         <div className="text-center">
-          <h2 className="text-2xl lg:text-3xl font-bold text-navy mb-3">{t('progress.title')}</h2>
-          <p className="text-gray-600">{t('progress.journey_description')}</p>
+          <h2 className="text-3xl lg:text-4xl font-bold text-navy mb-4 tracking-tight">{t('progress.title')}</h2>
+          <p className="text-gray-600 text-lg font-medium">{t('progress.journey_description')}</p>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {stages.map((stage, index) => {
             const status = getStageStatus(stage);
             const percentage = getProgressPercentage(stage);
@@ -183,48 +183,48 @@ export default function ProgressTracker({
             return (
               <Card 
                 key={stage.id} 
-                className={`group transition-all duration-300 hover:shadow-lg border overflow-hidden bg-white ${
-                  status === 'completed' ? 'ring-2 ring-green-400/30 bg-green-50/30' :
-                  status === 'current' ? 'ring-2 ring-blue-400/30 bg-blue-50/30' :
-                  'hover:shadow-md bg-gray-50/30'
+                className={`group transition-all duration-300 hover:shadow-2xl border-0 overflow-hidden shadow-lg hover:-translate-y-2 ${
+                  status === 'completed' ? 'ring-2 ring-green-400/50 bg-gradient-to-br from-green-50/50 via-white to-green-50/30' :
+                  status === 'current' ? 'ring-2 ring-blue-400/50 bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30' :
+                  'bg-gradient-to-br from-gray-50/50 via-white to-gray-50/30'
                 }`}
                 data-testid={`progress-stage-${stage.id}`}
               >
-              <CardContent className="p-6 h-full flex flex-col">
+              <CardContent className="p-8 h-full flex flex-col">
                 {/* Header */}
-                <div className="text-center mb-4 flex-shrink-0">
-                  <div className="relative inline-flex items-center justify-center mb-3">
-                    <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition-all duration-300 ${
-                      status === 'completed' ? 'bg-green-500 text-white' :
+                <div className="text-center mb-6 flex-shrink-0">
+                  <div className="relative inline-flex items-center justify-center mb-4">
+                    <div className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 group-hover:scale-110 ${
+                      status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' :
                       status === 'current' ? getStageGradientClasses(stage.color) :
                       'bg-gray-300 text-gray-600'
                     }`}>
-                      <Icon className="h-6 w-6" />
+                      <Icon className="h-8 w-8" />
                     </div>
                     {status === 'completed' && (
-                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white">
-                        <CheckCircle className="h-3 w-3" />
+                      <div className="absolute -top-1 -right-1 w-7 h-7 bg-green-600 rounded-full flex items-center justify-center text-white shadow-lg animate-bounce">
+                        <CheckCircle className="h-4 w-4" />
                       </div>
                     )}
                   </div>
                   
-                  <h3 className="text-lg font-bold text-navy mb-1">{stage.title}</h3>
-                  <p className="text-gray-600 text-sm mb-2">{stage.description}</p>
+                  <h3 className="text-xl font-bold text-navy mb-2">{stage.title}</h3>
+                  <p className="text-gray-600 text-sm mb-3 font-medium">{stage.description}</p>
                   
                   {/* Status Badge */}
                   {status === 'completed' && (
-                    <Badge className="bg-green-500 text-white text-xs">
+                    <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white text-xs px-3 py-1 shadow-md">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       {t('progress.stage_completed')}
                     </Badge>
                   )}
                   {status === 'current' && (
-                    <Badge className={`${getStageBadgeClasses(stage.color)} text-white text-xs`}>
+                    <Badge className={`${getStageBadgeClasses(stage.color)} text-white text-xs px-3 py-1 shadow-md`}>
                       {t('progress.stage_current')}
                     </Badge>
                   )}
                   {status === 'locked' && (
-                    <Badge variant="secondary" className="text-gray-600 bg-gray-100 text-xs">
+                    <Badge variant="secondary" className="text-gray-600 bg-gray-100 text-xs px-3 py-1">
                       <Lock className="h-3 w-3 mr-1" />
                       {t('progress.stage_locked')}
                     </Badge>
@@ -232,32 +232,42 @@ export default function ProgressTracker({
                 </div>
 
                 {/* Progress Circle */}
-                <div className="flex justify-center mb-4 flex-shrink-0">
-                  <div className="relative w-20 h-20">
-                    <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                <div className="flex justify-center mb-6 flex-shrink-0">
+                  <div className="relative w-24 h-24">
+                    <svg className="w-24 h-24 transform -rotate-90" viewBox="0 0 80 80">
                       <circle
-                        strokeWidth="4"
+                        strokeWidth="6"
                         stroke="#e5e7eb"
                         fill="transparent"
-                        r="36"
+                        r="34"
                         cx="40"
                         cy="40"
                       />
                       <circle
-                        strokeWidth="4"
-                        strokeDasharray={`${2 * Math.PI * 36}`}
-                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - percentage / 100)}`}
+                        strokeWidth="6"
+                        strokeDasharray={`${2 * Math.PI * 34}`}
+                        strokeDashoffset={`${2 * Math.PI * 34 * (1 - percentage / 100)}`}
                         strokeLinecap="round"
-                        stroke={status === 'completed' ? '#10b981' : status === 'current' ? '#3b82f6' : '#6b7280'}
+                        stroke={status === 'completed' ? 'url(#greenGradient)' : status === 'current' ? 'url(#blueGradient)' : '#6b7280'}
                         fill="transparent"
-                        r="36"
+                        r="34"
                         cx="40"
                         cy="40"
                         className="transition-all duration-500"
                       />
+                      <defs>
+                        <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#10b981" />
+                          <stop offset="100%" stopColor="#059669" />
+                        </linearGradient>
+                        <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                          <stop offset="0%" stopColor="#3b82f6" />
+                          <stop offset="100%" stopColor="#2563eb" />
+                        </linearGradient>
+                      </defs>
                     </svg>
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <span className={`text-lg font-bold ${status === 'completed' ? 'text-green-500' : 'text-navy'}`}>
+                      <span className={`text-xl font-bold ${status === 'completed' ? 'text-green-500' : 'text-navy'}`}>
                         {percentage}%
                       </span>
                     </div>
@@ -265,7 +275,7 @@ export default function ProgressTracker({
                 </div>
 
                 {/* Evidence Requirements Checklist */}
-                <div className="space-y-3 flex-grow">
+                <div className="space-y-4 flex-grow">
                   {requirementsLoading ? (
                     <div className="text-center py-4 text-gray-500 text-sm">
                       Loading requirements...
@@ -282,22 +292,22 @@ export default function ProgressTracker({
                       return (
                         <div 
                           key={requirement.id}
-                          className="border rounded-lg p-3 bg-white hover:shadow-sm transition-shadow"
+                          className="border-0 rounded-xl p-4 bg-white shadow-md hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
                           data-testid={`requirement-${requirement.id}`}
                         >
                           {/* Requirement Header */}
-                          <div className="flex items-start gap-2 mb-2">
+                          <div className="flex items-start gap-3 mb-3">
                             <Badge 
                               variant="outline" 
-                              className="flex-shrink-0 bg-blue-50 text-blue-700 border-blue-200"
+                              className="flex-shrink-0 bg-gradient-to-br from-blue-50 to-blue-100 text-blue-700 border-blue-200 font-semibold px-2.5 py-0.5"
                             >
                               #{idx + 1}
                             </Badge>
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-bold text-sm text-navy leading-tight">
+                              <h4 className="font-bold text-sm text-navy leading-tight mb-1">
                                 {requirement.title}
                               </h4>
-                              <p className="text-xs text-gray-600 mt-1">
+                              <p className="text-xs text-gray-600 font-medium">
                                 {requirement.description}
                               </p>
                             </div>
@@ -361,7 +371,11 @@ export default function ProgressTracker({
                               <Button
                                 size="sm"
                                 variant={evidenceStatus === 'rejected' ? 'destructive' : 'default'}
-                                className="text-xs h-7 px-2"
+                                className={`text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 ${
+                                  evidenceStatus === 'rejected' 
+                                    ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
+                                    : 'bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90'
+                                }`}
                                 onClick={() => handleSubmitEvidence(requirement.id, stage.id)}
                                 data-testid={`button-submit-${requirement.id}`}
                               >
