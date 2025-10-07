@@ -26,6 +26,7 @@ import inspireVideo from "@assets/inspire_1757867031379.mp4";
 import investigateVideo from "@assets/investigate_1757867031380.mp4";
 import actVideo from "@assets/ACT_1757867031379.mp4";
 import heroImage from "@assets/1W0A3542_1759747398974.jpg";
+import videoPlaceholder from "@assets/Screenshot 2025-10-07 at 08.55.43_1759821888486.png";
 import { 
   Star,
   ArrowRight,
@@ -328,12 +329,22 @@ export default function Landing() {
                 <div className="aspect-video rounded-2xl overflow-hidden shadow-2xl bg-black border-4 border-white ring-2 ring-ocean-blue/20 hover:ring-ocean-blue/40 transition-all duration-300">
                   <iframe
                     className="w-full h-full"
-                    src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+                    src="https://www.youtube.com/embed/sihnakV84Pw"
                     title="What is Plastic Clever Schools?"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     data-testid="iframe-intro-video"
+                    loading="lazy"
                   ></iframe>
+                  <OptimizedImage
+                    src={videoPlaceholder}
+                    alt="Plastic Clever Schools Video Placeholder"
+                    className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-0"
+                    width={1920}
+                    height={1080}
+                    priority={false}
+                    data-testid="img-video-placeholder"
+                  />
                 </div>
               </div>
               
