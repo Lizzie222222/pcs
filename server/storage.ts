@@ -153,6 +153,15 @@ export interface IStorage {
   deleteEvidence(id: string): Promise<boolean>;
   deleteSchool(id: string): Promise<boolean>;
   
+  // Progression system operations
+  checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined>;
+  getSchoolEvidenceCounts(schoolId: string): Promise<{
+    inspire: { total: number; approved: number };
+    investigate: { total: number; approved: number; hasQuiz: boolean };
+    act: { total: number; approved: number };
+  }>;
+  startNewRound(schoolId: string): Promise<School | undefined>;
+  
   // Case Study operations
   createCaseStudy(caseStudy: InsertCaseStudy): Promise<CaseStudy>;
   getCaseStudyById(id: string): Promise<CaseStudy | undefined>;
@@ -1092,6 +1101,135 @@ export class DatabaseStorage implements IStorage {
       console.error("Error deleting school:", error);
       return false;
     }
+  }
+
+  // Progression system operations
+  async getSchoolEvidenceCounts(schoolId: string): Promise<{
+    inspire: { total: number; approved: number };
+    investigate: { total: number; approved: number; hasQuiz: boolean };
+    act: { total: number; approved: number };
+  }> {
+    const school = await this.getSchool(schoolId);
+    if (!school) {
+      return {
+        inspire: { total: 0, approved: 0 },
+        investigate: { total: 0, approved: 0, hasQuiz: false },
+        act: { total: 0, approved: 0 }
+      };
+    }
+
+    const currentRound = school.currentRound || 1;
+
+    // Get all evidence for current round
+    const allEvidence = await db
+      .select()
+      .from(evidence)
+      .where(
+        and(
+          eq(evidence.schoolId, schoolId),
+          eq(evidence.roundNumber, currentRound)
+        )
+      );
+
+    const inspireEvidence = allEvidence.filter(e => e.stage === 'inspire');
+    const investigateEvidence = allEvidence.filter(e => e.stage === 'investigate');
+    const actEvidence = allEvidence.filter(e => e.stage === 'act');
+
+    const hasQuiz = investigateEvidence.some(e => e.isAuditQuiz && e.status === 'approved');
+
+    return {
+      inspire: {
+        total: inspireEvidence.length,
+        approved: inspireEvidence.filter(e => e.status === 'approved').length
+      },
+      investigate: {
+        total: investigateEvidence.length,
+        approved: investigateEvidence.filter(e => e.status === 'approved').length,
+        hasQuiz
+      },
+      act: {
+        total: actEvidence.length,
+        approved: actEvidence.filter(e => e.status === 'approved').length
+      }
+    };
+  }
+
+  async checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined> {
+    const school = await this.getSchool(schoolId);
+    if (!school) return undefined;
+
+    const counts = await this.getSchoolEvidenceCounts(schoolId);
+    
+    let updates: Partial<School> = {};
+    let hasChanges = false;
+
+    // Check Inspire completion (3 approved evidence)
+    if (counts.inspire.approved >= 3 && !school.inspireCompleted) {
+      updates.inspireCompleted = true;
+      updates.currentStage = 'investigate';
+      hasChanges = true;
+    }
+
+    // Check Investigate completion (2 approved including quiz)
+    if (counts.investigate.approved >= 2 && counts.investigate.hasQuiz && !school.investigateCompleted) {
+      updates.investigateCompleted = true;
+      updates.currentStage = 'act';
+      updates.auditQuizCompleted = true;
+      hasChanges = true;
+    }
+
+    // Check Act completion (3 approved evidence)
+    if (counts.act.approved >= 3 && !school.actCompleted) {
+      updates.actCompleted = true;
+      updates.awardCompleted = true;
+      hasChanges = true;
+      
+      // Round completed! Set up for next round
+      const roundsCompleted = (school.roundsCompleted || 0) + 1;
+      updates.roundsCompleted = roundsCompleted;
+    }
+
+    if (hasChanges) {
+      const [updated] = await db
+        .update(schools)
+        .set({
+          ...updates,
+          updatedAt: new Date()
+        })
+        .where(eq(schools.id, schoolId))
+        .returning();
+      return updated;
+    }
+
+    return school;
+  }
+
+  async startNewRound(schoolId: string): Promise<School | undefined> {
+    const school = await this.getSchool(schoolId);
+    if (!school) return undefined;
+
+    // Only allow starting new round if current round is complete
+    if (!school.awardCompleted) return undefined;
+
+    const nextRound = (school.currentRound || 1) + 1;
+
+    const [updated] = await db
+      .update(schools)
+      .set({
+        currentRound: nextRound,
+        currentStage: 'inspire',
+        inspireCompleted: false,
+        investigateCompleted: false,
+        actCompleted: false,
+        awardCompleted: false,
+        auditQuizCompleted: false,
+        progressPercentage: 0,
+        updatedAt: new Date()
+      })
+      .where(eq(schools.id, schoolId))
+      .returning();
+    
+    return updated;
   }
 
   // Case Study operations
