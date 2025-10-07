@@ -97,13 +97,11 @@ export default function ProgressTracker({
     return 'locked';
   };
 
-  const getRequiredCount = (stageId: string): number => {
-    switch (stageId) {
-      case 'inspire': return 3;
-      case 'investigate': return 2;
-      case 'act': return 3;
-      default: return 3;
-    }
+  // Get requirements for a specific stage
+  const getStageRequirements = (stageId: string) => {
+    return requirements
+      .filter(req => req.stage === stageId)
+      .sort((a, b) => a.orderIndex - b.orderIndex);
   };
 
   const getProgressPercentage = (stage: any) => {
@@ -112,7 +110,16 @@ export default function ProgressTracker({
       const stageId = stage.id as keyof EvidenceCounts;
       const counts = evidenceCounts?.[stageId];
       if (!counts || typeof counts.approved !== 'number') return 0;
-      const required = getRequiredCount(stageId);
+      
+      // Get required count dynamically from fetched requirements
+      const required = getStageRequirements(stageId).length;
+      
+      // Backward compatibility: fallback to old counts if no requirements defined
+      if (required === 0) {
+        const fallbackRequired = stageId === 'inspire' ? 3 : stageId === 'investigate' ? 2 : 3;
+        return Math.round((counts.approved / fallbackRequired) * 100);
+      }
+      
       return Math.round((counts.approved / required) * 100);
     }
     return 0;
@@ -142,13 +149,6 @@ export default function ProgressTracker({
       default:
         return 'bg-gradient-to-r from-blue-500 to-blue-600';
     }
-  };
-
-  // Get requirements for a specific stage
-  const getStageRequirements = (stageId: string) => {
-    return requirements
-      .filter(req => req.stage === stageId)
-      .sort((a, b) => a.orderIndex - b.orderIndex);
   };
 
   // Find evidence for a specific requirement
