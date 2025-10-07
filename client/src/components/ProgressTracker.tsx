@@ -1,12 +1,33 @@
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { CheckCircle, Circle, Lock, Lightbulb, Search, Hand } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CheckCircle, Circle, Lock, Lightbulb, Search, Hand, Clock, X, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface EvidenceCounts {
   inspire?: { total: number; approved: number };
   investigate?: { total: number; approved: number; hasQuiz: boolean };
   act?: { total: number; approved: number };
+}
+
+interface EvidenceRequirement {
+  id: string;
+  stage: string;
+  title: string;
+  description: string;
+  orderIndex: number;
+  resourceUrl?: string;
+}
+
+interface Evidence {
+  id: string;
+  evidenceRequirementId?: string;
+  status: 'pending' | 'approved' | 'rejected';
+  stage: string;
 }
 
 interface ProgressTrackerProps {
@@ -16,6 +37,7 @@ interface ProgressTrackerProps {
   awardCompleted: boolean;
   currentStage: string;
   evidenceCounts: EvidenceCounts;
+  schoolId: string;
 }
 
 export default function ProgressTracker({
@@ -25,8 +47,23 @@ export default function ProgressTracker({
   awardCompleted,
   currentStage,
   evidenceCounts,
+  schoolId,
 }: ProgressTrackerProps) {
   const { t } = useTranslation('dashboard');
+  const [showEvidenceForm, setShowEvidenceForm] = useState(false);
+  const [selectedRequirementId, setSelectedRequirementId] = useState<string | undefined>();
+  const [selectedStage, setSelectedStage] = useState<string>('inspire');
+
+  // Fetch evidence requirements
+  const { data: requirements = [], isLoading: requirementsLoading } = useQuery<EvidenceRequirement[]>({
+    queryKey: ['/api/evidence-requirements'],
+  });
+
+  // Fetch all school evidence to match with requirements
+  const { data: allEvidence = [] } = useQuery<Evidence[]>({
+    queryKey: ['/api/evidence'],
+  });
+
   const stages = [
     {
       id: 'inspire',
@@ -107,208 +144,283 @@ export default function ProgressTracker({
     }
   };
 
-  return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h2 className="text-2xl lg:text-3xl font-bold text-navy mb-3">{t('progress.title')}</h2>
-        <p className="text-gray-600">{t('progress.journey_description')}</p>
-      </div>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {stages.map((stage, index) => {
-          const status = getStageStatus(stage);
-          const percentage = getProgressPercentage(stage);
-          const Icon = stage.icon;
+  // Get requirements for a specific stage
+  const getStageRequirements = (stageId: string) => {
+    return requirements
+      .filter(req => req.stage === stageId)
+      .sort((a, b) => a.orderIndex - b.orderIndex);
+  };
 
-          return (
-            <Card 
-              key={stage.id} 
-              className={`group transition-all duration-300 hover:shadow-lg border overflow-hidden bg-white ${
-                status === 'completed' ? 'ring-2 ring-green-400/30 bg-green-50/30' :
-                status === 'current' ? 'ring-2 ring-blue-400/30 bg-blue-50/30' :
-                'hover:shadow-md bg-gray-50/30'
-              }`}
-              data-testid={`progress-stage-${stage.id}`}
-            >
-            <CardContent className="p-6 h-full flex flex-col">
-              {/* Header */}
-              <div className="text-center mb-4 flex-shrink-0">
-                <div className="relative inline-flex items-center justify-center mb-3">
-                  <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition-all duration-300 ${
-                    status === 'completed' ? 'bg-green-500 text-white' :
-                    status === 'current' ? getStageGradientClasses(stage.color) :
-                    'bg-gray-300 text-gray-600'
-                  }`}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  {status === 'completed' && (
-                    <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white">
-                      <CheckCircle className="h-3 w-3" />
+  // Find evidence for a specific requirement
+  const getRequirementEvidence = (requirementId: string) => {
+    if (!allEvidence) return null;
+    return allEvidence.find(
+      ev => ev.evidenceRequirementId === requirementId
+    );
+  };
+
+  // Handle opening evidence form with requirement
+  const handleSubmitEvidence = (requirementId: string, stage: string) => {
+    setSelectedRequirementId(requirementId);
+    setSelectedStage(stage);
+    setShowEvidenceForm(true);
+  };
+
+  return (
+    <>
+      <div className="space-y-8">
+        <div className="text-center">
+          <h2 className="text-2xl lg:text-3xl font-bold text-navy mb-3">{t('progress.title')}</h2>
+          <p className="text-gray-600">{t('progress.journey_description')}</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {stages.map((stage, index) => {
+            const status = getStageStatus(stage);
+            const percentage = getProgressPercentage(stage);
+            const Icon = stage.icon;
+            const stageRequirements = getStageRequirements(stage.id);
+
+            return (
+              <Card 
+                key={stage.id} 
+                className={`group transition-all duration-300 hover:shadow-lg border overflow-hidden bg-white ${
+                  status === 'completed' ? 'ring-2 ring-green-400/30 bg-green-50/30' :
+                  status === 'current' ? 'ring-2 ring-blue-400/30 bg-blue-50/30' :
+                  'hover:shadow-md bg-gray-50/30'
+                }`}
+                data-testid={`progress-stage-${stage.id}`}
+              >
+              <CardContent className="p-6 h-full flex flex-col">
+                {/* Header */}
+                <div className="text-center mb-4 flex-shrink-0">
+                  <div className="relative inline-flex items-center justify-center mb-3">
+                    <div className={`w-16 h-16 rounded-full flex items-center justify-center shadow transition-all duration-300 ${
+                      status === 'completed' ? 'bg-green-500 text-white' :
+                      status === 'current' ? getStageGradientClasses(stage.color) :
+                      'bg-gray-300 text-gray-600'
+                    }`}>
+                      <Icon className="h-6 w-6" />
                     </div>
+                    {status === 'completed' && (
+                      <div className="absolute -top-1 -right-1 w-6 h-6 bg-green-600 rounded-full flex items-center justify-center text-white">
+                        <CheckCircle className="h-3 w-3" />
+                      </div>
+                    )}
+                  </div>
+                  
+                  <h3 className="text-lg font-bold text-navy mb-1">{stage.title}</h3>
+                  <p className="text-gray-600 text-sm mb-2">{stage.description}</p>
+                  
+                  {/* Status Badge */}
+                  {status === 'completed' && (
+                    <Badge className="bg-green-500 text-white text-xs">
+                      <CheckCircle className="h-3 w-3 mr-1" />
+                      {t('progress.stage_completed')}
+                    </Badge>
+                  )}
+                  {status === 'current' && (
+                    <Badge className={`${getStageBadgeClasses(stage.color)} text-white text-xs`}>
+                      {t('progress.stage_current')}
+                    </Badge>
+                  )}
+                  {status === 'locked' && (
+                    <Badge variant="secondary" className="text-gray-600 bg-gray-100 text-xs">
+                      <Lock className="h-3 w-3 mr-1" />
+                      {t('progress.stage_locked')}
+                    </Badge>
                   )}
                 </div>
-                
-                <h3 className="text-lg font-bold text-navy mb-1">{stage.title}</h3>
-                <p className="text-gray-600 text-sm mb-2">{stage.description}</p>
-                
-                {/* Status Badge */}
-                {status === 'completed' && (
-                  <Badge className="bg-green-500 text-white text-xs">
-                    <CheckCircle className="h-3 w-3 mr-1" />
-                    {t('progress.stage_completed')}
-                  </Badge>
-                )}
-                {status === 'current' && (
-                  <Badge className={`${getStageBadgeClasses(stage.color)} text-white text-xs`}>
-                    {t('progress.stage_current')}
-                  </Badge>
-                )}
-                {status === 'locked' && (
-                  <Badge variant="secondary" className="text-gray-600 bg-gray-100 text-xs">
-                    <Lock className="h-3 w-3 mr-1" />
-                    {t('progress.stage_locked')}
-                  </Badge>
-                )}
-              </div>
 
-              {/* Progress Circle */}
-              <div className="flex justify-center mb-4 flex-shrink-0">
-                <div className="relative w-20 h-20">
-                  <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
-                    <circle
-                      strokeWidth="4"
-                      stroke="#e5e7eb"
-                      fill="transparent"
-                      r="36"
-                      cx="40"
-                      cy="40"
-                    />
-                    <circle
-                      strokeWidth="4"
-                      strokeDasharray={`${2 * Math.PI * 36}`}
-                      strokeDashoffset={`${2 * Math.PI * 36 * (1 - percentage / 100)}`}
-                      strokeLinecap="round"
-                      stroke={status === 'completed' ? '#10b981' : status === 'current' ? '#3b82f6' : '#6b7280'}
-                      fill="transparent"
-                      r="36"
-                      cx="40"
-                      cy="40"
-                      className="transition-all duration-500"
-                    />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className={`text-lg font-bold ${status === 'completed' ? 'text-green-500' : 'text-navy'}`}>
-                      {percentage}%
-                    </span>
+                {/* Progress Circle */}
+                <div className="flex justify-center mb-4 flex-shrink-0">
+                  <div className="relative w-20 h-20">
+                    <svg className="w-20 h-20 transform -rotate-90" viewBox="0 0 80 80">
+                      <circle
+                        strokeWidth="4"
+                        stroke="#e5e7eb"
+                        fill="transparent"
+                        r="36"
+                        cx="40"
+                        cy="40"
+                      />
+                      <circle
+                        strokeWidth="4"
+                        strokeDasharray={`${2 * Math.PI * 36}`}
+                        strokeDashoffset={`${2 * Math.PI * 36 * (1 - percentage / 100)}`}
+                        strokeLinecap="round"
+                        stroke={status === 'completed' ? '#10b981' : status === 'current' ? '#3b82f6' : '#6b7280'}
+                        fill="transparent"
+                        r="36"
+                        cx="40"
+                        cy="40"
+                        className="transition-all duration-500"
+                      />
+                    </svg>
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <span className={`text-lg font-bold ${status === 'completed' ? 'text-green-500' : 'text-navy'}`}>
+                        {percentage}%
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Evidence-Based Progress Items */}
-              <div className="space-y-2 flex-grow">
-                {(() => {
-                  const stageId = stage.id as keyof EvidenceCounts;
-                  const counts = evidenceCounts?.[stageId];
-                  const requiredCount = getRequiredCount(stageId);
-                  const total = counts?.total ?? 0;
-                  const approved = counts?.approved ?? 0;
-                  
-                  return (
-                    <>
-                      <div 
-                        className={`flex items-center gap-2 p-2 rounded text-sm ${
-                          total > 0 ? 'bg-blue-50 text-blue-700' :
-                          status === 'locked' ? 'bg-gray-50 text-gray-500' :
-                          'bg-gray-50 text-gray-500'
-                        }`}
-                        data-testid={`evidence-submitted-${stage.id}`}
-                      >
-                        <div className="flex-shrink-0">
-                          {total > 0 ? (
-                            <CheckCircle className="h-4 w-4 text-blue-500" />
-                          ) : status === 'locked' ? (
-                            <Lock className="h-4 w-4 text-gray-400" />
-                          ) : (
-                            <Circle className="h-4 w-4 text-gray-400" />
-                          )}
-                        </div>
-                        <span className="font-medium">
-                          {total > 0 
-                            ? t('progress.evidence_items_submitted', { count: total }) || `${total} evidence submitted`
-                            : t('progress.no_evidence_submitted') || 'No evidence submitted yet'
-                          }
-                        </span>
-                      </div>
+                {/* Evidence Requirements Checklist */}
+                <div className="space-y-3 flex-grow">
+                  {requirementsLoading ? (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                      Loading requirements...
+                    </div>
+                  ) : stageRequirements.length === 0 ? (
+                    <div className="text-center py-4 text-gray-500 text-sm">
+                      No requirements yet
+                    </div>
+                  ) : (
+                    stageRequirements.map((requirement, idx) => {
+                      const evidence = getRequirementEvidence(requirement.id);
+                      const evidenceStatus = evidence?.status;
                       
-                      <div 
-                        className={`flex items-center gap-2 p-2 rounded text-sm ${
-                          approved >= requiredCount ? 'bg-green-50 text-green-700' :
-                          approved > 0 ? 'bg-yellow-50 text-yellow-700' :
-                          status === 'locked' ? 'bg-gray-50 text-gray-500' :
-                          'bg-gray-50 text-gray-500'
-                        }`}
-                        data-testid={`evidence-approved-${stage.id}`}
-                      >
-                        <div className="flex-shrink-0">
-                          {approved >= requiredCount ? (
-                            <CheckCircle className="h-4 w-4 text-green-500" />
-                          ) : approved > 0 ? (
-                            <CheckCircle className="h-4 w-4 text-yellow-500" />
-                          ) : status === 'locked' ? (
-                            <Lock className="h-4 w-4 text-gray-400" />
-                          ) : (
-                            <Circle className="h-4 w-4 text-gray-400" />
-                          )}
-                        </div>
-                        <span className="font-medium">
-                          {t('progress.evidence_items_approved', { approved, required: requiredCount }) || `${approved} / ${requiredCount} evidence approved`}
-                        </span>
-                      </div>
-                      
-                      {stageId === 'investigate' && counts && 'hasQuiz' in counts && (
+                      return (
                         <div 
-                          className={`flex items-center gap-2 p-2 rounded text-sm ${
-                            counts.hasQuiz ? 'bg-green-50 text-green-700' :
-                            status === 'locked' ? 'bg-gray-50 text-gray-500' :
-                            'bg-gray-50 text-gray-500'
-                          }`}
-                          data-testid={`audit-quiz-${stage.id}`}
+                          key={requirement.id}
+                          className="border rounded-lg p-3 bg-white hover:shadow-sm transition-shadow"
+                          data-testid={`requirement-${requirement.id}`}
                         >
-                          <div className="flex-shrink-0">
-                            {counts.hasQuiz ? (
-                              <CheckCircle className="h-4 w-4 text-green-500" />
-                            ) : status === 'locked' ? (
-                              <Lock className="h-4 w-4 text-gray-400" />
-                            ) : (
-                              <Circle className="h-4 w-4 text-gray-400" />
+                          {/* Requirement Header */}
+                          <div className="flex items-start gap-2 mb-2">
+                            <Badge 
+                              variant="outline" 
+                              className="flex-shrink-0 bg-blue-50 text-blue-700 border-blue-200"
+                            >
+                              #{idx + 1}
+                            </Badge>
+                            <div className="flex-1 min-w-0">
+                              <h4 className="font-bold text-sm text-navy leading-tight">
+                                {requirement.title}
+                              </h4>
+                              <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                                {requirement.description}
+                              </p>
+                            </div>
+                          </div>
+
+                          {/* Status & Action */}
+                          <div className="flex items-center justify-between gap-2 mt-3">
+                            <div className="flex items-center gap-1.5">
+                              {!evidenceStatus && status !== 'locked' && (
+                                <>
+                                  <Circle className="h-4 w-4 text-gray-400" />
+                                  <span className="text-xs text-gray-500">Not started</span>
+                                </>
+                              )}
+                              {evidenceStatus === 'pending' && (
+                                <>
+                                  <Clock className="h-4 w-4 text-yellow-500" />
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
+                                    data-testid={`status-pending-${requirement.id}`}
+                                  >
+                                    Pending
+                                  </Badge>
+                                </>
+                              )}
+                              {evidenceStatus === 'approved' && (
+                                <>
+                                  <CheckCircle className="h-4 w-4 text-green-500" />
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-xs bg-green-50 text-green-700 border-green-200"
+                                    data-testid={`status-approved-${requirement.id}`}
+                                  >
+                                    Approved
+                                  </Badge>
+                                </>
+                              )}
+                              {evidenceStatus === 'rejected' && (
+                                <>
+                                  <X className="h-4 w-4 text-red-500" />
+                                  <Badge 
+                                    variant="outline" 
+                                    className="text-xs bg-red-50 text-red-700 border-red-200"
+                                    data-testid={`status-rejected-${requirement.id}`}
+                                  >
+                                    Rejected
+                                  </Badge>
+                                </>
+                              )}
+                              {status === 'locked' && (
+                                <>
+                                  <Lock className="h-4 w-4 text-gray-400" />
+                                  <span className="text-xs text-gray-400">Locked</span>
+                                </>
+                              )}
+                            </div>
+
+                            {/* Action Button */}
+                            {status !== 'locked' && evidenceStatus !== 'approved' && (
+                              <Button
+                                size="sm"
+                                variant={evidenceStatus === 'rejected' ? 'destructive' : 'default'}
+                                className="text-xs h-7 px-2"
+                                onClick={() => handleSubmitEvidence(requirement.id, stage.id)}
+                                data-testid={`button-submit-${requirement.id}`}
+                              >
+                                {evidenceStatus === 'rejected' ? 'Resubmit' : 'Submit'}
+                              </Button>
                             )}
                           </div>
-                          <span className="font-medium">
-                            {counts.hasQuiz 
-                              ? t('progress.audit_quiz_completed') || 'Audit quiz completed'
-                              : t('progress.audit_quiz_pending') || 'Audit quiz required'
-                            }
-                          </span>
-                        </div>
-                      )}
-                    </>
-                  );
-                })()}
-              </div>
 
-              {status === 'locked' && (
-                <div className="text-center mt-4 pt-4 border-t flex-shrink-0">
-                  <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full">
-                    <Lock className="h-3 w-3 text-gray-500" />
-                    <span className="text-xs text-gray-600">{t('progress.stage_locked')}</span>
-                  </div>
+                          {/* Resource Link */}
+                          {requirement.resourceUrl && (
+                            <div className="mt-2 pt-2 border-t">
+                              <a
+                                href={requirement.resourceUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 hover:underline"
+                                data-testid={`link-resource-${requirement.id}`}
+                              >
+                                <ExternalLink className="h-3 w-3" />
+                                View Helpful Resource
+                              </a>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })
+                  )}
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        );
-      })}
+
+                {status === 'locked' && (
+                  <div className="text-center mt-4 pt-4 border-t flex-shrink-0">
+                    <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full">
+                      <Lock className="h-3 w-3 text-gray-500" />
+                      <span className="text-xs text-gray-600">{t('progress.stage_locked')}</span>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          );
+        })}
+        </div>
       </div>
-    </div>
+
+      {/* Evidence Submission Dialog */}
+      <Dialog open={showEvidenceForm} onOpenChange={setShowEvidenceForm}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <EvidenceSubmissionForm 
+            onClose={() => {
+              setShowEvidenceForm(false);
+              setSelectedRequirementId(undefined);
+            }}
+            schoolId={schoolId}
+            evidenceRequirementId={selectedRequirementId}
+            preSelectedStage={selectedStage as 'inspire' | 'investigate' | 'act'}
+          />
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

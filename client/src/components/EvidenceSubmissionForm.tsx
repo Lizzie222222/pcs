@@ -40,6 +40,8 @@ const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.ob
 interface EvidenceSubmissionFormProps {
   onClose: () => void;
   schoolId: string;
+  evidenceRequirementId?: string;
+  preSelectedStage?: 'inspire' | 'investigate' | 'act';
 }
 
 interface UploadedFile {
@@ -49,7 +51,12 @@ interface UploadedFile {
   type: string;
 }
 
-export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSubmissionFormProps) {
+export default function EvidenceSubmissionForm({ 
+  onClose, 
+  schoolId, 
+  evidenceRequirementId,
+  preSelectedStage 
+}: EvidenceSubmissionFormProps) {
   const { t } = useTranslation(['forms', 'common']);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -67,7 +74,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
     defaultValues: {
       title: '',
       description: '',
-      stage: undefined,
+      stage: preSelectedStage,
       videoLinks: '',
       visibility: 'private',
       hasChildren: false,
@@ -79,6 +86,7 @@ export default function EvidenceSubmissionForm({ onClose, schoolId }: EvidenceSu
       await apiRequest('POST', '/api/evidence', {
         ...data,
         schoolId,
+        evidenceRequirementId,
         files: data.files,
         parentalConsentFiles: data.parentalConsentFiles,
       });

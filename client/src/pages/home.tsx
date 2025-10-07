@@ -424,6 +424,7 @@ export default function Home() {
             awardCompleted={school.awardCompleted}
             currentStage={school.currentStage}
             evidenceCounts={evidenceCounts}
+            schoolId={school.id}
           />
         </div>
 
