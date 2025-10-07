@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
+import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -4261,6 +4262,14 @@ export default function Admin() {
           >
             Email Management
           </button>
+          <Link href="/admin/evidence-requirements">
+            <button
+              className="px-4 py-2 rounded-lg font-medium transition-colors text-gray-600 hover:text-navy hover:bg-gray-100"
+              data-testid="tab-evidence-requirements"
+            >
+              Evidence Requirements
+            </button>
+          </Link>
         </div>
 
         {/* Overview Tab (Analytics Content) */}
