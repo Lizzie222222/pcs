@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Circle, Lock, Lightbulb, Search, Hand, Clock, X, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 interface EvidenceCounts {
   inspire?: { total: number; approved: number };
@@ -298,7 +297,7 @@ export default function ProgressTracker({
                               <h4 className="font-bold text-sm text-navy leading-tight">
                                 {requirement.title}
                               </h4>
-                              <p className="text-xs text-gray-600 mt-1 line-clamp-2">
+                              <p className="text-xs text-gray-600 mt-1">
                                 {requirement.description}
                               </p>
                             </div>
@@ -407,20 +406,18 @@ export default function ProgressTracker({
         </div>
       </div>
 
-      {/* Evidence Submission Dialog */}
-      <Dialog open={showEvidenceForm} onOpenChange={setShowEvidenceForm}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-          <EvidenceSubmissionForm 
-            onClose={() => {
-              setShowEvidenceForm(false);
-              setSelectedRequirementId(undefined);
-            }}
-            schoolId={schoolId}
-            evidenceRequirementId={selectedRequirementId}
-            preSelectedStage={selectedStage as 'inspire' | 'investigate' | 'act'}
-          />
-        </DialogContent>
-      </Dialog>
+      {/* Evidence Submission Form */}
+      {showEvidenceForm && (
+        <EvidenceSubmissionForm 
+          onClose={() => {
+            setShowEvidenceForm(false);
+            setSelectedRequirementId(undefined);
+          }}
+          schoolId={schoolId}
+          evidenceRequirementId={selectedRequirementId}
+          preSelectedStage={selectedStage as 'inspire' | 'investigate' | 'act'}
+        />
+      )}
     </>
   );
 }
