@@ -1,10 +1,51 @@
 import express, { type Request, Response, NextFunction } from "express";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ extended: false, limit: '200mb' }));
+
+// Configure CORS to allow credentials from approved origins only
+app.use(cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    // Build allowlist of approved origins
+    const allowedOrigins: string[] = [];
+    
+    // Add REPLIT_DOMAINS (works for both dev and production)
+    if (process.env.REPLIT_DOMAINS) {
+      const replitDomains = process.env.REPLIT_DOMAINS.split(',').map(d => d.trim());
+      allowedOrigins.push(...replitDomains.map(d => `https://${d}`));
+    }
+    
+    // In development, also allow localhost
+    if (process.env.NODE_ENV === 'development' || process.env.REPLIT_CONTEXT === 'testing') {
+      allowedOrigins.push('http://localhost:5000');
+      allowedOrigins.push('http://127.0.0.1:5000');
+    }
+    
+    // In production, allow additional domains from environment variable
+    if (process.env.ALLOWED_ORIGINS) {
+      const origins = process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim());
+      allowedOrigins.push(...origins);
+    }
+    
+    // Check if origin is in allowlist
+    if (allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    // Reject unauthorized origins
+    callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+}));
 
 app.use((req, res, next) => {
   const start = Date.now();
