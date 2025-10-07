@@ -1168,6 +1168,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Check if object is public first (fast path for public objects)
       const aclPolicy = await getObjectAclPolicy(objectFile);
+      console.log('[Object Access] Path:', req.path, 'Visibility:', aclPolicy?.visibility, 'Authenticated:', req.isAuthenticated(), 'User:', req.user?.id, 'IsAdmin:', req.user?.isAdmin);
+      
       if (aclPolicy?.visibility === 'public') {
         // Public objects are accessible to everyone
         if (shouldDownload) {
@@ -1180,12 +1182,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // For private objects, require authentication
       if (!req.isAuthenticated() || !req.user) {
+        console.log('[Object Access] Rejected: Not authenticated');
         return res.sendStatus(401);
       }
       
       // Check access with user credentials and admin status
       const userId = req.user.id;
       const isAdmin = req.user.isAdmin || false;
+      console.log('[Object Access] Checking ACL for user:', userId, 'isAdmin:', isAdmin);
       
       const canAccess = await objectStorageService.canAccessObjectEntity({
         objectFile,
