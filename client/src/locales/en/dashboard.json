@@ -53,7 +53,18 @@
     },
     "stage_locked": "Complete previous stage to unlock",
     "stage_current": "Current Stage",
-    "stage_completed": "Completed"
+    "stage_completed": "Completed",
+    "evidence_submitted": "Submitted:",
+    "evidence_approved": "Approved:",
+    "evidence_items_submitted": "{{count}} evidence submitted",
+    "no_evidence_submitted": "No evidence submitted yet",
+    "evidence_items_approved": "{{approved}} / {{required}} evidence approved",
+    "audit_quiz_completed": "Audit quiz completed",
+    "audit_quiz_pending": "Audit quiz required",
+    "more_needed": "{{count}} more needed",
+    "audit_quiz_required": "Audit Quiz: Required",
+    "audit_quiz_required_bullet": "Audit quiz required",
+    "evidence_needed": "{{count}} more evidence needed"
   },
   "evidence": {
     "title": "Evidence Submissions",

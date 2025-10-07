@@ -53,7 +53,18 @@
     },
     "stage_locked": "Ολοκληρώστε το προηγούμενο στάδιο για ξεκλείδωμα",
     "stage_current": "Τρέχον Στάδιο",
-    "stage_completed": "Ολοκληρώθηκε"
+    "stage_completed": "Ολοκληρώθηκε",
+    "evidence_submitted": "Υποβλήθηκαν:",
+    "evidence_approved": "Εγκρίθηκαν:",
+    "evidence_items_submitted": "{{count}} αποδεικτικά υποβλήθηκαν",
+    "no_evidence_submitted": "Δεν υποβλήθηκαν αποδεικτικά ακόμη",
+    "evidence_items_approved": "{{approved}} / {{required}} αποδεικτικά εγκρίθηκαν",
+    "audit_quiz_completed": "Το κουίζ ελέγχου ολοκληρώθηκε",
+    "audit_quiz_pending": "Το κουίζ ελέγχου απαιτείται",
+    "more_needed": "Χρειάζονται άλλα {{count}}",
+    "audit_quiz_required": "Κουίζ Ελέγχου: Απαιτείται",
+    "audit_quiz_required_bullet": "Απαιτείται κουίζ ελέγχου",
+    "evidence_needed": "Χρειάζονται άλλα {{count}} αποδεικτικά"
   },
   "evidence": {
     "title": "Υποβολές Αποδεικτικών",

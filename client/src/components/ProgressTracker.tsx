@@ -4,9 +4,9 @@ import { CheckCircle, Circle, Lock, Lightbulb, Search, Hand } from "lucide-react
 import { useTranslation } from "react-i18next";
 
 interface EvidenceCounts {
-  inspire: { total: number; approved: number };
-  investigate: { total: number; approved: number; hasQuiz: boolean };
-  act: { total: number; approved: number };
+  inspire?: { total: number; approved: number };
+  investigate?: { total: number; approved: number; hasQuiz: boolean };
+  act?: { total: number; approved: number };
 }
 
 interface ProgressTrackerProps {
@@ -35,11 +35,6 @@ export default function ProgressTracker({
       icon: Lightbulb,
       completed: inspireCompleted,
       color: 'pcs_blue',
-      activities: [
-        { name: t('progress.inspire.activities.assembly_presentation'), completed: inspireCompleted },
-        { name: t('progress.inspire.activities.student_engagement'), completed: inspireCompleted },
-        { name: t('progress.inspire.activities.evidence_submission'), completed: inspireCompleted },
-      ],
     },
     {
       id: 'investigate',
@@ -48,11 +43,6 @@ export default function ProgressTracker({
       icon: Search,
       completed: investigateCompleted,
       color: 'teal',
-      activities: [
-        { name: t('progress.investigate.activities.plastic_audit'), completed: investigateCompleted },
-        { name: t('progress.investigate.activities.data_collection'), completed: investigateCompleted },
-        { name: t('progress.investigate.activities.evidence_review'), completed: investigateCompleted },
-      ],
     },
     {
       id: 'act',
@@ -61,11 +51,6 @@ export default function ProgressTracker({
       icon: Hand,
       completed: actCompleted,
       color: 'coral',
-      activities: [
-        { name: t('progress.act.activities.action_plan'), completed: actCompleted },
-        { name: t('progress.act.activities.implementation'), completed: actCompleted },
-        { name: t('progress.act.activities.impact_measurement'), completed: actCompleted },
-      ],
     },
   ];
 
@@ -75,12 +60,23 @@ export default function ProgressTracker({
     return 'locked';
   };
 
+  const getRequiredCount = (stageId: string): number => {
+    switch (stageId) {
+      case 'inspire': return 3;
+      case 'investigate': return 2;
+      case 'act': return 3;
+      default: return 3;
+    }
+  };
+
   const getProgressPercentage = (stage: any) => {
     if (stage.completed) return 100;
     if (currentStage === stage.id) {
-      // Calculate based on completed activities
-      const completedActivities = stage.activities.filter((a: any) => a.completed).length;
-      return Math.round((completedActivities / stage.activities.length) * 100);
+      const stageId = stage.id as keyof EvidenceCounts;
+      const counts = evidenceCounts?.[stageId];
+      if (!counts || typeof counts.approved !== 'number') return 0;
+      const required = getRequiredCount(stageId);
+      return Math.round((counts.approved / required) * 100);
     }
     return 0;
   };
@@ -109,71 +105,6 @@ export default function ProgressTracker({
       default:
         return 'bg-gradient-to-r from-blue-500 to-blue-600';
     }
-  };
-
-  const CircularProgress = ({ percentage, color, completed }: { percentage: number, color: string, completed: boolean }) => {
-    const radius = 45;
-    const circumference = 2 * Math.PI * radius;
-    const strokeDasharray = circumference;
-    const strokeDashoffset = circumference - (percentage / 100) * circumference;
-    
-    // Define proper color maps for gradients
-    const colorMap: Record<string, { primary: string; secondary: string }> = {
-      'pcs_blue': { primary: '#4f94d4', secondary: '#3b82f6' },
-      'teal': { primary: '#14b8a6', secondary: '#0d9488' },
-      'coral': { primary: '#f97316', secondary: '#ea580c' },
-    };
-    
-    const colors = colorMap[color] || { primary: '#4f94d4', secondary: '#3b82f6' };
-    const gradientBgId = `gradient-bg-${color}-${Math.random().toString(36).substr(2, 9)}`;
-    const gradientProgressId = `gradient-progress-${color}-${Math.random().toString(36).substr(2, 9)}`;
-
-    return (
-      <div className="relative w-32 h-32 mx-auto mb-6">
-        <svg className="w-32 h-32 transform -rotate-90" viewBox="0 0 108 108">
-          <defs>
-            <linearGradient id={gradientBgId} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#f3f4f6" />
-              <stop offset="100%" stopColor="#e5e7eb" />
-            </linearGradient>
-            <linearGradient id={gradientProgressId} x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor={completed ? '#10b981' : colors.primary} />
-              <stop offset="100%" stopColor={completed ? '#059669' : colors.secondary} />
-            </linearGradient>
-          </defs>
-          <circle
-            strokeWidth="6"
-            stroke={`url(#${gradientBgId})`}
-            fill="transparent"
-            r={radius}
-            cx="54"
-            cy="54"
-          />
-          <circle
-            strokeWidth="6"
-            strokeDasharray={strokeDasharray}
-            strokeDashoffset={strokeDashoffset}
-            strokeLinecap="round"
-            stroke={`url(#${gradientProgressId})`}
-            fill="transparent"
-            r={radius}
-            cx="54"
-            cy="54"
-            style={{ 
-              transition: 'stroke-dashoffset 1s ease-out',
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-            }}
-          />
-        </svg>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center">
-            <span className={`text-2xl font-bold ${completed ? 'text-green-500' : 'text-navy'}`}>
-              {percentage}%
-            </span>
-          </div>
-        </div>
-      </div>
-    );
   };
 
   return (
@@ -273,30 +204,96 @@ export default function ProgressTracker({
                 </div>
               </div>
 
-              {/* Activities List */}
+              {/* Evidence-Based Progress Items */}
               <div className="space-y-2 flex-grow">
-                {stage.activities.map((activity, activityIndex) => (
-                  <div 
-                    key={activityIndex}
-                    className={`flex items-center gap-2 p-2 rounded text-sm ${
-                      activity.completed ? 'bg-green-50 text-green-700' :
-                      status === 'current' ? 'bg-blue-50 text-blue-700' :
-                      'bg-gray-50 text-gray-500'
-                    }`}
-                    data-testid={`activity-${stage.id}-${activityIndex}`}
-                  >
-                    <div className="flex-shrink-0">
-                      {activity.completed ? (
-                        <CheckCircle className="h-4 w-4 text-green-500" />
-                      ) : status === 'locked' ? (
-                        <Lock className="h-4 w-4 text-gray-400" />
-                      ) : (
-                        <Circle className="h-4 w-4 text-gray-400" />
+                {(() => {
+                  const stageId = stage.id as keyof EvidenceCounts;
+                  const counts = evidenceCounts?.[stageId];
+                  const requiredCount = getRequiredCount(stageId);
+                  const total = counts?.total ?? 0;
+                  const approved = counts?.approved ?? 0;
+                  
+                  return (
+                    <>
+                      <div 
+                        className={`flex items-center gap-2 p-2 rounded text-sm ${
+                          total > 0 ? 'bg-blue-50 text-blue-700' :
+                          status === 'locked' ? 'bg-gray-50 text-gray-500' :
+                          'bg-gray-50 text-gray-500'
+                        }`}
+                        data-testid={`evidence-submitted-${stage.id}`}
+                      >
+                        <div className="flex-shrink-0">
+                          {total > 0 ? (
+                            <CheckCircle className="h-4 w-4 text-blue-500" />
+                          ) : status === 'locked' ? (
+                            <Lock className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <Circle className="h-4 w-4 text-gray-400" />
+                          )}
+                        </div>
+                        <span className="font-medium">
+                          {total > 0 
+                            ? t('progress.evidence_items_submitted', { count: total }) || `${total} evidence submitted`
+                            : t('progress.no_evidence_submitted') || 'No evidence submitted yet'
+                          }
+                        </span>
+                      </div>
+                      
+                      <div 
+                        className={`flex items-center gap-2 p-2 rounded text-sm ${
+                          approved >= requiredCount ? 'bg-green-50 text-green-700' :
+                          approved > 0 ? 'bg-yellow-50 text-yellow-700' :
+                          status === 'locked' ? 'bg-gray-50 text-gray-500' :
+                          'bg-gray-50 text-gray-500'
+                        }`}
+                        data-testid={`evidence-approved-${stage.id}`}
+                      >
+                        <div className="flex-shrink-0">
+                          {approved >= requiredCount ? (
+                            <CheckCircle className="h-4 w-4 text-green-500" />
+                          ) : approved > 0 ? (
+                            <CheckCircle className="h-4 w-4 text-yellow-500" />
+                          ) : status === 'locked' ? (
+                            <Lock className="h-4 w-4 text-gray-400" />
+                          ) : (
+                            <Circle className="h-4 w-4 text-gray-400" />
+                          )}
+                        </div>
+                        <span className="font-medium">
+                          {t('progress.evidence_items_approved', { approved, required: requiredCount }) || `${approved} / ${requiredCount} evidence approved`}
+                        </span>
+                      </div>
+                      
+                      {stageId === 'investigate' && counts && 'hasQuiz' in counts && (
+                        <div 
+                          className={`flex items-center gap-2 p-2 rounded text-sm ${
+                            counts.hasQuiz ? 'bg-green-50 text-green-700' :
+                            status === 'locked' ? 'bg-gray-50 text-gray-500' :
+                            'bg-gray-50 text-gray-500'
+                          }`}
+                          data-testid={`audit-quiz-${stage.id}`}
+                        >
+                          <div className="flex-shrink-0">
+                            {counts.hasQuiz ? (
+                              <CheckCircle className="h-4 w-4 text-green-500" />
+                            ) : status === 'locked' ? (
+                              <Lock className="h-4 w-4 text-gray-400" />
+                            ) : (
+                              <Circle className="h-4 w-4 text-gray-400" />
+                            )}
+                          </div>
+                          <span className="font-medium">
+                            {counts.hasQuiz 
+                              ? t('progress.audit_quiz_completed') || 'Audit quiz completed'
+                              : t('progress.audit_quiz_pending') || 'Audit quiz required'
+                            }
+                          </span>
+                        </div>
                       )}
-                    </div>
-                    <span className="font-medium">{activity.name}</span>
-                  </div>
-                ))}
+                    </>
+                  );
+                })()}
               </div>
 
               {/* Evidence Progress - only show for current or completed stages */}
@@ -304,45 +301,47 @@ export default function ProgressTracker({
                 <div className="mt-4 pt-4 border-t flex-shrink-0">
                   {(() => {
                     const stageId = stage.id as keyof EvidenceCounts;
-                    const counts = evidenceCounts[stageId];
-                    const requiredCount = 3;
+                    const counts = evidenceCounts?.[stageId];
+                    const requiredCount = getRequiredCount(stageId);
                     const isInvestigate = stageId === 'investigate';
-                    const needsMore = requiredCount - counts.approved;
+                    const total = counts?.total ?? 0;
+                    const approved = counts?.approved ?? 0;
+                    const needsMore = requiredCount - approved;
                     
                     return (
                       <div className="space-y-2">
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Submitted:</span>
+                          <span className="text-gray-600">{t('progress.evidence_submitted')}</span>
                           <span className="font-semibold text-navy" data-testid={`${stageId}-submitted`}>
-                            {counts.total}
+                            {total}
                           </span>
                         </div>
                         <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">Approved:</span>
+                          <span className="text-gray-600">{t('progress.evidence_approved')}</span>
                           <span 
-                            className={`font-bold text-lg ${counts.approved >= requiredCount ? 'text-green-600' : 'text-yellow-600'}`}
+                            className={`font-bold text-lg ${approved >= requiredCount ? 'text-green-600' : 'text-yellow-600'}`}
                             data-testid={`${stageId}-approved`}
                           >
-                            {counts.approved} / {requiredCount}
+                            {approved} / {requiredCount}
                           </span>
                         </div>
                         
                         {needsMore > 0 && (
                           <div className="text-xs text-gray-500 flex items-center gap-1" data-testid={`${stageId}-needs-more`}>
                             <Circle className="h-3 w-3" />
-                            <span>{needsMore} more needed</span>
+                            <span>{t('progress.more_needed', { count: needsMore })}</span>
                           </div>
                         )}
                         
-                        {isInvestigate && 'hasQuiz' in counts && !counts.hasQuiz && (
+                        {isInvestigate && counts && 'hasQuiz' in counts && !counts.hasQuiz && (
                           <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs" data-testid="audit-quiz-required">
                             <div className="flex items-start gap-2">
                               <Lock className="h-3 w-3 text-red-600 mt-0.5 flex-shrink-0" />
                               <div className="flex-1">
-                                <p className="font-semibold text-red-900 mb-1">Audit Quiz: Required</p>
+                                <p className="font-semibold text-red-900 mb-1">{t('progress.audit_quiz_required')}</p>
                                 <p className="text-red-700">
-                                  • Audit quiz required<br/>
-                                  • {Math.max(0, 2 - counts.approved)} more evidence needed
+                                  • {t('progress.audit_quiz_required_bullet')}<br/>
+                                  • {t('progress.evidence_needed', { count: Math.max(0, requiredCount - approved) })}
                                 </p>
                               </div>
                             </div>
