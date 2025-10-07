@@ -222,32 +222,13 @@ export default function Landing() {
               {/* CTA Button with Enhanced Animation - Minimum 44x44px touch target */}
               <Button 
                 size="lg"
-                className="btn-primary px-6 py-3 sm:px-8 sm:py-4 text-lg sm:text-xl mb-6 sm:mb-8 group min-h-[44px] min-w-[44px]"
+                className="btn-primary px-6 py-3 sm:px-8 sm:py-4 text-lg sm:text-xl group min-h-[44px] min-w-[44px]"
                 onClick={() => window.location.href = '/register'}
                 data-testid="button-register-school"
               >
                 {t('hero.cta_primary')}
                 <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
               </Button>
-
-              {/* Simple Trust Indicators - Mobile optimized text size (min 14px) */}
-              <div className="flex flex-wrap justify-center items-center gap-3 sm:gap-6 text-sm sm:text-base text-gray-700 font-medium">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="w-4 h-4 text-ocean-blue" />
-                  <span className="hidden sm:inline">{t('hero.trust_indicators.curriculum_aligned')}</span>
-                  <span className="sm:hidden">Curriculum Aligned</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Recycle className="w-4 h-4 text-teal" />
-                  <span className="hidden sm:inline">{t('hero.trust_indicators.proven_impact')}</span>
-                  <span className="sm:hidden">Proven Impact</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Heart className="w-4 h-4 text-coral" />
-                  <span className="hidden sm:inline">{t('hero.trust_indicators.completely_free')}</span>
-                  <span className="sm:hidden">Free</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
