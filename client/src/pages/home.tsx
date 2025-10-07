@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import ProgressTracker from "@/components/ProgressTracker";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
+import { AuditQuizPlaceholder } from "@/components/AuditQuizPlaceholder";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner, ErrorState } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
@@ -621,6 +622,13 @@ export default function Home() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Audit Quiz Placeholder */}
+        {school.currentStage === 'investigate' && !evidenceCounts.investigate.hasQuiz && (
+          <div className="mb-8" data-testid="audit-quiz-section">
+            <AuditQuizPlaceholder />
+          </div>
+        )}
 
         {/* Enhanced Quick Actions */}
         <div className="mb-12">
