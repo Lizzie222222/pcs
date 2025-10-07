@@ -171,7 +171,7 @@ export const defaultStructuredData = {
   url: 'https://plasticclever.replit.app',
   logo: 'https://plasticclever.replit.app/assets/Logo_1757848498470.png',
   sameAs: [
-    'https://www.instagram.com/plasticclever'
+    'https://www.instagram.com/plastic_clever_schools'
   ],
   educationalCredentialAwarded: 'Plastic Clever Schools Certificate',
   offers: {

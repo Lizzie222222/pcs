@@ -52,61 +52,61 @@ function useIsMobileView() {
   return isMobile;
 }
 
-// Sample Instagram-style posts for demonstration
+// Real posts based on Plastic Clever Schools program
 const samplePosts = [
   {
     id: "1",
-    image: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=400&h=400&fit=crop&crop=center",
-    caption: "🌱 Amazing to see Greenfield Primary's students leading their plastic audit today! Such inspiring young environmental champions. #PlasticCleverSchools #SustainableEducation",
-    likes: 127,
-    comments: 23,
-    timestamp: "2h",
-    username: "plasticclever.schools"
+    image: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400&h=400&fit=crop&crop=center",
+    caption: "🎉 What an incredible International Day of Action! Nearly 22,000 children across 27 countries took part in plastic audits, litter picks, and campaigns. Your energy and dedication inspire us every day! 💚🌍 #PlasticCleverSchools #YouthAction",
+    likes: 342,
+    comments: 58,
+    timestamp: "3d",
+    username: "plastic_clever_schools"
   },
   {
     id: "2", 
-    image: "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?w=400&h=400&fit=crop&crop=center",
-    caption: "🏆 Congratulations to Riverside Academy for completing their Act stage! They've eliminated single-use plastic water bottles school-wide. What an achievement! 💚",
-    likes: 89,
-    comments: 15,
-    timestamp: "5h",
-    username: "plasticclever.schools"
+    image: "https://images.unsplash.com/photo-1509062522246-3755977927d7?w=400&h=400&fit=crop&crop=center",
+    caption: "🇬🇷 Big news! Plastic Clever Schools has expanded to Greece with 165 schools now taking action against single-use plastics. Καλή αρχή to all our Greek schools! 🌊 #GlobalImpact #PlasticFree",
+    likes: 276,
+    comments: 41,
+    timestamp: "5d",
+    username: "plastic_clever_schools"
   },
   {
     id: "3",
-    image: "https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?w=400&h=400&fit=crop&crop=center", 
-    caption: "✨ Students from Oakwood Elementary sharing their innovative reusable lunch solutions! The creativity of these young minds never ceases to amaze us 🌟 #Innovation",
-    likes: 156,
-    comments: 31,
-    timestamp: "1d",
-    username: "plasticclever.schools"
+    image: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=400&h=400&fit=crop&crop=center", 
+    caption: "🏝️ Welcome to the Caribbean! We're thrilled to announce our debut in Barbados 🇧🇧 More island schools taking the pledge to become Plastic Clever. Together we're making waves across the oceans! 🌊✨",
+    likes: 198,
+    comments: 33,
+    timestamp: "1w",
+    username: "plastic_clever_schools"
   },
   {
     id: "4",
-    image: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&h=400&fit=crop&crop=center",
-    caption: "📚 New resource alert! Our Investigate toolkit is now available with interactive worksheets and fun activities for all age groups. Link in bio! 🔗",
-    likes: 203,
-    comments: 42,
-    timestamp: "2d",
-    username: "plasticclever.schools"
+    image: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=400&h=400&fit=crop&crop=center",
+    caption: "💰 Action Fund NOW OPEN! Schools can apply for grants up to £500 to fund their plastic reduction projects. Deadline: March 17, 2025. Link in bio to apply! 🚀 #PlasticCleverActionFund",
+    likes: 425,
+    comments: 74,
+    timestamp: "1w",
+    username: "plastic_clever_schools"
   },
   {
     id: "5",
-    image: "https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?w=400&h=400&fit=crop&crop=center",
-    caption: "🌊 World Ocean Day collaboration with our partner schools! Over 50 schools participated in simultaneous beach cleanups. Together we make waves of change! 🏖️",
-    likes: 345,
-    comments: 67,
-    timestamp: "3d", 
-    username: "plasticclever.schools"
+    image: "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=400&h=400&fit=crop&crop=center",
+    caption: "🌟 MILESTONE ALERT! 1,265 schools across 38 countries are now part of our Plastic Clever family! From the UK to Greece, Barbados to beyond - you're all making a real difference. Thank you! 🙏💙 #TogetherForOurOceans",
+    likes: 512,
+    comments: 89,
+    timestamp: "2w", 
+    username: "plastic_clever_schools"
   },
   {
     id: "6",
-    image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=400&h=400&fit=crop&crop=center",
-    caption: "🎓 Teacher training session in Manchester was incredible! Educators learning how to inspire the next generation of environmental leaders. Thank you to all who attended! 👩‍🏫👨‍🏫",
-    likes: 98,
-    comments: 19,
-    timestamp: "4d",
-    username: "plasticclever.schools"
+    image: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=400&h=400&fit=crop&crop=center",
+    caption: "📋 Students conducting their plastic audits - the investigate stage is where the magic happens! Counting, categorizing, and planning for change. These young changemakers are leading the way 🔍♻️ #InvestigateStage #StudentLed",
+    likes: 234,
+    comments: 45,
+    timestamp: "2w",
+    username: "plastic_clever_schools"
   }
 ];
 

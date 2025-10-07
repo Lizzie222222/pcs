@@ -457,14 +457,14 @@ export default function Landing() {
             </p>
             <div className="flex justify-center mt-6">
               <a 
-                href="https://instagram.com/plasticclever.schools" 
+                href="https://instagram.com/plastic_clever_schools" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl min-h-[44px]"
                 data-testid="button-follow-instagram"
               >
                 <Instagram className="w-5 h-5" />
-                <span className="hidden sm:inline">Follow @plasticclever.schools</span>
+                <span className="hidden sm:inline">Follow @plastic_clever_schools</span>
                 <span className="sm:hidden">Follow Us</span>
               </a>
             </div>
