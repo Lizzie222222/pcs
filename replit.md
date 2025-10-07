@@ -4,6 +4,12 @@
 This project is a comprehensive web application for the Plastic Clever Schools program, aiming to reduce plastic usage in schools. It features a public-facing website and an integrated CRM system. The platform guides schools through a three-stage plastic reduction program (Inspire, Investigate, Act), offering educational resources, evidence submission tracking, case study showcasing, and administrative tools for managing school participation and progress. The business vision is to empower schools to become environmentally responsible and to scale the program's reach and impact.
 
 ## Recent Changes (October 2025)
+### PDF Preview and Authentication Fixes (October 7, 2025)
+-   **CORS Configuration**: Added secure CORS middleware using `cors` package to allow credentials from approved origins (REPLIT_DOMAINS for dev, ALLOWED_ORIGINS for production)
+-   **Admin ACL Bypass**: Enhanced ACL system with admin permissions - platform admins can now access all private objects regardless of ownership
+-   **Public/Private Object Routing**: Improved `/objects/*` route to efficiently serve public objects without auth check and private objects with proper authentication
+-   **PDF Preview Fix**: Resolved PDF preview errors for admins by ensuring pdf.js can properly authenticate when loading PDF documents
+
 ### File Thumbnail and Download Fixes (October 6, 2025)
 -   **Thumbnail Display**: Fixed "Access Denied" errors for evidence file thumbnails by ensuring files are served through authenticated backend endpoint (`/objects/*`)
 -   **Video Thumbnails**: Implemented HTML5 video element with `preload="metadata"` to display first frame of videos as thumbnails instead of generic placeholders
