@@ -4,6 +4,14 @@
 This project is a comprehensive web application for the Plastic Clever Schools program, aiming to reduce plastic usage in schools. It features a public-facing website and an integrated CRM system. The platform guides schools through a three-stage plastic reduction program (Inspire, Investigate, Act), offering educational resources, evidence submission tracking, case study showcasing, and administrative tools for managing school participation and progress. The business vision is to empower schools to become environmentally responsible and to scale the program's reach and impact.
 
 ## Recent Changes (October 2025)
+### Evidence Deletion and Stage Lock Fixes (October 7, 2025)
+-   **Evidence Deletion Feature**: Added ability for schools to delete pending evidence submissions with proper authorization
+-   **Delete Endpoint**: Implemented DELETE /api/evidence/:id endpoint with school membership validation (any school member can delete pending evidence, not just the submitter)
+-   **Delete UI**: Added delete button with trash icon to Recent Activity section for pending evidence, includes confirmation dialog before deletion
+-   **Stage Lock Validation**: Fixed critical bug where evidence could be submitted to locked stages - now enforces stage progression (Inspire always unlocked, Investigate requires Inspire completion, Act requires Investigate completion)
+-   **Authorization Fix**: Evidence submission now properly validates stage unlock status before accepting submissions
+-   **Internationalization**: Added Greek and English translations for deletion confirmation dialogs and success/error messages
+
 ### Dashboard Evidence Progress Integration (October 7, 2025)
 -   **Unified Progress Display**: Integrated evidence tracking directly into Program Progress stage cards, removing the redundant separate "Evidence Progress" section
 -   **Evidence Metrics**: Each stage card now shows submitted count, approved/required ratio, and remaining evidence needed
