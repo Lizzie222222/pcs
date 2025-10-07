@@ -337,29 +337,31 @@ export default function EvidenceSubmissionForm({
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-              {/* Program Stage */}
-              <FormField
-                control={form.control}
-                name="stage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('forms:evidence_submission.stage')} *</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-program-stage">
-                          <SelectValue placeholder={t('forms:evidence_submission.stage_placeholder')} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="inspire">{t('forms:evidence_submission.stage_inspire')}</SelectItem>
-                        <SelectItem value="investigate">{t('forms:evidence_submission.stage_investigate')}</SelectItem>
-                        <SelectItem value="act">{t('forms:evidence_submission.stage_act')}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {/* Program Stage - only show if not pre-selected */}
+              {!preSelectedStage && (
+                <FormField
+                  control={form.control}
+                  name="stage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t('forms:evidence_submission.stage')} *</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-program-stage">
+                            <SelectValue placeholder={t('forms:evidence_submission.stage_placeholder')} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="inspire">{t('forms:evidence_submission.stage_inspire')}</SelectItem>
+                          <SelectItem value="investigate">{t('forms:evidence_submission.stage_investigate')}</SelectItem>
+                          <SelectItem value="act">{t('forms:evidence_submission.stage_act')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              )}
 
               {/* Evidence Title */}
               <FormField
