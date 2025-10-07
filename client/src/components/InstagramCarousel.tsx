@@ -126,8 +126,9 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
   const isMobile = useIsMobileView();
 
   // Calculate total pages (slides) - showing postsPerView posts per slide
+  // Only create slides that have posts
   const totalSlides = Math.ceil(samplePosts.length / postsPerView);
-  const maxIndex = Math.max(0, totalSlides - 1);
+  const maxIndex = totalSlides - 1;
 
   // Reset to first slide when postsPerView changes to avoid showing empty slides
   useEffect(() => {
@@ -249,18 +250,24 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
             }`}
             style={{ 
               transform: `translateX(-${currentIndex * 100}%)`,
-              width: `${totalSlides * 100}%`
             }}
           >
-            {Array.from({ length: totalSlides }, (_, slideIndex) => (
-              <div
-                key={slideIndex}
-                className={`flex ${isMobile ? 'gap-4' : 'gap-6'}`}
-                style={{ width: `${100 / totalSlides}%` }}
-              >
-                {samplePosts
-                  .slice(slideIndex * postsPerView, (slideIndex + 1) * postsPerView)
-                  .map((post) => (
+            {Array.from({ length: totalSlides }, (_, slideIndex) => {
+              const slidePosts = samplePosts.slice(
+                slideIndex * postsPerView, 
+                (slideIndex + 1) * postsPerView
+              );
+              
+              // Only render slides that have posts
+              if (slidePosts.length === 0) return null;
+              
+              return (
+                <div
+                  key={slideIndex}
+                  className={`flex ${isMobile ? 'gap-4' : 'gap-6'} flex-shrink-0`}
+                  style={{ width: '100%' }}
+                >
+                  {slidePosts.map((post) => (
                     <div
                       key={post.id}
                       className="flex-shrink-0"
@@ -269,8 +276,9 @@ export default function InstagramCarousel({ className = "" }: InstagramCarouselP
                       <InstagramPost post={post} />
                     </div>
                   ))}
-              </div>
-            ))}
+                </div>
+              );
+            })}
           </div>
         </div>
 
