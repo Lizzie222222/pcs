@@ -72,6 +72,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
+import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
 
 interface AdminStats {
   totalSchools: number;
@@ -91,6 +92,7 @@ interface PendingEvidence {
   schoolId: string;
   submittedBy: string;
   files: any[];
+  videoLinks: string | null;
 }
 
 interface SchoolData {
@@ -4453,7 +4455,8 @@ export default function Admin() {
                               ) : null;
                             })()}
                           </div>
-                          <p className="text-gray-600 mb-3">{evidence.description}</p>
+                          <p className="text-gray-600 mb-2">{evidence.description}</p>
+                          <EvidenceVideoLinks videoLinks={evidence.videoLinks} />
                           <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
                             <span>School ID: {evidence.schoolId}</span>
                             <span>Submitted: {new Date(evidence.submittedAt).toLocaleDateString()}</span>
