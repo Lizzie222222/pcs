@@ -6,7 +6,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, type VerificationRequest, users } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, type VerificationRequest, users } from "@shared/schema";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
@@ -1215,6 +1215,138 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting evidence:", error);
       res.status(500).json({ message: "Failed to delete evidence" });
+    }
+  });
+
+  // Evidence Requirements endpoints
+
+  // Get all evidence requirements (public, optional stage filter)
+  app.get('/api/evidence-requirements', async (req, res) => {
+    try {
+      const { stage } = req.query;
+      const requirements = await storage.getEvidenceRequirements(stage as string);
+      res.json(requirements);
+    } catch (error) {
+      console.error("Error fetching evidence requirements:", error);
+      res.status(500).json({ message: "Failed to fetch evidence requirements" });
+    }
+  });
+
+  // Get single evidence requirement (public)
+  app.get('/api/evidence-requirements/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const requirement = await storage.getEvidenceRequirement(id);
+      
+      if (!requirement) {
+        return res.status(404).json({ message: "Evidence requirement not found" });
+      }
+      
+      res.json(requirement);
+    } catch (error) {
+      console.error("Error fetching evidence requirement:", error);
+      res.status(500).json({ message: "Failed to fetch evidence requirement" });
+    }
+  });
+
+  // Create evidence requirement (admin only)
+  app.post('/api/evidence-requirements', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const requirementData = insertEvidenceRequirementSchema.parse(req.body);
+      const requirement = await storage.createEvidenceRequirement(requirementData);
+      
+      console.log(`[Evidence Requirement Created] ID: ${requirement.id}, Stage: ${requirement.stage}, Title: ${requirement.title}`);
+      res.status(201).json(requirement);
+    } catch (error) {
+      console.error("Error creating evidence requirement:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create evidence requirement" });
+    }
+  });
+
+  // Update evidence requirement (admin only)
+  app.patch('/api/evidence-requirements/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      
+      // Validate partial update data
+      const updateData = insertEvidenceRequirementSchema.partial().parse(req.body);
+      
+      const requirement = await storage.updateEvidenceRequirement(id, updateData);
+      
+      if (!requirement) {
+        return res.status(404).json({ message: "Evidence requirement not found" });
+      }
+      
+      console.log(`[Evidence Requirement Updated] ID: ${requirement.id}, Title: ${requirement.title}`);
+      res.json(requirement);
+    } catch (error) {
+      console.error("Error updating evidence requirement:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update evidence requirement" });
+    }
+  });
+
+  // Delete evidence requirement (admin only)
+  app.delete('/api/evidence-requirements/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      
+      // Check if any evidence is linked to this requirement
+      const linkedEvidence = await storage.getEvidenceByRequirement(id);
+      
+      if (linkedEvidence.length > 0) {
+        return res.status(409).json({ 
+          message: "Cannot delete evidence requirement with linked evidence submissions",
+          linkedEvidenceCount: linkedEvidence.length
+        });
+      }
+      
+      const deleted = await storage.deleteEvidenceRequirement(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Evidence requirement not found" });
+      }
+      
+      console.log(`[Evidence Requirement Deleted] ID: ${id}`);
+      res.json({ message: "Evidence requirement deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting evidence requirement:", error);
+      res.status(500).json({ message: "Failed to delete evidence requirement" });
     }
   });
 

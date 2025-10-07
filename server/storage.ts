@@ -4,6 +4,7 @@ import {
   schoolUsers,
   resources,
   evidence,
+  evidenceRequirements,
   caseStudies,
   emailLogs,
   mailchimpAudiences,
@@ -23,6 +24,8 @@ import {
   type InsertResource,
   type Evidence,
   type InsertEvidence,
+  type EvidenceRequirement,
+  type InsertEvidenceRequirement,
   type CaseStudy,
   type InsertCaseStudy,
   type EmailLog,
@@ -152,6 +155,14 @@ export interface IStorage {
   updateEvidenceFiles(id: string, files: any[]): Promise<Evidence | undefined>;
   deleteEvidence(id: string): Promise<boolean>;
   deleteSchool(id: string): Promise<boolean>;
+  
+  // Evidence Requirements operations
+  getEvidenceRequirements(stage?: string): Promise<EvidenceRequirement[]>;
+  getEvidenceRequirement(id: string): Promise<EvidenceRequirement | undefined>;
+  createEvidenceRequirement(data: InsertEvidenceRequirement): Promise<EvidenceRequirement>;
+  updateEvidenceRequirement(id: string, data: Partial<InsertEvidenceRequirement>): Promise<EvidenceRequirement | undefined>;
+  deleteEvidenceRequirement(id: string): Promise<boolean>;
+  getEvidenceByRequirement(requirementId: string): Promise<Evidence[]>;
   
   // Progression system operations
   checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined>;
@@ -1101,6 +1112,70 @@ export class DatabaseStorage implements IStorage {
       console.error("Error deleting school:", error);
       return false;
     }
+  }
+
+  // Evidence Requirements operations
+  async getEvidenceRequirements(stage?: string): Promise<EvidenceRequirement[]> {
+    if (stage) {
+      return await db
+        .select()
+        .from(evidenceRequirements)
+        .where(eq(evidenceRequirements.stage, stage as any))
+        .orderBy(asc(evidenceRequirements.orderIndex));
+    }
+    
+    return await db
+      .select()
+      .from(evidenceRequirements)
+      .orderBy(asc(evidenceRequirements.stage), asc(evidenceRequirements.orderIndex));
+  }
+
+  async getEvidenceRequirement(id: string): Promise<EvidenceRequirement | undefined> {
+    const [requirement] = await db
+      .select()
+      .from(evidenceRequirements)
+      .where(eq(evidenceRequirements.id, id));
+    return requirement;
+  }
+
+  async createEvidenceRequirement(data: InsertEvidenceRequirement): Promise<EvidenceRequirement> {
+    const [requirement] = await db
+      .insert(evidenceRequirements)
+      .values(data)
+      .returning();
+    return requirement;
+  }
+
+  async updateEvidenceRequirement(
+    id: string, 
+    data: Partial<InsertEvidenceRequirement>
+  ): Promise<EvidenceRequirement | undefined> {
+    const [requirement] = await db
+      .update(evidenceRequirements)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(evidenceRequirements.id, id))
+      .returning();
+    return requirement;
+  }
+
+  async deleteEvidenceRequirement(id: string): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(evidenceRequirements)
+        .where(eq(evidenceRequirements.id, id));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error("Error deleting evidence requirement:", error);
+      return false;
+    }
+  }
+
+  async getEvidenceByRequirement(requirementId: string): Promise<Evidence[]> {
+    return await db
+      .select()
+      .from(evidence)
+      .where(eq(evidence.evidenceRequirementId, requirementId))
+      .orderBy(desc(evidence.submittedAt));
   }
 
   // Progression system operations
