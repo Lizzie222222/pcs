@@ -3224,7 +3224,7 @@ function EmailManagementSection({
                         <SelectValue placeholder="All countries" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Countries</SelectItem>
+                        <SelectItem value="all">All Countries</SelectItem>
                         {countryOptions.map((country: any) => (
                           <SelectItem key={country.value} value={country.value}>
                             {country.label}
@@ -3243,7 +3243,7 @@ function EmailManagementSection({
                         <SelectValue placeholder="All stages" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Stages</SelectItem>
+                        <SelectItem value="all">All Stages</SelectItem>
                         <SelectItem value="Stage 1">Stage 1</SelectItem>
                         <SelectItem value="Stage 2">Stage 2</SelectItem>
                         <SelectItem value="Stage 3">Stage 3</SelectItem>
@@ -3508,8 +3508,8 @@ export default function Admin() {
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [schoolFilters, setSchoolFilters] = useState({
     search: '',
-    country: '',
-    stage: '',
+    country: 'all',
+    stage: 'all',
   });
   const [caseStudyFilters, setCaseStudyFilters] = useState({
     search: '',
