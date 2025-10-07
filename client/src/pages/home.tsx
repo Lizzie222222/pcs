@@ -372,6 +372,7 @@ export default function Home() {
             actCompleted={school.actCompleted}
             awardCompleted={school.awardCompleted}
             currentStage={school.currentStage}
+            evidenceCounts={evidenceCounts}
           />
         </div>
 
@@ -496,139 +497,6 @@ export default function Home() {
           </div>
         )}
 
-        {/* Evidence Tracking Display */}
-        <div className="mb-8">
-          <Card className="bg-white shadow-lg border">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold text-navy">Evidence Progress</CardTitle>
-              <p className="text-sm text-gray-600">Track your evidence submissions and approvals for each stage</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {/* Inspire Stage */}
-                <div className="p-4 bg-gradient-to-br from-blue-50 to-white rounded-lg border border-blue-200" data-testid="evidence-inspire">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-10 h-10 bg-pcs_blue rounded-full flex items-center justify-center text-white font-bold">
-                      I
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-navy">Inspire</h3>
-                      <p className="text-xs text-gray-600">Need 3 approved</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Submitted:</span>
-                      <span className="font-semibold text-navy" data-testid="inspire-total">{evidenceCounts.inspire.total}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Approved:</span>
-                      <span className={`font-bold text-lg ${evidenceCounts.inspire.approved >= 3 ? 'text-green-600' : 'text-yellow-600'}`} data-testid="inspire-approved">
-                        {evidenceCounts.inspire.approved} / 3
-                      </span>
-                    </div>
-                    {evidenceCounts.inspire.approved >= 3 ? (
-                      <div className="flex items-center gap-2 text-green-600 text-sm font-medium bg-green-50 p-2 rounded">
-                        <CheckCircle className="h-4 w-4" />
-                        <span>Stage Complete!</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-yellow-600 text-sm bg-yellow-50 p-2 rounded">
-                        <Clock className="h-4 w-4" />
-                        <span>{3 - evidenceCounts.inspire.approved} more needed</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Investigate Stage */}
-                <div className="p-4 bg-gradient-to-br from-teal-50 to-white rounded-lg border border-teal-200" data-testid="evidence-investigate">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-10 h-10 bg-teal rounded-full flex items-center justify-center text-white font-bold">
-                      In
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-navy">Investigate</h3>
-                      <p className="text-xs text-gray-600">Need 2 approved (1 quiz)</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Submitted:</span>
-                      <span className="font-semibold text-navy" data-testid="investigate-total">{evidenceCounts.investigate.total}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Approved:</span>
-                      <span className={`font-bold text-lg ${evidenceCounts.investigate.approved >= 2 ? 'text-green-600' : 'text-yellow-600'}`} data-testid="investigate-approved">
-                        {evidenceCounts.investigate.approved} / 2
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Audit Quiz:</span>
-                      <span className={`font-semibold ${evidenceCounts.investigate.hasQuiz ? 'text-green-600' : 'text-red-600'}`} data-testid="investigate-quiz">
-                        {evidenceCounts.investigate.hasQuiz ? '✓ Complete' : '✗ Required'}
-                      </span>
-                    </div>
-                    {evidenceCounts.investigate.approved >= 2 && evidenceCounts.investigate.hasQuiz ? (
-                      <div className="flex items-center gap-2 text-green-600 text-sm font-medium bg-green-50 p-2 rounded">
-                        <CheckCircle className="h-4 w-4" />
-                        <span>Stage Complete!</span>
-                      </div>
-                    ) : (
-                      <div className="text-yellow-600 text-xs bg-yellow-50 p-2 rounded">
-                        {!evidenceCounts.investigate.hasQuiz && <div>• Audit quiz required</div>}
-                        {evidenceCounts.investigate.approved < 2 && <div>• {2 - evidenceCounts.investigate.approved} more evidence needed</div>}
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Act Stage */}
-                <div className="p-4 bg-gradient-to-br from-coral-50 to-white rounded-lg border border-coral-200" data-testid="evidence-act">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="w-10 h-10 bg-coral rounded-full flex items-center justify-center text-white font-bold">
-                      A
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-navy">Act</h3>
-                      <p className="text-xs text-gray-600">Need 3 approved</p>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Submitted:</span>
-                      <span className="font-semibold text-navy" data-testid="act-total">{evidenceCounts.act.total}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">Approved:</span>
-                      <span className={`font-bold text-lg ${evidenceCounts.act.approved >= 3 ? 'text-green-600' : 'text-yellow-600'}`} data-testid="act-approved">
-                        {evidenceCounts.act.approved} / 3
-                      </span>
-                    </div>
-                    {evidenceCounts.act.approved >= 3 ? (
-                      <div className="flex items-center gap-2 text-green-600 text-sm font-medium bg-green-50 p-2 rounded">
-                        <CheckCircle className="h-4 w-4" />
-                        <span>Stage Complete!</span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2 text-yellow-600 text-sm bg-yellow-50 p-2 rounded">
-                        <Clock className="h-4 w-4" />
-                        <span>{3 - evidenceCounts.act.approved} more needed</span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Audit Quiz Placeholder */}
-        {school.currentStage === 'investigate' && !evidenceCounts.investigate.hasQuiz && (
-          <div className="mb-8" data-testid="audit-quiz-section">
-            <AuditQuizPlaceholder />
-          </div>
-        )}
 
         {/* Enhanced Quick Actions */}
         <div className="mb-12">
