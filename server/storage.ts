@@ -1198,6 +1198,43 @@ export class DatabaseStorage implements IStorage {
         })
         .where(eq(schools.id, schoolId))
         .returning();
+      
+      // Generate certificate for Round 1 completion
+      if (updates.actCompleted && (school.currentRound || 1) === 1) {
+        const existingCertificates = await db
+          .select()
+          .from(certificates)
+          .where(
+            and(
+              eq(certificates.schoolId, schoolId),
+              eq(certificates.stage, 'act')
+            )
+          );
+        
+        // Only create certificate if one doesn't exist for this stage
+        if (existingCertificates.length === 0) {
+          const certificateNumber = `PCSR1-${Date.now()}-${schoolId.substring(0, 8)}`;
+          
+          await db.insert(certificates).values({
+            schoolId,
+            stage: 'act',
+            issuedBy: 'system',
+            certificateNumber,
+            completedDate: new Date(),
+            title: 'Round 1 Completion Certificate',
+            description: 'Successfully completed all three stages (Inspire, Investigate, Act) in Round 1',
+            metadata: {
+              round: 1,
+              achievements: {
+                inspire: counts.inspire.approved,
+                investigate: counts.investigate.approved,
+                act: counts.act.approved
+              }
+            }
+          });
+        }
+      }
+      
       return updated;
     }
 

@@ -1200,6 +1200,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Certificate routes
+  app.get('/api/schools/:schoolId/certificates', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+
+      // Verify user has access to this school
+      const schools = await storage.getUserSchools(userId);
+      const hasAccess = schools.some(s => s.id === schoolId) || req.user.isAdmin;
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "You don't have access to this school" });
+      }
+
+      const certificates = await storage.getCertificatesBySchool(schoolId);
+      res.json(certificates);
+    } catch (error) {
+      console.error("Error fetching certificates:", error);
+      res.status(500).json({ message: "Failed to fetch certificates" });
+    }
+  });
+
+  app.get('/api/certificates/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const certificate = await storage.getCertificate(req.params.id);
+      
+      if (!certificate) {
+        return res.status(404).json({ message: "Certificate not found" });
+      }
+
+      // Verify user has access to this school's certificate (or is admin)
+      const userId = req.user.id;
+      const schools = await storage.getUserSchools(userId);
+      const hasAccess = schools.some(s => s.id === certificate.schoolId) || req.user.isAdmin;
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "You don't have access to this certificate" });
+      }
+
+      res.json(certificate);
+    } catch (error) {
+      console.error("Error fetching certificate:", error);
+      res.status(500).json({ message: "Failed to fetch certificate" });
+    }
+  });
+
+  app.get('/api/certificates/number/:certificateNumber', isAuthenticated, async (req: any, res) => {
+    try {
+      const certificate = await storage.getCertificateByNumber(req.params.certificateNumber);
+      
+      if (!certificate) {
+        return res.status(404).json({ message: "Certificate not found" });
+      }
+
+      // Verify user has access to this school's certificate (or is admin)
+      const userId = req.user.id;
+      const schools = await storage.getUserSchools(userId);
+      const hasAccess = schools.some(s => s.id === certificate.schoolId) || req.user.isAdmin;
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "You don't have access to this certificate" });
+      }
+
+      res.json(certificate);
+    } catch (error) {
+      console.error("Error fetching certificate:", error);
+      res.status(500).json({ message: "Failed to fetch certificate" });
+    }
+  });
+
   // Object storage routes for evidence files
   
   // Serve objects with ACL check (both public and private)

@@ -25,6 +25,15 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 
+interface Certificate {
+  id: string;
+  certificateNumber: string;
+  title: string;
+  completedDate: string;
+  issuedDate: string;
+  stage: string;
+}
+
 interface DashboardData {
   school: {
     id: string;
@@ -97,6 +106,12 @@ export default function Home() {
   const { data: dashboardData, isLoading: isDashboardLoading, error } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
     enabled: isAuthenticated,
+    retry: false,
+  });
+
+  const { data: certificates = [] } = useQuery<Certificate[]>({
+    queryKey: ['/api/schools', dashboardData?.school?.id, 'certificates'],
+    enabled: !!dashboardData?.school?.id,
     retry: false,
   });
 
@@ -425,6 +440,55 @@ export default function Home() {
                       Starting a new round will reset your progress and begin fresh
                     </p>
                   </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Certificate Display */}
+        {certificates.length > 0 && school.roundsCompleted && school.roundsCompleted >= 1 && (
+          <div className="mb-8">
+            <Card className="bg-gradient-to-br from-yellow-50 via-white to-yellow-50 border-2 border-yellow-300 shadow-xl">
+              <CardHeader>
+                <CardTitle className="text-2xl font-bold text-navy flex items-center gap-2">
+                  <Award className="h-6 w-6 text-yellow-500" />
+                  Your Certificates
+                </CardTitle>
+                <p className="text-sm text-gray-600">Download and share your achievements</p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {certificates.map((cert) => (
+                    <div 
+                      key={cert.id}
+                      className="bg-white p-6 rounded-lg border-2 border-yellow-200 shadow-md hover:shadow-lg transition-shadow"
+                      data-testid={`certificate-${cert.id}`}
+                    >
+                      <div className="flex items-start gap-4">
+                        <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
+                          <Award className="h-8 w-8 text-white" />
+                        </div>
+                        <div className="flex-1">
+                          <h3 className="font-bold text-navy mb-1">{cert.title}</h3>
+                          <p className="text-xs text-gray-500 mb-2">
+                            Certificate #{cert.certificateNumber}
+                          </p>
+                          <p className="text-xs text-gray-600 mb-3">
+                            Completed: {new Date(cert.completedDate).toLocaleDateString()}
+                          </p>
+                          <Button
+                            size="sm"
+                            className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
+                            onClick={() => window.open(`/api/certificates/${cert.id}`, '_blank')}
+                            data-testid={`button-view-certificate-${cert.id}`}
+                          >
+                            View Certificate
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </CardContent>
             </Card>
