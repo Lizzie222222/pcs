@@ -1494,6 +1494,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Evidence not found" });
       }
 
+      // Check and update school progression if approved
+      if (status === 'approved') {
+        await storage.checkAndUpdateSchoolProgression(evidence.schoolId);
+      }
+
       // Send notification email
       const user = await storage.getUser(evidence.submittedBy);
       const school = await storage.getSchool(evidence.schoolId);
@@ -1537,6 +1542,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emailsProcessed: 0
       };
 
+      const affectedSchools = new Set<string>();
+
       // Process each evidence submission
       for (const evidenceId of evidenceIds) {
         try {
@@ -1549,6 +1556,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           if (evidence) {
             results.success.push(evidenceId);
+            
+            // Track affected schools for progression check
+            if (status === 'approved') {
+              affectedSchools.add(evidence.schoolId);
+            }
 
             // Send notification email (non-blocking)
             try {
@@ -1572,6 +1584,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } catch (error) {
           console.error(`Error reviewing evidence ${evidenceId}:`, error);
           results.failed.push({ id: evidenceId, reason: 'Review failed' });
+        }
+      }
+
+      // Check progression for all affected schools
+      for (const schoolId of affectedSchools) {
+        try {
+          await storage.checkAndUpdateSchoolProgression(schoolId);
+        } catch (error) {
+          console.warn(`Failed to check progression for school ${schoolId}:`, error);
         }
       }
 
