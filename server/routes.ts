@@ -1180,6 +1180,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Delete pending evidence
+  app.delete('/api/evidence/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+
+      // Get evidence by ID
+      const evidence = await storage.getEvidence(id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+
+      // Check if evidence status is 'pending'
+      if (evidence.status !== 'pending') {
+        return res.status(403).json({ message: "Only pending evidence can be deleted" });
+      }
+
+      // Verify user is a member of the school that submitted the evidence
+      const userSchools = await storage.getUserSchools(userId);
+      const hasPermission = userSchools.some(school => school.id === evidence.schoolId);
+      
+      if (!hasPermission) {
+        return res.status(403).json({ message: "You don't have permission to delete this evidence" });
+      }
+
+      // Delete the evidence
+      const deleted = await storage.deleteEvidence(id);
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete evidence" });
+      }
+
+      res.json({ message: "Evidence deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting evidence:", error);
+      res.status(500).json({ message: "Failed to delete evidence" });
+    }
+  });
+
   // Start a new round for the school
   app.post('/api/schools/:schoolId/start-round', isAuthenticated, async (req: any, res) => {
     try {
