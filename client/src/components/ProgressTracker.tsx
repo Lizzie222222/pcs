@@ -296,63 +296,6 @@ export default function ProgressTracker({
                 })()}
               </div>
 
-              {/* Evidence Progress - only show for current or completed stages */}
-              {status !== 'locked' && (
-                <div className="mt-4 pt-4 border-t flex-shrink-0">
-                  {(() => {
-                    const stageId = stage.id as keyof EvidenceCounts;
-                    const counts = evidenceCounts?.[stageId];
-                    const requiredCount = getRequiredCount(stageId);
-                    const isInvestigate = stageId === 'investigate';
-                    const total = counts?.total ?? 0;
-                    const approved = counts?.approved ?? 0;
-                    const needsMore = requiredCount - approved;
-                    
-                    return (
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">{t('progress.evidence_submitted')}</span>
-                          <span className="font-semibold text-navy" data-testid={`${stageId}-submitted`}>
-                            {total}
-                          </span>
-                        </div>
-                        <div className="flex items-center justify-between text-sm">
-                          <span className="text-gray-600">{t('progress.evidence_approved')}</span>
-                          <span 
-                            className={`font-bold text-lg ${approved >= requiredCount ? 'text-green-600' : 'text-yellow-600'}`}
-                            data-testid={`${stageId}-approved`}
-                          >
-                            {approved} / {requiredCount}
-                          </span>
-                        </div>
-                        
-                        {needsMore > 0 && (
-                          <div className="text-xs text-gray-500 flex items-center gap-1" data-testid={`${stageId}-needs-more`}>
-                            <Circle className="h-3 w-3" />
-                            <span>{t('progress.more_needed', { count: needsMore })}</span>
-                          </div>
-                        )}
-                        
-                        {isInvestigate && counts && 'hasQuiz' in counts && !counts.hasQuiz && (
-                          <div className="mt-2 p-2 bg-red-50 border border-red-200 rounded text-xs" data-testid="audit-quiz-required">
-                            <div className="flex items-start gap-2">
-                              <Lock className="h-3 w-3 text-red-600 mt-0.5 flex-shrink-0" />
-                              <div className="flex-1">
-                                <p className="font-semibold text-red-900 mb-1">{t('progress.audit_quiz_required')}</p>
-                                <p className="text-red-700">
-                                  • {t('progress.audit_quiz_required_bullet')}<br/>
-                                  • {t('progress.evidence_needed', { count: Math.max(0, requiredCount - approved) })}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
-
               {status === 'locked' && (
                 <div className="text-center mt-4 pt-4 border-t flex-shrink-0">
                   <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full">
