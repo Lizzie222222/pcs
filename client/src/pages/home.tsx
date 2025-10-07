@@ -8,6 +8,7 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import ProgressTracker from "@/components/ProgressTracker";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import { AuditQuizPlaceholder } from "@/components/AuditQuizPlaceholder";
+import TeamManagement from "@/pages/TeamManagement";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner, ErrorState } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
@@ -33,10 +34,13 @@ import {
   Award,
   MapPin,
   AlertCircle,
-  Trash2
+  Trash2,
+  X,
+  Lightbulb
 } from "lucide-react";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 
 interface Certificate {
   id: string;
@@ -76,6 +80,36 @@ interface DashboardData {
   };
 }
 
+interface AnalyticsData {
+  reviewStats: {
+    approvedCount: number;
+    pendingCount: number;
+    rejectedCount: number;
+    averageReviewTimeHours: number;
+  };
+  submissionTrends: Array<{
+    month: string;
+    count: number;
+  }>;
+  teamContributions: Array<{
+    userId: string;
+    userName: string;
+    submissionCount: number;
+    approvedCount: number;
+  }>;
+  stageTimeline: Array<{
+    stage: string;
+    completedAt: string | null;
+    daysToComplete: number;
+  }>;
+  fileTypeDistribution: {
+    images: number;
+    videos: number;
+    pdfs: number;
+    other: number;
+  };
+}
+
 export default function Home() {
   const { t } = useTranslation('dashboard');
   const { user, isAuthenticated, isLoading } = useAuth();
@@ -85,6 +119,11 @@ export default function Home() {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [evidenceToDelete, setEvidenceToDelete] = useState<string | null>(null);
+  const [dismissedNotifications, setDismissedNotifications] = useState<string[]>(() => {
+    const stored = localStorage.getItem('dismissedEvidenceNotifications');
+    return stored ? JSON.parse(stored) : [];
+  });
+  const [activeTab, setActiveTab] = useState<'progress' | 'analytics' | 'resources' | 'team'>('progress');
 
   // Redirect admins to admin dashboard
   useEffect(() => {
@@ -130,6 +169,11 @@ export default function Home() {
     retry: false,
   });
 
+  const { data: analyticsData, isLoading: analyticsLoading } = useQuery<AnalyticsData>({
+    queryKey: ['/api/schools', dashboardData?.school?.id, 'analytics'],
+    enabled: activeTab === 'analytics' && !!dashboardData?.school?.id,
+  });
+
   // Delete evidence mutation
   const deleteMutation = useMutation({
     mutationFn: async (evidenceId: string) => {
@@ -167,39 +211,12 @@ export default function Home() {
     }
   };
 
-  // Show toast notification for recent status updates (once per session)
-  useEffect(() => {
-    if (dashboardData && !sessionStorage.getItem('notificationsShown')) {
-      const now = new Date();
-      const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-      
-      const recentApproved = dashboardData.recentEvidence.filter(e => 
-        e.status === 'approved' && e.reviewedAt && new Date(e.reviewedAt) > sevenDaysAgo
-      );
-      const recentRejected = dashboardData.recentEvidence.filter(e => 
-        e.status === 'rejected' && e.reviewedAt && new Date(e.reviewedAt) > sevenDaysAgo
-      );
-      
-      if (recentApproved.length > 0 || recentRejected.length > 0) {
-        let message = '';
-        if (recentApproved.length > 0 && recentRejected.length > 0) {
-          message = `${recentApproved.length} approved, ${recentRejected.length} need attention`;
-        } else if (recentApproved.length > 0) {
-          message = `${recentApproved.length} ${recentApproved.length === 1 ? 'submission' : 'submissions'} approved!`;
-        } else {
-          message = `${recentRejected.length} ${recentRejected.length === 1 ? 'submission needs' : 'submissions need'} your attention`;
-        }
-        
-        toast({
-          title: "Evidence Updates",
-          description: message,
-          duration: 5000,
-        });
-        
-        sessionStorage.setItem('notificationsShown', 'true');
-      }
-    }
-  }, [dashboardData, toast]);
+  const dismissNotification = (evidenceId: string) => {
+    const updated = [...dismissedNotifications, evidenceId];
+    setDismissedNotifications(updated);
+    localStorage.setItem('dismissedEvidenceNotifications', JSON.stringify(updated));
+  };
+
 
   // Handle errors (unauthorized and no school registration)
   useEffect(() => {
@@ -348,354 +365,638 @@ export default function Home() {
           </Card>
         </div>
 
-        {/* Status Notifications */}
-        {(() => {
-          const now = new Date();
-          const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-          
-          const recentApproved = recentEvidence.filter(e => 
-            e.status === 'approved' && e.reviewedAt && new Date(e.reviewedAt) > sevenDaysAgo
-          );
-          const recentRejected = recentEvidence.filter(e => 
-            e.status === 'rejected' && e.reviewedAt && new Date(e.reviewedAt) > sevenDaysAgo
-          );
-          
-          const hasNotifications = recentApproved.length > 0 || recentRejected.length > 0;
-          
-          if (!hasNotifications) return null;
-          
-          return (
-            <div className="mb-8 space-y-3" data-testid="notifications-section">
-              {recentApproved.length > 0 && (
-                <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg shadow-sm animate-fade-in" data-testid="notification-approved">
-                  <div className="flex items-start gap-3">
-                    <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-green-900 mb-1">
-                        🎉 Evidence Approved!
-                      </h3>
-                      <p className="text-sm text-green-800">
-                        {recentApproved.length} {recentApproved.length === 1 ? 'submission has' : 'submissions have'} been approved in the last 7 days. Great work!
-                      </p>
-                      <div className="mt-2 space-y-1">
-                        {recentApproved.map(evidence => (
-                          <div key={evidence.id} className="text-xs text-green-700 font-medium">
-                            ✓ {evidence.title}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {recentRejected.length > 0 && (
-                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm animate-fade-in" data-testid="notification-rejected">
-                  <div className="flex items-start gap-3">
-                    <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-red-900 mb-1">
-                        Action Required
-                      </h3>
-                      <p className="text-sm text-red-800">
-                        {recentRejected.length} {recentRejected.length === 1 ? 'submission needs' : 'submissions need'} your attention. Please review feedback and resubmit.
-                      </p>
-                      <div className="mt-2 space-y-1">
-                        {recentRejected.map(evidence => (
-                          <div key={evidence.id} className="text-xs text-red-700 font-medium">
-                            ✗ {evidence.title}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-          );
-        })()}
-
-        {/* Progress Tracker */}
+        {/* Tab Navigation */}
         <div className="mb-8">
-          <ProgressTracker 
-            inspireCompleted={school.inspireCompleted}
-            investigateCompleted={school.investigateCompleted}
-            actCompleted={school.actCompleted}
-            awardCompleted={school.awardCompleted}
-            currentStage={school.currentStage}
-            evidenceCounts={evidenceCounts}
-            schoolId={school.id}
-          />
+          <div className="bg-white rounded-lg shadow-md p-2 flex gap-2">
+            <Button
+              variant={activeTab === 'progress' ? 'default' : 'ghost'}
+              className={`flex-1 ${activeTab === 'progress' ? 'bg-pcs_blue text-white' : 'text-gray-600'}`}
+              onClick={() => setActiveTab('progress')}
+              data-testid="tab-progress"
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Progress
+            </Button>
+            <Button
+              variant={activeTab === 'analytics' ? 'default' : 'ghost'}
+              className={`flex-1 ${activeTab === 'analytics' ? 'bg-pcs_blue text-white' : 'text-gray-600'}`}
+              onClick={() => setActiveTab('analytics')}
+              data-testid="tab-analytics"
+            >
+              <BarChart3 className="h-4 w-4 mr-2" />
+              Analytics
+            </Button>
+            <Button
+              variant={activeTab === 'resources' ? 'default' : 'ghost'}
+              className={`flex-1 ${activeTab === 'resources' ? 'bg-pcs_blue text-white' : 'text-gray-600'}`}
+              onClick={() => setActiveTab('resources')}
+              data-testid="tab-resources"
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              Resources
+            </Button>
+            <Button
+              variant={activeTab === 'team' ? 'default' : 'ghost'}
+              className={`flex-1 ${activeTab === 'team' ? 'bg-pcs_blue text-white' : 'text-gray-600'}`}
+              onClick={() => setActiveTab('team')}
+              data-testid="tab-team"
+            >
+              <Users className="h-4 w-4 mr-2" />
+              Team
+            </Button>
+          </div>
         </div>
 
-        {/* Round Completion Celebration */}
-        {school.awardCompleted && (
-          <div className="mb-8">
-            <Card className={`${
-              school.currentRound === 1 ? 'bg-gradient-to-br from-blue-50 via-white to-blue-50' :
-              school.currentRound === 2 ? 'bg-gradient-to-br from-purple-50 via-white to-purple-50' :
-              'bg-gradient-to-br from-green-50 via-white to-green-50'
-            } border-4 ${
-              school.currentRound === 1 ? 'border-blue-300' :
-              school.currentRound === 2 ? 'border-purple-300' :
-              'border-green-300'
-            } shadow-2xl`} data-testid="round-completion-card">
-              <CardContent className="p-8 text-center">
-                <div className="mb-6">
-                  <div className="w-24 h-24 mx-auto bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-xl animate-bounce">
-                    <Award className="h-14 w-14 text-white" />
-                  </div>
-                </div>
-                <h2 className="text-3xl font-bold text-navy mb-3">
-                  🎉 Congratulations!
-                </h2>
-                <p className="text-xl text-gray-700 mb-6">
-                  You've completed Round {school.currentRound}!
-                </p>
-                <div className="space-y-4">
-                  <div className="bg-white/80 backdrop-blur rounded-lg p-4 inline-block">
-                    <p className="text-sm text-gray-600 mb-2">Your school has successfully:</p>
-                    <div className="flex items-center gap-2 text-green-600 font-semibold">
-                      <CheckCircle className="h-5 w-5" />
-                      <span>Completed all 3 stages (Inspire → Investigate → Act)</span>
+        {/* Progress Tab Content */}
+        {activeTab === 'progress' && (
+          <>
+            {/* Status Notifications */}
+            {(() => {
+              const now = new Date();
+              const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+              
+              const recentApproved = recentEvidence.filter(e => 
+                e.status === 'approved' && 
+                e.reviewedAt && 
+                new Date(e.reviewedAt) > sevenDaysAgo &&
+                !dismissedNotifications.includes(e.id)
+              );
+              const recentRejected = recentEvidence.filter(e => 
+                e.status === 'rejected' && 
+                e.reviewedAt && 
+                new Date(e.reviewedAt) > sevenDaysAgo &&
+                !dismissedNotifications.includes(e.id)
+              );
+              
+              const hasNotifications = recentApproved.length > 0 || recentRejected.length > 0;
+              
+              if (!hasNotifications) return null;
+              
+              return (
+                <div className="mb-8 space-y-3" data-testid="notifications-section">
+                  {recentApproved.length > 0 && (
+                    <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded-r-lg shadow-sm animate-fade-in relative" data-testid="notification-approved">
+                      <button
+                        onClick={() => recentApproved.forEach(e => dismissNotification(e.id))}
+                        className="absolute top-2 right-2 p-1 rounded-full hover:bg-green-200 transition-colors"
+                        data-testid="button-dismiss-approved"
+                        aria-label="Dismiss notification"
+                      >
+                        <X className="h-4 w-4 text-green-700" />
+                      </button>
+                      <div className="flex items-start gap-3 pr-8">
+                        <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-green-900 mb-1">
+                            🎉 Evidence Approved!
+                          </h3>
+                          <p className="text-sm text-green-800">
+                            {recentApproved.length} {recentApproved.length === 1 ? 'submission has' : 'submissions have'} been approved in the last 7 days. Great work!
+                          </p>
+                          <div className="mt-2 space-y-1">
+                            {recentApproved.map(evidence => (
+                              <div key={evidence.id} className="text-xs text-green-700 font-medium">
+                                ✓ {evidence.title}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="pt-4">
-                    <Button
-                      className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
-                      onClick={async () => {
-                        try {
-                          const response = await fetch(`/api/schools/${school.id}/start-round`, {
-                            method: 'POST',
-                            credentials: 'include',
-                          });
-                          if (response.ok) {
-                            window.location.reload();
-                          } else {
-                            toast({
-                              title: "Error",
-                              description: "Failed to start new round",
-                              variant: "destructive",
-                            });
-                          }
-                        } catch (error) {
-                          toast({
-                            title: "Error",
-                            description: "Failed to start new round",
-                            variant: "destructive",
-                          });
-                        }
-                      }}
-                      data-testid="button-start-new-round"
-                    >
-                      Start Round {(school.currentRound || 1) + 1} →
-                    </Button>
-                    <p className="text-xs text-gray-500 mt-3">
-                      Starting a new round will reset your progress and begin fresh
-                    </p>
-                  </div>
+                  )}
+                  
+                  {recentRejected.length > 0 && (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg shadow-sm animate-fade-in relative" data-testid="notification-rejected">
+                      <button
+                        onClick={() => recentRejected.forEach(e => dismissNotification(e.id))}
+                        className="absolute top-2 right-2 p-1 rounded-full hover:bg-red-200 transition-colors"
+                        data-testid="button-dismiss-rejected"
+                        aria-label="Dismiss notification"
+                      >
+                        <X className="h-4 w-4 text-red-700" />
+                      </button>
+                      <div className="flex items-start gap-3 pr-8">
+                        <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-red-900 mb-1">
+                            Action Required
+                          </h3>
+                          <p className="text-sm text-red-800">
+                            {recentRejected.length} {recentRejected.length === 1 ? 'submission needs' : 'submissions need'} your attention. Please review feedback and resubmit.
+                          </p>
+                          <div className="mt-2 space-y-1">
+                            {recentRejected.map(evidence => (
+                              <div key={evidence.id} className="text-xs text-red-700 font-medium">
+                                ✗ {evidence.title}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+              );
+            })()}
+
+            {/* Progress Tracker */}
+            <div className="mb-8">
+              <ProgressTracker 
+                inspireCompleted={school.inspireCompleted}
+                investigateCompleted={school.investigateCompleted}
+                actCompleted={school.actCompleted}
+                awardCompleted={school.awardCompleted}
+                currentStage={school.currentStage}
+                evidenceCounts={evidenceCounts}
+                schoolId={school.id}
+              />
+            </div>
+
+            {/* Round Completion Celebration */}
+            {school.awardCompleted && (
+              <div className="mb-8">
+                <Card className={`${
+                  school.currentRound === 1 ? 'bg-gradient-to-br from-blue-50 via-white to-blue-50' :
+                  school.currentRound === 2 ? 'bg-gradient-to-br from-purple-50 via-white to-purple-50' :
+                  'bg-gradient-to-br from-green-50 via-white to-green-50'
+                } border-4 ${
+                  school.currentRound === 1 ? 'border-blue-300' :
+                  school.currentRound === 2 ? 'border-purple-300' :
+                  'border-green-300'
+                } shadow-2xl`} data-testid="round-completion-card">
+                  <CardContent className="p-8 text-center">
+                    <div className="mb-6">
+                      <div className="w-24 h-24 mx-auto bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-xl animate-bounce">
+                        <Award className="h-14 w-14 text-white" />
+                      </div>
+                    </div>
+                    <h2 className="text-3xl font-bold text-navy mb-3">
+                      🎉 Congratulations!
+                    </h2>
+                    <p className="text-xl text-gray-700 mb-6">
+                      You've completed Round {school.currentRound}!
+                    </p>
+                    <div className="space-y-4">
+                      <div className="bg-white/80 backdrop-blur rounded-lg p-4 inline-block">
+                        <p className="text-sm text-gray-600 mb-2">Your school has successfully:</p>
+                        <div className="flex items-center gap-2 text-green-600 font-semibold">
+                          <CheckCircle className="h-5 w-5" />
+                          <span>Completed all 3 stages (Inspire → Investigate → Act)</span>
+                        </div>
+                      </div>
+                      <div className="pt-4">
+                        <Button
+                          className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-4 text-lg font-bold rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                          onClick={async () => {
+                            try {
+                              const response = await fetch(`/api/schools/${school.id}/start-round`, {
+                                method: 'POST',
+                                credentials: 'include',
+                              });
+                              if (response.ok) {
+                                window.location.reload();
+                              } else {
+                                toast({
+                                  title: "Error",
+                                  description: "Failed to start new round",
+                                  variant: "destructive",
+                                });
+                              }
+                            } catch (error) {
+                              toast({
+                                title: "Error",
+                                description: "Failed to start new round",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                          data-testid="button-start-new-round"
+                        >
+                          Start Round {(school.currentRound || 1) + 1} →
+                        </Button>
+                        <p className="text-xs text-gray-500 mt-3">
+                          Starting a new round will reset your progress and begin fresh
+                        </p>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {/* Certificate Display */}
+            {certificates.length > 0 && school.roundsCompleted && school.roundsCompleted >= 1 && (
+              <div className="mb-8">
+                <Card className="bg-gradient-to-br from-yellow-50 via-white to-yellow-50 border-2 border-yellow-300 shadow-xl">
+                  <CardHeader>
+                    <CardTitle className="text-2xl font-bold text-navy flex items-center gap-2">
+                      <Award className="h-6 w-6 text-yellow-500" />
+                      Your Certificates
+                    </CardTitle>
+                    <p className="text-sm text-gray-600">Download and share your achievements</p>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {certificates.map((cert) => (
+                        <div 
+                          key={cert.id}
+                          className="bg-white p-6 rounded-lg border-2 border-yellow-200 shadow-md hover:shadow-lg transition-shadow"
+                          data-testid={`certificate-${cert.id}`}
+                        >
+                          <div className="flex items-start gap-4">
+                            <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
+                              <Award className="h-8 w-8 text-white" />
+                            </div>
+                            <div className="flex-1">
+                              <h3 className="font-bold text-navy mb-1">{cert.title}</h3>
+                              <p className="text-xs text-gray-500 mb-2">
+                                Certificate #{cert.certificateNumber}
+                              </p>
+                              <p className="text-xs text-gray-600 mb-3">
+                                Completed: {new Date(cert.completedDate).toLocaleDateString()}
+                              </p>
+                              <Button
+                                size="sm"
+                                className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
+                                onClick={() => window.open(`/api/certificates/${cert.id}`, '_blank')}
+                                data-testid={`button-view-certificate-${cert.id}`}
+                              >
+                                View Certificate
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+
+            {/* Enhanced Recent Activity */}
+            <div>
+              <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
+                <CardHeader className="pb-4">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="text-2xl font-bold text-navy">{t('activity_feed.title')}</CardTitle>
+                    <Calendar className="h-6 w-6 text-gray-400" />
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {recentEvidence.length === 0 ? (
+                    <div className="text-center py-12 px-6">
+                      <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <Calendar className="h-8 w-8 text-gray-400" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('activity_feed.no_activity_title')}</h3>
+                      <p className="text-gray-500 mb-6">{t('activity_feed.no_activity_description')}</p>
+                      <Button 
+                        className="bg-gradient-to-r from-coral to-coral/80 hover:from-coral hover:to-coral/70 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
+                        onClick={() => setShowEvidenceForm(true)}
+                        data-testid="button-upload-evidence-empty"
+                      >
+                        <Upload className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
+                        {t('evidence.submit_evidence')}
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {recentEvidence.map((evidence, index) => (
+                        <div 
+                          key={evidence.id} 
+                          className="group flex items-start gap-4 p-6 bg-gradient-to-r from-white to-gray-50/50 rounded-xl border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300"
+                          style={{ animationDelay: `${index * 0.1}s` }}
+                          data-testid={`activity-${evidence.id}`}
+                        >
+                          <div className={`p-3 rounded-full text-white shadow-lg ${
+                            evidence.status === 'approved' ? 'bg-gradient-to-r from-green-500 to-green-400' :
+                            evidence.status === 'pending' ? 'bg-gradient-to-r from-yellow to-yellow/80' :
+                            'bg-gradient-to-r from-red-500 to-red-400'
+                          } group-hover:scale-110 transition-transform duration-300`}>
+                            {evidence.status === 'approved' ? (
+                              <CheckCircle className="h-5 w-5" />
+                            ) : (
+                              <Clock className="h-5 w-5" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <h4 className="font-semibold text-navy group-hover:text-ocean-blue transition-colors">{evidence.title}</h4>
+                              <Badge className={`${getStageColor(evidence.stage)} text-white shadow-sm`}>
+                                {t(`progress.${evidence.stage}.title`)}
+                              </Badge>
+                              <Badge variant="outline" className={`${getStatusColor(evidence.status)} text-white border-0 shadow-sm`}>
+                                {t(`evidence.evidence_${evidence.status}`)}
+                              </Badge>
+                            </div>
+                            <p className="text-sm text-gray-600 flex items-center gap-2">
+                              <Calendar className="h-3 w-3" />
+                              {t('evidence.submitted_on', { date: new Date(evidence.submittedAt).toLocaleDateString() })}
+                            </p>
+                          </div>
+                          {evidence.status === 'pending' && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleDeleteClick(evidence.id)}
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                              data-testid={`button-delete-evidence-${evidence.id}`}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </>
+        )}
+
+        {/* Analytics Tab Content */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-6">
+            {analyticsLoading ? (
+              <LoadingSpinner />
+            ) : !analyticsData ? (
+              <Card>
+                <CardContent className="p-12 text-center">
+                  <p className="text-gray-600">No analytics data available</p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                {/* Overview Stats Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600">Total Submissions</div>
+                      <div className="text-2xl font-bold text-navy">{analyticsData.reviewStats.approvedCount + analyticsData.reviewStats.pendingCount + analyticsData.reviewStats.rejectedCount}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600">Approved</div>
+                      <div className="text-2xl font-bold text-green-600">{analyticsData.reviewStats.approvedCount}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600">Pending Review</div>
+                      <div className="text-2xl font-bold text-yellow-600">{analyticsData.reviewStats.pendingCount}</div>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardContent className="p-4">
+                      <div className="text-sm text-gray-600">Avg Review Time</div>
+                      <div className="text-2xl font-bold text-pcs_blue">{Math.round(analyticsData.reviewStats.averageReviewTimeHours)}h</div>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Submission Trends Chart */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Submission Trends</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-64">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={analyticsData.submissionTrends}>
+                          <CartesianGrid strokeDasharray="3 3" />
+                          <XAxis dataKey="month" />
+                          <YAxis />
+                          <Tooltip />
+                          <Bar dataKey="count" fill="#009ADE" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Team Contributions */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Team Contributions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {analyticsData.teamContributions.map(member => (
+                        <div key={member.userId} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                          <div className="flex-1">
+                            <div className="font-medium text-navy">{member.userName}</div>
+                            <div className="text-sm text-gray-600">{member.submissionCount} submissions</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-green-600 font-semibold">{member.approvedCount} approved</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Stage Timeline */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>Stage Completion Timeline</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {analyticsData.stageTimeline.map(stage => (
+                        <div key={stage.stage} className="flex items-center gap-4">
+                          <div className="w-24 font-medium capitalize">{stage.stage}</div>
+                          <div className="flex-1 relative h-8 bg-gray-100 rounded-full overflow-hidden">
+                            {stage.completedAt && (
+                              <div className="absolute inset-0 bg-green-500 opacity-20"></div>
+                            )}
+                          </div>
+                          <div className="w-32 text-sm text-gray-600">
+                            {stage.completedAt 
+                              ? `${stage.daysToComplete} days`
+                              : 'In progress'
+                            }
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* File Type Distribution */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle>File Type Distribution</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center p-4 bg-blue-50 rounded-lg">
+                        <div className="text-3xl font-bold text-blue-600">{analyticsData.fileTypeDistribution.images}</div>
+                        <div className="text-sm text-gray-600">Images</div>
+                      </div>
+                      <div className="text-center p-4 bg-purple-50 rounded-lg">
+                        <div className="text-3xl font-bold text-purple-600">{analyticsData.fileTypeDistribution.videos}</div>
+                        <div className="text-sm text-gray-600">Videos</div>
+                      </div>
+                      <div className="text-center p-4 bg-red-50 rounded-lg">
+                        <div className="text-3xl font-bold text-red-600">{analyticsData.fileTypeDistribution.pdfs}</div>
+                        <div className="text-sm text-gray-600">PDFs</div>
+                      </div>
+                      <div className="text-center p-4 bg-gray-100 rounded-lg">
+                        <div className="text-3xl font-bold text-gray-600">{analyticsData.fileTypeDistribution.other}</div>
+                        <div className="text-sm text-gray-600">Other</div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </>
+            )}
           </div>
         )}
 
-        {/* Certificate Display */}
-        {certificates.length > 0 && school.roundsCompleted && school.roundsCompleted >= 1 && (
-          <div className="mb-8">
-            <Card className="bg-gradient-to-br from-yellow-50 via-white to-yellow-50 border-2 border-yellow-300 shadow-xl">
+        {/* Resources Tab Content */}
+        {activeTab === 'resources' && (
+          <div className="space-y-6">
+            {/* Quick Access Resources */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <Card className="hover:shadow-lg transition-shadow cursor-pointer" onClick={() => window.location.href = '/resources'} data-testid="card-browse-resources">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-pcs_blue/10 rounded-lg flex items-center justify-center mb-4">
+                    <BookOpen className="h-6 w-6 text-pcs_blue" />
+                  </div>
+                  <h3 className="font-bold text-navy mb-2">Browse All Resources</h3>
+                  <p className="text-sm text-gray-600">Access our complete library of educational materials and guides</p>
+                  <Button className="w-full mt-4 bg-pcs_blue hover:bg-pcs_blue/90 text-white">
+                    View Resources →
+                  </Button>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-inspire_green/10 rounded-lg flex items-center justify-center mb-4">
+                    <Lightbulb className="h-6 w-6 text-inspire_green" />
+                  </div>
+                  <h3 className="font-bold text-navy mb-2">Evidence Guides</h3>
+                  <p className="text-sm text-gray-600 mb-4">Learn how to submit quality evidence for each stage</p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-pcs_blue rounded-full"></div>
+                      Photo & video guidelines
+                    </li>
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-pcs_blue rounded-full"></div>
+                      Documentation tips
+                    </li>
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-pcs_blue rounded-full"></div>
+                      Best practices
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+
+              <Card className="hover:shadow-lg transition-shadow">
+                <CardContent className="p-6">
+                  <div className="w-12 h-12 bg-coral/10 rounded-lg flex items-center justify-center mb-4">
+                    <Award className="h-6 w-6 text-coral" />
+                  </div>
+                  <h3 className="font-bold text-navy mb-2">Program Stages</h3>
+                  <p className="text-sm text-gray-600 mb-4">Understand each stage of the program</p>
+                  <ul className="space-y-2 text-sm">
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-inspire_green rounded-full"></div>
+                      Inspire: Build awareness
+                    </li>
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-yellow rounded-full"></div>
+                      Investigate: Research
+                    </li>
+                    <li className="flex items-center gap-2 text-gray-700">
+                      <div className="w-1.5 h-1.5 bg-coral rounded-full"></div>
+                      Act: Create change
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Helpful Tips */}
+            <Card>
               <CardHeader>
-                <CardTitle className="text-2xl font-bold text-navy flex items-center gap-2">
-                  <Award className="h-6 w-6 text-yellow-500" />
-                  Your Certificates
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5 text-pcs_blue" />
+                  Helpful Tips for Evidence Submission
                 </CardTitle>
-                <p className="text-sm text-gray-600">Download and share your achievements</p>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {certificates.map((cert) => (
-                    <div 
-                      key={cert.id}
-                      className="bg-white p-6 rounded-lg border-2 border-yellow-200 shadow-md hover:shadow-lg transition-shadow"
-                      data-testid={`certificate-${cert.id}`}
-                    >
-                      <div className="flex items-start gap-4">
-                        <div className="flex-shrink-0 w-16 h-16 bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center">
-                          <Award className="h-8 w-8 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-bold text-navy mb-1">{cert.title}</h3>
-                          <p className="text-xs text-gray-500 mb-2">
-                            Certificate #{cert.certificateNumber}
-                          </p>
-                          <p className="text-xs text-gray-600 mb-3">
-                            Completed: {new Date(cert.completedDate).toLocaleDateString()}
-                          </p>
-                          <Button
-                            size="sm"
-                            className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
-                            onClick={() => window.open(`/api/certificates/${cert.id}`, '_blank')}
-                            data-testid={`button-view-certificate-${cert.id}`}
-                          >
-                            View Certificate
-                          </Button>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                  <div className="bg-blue-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-navy mb-2">📸 Photo Guidelines</h4>
+                    <ul className="space-y-1 text-sm text-gray-700">
+                      <li>• Ensure images are clear and well-lit</li>
+                      <li>• Include context (date, location if relevant)</li>
+                      <li>• Get parental consent for children's photos</li>
+                    </ul>
+                  </div>
+                  <div className="bg-green-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-navy mb-2">📝 Documentation Tips</h4>
+                    <ul className="space-y-1 text-sm text-gray-700">
+                      <li>• Write detailed descriptions</li>
+                      <li>• Explain the impact of your actions</li>
+                      <li>• Include student reflections when possible</li>
+                    </ul>
+                  </div>
+                  <div className="bg-purple-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-navy mb-2">🎥 Video Best Practices</h4>
+                    <ul className="space-y-1 text-sm text-gray-700">
+                      <li>• Keep videos under 5 minutes</li>
+                      <li>• Use stable camera positioning</li>
+                      <li>• Include narration or captions</li>
+                    </ul>
+                  </div>
+                  <div className="bg-yellow-50 p-4 rounded-lg">
+                    <h4 className="font-semibold text-navy mb-2">⚡ Quick Wins</h4>
+                    <ul className="space-y-1 text-sm text-gray-700">
+                      <li>• Submit evidence promptly</li>
+                      <li>• Respond to feedback quickly</li>
+                      <li>• Collaborate with your team</li>
+                    </ul>
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Recent Resources (if available) */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Featured Resources</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600 text-sm mb-4">
+                  Access our curated collection of resources to help your school succeed in the Plastic Clever Schools program.
+                </p>
+                <Button 
+                  className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
+                  onClick={() => window.location.href = '/resources'}
+                >
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Explore All Resources
+                </Button>
               </CardContent>
             </Card>
           </div>
         )}
 
-
-        {/* Enhanced Quick Actions */}
-        <div className="mb-12">
-          <div className="text-center mb-8">
-            <h2 className="text-2xl lg:text-3xl font-bold text-navy mb-3">{t('quick_actions.title')}</h2>
-            <p className="text-gray-600">{t('quick_actions.subtitle')}</p>
+        {/* Team Tab Content */}
+        {activeTab === 'team' && (
+          <div className="mb-8">
+            <TeamManagement />
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm">
-              <CardContent className="p-0">
-                <Button 
-                  className="w-full h-full bg-gradient-to-br from-coral to-coral/80 hover:from-coral hover:to-coral/70 text-white p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
-                  onClick={() => setShowEvidenceForm(true)}
-                  data-testid="button-upload-evidence"
-                >
-                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                    <Upload className="h-6 w-6" />
-                  </div>
-                  <span className="font-semibold">{t('evidence.submit_evidence')}</span>
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm">
-              <CardContent className="p-0">
-                <Button 
-                  className="w-full h-full bg-gradient-to-br from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
-                  onClick={() => window.location.href = '/resources'}
-                  data-testid="button-view-resources"
-                >
-                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                    <BookOpen className="h-6 w-6" />
-                  </div>
-                  <span className="font-semibold">{t('quick_actions.view_resources')}</span>
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm">
-              <CardContent className="p-0">
-                <Button 
-                  className="w-full h-full bg-gradient-to-br from-teal to-teal/80 hover:from-teal hover:to-teal/70 text-white p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
-                  data-testid="button-manage-team"
-                >
-                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center group-hover:bg-white/30 transition-colors">
-                    <Users className="h-6 w-6" />
-                  </div>
-                  <span className="font-semibold">{t('quick_actions.manage_team')}</span>
-                </Button>
-              </CardContent>
-            </Card>
-            
-            <Card className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-0 overflow-hidden bg-white/90 backdrop-blur-sm">
-              <CardContent className="p-0">
-                <Button 
-                  className="w-full h-full bg-gradient-to-br from-yellow to-yellow/80 hover:from-yellow hover:to-yellow/70 text-navy p-6 flex-col gap-3 rounded-none group-hover:scale-105 transition-all duration-300"
-                  data-testid="button-view-progress"
-                >
-                  <div className="w-12 h-12 bg-navy/20 rounded-full flex items-center justify-center group-hover:bg-navy/30 transition-colors">
-                    <BarChart3 className="h-6 w-6" />
-                  </div>
-                  <span className="font-semibold">{t('quick_actions.track_progress')}</span>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-
-        {/* Enhanced Recent Activity */}
-        <div>
-          <Card className="bg-white/80 backdrop-blur-sm border-0 shadow-xl">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-2xl font-bold text-navy">{t('activity_feed.title')}</CardTitle>
-                <Calendar className="h-6 w-6 text-gray-400" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              {recentEvidence.length === 0 ? (
-                <div className="text-center py-12 px-6">
-                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <Calendar className="h-8 w-8 text-gray-400" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('activity_feed.no_activity_title')}</h3>
-                  <p className="text-gray-500 mb-6">{t('activity_feed.no_activity_description')}</p>
-                  <Button 
-                    className="bg-gradient-to-r from-coral to-coral/80 hover:from-coral hover:to-coral/70 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
-                    onClick={() => setShowEvidenceForm(true)}
-                    data-testid="button-upload-evidence-empty"
-                  >
-                    <Upload className="h-4 w-4 mr-2 group-hover:scale-110 transition-transform" />
-                    {t('evidence.submit_evidence')}
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {recentEvidence.map((evidence, index) => (
-                    <div 
-                      key={evidence.id} 
-                      className="group flex items-start gap-4 p-6 bg-gradient-to-r from-white to-gray-50/50 rounded-xl border border-gray-100 hover:shadow-lg hover:border-gray-200 transition-all duration-300"
-                      style={{ animationDelay: `${index * 0.1}s` }}
-                      data-testid={`activity-${evidence.id}`}
-                    >
-                      <div className={`p-3 rounded-full text-white shadow-lg ${
-                        evidence.status === 'approved' ? 'bg-gradient-to-r from-green-500 to-green-400' :
-                        evidence.status === 'pending' ? 'bg-gradient-to-r from-yellow to-yellow/80' :
-                        'bg-gradient-to-r from-red-500 to-red-400'
-                      } group-hover:scale-110 transition-transform duration-300`}>
-                        {evidence.status === 'approved' ? (
-                          <CheckCircle className="h-5 w-5" />
-                        ) : (
-                          <Clock className="h-5 w-5" />
-                        )}
-                      </div>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h4 className="font-semibold text-navy group-hover:text-ocean-blue transition-colors">{evidence.title}</h4>
-                          <Badge className={`${getStageColor(evidence.stage)} text-white shadow-sm`}>
-                            {t(`progress.${evidence.stage}.title`)}
-                          </Badge>
-                          <Badge variant="outline" className={`${getStatusColor(evidence.status)} text-white border-0 shadow-sm`}>
-                            {t(`evidence.evidence_${evidence.status}`)}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-gray-600 flex items-center gap-2">
-                          <Calendar className="h-3 w-3" />
-                          {t('evidence.submitted_on', { date: new Date(evidence.submittedAt).toLocaleDateString() })}
-                        </p>
-                      </div>
-                      {evidence.status === 'pending' && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleDeleteClick(evidence.id)}
-                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
-                          data-testid={`button-delete-evidence-${evidence.id}`}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+        )}
       </div>
 
       {/* Evidence Submission Form */}

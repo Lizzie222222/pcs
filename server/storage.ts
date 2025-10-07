@@ -296,6 +296,25 @@ export interface IStorage {
       coordinates: Array<{ lat: number; lng: number; schoolCount: number; country: string }>;
     };
   }>;
+
+  // School-specific analytics
+  getSchoolAnalytics(schoolId: string): Promise<{
+    submissionTrends: Array<{ month: string; count: number }>;
+    teamContributions: Array<{ userId: string; userName: string; submissionCount: number; approvedCount: number }>;
+    stageTimeline: Array<{ stage: 'inspire' | 'investigate' | 'act'; completedAt: string | null; daysToComplete: number | null }>;
+    reviewStats: {
+      averageReviewTimeHours: number;
+      pendingCount: number;
+      approvedCount: number;
+      rejectedCount: number;
+    };
+    fileTypeDistribution: {
+      images: number;
+      videos: number;
+      pdfs: number;
+      other: number;
+    };
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -2109,6 +2128,196 @@ export class DatabaseStorage implements IStorage {
         totalCountries: globalSummary.totalCountries,
         totalCities: globalSummary.totalCities,
         coordinates
+      }
+    };
+  }
+
+  async getSchoolAnalytics(schoolId: string): Promise<{
+    submissionTrends: Array<{ month: string; count: number }>;
+    teamContributions: Array<{ userId: string; userName: string; submissionCount: number; approvedCount: number }>;
+    stageTimeline: Array<{ stage: 'inspire' | 'investigate' | 'act'; completedAt: string | null; daysToComplete: number | null }>;
+    reviewStats: {
+      averageReviewTimeHours: number;
+      pendingCount: number;
+      approvedCount: number;
+      rejectedCount: number;
+    };
+    fileTypeDistribution: {
+      images: number;
+      videos: number;
+      pdfs: number;
+      other: number;
+    };
+  }> {
+    // Submission trends (last 6 months)
+    const submissionTrendsRaw = await db
+      .select({
+        month: sql<string>`TO_CHAR(submitted_at, 'Mon YYYY')`,
+        count: count()
+      })
+      .from(evidence)
+      .where(and(
+        eq(evidence.schoolId, schoolId),
+        sql`submitted_at >= NOW() - INTERVAL '6 months'`
+      ))
+      .groupBy(sql`TO_CHAR(submitted_at, 'Mon YYYY')`, sql`DATE_TRUNC('month', submitted_at)`)
+      .orderBy(sql`DATE_TRUNC('month', submitted_at)`);
+
+    // Team contributions (submissions and approvals by user)
+    const teamContributionsRaw = await db
+      .select({
+        userId: evidence.submittedBy,
+        submissionCount: count(),
+        approvedCount: sql<number>`COUNT(*) FILTER (WHERE status = 'approved')`
+      })
+      .from(evidence)
+      .where(eq(evidence.schoolId, schoolId))
+      .groupBy(evidence.submittedBy);
+
+    // Get user names for team contributions
+    const userIds = teamContributionsRaw.map(t => t.userId);
+    const userMap = new Map<string, { firstName: string | null; lastName: string | null }>();
+    
+    if (userIds.length > 0) {
+      const usersData = await db
+        .select({
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName
+        })
+        .from(users)
+        .where(inArray(users.id, userIds));
+      
+      usersData.forEach(u => {
+        userMap.set(u.id, { firstName: u.firstName, lastName: u.lastName });
+      });
+    }
+
+    const teamContributions = teamContributionsRaw.map(t => {
+      const user = userMap.get(t.userId);
+      const userName = user 
+        ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Unknown User'
+        : 'Unknown User';
+      
+      return {
+        userId: t.userId,
+        userName,
+        submissionCount: t.submissionCount,
+        approvedCount: t.approvedCount
+      };
+    });
+
+    // Stage timeline (based on first approved evidence for each stage)
+    const stageCompletionData = await db
+      .select({
+        stage: evidence.stage,
+        completedAt: sql<string>`MIN(reviewed_at)::text`
+      })
+      .from(evidence)
+      .where(and(
+        eq(evidence.schoolId, schoolId),
+        eq(evidence.status, 'approved'),
+        sql`reviewed_at IS NOT NULL`
+      ))
+      .groupBy(evidence.stage);
+
+    // Get school creation date for calculating days to complete
+    const school = await this.getSchool(schoolId);
+    const schoolCreatedAt = school?.createdAt || new Date();
+
+    const stageMap = new Map(stageCompletionData.map(s => [s.stage, s.completedAt]));
+    
+    const stageTimeline = (['inspire', 'investigate', 'act'] as const).map(stage => {
+      const completedAt = stageMap.get(stage) || null;
+      let daysToComplete = null;
+      
+      if (completedAt) {
+        const completedDate = new Date(completedAt);
+        const startDate = new Date(schoolCreatedAt);
+        daysToComplete = Math.floor((completedDate.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      }
+      
+      return {
+        stage,
+        completedAt,
+        daysToComplete
+      };
+    });
+
+    // Review stats
+    const reviewStatsRaw = await db
+      .select({
+        status: evidence.status,
+        count: count(),
+        avgReviewHours: sql<number>`AVG(EXTRACT(EPOCH FROM (reviewed_at - submitted_at)) / 3600)`
+      })
+      .from(evidence)
+      .where(eq(evidence.schoolId, schoolId))
+      .groupBy(evidence.status);
+
+    let averageReviewTimeHours = 0;
+    let pendingCount = 0;
+    let approvedCount = 0;
+    let rejectedCount = 0;
+
+    reviewStatsRaw.forEach(stat => {
+      if (stat.status === 'pending') pendingCount = stat.count;
+      if (stat.status === 'approved') {
+        approvedCount = stat.count;
+        averageReviewTimeHours = stat.avgReviewHours || 0;
+      }
+      if (stat.status === 'rejected') rejectedCount = stat.count;
+    });
+
+    // File type distribution
+    const evidenceFiles = await db
+      .select({
+        files: evidence.files
+      })
+      .from(evidence)
+      .where(eq(evidence.schoolId, schoolId));
+
+    let images = 0;
+    let videos = 0;
+    let pdfs = 0;
+    let other = 0;
+
+    evidenceFiles.forEach(e => {
+      const files = Array.isArray(e.files) ? e.files : [];
+      files.forEach((file: any) => {
+        const url = file.url || file.publicUrl || '';
+        const lowerUrl = url.toLowerCase();
+        
+        if (lowerUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/)) {
+          images++;
+        } else if (lowerUrl.match(/\.(mp4|mov|avi|webm|mkv)$/)) {
+          videos++;
+        } else if (lowerUrl.match(/\.pdf$/)) {
+          pdfs++;
+        } else if (url) {
+          other++;
+        }
+      });
+    });
+
+    return {
+      submissionTrends: submissionTrendsRaw.map(t => ({
+        month: t.month,
+        count: t.count
+      })),
+      teamContributions,
+      stageTimeline,
+      reviewStats: {
+        averageReviewTimeHours: Math.round(averageReviewTimeHours * 10) / 10,
+        pendingCount,
+        approvedCount,
+        rejectedCount
+      },
+      fileTypeDistribution: {
+        images,
+        videos,
+        pdfs,
+        other
       }
     };
   }

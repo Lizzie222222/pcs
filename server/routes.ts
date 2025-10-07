@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./auth";
+import { setupAuth, isAuthenticated, isSchoolMember } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail } from "./emailService";
@@ -1457,6 +1457,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching certificate:", error);
       res.status(500).json({ message: "Failed to fetch certificate" });
+    }
+  });
+
+  // School analytics route
+  app.get('/api/schools/:schoolId/analytics', isSchoolMember, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const analytics = await storage.getSchoolAnalytics(schoolId);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching school analytics:", error);
+      res.status(500).json({ message: "Failed to fetch analytics" });
     }
   });
 
