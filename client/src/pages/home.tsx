@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
@@ -12,6 +12,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner, ErrorState } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { 
   Upload, 
   BookOpen, 
@@ -22,9 +32,11 @@ import {
   Calendar,
   Award,
   MapPin,
-  AlertCircle
+  AlertCircle,
+  Trash2
 } from "lucide-react";
 import { useState } from "react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface Certificate {
   id: string;
@@ -71,6 +83,8 @@ export default function Home() {
   const [, setLocation] = useLocation();
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [evidenceToDelete, setEvidenceToDelete] = useState<string | null>(null);
 
   // Redirect admins to admin dashboard
   useEffect(() => {
@@ -115,6 +129,43 @@ export default function Home() {
     enabled: !!dashboardData?.school?.id,
     retry: false,
   });
+
+  // Delete evidence mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (evidenceId: string) => {
+      return apiRequest('DELETE', `/api/evidence/${evidenceId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/evidence'] });
+      toast({
+        title: t('evidence.delete_success'),
+        variant: "default",
+      });
+      setDeleteDialogOpen(false);
+      setEvidenceToDelete(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: t('evidence.delete_error'),
+        description: error?.message || t('errors.unexpected_error'),
+        variant: "destructive",
+      });
+      setDeleteDialogOpen(false);
+      setEvidenceToDelete(null);
+    },
+  });
+
+  const handleDeleteClick = (evidenceId: string) => {
+    setEvidenceToDelete(evidenceId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (evidenceToDelete) {
+      deleteMutation.mutate(evidenceToDelete);
+    }
+  };
 
   // Show toast notification for recent status updates (once per session)
   useEffect(() => {
@@ -626,6 +677,17 @@ export default function Home() {
                           {t('evidence.submitted_on', { date: new Date(evidence.submittedAt).toLocaleDateString() })}
                         </p>
                       </div>
+                      {evidence.status === 'pending' && (
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteClick(evidence.id)}
+                          className="text-red-600 hover:text-red-800 hover:bg-red-50"
+                          data-testid={`button-delete-evidence-${evidence.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -642,6 +704,30 @@ export default function Home() {
           schoolId={school.id}
         />
       )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('evidence.delete_confirmation_title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('evidence.delete_confirmation_description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setEvidenceToDelete(null)}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

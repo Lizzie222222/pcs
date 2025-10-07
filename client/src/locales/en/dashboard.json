@@ -77,7 +77,11 @@
     "upload_files": "Upload Files",
     "submission_successful": "Evidence submitted successfully",
     "submission_failed": "Failed to submit evidence",
-    "submitted_on": "Submitted {{date}}"
+    "submitted_on": "Submitted {{date}}",
+    "delete_confirmation_title": "Delete Evidence?",
+    "delete_confirmation_description": "This will permanently delete this evidence submission. This action cannot be undone.",
+    "delete_success": "Evidence deleted successfully",
+    "delete_error": "Failed to delete evidence"
   },
   "quick_actions": {
     "title": "Quick Actions",

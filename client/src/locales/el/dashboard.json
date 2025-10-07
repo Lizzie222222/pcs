@@ -77,7 +77,11 @@
     "upload_files": "Μεταφόρτωση Αρχείων",
     "submission_successful": "Τα αποδεικτικά υποβλήθηκαν με επιτυχία",
     "submission_failed": "Αποτυχία υποβολής αποδεικτικών",
-    "submitted_on": "Υποβλήθηκε {{date}}"
+    "submitted_on": "Υποβλήθηκε {{date}}",
+    "delete_confirmation_title": "Διαγραφή Αποδεικτικού;",
+    "delete_confirmation_description": "Αυτό θα διαγράψει μόνιμα αυτό το αποδεικτικό. Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.",
+    "delete_success": "Το αποδεικτικό διαγράφηκε επιτυχώς",
+    "delete_error": "Αποτυχία διαγραφής αποδεικτικού"
   },
   "quick_actions": {
     "title": "Γρήγορες Ενέργειες",
