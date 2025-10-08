@@ -27,6 +27,9 @@ import investigateVideo from "@assets/investigate_1757867031380.mp4";
 import actVideo from "@assets/ACT_1757867031379.mp4";
 import heroImage from "@assets/1W0A3542_1759747398974.jpg";
 import videoPlaceholder from "@assets/Screenshot 2025-10-07 at 08.55.43_1759821888486.png";
+import commonSeasLogo from "@assets/common-seas_1759934515099.png";
+import kidsAgainstPlasticLogo from "@assets/KAP-logo-png-300x300_1759934515099.png";
+import riverCleanupLogo from "@assets/RiverCleanup_logo_rgb_pos-WhiteBG-01-2-256x256_1759934515099.png";
 import { 
   Star,
   ArrowRight,
@@ -475,6 +478,72 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* Collaboration Logos Section */}
+      <section className="py-16 lg:py-20 bg-white">
+        <div className="container-width">
+          <div className="max-w-4xl mx-auto">
+            {/* Title */}
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy text-center mb-12 uppercase tracking-wide">
+              Plastic Clever Schools is a<br />collaboration between
+            </h2>
+            
+            {/* Top Row - Common Seas and Kids Against Plastic */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12 mb-8 items-center justify-items-center">
+              {/* Common Seas Logo */}
+              <a 
+                href="https://commonseas.com/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity duration-300"
+                data-testid="link-common-seas"
+              >
+                <img 
+                  src={commonSeasLogo} 
+                  alt="Common Seas" 
+                  className="h-20 sm:h-24 w-auto object-contain"
+                />
+              </a>
+              
+              {/* Kids Against Plastic Logo */}
+              <a 
+                href="https://kidsagainstplastic.co.uk/" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity duration-300"
+                data-testid="link-kids-against-plastic"
+              >
+                <img 
+                  src={kidsAgainstPlasticLogo} 
+                  alt="Kids Against Plastic" 
+                  className="h-20 sm:h-24 w-auto object-contain"
+                />
+              </a>
+            </div>
+            
+            {/* Partnership Text */}
+            <p className="text-center text-gray-600 text-lg mb-8">
+              in partnership with
+            </p>
+            
+            {/* River Cleanup Logo */}
+            <div className="flex justify-center">
+              <a 
+                href="https://www.river-cleanup.org/en" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="hover:opacity-80 transition-opacity duration-300"
+                data-testid="link-river-cleanup"
+              >
+                <img 
+                  src={riverCleanupLogo} 
+                  alt="River Cleanup" 
+                  className="h-20 sm:h-24 w-auto object-contain"
+                />
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Clean Professional Footer */}
       <footer className="bg-navy text-white py-12">
