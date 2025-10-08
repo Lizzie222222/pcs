@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -74,6 +74,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
   const [auditId, setAuditId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
+  const hasLoadedInitialData = useRef(false);
 
   // Fetch existing audit if any
   const { data: existingAudit } = useQuery<AuditResponse>({
@@ -144,7 +145,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
   // Load existing audit data or pre-populate from school data
   useEffect(() => {
-    if (existingAudit) {
+    if (existingAudit && !hasLoadedInitialData.current) {
       setAuditId(existingAudit.id);
       setCurrentStep(existingAudit.currentPart || 1);
       
@@ -160,7 +161,8 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       if (existingAudit.part4Data) {
         form4.reset(existingAudit.part4Data);
       }
-    } else if (schoolData) {
+      hasLoadedInitialData.current = true;
+    } else if (!existingAudit && schoolData && !hasLoadedInitialData.current) {
       // Pre-populate form with school data if no existing audit
       form1.reset({
         schoolName: schoolData.name,
@@ -169,6 +171,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
         auditDate: new Date().toISOString().split('T')[0],
         auditTeam: "",
       });
+      hasLoadedInitialData.current = true;
     }
   }, [existingAudit, schoolData]);
 
