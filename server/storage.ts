@@ -15,6 +15,7 @@ import {
   verificationRequests,
   testimonials,
   auditResponses,
+  reductionPromises,
   type User,
   type UpsertUser,
   type School,
@@ -47,6 +48,8 @@ import {
   type InsertTestimonial,
   type AuditResponse,
   type InsertAuditResponse,
+  type ReductionPromise,
+  type InsertReductionPromise,
   type CreatePasswordUser,
   type CreateOAuthUser,
 } from "@shared/schema";
@@ -354,6 +357,15 @@ export interface IStorage {
   reviewAudit(id: string, reviewerId: string, approved: boolean, notes?: string): Promise<AuditResponse | undefined>;
   getPendingAudits(): Promise<Array<AuditResponse & { school: School; submittedByUser: User }>>;
   getAllAudits(filters?: { status?: string; limit?: number; offset?: number }): Promise<Array<AuditResponse & { school: School }>>;
+
+  // Reduction Promise operations
+  getReductionPromisesBySchool(schoolId: string): Promise<ReductionPromise[]>;
+  getReductionPromisesByAudit(auditId: string): Promise<ReductionPromise[]>;
+  createReductionPromise(data: InsertReductionPromise): Promise<ReductionPromise>;
+  updateReductionPromise(id: string, data: Partial<InsertReductionPromise>): Promise<ReductionPromise>;
+  deleteReductionPromise(id: string): Promise<void>;
+  getActivePromisesBySchool(schoolId: string): Promise<ReductionPromise[]>;
+  getAllActivePromises(): Promise<ReductionPromise[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3558,6 +3570,65 @@ export class DatabaseStorage implements IStorage {
       plasticItemsTrend,
       wasteReductionSchools,
     };
+  }
+
+  // Reduction Promise operations
+  async getReductionPromisesBySchool(schoolId: string): Promise<ReductionPromise[]> {
+    return await db
+      .select()
+      .from(reductionPromises)
+      .where(eq(reductionPromises.schoolId, schoolId))
+      .orderBy(desc(reductionPromises.createdAt));
+  }
+
+  async getReductionPromisesByAudit(auditId: string): Promise<ReductionPromise[]> {
+    return await db
+      .select()
+      .from(reductionPromises)
+      .where(eq(reductionPromises.auditId, auditId))
+      .orderBy(desc(reductionPromises.createdAt));
+  }
+
+  async createReductionPromise(data: InsertReductionPromise): Promise<ReductionPromise> {
+    const [newPromise] = await db
+      .insert(reductionPromises)
+      .values(data)
+      .returning();
+    return newPromise;
+  }
+
+  async updateReductionPromise(id: string, data: Partial<InsertReductionPromise>): Promise<ReductionPromise> {
+    const [updatedPromise] = await db
+      .update(reductionPromises)
+      .set({ ...data, updatedAt: new Date() })
+      .where(eq(reductionPromises.id, id))
+      .returning();
+    return updatedPromise;
+  }
+
+  async deleteReductionPromise(id: string): Promise<void> {
+    await db
+      .delete(reductionPromises)
+      .where(eq(reductionPromises.id, id));
+  }
+
+  async getActivePromisesBySchool(schoolId: string): Promise<ReductionPromise[]> {
+    return await db
+      .select()
+      .from(reductionPromises)
+      .where(and(
+        eq(reductionPromises.schoolId, schoolId),
+        eq(reductionPromises.status, 'active')
+      ))
+      .orderBy(desc(reductionPromises.createdAt));
+  }
+
+  async getAllActivePromises(): Promise<ReductionPromise[]> {
+    return await db
+      .select()
+      .from(reductionPromises)
+      .where(eq(reductionPromises.status, 'active'))
+      .orderBy(desc(reductionPromises.createdAt));
   }
 }
 

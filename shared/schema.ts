@@ -313,6 +313,12 @@ export const auditStatusEnum = pgEnum('audit_status', [
   'rejected'
 ]);
 
+export const promiseStatusEnum = pgEnum('promise_status', [
+  'active',
+  'achieved',
+  'cancelled'
+]);
+
 export const auditResponses = pgTable("audit_responses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
@@ -348,6 +354,25 @@ export const auditResponses = pgTable("audit_responses", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const reductionPromises = pgTable("reduction_promises", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
+  auditId: varchar("audit_id").references(() => auditResponses.id, { onDelete: 'set null' }),
+  plasticItemType: varchar("plastic_item_type").notNull(),
+  plasticItemLabel: varchar("plastic_item_label").notNull(),
+  baselineQuantity: integer("baseline_quantity").notNull(),
+  targetQuantity: integer("target_quantity").notNull(),
+  reductionAmount: integer("reduction_amount").notNull(),
+  timeframeUnit: varchar("timeframe_unit").notNull(),
+  status: promiseStatusEnum("status").default('active'),
+  notes: text("notes"),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_reduction_promises_school_status").on(table.schoolId, table.status),
+]);
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   schoolUsers: many(schoolUsers),
@@ -364,6 +389,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   reviewedVerificationRequests: many(verificationRequests, { relationName: "reviewedVerificationRequests" }),
   submittedAudits: many(auditResponses, { relationName: "submittedAudits" }),
   reviewedAudits: many(auditResponses, { relationName: "reviewedAudits" }),
+  createdPromises: many(reductionPromises),
 }));
 
 export const schoolsRelations = relations(schools, ({ many, one }) => ({
@@ -378,6 +404,7 @@ export const schoolsRelations = relations(schools, ({ many, one }) => ({
   teacherInvitations: many(teacherInvitations),
   verificationRequests: many(verificationRequests),
   auditResponses: many(auditResponses),
+  reductionPromises: many(reductionPromises),
 }));
 
 export const schoolUsersRelations = relations(schoolUsers, ({ one }) => ({
@@ -492,7 +519,7 @@ export const verificationRequestsRelations = relations(verificationRequests, ({ 
   }),
 }));
 
-export const auditResponsesRelations = relations(auditResponses, ({ one }) => ({
+export const auditResponsesRelations = relations(auditResponses, ({ one, many }) => ({
   school: one(schools, {
     fields: [auditResponses.schoolId],
     references: [schools.id],
@@ -506,6 +533,22 @@ export const auditResponsesRelations = relations(auditResponses, ({ one }) => ({
     fields: [auditResponses.reviewedBy],
     references: [users.id],
     relationName: "reviewedAudits",
+  }),
+  reductionPromises: many(reductionPromises),
+}));
+
+export const reductionPromisesRelations = relations(reductionPromises, ({ one }) => ({
+  school: one(schools, {
+    fields: [reductionPromises.schoolId],
+    references: [schools.id],
+  }),
+  audit: one(auditResponses, {
+    fields: [reductionPromises.auditId],
+    references: [auditResponses.id],
+  }),
+  createdByUser: one(users, {
+    fields: [reductionPromises.createdBy],
+    references: [users.id],
   }),
 }));
 
@@ -696,6 +739,12 @@ export const insertAuditResponseSchema = createInsertSchema(auditResponses).omit
   submittedAt: true,
 });
 
+export const insertReductionPromiseSchema = createInsertSchema(reductionPromises).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -729,6 +778,8 @@ export type EvidenceRequirement = typeof evidenceRequirements.$inferSelect;
 export type InsertEvidenceRequirement = z.infer<typeof insertEvidenceRequirementSchema>;
 export type AuditResponse = typeof auditResponses.$inferSelect;
 export type InsertAuditResponse = z.infer<typeof insertAuditResponseSchema>;
+export type ReductionPromise = typeof reductionPromises.$inferSelect;
+export type InsertReductionPromise = z.infer<typeof insertReductionPromiseSchema>;
 
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;
