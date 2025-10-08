@@ -319,6 +319,32 @@ export interface IStorage {
     };
   }>;
 
+  // Audit analytics
+  getAuditOverviewAnalytics(): Promise<{
+    totalSchoolsAudited: number;
+    totalPlasticItems: number;
+    averageItemsPerSchool: number;
+    topProblemPlastics: Array<{ name: string; count: number }>;
+  }>;
+
+  getAuditBySchoolAnalytics(): Promise<Array<{
+    schoolId: string;
+    schoolName: string;
+    country: string;
+    totalPlasticItems: number;
+    topProblemPlastic: string | null;
+    auditDate: string;
+    hasRecycling: boolean;
+    hasComposting: boolean;
+    hasPolicy: boolean;
+  }>>;
+
+  getWasteTrendsAnalytics(): Promise<{
+    monthlySubmissions: Array<{ month: string; count: number }>;
+    plasticItemsTrend: Array<{ month: string; totalItems: number }>;
+    wasteReductionSchools: Array<{ month: string; count: number }>;
+  }>;
+
   // Audit operations
   createAudit(audit: InsertAuditResponse): Promise<AuditResponse>;
   getAudit(id: string): Promise<AuditResponse | undefined>;
@@ -1306,6 +1332,26 @@ export class DatabaseStorage implements IStorage {
       // Round completed! Set up for next round
       const roundsCompleted = (school.roundsCompleted || 0) + 1;
       updates.roundsCompleted = roundsCompleted;
+    }
+
+    // Calculate progress percentage based on completed stages
+    const inspireComplete = updates.inspireCompleted ?? school.inspireCompleted;
+    const investigateComplete = updates.investigateCompleted ?? school.investigateCompleted;
+    const actComplete = updates.actCompleted ?? school.actCompleted;
+    
+    let progressPercentage = 0;
+    if (actComplete) {
+      progressPercentage = 100;
+    } else if (investigateComplete) {
+      progressPercentage = 67;
+    } else if (inspireComplete) {
+      progressPercentage = 33;
+    }
+    
+    // Update progress percentage if it has changed
+    if (progressPercentage !== school.progressPercentage) {
+      updates.progressPercentage = progressPercentage;
+      hasChanges = true;
     }
 
     if (hasChanges) {
@@ -3363,6 +3409,154 @@ export class DatabaseStorage implements IStorage {
       ...r.audit,
       school: r.school,
     }));
+  }
+
+  // Audit analytics implementations
+  async getAuditOverviewAnalytics(): Promise<{
+    totalSchoolsAudited: number;
+    totalPlasticItems: number;
+    averageItemsPerSchool: number;
+    topProblemPlastics: Array<{ name: string; count: number }>;
+  }> {
+    // Only include approved audits
+    const approvedAudits = await db
+      .select()
+      .from(auditResponses)
+      .where(eq(auditResponses.status, 'approved'));
+
+    const totalSchoolsAudited = approvedAudits.length;
+    const totalPlasticItems = approvedAudits.reduce((sum, audit) => sum + (audit.totalPlasticItems || 0), 0);
+    const averageItemsPerSchool = totalSchoolsAudited > 0 ? Math.round(totalPlasticItems / totalSchoolsAudited) : 0;
+
+    // Aggregate top problem plastics across all schools
+    const plasticCounts = new Map<string, number>();
+    
+    approvedAudits.forEach(audit => {
+      const topProblems = audit.topProblemPlastics as any[];
+      if (Array.isArray(topProblems)) {
+        topProblems.forEach(item => {
+          if (item.name) {
+            const currentCount = plasticCounts.get(item.name) || 0;
+            plasticCounts.set(item.name, currentCount + (item.count || 1));
+          }
+        });
+      }
+    });
+
+    // Convert to array and sort by count
+    const topProblemPlastics = Array.from(plasticCounts.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    return {
+      totalSchoolsAudited,
+      totalPlasticItems,
+      averageItemsPerSchool,
+      topProblemPlastics,
+    };
+  }
+
+  async getAuditBySchoolAnalytics(): Promise<Array<{
+    schoolId: string;
+    schoolName: string;
+    country: string;
+    totalPlasticItems: number;
+    topProblemPlastic: string | null;
+    auditDate: string;
+    hasRecycling: boolean;
+    hasComposting: boolean;
+    hasPolicy: boolean;
+  }>> {
+    // Only include approved audits with school details
+    const results = await db
+      .select({
+        audit: auditResponses,
+        school: schools,
+      })
+      .from(auditResponses)
+      .innerJoin(schools, eq(auditResponses.schoolId, schools.id))
+      .where(eq(auditResponses.status, 'approved'))
+      .orderBy(desc(auditResponses.submittedAt));
+
+    return results.map(r => {
+      const part4 = (r.audit.part4Data as any) || {};
+      const topProblems = r.audit.topProblemPlastics as any[];
+      const topProblemPlastic = Array.isArray(topProblems) && topProblems.length > 0 
+        ? topProblems[0].name 
+        : null;
+
+      return {
+        schoolId: r.school.id,
+        schoolName: r.school.name,
+        country: r.school.country,
+        totalPlasticItems: r.audit.totalPlasticItems || 0,
+        topProblemPlastic,
+        auditDate: r.audit.submittedAt?.toISOString() || r.audit.createdAt?.toISOString() || '',
+        hasRecycling: part4.hasRecycling === 'yes' || part4.hasRecycling === true,
+        hasComposting: part4.hasComposting === 'yes' || part4.hasComposting === true,
+        hasPolicy: part4.hasWastePolicy === 'yes' || part4.hasWastePolicy === true,
+      };
+    });
+  }
+
+  async getWasteTrendsAnalytics(): Promise<{
+    monthlySubmissions: Array<{ month: string; count: number }>;
+    plasticItemsTrend: Array<{ month: string; totalItems: number }>;
+    wasteReductionSchools: Array<{ month: string; count: number }>;
+  }> {
+    // Monthly audit submissions (only approved, last 12 months)
+    const monthlySubmissions = await db
+      .select({
+        month: sql<string>`TO_CHAR(submitted_at, 'YYYY-MM')`,
+        count: count(),
+      })
+      .from(auditResponses)
+      .where(and(
+        eq(auditResponses.status, 'approved'),
+        sql`submitted_at >= NOW() - INTERVAL '12 months'`
+      ))
+      .groupBy(sql`TO_CHAR(submitted_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(submitted_at, 'YYYY-MM')`);
+
+    // Plastic items trend over time (last 12 months)
+    const plasticItemsTrend = await db
+      .select({
+        month: sql<string>`TO_CHAR(submitted_at, 'YYYY-MM')`,
+        totalItems: sql<number>`COALESCE(SUM(total_plastic_items), 0)`,
+      })
+      .from(auditResponses)
+      .where(and(
+        eq(auditResponses.status, 'approved'),
+        sql`submitted_at >= NOW() - INTERVAL '12 months'`
+      ))
+      .groupBy(sql`TO_CHAR(submitted_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(submitted_at, 'YYYY-MM')`);
+
+    // Schools implementing waste reduction (with recycling, composting, or policy)
+    const wasteReductionSchools = await db
+      .select({
+        month: sql<string>`TO_CHAR(submitted_at, 'YYYY-MM')`,
+        count: sql<number>`COUNT(DISTINCT CASE 
+          WHEN part4_data->>'hasRecycling' IN ('yes', 'true') 
+            OR part4_data->>'hasComposting' IN ('yes', 'true')
+            OR part4_data->>'hasWastePolicy' IN ('yes', 'true')
+          THEN school_id 
+        END)`,
+      })
+      .from(auditResponses)
+      .where(and(
+        eq(auditResponses.status, 'approved'),
+        sql`submitted_at >= NOW() - INTERVAL '12 months'`
+      ))
+      .groupBy(sql`TO_CHAR(submitted_at, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(submitted_at, 'YYYY-MM')`);
+
+    return {
+      monthlySubmissions,
+      plasticItemsTrend,
+      wasteReductionSchools,
+    };
   }
 }
 

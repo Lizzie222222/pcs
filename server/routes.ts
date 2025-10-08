@@ -1499,6 +1499,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Audit analytics route
+  app.get('/api/schools/:schoolId/audit-analytics', isSchoolMember, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      
+      // Fetch the approved audit for the school
+      const audit = await storage.getSchoolAudit(schoolId);
+      
+      if (!audit || audit.status !== 'approved') {
+        return res.status(404).json({ 
+          message: "No approved audit found",
+          hasAudit: false 
+        });
+      }
+
+      // Parse the audit data
+      const part2Data = audit.part2Data as any || {};
+      const part3Data = audit.part3Data as any || {};
+      const part4Data = audit.part4Data as any || {};
+
+      // Calculate location breakdown
+      const lunchroomTotal = 
+        parseInt(part2Data.lunchroomPlasticBottles || '0') +
+        parseInt(part2Data.lunchroomPlasticCups || '0') +
+        parseInt(part2Data.lunchroomPlasticCutlery || '0') +
+        parseInt(part2Data.lunchroomPlasticStraws || '0') +
+        parseInt(part2Data.lunchroomFoodPackaging || '0') +
+        parseInt(part2Data.lunchroomClingFilm || '0');
+
+      const staffroomTotal = 
+        parseInt(part2Data.staffroomPlasticBottles || '0') +
+        parseInt(part2Data.staffroomPlasticCups || '0') +
+        parseInt(part2Data.staffroomFoodPackaging || '0');
+
+      const classroomsTotal = 
+        parseInt(part3Data.classroomPensPencils || '0') +
+        parseInt(part3Data.classroomStationery || '0') +
+        parseInt(part3Data.classroomDisplayMaterials || '0') +
+        parseInt(part3Data.classroomToys || '0');
+
+      const bathroomsTotal = 
+        parseInt(part3Data.bathroomSoapBottles || '0') +
+        parseInt(part3Data.bathroomBinLiners || '0') +
+        parseInt(part3Data.bathroomCupsPaper || '0');
+
+      // Build detailed plastic items list with location context
+      const plasticItems: { name: string; count: number; location: string }[] = [
+        { name: 'Plastic Bottles', count: parseInt(part2Data.lunchroomPlasticBottles || '0'), location: 'Lunchroom' },
+        { name: 'Plastic Cups', count: parseInt(part2Data.lunchroomPlasticCups || '0'), location: 'Lunchroom' },
+        { name: 'Plastic Cutlery', count: parseInt(part2Data.lunchroomPlasticCutlery || '0'), location: 'Lunchroom' },
+        { name: 'Plastic Straws', count: parseInt(part2Data.lunchroomPlasticStraws || '0'), location: 'Lunchroom' },
+        { name: 'Food Packaging', count: parseInt(part2Data.lunchroomFoodPackaging || '0'), location: 'Lunchroom' },
+        { name: 'Cling Film', count: parseInt(part2Data.lunchroomClingFilm || '0'), location: 'Lunchroom' },
+        { name: 'Plastic Bottles', count: parseInt(part2Data.staffroomPlasticBottles || '0'), location: 'Staffroom' },
+        { name: 'Plastic Cups', count: parseInt(part2Data.staffroomPlasticCups || '0'), location: 'Staffroom' },
+        { name: 'Food Packaging', count: parseInt(part2Data.staffroomFoodPackaging || '0'), location: 'Staffroom' },
+        { name: 'Pens & Pencils', count: parseInt(part3Data.classroomPensPencils || '0'), location: 'Classrooms' },
+        { name: 'Stationery Items', count: parseInt(part3Data.classroomStationery || '0'), location: 'Classrooms' },
+        { name: 'Display Materials', count: parseInt(part3Data.classroomDisplayMaterials || '0'), location: 'Classrooms' },
+        { name: 'Toys/Equipment', count: parseInt(part3Data.classroomToys || '0'), location: 'Classrooms' },
+        { name: 'Soap Bottles', count: parseInt(part3Data.bathroomSoapBottles || '0'), location: 'Bathrooms' },
+        { name: 'Bin Liners', count: parseInt(part3Data.bathroomBinLiners || '0'), location: 'Bathrooms' },
+        { name: 'Cups/Dispensers', count: parseInt(part3Data.bathroomCupsPaper || '0'), location: 'Bathrooms' },
+      ];
+
+      // Get top 5 problem plastics (with location context)
+      const topProblemPlastics = plasticItems
+        .filter(item => item.count > 0)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+        .map(item => ({
+          name: `${item.name} (${item.location})`,
+          count: item.count
+        }));
+
+      const analyticsData = {
+        hasAudit: true,
+        totalPlasticItems: audit.totalPlasticItems || 0,
+        locationBreakdown: {
+          lunchroom: lunchroomTotal,
+          staffroom: staffroomTotal,
+          classrooms: classroomsTotal,
+          bathrooms: bathroomsTotal,
+        },
+        topProblemPlastics,
+        wasteManagement: {
+          hasRecycling: part4Data.hasRecyclingBins || false,
+          recyclingBinLocations: part4Data.recyclingBinLocations || null,
+          plasticWasteDestination: part4Data.plasticWasteDestination || null,
+          hasComposting: part4Data.compostsOrganicWaste || false,
+          hasPolicy: part4Data.hasPlasticReductionPolicy || false,
+          policyDetails: part4Data.reductionPolicyDetails || null,
+        },
+      };
+
+      res.json(analyticsData);
+    } catch (error) {
+      console.error("Error fetching audit analytics:", error);
+      res.status(500).json({ message: "Failed to fetch audit analytics" });
+    }
+  });
+
   // Object storage routes for evidence files
   
   // Serve objects with ACL check (both public and private)
@@ -1740,6 +1842,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching geographic analytics:", error);
       res.status(500).json({ message: "Failed to fetch geographic analytics" });
+    }
+  });
+
+  // Audit analytics endpoints
+  app.get('/api/admin/analytics/audit-overview', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getAuditOverviewAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching audit overview analytics:", error);
+      res.status(500).json({ message: "Failed to fetch audit overview analytics" });
+    }
+  });
+
+  app.get('/api/admin/analytics/audit-by-school', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getAuditBySchoolAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching audit by school analytics:", error);
+      res.status(500).json({ message: "Failed to fetch audit by school analytics" });
+    }
+  });
+
+  app.get('/api/admin/analytics/waste-trends', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getWasteTrendsAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching waste trends analytics:", error);
+      res.status(500).json({ message: "Failed to fetch waste trends analytics" });
     }
   });
 
