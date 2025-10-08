@@ -2312,6 +2312,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all reduction promises for an audit
+  app.get('/api/reduction-promises/audit/:auditId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { auditId } = req.params;
+      const promises = await storage.getReductionPromisesByAudit(auditId);
+      res.json(promises);
+    } catch (error) {
+      console.error("Error fetching reduction promises for audit:", error);
+      res.status(500).json({ message: "Failed to fetch reduction promises" });
+    }
+  });
+
   // Create a new reduction promise
   app.post('/api/reduction-promises', isAuthenticated, async (req: any, res) => {
     try {

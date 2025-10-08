@@ -8,14 +8,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle } from "lucide-react";
-import type { AuditResponse } from "@shared/schema";
+import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Plus, Trash2 } from "lucide-react";
+import type { AuditResponse, ReductionPromise } from "@shared/schema";
 
 interface PlasticWasteAuditProps {
   schoolId: string;
@@ -65,10 +65,25 @@ const part4Schema = z.object({
   wasteManagementNotes: z.string().optional(),
 });
 
+const promiseItemSchema = z.object({
+  plasticItemType: z.string().min(1, "Item type required"),
+  plasticItemLabel: z.string().min(1, "Item label required"),
+  baselineQuantity: z.coerce.number().min(1, "Baseline must be at least 1"),
+  targetQuantity: z.coerce.number().min(0, "Target must be 0 or more"),
+  timeframeUnit: z.enum(['week', 'month', 'year']),
+  notes: z.string().optional(),
+});
+
+const part5Schema = z.object({
+  promises: z.array(promiseItemSchema).min(2, "At least 2 promises required")
+});
+
 type Part1Data = z.infer<typeof part1Schema>;
 type Part2Data = z.infer<typeof part2Schema>;
 type Part3Data = z.infer<typeof part3Schema>;
 type Part4Data = z.infer<typeof part4Schema>;
+type Part5Data = z.infer<typeof part5Schema>;
+type PromiseItem = z.infer<typeof promiseItemSchema>;
 
 export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps) {
   const [currentStep, setCurrentStep] = useState(1);
@@ -144,6 +159,98 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     },
   });
 
+  const form5 = useForm<Part5Data>({
+    resolver: zodResolver(part5Schema),
+    defaultValues: {
+      promises: [
+        {
+          plasticItemType: "",
+          plasticItemLabel: "",
+          baselineQuantity: 0,
+          targetQuantity: 0,
+          timeframeUnit: "month" as const,
+          notes: "",
+        },
+        {
+          plasticItemType: "",
+          plasticItemLabel: "",
+          baselineQuantity: 0,
+          targetQuantity: 0,
+          timeframeUnit: "month" as const,
+          notes: "",
+        },
+      ],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form5.control,
+    name: "promises",
+  });
+
+  // Fetch existing promises if audit exists
+  const { data: existingPromises } = useQuery<ReductionPromise[]>({
+    queryKey: [`/api/reduction-promises/audit/${auditId}`],
+    enabled: !!auditId,
+  });
+
+  // Helper function to extract audit items from part2 and part3 data
+  const extractAuditItems = () => {
+    const part2 = form2.getValues();
+    const part3 = form3.getValues();
+    
+    const items: Array<{ type: string; label: string; quantity: number }> = [];
+    
+    // Part 2 - Lunchroom & Staffroom items
+    const lunchroomBottles = parseInt(part2.lunchroomPlasticBottles || "0");
+    const staffroomBottles = parseInt(part2.staffroomPlasticBottles || "0");
+    if (lunchroomBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Lunchroom)", quantity: lunchroomBottles });
+    if (staffroomBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Staffroom)", quantity: staffroomBottles });
+    
+    const lunchroomCups = parseInt(part2.lunchroomPlasticCups || "0");
+    const staffroomCups = parseInt(part2.staffroomPlasticCups || "0");
+    if (lunchroomCups > 0) items.push({ type: "plastic_cups", label: "Plastic Cups (Lunchroom)", quantity: lunchroomCups });
+    if (staffroomCups > 0) items.push({ type: "plastic_cups", label: "Plastic Cups (Staffroom)", quantity: staffroomCups });
+    
+    const lunchroomCutlery = parseInt(part2.lunchroomPlasticCutlery || "0");
+    if (lunchroomCutlery > 0) items.push({ type: "plastic_cutlery", label: "Plastic Cutlery", quantity: lunchroomCutlery });
+    
+    const lunchroomStraws = parseInt(part2.lunchroomPlasticStraws || "0");
+    if (lunchroomStraws > 0) items.push({ type: "plastic_straws", label: "Plastic Straws", quantity: lunchroomStraws });
+    
+    const lunchroomPackaging = parseInt(part2.lunchroomFoodPackaging || "0");
+    const staffroomPackaging = parseInt(part2.staffroomFoodPackaging || "0");
+    if (lunchroomPackaging > 0) items.push({ type: "food_packaging", label: "Food Packaging (Lunchroom)", quantity: lunchroomPackaging });
+    if (staffroomPackaging > 0) items.push({ type: "food_packaging", label: "Food Packaging (Staffroom)", quantity: staffroomPackaging });
+    
+    const clingFilm = parseInt(part2.lunchroomClingFilm || "0");
+    if (clingFilm > 0) items.push({ type: "cling_film", label: "Cling Film", quantity: clingFilm });
+    
+    // Part 3 - Classroom & Bathroom items
+    const pensPencils = parseInt(part3.classroomPensPencils || "0");
+    if (pensPencils > 0) items.push({ type: "pens_pencils", label: "Pens & Pencils", quantity: pensPencils });
+    
+    const stationery = parseInt(part3.classroomStationery || "0");
+    if (stationery > 0) items.push({ type: "stationery", label: "Stationery Items", quantity: stationery });
+    
+    const displayMaterials = parseInt(part3.classroomDisplayMaterials || "0");
+    if (displayMaterials > 0) items.push({ type: "display_materials", label: "Display Materials", quantity: displayMaterials });
+    
+    const toys = parseInt(part3.classroomToys || "0");
+    if (toys > 0) items.push({ type: "toys", label: "Toys/Equipment", quantity: toys });
+    
+    const soapBottles = parseInt(part3.bathroomSoapBottles || "0");
+    if (soapBottles > 0) items.push({ type: "soap_bottles", label: "Soap Bottles", quantity: soapBottles });
+    
+    const binLiners = parseInt(part3.bathroomBinLiners || "0");
+    if (binLiners > 0) items.push({ type: "bin_liners", label: "Bin Liners", quantity: binLiners });
+    
+    const cupsPaper = parseInt(part3.bathroomCupsPaper || "0");
+    if (cupsPaper > 0) items.push({ type: "cups_dispensers", label: "Cups/Dispensers", quantity: cupsPaper });
+    
+    return items;
+  };
+
   // Load existing audit data or pre-populate from school data
   useEffect(() => {
     if (existingAudit && !hasLoadedInitialData.current) {
@@ -175,6 +282,21 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       hasLoadedInitialData.current = true;
     }
   }, [existingAudit, schoolData]);
+
+  // Load existing promises
+  useEffect(() => {
+    if (existingPromises && existingPromises.length > 0) {
+      const formattedPromises = existingPromises.map(p => ({
+        plasticItemType: p.plasticItemType,
+        plasticItemLabel: p.plasticItemLabel,
+        baselineQuantity: p.baselineQuantity,
+        targetQuantity: p.targetQuantity,
+        timeframeUnit: p.timeframeUnit as 'week' | 'month' | 'year',
+        notes: p.notes || "",
+      }));
+      form5.reset({ promises: formattedPromises });
+    }
+  }, [existingPromises]);
 
   // Auto-save mutation
   const saveMutation = useMutation({
@@ -282,7 +404,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     }
 
     await handleSaveProgress();
-    if (currentStep < 4) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -296,7 +418,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
   // Submit audit
   const handleSubmit = async () => {
-    const isValid = await form4.trigger();
+    const isValid = await form5.trigger();
     
     if (!isValid) {
       toast({
@@ -309,15 +431,54 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
     setIsSubmitting(true);
     
-    // Save first
-    await handleSaveProgress();
-    
-    // Then submit
-    if (auditId) {
-      submitMutation.mutate(auditId);
+    try {
+      // Save audit first
+      await handleSaveProgress();
+      
+      if (!auditId) {
+        throw new Error("Audit ID not found");
+      }
+      
+      // Submit audit
+      await submitMutation.mutateAsync(auditId);
+      
+      // Create promises
+      const promisesData = form5.getValues().promises;
+      const promisePromises = promisesData.map(promise => {
+        const reductionAmount = promise.baselineQuantity - promise.targetQuantity;
+        return apiRequest('POST', '/api/reduction-promises', {
+          schoolId,
+          auditId,
+          plasticItemType: promise.plasticItemType,
+          plasticItemLabel: promise.plasticItemLabel,
+          baselineQuantity: promise.baselineQuantity,
+          targetQuantity: promise.targetQuantity,
+          reductionAmount,
+          timeframeUnit: promise.timeframeUnit,
+          notes: promise.notes || "",
+        });
+      });
+      
+      await Promise.all(promisePromises);
+      
+      queryClient.invalidateQueries({ queryKey: [`/api/reduction-promises/audit/${auditId}`] });
+      
+      toast({
+        title: "Audit and Promises Submitted!",
+        description: `Your plastic waste audit and ${promisesData.length} reduction promises have been submitted for review.`,
+      });
+      
+      onClose?.();
+    } catch (error) {
+      console.error("Error submitting audit and promises:", error);
+      toast({
+        title: "Submission Error",
+        description: "There was an error submitting your audit. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
     }
-    
-    setIsSubmitting(false);
   };
 
   const getCurrentForm = () => {
@@ -326,11 +487,12 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       case 2: return form2;
       case 3: return form3;
       case 4: return form4;
+      case 5: return form5;
       default: return form1;
     }
   };
 
-  const progress = (currentStep / 4) * 100;
+  const progress = (currentStep / 5) * 100;
 
   // Check if audit is already submitted
   if (existingAudit?.status === 'submitted') {
@@ -445,7 +607,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               </AccordionContent>
             </AccordionItem>
             
-            <AccordionItem value="part4" className="border-none">
+            <AccordionItem value="part4" className="border-b border-yellow-100">
               <AccordionTrigger className="px-4 hover:bg-yellow-50" data-testid="accordion-trigger-part4">
                 Part 4: Waste Management Practices
               </AccordionTrigger>
@@ -482,6 +644,31 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   </div>
                 ) : (
                   <p className="text-sm text-gray-500">No data available</p>
+                )}
+              </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="promises" className="border-none">
+              <AccordionTrigger className="px-4 hover:bg-yellow-50" data-testid="accordion-trigger-promises">
+                Part 5: Reduction Promises
+              </AccordionTrigger>
+              <AccordionContent className="px-4 pb-4" data-testid="accordion-content-promises">
+                {existingPromises && existingPromises.length > 0 ? (
+                  <div className="space-y-3">
+                    {existingPromises.map((promise, idx) => (
+                      <div key={promise.id} className="bg-green-50 p-3 rounded border border-green-200 text-sm">
+                        <p className="font-semibold text-navy">{promise.plasticItemLabel}</p>
+                        <div className="mt-2 space-y-1 text-gray-700">
+                          <div>Baseline: {promise.baselineQuantity} items per {promise.timeframeUnit}</div>
+                          <div>Target: {promise.targetQuantity} items per {promise.timeframeUnit}</div>
+                          <div className="font-semibold text-green-700">Reduction: {promise.reductionAmount} items per {promise.timeframeUnit}</div>
+                          {promise.notes && <div className="mt-2 text-sm italic">{promise.notes}</div>}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-sm text-gray-500">No promises have been set for this audit yet.</p>
                 )}
               </AccordionContent>
             </AccordionItem>
@@ -565,11 +752,12 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
           Plastic Waste Audit
         </CardTitle>
         <CardDescription>
-          Step {currentStep} of 4: {
+          Step {currentStep} of 5: {
             currentStep === 1 ? "About Your School" :
             currentStep === 2 ? "Lunchroom & Staffroom" :
             currentStep === 3 ? "Classrooms & Bathrooms" :
-            "Waste Management"
+            currentStep === 4 ? "Waste Management" :
+            "Reduction Promises"
           }
         </CardDescription>
         <Progress value={progress} className="mt-2" />
@@ -1097,6 +1285,215 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
           </Form>
         )}
 
+        {/* Step 5: Reduction Promises */}
+        {currentStep === 5 && (
+          <Form {...form5}>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-lg font-semibold text-navy mb-2">Your Reduction Promises</h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Based on your audit, commit to reducing at least 2 types of plastic. Set realistic targets!
+                </p>
+              </div>
+
+              {fields.map((field, index) => {
+                const availableItems = extractAuditItems();
+                const selectedItem = form5.watch(`promises.${index}.plasticItemType`);
+                const selectedItemData = availableItems.find(item => item.type === selectedItem);
+
+                return (
+                  <Card key={field.id} className="p-4 bg-gray-50 border border-gray-200" data-testid={`card-promise-${index}`}>
+                    <div className="flex justify-between items-start mb-4">
+                      <h4 className="font-semibold text-navy">Promise {index + 1}</h4>
+                      {fields.length > 2 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => remove(index)}
+                          data-testid={`button-remove-promise-${index}`}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-500" />
+                        </Button>
+                      )}
+                    </div>
+
+                    <div className="grid gap-4">
+                      <FormField
+                        control={form5.control}
+                        name={`promises.${index}.plasticItemType`}
+                        render={({ field: formField }) => (
+                          <FormItem>
+                            <FormLabel>Plastic Item Type</FormLabel>
+                            <Select
+                              onValueChange={(value) => {
+                                formField.onChange(value);
+                                const item = availableItems.find(i => i.type === value);
+                                if (item) {
+                                  form5.setValue(`promises.${index}.plasticItemLabel`, item.label);
+                                  form5.setValue(`promises.${index}.baselineQuantity`, item.quantity);
+                                }
+                              }}
+                              value={formField.value}
+                            >
+                              <FormControl>
+                                <SelectTrigger data-testid={`select-promise-type-${index}`}>
+                                  <SelectValue placeholder="Select plastic item" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {availableItems.map((item) => (
+                                  <SelectItem key={item.type + item.label} value={item.type}>
+                                    {item.label} ({item.quantity} items)
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {selectedItemData && (
+                        <div className="grid grid-cols-2 gap-4">
+                          <FormField
+                            control={form5.control}
+                            name={`promises.${index}.baselineQuantity`}
+                            render={({ field: formField }) => (
+                              <FormItem>
+                                <FormLabel>Current Usage (Baseline)</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...formField}
+                                    type="number"
+                                    min="1"
+                                    data-testid={`input-promise-baseline-${index}`}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form5.control}
+                            name={`promises.${index}.targetQuantity`}
+                            render={({ field: formField }) => (
+                              <FormItem>
+                                <FormLabel>Target Reduction</FormLabel>
+                                <FormControl>
+                                  <Input
+                                    {...formField}
+                                    type="number"
+                                    min="0"
+                                    data-testid={`input-promise-target-${index}`}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      )}
+
+                      <FormField
+                        control={form5.control}
+                        name={`promises.${index}.timeframeUnit`}
+                        render={({ field: formField }) => (
+                          <FormItem>
+                            <FormLabel>Timeframe</FormLabel>
+                            <Select onValueChange={formField.onChange} value={formField.value}>
+                              <FormControl>
+                                <SelectTrigger data-testid={`select-promise-timeframe-${index}`}>
+                                  <SelectValue placeholder="Select timeframe" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                <SelectItem value="week">Per Week</SelectItem>
+                                <SelectItem value="month">Per Month</SelectItem>
+                                <SelectItem value="year">Per Year</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form5.control}
+                        name={`promises.${index}.notes`}
+                        render={({ field: formField }) => (
+                          <FormItem>
+                            <FormLabel>Notes (Optional)</FormLabel>
+                            <FormControl>
+                              <Textarea
+                                {...formField}
+                                placeholder="How will you achieve this reduction?"
+                                data-testid={`input-promise-notes-${index}`}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      {selectedItemData && form5.watch(`promises.${index}.baselineQuantity`) > 0 && (
+                        <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                          <p className="text-sm font-semibold text-navy">
+                            Reduction: {form5.watch(`promises.${index}.baselineQuantity`) - form5.watch(`promises.${index}.targetQuantity`)} items per {form5.watch(`promises.${index}.timeframeUnit`)}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </Card>
+                );
+              })}
+
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => append({
+                  plasticItemType: "",
+                  plasticItemLabel: "",
+                  baselineQuantity: 0,
+                  targetQuantity: 0,
+                  timeframeUnit: "month" as const,
+                  notes: "",
+                })}
+                data-testid="button-add-promise"
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Add Another Promise
+              </Button>
+
+              {form5.formState.errors.promises?.root && (
+                <p className="text-sm text-red-500">{form5.formState.errors.promises.root.message}</p>
+              )}
+
+              {/* Promises Summary */}
+              {fields.length > 0 && (
+                <div className="bg-green-50 p-4 rounded-lg border border-green-200 mt-6">
+                  <h4 className="font-semibold text-navy mb-2">Your Promises Summary</h4>
+                  <p className="text-sm text-gray-600 mb-3">
+                    You're committing to reduce {fields.length} types of plastic items:
+                  </p>
+                  <div className="space-y-2">
+                    {fields.map((field, index) => {
+                      const promise = form5.watch(`promises.${index}`);
+                      const reduction = promise.baselineQuantity - promise.targetQuantity;
+                      return promise.plasticItemLabel ? (
+                        <div key={field.id} className="text-sm bg-white p-2 rounded">
+                          <span className="font-semibold">{promise.plasticItemLabel}:</span> Reduce by {reduction} items per {promise.timeframeUnit}
+                        </div>
+                      ) : null;
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </Form>
+        )}
+
         {/* Navigation Buttons */}
         <div className="flex justify-between pt-4 border-t">
           <div>
@@ -1121,7 +1518,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               <Save className="h-4 w-4 mr-1" />
               Save Progress
             </Button>
-            {currentStep < 4 ? (
+            {currentStep < 5 ? (
               <Button
                 onClick={handleNext}
                 data-testid="button-next"
