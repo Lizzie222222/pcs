@@ -80,7 +80,7 @@ export default function ProgressTracker({
       description: t('progress.inspire.description'),
       icon: Lightbulb,
       completed: inspireCompleted,
-      color: 'pcs_blue',
+      color: 'teal',
     },
     {
       id: 'investigate',
@@ -88,7 +88,7 @@ export default function ProgressTracker({
       description: t('progress.investigate.description'),
       icon: Search,
       completed: investigateCompleted,
-      color: 'teal',
+      color: 'yellow',
     },
     {
       id: 'act',
@@ -146,6 +146,8 @@ export default function ProgressTracker({
         return 'bg-gradient-to-br from-blue-500 to-blue-600 text-white';
       case 'teal':
         return 'bg-gradient-to-br from-teal-500 to-teal-600 text-white';
+      case 'yellow':
+        return 'bg-gradient-to-br from-yellow-400 to-yellow-500 text-white';
       case 'coral':
         return 'bg-gradient-to-br from-orange-500 to-orange-600 text-white';
       default:
@@ -159,6 +161,8 @@ export default function ProgressTracker({
         return 'bg-gradient-to-r from-blue-500 to-blue-600';
       case 'teal':
         return 'bg-gradient-to-r from-teal-500 to-teal-600';
+      case 'yellow':
+        return 'bg-gradient-to-r from-yellow-400 to-yellow-500';
       case 'coral':
         return 'bg-gradient-to-r from-orange-500 to-orange-600';
       default:

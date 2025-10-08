@@ -70,6 +70,7 @@ import {
   ScatterChart, Scatter
 } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
@@ -4657,50 +4658,149 @@ export default function Admin() {
                             </span>
                           </div>
 
-                          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
-                            <h4 className="font-medium text-sm text-gray-700 mb-2">Audit Data Summary</h4>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                              <div className="bg-white rounded p-3 border">
-                                <p className="text-xs font-semibold text-gray-600 mb-1">Part 1: About Your School</p>
-                                <p className="text-sm text-gray-700" data-testid={`text-part1-${audit.id}`}>
-                                  {audit.part1Data && Object.keys(audit.part1Data).length > 0 
-                                    ? `${Object.keys(audit.part1Data).length} fields completed` 
-                                    : 'No data'}
-                                </p>
-                              </div>
-                              <div className="bg-white rounded p-3 border">
-                                <p className="text-xs font-semibold text-gray-600 mb-1">Part 2: Lunchroom & Staffroom</p>
-                                <p className="text-sm text-gray-700" data-testid={`text-part2-${audit.id}`}>
-                                  {audit.part2Data && Object.keys(audit.part2Data).length > 0 
-                                    ? `${Object.keys(audit.part2Data).length} fields completed` 
-                                    : 'No data'}
-                                </p>
-                              </div>
-                              <div className="bg-white rounded p-3 border">
-                                <p className="text-xs font-semibold text-gray-600 mb-1">Part 3: Classrooms & Bathrooms</p>
-                                <p className="text-sm text-gray-700" data-testid={`text-part3-${audit.id}`}>
-                                  {audit.part3Data && Object.keys(audit.part3Data).length > 0 
-                                    ? `${Object.keys(audit.part3Data).length} fields completed` 
-                                    : 'No data'}
-                                </p>
-                              </div>
-                              <div className="bg-white rounded p-3 border">
-                                <p className="text-xs font-semibold text-gray-600 mb-1">Part 4: Waste Management</p>
-                                <p className="text-sm text-gray-700" data-testid={`text-part4-${audit.id}`}>
-                                  {audit.part4Data && Object.keys(audit.part4Data).length > 0 
-                                    ? `${Object.keys(audit.part4Data).length} fields completed` 
-                                    : 'No data'}
-                                </p>
-                              </div>
+                          <Accordion type="single" collapsible className="w-full bg-white rounded-lg border" data-testid={`accordion-audit-${audit.id}`}>
+                            <AccordionItem value="part1" className="border-b">
+                              <AccordionTrigger className="px-4 hover:bg-gray-50" data-testid={`accordion-trigger-part1-${audit.id}`}>
+                                Part 1: School Information
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 pb-4" data-testid={`accordion-content-part1-${audit.id}`}>
+                                {audit.part1Data ? (
+                                  <div className="space-y-2 text-sm">
+                                    <div><strong>School Name:</strong> {audit.part1Data.schoolName}</div>
+                                    {audit.part1Data.studentCount && <div><strong>Number of Students:</strong> {audit.part1Data.studentCount}</div>}
+                                    {audit.part1Data.staffCount && <div><strong>Number of Staff:</strong> {audit.part1Data.staffCount}</div>}
+                                    <div><strong>Audit Date:</strong> {audit.part1Data.auditDate}</div>
+                                    {audit.part1Data.auditTeam && <div><strong>Audit Team Members:</strong> {audit.part1Data.auditTeam}</div>}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-500">No data available</p>
+                                )}
+                              </AccordionContent>
+                            </AccordionItem>
+                            
+                            <AccordionItem value="part2" className="border-b">
+                              <AccordionTrigger className="px-4 hover:bg-gray-50" data-testid={`accordion-trigger-part2-${audit.id}`}>
+                                Part 2: Lunchroom & Staffroom
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 pb-4" data-testid={`accordion-content-part2-${audit.id}`}>
+                                {audit.part2Data ? (
+                                  <div className="space-y-4">
+                                    <div>
+                                      <h4 className="font-semibold mb-2 text-navy">Lunchroom</h4>
+                                      <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <div>Plastic Bottles: {audit.part2Data.lunchroomPlasticBottles || 0}</div>
+                                        <div>Plastic Cups: {audit.part2Data.lunchroomPlasticCups || 0}</div>
+                                        <div>Plastic Cutlery: {audit.part2Data.lunchroomPlasticCutlery || 0}</div>
+                                        <div>Plastic Straws: {audit.part2Data.lunchroomPlasticStraws || 0}</div>
+                                        <div>Food Packaging: {audit.part2Data.lunchroomFoodPackaging || 0}</div>
+                                        <div>Cling Film: {audit.part2Data.lunchroomClingFilm || 0}</div>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-semibold mb-2 text-navy">Staffroom</h4>
+                                      <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <div>Plastic Bottles: {audit.part2Data.staffroomPlasticBottles || 0}</div>
+                                        <div>Plastic Cups: {audit.part2Data.staffroomPlasticCups || 0}</div>
+                                        <div>Food Packaging: {audit.part2Data.staffroomFoodPackaging || 0}</div>
+                                      </div>
+                                    </div>
+                                    {audit.part2Data.lunchroomNotes && (
+                                      <div className="text-sm">
+                                        <strong>Additional Notes:</strong> {audit.part2Data.lunchroomNotes}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-500">No data available</p>
+                                )}
+                              </AccordionContent>
+                            </AccordionItem>
+                            
+                            <AccordionItem value="part3" className="border-b">
+                              <AccordionTrigger className="px-4 hover:bg-gray-50" data-testid={`accordion-trigger-part3-${audit.id}`}>
+                                Part 3: Classrooms & Bathrooms
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 pb-4" data-testid={`accordion-content-part3-${audit.id}`}>
+                                {audit.part3Data ? (
+                                  <div className="space-y-4">
+                                    <div>
+                                      <h4 className="font-semibold mb-2 text-navy">Classrooms</h4>
+                                      <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <div>Pens & Pencils: {audit.part3Data.classroomPensPencils || 0}</div>
+                                        <div>Stationery Items: {audit.part3Data.classroomStationery || 0}</div>
+                                        <div>Display Materials: {audit.part3Data.classroomDisplayMaterials || 0}</div>
+                                        <div>Toys/Equipment: {audit.part3Data.classroomToys || 0}</div>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <h4 className="font-semibold mb-2 text-navy">Bathrooms</h4>
+                                      <div className="grid grid-cols-2 gap-2 text-sm">
+                                        <div>Soap Bottles: {audit.part3Data.bathroomSoapBottles || 0}</div>
+                                        <div>Bin Liners: {audit.part3Data.bathroomBinLiners || 0}</div>
+                                        <div>Cups/Dispensers: {audit.part3Data.bathroomCupsPaper || 0}</div>
+                                      </div>
+                                    </div>
+                                    {audit.part3Data.classroomNotes && (
+                                      <div className="text-sm">
+                                        <strong>Additional Notes:</strong> {audit.part3Data.classroomNotes}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-500">No data available</p>
+                                )}
+                              </AccordionContent>
+                            </AccordionItem>
+                            
+                            <AccordionItem value="part4" className="border-none">
+                              <AccordionTrigger className="px-4 hover:bg-gray-50" data-testid={`accordion-trigger-part4-${audit.id}`}>
+                                Part 4: Waste Management Practices
+                              </AccordionTrigger>
+                              <AccordionContent className="px-4 pb-4" data-testid={`accordion-content-part4-${audit.id}`}>
+                                {audit.part4Data ? (
+                                  <div className="space-y-3 text-sm">
+                                    <div>
+                                      <strong>Has Recycling Bins:</strong> {audit.part4Data.hasRecyclingBins ? 'Yes' : 'No'}
+                                    </div>
+                                    {audit.part4Data.recyclingBinLocations && (
+                                      <div>
+                                        <strong>Recycling Bin Locations:</strong> {audit.part4Data.recyclingBinLocations}
+                                      </div>
+                                    )}
+                                    <div>
+                                      <strong>Plastic Waste Destination:</strong> {audit.part4Data.plasticWasteDestination}
+                                    </div>
+                                    <div>
+                                      <strong>Composts Organic Waste:</strong> {audit.part4Data.compostsOrganicWaste ? 'Yes' : 'No'}
+                                    </div>
+                                    <div>
+                                      <strong>Has Plastic Reduction Policy:</strong> {audit.part4Data.hasPlasticReductionPolicy ? 'Yes' : 'No'}
+                                    </div>
+                                    {audit.part4Data.reductionPolicyDetails && (
+                                      <div>
+                                        <strong>Policy Details:</strong> {audit.part4Data.reductionPolicyDetails}
+                                      </div>
+                                    )}
+                                    {audit.part4Data.wasteManagementNotes && (
+                                      <div>
+                                        <strong>Additional Notes:</strong> {audit.part4Data.wasteManagementNotes}
+                                      </div>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <p className="text-sm text-gray-500">No data available</p>
+                                )}
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
+                          
+                          {audit.totalPlasticItems !== undefined && (
+                            <div className="mt-4 bg-gray-50 rounded-lg p-3 border">
+                              <p className="text-sm font-medium text-gray-700">
+                                Total Plastic Items: <span className="text-pcs_blue font-semibold text-lg">{audit.totalPlasticItems}</span>
+                              </p>
                             </div>
-                            {audit.totalPlasticItems !== undefined && (
-                              <div className="mt-3 pt-3 border-t">
-                                <p className="text-sm font-medium text-gray-700">
-                                  Total Plastic Items: <span className="text-pcs_blue font-semibold">{audit.totalPlasticItems}</span>
-                                </p>
-                              </div>
-                            )}
-                          </div>
+                          )}
                         </div>
                         
                         <div className="flex flex-col gap-2">
