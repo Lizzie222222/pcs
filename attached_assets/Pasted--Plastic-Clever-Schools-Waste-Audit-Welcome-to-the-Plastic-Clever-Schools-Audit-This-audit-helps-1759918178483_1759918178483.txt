@@ -1,0 +1,167 @@
+🧭 Plastic Clever Schools Waste Audit
+
+Welcome to the Plastic Clever Schools Audit!
+This audit helps you understand what types and amounts of single-use plastics are being used at your school.
+By identifying these “problem plastics” — where they come from and how many are used — you’ll be able to make a plan to tackle them.
+
+🌟 How It Works
+
+There are 4 Parts to the audit, plus a Results section at the end.
+Each part focuses on a different area of your school.
+
+Part 1: About Your School
+
+Part 2: Lunchroom & Staffroom
+
+Part 3: Classrooms & Bathrooms
+
+Part 4: Waste Management
+
+Results Tab: Calculates your total and highlights your top problem plastics.
+
+You can do this audit as a class project or eco-team challenge.
+Ask teachers or staff (like caretakers, kitchen staff, or administrators) for help where needed.
+
+🟡 PART 1 — About Your School
+Purpose
+
+To gather background info: number of pupils, staff, and any current recycling or refill initiatives.
+This will help estimate usage in later parts.
+
+Questions
+
+Q1. Tell us about your school
+
+School Name
+
+Email Address
+
+Who is completing the audit?
+
+Q2. How many pupils does your school have in each of these age groups?
+
+Early Years
+
+Primary
+
+Secondary
+
+Sixth Form
+
+Total: [auto-sum or user-entered total]
+
+Q3. How many staff does your school have?
+
+Q4. What do you think are your school’s three most commonly used single-use plastic items?
+1.
+2.
+3.
+
+Q5. Has your school implemented any refill, waste, or recycling initiatives?
+(e.g., refill stations, milk cartons replaced with jugs, recycling bins, etc.)
+
+Q6. Who is responsible for changing school policies?
+
+Q7. Does your school have an eco-club? (Yes/No)
+
+Q8. Can students bring snacks from home for breaktime?
+If yes, does this contribute to single-use plastic waste?
+
+Q9. What percentage of school pupils bring in their own packed lunches?
+(e.g., 30%, 50%, etc.)
+
+🟡 PART 2 — Lunchroom & Staffroom Plastics
+Purpose
+
+To estimate the number of single-use plastic items used per day in these two key areas.
+
+How to Estimate
+
+Count items used during one lunchtime and assume similar numbers daily.
+
+Ask staff how many items are ordered yearly and divide by school days.
+
+Or sample bins (safely!) to estimate usage.
+
+Q10. Lunchroom — Estimated Number of Items Used Per Day
+Single-Use Plastic Item	Estimated # Used Per Day
+Sandwiches in plastic cartons	
+Plastic fruit pots	
+Plastic yoghurt pots	
+Large plastic milk bottles	
+Individual milk cartons/bottles	
+Plastic water bottles	
+Plastic plates/bowls	
+Plastic soft drink bottles	
+Single-use plastic cutlery	
+Single-use plastic cups	
+Plastic straws	
+Clingfilm rolls (100m)	
+Plastic bags	
+Q11. Staffroom — Estimated Number of Items Used Per Day
+Single-Use Plastic Item	Estimated # Used Per Day
+Large plastic milk bottles	
+Individual milk pods/sachets	
+Plastic water bottles	
+Tetra Pak soft drink cartons	
+Plastic plates/bowls	
+Single-use plastic cutlery	
+Single-use plastic cups	
+Coffee cups/plastic lids	
+Plastic stirrers	
+Plastic straws	
+🟡 PART 3 — Classrooms & Bathrooms
+Purpose
+
+To find out how many single-use items are used daily in classrooms, bathrooms, and milk schemes.
+
+Q12. Bathrooms — Estimated Number of Items Used Per Day
+Single-Use Plastic Item	Estimated # Used Per Day
+Plastic hand soap bottles	
+Plastic hand sanitiser bottles	
+Q13. Classrooms — Estimated Number of Items Used Per Day
+Single-Use Plastic Item	Estimated # Used Per Day
+Plastic whiteboard pens	
+Plastic pens	
+Glue sticks	
+Laminating pouches	
+Glitter pots	
+Plastic folders	
+Sellotape	
+Q14. Milk in Classrooms — Estimated Number of Items Used Per Day
+Single-Use Plastic Item	Estimated # Used Per Day
+Individual milk cartons (250ml, free school milk)	
+Large plastic milk bottles (free school milk)	
+Single-use cups for serving milk	
+🟡 PART 4 — Waste Management
+Purpose
+
+To understand how plastic waste is collected, sorted, and recycled in your school.
+
+Q15. What are your school’s biggest challenges in collecting and managing plastic waste?
+
+(e.g., lack of recycling bins, unclear labelling, no collection service)
+
+Q16. What types of bins are available in each area?
+Area	General Waste Bin	Mixed Recycling	Plastic Recycling	Not Sure
+Canteen	☐	☐	☐	☐
+Classrooms	☐	☐	☐	☐
+Common Rooms	☐	☐	☐	☐
+Staff Rooms	☐	☐	☐	☐
+Bathrooms	☐	☐	☐	☐
+School Kitchen	☐	☐	☐	☐
+Staff Kitchen	☐	☐	☐	☐
+Hallways	☐	☐	☐	☐
+Sports Hall	☐	☐	☐	☐
+Playground	☐	☐	☐	☐
+Other public areas	☐	☐	☐	☐
+🔴 RESULTS
+Purpose
+
+To display your total single-use plastic consumption and identify your Top 5 problem plastics.
+
+The totals auto-calculate from Parts 2 & 3.
+
+The graph shows which plastics are used most.
+
+Use these insights to design your Plastic Reduction Action Plan.
