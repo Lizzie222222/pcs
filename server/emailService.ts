@@ -484,6 +484,75 @@ export async function sendAdminNewEvidenceEmail(
   });
 }
 
+// Audit email functions
+export async function sendAuditSubmissionEmail(
+  userEmail: string,
+  schoolName: string
+): Promise<boolean> {
+  return await sendEmail({
+    to: userEmail,
+    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    subject: `Plastic Waste Audit Submitted - ${schoolName}`,
+    templateId: 'd-audit-submission-placeholder',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      dashboardUrl: getBaseUrl(),
+    },
+  });
+}
+
+export async function sendAdminNewAuditEmail(
+  adminEmail: string,
+  schoolName: string,
+  submitterName: string
+): Promise<boolean> {
+  return await sendEmail({
+    to: adminEmail,
+    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    subject: `New Audit Submission - ${schoolName}`,
+    templateId: 'd-admin-audit-notification-placeholder',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      submitterName: submitterName,
+      adminUrl: `${getBaseUrl()}/admin`,
+    },
+  });
+}
+
+export async function sendAuditApprovalEmail(
+  userEmail: string,
+  schoolName: string
+): Promise<boolean> {
+  return await sendEmail({
+    to: userEmail,
+    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    subject: `Audit Approved - ${schoolName}`,
+    templateId: 'd-audit-approval-placeholder',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      dashboardUrl: getBaseUrl(),
+    },
+  });
+}
+
+export async function sendAuditRejectionEmail(
+  userEmail: string,
+  schoolName: string,
+  feedback: string
+): Promise<boolean> {
+  return await sendEmail({
+    to: userEmail,
+    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    subject: `Audit Feedback - ${schoolName}`,
+    templateId: 'd-audit-rejection-placeholder',
+    dynamicTemplateData: {
+      schoolName: schoolName,
+      feedback: feedback,
+      dashboardUrl: getBaseUrl(),
+    },
+  });
+}
+
 // Bulk email functions for admin use
 // 
 // IMPORTANT: You must create a SendGrid dynamic template with the following variables:

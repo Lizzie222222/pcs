@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CheckCircle, Circle, Lock, Lightbulb, Search, Hand, Clock, X, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
+import { PlasticWasteAudit } from "@/components/PlasticWasteAudit";
 
 interface EvidenceCounts {
   inspire?: { total: number; approved: number };
@@ -404,6 +405,13 @@ export default function ProgressTracker({
                     })
                   )}
                 </div>
+
+                {/* Audit Component for Investigate Stage */}
+                {stage.id === 'investigate' && status !== 'locked' && (
+                  <div className="mt-4">
+                    <PlasticWasteAudit schoolId={schoolId} />
+                  </div>
+                )}
 
                 {status === 'locked' && (
                   <div className="text-center mt-4 pt-4 border-t flex-shrink-0">

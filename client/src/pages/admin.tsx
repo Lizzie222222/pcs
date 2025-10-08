@@ -203,6 +203,36 @@ interface UserWithSchools {
   }>;
 }
 
+interface PendingAudit {
+  id: string;
+  schoolId: string;
+  submittedBy: string;
+  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  part1Data: any;
+  part2Data: any;
+  part3Data: any;
+  part4Data: any;
+  resultsData?: any;
+  totalPlasticItems?: number;
+  topProblemPlastics?: any[];
+  reviewedBy?: string;
+  reviewedAt?: string;
+  reviewNotes?: string;
+  submittedAt: string;
+  createdAt: string;
+  school: {
+    id: string;
+    name: string;
+    country: string;
+  };
+  submittedByUser: {
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+  };
+}
+
 // Color palette for charts
 const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
 
@@ -3507,7 +3537,7 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'audits' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test'>('overview');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [schoolFilters, setSchoolFilters] = useState({
     search: '',
@@ -3530,6 +3560,11 @@ export default function Admin() {
   } | null>(null);
   const [reviewData, setReviewData] = useState<{
     evidenceId: string;
+    action: 'approved' | 'rejected';
+    notes: string;
+  } | null>(null);
+  const [auditReviewData, setAuditReviewData] = useState<{
+    auditId: string;
     action: 'approved' | 'rejected';
     notes: string;
   } | null>(null);
@@ -3632,6 +3667,13 @@ export default function Admin() {
     retry: false,
   });
 
+  // Pending audits query
+  const { data: pendingAudits = [] } = useQuery<PendingAudit[]>({
+    queryKey: ['/api/admin/audits/pending'],
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'audits'),
+    retry: false,
+  });
+
   // Clean filters for API (convert "all" values to empty strings)
   const cleanFilters = (filters: typeof schoolFilters) => {
     return Object.fromEntries(
@@ -3718,6 +3760,36 @@ export default function Admin() {
       toast({
         title: "Review Failed",
         description: "Failed to review evidence. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Audit review mutation
+  const reviewAuditMutation = useMutation({
+    mutationFn: async ({ auditId, approved, reviewNotes }: {
+      auditId: string;
+      approved: boolean;
+      reviewNotes: string;
+    }) => {
+      await apiRequest('PUT', `/api/admin/audits/${auditId}/review`, {
+        approved,
+        reviewNotes,
+      });
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Audit Reviewed",
+        description: `Audit has been successfully ${variables.approved ? 'approved' : 'rejected'}.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/audits/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      setAuditReviewData(null);
+    },
+    onError: (error) => {
+      toast({
+        title: "Review Failed",
+        description: "Failed to review audit. Please try again.",
         variant: "destructive",
       });
     },
@@ -4199,6 +4271,25 @@ export default function Admin() {
             )}
           </button>
           <button
+            className={`px-4 py-2 rounded-lg font-medium transition-colors relative ${
+              activeTab === 'audits' 
+                ? 'bg-white text-navy shadow-sm' 
+                : 'text-gray-600 hover:text-navy'
+            }`}
+            onClick={() => setActiveTab('audits')}
+            data-testid="tab-audits"
+          >
+            Audit Reviews
+            {pendingAudits.length > 0 && (
+              <span 
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
+                data-testid="badge-pending-audits-count"
+              >
+                {pendingAudits.length}
+              </span>
+            )}
+          </button>
+          <button
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'schools' 
                 ? 'bg-white text-navy shadow-sm' 
@@ -4504,6 +4595,140 @@ export default function Admin() {
                           >
                             <Star className="h-4 w-4 mr-1" />
                             Feature
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Audit Reviews Tab */}
+        {activeTab === 'audits' && (
+          <Card>
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Audit Review Queue
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {pendingAudits.length === 0 ? (
+                <EmptyState
+                  icon={FileText}
+                  title="No Pending Audits"
+                  description="All audits have been reviewed. Great work!"
+                />
+              ) : (
+                <div className="space-y-4">
+                  {pendingAudits.map((audit) => (
+                    <div 
+                      key={audit.id} 
+                      className="border rounded-lg p-4 hover:shadow-md transition-shadow"
+                      data-testid={`audit-card-${audit.id}`}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-3 mb-3">
+                            <h3 className="font-semibold text-navy text-lg" data-testid={`text-school-name-${audit.id}`}>
+                              {audit.school.name}
+                            </h3>
+                            <Badge variant="outline" data-testid={`text-school-country-${audit.id}`}>
+                              <MapPin className="h-3 w-3 mr-1" />
+                              {audit.school.country}
+                            </Badge>
+                            <Badge className="bg-blue-500 text-white" data-testid={`text-audit-status-${audit.id}`}>
+                              {audit.status}
+                            </Badge>
+                          </div>
+                          
+                          <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                            <span data-testid={`text-submitted-by-${audit.id}`}>
+                              Submitted by: {audit.submittedByUser.firstName} {audit.submittedByUser.lastName}
+                            </span>
+                            <span data-testid={`text-submitted-at-${audit.id}`}>
+                              <Calendar className="h-3 w-3 inline mr-1" />
+                              {new Date(audit.submittedAt).toLocaleDateString()}
+                            </span>
+                          </div>
+
+                          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                            <h4 className="font-medium text-sm text-gray-700 mb-2">Audit Data Summary</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="bg-white rounded p-3 border">
+                                <p className="text-xs font-semibold text-gray-600 mb-1">Part 1: About Your School</p>
+                                <p className="text-sm text-gray-700" data-testid={`text-part1-${audit.id}`}>
+                                  {audit.part1Data && Object.keys(audit.part1Data).length > 0 
+                                    ? `${Object.keys(audit.part1Data).length} fields completed` 
+                                    : 'No data'}
+                                </p>
+                              </div>
+                              <div className="bg-white rounded p-3 border">
+                                <p className="text-xs font-semibold text-gray-600 mb-1">Part 2: Lunchroom & Staffroom</p>
+                                <p className="text-sm text-gray-700" data-testid={`text-part2-${audit.id}`}>
+                                  {audit.part2Data && Object.keys(audit.part2Data).length > 0 
+                                    ? `${Object.keys(audit.part2Data).length} fields completed` 
+                                    : 'No data'}
+                                </p>
+                              </div>
+                              <div className="bg-white rounded p-3 border">
+                                <p className="text-xs font-semibold text-gray-600 mb-1">Part 3: Classrooms & Bathrooms</p>
+                                <p className="text-sm text-gray-700" data-testid={`text-part3-${audit.id}`}>
+                                  {audit.part3Data && Object.keys(audit.part3Data).length > 0 
+                                    ? `${Object.keys(audit.part3Data).length} fields completed` 
+                                    : 'No data'}
+                                </p>
+                              </div>
+                              <div className="bg-white rounded p-3 border">
+                                <p className="text-xs font-semibold text-gray-600 mb-1">Part 4: Waste Management</p>
+                                <p className="text-sm text-gray-700" data-testid={`text-part4-${audit.id}`}>
+                                  {audit.part4Data && Object.keys(audit.part4Data).length > 0 
+                                    ? `${Object.keys(audit.part4Data).length} fields completed` 
+                                    : 'No data'}
+                                </p>
+                              </div>
+                            </div>
+                            {audit.totalPlasticItems !== undefined && (
+                              <div className="mt-3 pt-3 border-t">
+                                <p className="text-sm font-medium text-gray-700">
+                                  Total Plastic Items: <span className="text-pcs_blue font-semibold">{audit.totalPlasticItems}</span>
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className="flex flex-col gap-2">
+                          <Button 
+                            size="sm" 
+                            className="bg-green-500 hover:bg-green-600"
+                            onClick={() => setAuditReviewData({
+                              auditId: audit.id,
+                              action: 'approved',
+                              notes: ''
+                            })}
+                            data-testid={`button-approve-audit-${audit.id}`}
+                          >
+                            <CheckCircle className="h-4 w-4 mr-1" />
+                            Approve
+                          </Button>
+                          <Button 
+                            size="sm" 
+                            variant="destructive"
+                            onClick={() => setAuditReviewData({
+                              auditId: audit.id,
+                              action: 'rejected',
+                              notes: ''
+                            })}
+                            data-testid={`button-reject-audit-${audit.id}`}
+                          >
+                            <XCircle className="h-4 w-4 mr-1" />
+                            Reject
                           </Button>
                         </div>
                       </div>
@@ -4979,6 +5204,67 @@ export default function Admin() {
                   data-testid="button-confirm-review"
                 >
                   {reviewEvidenceMutation.isPending ? 'Processing...' : 'Confirm'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Audit Review Modal */}
+      {auditReviewData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-navy mb-4">
+              {auditReviewData.action === 'approved' ? 'Approve Audit' : 'Reject Audit'}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Review Notes {auditReviewData.action === 'rejected' && <span className="text-red-500">*</span>}
+                </label>
+                <Textarea
+                  value={auditReviewData.notes}
+                  onChange={(e) => setAuditReviewData(prev => prev ? { ...prev, notes: e.target.value } : null)}
+                  placeholder={
+                    auditReviewData.action === 'approved' 
+                      ? 'Optional feedback for the school...'
+                      : 'Please provide feedback on why this audit was rejected...'
+                  }
+                  rows={4}
+                  data-testid="textarea-audit-review-notes"
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setAuditReviewData(null)}
+                  className="flex-1"
+                  data-testid="button-cancel-audit-review"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className={`flex-1 ${auditReviewData.action === 'approved' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}`}
+                  onClick={() => {
+                    if (auditReviewData.action === 'rejected' && !auditReviewData.notes.trim()) {
+                      toast({
+                        title: "Review Notes Required",
+                        description: "Please provide feedback when rejecting audit.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    reviewAuditMutation.mutate({
+                      auditId: auditReviewData.auditId,
+                      approved: auditReviewData.action === 'approved',
+                      reviewNotes: auditReviewData.notes,
+                    });
+                  }}
+                  disabled={reviewAuditMutation.isPending}
+                  data-testid="button-confirm-audit-review"
+                >
+                  {reviewAuditMutation.isPending ? 'Processing...' : 'Confirm'}
                 </Button>
               </div>
             </div>

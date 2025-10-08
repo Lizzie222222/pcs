@@ -1,0 +1,988 @@
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Progress } from "@/components/ui/progress";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
+import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle } from "lucide-react";
+import type { AuditResponse } from "@shared/schema";
+
+interface PlasticWasteAuditProps {
+  schoolId: string;
+  onClose?: () => void;
+}
+
+// Form schemas for each part
+const part1Schema = z.object({
+  schoolName: z.string().min(1, "School name is required"),
+  studentCount: z.string().min(1, "Student count is required"),
+  staffCount: z.string().min(1, "Staff count is required"),
+  auditDate: z.string().min(1, "Audit date is required"),
+  auditTeam: z.string().min(1, "Audit team members are required"),
+});
+
+const part2Schema = z.object({
+  lunchroomPlasticBottles: z.string().default("0"),
+  lunchroomPlasticCups: z.string().default("0"),
+  lunchroomPlasticCutlery: z.string().default("0"),
+  lunchroomPlasticStraws: z.string().default("0"),
+  lunchroomFoodPackaging: z.string().default("0"),
+  lunchroomClingFilm: z.string().default("0"),
+  staffroomPlasticBottles: z.string().default("0"),
+  staffroomPlasticCups: z.string().default("0"),
+  staffroomFoodPackaging: z.string().default("0"),
+  lunchroomNotes: z.string().optional(),
+});
+
+const part3Schema = z.object({
+  classroomPensPencils: z.string().default("0"),
+  classroomStationery: z.string().default("0"),
+  classroomDisplayMaterials: z.string().default("0"),
+  classroomToys: z.string().default("0"),
+  bathroomSoapBottles: z.string().default("0"),
+  bathroomBinLiners: z.string().default("0"),
+  bathroomCupsPaper: z.string().default("0"),
+  classroomNotes: z.string().optional(),
+});
+
+const part4Schema = z.object({
+  hasRecyclingBins: z.boolean().default(false),
+  recyclingBinLocations: z.string().optional(),
+  plasticWasteDestination: z.string().min(1, "Please specify where plastic waste goes"),
+  compostsOrganicWaste: z.boolean().default(false),
+  hasPlasticReductionPolicy: z.boolean().default(false),
+  reductionPolicyDetails: z.string().optional(),
+  wasteManagementNotes: z.string().optional(),
+});
+
+type Part1Data = z.infer<typeof part1Schema>;
+type Part2Data = z.infer<typeof part2Schema>;
+type Part3Data = z.infer<typeof part3Schema>;
+type Part4Data = z.infer<typeof part4Schema>;
+
+export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps) {
+  const [currentStep, setCurrentStep] = useState(1);
+  const [auditId, setAuditId] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
+
+  // Fetch existing audit if any
+  const { data: existingAudit } = useQuery<AuditResponse>({
+    queryKey: [`/api/audits/school/${schoolId}`],
+    enabled: !!schoolId,
+  });
+
+  // Forms for each part
+  const form1 = useForm<Part1Data>({
+    resolver: zodResolver(part1Schema),
+    defaultValues: {
+      schoolName: "",
+      studentCount: "",
+      staffCount: "",
+      auditDate: new Date().toISOString().split('T')[0],
+      auditTeam: "",
+    },
+  });
+
+  const form2 = useForm<Part2Data>({
+    resolver: zodResolver(part2Schema),
+    defaultValues: {
+      lunchroomPlasticBottles: "0",
+      lunchroomPlasticCups: "0",
+      lunchroomPlasticCutlery: "0",
+      lunchroomPlasticStraws: "0",
+      lunchroomFoodPackaging: "0",
+      lunchroomClingFilm: "0",
+      staffroomPlasticBottles: "0",
+      staffroomPlasticCups: "0",
+      staffroomFoodPackaging: "0",
+      lunchroomNotes: "",
+    },
+  });
+
+  const form3 = useForm<Part3Data>({
+    resolver: zodResolver(part3Schema),
+    defaultValues: {
+      classroomPensPencils: "0",
+      classroomStationery: "0",
+      classroomDisplayMaterials: "0",
+      classroomToys: "0",
+      bathroomSoapBottles: "0",
+      bathroomBinLiners: "0",
+      bathroomCupsPaper: "0",
+      classroomNotes: "",
+    },
+  });
+
+  const form4 = useForm<Part4Data>({
+    resolver: zodResolver(part4Schema),
+    defaultValues: {
+      hasRecyclingBins: false,
+      recyclingBinLocations: "",
+      plasticWasteDestination: "",
+      compostsOrganicWaste: false,
+      hasPlasticReductionPolicy: false,
+      reductionPolicyDetails: "",
+      wasteManagementNotes: "",
+    },
+  });
+
+  // Load existing audit data
+  useEffect(() => {
+    if (existingAudit) {
+      setAuditId(existingAudit.id);
+      setCurrentStep(existingAudit.currentPart || 1);
+      
+      if (existingAudit.part1Data) {
+        form1.reset(existingAudit.part1Data);
+      }
+      if (existingAudit.part2Data) {
+        form2.reset(existingAudit.part2Data);
+      }
+      if (existingAudit.part3Data) {
+        form3.reset(existingAudit.part3Data);
+      }
+      if (existingAudit.part4Data) {
+        form4.reset(existingAudit.part4Data);
+      }
+    }
+  }, [existingAudit]);
+
+  // Auto-save mutation
+  const saveMutation = useMutation({
+    mutationFn: async (data: any) => {
+      const res = await apiRequest('POST', '/api/audits', data);
+      return res.json() as Promise<AuditResponse>;
+    },
+    onSuccess: (data) => {
+      if (!auditId && data) {
+        setAuditId(data.id);
+      }
+      queryClient.invalidateQueries({ queryKey: [`/api/audits/school/${schoolId}`] });
+      toast({
+        title: "Progress saved",
+        description: "Your audit progress has been saved automatically.",
+      });
+    },
+  });
+
+  // Submit mutation
+  const submitMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return apiRequest('POST', `/api/audits/${id}/submit`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [`/api/audits/school/${schoolId}`] });
+      toast({
+        title: "Audit submitted!",
+        description: "Your plastic waste audit has been submitted for review.",
+      });
+      onClose?.();
+    },
+  });
+
+  // Calculate results
+  const calculateResults = () => {
+    const part2Values = form2.getValues();
+    const part3Values = form3.getValues();
+
+    const plasticCounts = {
+      'Plastic bottles': parseInt(part2Values.lunchroomPlasticBottles || "0") + parseInt(part2Values.staffroomPlasticBottles || "0"),
+      'Plastic cups': parseInt(part2Values.lunchroomPlasticCups || "0") + parseInt(part2Values.staffroomPlasticCups || "0"),
+      'Plastic cutlery': parseInt(part2Values.lunchroomPlasticCutlery || "0"),
+      'Plastic straws': parseInt(part2Values.lunchroomPlasticStraws || "0"),
+      'Food packaging': parseInt(part2Values.lunchroomFoodPackaging || "0") + parseInt(part2Values.staffroomFoodPackaging || "0"),
+      'Cling film': parseInt(part2Values.lunchroomClingFilm || "0"),
+      'Pens & pencils': parseInt(part3Values.classroomPensPencils || "0"),
+      'Stationery items': parseInt(part3Values.classroomStationery || "0"),
+      'Display materials': parseInt(part3Values.classroomDisplayMaterials || "0"),
+      'Toys': parseInt(part3Values.classroomToys || "0"),
+      'Soap bottles': parseInt(part3Values.bathroomSoapBottles || "0"),
+      'Bin liners': parseInt(part3Values.bathroomBinLiners || "0"),
+    };
+
+    const total = Object.values(plasticCounts).reduce((sum, count) => sum + count, 0);
+    const topItems = Object.entries(plasticCounts)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .filter(([, count]) => count > 0);
+
+    return {
+      totalPlasticItems: total,
+      topProblemPlastics: topItems.map(([name, count]) => ({ name, count })),
+      plasticCounts,
+    };
+  };
+
+  // Save progress
+  const handleSaveProgress = async () => {
+    const currentForm = getCurrentForm();
+    const isValid = await currentForm.trigger();
+    
+    if (!isValid) return;
+
+    const results = calculateResults();
+    
+    const auditData = {
+      schoolId,
+      currentPart: currentStep,
+      status: 'draft',
+      part1Data: form1.getValues(),
+      part2Data: form2.getValues(),
+      part3Data: form3.getValues(),
+      part4Data: form4.getValues(),
+      resultsData: results,
+      totalPlasticItems: results.totalPlasticItems,
+      topProblemPlastics: results.topProblemPlastics,
+    };
+
+    saveMutation.mutate(auditData);
+  };
+
+  // Next step
+  const handleNext = async () => {
+    const currentForm = getCurrentForm();
+    const isValid = await currentForm.trigger();
+    
+    if (!isValid) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields before continuing.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    await handleSaveProgress();
+    if (currentStep < 4) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  // Previous step
+  const handlePrevious = () => {
+    if (currentStep > 1) {
+      setCurrentStep(currentStep - 1);
+    }
+  };
+
+  // Submit audit
+  const handleSubmit = async () => {
+    const isValid = await form4.trigger();
+    
+    if (!isValid) {
+      toast({
+        title: "Validation Error",
+        description: "Please fill in all required fields before submitting.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    
+    // Save first
+    await handleSaveProgress();
+    
+    // Then submit
+    if (auditId) {
+      submitMutation.mutate(auditId);
+    }
+    
+    setIsSubmitting(false);
+  };
+
+  const getCurrentForm = () => {
+    switch (currentStep) {
+      case 1: return form1;
+      case 2: return form2;
+      case 3: return form3;
+      case 4: return form4;
+      default: return form1;
+    }
+  };
+
+  const progress = (currentStep / 4) * 100;
+
+  // Check if audit is already submitted
+  if (existingAudit?.status === 'submitted') {
+    return (
+      <Card className="border-2 border-yellow-300 bg-yellow-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-navy">
+            <ClipboardCheck className="h-6 w-6 text-yellow-600" />
+            Audit Under Review
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-700">
+            Your plastic waste audit has been submitted and is currently under review by an administrator.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (existingAudit?.status === 'approved') {
+    const topPlastics = existingAudit.topProblemPlastics as Array<{ name: string; count: number }> | null;
+    
+    return (
+      <Card className="border-2 border-green-300 bg-green-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-navy">
+            <CheckCircle className="h-6 w-6 text-green-600" />
+            Audit Approved
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-700 mb-4">
+            Your plastic waste audit has been approved! Check the results below.
+          </p>
+          <div className="bg-white p-4 rounded-lg border border-green-200">
+            <h4 className="font-semibold text-navy mb-2">Audit Results</h4>
+            <p className="text-sm text-gray-600">
+              Total plastic items identified: <span className="font-bold">{existingAudit.totalPlasticItems || 0}</span>
+            </p>
+            {topPlastics && topPlastics.length > 0 && (
+              <div className="mt-3">
+                <p className="text-sm font-semibold text-gray-700 mb-1">Top Problem Plastics:</p>
+                <ul className="text-sm text-gray-600 space-y-1">
+                  {topPlastics.map((item, idx) => (
+                    <li key={idx}>• {item.name}: {item.count}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (existingAudit?.status === 'rejected') {
+    return (
+      <Card className="border-2 border-red-300 bg-red-50">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-navy">
+            <ClipboardCheck className="h-6 w-6 text-red-600" />
+            Audit Needs Revision
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-gray-700 mb-2">
+            Your audit submission needs revision. Please review the feedback and resubmit.
+          </p>
+          {existingAudit.reviewNotes && (
+            <div className="bg-white p-3 rounded border border-red-200 mb-4">
+              <p className="text-sm font-semibold text-gray-700">Admin Feedback:</p>
+              <p className="text-sm text-gray-600 mt-1">{existingAudit.reviewNotes}</p>
+            </div>
+          )}
+          <Button
+            onClick={() => setCurrentStep(1)}
+            data-testid="button-revise-audit"
+          >
+            Revise Audit
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  return (
+    <Card className="border-2 border-blue-300">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2 text-navy">
+          <ClipboardCheck className="h-6 w-6 text-blue-600" />
+          Plastic Waste Audit
+        </CardTitle>
+        <CardDescription>
+          Step {currentStep} of 4: {
+            currentStep === 1 ? "About Your School" :
+            currentStep === 2 ? "Lunchroom & Staffroom" :
+            currentStep === 3 ? "Classrooms & Bathrooms" :
+            "Waste Management"
+          }
+        </CardDescription>
+        <Progress value={progress} className="mt-2" />
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* Step 1: About Your School */}
+        {currentStep === 1 && (
+          <Form {...form1}>
+            <div className="space-y-4">
+              <FormField
+                control={form1.control}
+                name="schoolName"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>School Name</FormLabel>
+                    <FormControl>
+                      <Input {...field} data-testid="input-school-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form1.control}
+                name="studentCount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Number of Students</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} data-testid="input-student-count" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form1.control}
+                name="staffCount"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Number of Staff</FormLabel>
+                    <FormControl>
+                      <Input type="number" {...field} data-testid="input-staff-count" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form1.control}
+                name="auditDate"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Audit Date</FormLabel>
+                    <FormControl>
+                      <Input type="date" {...field} data-testid="input-audit-date" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form1.control}
+                name="auditTeam"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Audit Team Members</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        placeholder="List the names of team members who conducted this audit"
+                        data-testid="input-audit-team"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </Form>
+        )}
+
+        {/* Step 2: Lunchroom & Staffroom */}
+        {currentStep === 2 && (
+          <Form {...form2}>
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-navy mb-3">Lunchroom</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form2.control}
+                    name="lunchroomPlasticBottles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-lunchroom-bottles" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="lunchroomPlasticCups"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Cups</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-lunchroom-cups" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="lunchroomPlasticCutlery"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Cutlery</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-lunchroom-cutlery" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="lunchroomPlasticStraws"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Straws</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-lunchroom-straws" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="lunchroomFoodPackaging"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Food Packaging Items</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-lunchroom-packaging" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="lunchroomClingFilm"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Cling Film Uses</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-lunchroom-clingfilm" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-navy mb-3">Staffroom</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form2.control}
+                    name="staffroomPlasticBottles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Bottles</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-staffroom-bottles" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="staffroomPlasticCups"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Cups</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-staffroom-cups" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="staffroomFoodPackaging"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Food Packaging</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-staffroom-packaging" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <FormField
+                control={form2.control}
+                name="lunchroomNotes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Additional Notes (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        placeholder="Any observations about plastic use in lunchroom/staffroom areas?"
+                        data-testid="input-lunchroom-notes"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </Form>
+        )}
+
+        {/* Step 3: Classrooms & Bathrooms */}
+        {currentStep === 3 && (
+          <Form {...form3}>
+            <div className="space-y-6">
+              <div>
+                <h3 className="font-semibold text-navy mb-3">Classrooms</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form3.control}
+                    name="classroomPensPencils"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Pens & Pencils</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-classroom-pens" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="classroomStationery"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Stationery</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-classroom-stationery" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="classroomDisplayMaterials"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Display Materials</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-classroom-display" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="classroomToys"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Toys/Equipment</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-classroom-toys" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <div>
+                <h3 className="font-semibold text-navy mb-3">Bathrooms</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form3.control}
+                    name="bathroomSoapBottles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Soap Bottles</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-bathroom-soap" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="bathroomBinLiners"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Bin Liners</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-bathroom-binliners" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="bathroomCupsPaper"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Cups/Dispensers</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-bathroom-cups" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+              </div>
+
+              <FormField
+                control={form3.control}
+                name="classroomNotes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Additional Notes (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        placeholder="Any observations about plastic use in classrooms/bathrooms?"
+                        data-testid="input-classroom-notes"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+          </Form>
+        )}
+
+        {/* Step 4: Waste Management & Results */}
+        {currentStep === 4 && (
+          <Form {...form4}>
+            <div className="space-y-6">
+              <h3 className="font-semibold text-navy mb-3">Waste Management Practices</h3>
+              
+              <FormField
+                control={form4.control}
+                name="hasRecyclingBins"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        data-testid="checkbox-recycling-bins"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>School has recycling bins</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form4.control}
+                name="recyclingBinLocations"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Recycling Bin Locations (if applicable)</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="E.g., classrooms, hallways, cafeteria" data-testid="input-bin-locations" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form4.control}
+                name="plasticWasteDestination"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Where does plastic waste go?</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-waste-destination">
+                          <SelectValue placeholder="Select destination" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="general-waste">General Waste (Landfill)</SelectItem>
+                        <SelectItem value="recycling-center">Recycling Center</SelectItem>
+                        <SelectItem value="mixed">Mixed (Some recycled, some to landfill)</SelectItem>
+                        <SelectItem value="unknown">Unknown</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form4.control}
+                name="compostsOrganicWaste"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        data-testid="checkbox-composting"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>School composts organic waste</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form4.control}
+                name="hasPlasticReductionPolicy"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                        data-testid="checkbox-reduction-policy"
+                      />
+                    </FormControl>
+                    <div className="space-y-1 leading-none">
+                      <FormLabel>School has a plastic reduction policy</FormLabel>
+                    </div>
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form4.control}
+                name="reductionPolicyDetails"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Policy Details (if applicable)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        placeholder="Describe your school's plastic reduction policy"
+                        data-testid="input-policy-details"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form4.control}
+                name="wasteManagementNotes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Additional Notes (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        placeholder="Any other observations about waste management?"
+                        data-testid="input-waste-notes"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {/* Results Preview */}
+              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-6">
+                <h4 className="font-semibold text-navy mb-2">Audit Results Preview</h4>
+                <p className="text-sm text-gray-600 mb-3">
+                  Based on your responses, here's a summary of plastic use in your school:
+                </p>
+                <div className="bg-white p-3 rounded">
+                  <p className="text-sm font-semibold text-gray-700">
+                    Total Plastic Items: <span className="text-blue-600">{calculateResults().totalPlasticItems}</span>
+                  </p>
+                  {calculateResults().topProblemPlastics.length > 0 && (
+                    <div className="mt-2">
+                      <p className="text-sm font-semibold text-gray-700 mb-1">Top Problem Areas:</p>
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        {calculateResults().topProblemPlastics.map((item, idx) => (
+                          <li key={idx}>• {item.name}: {item.count}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </Form>
+        )}
+
+        {/* Navigation Buttons */}
+        <div className="flex justify-between pt-4 border-t">
+          <div>
+            {currentStep > 1 && (
+              <Button
+                variant="outline"
+                onClick={handlePrevious}
+                data-testid="button-previous"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                Previous
+              </Button>
+            )}
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={handleSaveProgress}
+              disabled={saveMutation.isPending}
+              data-testid="button-save-progress"
+            >
+              <Save className="h-4 w-4 mr-1" />
+              Save Progress
+            </Button>
+            {currentStep < 4 ? (
+              <Button
+                onClick={handleNext}
+                data-testid="button-next"
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting || submitMutation.isPending}
+                data-testid="button-submit-audit"
+              >
+                <Send className="h-4 w-4 mr-1" />
+                Submit for Review
+              </Button>
+            )}
+          </div>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}

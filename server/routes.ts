@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isSchoolMember } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, type VerificationRequest, users } from "@shared/schema";
 import { z } from "zod";
@@ -2050,7 +2050,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const school = await storage.getSchool(audit.schoolId);
         
         if (user?.email && school) {
-          // TODO: Add audit submission email notification
+          // Send confirmation email to the teacher who submitted the audit
+          await sendAuditSubmissionEmail(
+            user.email,
+            school.name
+          );
+          
+          // TODO: Notify admins about new audit submission
           console.log(`Audit submitted for school: ${school.name}`);
         }
       } catch (emailError) {
@@ -2110,8 +2116,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const school = await storage.getSchool(audit.schoolId);
         
         if (user?.email && school) {
-          // TODO: Add audit approval/rejection email notifications
-          console.log(`Audit ${approved ? 'approved' : 'rejected'} for school: ${school.name}`);
+          if (approved) {
+            await sendAuditApprovalEmail(user.email, school.name);
+          } else {
+            await sendAuditRejectionEmail(user.email, school.name, reviewNotes || 'Please review and resubmit');
+          }
         }
       } catch (emailError) {
         console.warn("Failed to send audit review email:", emailError);

@@ -1242,7 +1242,19 @@ export class DatabaseStorage implements IStorage {
     const investigateEvidence = allEvidence.filter(e => e.stage === 'investigate');
     const actEvidence = allEvidence.filter(e => e.stage === 'act');
 
-    const hasQuiz = investigateEvidence.some(e => e.isAuditQuiz && e.status === 'approved');
+    // Check if school has an approved audit
+    const approvedAudit = await db
+      .select()
+      .from(auditResponses)
+      .where(
+        and(
+          eq(auditResponses.schoolId, schoolId),
+          eq(auditResponses.status, 'approved')
+        )
+      )
+      .limit(1);
+
+    const hasQuiz = approvedAudit.length > 0;
 
     return {
       inspire: {
