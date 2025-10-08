@@ -383,7 +383,8 @@ export async function setupAuth(app: Express) {
     }
 
     passport.authenticate('google', {
-      scope: ['profile', 'email']
+      scope: ['profile', 'email'],
+      prompt: 'select_account'
     })(req, res, next);
   });
 
