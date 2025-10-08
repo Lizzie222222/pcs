@@ -3,10 +3,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { CheckCircle, Circle, Lock, Lightbulb, Search, Hand, Clock, X, ExternalLink } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import { PlasticWasteAudit } from "@/components/PlasticWasteAudit";
+import type { AuditResponse } from "@shared/schema";
 
 interface EvidenceCounts {
   inspire?: { total: number; approved: number };
@@ -53,6 +55,7 @@ export default function ProgressTracker({
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
   const [selectedRequirementId, setSelectedRequirementId] = useState<string | undefined>();
   const [selectedStage, setSelectedStage] = useState<string>('inspire');
+  const [showAuditModal, setShowAuditModal] = useState(false);
 
   // Fetch evidence requirements
   const { data: requirements = [], isLoading: requirementsLoading } = useQuery<EvidenceRequirement[]>({
@@ -62,6 +65,12 @@ export default function ProgressTracker({
   // Fetch all school evidence to match with requirements
   const { data: allEvidence = [] } = useQuery<Evidence[]>({
     queryKey: ['/api/evidence'],
+  });
+
+  // Fetch audit status
+  const { data: auditResponse } = useQuery<AuditResponse>({
+    queryKey: [`/api/audits/school/${schoolId}`],
+    enabled: !!schoolId,
   });
 
   const stages = [
@@ -164,6 +173,23 @@ export default function ProgressTracker({
     setSelectedRequirementId(requirementId);
     setSelectedStage(stage);
     setShowEvidenceForm(true);
+  };
+
+  // Check if requirement is the Plastic Waste Audit
+  const isPlasticWasteAudit = (requirement: EvidenceRequirement) => {
+    return requirement.title.includes("Plastic Waste Audit");
+  };
+
+  // Get audit status for display
+  const getAuditStatus = () => {
+    if (!auditResponse) return 'not_started';
+    if (auditResponse.status === 'draft') return 'not_started';
+    return auditResponse.status;
+  };
+
+  // Handle opening audit modal
+  const handleOpenAudit = () => {
+    setShowAuditModal(true);
   };
 
   return (
@@ -289,6 +315,8 @@ export default function ProgressTracker({
                     stageRequirements.map((requirement, idx) => {
                       const evidence = getRequirementEvidence(requirement.id);
                       const evidenceStatus = evidence?.status;
+                      const isAudit = isPlasticWasteAudit(requirement);
+                      const auditStatus = isAudit ? getAuditStatus() : null;
                       
                       return (
                         <div 
@@ -314,76 +342,172 @@ export default function ProgressTracker({
                             </div>
                           </div>
 
-                          {/* Status & Action */}
-                          <div className="flex items-center justify-between gap-2 mt-3">
-                            <div className="flex items-center gap-1.5">
-                              {!evidenceStatus && status !== 'locked' && (
+                          {/* Status & Action - Plastic Waste Audit */}
+                          {isAudit && (
+                            <div className="flex items-center justify-between gap-2 mt-3">
+                              <div className="flex items-center gap-1.5">
+                                {auditStatus === 'not_started' && status !== 'locked' && (
+                                  <>
+                                    <Circle className="h-4 w-4 text-gray-400" />
+                                    <span className="text-xs text-gray-500">Not started</span>
+                                  </>
+                                )}
+                                {auditStatus === 'submitted' && (
+                                  <>
+                                    <Clock className="h-4 w-4 text-yellow-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
+                                      data-testid="status-pending-review"
+                                    >
+                                      Pending Review
+                                    </Badge>
+                                  </>
+                                )}
+                                {auditStatus === 'approved' && (
+                                  <>
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-green-50 text-green-700 border-green-200"
+                                      data-testid="status-approved"
+                                    >
+                                      Approved
+                                    </Badge>
+                                  </>
+                                )}
+                                {auditStatus === 'rejected' && (
+                                  <>
+                                    <X className="h-4 w-4 text-red-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-red-50 text-red-700 border-red-200"
+                                      data-testid="status-rejected"
+                                    >
+                                      Rejected
+                                    </Badge>
+                                  </>
+                                )}
+                                {status === 'locked' && (
+                                  <>
+                                    <Lock className="h-4 w-4 text-gray-400" />
+                                    <span className="text-xs text-gray-400">Locked</span>
+                                  </>
+                                )}
+                              </div>
+
+                              {/* Audit Action Buttons */}
+                              {status !== 'locked' && (
                                 <>
-                                  <Circle className="h-4 w-4 text-gray-400" />
-                                  <span className="text-xs text-gray-500">Not started</span>
-                                </>
-                              )}
-                              {evidenceStatus === 'pending' && (
-                                <>
-                                  <Clock className="h-4 w-4 text-yellow-500" />
-                                  <Badge 
-                                    variant="outline" 
-                                    className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
-                                    data-testid={`status-pending-${requirement.id}`}
-                                  >
-                                    Pending
-                                  </Badge>
-                                </>
-                              )}
-                              {evidenceStatus === 'approved' && (
-                                <>
-                                  <CheckCircle className="h-4 w-4 text-green-500" />
-                                  <Badge 
-                                    variant="outline" 
-                                    className="text-xs bg-green-50 text-green-700 border-green-200"
-                                    data-testid={`status-approved-${requirement.id}`}
-                                  >
-                                    Approved
-                                  </Badge>
-                                </>
-                              )}
-                              {evidenceStatus === 'rejected' && (
-                                <>
-                                  <X className="h-4 w-4 text-red-500" />
-                                  <Badge 
-                                    variant="outline" 
-                                    className="text-xs bg-red-50 text-red-700 border-red-200"
-                                    data-testid={`status-rejected-${requirement.id}`}
-                                  >
-                                    Rejected
-                                  </Badge>
-                                </>
-                              )}
-                              {status === 'locked' && (
-                                <>
-                                  <Lock className="h-4 w-4 text-gray-400" />
-                                  <span className="text-xs text-gray-400">Locked</span>
+                                  {auditStatus === 'not_started' && (
+                                    <Button
+                                      size="sm"
+                                      className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90"
+                                      onClick={handleOpenAudit}
+                                      data-testid="button-do-audit"
+                                    >
+                                      Do Audit
+                                    </Button>
+                                  )}
+                                  {auditStatus === 'submitted' && (
+                                    <Button
+                                      size="sm"
+                                      variant="outline"
+                                      className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300"
+                                      onClick={handleOpenAudit}
+                                      data-testid="button-review-answers"
+                                    >
+                                      Review Answers
+                                    </Button>
+                                  )}
+                                  {auditStatus === 'rejected' && (
+                                    <Button
+                                      size="sm"
+                                      variant="destructive"
+                                      className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
+                                      onClick={handleOpenAudit}
+                                      data-testid="button-redo-audit"
+                                    >
+                                      Redo Audit
+                                    </Button>
+                                  )}
                                 </>
                               )}
                             </div>
+                          )}
 
-                            {/* Action Button */}
-                            {status !== 'locked' && evidenceStatus !== 'approved' && (
-                              <Button
-                                size="sm"
-                                variant={evidenceStatus === 'rejected' ? 'destructive' : 'default'}
-                                className={`text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 ${
-                                  evidenceStatus === 'rejected' 
-                                    ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
-                                    : 'bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90'
-                                }`}
-                                onClick={() => handleSubmitEvidence(requirement.id, stage.id)}
-                                data-testid={`button-submit-${requirement.id}`}
-                              >
-                                {evidenceStatus === 'rejected' ? 'Resubmit' : 'Submit'}
-                              </Button>
-                            )}
-                          </div>
+                          {/* Status & Action - Regular Evidence */}
+                          {!isAudit && (
+                            <div className="flex items-center justify-between gap-2 mt-3">
+                              <div className="flex items-center gap-1.5">
+                                {!evidenceStatus && status !== 'locked' && (
+                                  <>
+                                    <Circle className="h-4 w-4 text-gray-400" />
+                                    <span className="text-xs text-gray-500">Not started</span>
+                                  </>
+                                )}
+                                {evidenceStatus === 'pending' && (
+                                  <>
+                                    <Clock className="h-4 w-4 text-yellow-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
+                                      data-testid={`status-pending-${requirement.id}`}
+                                    >
+                                      Pending
+                                    </Badge>
+                                  </>
+                                )}
+                                {evidenceStatus === 'approved' && (
+                                  <>
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-green-50 text-green-700 border-green-200"
+                                      data-testid={`status-approved-${requirement.id}`}
+                                    >
+                                      Approved
+                                    </Badge>
+                                  </>
+                                )}
+                                {evidenceStatus === 'rejected' && (
+                                  <>
+                                    <X className="h-4 w-4 text-red-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-red-50 text-red-700 border-red-200"
+                                      data-testid={`status-rejected-${requirement.id}`}
+                                    >
+                                      Rejected
+                                    </Badge>
+                                  </>
+                                )}
+                                {status === 'locked' && (
+                                  <>
+                                    <Lock className="h-4 w-4 text-gray-400" />
+                                    <span className="text-xs text-gray-400">Locked</span>
+                                  </>
+                                )}
+                              </div>
+
+                              {/* Action Button */}
+                              {status !== 'locked' && evidenceStatus !== 'approved' && (
+                                <Button
+                                  size="sm"
+                                  variant={evidenceStatus === 'rejected' ? 'destructive' : 'default'}
+                                  className={`text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 ${
+                                    evidenceStatus === 'rejected' 
+                                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
+                                      : 'bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90'
+                                  }`}
+                                  onClick={() => handleSubmitEvidence(requirement.id, stage.id)}
+                                  data-testid={`button-submit-${requirement.id}`}
+                                >
+                                  {evidenceStatus === 'rejected' ? 'Resubmit' : 'Submit'}
+                                </Button>
+                              )}
+                            </div>
+                          )}
 
                           {/* Resource Link */}
                           {requirement.resourceUrl && (
@@ -405,13 +529,6 @@ export default function ProgressTracker({
                     })
                   )}
                 </div>
-
-                {/* Audit Component for Investigate Stage */}
-                {stage.id === 'investigate' && status !== 'locked' && (
-                  <div className="mt-4">
-                    <PlasticWasteAudit schoolId={schoolId} />
-                  </div>
-                )}
 
                 {status === 'locked' && (
                   <div className="text-center mt-4 pt-4 border-t flex-shrink-0">
@@ -440,6 +557,16 @@ export default function ProgressTracker({
           preSelectedStage={selectedStage as 'inspire' | 'investigate' | 'act'}
         />
       )}
+
+      {/* Plastic Waste Audit Modal */}
+      <Dialog open={showAuditModal} onOpenChange={setShowAuditModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <PlasticWasteAudit 
+            schoolId={schoolId}
+            onClose={() => setShowAuditModal(false)}
+          />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
