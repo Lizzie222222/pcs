@@ -14,6 +14,7 @@ import {
   adminInvitations,
   verificationRequests,
   testimonials,
+  auditResponses,
   type User,
   type UpsertUser,
   type School,
@@ -44,6 +45,8 @@ import {
   type InsertVerificationRequest,
   type Testimonial,
   type InsertTestimonial,
+  type AuditResponse,
+  type InsertAuditResponse,
   type CreatePasswordUser,
   type CreateOAuthUser,
 } from "@shared/schema";
@@ -315,6 +318,16 @@ export interface IStorage {
       other: number;
     };
   }>;
+
+  // Audit operations
+  createAudit(audit: InsertAuditResponse): Promise<AuditResponse>;
+  getAudit(id: string): Promise<AuditResponse | undefined>;
+  getSchoolAudit(schoolId: string): Promise<AuditResponse | undefined>;
+  updateAudit(id: string, updates: Partial<AuditResponse>): Promise<AuditResponse | undefined>;
+  submitAudit(id: string, userId: string): Promise<AuditResponse | undefined>;
+  reviewAudit(id: string, reviewerId: string, approved: boolean, notes?: string): Promise<AuditResponse | undefined>;
+  getPendingAudits(): Promise<Array<AuditResponse & { school: School; submittedByUser: User }>>;
+  getAllAudits(filters?: { status?: string; limit?: number; offset?: number }): Promise<Array<AuditResponse & { school: School }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3211,6 +3224,133 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTestimonial(id: string): Promise<void> {
     await db.delete(testimonials).where(eq(testimonials.id, id));
+  }
+
+  // Audit operations
+  async createAudit(audit: InsertAuditResponse): Promise<AuditResponse> {
+    const [newAudit] = await db.insert(auditResponses).values(audit).returning();
+    return newAudit;
+  }
+
+  async getAudit(id: string): Promise<AuditResponse | undefined> {
+    const [audit] = await db.select().from(auditResponses).where(eq(auditResponses.id, id));
+    return audit;
+  }
+
+  async getSchoolAudit(schoolId: string): Promise<AuditResponse | undefined> {
+    const [audit] = await db
+      .select()
+      .from(auditResponses)
+      .where(eq(auditResponses.schoolId, schoolId))
+      .orderBy(desc(auditResponses.createdAt))
+      .limit(1);
+    return audit;
+  }
+
+  async updateAudit(id: string, updates: Partial<AuditResponse>): Promise<AuditResponse | undefined> {
+    const [updatedAudit] = await db
+      .update(auditResponses)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(auditResponses.id, id))
+      .returning();
+    return updatedAudit;
+  }
+
+  async submitAudit(id: string, userId: string): Promise<AuditResponse | undefined> {
+    const [submittedAudit] = await db
+      .update(auditResponses)
+      .set({
+        status: 'submitted',
+        submittedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(and(eq(auditResponses.id, id), eq(auditResponses.submittedBy, userId)))
+      .returning();
+    return submittedAudit;
+  }
+
+  async reviewAudit(
+    id: string,
+    reviewerId: string,
+    approved: boolean,
+    notes?: string
+  ): Promise<AuditResponse | undefined> {
+    const status = approved ? 'approved' : 'rejected';
+    const [reviewedAudit] = await db
+      .update(auditResponses)
+      .set({
+        status,
+        reviewedBy: reviewerId,
+        reviewedAt: new Date(),
+        reviewNotes: notes,
+        updatedAt: new Date(),
+      })
+      .where(eq(auditResponses.id, id))
+      .returning();
+
+    // If approved, update school's auditQuizCompleted status
+    if (approved && reviewedAudit) {
+      await db
+        .update(schools)
+        .set({ auditQuizCompleted: true })
+        .where(eq(schools.id, reviewedAudit.schoolId));
+    }
+
+    return reviewedAudit;
+  }
+
+  async getPendingAudits(): Promise<Array<AuditResponse & { school: School; submittedByUser: User }>> {
+    const results = await db
+      .select({
+        audit: auditResponses,
+        school: schools,
+        submittedByUser: users,
+      })
+      .from(auditResponses)
+      .innerJoin(schools, eq(auditResponses.schoolId, schools.id))
+      .innerJoin(users, eq(auditResponses.submittedBy, users.id))
+      .where(eq(auditResponses.status, 'submitted'))
+      .orderBy(desc(auditResponses.submittedAt));
+
+    return results.map((r) => ({
+      ...r.audit,
+      school: r.school,
+      submittedByUser: r.submittedByUser,
+    }));
+  }
+
+  async getAllAudits(filters?: {
+    status?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<Array<AuditResponse & { school: School }>> {
+    let query = db
+      .select({
+        audit: auditResponses,
+        school: schools,
+      })
+      .from(auditResponses)
+      .innerJoin(schools, eq(auditResponses.schoolId, schools.id))
+      .orderBy(desc(auditResponses.createdAt));
+
+    if (filters?.status) {
+      query = query.where(eq(auditResponses.status, filters.status as any)) as any;
+    }
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+
+    if (filters?.offset) {
+      query = query.offset(filters.offset) as any;
+    }
+
+    const results = await query;
+
+    return results.map((r) => ({
+      ...r.audit,
+      school: r.school,
+    }));
   }
 }
 
