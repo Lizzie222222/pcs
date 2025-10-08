@@ -3841,7 +3841,8 @@ export default function Admin() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'audits' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test'>('overview');
+  const [reviewType, setReviewType] = useState<'evidence' | 'audits'>('evidence');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [schoolFilters, setSchoolFilters] = useState({
     search: '',
@@ -3960,7 +3961,7 @@ export default function Admin() {
       if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
       return res.json();
     },
-    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'evidence'),
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'reviews'),
     retry: false,
   });
 
@@ -3971,10 +3972,10 @@ export default function Admin() {
     retry: false,
   });
 
-  // Pending audits query
+  // Pending audits query - always enabled so badge shows correct count
   const { data: pendingAudits = [] } = useQuery<PendingAudit[]>({
     queryKey: ['/api/admin/audits/pending'],
-    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'audits'),
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin)),
     retry: false,
   });
 
@@ -4557,39 +4558,20 @@ export default function Admin() {
           </button>
           <button
             className={`px-4 py-2 rounded-lg font-medium transition-colors relative ${
-              activeTab === 'evidence' 
+              activeTab === 'reviews' 
                 ? 'bg-white text-navy shadow-sm' 
                 : 'text-gray-600 hover:text-navy'
             }`}
-            onClick={() => setActiveTab('evidence')}
-            data-testid="tab-evidence"
+            onClick={() => setActiveTab('reviews')}
+            data-testid="tab-reviews"
           >
-            Evidence Review
-            {stats && stats.pendingEvidence > 0 && (
+            Review Queue
+            {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0) && (
               <span 
                 className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
-                data-testid="badge-pending-evidence-count"
+                data-testid="badge-pending-reviews-count"
               >
-                {stats.pendingEvidence}
-              </span>
-            )}
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors relative ${
-              activeTab === 'audits' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('audits')}
-            data-testid="tab-audits"
-          >
-            Audit Reviews
-            {pendingAudits.length > 0 && (
-              <span 
-                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
-                data-testid="badge-pending-audits-count"
-              >
-                {pendingAudits.length}
+                {(stats?.pendingEvidence || 0) + pendingAudits.length}
               </span>
             )}
           </button>
@@ -4676,8 +4658,47 @@ export default function Admin() {
           </div>
         )}
 
-        {/* Evidence Review Tab */}
-        {activeTab === 'evidence' && (
+        {/* Review Queue Tab - Merged Evidence Review and Audit Reviews */}
+        {activeTab === 'reviews' && (
+          <div className="space-y-4">
+            {/* Sub-tabs for Evidence and Audits */}
+            <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg w-fit">
+              <button
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                  reviewType === 'evidence'
+                    ? 'bg-white text-navy shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                onClick={() => setReviewType('evidence')}
+                data-testid="subtab-evidence"
+              >
+                Evidence Review
+                {stats && stats.pendingEvidence > 0 && (
+                  <Badge className="ml-2 bg-red-500 text-white" data-testid="badge-evidence-count">
+                    {stats.pendingEvidence}
+                  </Badge>
+                )}
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                  reviewType === 'audits'
+                    ? 'bg-white text-navy shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                onClick={() => setReviewType('audits')}
+                data-testid="subtab-audits"
+              >
+                Audit Review
+                {pendingAudits.length > 0 && (
+                  <Badge className="ml-2 bg-red-500 text-white" data-testid="badge-audits-count">
+                    {pendingAudits.length}
+                  </Badge>
+                )}
+              </button>
+            </div>
+
+            {/* Evidence Review Content */}
+            {reviewType === 'evidence' && (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -4908,10 +4929,10 @@ export default function Admin() {
               )}
             </CardContent>
           </Card>
-        )}
+            )}
 
-        {/* Audit Reviews Tab */}
-        {activeTab === 'audits' && (
+            {/* Audit Review Content */}
+            {reviewType === 'audits' && (
           <Card>
             <CardHeader>
               <div className="flex items-center justify-between">
@@ -5141,6 +5162,8 @@ export default function Admin() {
               )}
             </CardContent>
           </Card>
+            )}
+          </div>
         )}
 
         {/* Schools Tab */}
