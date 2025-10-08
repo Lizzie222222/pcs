@@ -61,7 +61,15 @@ import {
   ChevronUp,
   UserPlus,
   MoreVertical,
-  Shield
+  Shield,
+  Target,
+  TrendingDown,
+  Droplets,
+  Fish,
+  Heart,
+  Leaf,
+  Factory,
+  Trash
 } from "lucide-react";
 
 import { 
@@ -74,6 +82,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
+import type { ReductionPromise } from "@shared/schema";
+import { calculateAggregateMetrics } from "@shared/plasticMetrics";
 
 interface AdminStats {
   totalSchools: number;
@@ -4022,6 +4032,31 @@ export default function Admin() {
     retry: false,
   });
 
+  // Reduction promises query for selected school
+  const schoolPromisesQuery = useQuery<ReductionPromise[]>({
+    queryKey: ['/api/reduction-promises/school', viewingSchool?.id],
+    enabled: !!viewingSchool?.id,
+    retry: false,
+  });
+
+  // Calculate promise metrics
+  const promiseMetrics = schoolPromisesQuery.data 
+    ? calculateAggregateMetrics(schoolPromisesQuery.data)
+    : null;
+  
+  // Calculate additional metrics needed
+  const totalPromises = schoolPromisesQuery.data?.length || 0;
+  const totalAnnualReduction = schoolPromisesQuery.data?.reduce((sum, promise) => {
+    const frequencyMultipliers: Record<string, number> = {
+      week: 52,
+      month: 12,
+      year: 1,
+    };
+    const multiplier = frequencyMultipliers[promise.timeframeUnit] || 1;
+    return sum + (promise.reductionAmount * multiplier);
+  }, 0) || 0;
+  const totalAnnualWeightKg = promiseMetrics ? (promiseMetrics.totalGramsReduced / 1000) : 0;
+
   // Handle unauthorized errors
   useEffect(() => {
     const errors = [statsError, evidenceError, schoolsError, caseStudiesError].filter(Boolean);
@@ -6154,6 +6189,118 @@ export default function Admin() {
                   </p>
                 </div>
               )}
+
+              {/* Reduction Promises Impact Card */}
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Target className="h-5 w-5 text-pcs_blue" />
+                    Reduction Promises
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {schoolPromisesQuery.isLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue mr-3"></div>
+                      <span className="text-gray-600">Loading promises data...</span>
+                    </div>
+                  ) : schoolPromisesQuery.error ? (
+                    <div className="text-center py-8 text-red-600">
+                      Failed to load promises data. Please try again.
+                    </div>
+                  ) : totalPromises === 0 ? (
+                    <div className="text-center py-8 text-gray-500">
+                      This school hasn't made any reduction promises yet.
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Summary Metrics */}
+                      <div className="grid grid-cols-3 gap-4">
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Total Promises</label>
+                          <p className="text-2xl font-bold text-pcs_blue" data-testid="metric-promises-total">
+                            {totalPromises}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Items Reduced (annual)</label>
+                          <p className="text-2xl font-bold text-pcs_blue" data-testid="metric-items-reduced">
+                            {totalAnnualReduction.toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <label className="text-xs font-medium text-gray-600">Weight Reduced (kg/year)</label>
+                          <p className="text-2xl font-bold text-pcs_blue" data-testid="metric-weight-reduced">
+                            {totalAnnualWeightKg.toFixed(2)}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Ocean Impact Section */}
+                      <div className="border-t pt-4">
+                        <h4 className="font-semibold text-navy mb-3 flex items-center gap-2">
+                          <Droplets className="h-4 w-4 text-teal" />
+                          Ocean Impact
+                        </h4>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <label className="text-xs font-medium text-gray-600">Ocean Bottles Prevented</label>
+                            <p className="text-lg font-semibold text-teal flex items-center gap-1" data-testid="metric-ocean-bottles">
+                              <TrendingDown className="h-4 w-4" />
+                              {promiseMetrics?.funMetrics.oceanPlasticBottles.toFixed(0)}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-600">Fish Saved</label>
+                            <p className="text-lg font-semibold text-teal flex items-center gap-1" data-testid="metric-fish-saved">
+                              <Fish className="h-4 w-4" />
+                              {promiseMetrics?.funMetrics.fishSaved.toFixed(0)}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-600">Sea Turtles Saved</label>
+                            <p className="text-lg font-semibold text-teal flex items-center gap-1" data-testid="metric-sea-turtles">
+                              <Heart className="h-4 w-4" />
+                              {promiseMetrics?.funMetrics.seaTurtles.toFixed(2)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Environmental Impact Section */}
+                      <div className="border-t pt-4">
+                        <h4 className="font-semibold text-navy mb-3 flex items-center gap-2">
+                          <Leaf className="h-4 w-4 text-green-600" />
+                          Environmental Impact
+                        </h4>
+                        <div className="grid grid-cols-3 gap-4">
+                          <div>
+                            <label className="text-xs font-medium text-gray-600">CO₂ Prevented (kg)</label>
+                            <p className="text-lg font-semibold text-green-600 flex items-center gap-1" data-testid="metric-co2-prevented">
+                              <Factory className="h-4 w-4" />
+                              {promiseMetrics?.seriousMetrics.co2Prevented.toFixed(2)}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-600">Oil Saved (liters)</label>
+                            <p className="text-lg font-semibold text-green-600 flex items-center gap-1" data-testid="metric-oil-saved">
+                              <Droplets className="h-4 w-4" />
+                              {promiseMetrics?.seriousMetrics.oilSaved.toFixed(2)}
+                            </p>
+                          </div>
+                          <div>
+                            <label className="text-xs font-medium text-gray-600">Waste Prevented (tons)</label>
+                            <p className="text-lg font-semibold text-green-600 flex items-center gap-1" data-testid="metric-waste-prevented">
+                              <Trash className="h-4 w-4" />
+                              {promiseMetrics?.seriousMetrics.tons.toFixed(4)}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               <div className="flex justify-end gap-2 pt-4">
                 <Button 
