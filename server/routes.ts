@@ -385,6 +385,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get single school by ID
+  app.get('/api/schools/:schoolId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+
+      const school = await storage.getSchool(schoolId);
+      
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      // Verify user has access to this school (or is admin)
+      const schools = await storage.getUserSchools(userId);
+      const hasAccess = schools.some(s => s.id === schoolId) || req.user.isAdmin;
+      
+      if (!hasAccess) {
+        return res.status(403).json({ message: "You don't have access to this school" });
+      }
+
+      res.json(school);
+    } catch (error) {
+      console.error("Error fetching school:", error);
+      res.status(500).json({ message: "Failed to fetch school" });
+    }
+  });
+
   // School registration (public)
   app.post('/api/schools/register', async (req, res) => {
     try {

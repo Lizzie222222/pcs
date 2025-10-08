@@ -81,6 +81,12 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     enabled: !!schoolId,
   });
 
+  // Fetch school data for pre-population
+  const { data: schoolData } = useQuery<{ id: string; name: string; studentCount: number | null }>({
+    queryKey: [`/api/schools/${schoolId}`],
+    enabled: !!schoolId,
+  });
+
   // Forms for each part
   const form1 = useForm<Part1Data>({
     resolver: zodResolver(part1Schema),
@@ -136,7 +142,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     },
   });
 
-  // Load existing audit data
+  // Load existing audit data or pre-populate from school data
   useEffect(() => {
     if (existingAudit) {
       setAuditId(existingAudit.id);
@@ -154,8 +160,17 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       if (existingAudit.part4Data) {
         form4.reset(existingAudit.part4Data);
       }
+    } else if (schoolData) {
+      // Pre-populate form with school data if no existing audit
+      form1.reset({
+        schoolName: schoolData.name,
+        studentCount: schoolData.studentCount !== null ? String(schoolData.studentCount) : "",
+        staffCount: "",
+        auditDate: new Date().toISOString().split('T')[0],
+        auditTeam: "",
+      });
     }
-  }, [existingAudit]);
+  }, [existingAudit, schoolData]);
 
   // Auto-save mutation
   const saveMutation = useMutation({
