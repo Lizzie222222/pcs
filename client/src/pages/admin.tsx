@@ -177,6 +177,23 @@ interface WasteTrendsAnalytics {
   wasteReductionSchools: Array<{ month: string; count: number }>;
 }
 
+interface AdminPromiseMetrics {
+  totalPromises: number;
+  totalSchoolsWithPromises: number;
+  totalAnnualReduction: number;
+  totalAnnualWeightKg: number;
+  funMetrics: {
+    oceanPlasticBottles: number;
+    fishSaved: number;
+    seaTurtles: number;
+  };
+  seriousMetrics: {
+    co2Prevented: number;
+    oilSaved: number;
+    tons: number;
+  };
+}
+
 interface Resource {
   id: string;
   title: string;
@@ -2166,6 +2183,10 @@ function AnalyticsContent() {
     queryKey: ['/api/admin/analytics/waste-trends']
   });
 
+  const adminPromiseMetricsQuery = useQuery<AdminPromiseMetrics>({
+    queryKey: ['/api/admin/reduction-promises/metrics']
+  });
+
   const exportAnalytics = async (format: 'csv' | 'excel') => {
     try {
       const response = await fetch(`/api/admin/export/analytics?format=${format}`, {
@@ -2878,6 +2899,195 @@ function AnalyticsContent() {
           </CardContent>
         </Card>
       )}
+
+      {/* Reduction Promises Impact Section */}
+      <div className="mt-8 border-t pt-6">
+        <div className="flex items-center gap-3 mb-2">
+          <Target className="w-6 h-6 text-pcs_teal" />
+          <h3 className="text-xl font-bold text-navy">Global Reduction Promises Impact</h3>
+        </div>
+        <p className="text-gray-600 mb-6">Track the collective impact of all schools' reduction promises</p>
+
+        {adminPromiseMetricsQuery.isLoading && (
+          <div className="flex items-center justify-center py-12">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-pcs_blue mr-3"></div>
+            <span className="text-gray-600">Loading reduction metrics...</span>
+          </div>
+        )}
+
+        {adminPromiseMetricsQuery.error && (
+          <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
+            <XCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
+            <p className="text-red-800 font-medium">Failed to load reduction promises metrics</p>
+            <p className="text-red-600 text-sm mt-1">Please try refreshing the page</p>
+          </div>
+        )}
+
+        {adminPromiseMetricsQuery.data && (
+          <>
+            {adminPromiseMetricsQuery.data.totalPromises === 0 ? (
+              <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
+                <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-600 font-medium text-lg">No reduction promises have been made yet.</p>
+                <p className="text-gray-500 text-sm mt-2">Encourage schools to make their first reduction promise!</p>
+              </div>
+            ) : (
+              <>
+                {/* Overview Stats Row */}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                  <Card className="border-l-4 border-l-pcs_blue">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-gray-700">Total Promises</CardTitle>
+                      <Target className="h-5 w-5 text-pcs_blue" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-pcs_blue" data-testid="admin-metric-total-promises">
+                        {adminPromiseMetricsQuery.data.totalPromises.toLocaleString()}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Commitments made</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-pcs_blue">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-gray-700">Schools Participating</CardTitle>
+                      <School className="h-5 w-5 text-pcs_blue" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-pcs_blue" data-testid="admin-metric-schools-participating">
+                        {adminPromiseMetricsQuery.data.totalSchoolsWithPromises.toLocaleString()}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Making a difference</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-pcs_blue">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-gray-700">Items Reduced Annually</CardTitle>
+                      <TrendingDown className="h-5 w-5 text-pcs_blue" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-pcs_blue" data-testid="admin-metric-items-reduced">
+                        {adminPromiseMetricsQuery.data.totalAnnualReduction.toLocaleString()}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">Items per year</p>
+                    </CardContent>
+                  </Card>
+
+                  <Card className="border-l-4 border-l-pcs_blue">
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                      <CardTitle className="text-sm font-medium text-gray-700">Weight Reduced</CardTitle>
+                      <Trophy className="h-5 w-5 text-pcs_blue" />
+                    </CardHeader>
+                    <CardContent>
+                      <div className="text-3xl font-bold text-pcs_blue" data-testid="admin-metric-weight-reduced">
+                        {adminPromiseMetricsQuery.data.totalAnnualWeightKg.toFixed(2)}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">kg per year</p>
+                    </CardContent>
+                  </Card>
+                </div>
+
+                {/* Ocean Impact Row */}
+                <div className="mb-6">
+                  <h4 className="text-lg font-semibold text-navy mb-3 flex items-center">
+                    <Droplets className="w-5 h-5 mr-2 text-pcs_teal" />
+                    Ocean Impact
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className="border-l-4 border-l-pcs_teal bg-gradient-to-br from-white to-teal-50">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-gray-700">Ocean Bottles Prevented</CardTitle>
+                        <Droplets className="h-5 w-5 text-pcs_teal" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold text-pcs_teal" data-testid="admin-metric-ocean-bottles">
+                          {adminPromiseMetricsQuery.data.funMetrics.oceanPlasticBottles.toFixed(0).toLocaleString()}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Plastic bottles saved from oceans</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-l-4 border-l-pcs_teal bg-gradient-to-br from-white to-teal-50">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-gray-700">Fish Saved</CardTitle>
+                        <Fish className="h-5 w-5 text-pcs_teal" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold text-pcs_teal" data-testid="admin-metric-fish-saved">
+                          {adminPromiseMetricsQuery.data.funMetrics.fishSaved.toFixed(0).toLocaleString()}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Potential fish saved from plastic</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-l-4 border-l-pcs_teal bg-gradient-to-br from-white to-teal-50">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-gray-700">Sea Turtles Saved</CardTitle>
+                        <Heart className="h-5 w-5 text-pcs_teal" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold text-pcs_teal" data-testid="admin-metric-sea-turtles">
+                          {adminPromiseMetricsQuery.data.funMetrics.seaTurtles.toFixed(2)}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">Sea turtle equivalents protected</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+
+                {/* Environmental Impact Row */}
+                <div>
+                  <h4 className="text-lg font-semibold text-navy mb-3 flex items-center">
+                    <Leaf className="w-5 h-5 mr-2 text-green-600" />
+                    Environmental Impact
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <Card className="border-l-4 border-l-green-600 bg-gradient-to-br from-white to-green-50">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-gray-700">CO₂ Prevented</CardTitle>
+                        <Factory className="h-5 w-5 text-green-600" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold text-green-600" data-testid="admin-metric-co2-prevented">
+                          {adminPromiseMetricsQuery.data.seriousMetrics.co2Prevented.toFixed(2).toLocaleString()}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">kg of CO₂ emissions prevented</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-l-4 border-l-green-600 bg-gradient-to-br from-white to-green-50">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-gray-700">Oil Saved</CardTitle>
+                        <Droplets className="h-5 w-5 text-green-600" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold text-green-600" data-testid="admin-metric-oil-saved">
+                          {adminPromiseMetricsQuery.data.seriousMetrics.oilSaved.toFixed(2).toLocaleString()}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">liters of oil conserved</p>
+                      </CardContent>
+                    </Card>
+
+                    <Card className="border-l-4 border-l-green-600 bg-gradient-to-br from-white to-green-50">
+                      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                        <CardTitle className="text-sm font-medium text-gray-700">Waste Prevented</CardTitle>
+                        <Trash className="h-5 w-5 text-green-600" />
+                      </CardHeader>
+                      <CardContent>
+                        <div className="text-3xl font-bold text-green-600" data-testid="admin-metric-waste-prevented">
+                          {adminPromiseMetricsQuery.data.seriousMetrics.tons.toFixed(4)}
+                        </div>
+                        <p className="text-xs text-gray-600 mt-1">tons of plastic waste avoided</p>
+                      </CardContent>
+                    </Card>
+                  </div>
+                </div>
+              </>
+            )}
+          </>
+        )}
+      </div>
     </div>
   );
 }
