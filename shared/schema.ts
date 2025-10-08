@@ -306,6 +306,48 @@ export const testimonials = pgTable("testimonials", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const auditStatusEnum = pgEnum('audit_status', [
+  'draft',
+  'submitted',
+  'approved',
+  'rejected'
+]);
+
+export const auditResponses = pgTable("audit_responses", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
+  submittedBy: varchar("submitted_by").notNull().references(() => users.id),
+  status: auditStatusEnum("status").default('draft'),
+  
+  // Part 1: About Your School
+  part1Data: jsonb("part1_data").default('{}'),
+  
+  // Part 2: Lunchroom & Staffroom
+  part2Data: jsonb("part2_data").default('{}'),
+  
+  // Part 3: Classrooms & Bathrooms
+  part3Data: jsonb("part3_data").default('{}'),
+  
+  // Part 4: Waste Management
+  part4Data: jsonb("part4_data").default('{}'),
+  
+  // Calculated results
+  resultsData: jsonb("results_data").default('{}'),
+  totalPlasticItems: integer("total_plastic_items").default(0),
+  topProblemPlastics: jsonb("top_problem_plastics").default('[]'),
+  
+  // Review fields
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"),
+  
+  currentPart: integer("current_part").default(1),
+  completedAt: timestamp("completed_at"),
+  submittedAt: timestamp("submitted_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   schoolUsers: many(schoolUsers),
@@ -320,6 +362,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   invitedSchoolUsers: many(schoolUsers, { relationName: "invitedBy" }),
   verificationRequests: many(verificationRequests, { relationName: "userVerificationRequests" }),
   reviewedVerificationRequests: many(verificationRequests, { relationName: "reviewedVerificationRequests" }),
+  submittedAudits: many(auditResponses, { relationName: "submittedAudits" }),
+  reviewedAudits: many(auditResponses, { relationName: "reviewedAudits" }),
 }));
 
 export const schoolsRelations = relations(schools, ({ many, one }) => ({
@@ -333,6 +377,7 @@ export const schoolsRelations = relations(schools, ({ many, one }) => ({
   certificates: many(certificates),
   teacherInvitations: many(teacherInvitations),
   verificationRequests: many(verificationRequests),
+  auditResponses: many(auditResponses),
 }));
 
 export const schoolUsersRelations = relations(schoolUsers, ({ one }) => ({
@@ -444,6 +489,23 @@ export const verificationRequestsRelations = relations(verificationRequests, ({ 
     fields: [verificationRequests.reviewedBy],
     references: [users.id],
     relationName: "reviewedVerificationRequests",
+  }),
+}));
+
+export const auditResponsesRelations = relations(auditResponses, ({ one }) => ({
+  school: one(schools, {
+    fields: [auditResponses.schoolId],
+    references: [schools.id],
+  }),
+  submittedBy: one(users, {
+    fields: [auditResponses.submittedBy],
+    references: [users.id],
+    relationName: "submittedAudits",
+  }),
+  reviewedBy: one(users, {
+    fields: [auditResponses.reviewedBy],
+    references: [users.id],
+    relationName: "reviewedAudits",
   }),
 }));
 
@@ -623,6 +685,17 @@ export const insertEvidenceRequirementSchema = createInsertSchema(evidenceRequir
   updatedAt: true,
 });
 
+export const insertAuditResponseSchema = createInsertSchema(auditResponses).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  reviewedAt: true,
+  reviewedBy: true,
+  reviewNotes: true,
+  completedAt: true,
+  submittedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -654,6 +727,8 @@ export type Testimonial = typeof testimonials.$inferSelect;
 export type InsertTestimonial = z.infer<typeof insertTestimonialSchema>;
 export type EvidenceRequirement = typeof evidenceRequirements.$inferSelect;
 export type InsertEvidenceRequirement = z.infer<typeof insertEvidenceRequirementSchema>;
+export type AuditResponse = typeof auditResponses.$inferSelect;
+export type InsertAuditResponse = z.infer<typeof insertAuditResponseSchema>;
 
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;
