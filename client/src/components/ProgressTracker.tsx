@@ -147,7 +147,7 @@ export default function ProgressTracker({
       case 'teal':
         return 'bg-gradient-to-br from-teal-500 to-teal-600 text-white';
       case 'yellow':
-        return 'bg-gradient-to-br from-yellow-400 to-yellow-500 text-white';
+        return 'bg-gradient-to-br from-yellow-400 to-yellow-500 text-gray-800';
       case 'coral':
         return 'bg-gradient-to-br from-orange-500 to-orange-600 text-white';
       default:

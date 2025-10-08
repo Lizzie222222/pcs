@@ -1315,8 +1315,9 @@ export class DatabaseStorage implements IStorage {
       hasChanges = true;
     }
 
-    // Check Investigate completion (2 approved including quiz)
-    if (counts.investigate.approved >= 2 && counts.investigate.hasQuiz && !school.investigateCompleted) {
+    // Check Investigate completion (2 approved items total, counting audit as 1 item)
+    const investigateItemCount = counts.investigate.approved + (counts.investigate.hasQuiz ? 1 : 0);
+    if (investigateItemCount >= 2 && !school.investigateCompleted) {
       updates.investigateCompleted = true;
       updates.currentStage = 'act';
       updates.auditQuizCompleted = true;
