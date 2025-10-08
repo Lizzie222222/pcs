@@ -1,7 +1,7 @@
 # Plastic Clever Schools Web Application
 
 ## Overview
-This project is a web application for the Plastic Clever Schools program, designed to reduce plastic usage in schools. It features a public website and an integrated CRM system. The platform guides schools through a three-stage plastic reduction program (Inspire, Investigate, Act) by providing educational resources, tracking evidence submissions, showcasing case studies, and offering administrative tools for managing school participation and progress. The business vision is to empower schools to become environmentally responsible and to scale the program's reach and impact.
+This project is a web application for the Plastic Clever Schools program, designed to reduce plastic usage in schools. It features a public website and an integrated CRM system. The platform guides schools through a three-stage plastic reduction program (Inspire, Investigate, Act) by providing educational resources, tracking evidence submissions, showcasing case studies, offering reduction promise tracking, and providing administrative tools for managing school participation and progress. The business vision is to empower schools to become environmentally responsible and to scale the program's reach and impact.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -36,7 +36,8 @@ Preferred communication style: Simple, everyday language.
 -   **Schools**: Program progress tracking with auto-calculated progress_percentage.
 -   **Evidence**: Stage-specific file submissions with approval workflows, linked to specific evidence requirements.
 -   **EvidenceRequirements**: Admin-configurable checklist of required evidence per stage.
--   **Audits**: Plastic waste audit data (4-part form) with approval workflow, status tracking, and analytics integration.
+-   **Audits**: Plastic waste audit data (5-part form) with approval workflow, status tracking, and analytics integration.
+-   **ReductionPromises**: Plastic reduction commitments made by schools, linked to audits and schools, with baseline/target quantities, timeframes, and impact calculations.
 -   **Resources**: Educational materials.
 -   **Case Studies**: Approved evidence for public display.
 -   **SchoolUsers**: Junction table for user-school relationships.
@@ -50,9 +51,18 @@ Preferred communication style: Simple, everyday language.
 -   **Design Approach**: Component-based using Radix UI and shadcn/ui for consistency and accessibility.
 -   **Page Structure**: Public routes for general access and authenticated routes for specific user roles.
 -   **Animations**: Scroll-reveal animations disabled; button hover/press interactions preserved.
--   **Dashboard Features**: Tab-based navigation (Progress, Analytics, Resources, Team), dismissible evidence notifications, comprehensive analytics with visualizations, dynamic evidence requirements checklist, and integrated evidence tracking within stage cards.
+-   **Dashboard Features**: Tab-based navigation (Progress, Analytics, Resources, Team, Our Promises), dismissible evidence notifications, comprehensive analytics with visualizations, dynamic evidence requirements checklist, integrated evidence tracking within stage cards, and reduction promises management with impact metrics.
 -   **Landing Page**: Hero section, Impact Ribbon, teacher testimonial, program stage overview, CTA, and Instagram feed.
--   **Analytics System**: Plastic waste audit data automatically converts into visual analytics for both teacher and admin dashboards, showing total plastic items, location breakdowns, top problem plastics, waste management practices, and cross-school trends.
+-   **Analytics System**: Plastic waste audit data automatically converts into visual analytics for both teacher and admin dashboards, showing total plastic items, location breakdowns, top problem plastics, waste management practices, cross-school trends, and reduction promises impact.
+
+### Reduction Promises System
+-   **Overview**: Schools commit to reducing specific plastic items (e.g., reduce plastic bottles from 100 to 20 per week).
+-   **Audit Integration**: Step 5 of the audit flow prompts schools to make at least 2 reduction promises based on audit results.
+-   **Dashboard Management**: Teachers can view, add, edit, and delete promises in the "Our Promises" tab.
+-   **Impact Tracking**: System calculates and displays both fun ocean-themed metrics (sea turtles saved, fish protected, ocean bottles prevented) and serious environmental metrics (CO2 prevented, oil saved, waste tons prevented).
+-   **Metric Calculations**: Uses scientifically accurate weights and conversion factors for each plastic item type, annualizes reductions based on timeframe (week/month/year).
+-   **Admin Analytics**: Individual school promise data visible in Schools tab; aggregated metrics across all schools shown in Analytics tab.
+-   **Notification System**: Dashboard banner prompts schools that completed audits but haven't made promises yet.
 
 ## External Dependencies
 ### Core Infrastructure
@@ -66,3 +76,14 @@ Preferred communication style: Simple, everyday language.
 ### Development & Deployment
 -   **Build Tool**: Vite
 -   **Hosting/Deployment**: Replit
+
+## Recent Updates (October 2025)
+### Reduction Promises Feature
+- **Database**: Added reductionPromises table with relationships to schools and audits, including status enum (active, completed, cancelled)
+- **Backend**: Implemented 5 REST API endpoints for CRUD operations and admin metrics aggregation
+- **Metrics Utilities**: Created comprehensive conversion functions (shared/plasticMetrics.ts) for plastic-to-weight calculations and impact metrics
+- **Audit Flow**: Extended audit form from 4 to 5 steps, with Step 5 requiring minimum 2 reduction promises
+- **Teacher Dashboard**: Added "Our Promises" tab with impact summary, promise management (add/edit/delete), and dual metric displays (fun + serious)
+- **Notification System**: Dismissible banner in Progress tab prompts for promises when audit is complete
+- **Admin Features**: Individual school promise cards in Schools tab, and global aggregated metrics in Analytics tab
+- **Impact Display**: Shows ocean impact (bottles, fish, sea turtles) and environmental impact (CO2, oil, waste) across all views
