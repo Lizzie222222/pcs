@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner, ErrorState } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -22,6 +23,31 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { 
   Upload, 
   BookOpen, 
@@ -35,11 +61,21 @@ import {
   AlertCircle,
   Trash2,
   X,
-  Lightbulb
+  Lightbulb,
+  Target,
+  Leaf,
+  TrendingDown,
+  Edit,
+  Plus
 } from "lucide-react";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
+import { PLASTIC_ITEM_WEIGHTS, calculateAggregateMetrics } from "@/../../shared/plasticMetrics";
+import type { ReductionPromise, InsertReductionPromise, AuditResponse } from "@/../../shared/schema";
 
 interface Certificate {
   id: string;
@@ -146,7 +182,15 @@ export default function Home() {
     const stored = localStorage.getItem('dismissedEvidenceNotifications');
     return stored ? JSON.parse(stored) : [];
   });
-  const [activeTab, setActiveTab] = useState<'progress' | 'analytics' | 'resources' | 'team'>('progress');
+  const [dismissedPromiseNotification, setDismissedPromiseNotification] = useState<boolean>(() => {
+    const stored = localStorage.getItem('dismissedPromiseNotification');
+    return stored === 'true';
+  });
+  const [activeTab, setActiveTab] = useState<'progress' | 'analytics' | 'resources' | 'team' | 'promises'>('progress');
+  const [promiseDialogOpen, setPromiseDialogOpen] = useState(false);
+  const [editingPromise, setEditingPromise] = useState<ReductionPromise | null>(null);
+  const [deletePromiseDialogOpen, setDeletePromiseDialogOpen] = useState(false);
+  const [promiseToDelete, setPromiseToDelete] = useState<string | null>(null);
 
   // Redirect admins to admin dashboard
   useEffect(() => {
@@ -203,6 +247,27 @@ export default function Home() {
     retry: false,
   });
 
+  // Fetch school audit for promise notification check
+  const { data: schoolAudit } = useQuery<AuditResponse>({
+    queryKey: ['/api/audits/school', dashboardData?.school?.id],
+    enabled: !!dashboardData?.school?.id,
+    retry: false,
+  });
+
+  // Fetch promises for audit (to check if missing)
+  const { data: auditPromises } = useQuery<ReductionPromise[]>({
+    queryKey: ['/api/reduction-promises/audit', schoolAudit?.id],
+    enabled: !!schoolAudit?.id && (schoolAudit.status === 'submitted' || schoolAudit.status === 'approved'),
+    retry: false,
+  });
+
+  // Fetch all promises for school (for Our Promises tab)
+  const { data: schoolPromises = [], isLoading: promisesLoading } = useQuery<ReductionPromise[]>({
+    queryKey: ['/api/reduction-promises/school', dashboardData?.school?.id],
+    enabled: activeTab === 'promises' && !!dashboardData?.school?.id,
+    retry: false,
+  });
+
   // Delete evidence mutation
   const deleteMutation = useMutation({
     mutationFn: async (evidenceId: string) => {
@@ -244,6 +309,173 @@ export default function Home() {
     const updated = [...dismissedNotifications, evidenceId];
     setDismissedNotifications(updated);
     localStorage.setItem('dismissedEvidenceNotifications', JSON.stringify(updated));
+  };
+
+  const dismissPromiseNotification = () => {
+    setDismissedPromiseNotification(true);
+    localStorage.setItem('dismissedPromiseNotification', 'true');
+  };
+
+  // Form schema for promise dialog
+  const promiseFormSchema = z.object({
+    plasticItemType: z.string().min(1, "Please select a plastic item type"),
+    plasticItemLabel: z.string().min(1, "Please provide a label for the plastic item"),
+    baselineQuantity: z.number().min(1, "Baseline quantity must be at least 1"),
+    targetQuantity: z.number().min(0, "Target quantity must be at least 0"),
+    timeframeUnit: z.enum(["week", "month", "year"]),
+    notes: z.string().optional(),
+  });
+
+  const promiseForm = useForm<z.infer<typeof promiseFormSchema>>({
+    resolver: zodResolver(promiseFormSchema),
+    defaultValues: {
+      plasticItemType: "",
+      plasticItemLabel: "",
+      baselineQuantity: 0,
+      targetQuantity: 0,
+      timeframeUnit: "week",
+      notes: "",
+    },
+  });
+
+  // Create promise mutation
+  const createPromiseMutation = useMutation({
+    mutationFn: async (data: InsertReductionPromise) => {
+      return apiRequest('POST', '/api/reduction-promises', data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/school', dashboardData?.school?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit'] });
+      toast({
+        title: "Success",
+        description: "Reduction promise created successfully!",
+      });
+      setPromiseDialogOpen(false);
+      setEditingPromise(null);
+      promiseForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to create reduction promise",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update promise mutation
+  const updatePromiseMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<InsertReductionPromise> }) => {
+      return apiRequest('PATCH', `/api/reduction-promises/${id}`, data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/school', dashboardData?.school?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit'] });
+      toast({
+        title: "Success",
+        description: "Reduction promise updated successfully!",
+      });
+      setPromiseDialogOpen(false);
+      setEditingPromise(null);
+      promiseForm.reset();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to update reduction promise",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Delete promise mutation
+  const deletePromiseMutation = useMutation({
+    mutationFn: async (promiseId: string) => {
+      return apiRequest('DELETE', `/api/reduction-promises/${promiseId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/school', dashboardData?.school?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit'] });
+      toast({
+        title: "Success",
+        description: "Reduction promise deleted successfully!",
+      });
+      setDeletePromiseDialogOpen(false);
+      setPromiseToDelete(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to delete reduction promise",
+        variant: "destructive",
+      });
+      setDeletePromiseDialogOpen(false);
+      setPromiseToDelete(null);
+    },
+  });
+
+  const handlePromiseSubmit = (values: z.infer<typeof promiseFormSchema>) => {
+    if (!dashboardData?.school?.id || !user?.id) return;
+
+    const reductionAmount = values.baselineQuantity - values.targetQuantity;
+    
+    if (editingPromise) {
+      updatePromiseMutation.mutate({
+        id: editingPromise.id,
+        data: {
+          ...values,
+          reductionAmount,
+          schoolId: dashboardData.school.id,
+          createdBy: editingPromise.createdBy,
+        },
+      });
+    } else {
+      createPromiseMutation.mutate({
+        ...values,
+        reductionAmount,
+        schoolId: dashboardData.school.id,
+        auditId: schoolAudit?.id,
+        createdBy: user.id,
+        status: 'active',
+      });
+    }
+  };
+
+  const handleEditPromise = (promise: ReductionPromise) => {
+    setEditingPromise(promise);
+    promiseForm.reset({
+      plasticItemType: promise.plasticItemType,
+      plasticItemLabel: promise.plasticItemLabel,
+      baselineQuantity: promise.baselineQuantity,
+      targetQuantity: promise.targetQuantity,
+      timeframeUnit: promise.timeframeUnit as "week" | "month" | "year",
+      notes: promise.notes || "",
+    });
+    setPromiseDialogOpen(true);
+  };
+
+  const handleDeletePromiseClick = (promiseId: string) => {
+    setPromiseToDelete(promiseId);
+    setDeletePromiseDialogOpen(true);
+  };
+
+  const handleDeletePromiseConfirm = () => {
+    if (promiseToDelete) {
+      deletePromiseMutation.mutate(promiseToDelete);
+    }
+  };
+
+  const handleAddPromiseClick = () => {
+    setEditingPromise(null);
+    promiseForm.reset({
+      plasticItemType: "",
+      plasticItemLabel: "",
+      baselineQuantity: 0,
+      targetQuantity: 0,
+      timeframeUnit: "week",
+      notes: "",
+    });
+    setPromiseDialogOpen(true);
   };
 
 
@@ -453,12 +685,66 @@ export default function Home() {
               <Users className="h-5 w-5 mr-2" />
               Team
             </Button>
+            <Button
+              variant={activeTab === 'promises' ? 'default' : 'ghost'}
+              className={`flex-1 transition-all duration-300 font-semibold ${
+                activeTab === 'promises' 
+                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
+              }`}
+              onClick={() => setActiveTab('promises')}
+              data-testid="tab-promises"
+            >
+              <Target className="h-5 w-5 mr-2" />
+              Our Promises
+            </Button>
           </div>
         </div>
 
         {/* Progress Tab Content */}
         {activeTab === 'progress' && (
           <>
+            {/* Missing Promises Notification */}
+            {schoolAudit && 
+             (schoolAudit.status === 'submitted' || schoolAudit.status === 'approved') && 
+             auditPromises !== undefined &&
+             auditPromises.length === 0 && 
+             !dismissedPromiseNotification && (
+              <div className="mb-6" data-testid="missing-promises-notification">
+                <Alert className="bg-gradient-to-r from-teal/10 to-pcs_blue/10 border-l-4 border-teal shadow-lg">
+                  <button
+                    onClick={dismissPromiseNotification}
+                    className="absolute top-4 right-4 p-1 rounded-full hover:bg-teal/20 transition-colors"
+                    data-testid="button-dismiss-promise-notification"
+                    aria-label="Dismiss notification"
+                  >
+                    <X className="h-4 w-4 text-teal" />
+                  </button>
+                  <Leaf className="h-5 w-5 text-teal" />
+                  <AlertDescription className="pr-8">
+                    <div className="flex flex-col gap-3">
+                      <div>
+                        <h3 className="font-semibold text-navy text-lg mb-1">
+                          🎉 You've completed your plastic waste audit!
+                        </h3>
+                        <p className="text-gray-700">
+                          Make your reduction promises to start tracking your impact and see the difference your school can make.
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => setActiveTab('promises')}
+                        className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white w-fit"
+                        data-testid="button-make-promises-now"
+                      >
+                        <Target className="h-4 w-4 mr-2" />
+                        Make Promises Now
+                      </Button>
+                    </div>
+                  </AlertDescription>
+                </Alert>
+              </div>
+            )}
+
             {/* Status Notifications */}
             {(() => {
               const now = new Date();
@@ -1111,6 +1397,269 @@ export default function Home() {
             <TeamManagement />
           </div>
         )}
+
+        {/* Our Promises Tab Content */}
+        {activeTab === 'promises' && (
+          <div className="space-y-8">
+            {promisesLoading ? (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i} className="shadow-lg border-0">
+                      <CardContent className="p-6">
+                        <div className="animate-pulse space-y-3">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+            ) : schoolPromises.length === 0 ? (
+              <Card className="shadow-lg border-0">
+                <CardContent className="p-12 text-center">
+                  <div className="mb-6">
+                    <div className="w-24 h-24 mx-auto bg-gradient-to-br from-teal/20 to-pcs_blue/20 rounded-full flex items-center justify-center">
+                      <Target className="h-12 w-12 text-teal" />
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-bold text-navy mb-3">No Reduction Promises Yet</h2>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    You haven't made any reduction promises yet. Complete an audit and make your first promises to start tracking your impact!
+                  </p>
+                  <Button
+                    onClick={handleAddPromiseClick}
+                    className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white px-6 py-3 text-lg shadow-lg"
+                    data-testid="button-add-first-promise"
+                  >
+                    <Plus className="h-5 w-5 mr-2" />
+                    Make Your First Promise
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                {/* Impact Summary */}
+                {(() => {
+                  const metrics = calculateAggregateMetrics(schoolPromises);
+                  return (
+                    <>
+                      <div className="flex items-center justify-between mb-6">
+                        <h2 className="text-3xl font-bold text-navy">Our Promises Impact</h2>
+                        <Button
+                          onClick={handleAddPromiseClick}
+                          className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white shadow-lg"
+                          data-testid="button-add-promise"
+                        >
+                          <Plus className="h-5 w-5 mr-2" />
+                          Add Promise
+                        </Button>
+                      </div>
+
+                      {/* Summary Cards */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                        <Card className="shadow-xl border-0 bg-gradient-to-br from-teal to-pcs_blue text-white">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                                <Target className="h-8 w-8 text-white" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-semibold opacity-90">Total Promises</div>
+                                <div className="text-3xl font-bold" data-testid="text-total-promises">
+                                  {schoolPromises.length}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="shadow-xl border-0 bg-gradient-to-br from-green-500 to-green-600 text-white">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                                <TrendingDown className="h-8 w-8 text-white" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-semibold opacity-90">Items Reduced/Year</div>
+                                <div className="text-3xl font-bold" data-testid="text-items-reduced">
+                                  {metrics.byItemType.reduce((sum, item) => sum + item.totalReduction, 0).toLocaleString()}
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="shadow-xl border-0 bg-gradient-to-br from-coral to-red-400 text-white">
+                          <CardContent className="p-6">
+                            <div className="flex items-center gap-4">
+                              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                                <Leaf className="h-8 w-8 text-white" />
+                              </div>
+                              <div>
+                                <div className="text-sm font-semibold opacity-90">Weight Reduced/Year</div>
+                                <div className="text-3xl font-bold" data-testid="text-weight-reduced">
+                                  {metrics.seriousMetrics.kilograms.toFixed(1)} kg
+                                </div>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Fun & Serious Metrics */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                        <Card className="shadow-lg border-0">
+                          <CardHeader>
+                            <CardTitle className="text-xl font-bold text-navy flex items-center gap-2">
+                              🌊 Ocean Impact
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="p-4 bg-blue-50 rounded-lg">
+                              <p className="text-sm font-semibold text-navy mb-1">Plastic Bottles Prevented</p>
+                              <p className="text-2xl font-bold text-pcs_blue" data-testid="text-ocean-bottles">
+                                {Math.floor(metrics.funMetrics.oceanPlasticBottles).toLocaleString()}
+                              </p>
+                            </div>
+                            <div className="p-4 bg-green-50 rounded-lg">
+                              <p className="text-sm font-semibold text-navy mb-1">Fish Potentially Saved</p>
+                              <p className="text-2xl font-bold text-green-600" data-testid="text-fish-saved">
+                                {Math.floor(metrics.funMetrics.fishSaved).toLocaleString()}
+                              </p>
+                            </div>
+                            <div className="p-4 bg-teal-50 rounded-lg">
+                              <p className="text-sm font-semibold text-navy mb-1">Sea Turtles Worth of Plastic</p>
+                              <p className="text-2xl font-bold text-teal" data-testid="text-sea-turtles">
+                                {metrics.funMetrics.seaTurtles.toFixed(3)}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card className="shadow-lg border-0">
+                          <CardHeader>
+                            <CardTitle className="text-xl font-bold text-navy flex items-center gap-2">
+                              📊 Environmental Impact
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="p-4 bg-orange-50 rounded-lg">
+                              <p className="text-sm font-semibold text-navy mb-1">CO₂ Emissions Prevented</p>
+                              <p className="text-2xl font-bold text-orange-600" data-testid="text-co2-prevented">
+                                {metrics.seriousMetrics.co2Prevented.toFixed(1)} kg
+                              </p>
+                            </div>
+                            <div className="p-4 bg-purple-50 rounded-lg">
+                              <p className="text-sm font-semibold text-navy mb-1">Oil Saved</p>
+                              <p className="text-2xl font-bold text-purple-600" data-testid="text-oil-saved">
+                                {metrics.seriousMetrics.oilSaved.toFixed(1)} liters
+                              </p>
+                            </div>
+                            <div className="p-4 bg-indigo-50 rounded-lg">
+                              <p className="text-sm font-semibold text-navy mb-1">Tons of Plastic Prevented</p>
+                              <p className="text-2xl font-bold text-indigo-600" data-testid="text-tons-prevented">
+                                {metrics.seriousMetrics.tons.toFixed(4)}
+                              </p>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+                    </>
+                  );
+                })()}
+
+                {/* Promise Cards */}
+                <div>
+                  <h3 className="text-2xl font-bold text-navy mb-6">Active Promises</h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {schoolPromises.map((promise) => {
+                      const reduction = promise.baselineQuantity - promise.targetQuantity;
+                      const reductionPercent = ((reduction / promise.baselineQuantity) * 100).toFixed(0);
+                      
+                      return (
+                        <Card key={promise.id} className="shadow-lg border-0 hover:shadow-xl transition-shadow" data-testid={`promise-card-${promise.id}`}>
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <CardTitle className="text-lg font-bold text-navy mb-1">
+                                  {promise.plasticItemLabel}
+                                </CardTitle>
+                                <Badge className="bg-teal/10 text-teal hover:bg-teal/20">
+                                  {promise.plasticItemType.replace(/_/g, ' ')}
+                                </Badge>
+                              </div>
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleEditPromise(promise)}
+                                  className="h-8 w-8 p-0 hover:bg-pcs_blue/10"
+                                  data-testid={`button-edit-promise-${promise.id}`}
+                                >
+                                  <Edit className="h-4 w-4 text-pcs_blue" />
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => handleDeletePromiseClick(promise.id)}
+                                  className="h-8 w-8 p-0 hover:bg-red-50"
+                                  data-testid={`button-delete-promise-${promise.id}`}
+                                >
+                                  <Trash2 className="h-4 w-4 text-red-500" />
+                                </Button>
+                              </div>
+                            </div>
+                          </CardHeader>
+                          <CardContent className="space-y-4">
+                            <div className="grid grid-cols-2 gap-4">
+                              <div className="p-3 bg-gray-50 rounded-lg">
+                                <p className="text-xs text-gray-600 mb-1">Baseline</p>
+                                <p className="text-lg font-bold text-navy" data-testid={`text-baseline-${promise.id}`}>
+                                  {promise.baselineQuantity}
+                                </p>
+                                <p className="text-xs text-gray-500">per {promise.timeframeUnit}</p>
+                              </div>
+                              <div className="p-3 bg-gray-50 rounded-lg">
+                                <p className="text-xs text-gray-600 mb-1">Target</p>
+                                <p className="text-lg font-bold text-navy" data-testid={`text-target-${promise.id}`}>
+                                  {promise.targetQuantity}
+                                </p>
+                                <p className="text-xs text-gray-500">per {promise.timeframeUnit}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg border border-green-200">
+                              <div className="flex items-center justify-between mb-2">
+                                <p className="text-sm font-semibold text-navy">Reduction Goal</p>
+                                <Badge className="bg-green-500 text-white">
+                                  -{reductionPercent}%
+                                </Badge>
+                              </div>
+                              <p className="text-2xl font-bold text-green-600" data-testid={`text-reduction-${promise.id}`}>
+                                {reduction} items
+                              </p>
+                            </div>
+
+                            {promise.notes && (
+                              <div className="pt-2 border-t border-gray-200">
+                                <p className="text-xs text-gray-600 mb-1">Notes</p>
+                                <p className="text-sm text-gray-700" data-testid={`text-notes-${promise.id}`}>
+                                  {promise.notes}
+                                </p>
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Evidence Submission Form */}
@@ -1121,7 +1670,7 @@ export default function Home() {
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Evidence Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -1140,6 +1689,246 @@ export default function Home() {
               disabled={deleteMutation.isPending}
             >
               {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Promise Form Dialog */}
+      <Dialog open={promiseDialogOpen} onOpenChange={setPromiseDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-promise-form">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-navy">
+              {editingPromise ? 'Edit Reduction Promise' : 'Add Reduction Promise'}
+            </DialogTitle>
+            <DialogDescription>
+              Set a goal to reduce plastic waste at your school. Choose a plastic item type and set your reduction targets.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <Form {...promiseForm}>
+            <form onSubmit={promiseForm.handleSubmit(handlePromiseSubmit)} className="space-y-6">
+              <FormField
+                control={promiseForm.control}
+                name="plasticItemType"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Plastic Item Type *</FormLabel>
+                    <Select 
+                      onValueChange={(value) => {
+                        field.onChange(value);
+                        // Auto-fill label with formatted version
+                        if (!promiseForm.getValues('plasticItemLabel')) {
+                          promiseForm.setValue('plasticItemLabel', value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
+                        }
+                      }} 
+                      value={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger data-testid="select-plastic-item-type">
+                          <SelectValue placeholder="Select plastic item type" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {Object.keys(PLASTIC_ITEM_WEIGHTS).map((type) => (
+                          <SelectItem key={type} value={type}>
+                            {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={promiseForm.control}
+                name="plasticItemLabel"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Item Label *</FormLabel>
+                    <FormControl>
+                      <Input 
+                        {...field} 
+                        placeholder="e.g., Single-use water bottles"
+                        data-testid="input-plastic-item-label"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={promiseForm.control}
+                  name="baselineQuantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Baseline Quantity *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          {...field} 
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          placeholder="Current usage"
+                          data-testid="input-baseline-quantity"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={promiseForm.control}
+                  name="targetQuantity"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Target Quantity *</FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="number" 
+                          {...field} 
+                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
+                          placeholder="Reduction goal"
+                          data-testid="input-target-quantity"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              <FormField
+                control={promiseForm.control}
+                name="timeframeUnit"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Timeframe *</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value}>
+                      <FormControl>
+                        <SelectTrigger data-testid="select-timeframe-unit">
+                          <SelectValue placeholder="Select timeframe" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="week">Per Week</SelectItem>
+                        <SelectItem value="month">Per Month</SelectItem>
+                        <SelectItem value="year">Per Year</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              {(() => {
+                const baseline = promiseForm.watch('baselineQuantity');
+                const target = promiseForm.watch('targetQuantity');
+                const reduction = baseline - target;
+                const reductionPercent = baseline > 0 ? ((reduction / baseline) * 100).toFixed(0) : 0;
+                
+                if (baseline > 0 && target >= 0) {
+                  return (
+                    <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg border border-green-200">
+                      <p className="text-sm font-semibold text-navy mb-2">Reduction Preview</p>
+                      <div className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <p className="text-2xl font-bold text-green-600">
+                            {reduction} items
+                          </p>
+                          <p className="text-xs text-gray-600">
+                            {reductionPercent}% reduction
+                          </p>
+                        </div>
+                        {reduction > 0 && (
+                          <Badge className="bg-green-500 text-white">
+                            Great Goal!
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
+              <FormField
+                control={promiseForm.control}
+                name="notes"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Notes (Optional)</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        {...field} 
+                        placeholder="Add any additional notes about this promise..."
+                        rows={3}
+                        data-testid="input-notes"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setPromiseDialogOpen(false);
+                    setEditingPromise(null);
+                    promiseForm.reset();
+                  }}
+                  data-testid="button-cancel-promise"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white"
+                  disabled={createPromiseMutation.isPending || updatePromiseMutation.isPending}
+                  data-testid="button-save-promise"
+                >
+                  {createPromiseMutation.isPending || updatePromiseMutation.isPending
+                    ? 'Saving...'
+                    : editingPromise
+                    ? 'Update Promise'
+                    : 'Create Promise'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Promise Confirmation Dialog */}
+      <AlertDialog open={deletePromiseDialogOpen} onOpenChange={setDeletePromiseDialogOpen}>
+        <AlertDialogContent data-testid="dialog-delete-promise-confirmation">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure you want to delete this promise?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete your reduction promise and remove it from your impact calculations.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel 
+              onClick={() => setPromiseToDelete(null)}
+              data-testid="button-cancel-delete-promise"
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePromiseConfirm}
+              className="bg-red-600 hover:bg-red-700 text-white"
+              disabled={deletePromiseMutation.isPending}
+              data-testid="button-confirm-delete-promise"
+            >
+              {deletePromiseMutation.isPending ? 'Deleting...' : 'Delete Promise'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
