@@ -382,10 +382,15 @@ export async function setupAuth(app: Express) {
       }
     }
 
-    passport.authenticate('google', {
+    const authOptions = {
       scope: ['profile', 'email'],
-      prompt: 'select_account'
-    })(req, res, next);
+      prompt: 'consent select_account',
+      accessType: 'offline'
+    };
+    
+    console.log('[Google OAuth] Initiating with options:', authOptions);
+
+    passport.authenticate('google', authOptions)(req, res, next);
   });
 
   // GET /api/auth/google/callback - Handle Google OAuth callback
