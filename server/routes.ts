@@ -6,7 +6,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, type VerificationRequest, users } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, type VerificationRequest, users } from "@shared/schema";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
@@ -2295,6 +2295,186 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error reviewing audit:", error);
       res.status(500).json({ message: "Failed to review audit" });
+    }
+  });
+
+  // Reduction Promises Routes
+
+  // Get all reduction promises for a school
+  app.get('/api/reduction-promises/school/:schoolId', isAuthenticated, isSchoolMember, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const promises = await storage.getReductionPromisesBySchool(schoolId);
+      res.json(promises);
+    } catch (error) {
+      console.error("Error fetching reduction promises:", error);
+      res.status(500).json({ message: "Failed to fetch reduction promises" });
+    }
+  });
+
+  // Create a new reduction promise
+  app.post('/api/reduction-promises', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Validate request body
+      const validatedData = insertReductionPromiseSchema.parse(req.body);
+      
+      // Check if user is a member of the school
+      const schools = await storage.getUserSchools(userId);
+      const isMember = schools.some(s => s.id === validatedData.schoolId) || req.user.isAdmin;
+      
+      if (!isMember) {
+        return res.status(403).json({ message: "Not authorized to create promises for this school" });
+      }
+      
+      // Calculate reduction amount
+      const reductionAmount = validatedData.baselineQuantity - validatedData.targetQuantity;
+      
+      // Create the promise
+      const promise = await storage.createReductionPromise({
+        ...validatedData,
+        reductionAmount,
+        status: 'active',
+        createdBy: userId,
+      });
+      
+      res.status(201).json(promise);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Error creating reduction promise:", error);
+      res.status(500).json({ message: "Failed to create reduction promise" });
+    }
+  });
+
+  // Update a reduction promise
+  app.patch('/api/reduction-promises/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { id } = req.params;
+      
+      // Fetch user's schools to find the promise
+      const userSchools = await storage.getUserSchools(userId);
+      const allPromises = await Promise.all(
+        userSchools.map(school => storage.getReductionPromisesBySchool(school.id))
+      );
+      const existingPromise = allPromises.flat().find(p => p.id === id);
+      
+      if (!existingPromise) {
+        return res.status(404).json({ message: "Reduction promise not found" });
+      }
+      
+      // Verify user is member of the school
+      const isMember = userSchools.some(s => s.id === existingPromise.schoolId) || req.user.isAdmin;
+      if (!isMember) {
+        return res.status(403).json({ message: "Not authorized to update this promise" });
+      }
+      
+      // Validate request body with partial schema
+      const partialSchema = insertReductionPromiseSchema.partial();
+      const validatedData = partialSchema.parse(req.body);
+      
+      // Recalculate reduction amount if baseline or target quantities are being updated
+      let updateData = { ...validatedData };
+      if (validatedData.baselineQuantity !== undefined || validatedData.targetQuantity !== undefined) {
+        const baselineQuantity = validatedData.baselineQuantity ?? existingPromise.baselineQuantity;
+        const targetQuantity = validatedData.targetQuantity ?? existingPromise.targetQuantity;
+        updateData.reductionAmount = baselineQuantity - targetQuantity;
+      }
+      
+      // Update the promise
+      const updatedPromise = await storage.updateReductionPromise(id, updateData);
+      res.json(updatedPromise);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Error updating reduction promise:", error);
+      res.status(500).json({ message: "Failed to update reduction promise" });
+    }
+  });
+
+  // Delete a reduction promise
+  app.delete('/api/reduction-promises/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { id } = req.params;
+      
+      // Fetch user's schools to find the promise
+      const userSchools = await storage.getUserSchools(userId);
+      const allPromises = await Promise.all(
+        userSchools.map(school => storage.getReductionPromisesBySchool(school.id))
+      );
+      const promise = allPromises.flat().find(p => p.id === id);
+      
+      if (!promise) {
+        return res.status(404).json({ message: "Reduction promise not found" });
+      }
+      
+      // Verify user is member of the school or is admin
+      const isMember = userSchools.some(s => s.id === promise.schoolId) || req.user.isAdmin;
+      if (!isMember) {
+        return res.status(403).json({ message: "Not authorized to delete this promise" });
+      }
+      
+      // Delete the promise
+      await storage.deleteReductionPromise(id);
+      
+      res.json({ message: "Reduction promise deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting reduction promise:", error);
+      res.status(500).json({ message: "Failed to delete reduction promise" });
+    }
+  });
+
+  // Get aggregated metrics for reduction promises (admin only)
+  app.get('/api/admin/reduction-promises/metrics', isAuthenticated, async (req: any, res) => {
+    try {
+      // Check if user is admin
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+      
+      // Get all active promises
+      const activePromises = await storage.getAllActivePromises();
+      
+      // Calculate aggregated metrics
+      const totalPromises = activePromises.length;
+      
+      // Group by item type and calculate totals
+      const itemTypeMetrics = activePromises.reduce((acc, promise) => {
+        const type = promise.plasticItemType;
+        if (!acc[type]) {
+          acc[type] = {
+            itemType: type,
+            count: 0,
+            totalReduction: 0,
+          };
+        }
+        acc[type].count += 1;
+        acc[type].totalReduction += promise.reductionAmount;
+        return acc;
+      }, {} as Record<string, { itemType: string; count: number; totalReduction: number }>);
+      
+      const itemTypeBreakdown = Object.values(itemTypeMetrics);
+      const totalReductionAmount = activePromises.reduce((sum, p) => sum + p.reductionAmount, 0);
+      
+      res.json({
+        totalPromises,
+        totalReductionAmount,
+        itemTypeBreakdown,
+      });
+    } catch (error) {
+      console.error("Error fetching reduction promise metrics:", error);
+      res.status(500).json({ message: "Failed to fetch reduction promise metrics" });
     }
   });
 
