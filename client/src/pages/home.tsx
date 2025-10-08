@@ -71,6 +71,7 @@ interface DashboardData {
     status: string;
     submittedAt: string;
     reviewedAt?: string;
+    reviewNotes?: string;
   }>;
   evidenceCounts: {
     inspire: { total: number; approved: number };
@@ -501,10 +502,17 @@ export default function Home() {
                           <p className="text-sm text-green-800">
                             {recentApproved.length} {recentApproved.length === 1 ? 'submission has' : 'submissions have'} been approved in the last 7 days. Great work!
                           </p>
-                          <div className="mt-2 space-y-1">
+                          <div className="mt-2 space-y-2">
                             {recentApproved.map(evidence => (
-                              <div key={evidence.id} className="text-xs text-green-700 font-medium">
-                                ✓ {evidence.title}
+                              <div key={evidence.id} className="text-xs">
+                                <div className="text-green-700 font-medium">
+                                  ✓ {evidence.title}
+                                </div>
+                                {evidence.reviewNotes && (
+                                  <div className="text-green-600 mt-1 pl-4 italic">
+                                    "{evidence.reviewNotes}"
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
