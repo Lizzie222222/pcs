@@ -33,9 +33,10 @@ Preferred communication style: Simple, everyday language.
 
 ### Key Data Models
 -   **Users**: Teachers linked to schools with roles.
--   **Schools**: Program progress tracking.
+-   **Schools**: Program progress tracking with auto-calculated progress_percentage.
 -   **Evidence**: Stage-specific file submissions with approval workflows, linked to specific evidence requirements.
 -   **EvidenceRequirements**: Admin-configurable checklist of required evidence per stage.
+-   **Audits**: Plastic waste audit data (4-part form) with approval workflow, status tracking, and analytics integration.
 -   **Resources**: Educational materials.
 -   **Case Studies**: Approved evidence for public display.
 -   **SchoolUsers**: Junction table for user-school relationships.
@@ -51,6 +52,7 @@ Preferred communication style: Simple, everyday language.
 -   **Animations**: Scroll-reveal animations disabled; button hover/press interactions preserved.
 -   **Dashboard Features**: Tab-based navigation (Progress, Analytics, Resources, Team), dismissible evidence notifications, comprehensive analytics with visualizations, dynamic evidence requirements checklist, and integrated evidence tracking within stage cards.
 -   **Landing Page**: Hero section, Impact Ribbon, teacher testimonial, program stage overview, CTA, and Instagram feed.
+-   **Analytics System**: Plastic waste audit data automatically converts into visual analytics for both teacher and admin dashboards, showing total plastic items, location breakdowns, top problem plastics, waste management practices, and cross-school trends.
 
 ## External Dependencies
 ### Core Infrastructure
