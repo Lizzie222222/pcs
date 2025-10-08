@@ -6,7 +6,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, type VerificationRequest, users } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, type VerificationRequest, users } from "@shared/schema";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
@@ -1960,6 +1960,172 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in bulk evidence delete:", error);
       res.status(500).json({ message: "Failed to perform bulk delete" });
+    }
+  });
+
+  // Audit Routes
+  
+  // Create or update audit (save progress)
+  app.post('/api/audits', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const auditData = insertAuditResponseSchema.parse({
+        ...req.body,
+        submittedBy: userId,
+      });
+
+      // Check if audit already exists for this school
+      const existingAudit = await storage.getSchoolAudit(auditData.schoolId);
+      
+      let audit;
+      if (existingAudit && existingAudit.status === 'draft') {
+        // Update existing draft
+        audit = await storage.updateAudit(existingAudit.id, auditData);
+      } else if (!existingAudit) {
+        // Create new audit
+        audit = await storage.createAudit(auditData);
+      } else {
+        return res.status(400).json({ message: "Audit already submitted for this school" });
+      }
+
+      res.status(201).json(audit);
+    } catch (error) {
+      console.error("Error saving audit:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to save audit" });
+    }
+  });
+
+  // Get school audit
+  app.get('/api/audits/school/:schoolId', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const audit = await storage.getSchoolAudit(schoolId);
+      
+      if (!audit) {
+        return res.status(404).json({ message: "No audit found for this school" });
+      }
+
+      res.json(audit);
+    } catch (error) {
+      console.error("Error fetching school audit:", error);
+      res.status(500).json({ message: "Failed to fetch audit" });
+    }
+  });
+
+  // Get specific audit
+  app.get('/api/audits/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const audit = await storage.getAudit(id);
+      
+      if (!audit) {
+        return res.status(404).json({ message: "Audit not found" });
+      }
+
+      res.json(audit);
+    } catch (error) {
+      console.error("Error fetching audit:", error);
+      res.status(500).json({ message: "Failed to fetch audit" });
+    }
+  });
+
+  // Submit audit for review
+  app.post('/api/audits/:id/submit', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { id } = req.params;
+      
+      const audit = await storage.submitAudit(id, userId);
+      
+      if (!audit) {
+        return res.status(404).json({ message: "Audit not found or unauthorized" });
+      }
+
+      // Send email notifications (non-blocking)
+      try {
+        const user = await storage.getUser(userId);
+        const school = await storage.getSchool(audit.schoolId);
+        
+        if (user?.email && school) {
+          // TODO: Add audit submission email notification
+          console.log(`Audit submitted for school: ${school.name}`);
+        }
+      } catch (emailError) {
+        console.warn("Failed to send audit submission email:", emailError);
+      }
+
+      res.json(audit);
+    } catch (error) {
+      console.error("Error submitting audit:", error);
+      res.status(500).json({ message: "Failed to submit audit" });
+    }
+  });
+
+  // Admin: Get pending audits
+  app.get('/api/admin/audits/pending', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const audits = await storage.getPendingAudits();
+      res.json(audits);
+    } catch (error) {
+      console.error("Error fetching pending audits:", error);
+      res.status(500).json({ message: "Failed to fetch pending audits" });
+    }
+  });
+
+  // Admin: Get all audits with filters
+  app.get('/api/admin/audits', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { status, limit, offset } = req.query;
+      const audits = await storage.getAllAudits({
+        status: status as string,
+        limit: limit ? parseInt(limit as string) : undefined,
+        offset: offset ? parseInt(offset as string) : undefined,
+      });
+      res.json(audits);
+    } catch (error) {
+      console.error("Error fetching audits:", error);
+      res.status(500).json({ message: "Failed to fetch audits" });
+    }
+  });
+
+  // Admin: Review audit (approve/reject)
+  app.put('/api/admin/audits/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { approved, reviewNotes } = req.body;
+      const reviewerId = req.user.id;
+      const { id } = req.params;
+      
+      const audit = await storage.reviewAudit(id, reviewerId, approved, reviewNotes);
+      
+      if (!audit) {
+        return res.status(404).json({ message: "Audit not found" });
+      }
+
+      // Send notification email
+      try {
+        const user = await storage.getUser(audit.submittedBy);
+        const school = await storage.getSchool(audit.schoolId);
+        
+        if (user?.email && school) {
+          // TODO: Add audit approval/rejection email notifications
+          console.log(`Audit ${approved ? 'approved' : 'rejected'} for school: ${school.name}`);
+        }
+      } catch (emailError) {
+        console.warn("Failed to send audit review email:", emailError);
+      }
+
+      // Check and update school progression if approved
+      if (approved) {
+        await storage.checkAndUpdateSchoolProgression(audit.schoolId);
+      }
+
+      res.json(audit);
+    } catch (error) {
+      console.error("Error reviewing audit:", error);
+      res.status(500).json({ message: "Failed to review audit" });
     }
   });
 
