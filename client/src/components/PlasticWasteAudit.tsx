@@ -24,10 +24,10 @@ interface PlasticWasteAuditProps {
 // Form schemas for each part
 const part1Schema = z.object({
   schoolName: z.string().min(1, "School name is required"),
-  studentCount: z.string().min(1, "Student count is required"),
-  staffCount: z.string().min(1, "Staff count is required"),
+  studentCount: z.string().optional(),
+  staffCount: z.string().optional(),
   auditDate: z.string().min(1, "Audit date is required"),
-  auditTeam: z.string().min(1, "Audit team members are required"),
+  auditTeam: z.string().optional(),
 });
 
 const part2Schema = z.object({

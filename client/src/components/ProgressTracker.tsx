@@ -129,6 +129,12 @@ export default function ProgressTracker({
         return Math.round((counts.approved / fallbackRequired) * 100);
       }
       
+      // Special handling for investigate stage: count approved audit separately
+      if (stageId === 'investigate' && 'hasQuiz' in counts) {
+        const approvedItems = counts.approved + (counts.hasQuiz ? 1 : 0);
+        return Math.round((approvedItems / required) * 100);
+      }
+      
       return Math.round((counts.approved / required) * 100);
     }
     return 0;
