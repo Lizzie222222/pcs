@@ -93,7 +93,7 @@ export function useAuth() {
       return data.user || null;
     },
     retry: false,
-    enabled: authHint || shouldCheck, // Run query if we have hint OR should check
+    enabled: true, // Always check auth on initial load to detect existing sessions
     staleTime: 5 * 60 * 1000, // 5 minutes
     gcTime: 10 * 60 * 1000, // 10 minutes (formerly cacheTime)
   });

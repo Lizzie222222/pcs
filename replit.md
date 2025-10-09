@@ -87,3 +87,10 @@ Preferred communication style: Simple, everyday language.
 - **Notification System**: Dismissible banner in Progress tab prompts for promises when audit is complete
 - **Admin Features**: Individual school promise cards in Schools tab, and global aggregated metrics in Analytics tab
 - **Impact Display**: Shows ocean impact (bottles, fish, sea turtles) and environmental impact (CO2, oil, waste) across all views
+
+### Admin UI Improvements (October 2025)
+- **Evidence Requirements Tab**: Integrated Evidence Requirements as a tab within the admin page instead of a separate page, maintaining tabbed UI visibility at all times
+- **Navigation**: Changed Evidence Requirements button from navigation link to tab trigger, preventing tabbed UI from disappearing when clicked
+- **Backwards Compatibility**: Restored `/admin/evidence-requirements` route that renders admin page with Evidence Requirements tab pre-selected via initialTab prop
+- **Deep Linking**: Both `/admin` (defaults to Overview tab) and `/admin/evidence-requirements` routes now supported for direct navigation to specific tabs
+- **Authentication Fix**: Updated useAuth hook to always check authentication on initial load (enabled: true), ensuring existing backend sessions are properly detected for route protection and testing scenarios
