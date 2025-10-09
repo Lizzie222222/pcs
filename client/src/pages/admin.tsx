@@ -13,6 +13,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useCountries } from "@/hooks/useCountries";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { DateRangePicker } from "@/components/ui/date-range-picker";
+import { subDays } from "date-fns";
+import type { DateRange } from "react-day-picker";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -2165,6 +2168,12 @@ function ResourceForm({ resource, onClose, onSuccess }: {
 }
 
 function AnalyticsContent() {
+  // Date range state - default to Last 30 days
+  const [dateRange, setDateRange] = useState<DateRange | undefined>(() => ({
+    from: subDays(new Date(), 30),
+    to: new Date(),
+  }));
+
   // Analytics queries - all enabled
   const overviewQuery = useQuery<AnalyticsOverview>({
     queryKey: ['/api/admin/analytics/overview']
@@ -2248,6 +2257,15 @@ function AnalyticsContent() {
             Export Excel
           </Button>
         </div>
+      </div>
+
+      {/* Date Range Picker */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4">
+        <DateRangePicker
+          value={dateRange}
+          onChange={setDateRange}
+          className="w-full"
+        />
       </div>
 
       {/* Nested Tabs for Analytics Sections */}
