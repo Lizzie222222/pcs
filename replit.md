@@ -119,3 +119,22 @@ Preferred communication style: Simple, everyday language.
   - Admin-only endpoint: `POST /api/admin/analytics/export-pdf`
   - Frontend export button with loading states and success/error toasts
   - **Note**: Requires Chromium system dependencies (libglib-2.0, etc.) which may not be available in all deployment environments
+
+### Multi-Language Support (October 2025)
+- **Supported Languages**: Added comprehensive support for 14 languages: English, Greek, Arabic, Chinese, Dutch, French, German, Indonesian, Italian, Korean, Portuguese, Russian, Spanish, Welsh
+- **Database Schema**: Added `preferredLanguage` field to users table with default value 'en', storing user's language preference in their profile
+- **Translation Infrastructure**: 
+  - Created translation directory structure for all languages with 10 JSON files each (common, landing, dashboard, resources, forms, auth, admin, map, search, newsletter)
+  - Updated language names in common.json for all 14 languages with native language labels (e.g., "Français" for French, "Español" for Spanish)
+  - Implemented generic lazy-loading system in i18n.ts using dynamic imports - English loaded upfront, all other languages loaded on demand
+- **User Interface**:
+  - Updated LanguageSwitcher component to display all 14 language options with scrollable dropdown
+  - Added language selection dropdown to sign-up/register form, defaulting to current i18n language
+  - Language switcher in header allows real-time language switching
+- **Authentication Integration**:
+  - Updated register and login API responses to include preferredLanguage field
+  - Modified /api/auth/user endpoint to return user's language preference
+  - Enhanced useAuth hook to automatically apply user's preferred language on initial load, login, and registration
+  - Language preference persists across sessions and page reloads when authenticated
+- **User Experience**: Users select language during registration, preference is saved to profile, language automatically applies on login, persists across sessions; temporary language changes revert to user preference on page reload
+- **Testing**: E2E test validates complete flow including language selection during registration, persistence across page reloads, and automatic application of saved preference
