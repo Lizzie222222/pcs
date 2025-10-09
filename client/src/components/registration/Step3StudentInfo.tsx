@@ -164,7 +164,7 @@ export default function Step3StudentInfo({
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="cursor-pointer">
-                    {t('forms:school_registration.show_on_map_label')}
+                    {t('forms:school_registration.show_on_map')}
                   </FormLabel>
                   <FormDescription>
                     {t('forms:school_registration.show_on_map_description')}
@@ -189,7 +189,7 @@ export default function Step3StudentInfo({
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="cursor-pointer">
-                    {t('forms:school_registration.gdpr_consent_label')} *
+                    {t('forms:school_registration.gdpr_consent')} *
                   </FormLabel>
                   <FormMessage data-testid="error-gdpr-consent" />
                 </div>
@@ -212,7 +212,7 @@ export default function Step3StudentInfo({
                 </FormControl>
                 <div className="space-y-1 leading-none">
                   <FormLabel className="cursor-pointer">
-                    {t('forms:school_registration.accept_terms_label')} *
+                    {t('forms:school_registration.accept_terms')} *
                   </FormLabel>
                   <FormMessage data-testid="error-accept-terms" />
                 </div>
