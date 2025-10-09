@@ -2001,11 +2001,27 @@ export class DatabaseStorage implements IStorage {
     // Role distribution
     const roleDistribution = await db
       .select({
-        role: sql<string>`CASE WHEN is_admin = true THEN 'admin' ELSE role END`,
+        role: sql<string>`
+          CASE 
+            WHEN is_admin = true THEN 'Admin'
+            WHEN role = 'teacher' THEN 'Teacher'
+            WHEN role = 'head_teacher' THEN 'Head Teacher'
+            WHEN role = 'pending_teacher' THEN 'Pending Teacher'
+            ELSE COALESCE(role, 'Other')
+          END
+        `,
         count: count()
       })
       .from(users)
-      .groupBy(sql`CASE WHEN is_admin = true THEN 'admin' ELSE role END`);
+      .groupBy(sql`
+        CASE 
+          WHEN is_admin = true THEN 'Admin'
+          WHEN role = 'teacher' THEN 'Teacher'
+          WHEN role = 'head_teacher' THEN 'Head Teacher'
+          WHEN role = 'pending_teacher' THEN 'Pending Teacher'
+          ELSE COALESCE(role, 'Other')
+        END
+      `);
 
     // Active users (based on evidence submissions)
     const activeUsers = [
