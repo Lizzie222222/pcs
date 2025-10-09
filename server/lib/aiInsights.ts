@@ -108,12 +108,16 @@ Return your response as a JSON object with the following structure:
     }
 
     console.log(`[AI Insights] Using model: ${modelUsed}`);
+    console.log('[AI Insights] Completion response:', JSON.stringify(completion, null, 2));
 
     // Parse the response
     const responseContent = completion.choices[0]?.message?.content;
     
+    console.log('[AI Insights] Response content:', responseContent);
+    
     if (!responseContent) {
-      throw new Error(`No response content from OpenAI API (model: ${modelUsed})`);
+      console.error('[AI Insights] Full completion object:', JSON.stringify(completion, null, 2));
+      throw new Error(`No response content from OpenAI API (model: ${modelUsed}). Choices: ${completion.choices?.length || 0}, Finish reason: ${completion.choices?.[0]?.finish_reason || 'none'}`);
     }
 
     const insights = JSON.parse(responseContent) as AnalyticsInsights;
