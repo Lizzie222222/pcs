@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/ui/states";
 import { Mail, Globe, Shield, ArrowRight, School, User, LogOut, Eye, EyeOff, UserPlus, X, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -15,8 +16,25 @@ import MultiStepSchoolRegistration from "@/components/MultiStepSchoolRegistratio
 import JoinSchoolFlow from "@/components/JoinSchoolFlow";
 import logoUrl from "@assets/Logo_1757848498470.png";
 
+const languages = [
+  { code: 'ar', key: 'arabic' },
+  { code: 'zh', key: 'chinese' },
+  { code: 'nl', key: 'dutch' },
+  { code: 'en', key: 'english' },
+  { code: 'fr', key: 'french' },
+  { code: 'de', key: 'german' },
+  { code: 'el', key: 'greek' },
+  { code: 'id', key: 'indonesian' },
+  { code: 'it', key: 'italian' },
+  { code: 'ko', key: 'korean' },
+  { code: 'pt', key: 'portuguese' },
+  { code: 'ru', key: 'russian' },
+  { code: 'es', key: 'spanish' },
+  { code: 'cy', key: 'welsh' },
+];
+
 export default function Register() {
-  const { t } = useTranslation(['auth', 'forms']);
+  const { t, i18n } = useTranslation(['auth', 'forms', 'common']);
   const { user, isLoading, isAuthenticated, register, isRegistering } = useAuth();
   const [, setLocation] = useLocation();
   const [showSignUpForm, setShowSignUpForm] = useState(false);
@@ -43,6 +61,7 @@ export default function Register() {
       confirmPassword: "",
       firstName: "",
       lastName: "",
+      preferredLanguage: i18n.language || "en",
     },
   });
 
@@ -263,6 +282,39 @@ export default function Register() {
                               </div>
                             </FormControl>
                             <FormMessage data-testid="error-confirm-password" />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="preferredLanguage"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>{t('auth:register.preferred_language_label')}</FormLabel>
+                            <Select
+                              onValueChange={field.onChange}
+                              defaultValue={field.value}
+                              disabled={isRegistering}
+                            >
+                              <FormControl>
+                                <SelectTrigger data-testid="select-preferred-language">
+                                  <SelectValue placeholder={t('auth:register.preferred_language_placeholder')} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent className="max-h-[300px]">
+                                {languages.map((lang) => (
+                                  <SelectItem 
+                                    key={lang.code} 
+                                    value={lang.code}
+                                    data-testid={`language-option-${lang.code}`}
+                                  >
+                                    {t(`common:language.${lang.key}`)}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage data-testid="error-preferred-language" />
                           </FormItem>
                         )}
                       />

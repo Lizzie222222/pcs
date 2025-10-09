@@ -593,6 +593,7 @@ export const createRegisterSchema = (t: TranslationFunction) => z.object({
   confirmPassword: z.string(),
   firstName: z.string().min(1, t('forms:validation.first_name_required')),
   lastName: z.string().min(1, t('forms:validation.last_name_required')),
+  preferredLanguage: z.string().default('en'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: t('forms:validation.passwords_dont_match'),
   path: ["confirmPassword"],
@@ -614,6 +615,7 @@ export const registerSchema = z.object({
   confirmPassword: z.string(),
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
+  preferredLanguage: z.string().default('en'),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
