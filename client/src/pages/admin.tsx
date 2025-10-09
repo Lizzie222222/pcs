@@ -2176,19 +2176,31 @@ function AnalyticsContent() {
 
   // Analytics queries - all enabled
   const overviewQuery = useQuery<AnalyticsOverview>({
-    queryKey: ['/api/admin/analytics/overview']
+    queryKey: ['/api/admin/analytics/overview', { 
+      startDate: dateRange?.from?.toISOString(), 
+      endDate: dateRange?.to?.toISOString() 
+    }]
   });
 
   const schoolProgressQuery = useQuery<SchoolProgressAnalytics>({
-    queryKey: ['/api/admin/analytics/school-progress']
+    queryKey: ['/api/admin/analytics/school-progress', { 
+      startDate: dateRange?.from?.toISOString(), 
+      endDate: dateRange?.to?.toISOString() 
+    }]
   });
 
   const evidenceQuery = useQuery<EvidenceAnalytics>({
-    queryKey: ['/api/admin/analytics/evidence']
+    queryKey: ['/api/admin/analytics/evidence', { 
+      startDate: dateRange?.from?.toISOString(), 
+      endDate: dateRange?.to?.toISOString() 
+    }]
   });
 
   const userEngagementQuery = useQuery<UserEngagementAnalytics>({
-    queryKey: ['/api/admin/analytics/user-engagement']
+    queryKey: ['/api/admin/analytics/user-engagement', { 
+      startDate: dateRange?.from?.toISOString(), 
+      endDate: dateRange?.to?.toISOString() 
+    }]
   });
 
   const auditOverviewQuery = useQuery<AuditOverviewAnalytics>({

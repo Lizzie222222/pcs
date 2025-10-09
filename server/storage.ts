@@ -248,7 +248,7 @@ export interface IStorage {
   }>>;
 
   // Analytics operations
-  getAnalyticsOverview(): Promise<{
+  getAnalyticsOverview(startDate?: string, endDate?: string): Promise<{
     totalSchools: number;
     totalUsers: number;
     totalEvidence: number;
@@ -259,7 +259,7 @@ export interface IStorage {
     countriesReached: number;
   }>;
 
-  getSchoolProgressAnalytics(): Promise<{
+  getSchoolProgressAnalytics(startDate?: string, endDate?: string): Promise<{
     stageDistribution: Array<{ stage: string; count: number }>;
     progressRanges: Array<{ range: string; count: number }>;
     completionRates: Array<{ metric: string; rate: number }>;
@@ -267,14 +267,14 @@ export interface IStorage {
     schoolsByCountry: Array<{ country: string; count: number; students: number }>;
   }>;
 
-  getEvidenceAnalytics(): Promise<{
+  getEvidenceAnalytics(startDate?: string, endDate?: string): Promise<{
     submissionTrends: Array<{ month: string; submissions: number; approvals: number; rejections: number }>;
     stageBreakdown: Array<{ stage: string; total: number; approved: number; pending: number; rejected: number }>;
     reviewTurnaround: Array<{ range: string; count: number }>;
     topSubmitters: Array<{ schoolName: string; submissions: number; approvalRate: number }>;
   }>;
 
-  getUserEngagementAnalytics(): Promise<{
+  getUserEngagementAnalytics(startDate?: string, endDate?: string): Promise<{
     registrationTrends: Array<{ month: string; teachers: number; admins: number }>;
     roleDistribution: Array<{ role: string; count: number }>;
     activeUsers: Array<{ period: string; active: number }>;
@@ -1782,7 +1782,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Analytics implementations
-  async getAnalyticsOverview(): Promise<{
+  async getAnalyticsOverview(startDate?: string, endDate?: string): Promise<{
     totalSchools: number;
     totalUsers: number;
     totalEvidence: number;
@@ -1792,15 +1792,28 @@ export class DatabaseStorage implements IStorage {
     studentsImpacted: number;
     countriesReached: number;
   }> {
+    // Build date filter conditions
+    const schoolDateFilter = startDate && endDate 
+      ? sql`created_at >= ${startDate}::timestamp AND created_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
+    
+    const userDateFilter = startDate && endDate
+      ? sql`created_at >= ${startDate}::timestamp AND created_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
+    
+    const evidenceDateFilter = startDate && endDate
+      ? sql`submitted_at >= ${startDate}::timestamp AND submitted_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
+
     // Get individual metrics separately to avoid complex subquery issues
-    const [schoolsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools);
-    const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users);
-    const [evidenceCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence);
-    const [awardsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools).where(eq(schools.awardCompleted, true));
-    const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(eq(evidence.status, 'pending'));
-    const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools);
-    const [studentsSum] = await db.select({ sum: sql<number>`COALESCE(SUM(student_count), 0)` }).from(schools);
-    const [countriesCount] = await db.select({ count: sql<number>`COUNT(DISTINCT country)` }).from(schools);
+    const [schoolsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools).where(schoolDateFilter);
+    const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users).where(userDateFilter);
+    const [evidenceCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(evidenceDateFilter);
+    const [awardsCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(schools).where(and(eq(schools.awardCompleted, true), schoolDateFilter));
+    const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(and(eq(evidence.status, 'pending'), evidenceDateFilter));
+    const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools).where(schoolDateFilter);
+    const [studentsSum] = await db.select({ sum: sql<number>`COALESCE(SUM(student_count), 0)` }).from(schools).where(schoolDateFilter);
+    const [countriesCount] = await db.select({ count: sql<number>`COUNT(DISTINCT country)` }).from(schools).where(schoolDateFilter);
 
     return {
       totalSchools: schoolsCount?.count || 0,
@@ -1814,13 +1827,18 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getSchoolProgressAnalytics(): Promise<{
+  async getSchoolProgressAnalytics(startDate?: string, endDate?: string): Promise<{
     stageDistribution: Array<{ stage: string; count: number }>;
     progressRanges: Array<{ range: string; count: number }>;
     completionRates: Array<{ metric: string; rate: number }>;
     monthlyRegistrations: Array<{ month: string; count: number }>;
     schoolsByCountry: Array<{ country: string; count: number; students: number }>;
   }> {
+    // Build date filter condition
+    const dateFilter = startDate && endDate
+      ? sql`created_at >= ${startDate}::timestamp AND created_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
+
     // Stage distribution
     const stageDistribution = await db
       .select({
@@ -1828,6 +1846,7 @@ export class DatabaseStorage implements IStorage {
         count: count()
       })
       .from(schools)
+      .where(dateFilter)
       .groupBy(schools.currentStage);
 
     // Progress ranges
@@ -1844,6 +1863,7 @@ export class DatabaseStorage implements IStorage {
         count: count()
       })
       .from(schools)
+      .where(dateFilter)
       .groupBy(sql`CASE 
         WHEN progress_percentage = 0 THEN 'Not Started'
         WHEN progress_percentage <= 25 THEN '1-25%'
@@ -1862,7 +1882,8 @@ export class DatabaseStorage implements IStorage {
         award: sql<number>`COUNT(*) FILTER (WHERE award_completed = true)`,
         total: count()
       })
-      .from(schools);
+      .from(schools)
+      .where(dateFilter);
 
     const completionRates = [
       { metric: 'Inspire', rate: (completionData.inspire / completionData.total) * 100 },
@@ -1871,14 +1892,18 @@ export class DatabaseStorage implements IStorage {
       { metric: 'Award', rate: (completionData.award / completionData.total) * 100 }
     ];
 
-    // Monthly registrations (last 12 months)
+    // Monthly registrations - use date filter or default to last 12 months
+    const monthlyRegistrationsFilter = startDate && endDate
+      ? dateFilter
+      : sql`created_at >= NOW() - INTERVAL '12 months'`;
+    
     const monthlyRegistrations = await db
       .select({
         month: sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
         count: count()
       })
       .from(schools)
-      .where(sql`created_at >= NOW() - INTERVAL '12 months'`)
+      .where(monthlyRegistrationsFilter)
       .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
       .orderBy(sql`TO_CHAR(created_at, 'YYYY-MM')`);
 
@@ -1890,6 +1915,7 @@ export class DatabaseStorage implements IStorage {
         students: sql<number>`COALESCE(SUM(student_count), 0)`
       })
       .from(schools)
+      .where(dateFilter)
       .groupBy(schools.country)
       .orderBy(desc(count()));
 
@@ -1902,13 +1928,22 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getEvidenceAnalytics(): Promise<{
+  async getEvidenceAnalytics(startDate?: string, endDate?: string): Promise<{
     submissionTrends: Array<{ month: string; submissions: number; approvals: number; rejections: number }>;
     stageBreakdown: Array<{ stage: string; total: number; approved: number; pending: number; rejected: number }>;
     reviewTurnaround: Array<{ range: string; count: number }>;
     topSubmitters: Array<{ schoolName: string; submissions: number; approvalRate: number }>;
   }> {
-    // Submission trends (last 12 months)
+    // Build date filter condition
+    const dateFilter = startDate && endDate
+      ? sql`submitted_at >= ${startDate}::timestamp AND submitted_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
+
+    // Submission trends - use date filter or default to last 12 months
+    const submissionTrendsFilter = startDate && endDate
+      ? dateFilter
+      : sql`submitted_at >= NOW() - INTERVAL '12 months'`;
+    
     const submissionTrends = await db
       .select({
         month: sql<string>`TO_CHAR(submitted_at, 'YYYY-MM')`,
@@ -1917,7 +1952,7 @@ export class DatabaseStorage implements IStorage {
         rejections: sql<number>`COUNT(*) FILTER (WHERE status = 'rejected')`
       })
       .from(evidence)
-      .where(sql`submitted_at >= NOW() - INTERVAL '12 months'`)
+      .where(submissionTrendsFilter)
       .groupBy(sql`TO_CHAR(submitted_at, 'YYYY-MM')`)
       .orderBy(sql`TO_CHAR(submitted_at, 'YYYY-MM')`);
 
@@ -1931,20 +1966,27 @@ export class DatabaseStorage implements IStorage {
         rejected: sql<number>`COUNT(*) FILTER (WHERE status = 'rejected')`
       })
       .from(evidence)
+      .where(dateFilter)
       .groupBy(evidence.stage);
 
     // Review turnaround (for completed reviews)
     // First, count total reviewed items to ensure sufficient data
+    const reviewConditions = [
+      sql`reviewed_at IS NOT NULL`,
+      sql`submitted_at IS NOT NULL`,
+      sql`reviewed_at >= submitted_at`
+    ];
+    
+    if (startDate && endDate) {
+      reviewConditions.push(sql`reviewed_at >= ${startDate}::timestamp AND reviewed_at < (${endDate}::timestamp + INTERVAL '1 day')`);
+    }
+    
     const reviewedCountResult = await db
       .select({
         count: count()
       })
       .from(evidence)
-      .where(and(
-        sql`reviewed_at IS NOT NULL`,
-        sql`submitted_at IS NOT NULL`,
-        sql`reviewed_at >= submitted_at`
-      ));
+      .where(and(...reviewConditions));
     
     const reviewedCount = reviewedCountResult[0]?.count || 0;
     
@@ -1964,11 +2006,7 @@ export class DatabaseStorage implements IStorage {
           count: count()
         })
         .from(evidence)
-        .where(and(
-          sql`reviewed_at IS NOT NULL`,
-          sql`submitted_at IS NOT NULL`,
-          sql`reviewed_at >= submitted_at`
-        ))
+        .where(and(...reviewConditions))
         .groupBy(sql`CASE 
           WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 1 THEN 'Same day'
           WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 3 THEN '1-3 days'
@@ -1987,6 +2025,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(evidence)
       .innerJoin(schools, eq(evidence.schoolId, schools.id))
+      .where(dateFilter)
       .groupBy(schools.id, schools.name)
       .having(sql`COUNT(*) >= 3`)
       .orderBy(desc(count()))
@@ -2000,13 +2039,26 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async getUserEngagementAnalytics(): Promise<{
+  async getUserEngagementAnalytics(startDate?: string, endDate?: string): Promise<{
     registrationTrends: Array<{ month: string; teachers: number; admins: number }>;
     roleDistribution: Array<{ role: string; count: number }>;
     activeUsers: Array<{ period: string; active: number }>;
     schoolEngagement: Array<{ schoolName: string; users: number; evidence: number; lastActivity: Date }>;
   }> {
-    // Registration trends (last 12 months)
+    // Build date filter conditions
+    const userDateFilter = startDate && endDate
+      ? sql`created_at >= ${startDate}::timestamp AND created_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
+    
+    const evidenceDateFilter = startDate && endDate
+      ? sql`submitted_at >= ${startDate}::timestamp AND submitted_at < (${endDate}::timestamp + INTERVAL '1 day')`
+      : sql`true`;
+
+    // Registration trends - use date filter or default to last 12 months
+    const registrationTrendsFilter = startDate && endDate
+      ? userDateFilter
+      : sql`created_at >= NOW() - INTERVAL '12 months'`;
+    
     const registrationTrends = await db
       .select({
         month: sql<string>`TO_CHAR(created_at, 'YYYY-MM')`,
@@ -2014,11 +2066,11 @@ export class DatabaseStorage implements IStorage {
         admins: sql<number>`COUNT(*) FILTER (WHERE is_admin = true)`
       })
       .from(users)
-      .where(sql`created_at >= NOW() - INTERVAL '12 months'`)
+      .where(registrationTrendsFilter)
       .groupBy(sql`TO_CHAR(created_at, 'YYYY-MM')`)
       .orderBy(sql`TO_CHAR(created_at, 'YYYY-MM')`);
 
-    // Role distribution
+    // Role distribution - filter by user creation date
     const roleDistribution = await db
       .select({
         role: sql<string>`
@@ -2033,6 +2085,7 @@ export class DatabaseStorage implements IStorage {
         count: count()
       })
       .from(users)
+      .where(userDateFilter)
       .groupBy(sql`
         CASE 
           WHEN is_admin = true THEN 'Admin'
@@ -2043,37 +2096,49 @@ export class DatabaseStorage implements IStorage {
         END
       `);
 
-    // Active users (based on evidence submissions)
+    // Active users (based on evidence submissions) - use evidence date filter or default periods
+    const activeUsersFilter7Days = startDate && endDate
+      ? evidenceDateFilter
+      : sql`submitted_at >= NOW() - INTERVAL '7 days'`;
+    
+    const activeUsersFilter30Days = startDate && endDate
+      ? evidenceDateFilter
+      : sql`submitted_at >= NOW() - INTERVAL '30 days'`;
+    
+    const activeUsersFilter90Days = startDate && endDate
+      ? evidenceDateFilter
+      : sql`submitted_at >= NOW() - INTERVAL '90 days'`;
+    
     const activeUsers = [
       {
         period: 'Last 7 days',
         active: (await db
           .select({ count: sql<number>`COUNT(DISTINCT submitted_by)` })
           .from(evidence)
-          .where(sql`submitted_at >= NOW() - INTERVAL '7 days'`))[0].count
+          .where(activeUsersFilter7Days))[0].count
       },
       {
         period: 'Last 30 days',
         active: (await db
           .select({ count: sql<number>`COUNT(DISTINCT submitted_by)` })
           .from(evidence)
-          .where(sql`submitted_at >= NOW() - INTERVAL '30 days'`))[0].count
+          .where(activeUsersFilter30Days))[0].count
       },
       {
         period: 'Last 90 days',
         active: (await db
           .select({ count: sql<number>`COUNT(DISTINCT submitted_by)` })
           .from(evidence)
-          .where(sql`submitted_at >= NOW() - INTERVAL '90 days'`))[0].count
+          .where(activeUsersFilter90Days))[0].count
       }
     ];
 
-    // School engagement
+    // School engagement - filter evidence by date
     const schoolEngagement = await db
       .select({
         schoolName: schools.name,
         users: sql<number>`COUNT(DISTINCT school_users.user_id)`,
-        evidence: sql<number>`COUNT(DISTINCT evidence.id)`,
+        evidence: sql<number>`COUNT(DISTINCT CASE WHEN ${evidenceDateFilter} THEN evidence.id END)`,
         lastActivity: sql<Date>`GREATEST(MAX(evidence.submitted_at), MAX(school_users.created_at))`
       })
       .from(schools)

@@ -1777,7 +1777,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Analytics endpoints
   app.get('/api/admin/analytics/overview', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const analytics = await storage.getAnalyticsOverview();
+      const { startDate, endDate } = req.query;
+      const analytics = await storage.getAnalyticsOverview(
+        startDate as string | undefined,
+        endDate as string | undefined
+      );
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching analytics overview:", error);
@@ -1787,7 +1791,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/analytics/school-progress', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const analytics = await storage.getSchoolProgressAnalytics();
+      const { startDate, endDate } = req.query;
+      const analytics = await storage.getSchoolProgressAnalytics(
+        startDate as string | undefined,
+        endDate as string | undefined
+      );
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching school progress analytics:", error);
@@ -1797,7 +1805,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/analytics/evidence', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const analytics = await storage.getEvidenceAnalytics();
+      const { startDate, endDate } = req.query;
+      const analytics = await storage.getEvidenceAnalytics(
+        startDate as string | undefined,
+        endDate as string | undefined
+      );
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching evidence analytics:", error);
@@ -1807,7 +1819,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get('/api/admin/analytics/user-engagement', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const analytics = await storage.getUserEngagementAnalytics();
+      const { startDate, endDate } = req.query;
+      const analytics = await storage.getUserEngagementAnalytics(
+        startDate as string | undefined,
+        endDate as string | undefined
+      );
       res.json(analytics);
     } catch (error) {
       console.error("Error fetching user engagement analytics:", error);
