@@ -25,11 +25,55 @@ const languages = [
   { code: 'cy', nativeName: 'Cymraeg' },
 ];
 
+// Function to load translations for a language
+const loadTranslations = async (lang: string) => {
+  const [common, landing, dashboard, resources, forms, auth, admin, map, search, newsletter] = await Promise.all([
+    import(`../locales/${lang}/common.json`),
+    import(`../locales/${lang}/landing.json`),
+    import(`../locales/${lang}/dashboard.json`),
+    import(`../locales/${lang}/resources.json`),
+    import(`../locales/${lang}/forms.json`),
+    import(`../locales/${lang}/auth.json`),
+    import(`../locales/${lang}/admin.json`),
+    import(`../locales/${lang}/map.json`),
+    import(`../locales/${lang}/search.json`),
+    import(`../locales/${lang}/newsletter.json`),
+  ]);
+  
+  return {
+    common: common.default,
+    landing: landing.default,
+    dashboard: dashboard.default,
+    resources: resources.default,
+    forms: forms.default,
+    auth: auth.default,
+    admin: admin.default,
+    map: map.default,
+    search: search.default,
+    newsletter: newsletter.default,
+  };
+};
+
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
 
-  const handleLanguageChange = (lang: string) => {
-    i18n.changeLanguage(lang);
+  const handleLanguageChange = async (lang: string) => {
+    // If not English and translations not loaded, load them first
+    if (lang !== 'en' && !i18n.hasResourceBundle(lang, 'common')) {
+      try {
+        const translations = await loadTranslations(lang);
+        // Add all namespaces to i18n
+        Object.entries(translations).forEach(([namespace, resources]) => {
+          i18n.addResourceBundle(lang, namespace, resources, true, true);
+        });
+      } catch (error) {
+        console.warn(`Failed to load ${lang} translations:`, error);
+        return; // Don't change language if translations fail to load
+      }
+    }
+    
+    // Change language - React will re-render automatically
+    await i18n.changeLanguage(lang);
   };
 
   return (

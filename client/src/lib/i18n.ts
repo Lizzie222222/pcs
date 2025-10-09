@@ -88,6 +88,7 @@ i18n
     // React options
     react: {
       useSuspense: false, // Set to false to avoid suspense mode
+      bindI18n: 'languageChanged loaded', // Ensure components re-render on language change
     },
   });
 
@@ -105,11 +106,11 @@ i18n.on('languageChanged', async (lng) => {
       
       // Add all namespaces to i18n
       Object.entries(translations).forEach(([namespace, resources]) => {
-        i18n.addResourceBundle(lng, namespace, resources);
+        i18n.addResourceBundle(lng, namespace, resources, true, true);
       });
       
-      // Force re-render by changing language again
-      i18n.changeLanguage(lng);
+      // Emit loaded event to trigger React re-render
+      i18n.emit('loaded', [lng]);
     } catch (error) {
       console.warn(`Failed to load ${lng} translations:`, error);
       // Fallback to English if language fails to load
