@@ -63,61 +63,40 @@ Return your response as a JSON object with the following structure:
 }
 `;
 
-    // Call OpenAI API with gpt-4o (most capable model available)
-    // Try gpt-5 first, fall back to gpt-4o if it doesn't exist
-    let completion;
-    let modelUsed = "gpt-5";
+    // Use GPT-4o which is the most reliable and capable model available
+    // Note: gpt-5 may not be generally available yet
+    const modelUsed = "gpt-4o";
     
-    try {
-      completion = await openai.chat.completions.create({
-        model: "gpt-5",
-        messages: [
-          {
-            role: "system",
-            content: "You are an educational analytics expert analyzing plastic reduction program data. Provide clear, actionable insights based on the data provided. Focus on identifying meaningful patterns, engagement metrics, and practical recommendations for program coordinators and administrators."
-          },
-          {
-            role: "user",
-            content: userPrompt
-          }
-        ],
-        max_completion_tokens: 1500,
-        response_format: { type: "json_object" }
-      });
-    } catch (modelError: any) {
-      // If gpt-5 doesn't exist, fall back to gpt-4o
-      console.log('[AI Insights] gpt-5 not available, falling back to gpt-4o:', modelError.message);
-      modelUsed = "gpt-4o";
-      
-      completion = await openai.chat.completions.create({
-        model: "gpt-4o",
-        messages: [
-          {
-            role: "system",
-            content: "You are an educational analytics expert analyzing plastic reduction program data. Provide clear, actionable insights based on the data provided. Focus on identifying meaningful patterns, engagement metrics, and practical recommendations for program coordinators and administrators."
-          },
-          {
-            role: "user",
-            content: userPrompt
-          }
-        ],
-        max_tokens: 1500,
-        temperature: 0.7,
-        response_format: { type: "json_object" }
-      });
-    }
-
     console.log(`[AI Insights] Using model: ${modelUsed}`);
-    console.log('[AI Insights] Completion response:', JSON.stringify(completion, null, 2));
+    
+    const completion = await openai.chat.completions.create({
+      model: modelUsed,
+      messages: [
+        {
+          role: "system",
+          content: "You are an educational analytics expert analyzing plastic reduction program data. Provide clear, actionable insights based on the data provided. Focus on identifying meaningful patterns, engagement metrics, and practical recommendations for program coordinators and administrators."
+        },
+        {
+          role: "user",
+          content: userPrompt
+        }
+      ],
+      max_tokens: 1500,
+      temperature: 0.7,
+      response_format: { type: "json_object" }
+    });
+
+    console.log('[AI Insights] API call completed successfully');
+    console.log('[AI Insights] Completion choices:', completion.choices?.length || 0);
 
     // Parse the response
     const responseContent = completion.choices[0]?.message?.content;
     
-    console.log('[AI Insights] Response content:', responseContent);
+    console.log('[AI Insights] Response content length:', responseContent?.length || 0);
     
     if (!responseContent) {
-      console.error('[AI Insights] Full completion object:', JSON.stringify(completion, null, 2));
-      throw new Error(`No response content from OpenAI API (model: ${modelUsed}). Choices: ${completion.choices?.length || 0}, Finish reason: ${completion.choices?.[0]?.finish_reason || 'none'}`);
+      console.error('[AI Insights] Empty response - finish reason:', completion.choices?.[0]?.finish_reason);
+      throw new Error(`No response content from OpenAI API (model: ${modelUsed}). Finish reason: ${completion.choices?.[0]?.finish_reason || 'none'}`);
     }
 
     const insights = JSON.parse(responseContent) as AnalyticsInsights;
