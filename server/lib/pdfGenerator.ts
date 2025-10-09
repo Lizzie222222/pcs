@@ -16,9 +16,16 @@ export async function generatePDFReport(htmlContent: string): Promise<Buffer> {
   try {
     console.log('[PDF Generator] Launching headless browser...');
     
+    // Use system Chromium instead of Puppeteer's bundled version for Replit/NixOS compatibility
+    const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || 
+                          '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium';
+    
+    console.log(`[PDF Generator] Using Chromium at: ${executablePath}`);
+    
     // Launch headless browser with proper args for Replit environment
     browser = await puppeteer.launch({
       headless: true,
+      executablePath,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
