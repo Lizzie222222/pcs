@@ -81,11 +81,23 @@
     "years_ago": "{{count}} years ago"
   },
   "language": {
-    "language": "Language",
-    "english": "English",
-    "greek": "Greek",
-    "change_language": "Change Language",
-    "language_switcher_label": "Language / Γλώσσα"
+    "language": "Sprache",
+    "arabic": "Arabisch",
+    "chinese": "Chinesisch",
+    "dutch": "Niederländisch",
+    "english": "Englisch",
+    "french": "Französisch",
+    "german": "Deutsch",
+    "greek": "Griechisch",
+    "indonesian": "Indonesisch",
+    "italian": "Italienisch",
+    "korean": "Koreanisch",
+    "portuguese": "Portugiesisch",
+    "russian": "Russisch",
+    "spanish": "Spanisch",
+    "welsh": "Walisisch",
+    "change_language": "Sprache ändern",
+    "language_switcher_label": "Sprache"
   },
   "accessibility": {
     "skip_to_main_content": "Skip to main content"

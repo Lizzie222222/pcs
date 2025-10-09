@@ -82,10 +82,22 @@
   },
   "language": {
     "language": "Γλώσσα",
+    "arabic": "Αραβικά",
+    "chinese": "Κινέζικα",
+    "dutch": "Ολλανδικά",
     "english": "Αγγλικά",
+    "french": "Γαλλικά",
+    "german": "Γερμανικά",
     "greek": "Ελληνικά",
+    "indonesian": "Ινδονησιακά",
+    "italian": "Ιταλικά",
+    "korean": "Κορεατικά",
+    "portuguese": "Πορτογαλικά",
+    "russian": "Ρωσικά",
+    "spanish": "Ισπανικά",
+    "welsh": "Ουαλικά",
     "change_language": "Αλλαγή Γλώσσας",
-    "language_switcher_label": "Language / Γλώσσα"
+    "language_switcher_label": "Γλώσσα"
   },
   "accessibility": {
     "skip_to_main_content": "Μετάβαση στο κύριο περιεχόμενο"

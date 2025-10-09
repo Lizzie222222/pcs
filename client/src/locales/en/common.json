@@ -82,10 +82,22 @@
   },
   "language": {
     "language": "Language",
+    "arabic": "Arabic",
+    "chinese": "Chinese",
+    "dutch": "Dutch",
     "english": "English",
+    "french": "French",
+    "german": "German",
     "greek": "Greek",
+    "indonesian": "Indonesian",
+    "italian": "Italian",
+    "korean": "Korean",
+    "portuguese": "Portuguese",
+    "russian": "Russian",
+    "spanish": "Spanish",
+    "welsh": "Welsh",
     "change_language": "Change Language",
-    "language_switcher_label": "Language / Γλώσσα"
+    "language_switcher_label": "Language"
   },
   "accessibility": {
     "skip_to_main_content": "Skip to main content"
