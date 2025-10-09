@@ -29,6 +29,7 @@ declare global {
       profileImageUrl: string | null;
       role: string | null;
       isAdmin: boolean | null;
+      preferredLanguage: string | null;
       createdAt: Date | null;
       updatedAt: Date | null;
     }
@@ -42,6 +43,7 @@ const registerSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().min(1, "Last name is required"),
   role: z.enum(["teacher", "admin"]).default("teacher"),
+  preferredLanguage: z.string().default("en"),
 });
 
 const loginSchema = z.object({

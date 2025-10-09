@@ -77,6 +77,7 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").default("teacher"), // Supports: teacher, admin, partner, school
   isAdmin: boolean("is_admin").default(false),
+  preferredLanguage: varchar("preferred_language").default("en"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
