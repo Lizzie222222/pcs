@@ -1932,6 +1932,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Export analytics report as PDF
+  app.post('/api/admin/analytics/export-pdf', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      console.log('[Export PDF] Request received from admin');
+      
+      // Validate request body
+      const exportRequestSchema = z.object({
+        dateRange: z.object({
+          start: z.string(),
+          end: z.string()
+        }),
+        includeInsights: z.boolean().default(true)
+      });
+
+      const { dateRange, includeInsights } = exportRequestSchema.parse(req.body);
+      
+      console.log('[Export PDF] Fetching analytics data for date range:', dateRange);
+      
+      // Fetch all analytics data sets
+      const [overview, schoolEvidence, evidenceAnalytics, userEngagement] = await Promise.all([
+        storage.getAnalyticsOverview(dateRange.start, dateRange.end),
+        storage.getSchoolProgressAnalytics(dateRange.start, dateRange.end),
+        storage.getEvidenceAnalytics(dateRange.start, dateRange.end),
+        storage.getUserEngagementAnalytics(dateRange.start, dateRange.end)
+      ]);
+      
+      // Generate AI insights if requested
+      let aiInsights;
+      if (includeInsights) {
+        console.log('[Export PDF] Generating AI insights...');
+        aiInsights = await generateAnalyticsInsights({
+          overview,
+          schoolEvidence,
+          evidenceAnalytics,
+          userEngagement,
+          dateRange
+        });
+      } else {
+        // Provide default insights structure if not requested
+        aiInsights = {
+          executiveSummary: "This report provides a comprehensive overview of Plastic Clever Schools program performance during the selected period.",
+          keyInsights: [],
+          trends: [],
+          recommendations: []
+        };
+      }
+      
+      // Prepare report data
+      const reportData = {
+        dateRange,
+        overview,
+        schoolEvidence,
+        evidenceAnalytics,
+        userEngagement,
+        aiInsights
+      };
+      
+      console.log('[Export PDF] Generating HTML report...');
+      
+      // Import report template (dynamic import to avoid circular dependencies)
+      const { generateHTMLReport } = await import('./lib/reportTemplate');
+      const htmlReport = generateHTMLReport(reportData);
+      
+      console.log('[Export PDF] Converting HTML to PDF...');
+      
+      // Import PDF generator
+      const { generatePDFReport } = await import('./lib/pdfGenerator');
+      const pdfBuffer = await generatePDFReport(htmlReport);
+      
+      console.log('[Export PDF] PDF generated successfully');
+      
+      // Generate filename with current date
+      const date = new Date().toISOString().split('T')[0];
+      const filename = `analytics-report-${date}.pdf`;
+      
+      // Set response headers
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+      
+      // Send PDF buffer
+      res.send(pdfBuffer);
+      
+    } catch (error) {
+      console.error('[Export PDF] Error exporting report:', error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid request data", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to export PDF report",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Get evidence with optional status filter
   app.get('/api/admin/evidence', isAuthenticated, requireAdmin, async (req, res) => {
     try {

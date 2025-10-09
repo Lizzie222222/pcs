@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useCountries } from "@/hooks/useCountries";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
@@ -119,6 +120,8 @@ interface SchoolData {
   createdAt: string;
   primaryContactId: string;
   primaryContactEmail: string | null;
+  type?: string;
+  address?: string;
 }
 
 // Analytics interfaces
@@ -2168,6 +2171,8 @@ function ResourceForm({ resource, onClose, onSuccess }: {
 }
 
 function AnalyticsContent() {
+  const { toast } = useToast();
+  
   // Date range state - default to Last 30 days
   const [dateRange, setDateRange] = useState<DateRange | undefined>(() => ({
     from: subDays(new Date(), 30),
@@ -2219,6 +2224,8 @@ function AnalyticsContent() {
     queryKey: ['/api/admin/reduction-promises/metrics']
   });
 
+  const [includeAIInsights, setIncludeAIInsights] = useState(true);
+
   const exportAnalytics = async (format: 'csv' | 'excel') => {
     try {
       const response = await fetch(`/api/admin/export/analytics?format=${format}`, {
@@ -2241,6 +2248,45 @@ function AnalyticsContent() {
       console.error('Export failed:', error);
     }
   };
+
+  const exportPDFMutation = useMutation({
+    mutationFn: async () => {
+      if (!dateRange?.from || !dateRange?.to) {
+        throw new Error('Please select a date range');
+      }
+
+      const response = await apiRequest('POST', '/api/admin/analytics/export-pdf', {
+        dateRange: {
+          start: dateRange.from.toISOString(),
+          end: dateRange.to.toISOString()
+        },
+        includeInsights: includeAIInsights
+      });
+
+      const blob = await response.blob();
+      return blob;
+    },
+    onSuccess: (blob) => {
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `analytics-report-${Date.now()}.pdf`;
+      link.click();
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Report downloaded successfully",
+        description: "Your PDF analytics report has been downloaded.",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Export failed",
+        description: error instanceof Error ? error.message : "Failed to export PDF report",
+        variant: "destructive",
+      });
+    }
+  });
 
   return (
     <div className="space-y-6">
@@ -2271,13 +2317,53 @@ function AnalyticsContent() {
         </div>
       </div>
 
-      {/* Date Range Picker */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4">
-        <DateRangePicker
-          value={dateRange}
-          onChange={setDateRange}
-          className="w-full"
-        />
+      {/* Date Range Picker and PDF Export */}
+      <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex-1">
+            <DateRangePicker
+              value={dateRange}
+              onChange={setDateRange}
+              className="w-full"
+            />
+          </div>
+          
+          <div className="flex items-center gap-4">
+            <div className="flex items-center space-x-2">
+              <Checkbox
+                id="include-ai-insights"
+                checked={includeAIInsights}
+                onCheckedChange={(checked) => setIncludeAIInsights(checked as boolean)}
+                data-testid="checkbox-include-ai-insights"
+              />
+              <label
+                htmlFor="include-ai-insights"
+                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              >
+                Include AI insights
+              </label>
+            </div>
+            
+            <Button
+              onClick={() => exportPDFMutation.mutate()}
+              disabled={exportPDFMutation.isPending || !dateRange?.from || !dateRange?.to}
+              data-testid="button-export-pdf"
+              className="bg-pcs_blue hover:bg-pcs_navy"
+            >
+              {exportPDFMutation.isPending ? (
+                <>
+                  <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                  Generating report...
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4 mr-2" />
+                  Export PDF Report
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
       </div>
 
       {/* Nested Tabs for Analytics Sections */}
