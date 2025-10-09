@@ -14,19 +14,19 @@ import enMap from '../locales/en/map.json';
 import enSearch from '../locales/en/search.json';
 import enNewsletter from '../locales/en/newsletter.json';
 
-// Greek translations loaded lazily
-const loadGreekTranslations = async () => {
+// Generic function to load translations for any language
+const loadTranslations = async (lang: string) => {
   const [common, landing, dashboard, resources, forms, auth, admin, map, search, newsletter] = await Promise.all([
-    import('../locales/el/common.json'),
-    import('../locales/el/landing.json'),
-    import('../locales/el/dashboard.json'),
-    import('../locales/el/resources.json'),
-    import('../locales/el/forms.json'),
-    import('../locales/el/auth.json'),
-    import('../locales/el/admin.json'),
-    import('../locales/el/map.json'),
-    import('../locales/el/search.json'),
-    import('../locales/el/newsletter.json'),
+    import(`../locales/${lang}/common.json`),
+    import(`../locales/${lang}/landing.json`),
+    import(`../locales/${lang}/dashboard.json`),
+    import(`../locales/${lang}/resources.json`),
+    import(`../locales/${lang}/forms.json`),
+    import(`../locales/${lang}/auth.json`),
+    import(`../locales/${lang}/admin.json`),
+    import(`../locales/${lang}/map.json`),
+    import(`../locales/${lang}/search.json`),
+    import(`../locales/${lang}/newsletter.json`),
   ]);
   
   return {
@@ -91,25 +91,28 @@ i18n
     },
   });
 
-// Load Greek translations when language changes to 'el'
+// Supported languages for lazy loading
+const supportedLanguages = ['ar', 'zh', 'nl', 'el', 'fr', 'de', 'id', 'it', 'ko', 'pt', 'ru', 'es', 'cy'];
+
+// Load translations when language changes
 i18n.on('languageChanged', async (lng) => {
   document.documentElement.lang = lng;
   
-  // Lazy load Greek translations if not already loaded
-  if (lng === 'el' && !i18n.hasResourceBundle('el', 'common')) {
+  // Lazy load translations if not already loaded (skip English as it's loaded upfront)
+  if (lng !== 'en' && supportedLanguages.includes(lng) && !i18n.hasResourceBundle(lng, 'common')) {
     try {
-      const greekTranslations = await loadGreekTranslations();
+      const translations = await loadTranslations(lng);
       
-      // Add all Greek namespaces to i18n
-      Object.entries(greekTranslations).forEach(([namespace, resources]) => {
-        i18n.addResourceBundle('el', namespace, resources);
+      // Add all namespaces to i18n
+      Object.entries(translations).forEach(([namespace, resources]) => {
+        i18n.addResourceBundle(lng, namespace, resources);
       });
       
       // Force re-render by changing language again
       i18n.changeLanguage(lng);
     } catch (error) {
-      console.warn('Failed to load Greek translations:', error);
-      // Fallback to English if Greek fails to load
+      console.warn(`Failed to load ${lng} translations:`, error);
+      // Fallback to English if language fails to load
       i18n.changeLanguage('en');
     }
   }
