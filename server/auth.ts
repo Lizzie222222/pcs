@@ -454,8 +454,26 @@ export async function setupAuth(app: Express) {
         
         console.log(`[Test Auth] Logging in test user: ${email}`);
         
-        // Find or create user using OAuth profile pattern
+        // Find or create user - check both email and googleId to avoid duplicates
         let user = await storage.findUserByEmail(email);
+        
+        // If not found by email, try finding by googleId
+        if (!user) {
+          const { db } = await import('./db');
+          const { users } = await import('@shared/schema');
+          const { eq } = await import('drizzle-orm');
+          
+          const usersByGoogleId = await db
+            .select()
+            .from(users)
+            .where(eq(users.googleId, sub))
+            .limit(1);
+          
+          if (usersByGoogleId.length > 0) {
+            user = usersByGoogleId[0];
+            console.log(`[Test Auth] Found existing user by googleId: ${user.email}`);
+          }
+        }
         
         if (!user) {
           console.log(`[Test Auth] Creating new user: ${email}`);
@@ -470,9 +488,9 @@ export async function setupAuth(app: Express) {
             profileImageUrl: null,
           });
         } else {
+          console.log(`[Test Auth] Found existing user: ${email}`);
           // Set isAdmin if specified and different from current value
           if (isAdmin && !user.isAdmin) {
-            // Import db and users at top if not already imported
             const { db } = await import('./db');
             const { users } = await import('@shared/schema');
             const { eq } = await import('drizzle-orm');
@@ -483,6 +501,7 @@ export async function setupAuth(app: Express) {
               .where(eq(users.id, user.id))
               .returning();
             user = updatedUser;
+            console.log(`[Test Auth] Updated user to admin: ${user.email}`);
           }
         }
         

@@ -95,3 +95,15 @@ Preferred communication style: Simple, everyday language.
 - **Deep Linking**: Both `/admin` (defaults to Overview tab) and `/admin/evidence-requirements` routes now supported for direct navigation to specific tabs
 - **Authentication Fix**: Updated useAuth hook to always check authentication on initial load (enabled: true), ensuring existing backend sessions are properly detected for route protection and testing scenarios
 - **Analytics Dashboard Reorganization**: Restructured Overview tab analytics with nested tabs (Overview, Schools & Evidence, Plastic Waste Audits, User Engagement) to eliminate excessive scrolling and provide better access to all analytics sections at the same level
+
+### Analytics Enhancements (October 2025)
+- **Data Quality Fixes**: Fixed User Role Distribution query to display proper role names (Teacher, Admin, Head Teacher) instead of numeric values; improved Review Turnaround chart to handle edge cases, NULL values, and display "Insufficient Data" message when fewer than 5 reviewed items exist
+- **Date Range Filtering**: Added DateRangePicker component to analytics dashboard with presets (Last 7/30/90 days, 1 year, All time, Custom); updated all 4 analytics backend queries to support optional date range filtering; fixed inclusive date range bug to ensure end date includes full final day
+- **AI-Powered Insights**: Integrated OpenAI GPT-5 for automated analytics insights generation; service generates executive summaries, key insights, trends, and recommendations based on analytics data
+- **PDF Export System**: Implemented complete PDF export functionality with:
+  - Beautiful HTML report template with PCS branding (Navy, Blue, stage colors, Gilroy/Century Gothic fonts)
+  - Puppeteer-based PDF generation (A4 format, print-optimized)
+  - Optional AI insights toggle (adds ~5-10 seconds to generation)
+  - Admin-only endpoint: `POST /api/admin/analytics/export-pdf`
+  - Frontend export button with loading states and success/error toasts
+  - **Note**: Requires Chromium system dependencies (libglib-2.0, etc.) which may not be available in all deployment environments
