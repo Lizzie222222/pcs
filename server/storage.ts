@@ -1934,29 +1934,49 @@ export class DatabaseStorage implements IStorage {
       .groupBy(evidence.stage);
 
     // Review turnaround (for completed reviews)
-    const reviewTurnaround = await db
+    // First, count total reviewed items to ensure sufficient data
+    const reviewedCountResult = await db
       .select({
-        range: sql<string>`CASE 
-          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 1 THEN 'Same day'
-          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 3 THEN '1-3 days'
-          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 7 THEN '4-7 days'
-          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 14 THEN '1-2 weeks'
-          ELSE 'Over 2 weeks'
-        END`,
         count: count()
       })
       .from(evidence)
       .where(and(
         sql`reviewed_at IS NOT NULL`,
-        sql`submitted_at IS NOT NULL`
-      ))
-      .groupBy(sql`CASE 
-        WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 1 THEN 'Same day'
-        WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 3 THEN '1-3 days'
-        WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 7 THEN '4-7 days'
-        WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 14 THEN '1-2 weeks'
-        ELSE 'Over 2 weeks'
-      END`);
+        sql`submitted_at IS NOT NULL`,
+        sql`reviewed_at >= submitted_at`
+      ));
+    
+    const reviewedCount = reviewedCountResult[0]?.count || 0;
+    
+    // Only calculate turnaround if we have at least 5 reviewed items (sufficient data)
+    let reviewTurnaround: Array<{ range: string; count: number }> = [];
+    
+    if (reviewedCount >= 5) {
+      reviewTurnaround = await db
+        .select({
+          range: sql<string>`CASE 
+            WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 1 THEN 'Same day'
+            WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 3 THEN '1-3 days'
+            WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 7 THEN '4-7 days'
+            WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 14 THEN '1-2 weeks'
+            ELSE 'Over 2 weeks'
+          END`,
+          count: count()
+        })
+        .from(evidence)
+        .where(and(
+          sql`reviewed_at IS NOT NULL`,
+          sql`submitted_at IS NOT NULL`,
+          sql`reviewed_at >= submitted_at`
+        ))
+        .groupBy(sql`CASE 
+          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 1 THEN 'Same day'
+          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 3 THEN '1-3 days'
+          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 7 THEN '4-7 days'
+          WHEN EXTRACT(EPOCH FROM (reviewed_at - submitted_at))/86400 <= 14 THEN '1-2 weeks'
+          ELSE 'Over 2 weeks'
+        END`);
+    }
 
     // Top submitting schools
     const topSubmitters = await db

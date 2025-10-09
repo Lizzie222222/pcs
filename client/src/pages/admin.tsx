@@ -2505,25 +2505,38 @@ function AnalyticsContent() {
                   <CardTitle>Review Turnaround Time</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <ResponsiveContainer width="100%" height={250}>
-                    <PieChart>
-                      <Pie
-                        data={evidenceQuery.data.reviewTurnaround}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        label={({ name, value }) => `${name}: ${value}`}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="count"
-                      >
-                        {evidenceQuery.data.reviewTurnaround.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
-                        ))}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {evidenceQuery.data.reviewTurnaround.length === 0 ? (
+                    <div 
+                      className="flex flex-col items-center justify-center h-[250px] text-center"
+                      data-testid="review-turnaround-insufficient-data"
+                    >
+                      <Clock className="w-12 h-12 text-gray-300 mb-3" />
+                      <p className="text-gray-500 font-medium">Insufficient Data</p>
+                      <p className="text-sm text-gray-400 mt-1">
+                        At least 5 reviewed evidence items are required to display turnaround metrics
+                      </p>
+                    </div>
+                  ) : (
+                    <ResponsiveContainer width="100%" height={250}>
+                      <PieChart>
+                        <Pie
+                          data={evidenceQuery.data.reviewTurnaround}
+                          cx="50%"
+                          cy="50%"
+                          labelLine={false}
+                          label={({ name, value }) => `${name}: ${value}`}
+                          outerRadius={80}
+                          fill="#8884d8"
+                          dataKey="count"
+                        >
+                          {evidenceQuery.data.reviewTurnaround.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={ANALYTICS_COLORS[index % ANALYTICS_COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  )}
                 </CardContent>
               </Card>
 
