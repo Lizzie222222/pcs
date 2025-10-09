@@ -94,3 +94,4 @@ Preferred communication style: Simple, everyday language.
 - **Backwards Compatibility**: Restored `/admin/evidence-requirements` route that renders admin page with Evidence Requirements tab pre-selected via initialTab prop
 - **Deep Linking**: Both `/admin` (defaults to Overview tab) and `/admin/evidence-requirements` routes now supported for direct navigation to specific tabs
 - **Authentication Fix**: Updated useAuth hook to always check authentication on initial load (enabled: true), ensuring existing backend sessions are properly detected for route protection and testing scenarios
+- **Analytics Dashboard Reorganization**: Restructured Overview tab analytics with nested tabs (Overview, Schools & Evidence, Plastic Waste Audits, User Engagement) to eliminate excessive scrolling and provide better access to all analytics sections at the same level
