@@ -9,20 +9,20 @@ import {
 import { Globe } from 'lucide-react';
 
 const languages = [
-  { code: 'ar', key: 'arabic' },
-  { code: 'zh', key: 'chinese' },
-  { code: 'nl', key: 'dutch' },
-  { code: 'en', key: 'english' },
-  { code: 'fr', key: 'french' },
-  { code: 'de', key: 'german' },
-  { code: 'el', key: 'greek' },
-  { code: 'id', key: 'indonesian' },
-  { code: 'it', key: 'italian' },
-  { code: 'ko', key: 'korean' },
-  { code: 'pt', key: 'portuguese' },
-  { code: 'ru', key: 'russian' },
-  { code: 'es', key: 'spanish' },
-  { code: 'cy', key: 'welsh' },
+  { code: 'ar', nativeName: 'العربية' },
+  { code: 'zh', nativeName: '中文' },
+  { code: 'nl', nativeName: 'Nederlands' },
+  { code: 'en', nativeName: 'English' },
+  { code: 'fr', nativeName: 'Français' },
+  { code: 'de', nativeName: 'Deutsch' },
+  { code: 'el', nativeName: 'Ελληνικά' },
+  { code: 'id', nativeName: 'Bahasa Indonesia' },
+  { code: 'it', nativeName: 'Italiano' },
+  { code: 'ko', nativeName: '한국어' },
+  { code: 'pt', nativeName: 'Português' },
+  { code: 'ru', nativeName: 'Русский' },
+  { code: 'es', nativeName: 'Español' },
+  { code: 'cy', nativeName: 'Cymraeg' },
 ];
 
 export function LanguageSwitcher() {
@@ -53,7 +53,7 @@ export function LanguageSwitcher() {
             data-testid={`language-option-${lang.code}`}
             className={i18n.language === lang.code ? 'bg-accent' : ''}
           >
-            {t(`common:language.${lang.key}`)}
+            {lang.nativeName}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>
