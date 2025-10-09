@@ -80,15 +80,16 @@ Preferred communication style: Simple, everyday language.
 ## Recent Updates (October 2025)
 ### Multi-Step School Registration (October 2025)
 - **User Experience**: Redesigned school registration into a 3-step wizard with progress stepper to reduce cognitive load and improve completion rates
-- **Step 1 - About Your School**: Collects country, school name, type, admin email, address, and country-specific postal code (UK: postcode, US: zip code, Other: postal/zip code)
+- **Step 1 - About Your School**: Collects country, school name, optional admin email, address, and country-specific postal code (UK: postcode, US: zip code, Other: postal/zip code). School type field removed to focus on age ranges instead.
 - **Step 2 - About You (Lead Teacher)**: Collects teacher's personal details (name, email pre-filled from auth), teaching role, and referral source (how they found the program)
-- **Step 3 - About Your Students**: Collects student count, age ranges (adapted to country - UK: Year groups, US: Grades, Other: Age ranges), map visibility, and legal consents (GDPR, Terms)
-- **Database Schema**: Extended schools table with adminEmail, postcode, zipCode, primaryLanguage, ageRanges (array), registrationCompleted; extended schoolUsers with teacherRole, referralSource
+- **Step 3 - About Your Students**: Collects student count, age ranges (adapted to country - UK: Year groups, US: Grades, Other: Age ranges), map visibility, and legal consents (GDPR, Terms). Checkbox labels display translated text correctly.
+- **Database Schema**: Extended schools table with adminEmail (optional), postcode, zipCode, primaryLanguage, ageRanges (array), registrationCompleted; schools.type is nullable; extended schoolUsers with teacherRole, referralSource
 - **Country Configuration**: Smart field adaptation based on selected country (client/src/lib/countryConfig.ts) with localized labels and validation
-- **Backend API**: New authenticated endpoint `/api/schools/register-multi-step` with comprehensive Zod validation enforcing gdprConsent and acceptTerms must be true
+- **Backend API**: New authenticated endpoint `/api/schools/register-multi-step` with comprehensive Zod validation enforcing gdprConsent and acceptTerms must be true; schoolType removed from validation; adminEmail optional
 - **Backward Compatibility**: Existing schools auto-migrated to registrationCompleted=true via SQL, ensuring no disruption to current users
 - **Components**: RegistrationStepper, Step1SchoolInfo, Step2TeacherInfo, Step3StudentInfo, MultiStepSchoolRegistration container
-- **Testing**: E2E test validates complete flow from signup to dashboard with country-specific field rendering
+- **Language Persistence Fix**: Made register/login mutations async to await i18n.changeLanguage() before redirect, ensuring language preference is saved to localStorage and persists correctly
+- **Testing**: E2E test validates complete flow from signup to dashboard with country-specific field rendering, language preference persistence, and translation display
 
 ### Reduction Promises Feature
 - **Database**: Added reductionPromises table with relationships to schools and audits, including status enum (active, completed, cancelled)
