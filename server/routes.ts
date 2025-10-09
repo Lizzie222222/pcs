@@ -514,8 +514,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Step 1: School Info
         country: z.string().min(1),
         schoolName: z.string().min(1).max(200),
-        schoolType: z.enum(['primary', 'secondary', 'high_school', 'international', 'other']),
-        adminEmail: z.string().email(),
+        adminEmail: z.string().email().optional().or(z.literal('')),
         address: z.string().min(1),
         postcode: z.string().optional(),
         zipCode: z.string().optional(),
@@ -548,10 +547,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create school with all the collected data
       const school = await storage.createSchool({
         name: data.schoolName,
-        type: data.schoolType,
         country: data.country,
         address: data.address,
-        adminEmail: data.adminEmail,
+        adminEmail: data.adminEmail || undefined,
         postcode: data.postcode,
         zipCode: data.zipCode,
         primaryLanguage: data.primaryLanguage,

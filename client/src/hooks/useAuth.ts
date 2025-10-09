@@ -127,14 +127,14 @@ export function useAuth() {
       
       return result.user;
     },
-    onSuccess: (user: User) => {
+    onSuccess: async (user: User) => {
       // Set authentication hint and update cache
       setAuthHint(true);
       queryClient.setQueryData(["/api/auth/user"], user);
       
-      // Apply user's preferred language
+      // Apply user's preferred language and wait for it to complete
       if (user.preferredLanguage && user.preferredLanguage !== i18n.language) {
-        i18n.changeLanguage(user.preferredLanguage);
+        await i18n.changeLanguage(user.preferredLanguage);
       }
       
       toast({
@@ -180,14 +180,14 @@ export function useAuth() {
       
       return result.user;
     },
-    onSuccess: (user: User) => {
+    onSuccess: async (user: User) => {
       // Set authentication hint and update cache
       setAuthHint(true);
       queryClient.setQueryData(["/api/auth/user"], user);
       
-      // Apply user's preferred language
+      // Apply user's preferred language and wait for it to complete
       if (user.preferredLanguage && user.preferredLanguage !== i18n.language) {
-        i18n.changeLanguage(user.preferredLanguage);
+        await i18n.changeLanguage(user.preferredLanguage);
       }
       
       toast({

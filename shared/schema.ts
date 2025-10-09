@@ -101,7 +101,7 @@ export const requestTypeEnum = pgEnum('request_type', [
 export const schools = pgTable("schools", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name").notNull(),
-  type: schoolTypeEnum("type").notNull(),
+  type: schoolTypeEnum("type"),
   country: varchar("country").notNull(),
   address: text("address"),
   adminEmail: varchar("admin_email"),
