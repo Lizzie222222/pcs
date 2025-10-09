@@ -15,19 +15,10 @@ import { useCountriesForRegistration } from "@/hooks/useCountries";
 import { getCountryConfig, LANGUAGE_OPTIONS } from "@/lib/countryConfig";
 import { LoadingSpinner } from "@/components/ui/states";
 
-const schoolTypeOptions = [
-  { value: 'primary', label: 'Primary School' },
-  { value: 'secondary', label: 'Secondary School' },
-  { value: 'high_school', label: 'High School' },
-  { value: 'international', label: 'International School' },
-  { value: 'other', label: 'Other' },
-];
-
 export interface Step1Data {
   country: string;
   schoolName: string;
-  schoolType: 'primary' | 'secondary' | 'high_school' | 'international' | 'other';
-  adminEmail: string;
+  adminEmail?: string;
   address: string;
   postcode?: string;
   zipCode?: string;
@@ -51,8 +42,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
     return z.object({
       country: z.string().min(1, t('forms:validation.required')),
       schoolName: z.string().min(1, t('forms:validation.required')).max(200),
-      schoolType: z.enum(['primary', 'secondary', 'high_school', 'international', 'other']),
-      adminEmail: z.string().email(t('forms:validation.email_invalid')),
+      adminEmail: z.string().email(t('forms:validation.email_invalid')).optional().or(z.literal('')),
       address: z.string().min(1, t('forms:validation.required')),
       postcode: countryConfig?.postalCodeField === 'postcode' 
         ? z.string().min(1, t('forms:validation.required'))
@@ -72,7 +62,6 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
     defaultValues: {
       country: initialData?.country || '',
       schoolName: initialData?.schoolName || '',
-      schoolType: initialData?.schoolType || undefined,
       adminEmail: initialData?.adminEmail || '',
       address: initialData?.address || '',
       postcode: initialData?.postcode || '',
@@ -177,43 +166,13 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
             )}
           />
 
-          {/* School Type */}
-          <FormField
-            control={form.control}
-            name="schoolType"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>School Type *</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger data-testid="select-school-type">
-                      <SelectValue placeholder="Select school type" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {schoolTypeOptions.map((option) => (
-                      <SelectItem 
-                        key={option.value} 
-                        value={option.value}
-                        data-testid={`option-school-type-${option.value}`}
-                      >
-                        {option.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage data-testid="error-school-type" />
-              </FormItem>
-            )}
-          />
-
-          {/* Admin Email */}
+          {/* Admin Email - Optional */}
           <FormField
             control={form.control}
             name="adminEmail"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>School Admin Email *</FormLabel>
+                <FormLabel>School Admin Email (Optional)</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
