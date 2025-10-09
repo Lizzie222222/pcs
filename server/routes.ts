@@ -12,6 +12,7 @@ import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
 import { eq } from "drizzle-orm";
+import { generateAnalyticsInsights } from "./lib/aiInsights";
 
 // CSV generation helper with proper escaping
 function generateCSV(data: any[], type: string): string {
@@ -1892,6 +1893,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI-powered analytics insights generation
+  app.post('/api/admin/analytics/generate-insights', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      console.log('[Generate Insights] Request received from admin');
+      
+      // Validate request body
+      const analyticsDataSchema = z.object({
+        overview: z.any().optional(),
+        schoolEvidence: z.any().optional(),
+        evidenceAnalytics: z.any().optional(),
+        userEngagement: z.any().optional(),
+        dateRange: z.object({
+          start: z.string(),
+          end: z.string()
+        }).optional()
+      });
+
+      const analyticsData = analyticsDataSchema.parse(req.body);
+      
+      // Generate AI insights using OpenAI GPT-5
+      const insights = await generateAnalyticsInsights(analyticsData);
+      
+      console.log('[Generate Insights] Successfully generated AI insights');
+      res.json(insights);
+    } catch (error) {
+      console.error("Error generating analytics insights:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid analytics data provided", 
+          errors: error.errors 
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to generate analytics insights",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Get evidence with optional status filter
   app.get('/api/admin/evidence', isAuthenticated, requireAdmin, async (req, res) => {
     try {
@@ -2080,7 +2120,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check progression for all affected schools
-      for (const schoolId of affectedSchools) {
+      for (const schoolId of Array.from(affectedSchools)) {
         try {
           await storage.checkAndUpdateSchoolProgression(schoolId);
         } catch (error) {
