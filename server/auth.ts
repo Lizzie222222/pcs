@@ -224,6 +224,7 @@ export async function setupAuth(app: Express) {
             role: user.role,
             isAdmin: user.isAdmin,
             emailVerified: user.emailVerified,
+            preferredLanguage: user.preferredLanguage,
           }
         });
       });
@@ -294,6 +295,7 @@ export async function setupAuth(app: Express) {
             role: user.role,
             isAdmin: user.isAdmin,
             emailVerified: user.emailVerified,
+            preferredLanguage: user.preferredLanguage,
           }
         });
       });
@@ -368,6 +370,7 @@ export async function setupAuth(app: Express) {
         isAdmin: req.user.isAdmin,
         emailVerified: req.user.emailVerified,
         profileImageUrl: req.user.profileImageUrl,
+        preferredLanguage: req.user.preferredLanguage,
       }
     });
   });

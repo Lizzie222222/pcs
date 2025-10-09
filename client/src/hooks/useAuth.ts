@@ -2,6 +2,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { getQueryFn, apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { User, LoginForm, RegisterForm } from "@shared/schema";
+import i18n from "@/lib/i18n";
 
 // Authentication state management to prevent unnecessary API calls
 const AUTH_HINT_KEY = 'pcs_auth_hint';
@@ -89,8 +90,15 @@ export function useAuth() {
         throw new Error(`${res.status}: ${await res.text()}`);
       }
       const data = await res.json();
+      const user = data.user || null;
+      
+      // Apply user's preferred language if available
+      if (user?.preferredLanguage && user.preferredLanguage !== i18n.language) {
+        i18n.changeLanguage(user.preferredLanguage);
+      }
+      
       // Extract user from the response wrapper
-      return data.user || null;
+      return user;
     },
     retry: false,
     enabled: true, // Always check auth on initial load to detect existing sessions
@@ -123,6 +131,12 @@ export function useAuth() {
       // Set authentication hint and update cache
       setAuthHint(true);
       queryClient.setQueryData(["/api/auth/user"], user);
+      
+      // Apply user's preferred language
+      if (user.preferredLanguage && user.preferredLanguage !== i18n.language) {
+        i18n.changeLanguage(user.preferredLanguage);
+      }
+      
       toast({
         title: "Welcome back!",
         description: `Successfully signed in as ${user.firstName || user.email}`,
@@ -170,6 +184,12 @@ export function useAuth() {
       // Set authentication hint and update cache
       setAuthHint(true);
       queryClient.setQueryData(["/api/auth/user"], user);
+      
+      // Apply user's preferred language
+      if (user.preferredLanguage && user.preferredLanguage !== i18n.language) {
+        i18n.changeLanguage(user.preferredLanguage);
+      }
+      
       toast({
         title: "Account created successfully!",
         description: `Welcome to Plastic Clever Schools, ${user.firstName}!`,
