@@ -27,7 +27,6 @@ const SchoolsMap = lazy(() => import("@/pages/schools-map"));
 const Search = lazy(() => import("@/pages/search"));
 const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
 const Admin = lazy(() => import("@/pages/admin"));
-const AdminEvidenceRequirements = lazy(() => import("@/pages/admin-evidence-requirements"));
 const Login = lazy(() => import("@/pages/login"));
 const Register = lazy(() => import("@/pages/register"));
 const InvitationAccept = lazy(() => import("@/pages/InvitationAccept"));
@@ -132,8 +131,12 @@ function Router() {
                   }}
                 </Route>
                 <Route path="/dashboard/team-management" component={TeamManagement} />
-                <Route path="/admin" component={Admin} />
-                <Route path="/admin/evidence-requirements" component={AdminEvidenceRequirements} />
+                <Route path="/admin/evidence-requirements">
+                  {() => <Admin initialTab="evidence-requirements" />}
+                </Route>
+                <Route path="/admin">
+                  {() => <Admin />}
+                </Route>
               </>
             )}
             <Route component={NotFound} />
