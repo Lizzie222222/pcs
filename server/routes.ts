@@ -504,6 +504,108 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Multi-step school registration (authenticated)
+  app.post('/api/schools/register-multi-step', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Validate the multi-step registration data
+      const multiStepSchema = z.object({
+        // Step 1: School Info
+        country: z.string().min(1),
+        schoolName: z.string().min(1).max(200),
+        schoolType: z.enum(['primary', 'secondary', 'high_school', 'international', 'other']),
+        adminEmail: z.string().email(),
+        address: z.string().min(1),
+        postcode: z.string().optional(),
+        zipCode: z.string().optional(),
+        primaryLanguage: z.string().min(1),
+        // Step 2: Teacher Info
+        firstName: z.string().min(1),
+        lastName: z.string().min(1),
+        email: z.string().email(),
+        teacherRole: z.string().optional(),
+        referralSource: z.string().optional(),
+        // Step 3: Student Info
+        studentCount: z.number().min(1).max(10000),
+        ageRanges: z.array(z.string()).min(1),
+        showOnMap: z.boolean().default(false),
+        gdprConsent: z.boolean().refine(val => val === true, { message: "GDPR consent is required" }),
+        acceptTerms: z.boolean().refine(val => val === true, { message: "Terms acceptance is required" }),
+      });
+
+      const data = multiStepSchema.parse(req.body);
+
+      // Update user info if different from auth
+      if (data.firstName !== req.user.firstName || data.lastName !== req.user.lastName || data.email !== req.user.email) {
+        await storage.updateUser(userId, {
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+        });
+      }
+
+      // Create school with all the collected data
+      const school = await storage.createSchool({
+        name: data.schoolName,
+        type: data.schoolType,
+        country: data.country,
+        address: data.address,
+        adminEmail: data.adminEmail,
+        postcode: data.postcode,
+        zipCode: data.zipCode,
+        primaryLanguage: data.primaryLanguage,
+        ageRanges: data.ageRanges,
+        studentCount: data.studentCount,
+        showOnMap: data.showOnMap,
+        registrationCompleted: true,
+        primaryContactId: userId,
+      });
+
+      // Add user to school with teacher info
+      await storage.addUserToSchool({
+        schoolId: school.id,
+        userId: userId,
+        role: 'head_teacher',
+        teacherRole: data.teacherRole,
+        referralSource: data.referralSource,
+      });
+
+      // Send welcome email (non-blocking)
+      try {
+        await sendWelcomeEmail(req.user.email!, school.name);
+      } catch (emailError) {
+        console.warn('Welcome email failed to send:', emailError);
+      }
+
+      // Add to Mailchimp automation (non-blocking)
+      try {
+        await mailchimpService.setupSchoolSignupAutomation({
+          email: req.user.email!,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          schoolName: school.name,
+          schoolCountry: school.country,
+          role: 'teacher',
+          tags: ['new_school_signup', 'teacher', school.currentStage || 'inspire', 'multi_step_registration'],
+        });
+      } catch (mailchimpError) {
+        console.warn('Mailchimp automation failed for school signup:', mailchimpError);
+      }
+
+      res.status(201).json({ 
+        message: "School registered successfully",
+        school: school,
+      });
+    } catch (error) {
+      console.error("Error in multi-step school registration:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to register school" });
+    }
+  });
+
   // Protected routes (require authentication)
 
   // TEACHER INVITATION ROUTES

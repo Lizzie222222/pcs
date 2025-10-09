@@ -11,7 +11,7 @@ import { LoadingSpinner } from "@/components/ui/states";
 import { Mail, Globe, Shield, ArrowRight, School, User, LogOut, Eye, EyeOff, UserPlus, X, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { createRegisterSchema, type RegisterForm } from "@shared/schema";
-import SchoolSignUpForm from "@/components/SchoolSignUpForm";
+import MultiStepSchoolRegistration from "@/components/MultiStepSchoolRegistration";
 import JoinSchoolFlow from "@/components/JoinSchoolFlow";
 import logoUrl from "@assets/Logo_1757848498470.png";
 
@@ -445,10 +445,8 @@ export default function Register() {
                     </Button>
                   </div>
                   
-                  <SchoolSignUpForm 
-                    onClose={handleCloseSchoolForm} 
-                    inline={true}
-                    onRequestJoinInstead={handleRequestJoinInstead}
+                  <MultiStepSchoolRegistration 
+                    onClose={handleCloseSchoolForm}
                   />
                 </CardContent>
               </Card>
