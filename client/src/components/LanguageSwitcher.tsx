@@ -8,6 +8,23 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
 
+const languages = [
+  { code: 'ar', key: 'arabic' },
+  { code: 'zh', key: 'chinese' },
+  { code: 'nl', key: 'dutch' },
+  { code: 'en', key: 'english' },
+  { code: 'fr', key: 'french' },
+  { code: 'de', key: 'german' },
+  { code: 'el', key: 'greek' },
+  { code: 'id', key: 'indonesian' },
+  { code: 'it', key: 'italian' },
+  { code: 'ko', key: 'korean' },
+  { code: 'pt', key: 'portuguese' },
+  { code: 'ru', key: 'russian' },
+  { code: 'es', key: 'spanish' },
+  { code: 'cy', key: 'welsh' },
+];
+
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
 
@@ -28,19 +45,17 @@ export function LanguageSwitcher() {
           <span className="sr-only">{t('common:language.language')}</span>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem 
-          onClick={() => handleLanguageChange('en')}
-          data-testid="language-option-en"
-        >
-          {t('common:language.english')}
-        </DropdownMenuItem>
-        <DropdownMenuItem 
-          onClick={() => handleLanguageChange('el')}
-          data-testid="language-option-el"
-        >
-          {t('common:language.greek')}
-        </DropdownMenuItem>
+      <DropdownMenuContent align="end" className="max-h-[400px] overflow-y-auto">
+        {languages.map((lang) => (
+          <DropdownMenuItem 
+            key={lang.code}
+            onClick={() => handleLanguageChange(lang.code)}
+            data-testid={`language-option-${lang.code}`}
+            className={i18n.language === lang.code ? 'bg-accent' : ''}
+          >
+            {t(`common:language.${lang.key}`)}
+          </DropdownMenuItem>
+        ))}
       </DropdownMenuContent>
     </DropdownMenu>
   );
