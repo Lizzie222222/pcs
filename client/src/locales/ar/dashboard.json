@@ -1,117 +1,117 @@
 {
   "welcome": {
-    "title": "Welcome to Your Dashboard",
-    "greeting": "Welcome back, {{name}}!",
-    "default_name": "Teacher",
-    "subtitle": "Track your school's progress through the Plastic Clever Schools program",
-    "loading_dashboard": "Loading your dashboard...",
-    "unauthorized_title": "Unauthorized",
-    "unauthorized_message": "You are logged out. Logging in again...",
-    "school_registration_required": "School Registration Required",
-    "school_registration_message": "Please complete your school registration to access the dashboard.",
-    "redirecting_title": "Setting up your account...",
-    "redirecting_message": "Redirecting you to complete school registration."
+    "title": "مرحباً بك في لوحة التحكم الخاصة بك",
+    "greeting": "مرحباً بعودتك، {{name}}!",
+    "default_name": "المعلم",
+    "subtitle": "تتبع تقدم مدرستك من خلال برنامج Plastic Clever Schools",
+    "loading_dashboard": "جارٍ تحميل لوحة التحكم...",
+    "unauthorized_title": "غير مصرح",
+    "unauthorized_message": "لقد قمت بتسجيل الخروج. جارٍ تسجيل الدخول مرة أخرى...",
+    "school_registration_required": "تسجيل المدرسة مطلوب",
+    "school_registration_message": "يرجى إكمال تسجيل مدرستك للوصول إلى لوحة التحكم.",
+    "redirecting_title": "جارٍ إعداد حسابك...",
+    "redirecting_message": "جارٍ إعادة توجيهك لإكمال تسجيل المدرسة."
   },
   "school_info": {
-    "school_name": "School Name",
-    "current_stage": "Current Stage",
-    "progress_percentage": "Progress",
-    "students_impacted": "Students Impacted"
+    "school_name": "اسم المدرسة",
+    "current_stage": "المرحلة الحالية",
+    "progress_percentage": "التقدم",
+    "students_impacted": "الطلاب المتأثرون"
   },
   "progress": {
-    "title": "Program Progress",
-    "journey_description": "Progress through the three stages of environmental action",
-    "overall_progress": "Overall Progress",
-    "current_stage": "Current Stage",
-    "stages_completed": "Stages Completed",
+    "title": "تقدم البرنامج",
+    "journey_description": "تقدم عبر المراحل الثلاث للعمل البيئي",
+    "overall_progress": "التقدم الإجمالي",
+    "current_stage": "المرحلة الحالية",
+    "stages_completed": "المراحل المكتملة",
     "inspire": {
-      "title": "Inspire",
-      "description": "Build awareness and motivation",
+      "title": "إلهام",
+      "description": "بناء الوعي والتحفيز",
       "activities": {
-        "assembly_presentation": "Assembly presentation",
-        "student_engagement": "Student engagement", 
-        "evidence_submission": "Evidence submission"
+        "assembly_presentation": "عرض تقديمي في الجمعية",
+        "student_engagement": "مشاركة الطلاب",
+        "evidence_submission": "تقديم الأدلة"
       }
     },
     "investigate": {
-      "title": "Investigate",
-      "description": "Research and analyze",
+      "title": "تحقيق",
+      "description": "البحث والتحليل",
       "activities": {
-        "plastic_audit": "Plastic audit conducted",
-        "data_collection": "Data collection",
-        "evidence_review": "Evidence review"
+        "plastic_audit": "تم إجراء تدقيق البلاستيك",
+        "data_collection": "جمع البيانات",
+        "evidence_review": "مراجعة الأدلة"
       }
     },
     "act": {
-      "title": "Act", 
-      "description": "Create lasting change",
+      "title": "عمل",
+      "description": "إحداث تغيير دائم",
       "activities": {
-        "action_plan": "Action plan development",
-        "implementation": "Implementation activities",
-        "impact_measurement": "Impact measurement"
+        "action_plan": "تطوير خطة العمل",
+        "implementation": "أنشطة التنفيذ",
+        "impact_measurement": "قياس التأثير"
       }
     },
-    "stage_locked": "Complete previous stage to unlock",
-    "stage_current": "Current Stage",
-    "stage_completed": "Completed",
-    "evidence_submitted": "Submitted:",
-    "evidence_approved": "Approved:",
-    "evidence_items_submitted": "{{count}} evidence submitted",
-    "no_evidence_submitted": "No evidence submitted yet",
-    "evidence_items_approved": "{{approved}} / {{required}} evidence approved",
-    "audit_quiz_completed": "Audit quiz completed",
-    "audit_quiz_pending": "Audit quiz required",
-    "more_needed": "{{count}} more needed",
-    "audit_quiz_required": "Audit Quiz: Required",
-    "audit_quiz_required_bullet": "Audit quiz required",
-    "evidence_needed": "{{count}} more evidence needed"
+    "stage_locked": "أكمل المرحلة السابقة لفتح القفل",
+    "stage_current": "المرحلة الحالية",
+    "stage_completed": "مكتملة",
+    "evidence_submitted": "المقدمة:",
+    "evidence_approved": "الموافق عليها:",
+    "evidence_items_submitted": "{{count}} أدلة مقدمة",
+    "no_evidence_submitted": "لم يتم تقديم أدلة بعد",
+    "evidence_items_approved": "{{approved}} / {{required}} أدلة موافق عليها",
+    "audit_quiz_completed": "تم إكمال اختبار التدقيق",
+    "audit_quiz_pending": "اختبار التدقيق مطلوب",
+    "more_needed": "{{count}} أخرى مطلوبة",
+    "audit_quiz_required": "اختبار التدقيق: مطلوب",
+    "audit_quiz_required_bullet": "اختبار التدقيق مطلوب",
+    "evidence_needed": "{{count}} أدلة إضافية مطلوبة"
   },
   "evidence": {
-    "title": "Evidence Submissions",
-    "recent_evidence": "Recent Evidence",
-    "submit_evidence": "Submit Evidence",
-    "no_evidence": "No evidence submitted yet",
-    "evidence_pending": "Evidence pending review",
-    "evidence_approved": "Evidence approved",
-    "evidence_rejected": "Evidence needs revision",
-    "upload_files": "Upload Files",
-    "submission_successful": "Evidence submitted successfully",
-    "submission_failed": "Failed to submit evidence",
-    "submitted_on": "Submitted {{date}}",
-    "delete_confirmation_title": "Delete Evidence?",
-    "delete_confirmation_description": "This will permanently delete this evidence submission. This action cannot be undone.",
-    "delete_success": "Evidence deleted successfully",
-    "delete_error": "Failed to delete evidence"
+    "title": "تقديم الأدلة",
+    "recent_evidence": "الأدلة الحديثة",
+    "submit_evidence": "تقديم الأدلة",
+    "no_evidence": "لم يتم تقديم أدلة بعد",
+    "evidence_pending": "الأدلة قيد المراجعة",
+    "evidence_approved": "الأدلة موافق عليها",
+    "evidence_rejected": "الأدلة تحتاج إلى مراجعة",
+    "upload_files": "تحميل الملفات",
+    "submission_successful": "تم تقديم الأدلة بنجاح",
+    "submission_failed": "فشل تقديم الأدلة",
+    "submitted_on": "تم التقديم في {{date}}",
+    "delete_confirmation_title": "حذف الأدلة؟",
+    "delete_confirmation_description": "سيؤدي هذا إلى حذف هذا التقديم للأدلة بشكل دائم. لا يمكن التراجع عن هذا الإجراء.",
+    "delete_success": "تم حذف الأدلة بنجاح",
+    "delete_error": "فشل حذف الأدلة"
   },
   "quick_actions": {
-    "title": "Quick Actions",
-    "subtitle": "Take action to advance your school's journey",
-    "submit_evidence": "Submit Evidence",
-    "view_resources": "View Resources", 
-    "track_progress": "Track Progress",
-    "view_analytics": "View Analytics",
-    "manage_team": "Manage Team"
+    "title": "إجراءات سريعة",
+    "subtitle": "اتخذ إجراءً لتقدم رحلة مدرستك",
+    "submit_evidence": "تقديم الأدلة",
+    "view_resources": "عرض الموارد",
+    "track_progress": "تتبع التقدم",
+    "view_analytics": "عرض التحليلات",
+    "manage_team": "إدارة الفريق"
   },
   "achievements": {
-    "title": "Achievements",
-    "no_achievements": "No achievements yet",
-    "inspire_completed": "Inspire Stage Completed",
-    "investigate_completed": "Investigate Stage Completed",
-    "act_completed": "Act Stage Completed",
-    "award_earned": "Plastic Clever School Award Earned"
+    "title": "الإنجازات",
+    "no_achievements": "لا توجد إنجازات بعد",
+    "inspire_completed": "مرحلة الإلهام مكتملة",
+    "investigate_completed": "مرحلة التحقيق مكتملة",
+    "act_completed": "مرحلة العمل مكتملة",
+    "award_earned": "تم الحصول على جائزة Plastic Clever School"
   },
   "activity_feed": {
-    "title": "Recent Activity",
-    "no_activity": "No recent activity",
-    "no_activity_title": "No Activity Yet",
-    "no_activity_description": "No recent activity. Start by submitting your first evidence!",
-    "evidence_submitted": "Evidence submitted for {{stage}} stage",
-    "submitted_on": "Submitted {{date}}",
-    "evidence_approved": "Evidence approved for {{stage}} stage",
-    "stage_completed": "{{stage}} stage completed",
-    "welcome_message": "Welcome to Plastic Clever Schools!"
+    "title": "النشاط الأخير",
+    "no_activity": "لا يوجد نشاط حديث",
+    "no_activity_title": "لا يوجد نشاط بعد",
+    "no_activity_description": "لا يوجد نشاط حديث. ابدأ بتقديم أول دليل!",
+    "evidence_submitted": "تم تقديم الأدلة لمرحلة {{stage}}",
+    "submitted_on": "تم التقديم في {{date}}",
+    "evidence_approved": "تمت الموافقة على الأدلة لمرحلة {{stage}}",
+    "stage_completed": "تم إكمال مرحلة {{stage}}",
+    "welcome_message": "مرحباً بك في Plastic Clever Schools!"
   },
   "errors": {
-    "unexpected_error": "An unexpected error occurred"
+    "unexpected_error": "حدث خطأ غير متوقع"
   }
 }

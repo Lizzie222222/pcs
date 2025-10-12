@@ -1,117 +1,117 @@
 {
   "welcome": {
-    "title": "Welcome to Your Dashboard",
-    "greeting": "Welcome back, {{name}}!",
-    "default_name": "Teacher",
-    "subtitle": "Track your school's progress through the Plastic Clever Schools program",
-    "loading_dashboard": "Loading your dashboard...",
-    "unauthorized_title": "Unauthorized",
-    "unauthorized_message": "You are logged out. Logging in again...",
-    "school_registration_required": "School Registration Required",
-    "school_registration_message": "Please complete your school registration to access the dashboard.",
-    "redirecting_title": "Setting up your account...",
-    "redirecting_message": "Redirecting you to complete school registration."
+    "title": "Welkom bij Uw Dashboard",
+    "greeting": "Welkom terug, {{name}}!",
+    "default_name": "Leraar",
+    "subtitle": "Volg de voortgang van uw school via het Plastic Clever Schools-programma",
+    "loading_dashboard": "Uw dashboard wordt geladen...",
+    "unauthorized_title": "Niet Geautoriseerd",
+    "unauthorized_message": "U bent uitgelogd. Opnieuw inloggen...",
+    "school_registration_required": "Schoolregistratie Vereist",
+    "school_registration_message": "Voltooi uw schoolregistratie om toegang te krijgen tot het dashboard.",
+    "redirecting_title": "Uw account instellen...",
+    "redirecting_message": "U wordt doorgestuurd om de schoolregistratie te voltooien."
   },
   "school_info": {
-    "school_name": "School Name",
-    "current_stage": "Current Stage",
-    "progress_percentage": "Progress",
-    "students_impacted": "Students Impacted"
+    "school_name": "Schoolnaam",
+    "current_stage": "Huidige Fase",
+    "progress_percentage": "Voortgang",
+    "students_impacted": "Beïnvloede Leerlingen"
   },
   "progress": {
-    "title": "Program Progress",
-    "journey_description": "Progress through the three stages of environmental action",
-    "overall_progress": "Overall Progress",
-    "current_stage": "Current Stage",
-    "stages_completed": "Stages Completed",
+    "title": "Programmavoortgang",
+    "journey_description": "Doorloop de drie fasen van milieuactie",
+    "overall_progress": "Algemene Voortgang",
+    "current_stage": "Huidige Fase",
+    "stages_completed": "Voltooide Fasen",
     "inspire": {
-      "title": "Inspire",
-      "description": "Build awareness and motivation",
+      "title": "Inspireren",
+      "description": "Bewustzijn en motivatie opbouwen",
       "activities": {
-        "assembly_presentation": "Assembly presentation",
-        "student_engagement": "Student engagement", 
-        "evidence_submission": "Evidence submission"
+        "assembly_presentation": "Assemblagepresentatie",
+        "student_engagement": "Studentenbetrokkenheid",
+        "evidence_submission": "Bewijsindiening"
       }
     },
     "investigate": {
-      "title": "Investigate",
-      "description": "Research and analyze",
+      "title": "Onderzoeken",
+      "description": "Onderzoek en analyseer",
       "activities": {
-        "plastic_audit": "Plastic audit conducted",
-        "data_collection": "Data collection",
-        "evidence_review": "Evidence review"
+        "plastic_audit": "Plastic audit uitgevoerd",
+        "data_collection": "Gegevensverzameling",
+        "evidence_review": "Bewijsbeoordeling"
       }
     },
     "act": {
-      "title": "Act", 
-      "description": "Create lasting change",
+      "title": "Handelen",
+      "description": "Creëer blijvende verandering",
       "activities": {
-        "action_plan": "Action plan development",
-        "implementation": "Implementation activities",
-        "impact_measurement": "Impact measurement"
+        "action_plan": "Actieplanontwikkeling",
+        "implementation": "Implementatieactiviteiten",
+        "impact_measurement": "Impactmeting"
       }
     },
-    "stage_locked": "Complete previous stage to unlock",
-    "stage_current": "Current Stage",
-    "stage_completed": "Completed",
-    "evidence_submitted": "Submitted:",
-    "evidence_approved": "Approved:",
-    "evidence_items_submitted": "{{count}} evidence submitted",
-    "no_evidence_submitted": "No evidence submitted yet",
-    "evidence_items_approved": "{{approved}} / {{required}} evidence approved",
-    "audit_quiz_completed": "Audit quiz completed",
-    "audit_quiz_pending": "Audit quiz required",
-    "more_needed": "{{count}} more needed",
-    "audit_quiz_required": "Audit Quiz: Required",
-    "audit_quiz_required_bullet": "Audit quiz required",
-    "evidence_needed": "{{count}} more evidence needed"
+    "stage_locked": "Voltooi vorige fase om te ontgrendelen",
+    "stage_current": "Huidige Fase",
+    "stage_completed": "Voltooid",
+    "evidence_submitted": "Ingediend:",
+    "evidence_approved": "Goedgekeurd:",
+    "evidence_items_submitted": "{{count}} bewijzen ingediend",
+    "no_evidence_submitted": "Nog geen bewijzen ingediend",
+    "evidence_items_approved": "{{approved}} / {{required}} bewijzen goedgekeurd",
+    "audit_quiz_completed": "Audit quiz voltooid",
+    "audit_quiz_pending": "Audit quiz vereist",
+    "more_needed": "{{count}} meer nodig",
+    "audit_quiz_required": "Audit Quiz: Vereist",
+    "audit_quiz_required_bullet": "Audit quiz vereist",
+    "evidence_needed": "{{count}} meer bewijzen nodig"
   },
   "evidence": {
-    "title": "Evidence Submissions",
-    "recent_evidence": "Recent Evidence",
-    "submit_evidence": "Submit Evidence",
-    "no_evidence": "No evidence submitted yet",
-    "evidence_pending": "Evidence pending review",
-    "evidence_approved": "Evidence approved",
-    "evidence_rejected": "Evidence needs revision",
-    "upload_files": "Upload Files",
-    "submission_successful": "Evidence submitted successfully",
-    "submission_failed": "Failed to submit evidence",
-    "submitted_on": "Submitted {{date}}",
-    "delete_confirmation_title": "Delete Evidence?",
-    "delete_confirmation_description": "This will permanently delete this evidence submission. This action cannot be undone.",
-    "delete_success": "Evidence deleted successfully",
-    "delete_error": "Failed to delete evidence"
+    "title": "Bewijsindieningen",
+    "recent_evidence": "Recente Bewijzen",
+    "submit_evidence": "Bewijs Indienen",
+    "no_evidence": "Nog geen bewijzen ingediend",
+    "evidence_pending": "Bewijs in afwachting van beoordeling",
+    "evidence_approved": "Bewijs goedgekeurd",
+    "evidence_rejected": "Bewijs vereist revisie",
+    "upload_files": "Bestanden Uploaden",
+    "submission_successful": "Bewijs succesvol ingediend",
+    "submission_failed": "Bewijs indienen mislukt",
+    "submitted_on": "Ingediend op {{date}}",
+    "delete_confirmation_title": "Bewijs Verwijderen?",
+    "delete_confirmation_description": "Dit zal deze bewijsindiening permanent verwijderen. Deze actie kan niet ongedaan worden gemaakt.",
+    "delete_success": "Bewijs succesvol verwijderd",
+    "delete_error": "Bewijs verwijderen mislukt"
   },
   "quick_actions": {
-    "title": "Quick Actions",
-    "subtitle": "Take action to advance your school's journey",
-    "submit_evidence": "Submit Evidence",
-    "view_resources": "View Resources", 
-    "track_progress": "Track Progress",
-    "view_analytics": "View Analytics",
-    "manage_team": "Manage Team"
+    "title": "Snelle Acties",
+    "subtitle": "Onderneem actie om de reis van uw school te bevorderen",
+    "submit_evidence": "Bewijs Indienen",
+    "view_resources": "Bronnen Bekijken",
+    "track_progress": "Voortgang Volgen",
+    "view_analytics": "Analyses Bekijken",
+    "manage_team": "Team Beheren"
   },
   "achievements": {
-    "title": "Achievements",
-    "no_achievements": "No achievements yet",
-    "inspire_completed": "Inspire Stage Completed",
-    "investigate_completed": "Investigate Stage Completed",
-    "act_completed": "Act Stage Completed",
-    "award_earned": "Plastic Clever School Award Earned"
+    "title": "Prestaties",
+    "no_achievements": "Nog geen prestaties",
+    "inspire_completed": "Inspireren Fase Voltooid",
+    "investigate_completed": "Onderzoeken Fase Voltooid",
+    "act_completed": "Handelen Fase Voltooid",
+    "award_earned": "Plastic Clever School Award Verdiend"
   },
   "activity_feed": {
-    "title": "Recent Activity",
-    "no_activity": "No recent activity",
-    "no_activity_title": "No Activity Yet",
-    "no_activity_description": "No recent activity. Start by submitting your first evidence!",
-    "evidence_submitted": "Evidence submitted for {{stage}} stage",
-    "submitted_on": "Submitted {{date}}",
-    "evidence_approved": "Evidence approved for {{stage}} stage",
-    "stage_completed": "{{stage}} stage completed",
-    "welcome_message": "Welcome to Plastic Clever Schools!"
+    "title": "Recente Activiteit",
+    "no_activity": "Geen recente activiteit",
+    "no_activity_title": "Nog Geen Activiteit",
+    "no_activity_description": "Geen recente activiteit. Begin met het indienen van uw eerste bewijs!",
+    "evidence_submitted": "Bewijs ingediend voor {{stage}} fase",
+    "submitted_on": "Ingediend op {{date}}",
+    "evidence_approved": "Bewijs goedgekeurd voor {{stage}} fase",
+    "stage_completed": "{{stage}} fase voltooid",
+    "welcome_message": "Welkom bij Plastic Clever Schools!"
   },
   "errors": {
-    "unexpected_error": "An unexpected error occurred"
+    "unexpected_error": "Er is een onverwachte fout opgetreden"
   }
 }

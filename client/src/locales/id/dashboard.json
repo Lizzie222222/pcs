@@ -1,117 +1,117 @@
 {
   "welcome": {
-    "title": "Welcome to Your Dashboard",
-    "greeting": "Welcome back, {{name}}!",
-    "default_name": "Teacher",
-    "subtitle": "Track your school's progress through the Plastic Clever Schools program",
-    "loading_dashboard": "Loading your dashboard...",
-    "unauthorized_title": "Unauthorized",
-    "unauthorized_message": "You are logged out. Logging in again...",
-    "school_registration_required": "School Registration Required",
-    "school_registration_message": "Please complete your school registration to access the dashboard.",
-    "redirecting_title": "Setting up your account...",
-    "redirecting_message": "Redirecting you to complete school registration."
+    "title": "Selamat Datang di Dashboard Anda",
+    "greeting": "Selamat datang kembali, {{name}}!",
+    "default_name": "Guru",
+    "subtitle": "Lacak kemajuan sekolah Anda melalui program Plastic Clever Schools",
+    "loading_dashboard": "Memuat dashboard Anda...",
+    "unauthorized_title": "Tidak Diotorisasi",
+    "unauthorized_message": "Anda telah keluar. Login kembali...",
+    "school_registration_required": "Pendaftaran Sekolah Diperlukan",
+    "school_registration_message": "Harap selesaikan pendaftaran sekolah Anda untuk mengakses dashboard.",
+    "redirecting_title": "Menyiapkan akun Anda...",
+    "redirecting_message": "Mengarahkan Anda untuk menyelesaikan pendaftaran sekolah."
   },
   "school_info": {
-    "school_name": "School Name",
-    "current_stage": "Current Stage",
-    "progress_percentage": "Progress",
-    "students_impacted": "Students Impacted"
+    "school_name": "Nama Sekolah",
+    "current_stage": "Tahap Saat Ini",
+    "progress_percentage": "Kemajuan",
+    "students_impacted": "Siswa Terpengaruh"
   },
   "progress": {
-    "title": "Program Progress",
-    "journey_description": "Progress through the three stages of environmental action",
-    "overall_progress": "Overall Progress",
-    "current_stage": "Current Stage",
-    "stages_completed": "Stages Completed",
+    "title": "Kemajuan Program",
+    "journey_description": "Maju melalui tiga tahap aksi lingkungan",
+    "overall_progress": "Kemajuan Keseluruhan",
+    "current_stage": "Tahap Saat Ini",
+    "stages_completed": "Tahap Selesai",
     "inspire": {
-      "title": "Inspire",
-      "description": "Build awareness and motivation",
+      "title": "Inspirasi",
+      "description": "Bangun kesadaran dan motivasi",
       "activities": {
-        "assembly_presentation": "Assembly presentation",
-        "student_engagement": "Student engagement", 
-        "evidence_submission": "Evidence submission"
+        "assembly_presentation": "Presentasi pertemuan",
+        "student_engagement": "Keterlibatan siswa",
+        "evidence_submission": "Pengajuan bukti"
       }
     },
     "investigate": {
-      "title": "Investigate",
-      "description": "Research and analyze",
+      "title": "Investigasi",
+      "description": "Teliti dan analisis",
       "activities": {
-        "plastic_audit": "Plastic audit conducted",
-        "data_collection": "Data collection",
-        "evidence_review": "Evidence review"
+        "plastic_audit": "Audit plastik dilakukan",
+        "data_collection": "Pengumpulan data",
+        "evidence_review": "Tinjauan bukti"
       }
     },
     "act": {
-      "title": "Act", 
-      "description": "Create lasting change",
+      "title": "Tindakan",
+      "description": "Ciptakan perubahan berkelanjutan",
       "activities": {
-        "action_plan": "Action plan development",
-        "implementation": "Implementation activities",
-        "impact_measurement": "Impact measurement"
+        "action_plan": "Pengembangan rencana tindakan",
+        "implementation": "Kegiatan implementasi",
+        "impact_measurement": "Pengukuran dampak"
       }
     },
-    "stage_locked": "Complete previous stage to unlock",
-    "stage_current": "Current Stage",
-    "stage_completed": "Completed",
-    "evidence_submitted": "Submitted:",
-    "evidence_approved": "Approved:",
-    "evidence_items_submitted": "{{count}} evidence submitted",
-    "no_evidence_submitted": "No evidence submitted yet",
-    "evidence_items_approved": "{{approved}} / {{required}} evidence approved",
-    "audit_quiz_completed": "Audit quiz completed",
-    "audit_quiz_pending": "Audit quiz required",
-    "more_needed": "{{count}} more needed",
-    "audit_quiz_required": "Audit Quiz: Required",
-    "audit_quiz_required_bullet": "Audit quiz required",
-    "evidence_needed": "{{count}} more evidence needed"
+    "stage_locked": "Selesaikan tahap sebelumnya untuk membuka kunci",
+    "stage_current": "Tahap Saat Ini",
+    "stage_completed": "Selesai",
+    "evidence_submitted": "Diajukan:",
+    "evidence_approved": "Disetujui:",
+    "evidence_items_submitted": "{{count}} bukti diajukan",
+    "no_evidence_submitted": "Belum ada bukti yang diajukan",
+    "evidence_items_approved": "{{approved}} / {{required}} bukti disetujui",
+    "audit_quiz_completed": "Kuis audit selesai",
+    "audit_quiz_pending": "Kuis audit diperlukan",
+    "more_needed": "{{count}} lagi diperlukan",
+    "audit_quiz_required": "Kuis Audit: Diperlukan",
+    "audit_quiz_required_bullet": "Kuis audit diperlukan",
+    "evidence_needed": "{{count}} bukti lagi diperlukan"
   },
   "evidence": {
-    "title": "Evidence Submissions",
-    "recent_evidence": "Recent Evidence",
-    "submit_evidence": "Submit Evidence",
-    "no_evidence": "No evidence submitted yet",
-    "evidence_pending": "Evidence pending review",
-    "evidence_approved": "Evidence approved",
-    "evidence_rejected": "Evidence needs revision",
-    "upload_files": "Upload Files",
-    "submission_successful": "Evidence submitted successfully",
-    "submission_failed": "Failed to submit evidence",
-    "submitted_on": "Submitted {{date}}",
-    "delete_confirmation_title": "Delete Evidence?",
-    "delete_confirmation_description": "This will permanently delete this evidence submission. This action cannot be undone.",
-    "delete_success": "Evidence deleted successfully",
-    "delete_error": "Failed to delete evidence"
+    "title": "Pengajuan Bukti",
+    "recent_evidence": "Bukti Terbaru",
+    "submit_evidence": "Ajukan Bukti",
+    "no_evidence": "Belum ada bukti yang diajukan",
+    "evidence_pending": "Bukti menunggu tinjauan",
+    "evidence_approved": "Bukti disetujui",
+    "evidence_rejected": "Bukti memerlukan revisi",
+    "upload_files": "Unggah File",
+    "submission_successful": "Bukti berhasil diajukan",
+    "submission_failed": "Gagal mengajukan bukti",
+    "submitted_on": "Diajukan pada {{date}}",
+    "delete_confirmation_title": "Hapus Bukti?",
+    "delete_confirmation_description": "Ini akan menghapus pengajuan bukti ini secara permanen. Tindakan ini tidak dapat dibatalkan.",
+    "delete_success": "Bukti berhasil dihapus",
+    "delete_error": "Gagal menghapus bukti"
   },
   "quick_actions": {
-    "title": "Quick Actions",
-    "subtitle": "Take action to advance your school's journey",
-    "submit_evidence": "Submit Evidence",
-    "view_resources": "View Resources", 
-    "track_progress": "Track Progress",
-    "view_analytics": "View Analytics",
-    "manage_team": "Manage Team"
+    "title": "Tindakan Cepat",
+    "subtitle": "Ambil tindakan untuk memajukan perjalanan sekolah Anda",
+    "submit_evidence": "Ajukan Bukti",
+    "view_resources": "Lihat Sumber Daya",
+    "track_progress": "Lacak Kemajuan",
+    "view_analytics": "Lihat Analitik",
+    "manage_team": "Kelola Tim"
   },
   "achievements": {
-    "title": "Achievements",
-    "no_achievements": "No achievements yet",
-    "inspire_completed": "Inspire Stage Completed",
-    "investigate_completed": "Investigate Stage Completed",
-    "act_completed": "Act Stage Completed",
-    "award_earned": "Plastic Clever School Award Earned"
+    "title": "Pencapaian",
+    "no_achievements": "Belum ada pencapaian",
+    "inspire_completed": "Tahap Inspirasi Selesai",
+    "investigate_completed": "Tahap Investigasi Selesai",
+    "act_completed": "Tahap Tindakan Selesai",
+    "award_earned": "Penghargaan Plastic Clever School Diperoleh"
   },
   "activity_feed": {
-    "title": "Recent Activity",
-    "no_activity": "No recent activity",
-    "no_activity_title": "No Activity Yet",
-    "no_activity_description": "No recent activity. Start by submitting your first evidence!",
-    "evidence_submitted": "Evidence submitted for {{stage}} stage",
-    "submitted_on": "Submitted {{date}}",
-    "evidence_approved": "Evidence approved for {{stage}} stage",
-    "stage_completed": "{{stage}} stage completed",
-    "welcome_message": "Welcome to Plastic Clever Schools!"
+    "title": "Aktivitas Terbaru",
+    "no_activity": "Tidak ada aktivitas terbaru",
+    "no_activity_title": "Belum Ada Aktivitas",
+    "no_activity_description": "Tidak ada aktivitas terbaru. Mulai dengan mengajukan bukti pertama Anda!",
+    "evidence_submitted": "Bukti diajukan untuk tahap {{stage}}",
+    "submitted_on": "Diajukan pada {{date}}",
+    "evidence_approved": "Bukti disetujui untuk tahap {{stage}}",
+    "stage_completed": "Tahap {{stage}} selesai",
+    "welcome_message": "Selamat datang di Plastic Clever Schools!"
   },
   "errors": {
-    "unexpected_error": "An unexpected error occurred"
+    "unexpected_error": "Terjadi kesalahan yang tidak terduga"
   }
 }

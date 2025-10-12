@@ -1,117 +1,117 @@
 {
   "welcome": {
-    "title": "Welcome to Your Dashboard",
-    "greeting": "Welcome back, {{name}}!",
-    "default_name": "Teacher",
-    "subtitle": "Track your school's progress through the Plastic Clever Schools program",
-    "loading_dashboard": "Loading your dashboard...",
-    "unauthorized_title": "Unauthorized",
-    "unauthorized_message": "You are logged out. Logging in again...",
-    "school_registration_required": "School Registration Required",
-    "school_registration_message": "Please complete your school registration to access the dashboard.",
-    "redirecting_title": "Setting up your account...",
-    "redirecting_message": "Redirecting you to complete school registration."
+    "title": "대시보드에 오신 것을 환영합니다",
+    "greeting": "다시 오신 것을 환영합니다, {{name}}!",
+    "default_name": "교사",
+    "subtitle": "Plastic Clever Schools 프로그램을 통한 학교의 진행 상황을 추적하세요",
+    "loading_dashboard": "대시보드를 로딩 중...",
+    "unauthorized_title": "권한 없음",
+    "unauthorized_message": "로그아웃되었습니다. 다시 로그인 중...",
+    "school_registration_required": "학교 등록 필요",
+    "school_registration_message": "대시보드에 액세스하려면 학교 등록을 완료하세요.",
+    "redirecting_title": "계정 설정 중...",
+    "redirecting_message": "학교 등록을 완료하기 위해 리디렉션 중입니다."
   },
   "school_info": {
-    "school_name": "School Name",
-    "current_stage": "Current Stage",
-    "progress_percentage": "Progress",
-    "students_impacted": "Students Impacted"
+    "school_name": "학교 이름",
+    "current_stage": "현재 단계",
+    "progress_percentage": "진행률",
+    "students_impacted": "영향받은 학생"
   },
   "progress": {
-    "title": "Program Progress",
-    "journey_description": "Progress through the three stages of environmental action",
-    "overall_progress": "Overall Progress",
-    "current_stage": "Current Stage",
-    "stages_completed": "Stages Completed",
+    "title": "프로그램 진행 상황",
+    "journey_description": "환경 행동의 세 단계를 진행하세요",
+    "overall_progress": "전체 진행 상황",
+    "current_stage": "현재 단계",
+    "stages_completed": "완료된 단계",
     "inspire": {
-      "title": "Inspire",
-      "description": "Build awareness and motivation",
+      "title": "영감",
+      "description": "인식과 동기 부여 구축",
       "activities": {
-        "assembly_presentation": "Assembly presentation",
-        "student_engagement": "Student engagement", 
-        "evidence_submission": "Evidence submission"
+        "assembly_presentation": "집회 발표",
+        "student_engagement": "학생 참여",
+        "evidence_submission": "증거 제출"
       }
     },
     "investigate": {
-      "title": "Investigate",
-      "description": "Research and analyze",
+      "title": "조사",
+      "description": "연구 및 분석",
       "activities": {
-        "plastic_audit": "Plastic audit conducted",
-        "data_collection": "Data collection",
-        "evidence_review": "Evidence review"
+        "plastic_audit": "플라스틱 감사 수행됨",
+        "data_collection": "데이터 수집",
+        "evidence_review": "증거 검토"
       }
     },
     "act": {
-      "title": "Act", 
-      "description": "Create lasting change",
+      "title": "행동",
+      "description": "지속적인 변화 창출",
       "activities": {
-        "action_plan": "Action plan development",
-        "implementation": "Implementation activities",
-        "impact_measurement": "Impact measurement"
+        "action_plan": "행동 계획 개발",
+        "implementation": "실행 활동",
+        "impact_measurement": "영향 측정"
       }
     },
-    "stage_locked": "Complete previous stage to unlock",
-    "stage_current": "Current Stage",
-    "stage_completed": "Completed",
-    "evidence_submitted": "Submitted:",
-    "evidence_approved": "Approved:",
-    "evidence_items_submitted": "{{count}} evidence submitted",
-    "no_evidence_submitted": "No evidence submitted yet",
-    "evidence_items_approved": "{{approved}} / {{required}} evidence approved",
-    "audit_quiz_completed": "Audit quiz completed",
-    "audit_quiz_pending": "Audit quiz required",
-    "more_needed": "{{count}} more needed",
-    "audit_quiz_required": "Audit Quiz: Required",
-    "audit_quiz_required_bullet": "Audit quiz required",
-    "evidence_needed": "{{count}} more evidence needed"
+    "stage_locked": "잠금을 해제하려면 이전 단계를 완료하세요",
+    "stage_current": "현재 단계",
+    "stage_completed": "완료됨",
+    "evidence_submitted": "제출됨:",
+    "evidence_approved": "승인됨:",
+    "evidence_items_submitted": "{{count}}개 증거 제출됨",
+    "no_evidence_submitted": "아직 증거가 제출되지 않음",
+    "evidence_items_approved": "{{approved}} / {{required}}개 증거 승인됨",
+    "audit_quiz_completed": "감사 퀴즈 완료됨",
+    "audit_quiz_pending": "감사 퀴즈 필요",
+    "more_needed": "{{count}}개 더 필요",
+    "audit_quiz_required": "감사 퀴즈: 필수",
+    "audit_quiz_required_bullet": "감사 퀴즈 필요",
+    "evidence_needed": "{{count}}개 증거 더 필요"
   },
   "evidence": {
-    "title": "Evidence Submissions",
-    "recent_evidence": "Recent Evidence",
-    "submit_evidence": "Submit Evidence",
-    "no_evidence": "No evidence submitted yet",
-    "evidence_pending": "Evidence pending review",
-    "evidence_approved": "Evidence approved",
-    "evidence_rejected": "Evidence needs revision",
-    "upload_files": "Upload Files",
-    "submission_successful": "Evidence submitted successfully",
-    "submission_failed": "Failed to submit evidence",
-    "submitted_on": "Submitted {{date}}",
-    "delete_confirmation_title": "Delete Evidence?",
-    "delete_confirmation_description": "This will permanently delete this evidence submission. This action cannot be undone.",
-    "delete_success": "Evidence deleted successfully",
-    "delete_error": "Failed to delete evidence"
+    "title": "증거 제출",
+    "recent_evidence": "최근 증거",
+    "submit_evidence": "증거 제출",
+    "no_evidence": "아직 증거가 제출되지 않음",
+    "evidence_pending": "증거 검토 대기 중",
+    "evidence_approved": "증거 승인됨",
+    "evidence_rejected": "증거 수정 필요",
+    "upload_files": "파일 업로드",
+    "submission_successful": "증거 제출 성공",
+    "submission_failed": "증거 제출 실패",
+    "submitted_on": "{{date}}에 제출됨",
+    "delete_confirmation_title": "증거 삭제?",
+    "delete_confirmation_description": "이 증거 제출을 영구적으로 삭제합니다. 이 작업은 되돌릴 수 없습니다.",
+    "delete_success": "증거 삭제 성공",
+    "delete_error": "증거 삭제 실패"
   },
   "quick_actions": {
-    "title": "Quick Actions",
-    "subtitle": "Take action to advance your school's journey",
-    "submit_evidence": "Submit Evidence",
-    "view_resources": "View Resources", 
-    "track_progress": "Track Progress",
-    "view_analytics": "View Analytics",
-    "manage_team": "Manage Team"
+    "title": "빠른 작업",
+    "subtitle": "학교의 여정을 진전시키기 위한 행동을 취하세요",
+    "submit_evidence": "증거 제출",
+    "view_resources": "리소스 보기",
+    "track_progress": "진행 상황 추적",
+    "view_analytics": "분석 보기",
+    "manage_team": "팀 관리"
   },
   "achievements": {
-    "title": "Achievements",
-    "no_achievements": "No achievements yet",
-    "inspire_completed": "Inspire Stage Completed",
-    "investigate_completed": "Investigate Stage Completed",
-    "act_completed": "Act Stage Completed",
-    "award_earned": "Plastic Clever School Award Earned"
+    "title": "성취",
+    "no_achievements": "아직 성취가 없음",
+    "inspire_completed": "영감 단계 완료",
+    "investigate_completed": "조사 단계 완료",
+    "act_completed": "행동 단계 완료",
+    "award_earned": "Plastic Clever School 상 획득"
   },
   "activity_feed": {
-    "title": "Recent Activity",
-    "no_activity": "No recent activity",
-    "no_activity_title": "No Activity Yet",
-    "no_activity_description": "No recent activity. Start by submitting your first evidence!",
-    "evidence_submitted": "Evidence submitted for {{stage}} stage",
-    "submitted_on": "Submitted {{date}}",
-    "evidence_approved": "Evidence approved for {{stage}} stage",
-    "stage_completed": "{{stage}} stage completed",
-    "welcome_message": "Welcome to Plastic Clever Schools!"
+    "title": "최근 활동",
+    "no_activity": "최근 활동 없음",
+    "no_activity_title": "아직 활동 없음",
+    "no_activity_description": "최근 활동이 없습니다. 첫 번째 증거를 제출하여 시작하세요!",
+    "evidence_submitted": "{{stage}} 단계에 증거 제출됨",
+    "submitted_on": "{{date}}에 제출됨",
+    "evidence_approved": "{{stage}} 단계에 증거 승인됨",
+    "stage_completed": "{{stage}} 단계 완료됨",
+    "welcome_message": "Plastic Clever Schools에 오신 것을 환영합니다!"
   },
   "errors": {
-    "unexpected_error": "An unexpected error occurred"
+    "unexpected_error": "예기치 않은 오류가 발생했습니다"
   }
 }

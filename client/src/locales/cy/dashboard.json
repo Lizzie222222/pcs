@@ -1,117 +1,117 @@
 {
   "welcome": {
-    "title": "Welcome to Your Dashboard",
-    "greeting": "Welcome back, {{name}}!",
-    "default_name": "Teacher",
-    "subtitle": "Track your school's progress through the Plastic Clever Schools program",
-    "loading_dashboard": "Loading your dashboard...",
-    "unauthorized_title": "Unauthorized",
-    "unauthorized_message": "You are logged out. Logging in again...",
-    "school_registration_required": "School Registration Required",
-    "school_registration_message": "Please complete your school registration to access the dashboard.",
-    "redirecting_title": "Setting up your account...",
-    "redirecting_message": "Redirecting you to complete school registration."
+    "title": "Croeso i'ch Dangosfwrdd",
+    "greeting": "Croeso yn ôl, {{name}}!",
+    "default_name": "Athro",
+    "subtitle": "Olrhain cynnydd eich ysgol trwy raglen Plastic Clever Schools",
+    "loading_dashboard": "Yn llwytho'ch dangosfwrdd...",
+    "unauthorized_title": "Heb Awdurdod",
+    "unauthorized_message": "Rydych wedi allgofnodi. Mewngofnodi eto...",
+    "school_registration_required": "Mae Angen Cofrestru'r Ysgol",
+    "school_registration_message": "Cwblhewch gofrestriad eich ysgol i gael mynediad at y dangosfwrdd.",
+    "redirecting_title": "Yn sefydlu eich cyfrif...",
+    "redirecting_message": "Yn eich ailgyfeirio i gwblhau cofrestriad yr ysgol."
   },
   "school_info": {
-    "school_name": "School Name",
-    "current_stage": "Current Stage",
-    "progress_percentage": "Progress",
-    "students_impacted": "Students Impacted"
+    "school_name": "Enw'r Ysgol",
+    "current_stage": "Cam Presennol",
+    "progress_percentage": "Cynnydd",
+    "students_impacted": "Myfyrwyr yr Effeithiwyd Arnynt"
   },
   "progress": {
-    "title": "Program Progress",
-    "journey_description": "Progress through the three stages of environmental action",
-    "overall_progress": "Overall Progress",
-    "current_stage": "Current Stage",
-    "stages_completed": "Stages Completed",
+    "title": "Cynnydd y Rhaglen",
+    "journey_description": "Symud ymlaen trwy'r tri cham o weithredu amgylcheddol",
+    "overall_progress": "Cynnydd Cyffredinol",
+    "current_stage": "Cam Presennol",
+    "stages_completed": "Camau wedi'u Cwblhau",
     "inspire": {
-      "title": "Inspire",
-      "description": "Build awareness and motivation",
+      "title": "Ysbrydoli",
+      "description": "Adeiladu ymwybyddiaeth a chymhelliant",
       "activities": {
-        "assembly_presentation": "Assembly presentation",
-        "student_engagement": "Student engagement", 
-        "evidence_submission": "Evidence submission"
+        "assembly_presentation": "Cyflwyniad cynulliad",
+        "student_engagement": "Ymgysylltiad myfyrwyr",
+        "evidence_submission": "Cyflwyno tystiolaeth"
       }
     },
     "investigate": {
-      "title": "Investigate",
-      "description": "Research and analyze",
+      "title": "Ymchwilio",
+      "description": "Ymchwilio a dadansoddi",
       "activities": {
-        "plastic_audit": "Plastic audit conducted",
-        "data_collection": "Data collection",
-        "evidence_review": "Evidence review"
+        "plastic_audit": "Archwiliad plastig wedi'i gynnal",
+        "data_collection": "Casglu data",
+        "evidence_review": "Adolygu tystiolaeth"
       }
     },
     "act": {
-      "title": "Act", 
-      "description": "Create lasting change",
+      "title": "Gweithredu",
+      "description": "Creu newid parhaol",
       "activities": {
-        "action_plan": "Action plan development",
-        "implementation": "Implementation activities",
-        "impact_measurement": "Impact measurement"
+        "action_plan": "Datblygu cynllun gweithredu",
+        "implementation": "Gweithgareddau gweithredu",
+        "impact_measurement": "Mesur effaith"
       }
     },
-    "stage_locked": "Complete previous stage to unlock",
-    "stage_current": "Current Stage",
-    "stage_completed": "Completed",
-    "evidence_submitted": "Submitted:",
-    "evidence_approved": "Approved:",
-    "evidence_items_submitted": "{{count}} evidence submitted",
-    "no_evidence_submitted": "No evidence submitted yet",
-    "evidence_items_approved": "{{approved}} / {{required}} evidence approved",
-    "audit_quiz_completed": "Audit quiz completed",
-    "audit_quiz_pending": "Audit quiz required",
-    "more_needed": "{{count}} more needed",
-    "audit_quiz_required": "Audit Quiz: Required",
-    "audit_quiz_required_bullet": "Audit quiz required",
-    "evidence_needed": "{{count}} more evidence needed"
+    "stage_locked": "Cwblhewch y cam blaenorol i ddatgloi",
+    "stage_current": "Cam Presennol",
+    "stage_completed": "Wedi'i Gwblhau",
+    "evidence_submitted": "Wedi'u Cyflwyno:",
+    "evidence_approved": "Wedi'u Cymeradwyo:",
+    "evidence_items_submitted": "{{count}} tystiolaeth wedi'i chyflwyno",
+    "no_evidence_submitted": "Dim tystiolaeth wedi'i chyflwyno eto",
+    "evidence_items_approved": "{{approved}} / {{required}} tystiolaeth wedi'i chymeradwyo",
+    "audit_quiz_completed": "Cwis archwilio wedi'i gwblhau",
+    "audit_quiz_pending": "Mae angen cwis archwilio",
+    "more_needed": "{{count}} yn fwy sydd eu hangen",
+    "audit_quiz_required": "Cwis Archwilio: Gofynnol",
+    "audit_quiz_required_bullet": "Mae angen cwis archwilio",
+    "evidence_needed": "{{count}} tystiolaeth ychwanegol sydd eu hangen"
   },
   "evidence": {
-    "title": "Evidence Submissions",
-    "recent_evidence": "Recent Evidence",
-    "submit_evidence": "Submit Evidence",
-    "no_evidence": "No evidence submitted yet",
-    "evidence_pending": "Evidence pending review",
-    "evidence_approved": "Evidence approved",
-    "evidence_rejected": "Evidence needs revision",
-    "upload_files": "Upload Files",
-    "submission_successful": "Evidence submitted successfully",
-    "submission_failed": "Failed to submit evidence",
-    "submitted_on": "Submitted {{date}}",
-    "delete_confirmation_title": "Delete Evidence?",
-    "delete_confirmation_description": "This will permanently delete this evidence submission. This action cannot be undone.",
-    "delete_success": "Evidence deleted successfully",
-    "delete_error": "Failed to delete evidence"
+    "title": "Cyflwyniadau Tystiolaeth",
+    "recent_evidence": "Tystiolaeth Ddiweddar",
+    "submit_evidence": "Cyflwyno Tystiolaeth",
+    "no_evidence": "Dim tystiolaeth wedi'i chyflwyno eto",
+    "evidence_pending": "Tystiolaeth yn aros am adolygiad",
+    "evidence_approved": "Tystiolaeth wedi'i chymeradwyo",
+    "evidence_rejected": "Mae angen diwygio'r dystiolaeth",
+    "upload_files": "Llwytho Ffeiliau i Fyny",
+    "submission_successful": "Tystiolaeth wedi'i chyflwyno'n llwyddiannus",
+    "submission_failed": "Methodd cyflwyno tystiolaeth",
+    "submitted_on": "Cyflwynwyd {{date}}",
+    "delete_confirmation_title": "Dileu Tystiolaeth?",
+    "delete_confirmation_description": "Bydd hyn yn dileu'r cyflwyniad tystiolaeth hwn yn barhaol. Ni ellir dadwneud y weithred hon.",
+    "delete_success": "Tystiolaeth wedi'i dileu'n llwyddiannus",
+    "delete_error": "Methodd dileu tystiolaeth"
   },
   "quick_actions": {
-    "title": "Quick Actions",
-    "subtitle": "Take action to advance your school's journey",
-    "submit_evidence": "Submit Evidence",
-    "view_resources": "View Resources", 
-    "track_progress": "Track Progress",
-    "view_analytics": "View Analytics",
-    "manage_team": "Manage Team"
+    "title": "Gweithredoedd Cyflym",
+    "subtitle": "Cymryd camau i hyrwyddo taith eich ysgol",
+    "submit_evidence": "Cyflwyno Tystiolaeth",
+    "view_resources": "Gweld Adnoddau",
+    "track_progress": "Olrhain Cynnydd",
+    "view_analytics": "Gweld Dadansoddeg",
+    "manage_team": "Rheoli Tîm"
   },
   "achievements": {
-    "title": "Achievements",
-    "no_achievements": "No achievements yet",
-    "inspire_completed": "Inspire Stage Completed",
-    "investigate_completed": "Investigate Stage Completed",
-    "act_completed": "Act Stage Completed",
-    "award_earned": "Plastic Clever School Award Earned"
+    "title": "Cyflawniadau",
+    "no_achievements": "Dim cyflawniadau eto",
+    "inspire_completed": "Cam Ysbrydoli wedi'i Gwblhau",
+    "investigate_completed": "Cam Ymchwilio wedi'i Gwblhau",
+    "act_completed": "Cam Gweithredu wedi'i Gwblhau",
+    "award_earned": "Gwobr Plastic Clever School Wedi'i Hennill"
   },
   "activity_feed": {
-    "title": "Recent Activity",
-    "no_activity": "No recent activity",
-    "no_activity_title": "No Activity Yet",
-    "no_activity_description": "No recent activity. Start by submitting your first evidence!",
-    "evidence_submitted": "Evidence submitted for {{stage}} stage",
-    "submitted_on": "Submitted {{date}}",
-    "evidence_approved": "Evidence approved for {{stage}} stage",
-    "stage_completed": "{{stage}} stage completed",
-    "welcome_message": "Welcome to Plastic Clever Schools!"
+    "title": "Gweithgaredd Diweddar",
+    "no_activity": "Dim gweithgaredd diweddar",
+    "no_activity_title": "Dim Gweithgaredd Eto",
+    "no_activity_description": "Dim gweithgaredd diweddar. Dechreuwch drwy gyflwyno'ch tystiolaeth gyntaf!",
+    "evidence_submitted": "Tystiolaeth wedi'i chyflwyno ar gyfer cam {{stage}}",
+    "submitted_on": "Cyflwynwyd {{date}}",
+    "evidence_approved": "Tystiolaeth wedi'i chymeradwyo ar gyfer cam {{stage}}",
+    "stage_completed": "Cam {{stage}} wedi'i gwblhau",
+    "welcome_message": "Croeso i Plastic Clever Schools!"
   },
   "errors": {
-    "unexpected_error": "An unexpected error occurred"
+    "unexpected_error": "Digwyddodd gwall annisgwyl"
   }
 }

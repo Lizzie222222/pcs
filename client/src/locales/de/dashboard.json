@@ -1,117 +1,117 @@
 {
   "welcome": {
-    "title": "Welcome to Your Dashboard",
-    "greeting": "Welcome back, {{name}}!",
-    "default_name": "Teacher",
-    "subtitle": "Track your school's progress through the Plastic Clever Schools program",
-    "loading_dashboard": "Loading your dashboard...",
-    "unauthorized_title": "Unauthorized",
-    "unauthorized_message": "You are logged out. Logging in again...",
-    "school_registration_required": "School Registration Required",
-    "school_registration_message": "Please complete your school registration to access the dashboard.",
-    "redirecting_title": "Setting up your account...",
-    "redirecting_message": "Redirecting you to complete school registration."
+    "title": "Willkommen in Ihrem Dashboard",
+    "greeting": "Willkommen zurück, {{name}}!",
+    "default_name": "Lehrer",
+    "subtitle": "Verfolgen Sie den Fortschritt Ihrer Schule im Plastic Clever Schools-Programm",
+    "loading_dashboard": "Ihr Dashboard wird geladen...",
+    "unauthorized_title": "Nicht Autorisiert",
+    "unauthorized_message": "Sie sind abgemeldet. Erneute Anmeldung...",
+    "school_registration_required": "Schulregistrierung Erforderlich",
+    "school_registration_message": "Bitte vervollständigen Sie Ihre Schulregistrierung, um auf das Dashboard zuzugreifen.",
+    "redirecting_title": "Ihr Konto wird eingerichtet...",
+    "redirecting_message": "Sie werden zur Vervollständigung der Schulregistrierung weitergeleitet."
   },
   "school_info": {
-    "school_name": "School Name",
-    "current_stage": "Current Stage",
-    "progress_percentage": "Progress",
-    "students_impacted": "Students Impacted"
+    "school_name": "Schulname",
+    "current_stage": "Aktuelle Stufe",
+    "progress_percentage": "Fortschritt",
+    "students_impacted": "Betroffene Schüler"
   },
   "progress": {
-    "title": "Program Progress",
-    "journey_description": "Progress through the three stages of environmental action",
-    "overall_progress": "Overall Progress",
-    "current_stage": "Current Stage",
-    "stages_completed": "Stages Completed",
+    "title": "Programmfortschritt",
+    "journey_description": "Fortschritt durch die drei Stufen des Umwelthandelns",
+    "overall_progress": "Gesamtfortschritt",
+    "current_stage": "Aktuelle Stufe",
+    "stages_completed": "Abgeschlossene Stufen",
     "inspire": {
-      "title": "Inspire",
-      "description": "Build awareness and motivation",
+      "title": "Inspirieren",
+      "description": "Bewusstsein und Motivation aufbauen",
       "activities": {
-        "assembly_presentation": "Assembly presentation",
-        "student_engagement": "Student engagement", 
-        "evidence_submission": "Evidence submission"
+        "assembly_presentation": "Versammlungspräsentation",
+        "student_engagement": "Schülerbeteiligung",
+        "evidence_submission": "Nachweiseinreichung"
       }
     },
     "investigate": {
-      "title": "Investigate",
-      "description": "Research and analyze",
+      "title": "Untersuchen",
+      "description": "Forschen und analysieren",
       "activities": {
-        "plastic_audit": "Plastic audit conducted",
-        "data_collection": "Data collection",
-        "evidence_review": "Evidence review"
+        "plastic_audit": "Plastikprüfung durchgeführt",
+        "data_collection": "Datenerfassung",
+        "evidence_review": "Nachweisüberprüfung"
       }
     },
     "act": {
-      "title": "Act", 
-      "description": "Create lasting change",
+      "title": "Handeln",
+      "description": "Dauerhafte Veränderung schaffen",
       "activities": {
-        "action_plan": "Action plan development",
-        "implementation": "Implementation activities",
-        "impact_measurement": "Impact measurement"
+        "action_plan": "Aktionsplanentwicklung",
+        "implementation": "Umsetzungsaktivitäten",
+        "impact_measurement": "Wirkungsmessung"
       }
     },
-    "stage_locked": "Complete previous stage to unlock",
-    "stage_current": "Current Stage",
-    "stage_completed": "Completed",
-    "evidence_submitted": "Submitted:",
-    "evidence_approved": "Approved:",
-    "evidence_items_submitted": "{{count}} evidence submitted",
-    "no_evidence_submitted": "No evidence submitted yet",
-    "evidence_items_approved": "{{approved}} / {{required}} evidence approved",
-    "audit_quiz_completed": "Audit quiz completed",
-    "audit_quiz_pending": "Audit quiz required",
-    "more_needed": "{{count}} more needed",
-    "audit_quiz_required": "Audit Quiz: Required",
-    "audit_quiz_required_bullet": "Audit quiz required",
-    "evidence_needed": "{{count}} more evidence needed"
+    "stage_locked": "Vorherige Stufe abschließen zum Freischalten",
+    "stage_current": "Aktuelle Stufe",
+    "stage_completed": "Abgeschlossen",
+    "evidence_submitted": "Eingereicht:",
+    "evidence_approved": "Genehmigt:",
+    "evidence_items_submitted": "{{count}} Nachweise eingereicht",
+    "no_evidence_submitted": "Noch keine Nachweise eingereicht",
+    "evidence_items_approved": "{{approved}} / {{required}} Nachweise genehmigt",
+    "audit_quiz_completed": "Audit-Quiz abgeschlossen",
+    "audit_quiz_pending": "Audit-Quiz erforderlich",
+    "more_needed": "{{count}} weitere benötigt",
+    "audit_quiz_required": "Audit-Quiz: Erforderlich",
+    "audit_quiz_required_bullet": "Audit-Quiz erforderlich",
+    "evidence_needed": "{{count}} weitere Nachweise benötigt"
   },
   "evidence": {
-    "title": "Evidence Submissions",
-    "recent_evidence": "Recent Evidence",
-    "submit_evidence": "Submit Evidence",
-    "no_evidence": "No evidence submitted yet",
-    "evidence_pending": "Evidence pending review",
-    "evidence_approved": "Evidence approved",
-    "evidence_rejected": "Evidence needs revision",
-    "upload_files": "Upload Files",
-    "submission_successful": "Evidence submitted successfully",
-    "submission_failed": "Failed to submit evidence",
-    "submitted_on": "Submitted {{date}}",
-    "delete_confirmation_title": "Delete Evidence?",
-    "delete_confirmation_description": "This will permanently delete this evidence submission. This action cannot be undone.",
-    "delete_success": "Evidence deleted successfully",
-    "delete_error": "Failed to delete evidence"
+    "title": "Nachweiseinreichungen",
+    "recent_evidence": "Aktuelle Nachweise",
+    "submit_evidence": "Nachweis Einreichen",
+    "no_evidence": "Noch keine Nachweise eingereicht",
+    "evidence_pending": "Nachweis wartet auf Überprüfung",
+    "evidence_approved": "Nachweis genehmigt",
+    "evidence_rejected": "Nachweis erfordert Überarbeitung",
+    "upload_files": "Dateien Hochladen",
+    "submission_successful": "Nachweis erfolgreich eingereicht",
+    "submission_failed": "Nachweiseinreichung fehlgeschlagen",
+    "submitted_on": "Eingereicht am {{date}}",
+    "delete_confirmation_title": "Nachweis Löschen?",
+    "delete_confirmation_description": "Dies wird diese Nachweiseinreichung dauerhaft löschen. Diese Aktion kann nicht rückgängig gemacht werden.",
+    "delete_success": "Nachweis erfolgreich gelöscht",
+    "delete_error": "Löschen des Nachweises fehlgeschlagen"
   },
   "quick_actions": {
-    "title": "Quick Actions",
-    "subtitle": "Take action to advance your school's journey",
-    "submit_evidence": "Submit Evidence",
-    "view_resources": "View Resources", 
-    "track_progress": "Track Progress",
-    "view_analytics": "View Analytics",
-    "manage_team": "Manage Team"
+    "title": "Schnellaktionen",
+    "subtitle": "Handeln Sie, um den Weg Ihrer Schule voranzubringen",
+    "submit_evidence": "Nachweis Einreichen",
+    "view_resources": "Ressourcen Anzeigen",
+    "track_progress": "Fortschritt Verfolgen",
+    "view_analytics": "Analysen Anzeigen",
+    "manage_team": "Team Verwalten"
   },
   "achievements": {
-    "title": "Achievements",
-    "no_achievements": "No achievements yet",
-    "inspire_completed": "Inspire Stage Completed",
-    "investigate_completed": "Investigate Stage Completed",
-    "act_completed": "Act Stage Completed",
-    "award_earned": "Plastic Clever School Award Earned"
+    "title": "Erfolge",
+    "no_achievements": "Noch keine Erfolge",
+    "inspire_completed": "Stufe Inspirieren Abgeschlossen",
+    "investigate_completed": "Stufe Untersuchen Abgeschlossen",
+    "act_completed": "Stufe Handeln Abgeschlossen",
+    "award_earned": "Plastic Clever School Award Verdient"
   },
   "activity_feed": {
-    "title": "Recent Activity",
-    "no_activity": "No recent activity",
-    "no_activity_title": "No Activity Yet",
-    "no_activity_description": "No recent activity. Start by submitting your first evidence!",
-    "evidence_submitted": "Evidence submitted for {{stage}} stage",
-    "submitted_on": "Submitted {{date}}",
-    "evidence_approved": "Evidence approved for {{stage}} stage",
-    "stage_completed": "{{stage}} stage completed",
-    "welcome_message": "Welcome to Plastic Clever Schools!"
+    "title": "Letzte Aktivität",
+    "no_activity": "Keine aktuelle Aktivität",
+    "no_activity_title": "Noch Keine Aktivität",
+    "no_activity_description": "Keine aktuelle Aktivität. Beginnen Sie mit der Einreichung Ihres ersten Nachweises!",
+    "evidence_submitted": "Nachweis eingereicht für {{stage}} Stufe",
+    "submitted_on": "Eingereicht am {{date}}",
+    "evidence_approved": "Nachweis genehmigt für {{stage}} Stufe",
+    "stage_completed": "{{stage}} Stufe abgeschlossen",
+    "welcome_message": "Willkommen bei Plastic Clever Schools!"
   },
   "errors": {
-    "unexpected_error": "An unexpected error occurred"
+    "unexpected_error": "Ein unerwarteter Fehler ist aufgetreten"
   }
 }

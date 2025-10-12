@@ -1,117 +1,117 @@
 {
   "welcome": {
-    "title": "Welcome to Your Dashboard",
-    "greeting": "Welcome back, {{name}}!",
-    "default_name": "Teacher",
-    "subtitle": "Track your school's progress through the Plastic Clever Schools program",
-    "loading_dashboard": "Loading your dashboard...",
-    "unauthorized_title": "Unauthorized",
-    "unauthorized_message": "You are logged out. Logging in again...",
-    "school_registration_required": "School Registration Required",
-    "school_registration_message": "Please complete your school registration to access the dashboard.",
-    "redirecting_title": "Setting up your account...",
-    "redirecting_message": "Redirecting you to complete school registration."
+    "title": "欢迎访问您的仪表板",
+    "greeting": "欢迎回来，{{name}}！",
+    "default_name": "教师",
+    "subtitle": "通过Plastic Clever Schools计划跟踪您学校的进度",
+    "loading_dashboard": "正在加载您的仪表板...",
+    "unauthorized_title": "未授权",
+    "unauthorized_message": "您已登出。正在重新登录...",
+    "school_registration_required": "需要学校注册",
+    "school_registration_message": "请完成您的学校注册以访问仪表板。",
+    "redirecting_title": "正在设置您的账户...",
+    "redirecting_message": "正在重定向您完成学校注册。"
   },
   "school_info": {
-    "school_name": "School Name",
-    "current_stage": "Current Stage",
-    "progress_percentage": "Progress",
-    "students_impacted": "Students Impacted"
+    "school_name": "学校名称",
+    "current_stage": "当前阶段",
+    "progress_percentage": "进度",
+    "students_impacted": "受影响学生"
   },
   "progress": {
-    "title": "Program Progress",
-    "journey_description": "Progress through the three stages of environmental action",
-    "overall_progress": "Overall Progress",
-    "current_stage": "Current Stage",
-    "stages_completed": "Stages Completed",
+    "title": "计划进度",
+    "journey_description": "通过环境行动的三个阶段取得进展",
+    "overall_progress": "整体进度",
+    "current_stage": "当前阶段",
+    "stages_completed": "已完成阶段",
     "inspire": {
-      "title": "Inspire",
-      "description": "Build awareness and motivation",
+      "title": "启发",
+      "description": "建立意识和动力",
       "activities": {
-        "assembly_presentation": "Assembly presentation",
-        "student_engagement": "Student engagement", 
-        "evidence_submission": "Evidence submission"
+        "assembly_presentation": "集会演示",
+        "student_engagement": "学生参与",
+        "evidence_submission": "证据提交"
       }
     },
     "investigate": {
-      "title": "Investigate",
-      "description": "Research and analyze",
+      "title": "调查",
+      "description": "研究和分析",
       "activities": {
-        "plastic_audit": "Plastic audit conducted",
-        "data_collection": "Data collection",
-        "evidence_review": "Evidence review"
+        "plastic_audit": "已进行塑料审计",
+        "data_collection": "数据收集",
+        "evidence_review": "证据审查"
       }
     },
     "act": {
-      "title": "Act", 
-      "description": "Create lasting change",
+      "title": "行动",
+      "description": "创造持久改变",
       "activities": {
-        "action_plan": "Action plan development",
-        "implementation": "Implementation activities",
-        "impact_measurement": "Impact measurement"
+        "action_plan": "行动计划制定",
+        "implementation": "实施活动",
+        "impact_measurement": "影响测量"
       }
     },
-    "stage_locked": "Complete previous stage to unlock",
-    "stage_current": "Current Stage",
-    "stage_completed": "Completed",
-    "evidence_submitted": "Submitted:",
-    "evidence_approved": "Approved:",
-    "evidence_items_submitted": "{{count}} evidence submitted",
-    "no_evidence_submitted": "No evidence submitted yet",
-    "evidence_items_approved": "{{approved}} / {{required}} evidence approved",
-    "audit_quiz_completed": "Audit quiz completed",
-    "audit_quiz_pending": "Audit quiz required",
-    "more_needed": "{{count}} more needed",
-    "audit_quiz_required": "Audit Quiz: Required",
-    "audit_quiz_required_bullet": "Audit quiz required",
-    "evidence_needed": "{{count}} more evidence needed"
+    "stage_locked": "完成上一阶段以解锁",
+    "stage_current": "当前阶段",
+    "stage_completed": "已完成",
+    "evidence_submitted": "已提交：",
+    "evidence_approved": "已批准：",
+    "evidence_items_submitted": "已提交{{count}}个证据",
+    "no_evidence_submitted": "尚未提交证据",
+    "evidence_items_approved": "{{approved}} / {{required}}个证据已批准",
+    "audit_quiz_completed": "审计测验已完成",
+    "audit_quiz_pending": "需要审计测验",
+    "more_needed": "还需要{{count}}个",
+    "audit_quiz_required": "审计测验：必需",
+    "audit_quiz_required_bullet": "需要审计测验",
+    "evidence_needed": "还需要{{count}}个证据"
   },
   "evidence": {
-    "title": "Evidence Submissions",
-    "recent_evidence": "Recent Evidence",
-    "submit_evidence": "Submit Evidence",
-    "no_evidence": "No evidence submitted yet",
-    "evidence_pending": "Evidence pending review",
-    "evidence_approved": "Evidence approved",
-    "evidence_rejected": "Evidence needs revision",
-    "upload_files": "Upload Files",
-    "submission_successful": "Evidence submitted successfully",
-    "submission_failed": "Failed to submit evidence",
-    "submitted_on": "Submitted {{date}}",
-    "delete_confirmation_title": "Delete Evidence?",
-    "delete_confirmation_description": "This will permanently delete this evidence submission. This action cannot be undone.",
-    "delete_success": "Evidence deleted successfully",
-    "delete_error": "Failed to delete evidence"
+    "title": "证据提交",
+    "recent_evidence": "最近的证据",
+    "submit_evidence": "提交证据",
+    "no_evidence": "尚未提交证据",
+    "evidence_pending": "证据待审查",
+    "evidence_approved": "证据已批准",
+    "evidence_rejected": "证据需要修订",
+    "upload_files": "上传文件",
+    "submission_successful": "证据提交成功",
+    "submission_failed": "证据提交失败",
+    "submitted_on": "提交于{{date}}",
+    "delete_confirmation_title": "删除证据？",
+    "delete_confirmation_description": "这将永久删除此证据提交。此操作无法撤消。",
+    "delete_success": "证据删除成功",
+    "delete_error": "证据删除失败"
   },
   "quick_actions": {
-    "title": "Quick Actions",
-    "subtitle": "Take action to advance your school's journey",
-    "submit_evidence": "Submit Evidence",
-    "view_resources": "View Resources", 
-    "track_progress": "Track Progress",
-    "view_analytics": "View Analytics",
-    "manage_team": "Manage Team"
+    "title": "快速操作",
+    "subtitle": "采取行动推进您学校的旅程",
+    "submit_evidence": "提交证据",
+    "view_resources": "查看资源",
+    "track_progress": "跟踪进度",
+    "view_analytics": "查看分析",
+    "manage_team": "管理团队"
   },
   "achievements": {
-    "title": "Achievements",
-    "no_achievements": "No achievements yet",
-    "inspire_completed": "Inspire Stage Completed",
-    "investigate_completed": "Investigate Stage Completed",
-    "act_completed": "Act Stage Completed",
-    "award_earned": "Plastic Clever School Award Earned"
+    "title": "成就",
+    "no_achievements": "尚无成就",
+    "inspire_completed": "启发阶段已完成",
+    "investigate_completed": "调查阶段已完成",
+    "act_completed": "行动阶段已完成",
+    "award_earned": "获得Plastic Clever School奖"
   },
   "activity_feed": {
-    "title": "Recent Activity",
-    "no_activity": "No recent activity",
-    "no_activity_title": "No Activity Yet",
-    "no_activity_description": "No recent activity. Start by submitting your first evidence!",
-    "evidence_submitted": "Evidence submitted for {{stage}} stage",
-    "submitted_on": "Submitted {{date}}",
-    "evidence_approved": "Evidence approved for {{stage}} stage",
-    "stage_completed": "{{stage}} stage completed",
-    "welcome_message": "Welcome to Plastic Clever Schools!"
+    "title": "最近活动",
+    "no_activity": "没有最近的活动",
+    "no_activity_title": "尚无活动",
+    "no_activity_description": "没有最近的活动。从提交您的第一个证据开始！",
+    "evidence_submitted": "已为{{stage}}阶段提交证据",
+    "submitted_on": "提交于{{date}}",
+    "evidence_approved": "已批准{{stage}}阶段的证据",
+    "stage_completed": "{{stage}}阶段已完成",
+    "welcome_message": "欢迎来到Plastic Clever Schools！"
   },
   "errors": {
-    "unexpected_error": "An unexpected error occurred"
+    "unexpected_error": "发生意外错误"
   }
 }
