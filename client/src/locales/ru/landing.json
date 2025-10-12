@@ -1,191 +1,191 @@
 {
   "hero": {
-    "title": "Empower Your School to Lead the Way in Reducing Plastic Waste",
-    "subtitle": "Join a global movement of schools creating lasting environmental change through education, investigation, and action.",
-    "cta_primary": "Register Your School Now",
-    "cta_secondary": "Explore the Program",
-    "watch_video": "Watch Introduction Video",
+    "title": "Дайте Вашей Школе Возможность Возглавить Борьбу с Пластиковыми Отходами",
+    "subtitle": "Присоединяйтесь к глобальному движению школ, создающих устойчивые экологические изменения через образование, исследования и действия.",
+    "cta_primary": "Зарегистрируйте Вашу Школу Сейчас",
+    "cta_secondary": "Изучить Программу",
+    "watch_video": "Посмотреть Вводное Видео",
     "trust_indicators": {
-      "curriculum_aligned": "Curriculum Aligned",
-      "proven_impact": "Proven Impact",
-      "completely_free": "Completely Free"
+      "curriculum_aligned": "Соответствует Учебному Плану",
+      "proven_impact": "Доказанное Воздействие",
+      "completely_free": "Совершенно Бесплатно"
     }
   },
   "what_is_section": {
-    "title": "What is a <span>Plastic Clever School</span>?",
-    "description": "Plastic Clever Schools is an awards program designed to help schools reduce their single-use plastic consumption. We provide you with the tools and a simple 3-step framework to inspire change, investigate your school's plastic use, and act on solutions—all while empowering your students to become the next generation of environmental leaders.",
+    "title": "Что такое <span>Умная Пластиковая Школа</span>?",
+    "description": "Plastic Clever Schools — это программа наград, разработанная для помощи школам в сокращении потребления одноразового пластика. Мы предоставляем вам инструменты и простую структуру из 3 шагов для вдохновения на перемены, исследования использования пластика в вашей школе и действий по решениям — при этом расширяя возможности ваших учеников стать следующим поколением экологических лидеров.",
     "award_winning": {
-      "title": "Award-Winning Program",
-      "description": "Recognized for our effective approach to reducing waste."
+      "title": "Награжденная Программа",
+      "description": "Признана за наш эффективный подход к сокращению отходов."
     },
     "student_led": {
-      "title": "Student-Led Action",
-      "description": "Kids are at the heart of every step, fostering a sense of ownership and responsibility."
+      "title": "Действия под Руководством Учеников",
+      "description": "Дети находятся в центре каждого шага, развивая чувство собственности и ответственности."
     },
     "free_resources": {
-      "title": "Free Resources",
-      "description": "Access a full toolkit of guides, worksheets, and activities to make your journey simple and effective."
+      "title": "Бесплатные Ресурсы",
+      "description": "Доступ к полному набору руководств, рабочих листов и мероприятий, чтобы сделать ваше путешествие простым и эффективным."
     },
-    "download_sample_cta": "Download a Sample Resource"
+    "download_sample_cta": "Скачать Образец Ресурса"
   },
   "social_proof": {
-    "title": "Join a Growing Movement",
-    "description": "More than {count} schools have already registered for the Plastic Clever Schools program, making a collective impact on waste reduction and environmental education.",
-    "registered_schools_label": "Registered Schools So Far",
-    "view_schools_cta": "View All Registered Schools"
+    "title": "Присоединяйтесь к Растущему Движению",
+    "description": "Более {count} школ уже зарегистрировались в программе Plastic Clever Schools, создавая коллективное влияние на сокращение отходов и экологическое образование.",
+    "registered_schools_label": "Зарегистрированные Школы На Данный Момент",
+    "view_schools_cta": "Посмотреть Все Зарегистрированные Школы"
   },
   "three_stage_program": {
-    "title": "A Simple 3-Stage Journey to a Plastic Clever School",
-    "subtitle": "Our proven framework breaks down your school's transformation into three straightforward stages.",
-    "stage_1_title": "INSPIRE",
-    "stage_1_description": "Learn about plastic pollution and inspire others in school to take action.",
-    "stage_2_title": "INVESTIGATE", 
-    "stage_2_description": "Identify any problem plastics in school and make a plan to tackle them.",
-    "stage_3_title": "ACT",
-    "stage_3_description": "Take action to wave goodbye to single-use plastics.",
-    "recognition_title": "Earn Recognition for Your Impact",
-    "recognition_description": "Complete each stage to earn digital badges and certificates that showcase your school's environmental leadership",
-    "digital_badges": "Digital Badges",
-    "certificates": "Certificates",
-    "progress_tracking": "Progress Tracking"
+    "title": "Простой 3-Этапный Путь к Умной Пластиковой Школе",
+    "subtitle": "Наша проверенная структура разбивает трансформацию вашей школы на три простых этапа.",
+    "stage_1_title": "ВДОХНОВЕНИЕ",
+    "stage_1_description": "Узнайте о загрязнении пластиком и вдохновите других в школе на действия.",
+    "stage_2_title": "ИССЛЕДОВАНИЕ", 
+    "stage_2_description": "Определите проблемный пластик в школе и составьте план по его устранению.",
+    "stage_3_title": "ДЕЙСТВИЕ",
+    "stage_3_description": "Примите меры, чтобы попрощаться с одноразовым пластиком.",
+    "recognition_title": "Получите Признание за Ваше Влияние",
+    "recognition_description": "Завершите каждый этап, чтобы получить цифровые значки и сертификаты, демонстрирующие экологическое лидерство вашей школы",
+    "digital_badges": "Цифровые Значки",
+    "certificates": "Сертификаты",
+    "progress_tracking": "Отслеживание Прогресса"
   },
   "partnership": {
-    "title": "Built on Strong Partnerships",
-    "description": "Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education."
+    "title": "Построено на Прочных Партнерствах",
+    "description": "Plastic Clever Schools — это сотрудничество ведущих экологических организаций, работающих вместе для создания значимых изменений в образовании."
   },
   "testimonials": {
-    "title": "Why Schools Choose Us",
-    "subtitle": "Hear from educators and students who have transformed their schools through our program",
+    "title": "Почему Школы Выбирают Нас",
+    "subtitle": "Послушайте педагогов и учеников, которые преобразовали свои школы через нашу программу",
     "testimonial_1": {
-      "quote": "The structured approach made implementation seamless. Our students are now passionate environmental advocates!",
+      "quote": "Структурированный подход сделал внедрение беспроблемным. Наши ученики теперь страстные защитники окружающей среды!",
       "name": "Sarah Johnson",
-      "school": "Green Valley Primary, UK"
+      "school": "Green Valley Primary, Великобритания"
     },
     "testimonial_2": {
-      "quote": "We've reduced plastic waste by 60%! The whole school community is involved and excited about sustainability.",
-      "name": "Maria Rodriguez",
-      "school": "Sunshine Elementary, Australia"
+      "quote": "Мы сократили пластиковые отходы на 60%! Все школьное сообщество вовлечено и воодушевлено устойчивым развитием.",
+      "name": "Maria Rodriguez", 
+      "school": "Sunshine Elementary, Австралия"
     },
     "testimonial_3": {
-      "quote": "Perfect for cross-curricular learning! We integrated it across science, geography, and citizenship classes.",
+      "quote": "Идеально для межпредметного обучения! Мы интегрировали его в уроки естественных наук, географии и граж��анства.",
       "name": "David Kim",
-      "school": "Future Leaders High, Canada"
+      "school": "Future Leaders High, Канада"
     }
   },
   "instagram": {
-    "title": "Follow Our Journey",
-    "description": "See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.",
-    "follow_button": "Follow on Instagram"
+    "title": "Следите за Нашим Путешествием",
+    "description": "Смотрите последние обновления от школ по всему миру, которые меняют ситуацию. Реальные истории, реальное влияние, ежедневно публикуемые в нашем Instagram.",
+    "follow_button": "Подписаться в Instagram"
   },
   "newsletter": {
-    "title": "Stay Connected",
-    "description": "Get the latest updates, resources, and inspiration delivered straight to your inbox."
+    "title": "Оставайтесь на Связи",
+    "description": "Получайте последние обновления, ресурсы и вдохновение прямо в свой почтовый ящик."
   },
   "final_cta": {
-    "title": "Ready to Transform Your School?",
-    "subtitle": "Join the Movement Today",
-    "description": "Thousands of schools worldwide are already making a difference. Start your Plastic Clever journey today and become part of the solution.",
-    "get_started_button": "Get Started Today",
-    "contact_support": "Questions? Contact Support"
+    "title": "Готовы Преобразовать Вашу Школу?",
+    "subtitle": "Присоединяйтесь к Движению Сегодня",
+    "description": "Тысячи школ по всему миру уже меняют ситуацию. Начните свое путешествие Plastic Clever сегодня и станьте частью решения.",
+    "get_started_button": "Начать Сегодня",
+    "contact_support": "Вопросы? Связаться с Поддержкой"
   },
   "stats": {
-    "schools_registered": "Schools Registered",
-    "students_impacted": "Students Impacted", 
-    "countries_participating": "Countries Participating",
-    "awards_completed": "Awards Completed"
+    "schools_registered": "Зарегистрированные Школы",
+    "students_impacted": "Вовлеченные Ученики", 
+    "countries_participating": "Участвующие Страны",
+    "awards_completed": "Завершенные Награды"
   },
   "program": {
-    "title": "Our Three-Stage Program",
-    "subtitle": "Transform your school community through structured learning and action",
+    "title": "Наша Трехэтапная Программа",
+    "subtitle": "Преобразуйте ваше школьное сообщество через структурированное обучение и действия",
     "stage_1": {
-      "title": "Inspire",
-      "description": "Build awareness and motivation around plastic pollution issues",
-      "details": "Engage students with compelling presentations, videos, and interactive activities that highlight the urgency of plastic pollution and inspire them to take action."
+      "title": "Вдохновение",
+      "description": "Повышайте осведомленность и мотивацию вокруг проблем загрязнения пластиком",
+      "details": "Вовлекайте учеников убедительными презентациями, видео и интерактивными мероприятиями, подчеркивающими срочность проблемы загрязнения пластиком и вдохновляющими их на действия."
     },
     "stage_2": {
-      "title": "Investigate", 
-      "description": "Research and analyze plastic use in your school",
-      "details": "Conduct comprehensive plastic audits, collect data, and analyze patterns of plastic consumption to understand your school's environmental impact."
+      "title": "Исследование", 
+      "description": "Исследуйте и анализируйте использование пластика в вашей школе",
+      "details": "Проводите комплексные аудиты пластика, собирайте данные и анализируйте модели потребления пластика, чтобы понять экологическое воздействие вашей школы."
     },
     "stage_3": {
-      "title": "Act",
-      "description": "Create lasting change through practical solutions",
-      "details": "Implement sustainable alternatives, reduce plastic waste, and create long-term policies that make your school a model for environmental responsibility."
+      "title": "Действие",
+      "description": "Создайте долгосрочные изменения через практические решения",
+      "details": "Внедряйте устойчивые альтернативы, сокращайте пластиковые отходы и создавайте долгосрочные политики, которые делают вашу школу образцом экологической ответственности."
     }
   },
   "benefits": {
-    "title": "Why Join Plastic Clever Schools?",
-    "subtitle": "Discover the transformative benefits for your educational community",
+    "title": "Почему Присоединиться к Plastic Clever Schools?",
+    "subtitle": "Откройте для себя преобразующие преимущества для вашего образовательного сообщества",
     "comprehensive_curriculum": {
-      "title": "Comprehensive Curriculum",
-      "description": "Access expertly designed lesson plans and resources aligned with educational standards"
+      "title": "Комплексная Учебная Программа",
+      "description": "Получите доступ к экспертно разработанным планам уроков и ресурсам, соответствующим образовательным стандартам"
     },
     "global_network": {
-      "title": "Global Network",
-      "description": "Connect with schools worldwide and share best practices for environmental education"
+      "title": "Глобальная Сеть",
+      "description": "Подключайтесь к школам по всему миру и делитесь лучшими практиками экологического образования"
     },
     "progress_tracking": {
-      "title": "Progress Tracking",
-      "description": "Monitor your school's journey with detailed analytics and achievement milestones"
+      "title": "Отслеживание Прогресса",
+      "description": "Отслеживайте путешествие вашей школы с подробной аналитикой и достижениями"
     },
     "expert_support": {
-      "title": "Expert Support",
-      "description": "Get guidance from environmental educators and sustainability professionals"
+      "title": "Экспертная Поддержка",
+      "description": "Получайте руководство от экологических педагогов и специалистов по устойчивому развитию"
     },
     "real_impact": {
-      "title": "Real Impact",
-      "description": "Make measurable differences in plastic waste reduction and environmental awareness"
+      "title": "Реальное Влияние",
+      "description": "Добивайтесь измеримых результатов в сокращении пластиковых отходов и экологической осведомленности"
     },
     "award_recognition": {
-      "title": "Award Recognition", 
-      "description": "Earn certificates and recognition for your school's environmental achievements"
+      "title": "Признание Наградами", 
+      "description": "Получайте сертификаты и признание за экологические достижения вашей школы"
     }
   },
   "process": {
-    "title": "How It Works",
-    "subtitle": "Simple steps to transform your school into an environmental leader",
+    "title": "Как Это Работает",
+    "subtitle": "Простые шаги для превращения вашей школы в экологического лидера",
     "step_1": {
-      "title": "Register",
-      "description": "Sign up your school and create your educator profile"
+      "title": "Регистрация",
+      "description": "Зарегистрируйте свою школу и создайте профиль педагога"
     },
     "step_2": {
-      "title": "Learn", 
-      "description": "Access curriculum materials and training resources"
+      "title": "Обучение", 
+      "description": "Получите доступ к учебным материалам и ресурсам для обучения"
     },
     "step_3": {
-      "title": "Implement",
-      "description": "Execute the three-stage program with your students"
+      "title": "Внедрение",
+      "description": "Выполняйте трехэтапную программу со своими учениками"
     },
     "step_4": {
-      "title": "Share",
-      "description": "Document progress and share your success stories"
+      "title": "Поделиться",
+      "description": "Документируйте прогресс и делитесь историями успеха"
     }
   },
   "partners": {
-    "title": "Our Trusted Partners",
-    "subtitle": "Working together to create a plastic-free future",
-    "description": "We collaborate with leading environmental organizations, educational institutions, and sustainability experts to deliver the highest quality resources and support for your school's journey."
+    "title": "Наши Надежные Партнеры",
+    "subtitle": "Работаем вместе для создания будущего без пластика",
+    "description": "Мы сотрудничаем с ведущими экологическими организациями, образовательными учреждениями и экспертами по устойчивому развитию, чтобы предоставить ресурсы и поддержку высочайшего качества для путешествия вашей школы."
   },
   "cta_section": {
-    "title": "Ready to Make a Difference?",
-    "subtitle": "Join thousands of schools worldwide in the fight against plastic pollution",
-    "description": "Your school can be part of the solution. Register today and start your journey toward becoming a Plastic Clever School.",
-    "register_now": "Register Your School Now",
-    "have_questions": "Have questions?",
-    "contact_support": "Contact our support team"
+    "title": "Готовы Изменить Ситуацию?",
+    "subtitle": "Присоединяйтесь к тысячам школ по всему миру в борьбе с загрязнением пластиком",
+    "description": "Ваша школа может стать частью решения. Зарегистрируйтесь сегодня и начните свой путь к тому, чтобы стать Plastic Clever School.",
+    "register_now": "Зарегистрируйте Вашу Школу Сейчас",
+    "have_questions": "Есть вопросы?",
+    "contact_support": "Свяжитесь с нашей службой поддержки"
   },
   "accessibility": {
-    "hero_video_title": "Plastic Clever Schools Introduction Video",
-    "play_hero_video": "Play hero video",
-    "award_trophy_alt": "Award trophy animation",
-    "student_character_alt": "Student character animation",
-    "books_resources_alt": "Books and educational resources animation",
-    "inspire_stage_alt": "Inspire stage icon",
-    "investigate_stage_alt": "Investigate stage icon",
-    "act_stage_alt": "Act stage icon",
-    "common_seas_logo_alt": "Common Seas organization logo",
-    "kids_against_plastic_logo_alt": "Kids Against Plastic organization logo",
-    "river_cleanup_logo_alt": "River Cleanup organization logo",
-    "plastic_clever_schools_logo_alt": "Plastic Clever Schools logo"
+    "hero_video_title": "Вводное Видео Plastic Clever Schools",
+    "play_hero_video": "Воспроизвести главное видео",
+    "award_trophy_alt": "Анимация трофея награды",
+    "student_character_alt": "Анимация персонажа ученика",
+    "books_resources_alt": "Анимация книг и образовательных ресурсов",
+    "inspire_stage_alt": "Значок этапа вдохновения",
+    "investigate_stage_alt": "Значок этапа исследования",
+    "act_stage_alt": "Значок этапа действия",
+    "common_seas_logo_alt": "Логотип организации Common Seas",
+    "kids_against_plastic_logo_alt": "Логотип организации Kids Against Plastic",
+    "river_cleanup_logo_alt": "Логотип организации River Cleanup",
+    "plastic_clever_schools_logo_alt": "Логотип Plastic Clever Schools"
   }
 }
