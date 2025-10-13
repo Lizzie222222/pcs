@@ -2346,7 +2346,7 @@ export default function Home() {
       {/* Event Detail Modal - Luma Style */}
       {selectedEvent && (
         <Dialog open={eventDetailOpen} onOpenChange={setEventDetailOpen}>
-          <DialogContent className="max-w-6xl max-h-[95vh] p-0 gap-0 overflow-hidden" data-testid="dialog-event-detail">
+          <DialogContent className="max-w-6xl max-h-[95vh] p-0 gap-0 overflow-y-auto" data-testid="dialog-event-detail">
             {/* Hero Image Section */}
             {selectedEvent.imageUrl ? (
               <div className="relative w-full h-[400px] md:h-[500px] overflow-hidden">
@@ -2398,7 +2398,7 @@ export default function Home() {
             )}
 
             {/* Two-Column Content Layout */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8 md:p-12 overflow-y-auto max-h-[calc(95vh-400px)] md:max-h-[calc(95vh-500px)]">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8 md:p-12">
               {/* Left Column - Description & Details (2/3 width) */}
               <div className="lg:col-span-2 space-y-8">
                 {/* Description Section */}
