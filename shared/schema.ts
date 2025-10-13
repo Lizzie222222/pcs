@@ -445,6 +445,21 @@ export const eventRegistrations = pgTable("event_registrations", {
   index("idx_event_registrations_user").on(table.userId),
 ]);
 
+export const eventAnnouncements = pgTable("event_announcements", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventId: varchar("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
+  audienceId: varchar("audience_id").notNull(),
+  campaignId: varchar("campaign_id"),
+  campaignWebId: integer("campaign_web_id"),
+  announcementType: varchar("announcement_type").notNull(),
+  sentBy: varchar("sent_by").notNull().references(() => users.id),
+  sentAt: timestamp("sent_at").defaultNow(),
+  recipientCount: integer("recipient_count"),
+  status: varchar("status").default('sent'),
+}, (table) => [
+  index("idx_event_announcements_event").on(table.eventId),
+]);
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   schoolUsers: many(schoolUsers),
@@ -633,6 +648,7 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
     references: [users.id],
   }),
   registrations: many(eventRegistrations),
+  announcements: many(eventAnnouncements),
 }));
 
 export const eventRegistrationsRelations = relations(eventRegistrations, ({ one }) => ({
@@ -647,6 +663,17 @@ export const eventRegistrationsRelations = relations(eventRegistrations, ({ one 
   school: one(schools, {
     fields: [eventRegistrations.schoolId],
     references: [schools.id],
+  }),
+}));
+
+export const eventAnnouncementsRelations = relations(eventAnnouncements, ({ one }) => ({
+  event: one(events, {
+    fields: [eventAnnouncements.eventId],
+    references: [events.id],
+  }),
+  sentBy: one(users, {
+    fields: [eventAnnouncements.sentBy],
+    references: [users.id],
   }),
 }));
 
@@ -862,6 +889,11 @@ export const insertEventRegistrationSchema = createInsertSchema(eventRegistratio
   attendedAt: true,
 });
 
+export const insertEventAnnouncementSchema = createInsertSchema(eventAnnouncements).omit({
+  id: true,
+  sentAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -901,6 +933,8 @@ export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type EventRegistration = typeof eventRegistrations.$inferSelect;
 export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSchema>;
+export type EventAnnouncement = typeof eventAnnouncements.$inferSelect;
+export type InsertEventAnnouncement = z.infer<typeof insertEventAnnouncementSchema>;
 
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;

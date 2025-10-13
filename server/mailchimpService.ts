@@ -371,6 +371,258 @@ export class MailchimpService {
       </html>
     `;
   }
+
+  // Send event announcement campaign
+  async sendEventAnnouncement(event: any, audienceId: string): Promise<{ success: boolean; campaignId?: string; webId?: number; error?: string }> {
+    if (!this.isConfigured()) {
+      return { success: false, error: 'Mailchimp not configured' };
+    }
+
+    try {
+      const eventDate = new Date(event.startDateTime);
+      const formattedDate = eventDate.toLocaleDateString('en-US', { 
+        weekday: 'long', 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric' 
+      });
+      const formattedTime = eventDate.toLocaleTimeString('en-US', { 
+        hour: '2-digit', 
+        minute: '2-digit',
+        timeZoneName: 'short'
+      });
+
+      const eventTypeLabels: { [key: string]: string } = {
+        workshop: '🎨 Workshop',
+        webinar: '💻 Webinar',
+        community_event: '🌍 Community Event',
+        training: '📚 Training',
+        celebration: '🎉 Celebration',
+        other: '📅 Event'
+      };
+
+      const eventTypeLabel = eventTypeLabels[event.eventType] || '📅 Event';
+      const locationInfo = event.isVirtual 
+        ? '💻 Virtual Event' 
+        : `📍 ${event.location || 'Location TBA'}`;
+
+      const baseUrl = process.env.FRONTEND_URL || 'https://plasticclever.org';
+      const registrationUrl = `${baseUrl}/events/${event.id}`;
+
+      const subject = `${eventTypeLabel}: ${event.title}`;
+      
+      const content = `
+        <h2 style="color: #0B3D5D; margin-top: 0;">${eventTypeLabel}: ${event.title}</h2>
+        
+        <div style="background: #F0F9FF; border-left: 4px solid #019ADE; padding: 20px; margin: 20px 0;">
+          <p style="margin: 0 0 10px 0; color: #0B3D5D; font-size: 18px; font-weight: bold;">
+            📅 ${formattedDate}
+          </p>
+          <p style="margin: 0 0 10px 0; color: #0B3D5D; font-size: 16px;">
+            🕐 ${formattedTime}
+          </p>
+          <p style="margin: 0; color: #0B3D5D; font-size: 16px;">
+            ${locationInfo}
+          </p>
+        </div>
+
+        <div style="margin: 30px 0;">
+          <p style="font-size: 16px; line-height: 1.6; color: #333;">
+            ${event.description}
+          </p>
+        </div>
+
+        ${event.meetingLink ? `
+          <div style="background: #FFF9E6; border-left: 4px solid #FFC557; padding: 15px; margin: 20px 0;">
+            <p style="margin: 0; color: #8B6914; font-size: 14px;">
+              💡 Meeting Link: <a href="${event.meetingLink}" style="color: #0B3D5D;">${event.meetingLink}</a>
+            </p>
+          </div>
+        ` : ''}
+
+        ${event.capacity ? `
+          <p style="font-size: 14px; color: #666; margin: 20px 0;">
+            ⚠️ Limited spaces available - ${event.capacity} spots total
+          </p>
+        ` : ''}
+
+        <div style="text-align: center; margin: 30px 0;">
+          <a href="${registrationUrl}" 
+             style="display: inline-block; background: #019ADE; color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px;">
+            Register Now
+          </a>
+        </div>
+
+        <p style="font-size: 14px; color: #666; margin-top: 30px;">
+          Don't miss this opportunity to connect with fellow educators and advance your plastic reduction journey!
+        </p>
+      `;
+
+      const campaign = await this.createCampaign({
+        subject,
+        title: `Event Announcement: ${event.title}`,
+        content,
+        audienceId,
+        fromName: 'Plastic Clever Schools Events',
+      });
+
+      if (!campaign) {
+        return { success: false, error: 'Failed to create campaign' };
+      }
+
+      const sent = await this.sendCampaign(campaign.campaignId);
+      
+      if (!sent) {
+        return { success: false, error: 'Failed to send campaign' };
+      }
+
+      return { 
+        success: true, 
+        campaignId: campaign.campaignId,
+        webId: campaign.webId
+      };
+    } catch (error: any) {
+      console.error('Mailchimp send event announcement error:', error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  // Create event digest campaign
+  async createEventDigest(events: any[], audienceId: string): Promise<{ success: boolean; campaignId?: string; webId?: number; error?: string }> {
+    if (!this.isConfigured()) {
+      return { success: false, error: 'Mailchimp not configured' };
+    }
+
+    if (!events || events.length === 0) {
+      return { success: false, error: 'No events to include in digest' };
+    }
+
+    try {
+      const baseUrl = process.env.FRONTEND_URL || 'https://plasticclever.org';
+
+      const eventTypeLabels: { [key: string]: string } = {
+        workshop: '🎨 Workshop',
+        webinar: '💻 Webinar',
+        community_event: '🌍 Community Event',
+        training: '📚 Training',
+        celebration: '🎉 Celebration',
+        other: '📅 Event'
+      };
+
+      const groupedEvents: { [key: string]: any[] } = {};
+      events.forEach(event => {
+        const type = event.eventType || 'other';
+        if (!groupedEvents[type]) {
+          groupedEvents[type] = [];
+        }
+        groupedEvents[type].push(event);
+      });
+
+      let eventsHtml = '';
+      Object.keys(groupedEvents).sort().forEach(type => {
+        const typeLabel = eventTypeLabels[type] || '📅 Events';
+        const typeEvents = groupedEvents[type];
+
+        eventsHtml += `
+          <h3 style="color: #0B3D5D; margin-top: 30px; margin-bottom: 20px; border-bottom: 2px solid #019ADE; padding-bottom: 10px;">
+            ${typeLabel}
+          </h3>
+        `;
+
+        typeEvents.forEach(event => {
+          const eventDate = new Date(event.startDateTime);
+          const formattedDate = eventDate.toLocaleDateString('en-US', { 
+            weekday: 'short', 
+            month: 'short', 
+            day: 'numeric' 
+          });
+          const formattedTime = eventDate.toLocaleTimeString('en-US', { 
+            hour: '2-digit', 
+            minute: '2-digit' 
+          });
+
+          const locationInfo = event.isVirtual 
+            ? '💻 Virtual' 
+            : `📍 ${event.location || 'TBA'}`;
+
+          const registrationUrl = `${baseUrl}/events/${event.id}`;
+
+          eventsHtml += `
+            <div style="background: #F8F9FA; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+              <h4 style="color: #0B3D5D; margin-top: 0; margin-bottom: 10px;">
+                ${event.title}
+              </h4>
+              
+              <p style="margin: 10px 0; color: #666; font-size: 14px;">
+                <strong>📅 ${formattedDate} at ${formattedTime}</strong> | ${locationInfo}
+              </p>
+
+              <p style="margin: 15px 0; color: #333; font-size: 14px; line-height: 1.5;">
+                ${event.description.substring(0, 200)}${event.description.length > 200 ? '...' : ''}
+              </p>
+
+              <a href="${registrationUrl}" 
+                 style="display: inline-block; background: #019ADE; color: white; padding: 10px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; margin-top: 10px;">
+                Learn More & Register
+              </a>
+            </div>
+          `;
+        });
+      });
+
+      const subject = `📅 Upcoming Events from Plastic Clever Schools`;
+      const content = `
+        <h2 style="color: #0B3D5D; margin-top: 0;">Upcoming Events & Opportunities</h2>
+        
+        <p style="font-size: 16px; line-height: 1.6; color: #333;">
+          Join us for exciting upcoming events designed to help you and your school reduce plastic waste and create lasting change!
+        </p>
+
+        ${eventsHtml}
+
+        <div style="background: #F0F9FF; border-radius: 8px; padding: 20px; margin-top: 30px; text-align: center;">
+          <p style="margin: 0; color: #0B3D5D; font-size: 16px;">
+            <strong>Want to see all our events?</strong>
+          </p>
+          <a href="${baseUrl}/events" 
+             style="display: inline-block; background: #FF595A; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px;">
+            View All Events
+          </a>
+        </div>
+
+        <p style="font-size: 14px; color: #666; margin-top: 30px; text-align: center;">
+          Stay connected with the Plastic Clever Schools community and make a difference together! 🌱
+        </p>
+      `;
+
+      const campaign = await this.createCampaign({
+        subject,
+        title: `Events Digest - ${new Date().toLocaleDateString()}`,
+        content,
+        audienceId,
+        fromName: 'Plastic Clever Schools Events',
+      });
+
+      if (!campaign) {
+        return { success: false, error: 'Failed to create digest campaign' };
+      }
+
+      const sent = await this.sendCampaign(campaign.campaignId);
+      
+      if (!sent) {
+        return { success: false, error: 'Failed to send digest campaign' };
+      }
+
+      return { 
+        success: true, 
+        campaignId: campaign.campaignId,
+        webId: campaign.webId
+      };
+    } catch (error: any) {
+      console.error('Mailchimp create event digest error:', error);
+      return { success: false, error: error.message };
+    }
+  }
 }
 
 export const mailchimpService = new MailchimpService();

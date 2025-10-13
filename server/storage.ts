@@ -18,6 +18,7 @@ import {
   reductionPromises,
   events,
   eventRegistrations,
+  eventAnnouncements,
   type User,
   type UpsertUser,
   type School,
@@ -56,6 +57,8 @@ import {
   type InsertEvent,
   type EventRegistration,
   type InsertEventRegistration,
+  type EventAnnouncement,
+  type InsertEventAnnouncement,
   type CreatePasswordUser,
   type CreateOAuthUser,
 } from "@shared/schema";
@@ -397,6 +400,12 @@ export interface IStorage {
   cancelEventRegistration(id: string): Promise<EventRegistration | undefined>;
   getEventRegistrationCount(eventId: string): Promise<number>;
   getEventAttendeesCount(eventId: string): Promise<number>;
+
+  // Event Announcement operations
+  createEventAnnouncement(announcement: InsertEventAnnouncement): Promise<EventAnnouncement>;
+  getEventAnnouncements(eventId: string): Promise<EventAnnouncement[]>;
+  getEventAnnouncementsByAudience(audienceId: string): Promise<Array<EventAnnouncement & { event: Event }>>;
+  hasEventBeenAnnounced(eventId: string, audienceId: string): Promise<boolean>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3959,6 +3968,53 @@ export class DatabaseStorage implements IStorage {
         eq(eventRegistrations.status, 'attended')
       ));
     return result[0]?.count || 0;
+  }
+
+  // Event Announcement operations
+  async createEventAnnouncement(announcement: InsertEventAnnouncement): Promise<EventAnnouncement> {
+    const [newAnnouncement] = await db
+      .insert(eventAnnouncements)
+      .values(announcement)
+      .returning();
+    return newAnnouncement;
+  }
+
+  async getEventAnnouncements(eventId: string): Promise<EventAnnouncement[]> {
+    return await db
+      .select()
+      .from(eventAnnouncements)
+      .where(eq(eventAnnouncements.eventId, eventId))
+      .orderBy(desc(eventAnnouncements.sentAt));
+  }
+
+  async getEventAnnouncementsByAudience(audienceId: string): Promise<Array<EventAnnouncement & { event: Event }>> {
+    const results = await db
+      .select({
+        announcement: eventAnnouncements,
+        event: events,
+      })
+      .from(eventAnnouncements)
+      .innerJoin(events, eq(eventAnnouncements.eventId, events.id))
+      .where(eq(eventAnnouncements.audienceId, audienceId))
+      .orderBy(desc(eventAnnouncements.sentAt));
+
+    return results.map(r => ({
+      ...r.announcement,
+      event: r.event,
+    }));
+  }
+
+  async hasEventBeenAnnounced(eventId: string, audienceId: string): Promise<boolean> {
+    const [result] = await db
+      .select()
+      .from(eventAnnouncements)
+      .where(and(
+        eq(eventAnnouncements.eventId, eventId),
+        eq(eventAnnouncements.audienceId, audienceId)
+      ))
+      .limit(1);
+    
+    return !!result;
   }
 }
 

@@ -4372,6 +4372,13 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     tags: '',
   });
 
+  // Newsletter state
+  const [announcingEvent, setAnnouncingEvent] = useState<Event | null>(null);
+  const [newsletterDialogOpen, setNewsletterDialogOpen] = useState(false);
+  const [selectedAudienceId, setSelectedAudienceId] = useState<string>('');
+  const [selectedEventsForDigest, setSelectedEventsForDigest] = useState<Set<string>>(new Set());
+  const [digestDialogOpen, setDigestDialogOpen] = useState(false);
+
   // Redirect if not authenticated or not admin (but only after loading completes)
   useEffect(() => {
     console.log('Admin page - access check:', {
@@ -4741,6 +4748,59 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       toast({
         title: "Error",
         description: error.message || "Failed to delete event.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Mailchimp audiences query
+  const { data: mailchimpAudiences = [] } = useQuery<Array<{ id: string; name: string; memberCount: number }>>({
+    queryKey: ['/api/mailchimp/audiences'],
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && (newsletterDialogOpen || digestDialogOpen)),
+    retry: false,
+  });
+
+  // Send event announcement mutation
+  const sendAnnouncementMutation = useMutation({
+    mutationFn: async ({ eventId, audienceId }: { eventId: string; audienceId: string }) => {
+      return await apiRequest('POST', `/api/admin/events/${eventId}/announce`, { audienceId });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Event announcement sent to newsletter successfully.",
+      });
+      setNewsletterDialogOpen(false);
+      setAnnouncingEvent(null);
+      setSelectedAudienceId('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send event announcement.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Send event digest mutation
+  const sendDigestMutation = useMutation({
+    mutationFn: async ({ eventIds, audienceId }: { eventIds: string[]; audienceId: string }) => {
+      return await apiRequest('POST', '/api/admin/events/digest', { eventIds, audienceId });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Event digest sent to newsletter successfully.",
+      });
+      setDigestDialogOpen(false);
+      setSelectedEventsForDigest(new Set());
+      setSelectedAudienceId('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send event digest.",
         variant: "destructive",
       });
     },
@@ -6739,6 +6799,20 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                 >
                                   <Trash2 className="h-4 w-4" />
                                 </Button>
+                                {event.status === 'published' && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      setAnnouncingEvent(event);
+                                      setNewsletterDialogOpen(true);
+                                    }}
+                                    className="text-pcs_blue hover:text-pcs_blue/80 hover:bg-pcs_blue/10"
+                                    data-testid={`button-send-newsletter-${event.id}`}
+                                  >
+                                    <Mail className="h-4 w-4" />
+                                  </Button>
+                                )}
                               </div>
                             </td>
                           </tr>
@@ -7164,6 +7238,69 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               </div>
             )}
           </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Newsletter Announcement Dialog */}
+      <Dialog open={newsletterDialogOpen} onOpenChange={setNewsletterDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle data-testid="text-newsletter-title">
+              Send Event to Newsletter
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-gray-600">
+              Send "{announcingEvent?.title}" to your Mailchimp newsletter subscribers.
+            </p>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Select Mailchimp Audience
+              </label>
+              <select
+                value={selectedAudienceId}
+                onChange={(e) => setSelectedAudienceId(e.target.value)}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                data-testid="select-audience"
+              >
+                <option value="">Select an audience...</option>
+                {mailchimpAudiences.map((audience) => (
+                  <option key={audience.id} value={audience.id}>
+                    {audience.name} ({audience.memberCount} subscribers)
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setNewsletterDialogOpen(false);
+                setAnnouncingEvent(null);
+                setSelectedAudienceId('');
+              }}
+              data-testid="button-cancel-newsletter"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (announcingEvent && selectedAudienceId) {
+                  sendAnnouncementMutation.mutate({
+                    eventId: announcingEvent.id,
+                    audienceId: selectedAudienceId,
+                  });
+                }
+              }}
+              disabled={!selectedAudienceId || sendAnnouncementMutation.isPending}
+              className="bg-pcs_blue hover:bg-pcs_blue/90"
+              data-testid="button-confirm-newsletter"
+            >
+              {sendAnnouncementMutation.isPending ? 'Sending...' : 'Send to Newsletter'}
+            </Button>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
 

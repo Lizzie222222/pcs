@@ -4951,6 +4951,134 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: Send event announcement to Mailchimp
+  app.post('/api/admin/events/:id/announce', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const eventId = req.params.id;
+      const { audienceId } = req.body;
+
+      if (!audienceId) {
+        return res.status(400).json({ message: "Mailchimp audience ID is required" });
+      }
+
+      const event = await storage.getEvent(eventId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      if (event.status !== 'published') {
+        return res.status(400).json({ message: "Only published events can be announced" });
+      }
+
+      const hasBeenAnnounced = await storage.hasEventBeenAnnounced(eventId, audienceId);
+      if (hasBeenAnnounced) {
+        return res.status(400).json({ message: "This event has already been announced to this audience" });
+      }
+
+      const result = await mailchimpService.sendEventAnnouncement(event, audienceId);
+      
+      if (!result.success) {
+        return res.status(500).json({ 
+          message: result.error || "Failed to send event announcement" 
+        });
+      }
+
+      await storage.createEventAnnouncement({
+        eventId,
+        audienceId,
+        campaignId: result.campaignId || null,
+        campaignWebId: result.webId || null,
+        announcementType: 'single_event',
+        sentBy: req.user.id,
+        recipientCount: null,
+        status: 'sent',
+      });
+
+      await storage.logEmail({
+        recipientEmail: 'mailchimp_audience',
+        subject: `Event Announcement: ${event.title}`,
+        template: 'event_announcement',
+        status: 'sent',
+      });
+
+      res.json({ 
+        message: "Event announcement sent successfully",
+        campaignId: result.campaignId,
+        webId: result.webId
+      });
+    } catch (error: any) {
+      console.error("Error sending event announcement:", error);
+      res.status(500).json({ message: "Failed to send event announcement" });
+    }
+  });
+
+  // Admin: Send event digest to Mailchimp
+  app.post('/api/admin/events/digest', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { audienceId, eventIds } = req.body;
+
+      if (!audienceId) {
+        return res.status(400).json({ message: "Mailchimp audience ID is required" });
+      }
+
+      if (!eventIds || !Array.isArray(eventIds) || eventIds.length === 0) {
+        return res.status(400).json({ message: "At least one event must be selected for the digest" });
+      }
+
+      const eventsToInclude = [];
+      for (const eventId of eventIds) {
+        const event = await storage.getEvent(eventId);
+        if (event && event.status === 'published') {
+          eventsToInclude.push(event);
+        }
+      }
+
+      if (eventsToInclude.length === 0) {
+        return res.status(400).json({ message: "No published events found to include in digest" });
+      }
+
+      const result = await mailchimpService.createEventDigest(eventsToInclude, audienceId);
+      
+      if (!result.success) {
+        return res.status(500).json({ 
+          message: result.error || "Failed to send event digest" 
+        });
+      }
+
+      for (const event of eventsToInclude) {
+        const hasBeenAnnounced = await storage.hasEventBeenAnnounced(event.id, audienceId);
+        if (!hasBeenAnnounced) {
+          await storage.createEventAnnouncement({
+            eventId: event.id,
+            audienceId,
+            campaignId: result.campaignId || null,
+            campaignWebId: result.webId || null,
+            announcementType: 'digest',
+            sentBy: req.user.id,
+            recipientCount: null,
+            status: 'sent',
+          });
+        }
+      }
+
+      await storage.logEmail({
+        recipientEmail: 'mailchimp_audience',
+        subject: `Event Digest: ${eventsToInclude.length} Upcoming Events`,
+        template: 'event_digest',
+        status: 'sent',
+      });
+
+      res.json({ 
+        message: `Event digest sent successfully with ${eventsToInclude.length} events`,
+        campaignId: result.campaignId,
+        webId: result.webId
+      });
+    } catch (error: any) {
+      console.error("Error sending event digest:", error);
+      res.status(500).json({ message: "Failed to send event digest" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
