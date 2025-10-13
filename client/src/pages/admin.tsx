@@ -3340,6 +3340,8 @@ function EmailManagementSection({
   const [testEmailSending, setTestEmailSending] = useState(false);
   const [bulkEmailConfirmOpen, setBulkEmailConfirmOpen] = useState(false);
   const [selectedEmailType, setSelectedEmailType] = useState('welcome');
+  const [imagePickerOpen, setImagePickerOpen] = useState(false);
+  const [imageSearch, setImageSearch] = useState('');
   
   const [formData, setFormData] = useState({
     welcome: { recipientEmail: '', schoolName: 'Test School' },
@@ -3456,6 +3458,38 @@ function EmailManagementSection({
     } finally {
       setTestEmailSending(false);
     }
+  };
+
+  // Fetch images from Media Library
+  const { data: mediaImages = [] } = useQuery({
+    queryKey: ['/api/admin/media-assets', { mediaType: 'image', search: imageSearch }],
+    enabled: imagePickerOpen,
+    queryFn: async () => {
+      const params = new URLSearchParams({ mediaType: 'image' });
+      if (imageSearch) params.append('search', imageSearch);
+      const response = await fetch(`/api/admin/media-assets?${params}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch images');
+      return response.json();
+    },
+  });
+
+  // Handle image insertion into email content
+  const handleImageInsert = (image: any) => {
+    const imgTag = `<img src="${image.signedUrl}" alt="${image.altText || image.filename}" style="max-width: 100%; height: auto;" />`;
+    
+    setEmailForm((prev: any) => ({
+      ...prev,
+      messageContent: prev.messageContent + '\n' + imgTag
+    }));
+    
+    toast({
+      title: "Image Inserted",
+      description: `${image.filename} has been added to your email content`,
+    });
+    
+    setImagePickerOpen(false);
   };
 
   const ResultMessage = ({ type }: { type: string }) => {
@@ -4147,7 +4181,19 @@ function EmailManagementSection({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <label className="block text-sm font-medium">Message Content *</label>
-                <span className="text-xs text-gray-500">Supports HTML formatting</span>
+                <div className="flex items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setImagePickerOpen(true)}
+                    data-testid="button-insert-image"
+                  >
+                    <ImageIcon className="h-4 w-4 mr-1" />
+                    Insert Image
+                  </Button>
+                  <span className="text-xs text-gray-500">Supports HTML formatting</span>
+                </div>
               </div>
               <Textarea
                 placeholder="Enter the main message content. HTML tags are supported for formatting."
@@ -4304,6 +4350,51 @@ function EmailManagementSection({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Image Picker Dialog */}
+      <Dialog open={imagePickerOpen} onOpenChange={setImagePickerOpen}>
+        <DialogContent className="max-w-4xl max-h-[80vh]" data-testid="dialog-image-picker">
+          <DialogHeader>
+            <DialogTitle>Insert Image from Media Library</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {/* Search/Filter */}
+            <Input
+              placeholder="Search images..."
+              value={imageSearch}
+              onChange={(e) => setImageSearch(e.target.value)}
+              data-testid="input-image-search"
+            />
+            
+            {/* Image Grid */}
+            <div className="grid grid-cols-4 gap-4 max-h-[400px] overflow-y-auto">
+              {mediaImages.map((image: any) => (
+                <div 
+                  key={image.id}
+                  className="border rounded cursor-pointer hover:border-blue-500 transition-colors"
+                  onClick={() => handleImageInsert(image)}
+                  data-testid={`image-picker-${image.id}`}
+                >
+                  <img src={image.signedUrl} alt={image.altText || image.filename} className="w-full h-32 object-cover rounded-t" />
+                  <div className="p-2 text-xs">
+                    <p className="font-medium truncate">{image.filename}</p>
+                    {image.altText && <p className="text-gray-500 truncate">{image.altText}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* No images message */}
+            {mediaImages.length === 0 && (
+              <div className="text-center py-8 text-gray-500">
+                <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                <p>No images found in Media Library</p>
+                <p className="text-sm">Upload images in the Media Library tab first</p>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
