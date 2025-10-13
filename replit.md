@@ -51,7 +51,14 @@ Preferred communication style: Simple, everyday language.
 -   **Analytics System**: Plastic waste audit data automatically converts into visual analytics for both teacher and admin dashboards.
 -   **Reduction Promises System**: Schools commit to reducing plastic items, with audit integration, dashboard management, impact tracking (ocean-themed and environmental metrics), and admin analytics.
 -   **Multi-Step School Registration**: Redesigned 3-step wizard for school registration, adapting fields based on country.
--   **Multi-Language Support**: Comprehensive support for 14 languages with lazy-loading, native language names, and user preference persistence across sessions.
+-   **Multi-Language Support**: Comprehensive i18next-based internationalization system:
+    -   **14 Languages**: English, Greek, Arabic, Chinese, Dutch, French, German, Indonesian, Italian, Korean, Portuguese, Russian, Spanish, Welsh
+    -   **140 Translation Files**: 10 namespaces (common, landing, forms, dashboard, auth, admin, search, resources, newsletter, map) × 14 languages
+    -   **RTL Support**: Automatic right-to-left layout switching for Arabic
+    -   **Complete Coverage**: ALL pages, forms, buttons, navigation, and content fully translated (no hardcoded English)
+    -   **User Preference**: Language selection persists in user profile and localStorage
+    -   **Lazy Loading**: Translation files load on-demand for performance
+    -   **Native Names**: Language switcher displays names in native script (한국어, 中文, العربية, etc.)
 -   **Admin UI Improvements**: Integrated Evidence Requirements as a tab within the admin page, improved navigation, and reorganized analytics dashboard with nested tabs.
 -   **Analytics Enhancements**: Improved data quality, added date range filtering, integrated OpenAI GPT-5 for AI-powered insights, and implemented PDF export functionality with PCS branding.
 
