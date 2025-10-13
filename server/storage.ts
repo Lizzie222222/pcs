@@ -1527,21 +1527,25 @@ export class DatabaseStorage implements IStorage {
         .where(eq(schools.id, schoolId))
         .returning();
       
-      // Generate certificate for Round 1 completion
-      if (updates.actCompleted && (school.currentRound || 1) === 1) {
+      // Generate certificate for round completion
+      if (updates.actCompleted) {
+        const currentRound = school.currentRound || 1;
+        
+        // Check if certificate already exists for this round
         const existingCertificates = await db
           .select()
           .from(certificates)
           .where(
             and(
               eq(certificates.schoolId, schoolId),
-              eq(certificates.stage, 'act')
+              eq(certificates.stage, 'act'),
+              sql`(${certificates.metadata}->>'round')::int = ${currentRound}`
             )
           );
         
-        // Only create certificate if one doesn't exist for this stage
+        // Only create certificate if one doesn't exist for this round
         if (existingCertificates.length === 0) {
-          const certificateNumber = `PCSR1-${Date.now()}-${schoolId.substring(0, 8)}`;
+          const certificateNumber = `PCSR${currentRound}-${Date.now()}-${schoolId.substring(0, 8)}`;
           
           await db.insert(certificates).values({
             schoolId,
@@ -1549,10 +1553,10 @@ export class DatabaseStorage implements IStorage {
             issuedBy: 'system',
             certificateNumber,
             completedDate: new Date(),
-            title: 'Round 1 Completion Certificate',
-            description: 'Successfully completed all three stages (Inspire, Investigate, Act) in Round 1',
+            title: `Round ${currentRound} Completion Certificate`,
+            description: `Successfully completed all three stages (Inspire, Investigate, Act) in Round ${currentRound}`,
             metadata: {
-              round: 1,
+              round: currentRound,
               achievements: {
                 inspire: counts.inspire.approved,
                 investigate: counts.investigate.approved,
