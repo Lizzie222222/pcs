@@ -80,6 +80,7 @@ import {
 import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray } from "drizzle-orm";
 import * as bcrypt from "bcrypt";
+import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
 
 export interface IStorage {
   // User operations (required for authentication system)
@@ -1564,6 +1565,26 @@ export class DatabaseStorage implements IStorage {
               }
             }
           });
+        }
+      }
+      
+      // Send celebration email when round is completed
+      if (updates.actCompleted) {
+        const currentRound = school.currentRound || 1;
+        
+        // Get school primary contact email
+        const primaryContact = school.primaryContactId 
+          ? await this.getUser(school.primaryContactId)
+          : null;
+        
+        if (primaryContact?.email) {
+          // Send celebration email (fire and forget - don't block on email)
+          sendCourseCompletionCelebrationEmail(
+            primaryContact.email,
+            school.name,
+            currentRound,
+            `${getBaseUrl()}/dashboard`
+          ).catch(err => console.error('Failed to send celebration email:', err));
         }
       }
       

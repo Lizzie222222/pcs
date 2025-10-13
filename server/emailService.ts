@@ -10,7 +10,7 @@ if (process.env.SENDGRID_API_KEY) {
   mailService.setApiKey(process.env.SENDGRID_API_KEY);
 }
 
-function getBaseUrl(): string {
+export function getBaseUrl(): string {
   if (process.env.REPLIT_DEV_DOMAIN) {
     return `https://${process.env.REPLIT_DEV_DOMAIN}`;
   }
@@ -1622,5 +1622,127 @@ export async function sendEventDigestEmail(
 
     return { success: false, error: error.message || 'Failed to send event digest' };
   }
+}
+
+export async function sendCourseCompletionCelebrationEmail(
+  recipientEmail: string,
+  schoolName: string,
+  roundNumber: number,
+  certificateUrl?: string
+): Promise<boolean> {
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Congratulations! - Plastic Clever Schools</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f5f5f5;">
+        <tr>
+          <td style="padding: 40px 20px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+              <!-- Celebration Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #019ADE 0%, #0B3D5D 100%); padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
+                  <div style="font-size: 64px; margin-bottom: 20px;">🎉</div>
+                  <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">
+                    Congratulations!
+                  </h1>
+                  <p style="margin: 10px 0 0 0; color: #ffffff; font-size: 18px; opacity: 0.9;">
+                    ${schoolName}
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Body -->
+              <tr>
+                <td style="padding: 40px 30px;">
+                  <h2 style="margin: 0 0 20px 0; color: #0B3D5D; font-size: 24px; font-weight: 600; text-align: center;">
+                    ${roundNumber === 1 ? "You've Completed Your First Round!" : `You've Completed Round ${roundNumber}!`}
+                  </h2>
+                  
+                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                    What an incredible achievement! ${schoolName} has successfully completed all three stages of the Plastic Clever Schools program:
+                  </p>
+                  
+                  <div style="margin: 30px 0; padding: 30px; background-color: #f8f9fa; border-radius: 8px;">
+                    <div style="margin-bottom: 15px;">
+                      <span style="color: #019ADE; font-size: 20px; font-weight: 600;">✓</span>
+                      <span style="margin-left: 10px; color: #333333; font-size: 16px; font-weight: 600;">Inspire</span>
+                      <span style="margin-left: 10px; color: #666666; font-size: 14px;">- Building awareness</span>
+                    </div>
+                    <div style="margin-bottom: 15px;">
+                      <span style="color: #019ADE; font-size: 20px; font-weight: 600;">✓</span>
+                      <span style="margin-left: 10px; color: #333333; font-size: 16px; font-weight: 600;">Investigate</span>
+                      <span style="margin-left: 10px; color: #666666; font-size: 14px;">- Understanding the problem</span>
+                    </div>
+                    <div>
+                      <span style="color: #019ADE; font-size: 20px; font-weight: 600;">✓</span>
+                      <span style="margin-left: 10px; color: #333333; font-size: 16px; font-weight: 600;">Act</span>
+                      <span style="margin-left: 10px; color: #666666; font-size: 14px;">- Making real change</span>
+                    </div>
+                  </div>
+                  
+                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                    ${roundNumber === 1 
+                      ? 'You are now officially a Plastic Clever School! Your commitment to reducing plastic waste is making a real difference in your school and community.' 
+                      : `Completing Round ${roundNumber} shows your continued dedication to sustainability. Each round builds on your success and deepens your impact on reducing plastic waste.`}
+                  </p>
+                  
+                  <div style="margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-left: 4px solid #f39c12; border-radius: 4px;">
+                    <p style="margin: 0; color: #856404; font-size: 15px; line-height: 1.6; font-weight: 600;">
+                      🏆 Your Round ${roundNumber} completion certificate ${certificateUrl ? 'is ready to view in' : 'will be available in'} your dashboard!
+                    </p>
+                  </div>
+                  
+                  ${certificateUrl ? `
+                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                    <tr>
+                      <td style="border-radius: 6px; background-color: #019ADE;">
+                        <a href="${certificateUrl}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
+                          View Certificate
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                  ` : ''}
+                  
+                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                    Thank you for your dedication to creating a plastic-free future. Your leadership and action inspire students, staff, and communities around the world.
+                  </p>
+                  
+                  <p style="margin: 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                    Ready to take it even further? You can start the next round anytime from your dashboard to continue your plastic reduction journey!
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center; border-top: 1px solid #e9ecef;">
+                  <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.6; font-weight: 600;">
+                    Plastic Clever Schools
+                  </p>
+                  <p style="margin: 0; color: #999999; font-size: 12px; line-height: 1.6;">
+                    Together, we're making schools plastic clever
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+  
+  return await sendEmail({
+    to: recipientEmail,
+    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    subject: `🎉 Congratulations! ${schoolName} Completed Round ${roundNumber}!`,
+    html: html,
+  });
 }
 
