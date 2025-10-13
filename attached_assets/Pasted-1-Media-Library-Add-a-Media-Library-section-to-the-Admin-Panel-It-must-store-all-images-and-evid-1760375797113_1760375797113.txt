@@ -1,0 +1,100 @@
+1. Media Library
+
+Add a Media Library section to the Admin Panel.
+
+It must store all images and evidence submitted by schools.
+
+Include filter options:
+
+Private (only visible internally)
+
+Public (shared or published assets)
+
+Each item should display metadata (school name, upload date, file type, visibility status).
+
+2. “Promises” → “Action Plan”
+
+Replace all mentions of “Promises” with “Action Plan.”
+
+This feature should be triggered from the Investigate stage under Action Plan.
+
+When users complete an Action Plan, the same pop-up/modal should appear as the old “Promises” flow.
+
+Ensure backward compatibility with existing data if “Promises” entries exist.
+
+3. Repeat Course Completion Logic
+
+Users can complete the course multiple times.
+
+On each full completion:
+
+Send a “celebration email” to the participant.
+
+Allow them to restart the course.
+
+Label course iterations as:
+Inspire II, Investigate II, Act II, Inspire III, etc.
+
+In the Admin Panel:
+
+Add filter and sorting by completion count or course iteration.
+
+Display iteration labels in user progress data.
+
+4. School Preferred Language
+
+Each school must have a preferred language field.
+
+This should be visible and editable in the Admin Panel.
+
+5. Bulk Email Filters by Language
+
+In the Bulk Email section, allow admins to filter recipients by preferred language before sending.
+
+6. Auto-Translation in Bulk Emails
+
+Explore adding auto-translate for bulk email content.
+
+UX suggestion:
+
+When composing an email, show a toggle or dropdown for “Translate email into [language]”.
+
+Allow preview/edit before sending.
+
+Aim for clarity and control—avoid auto-sending unreviewed translations.
+
+7. Email Template Editor Enhancements
+
+Currently, admins can edit:
+
+Title
+
+Preheader
+
+Header
+
+Subject
+
+Body text
+
+Extend this to support emails containing images.
+
+For one-off newsletters:
+
+Consider a simple drag-and-drop or rich text editor in the admin dashboard.
+
+Evaluate trade-off: flexibility vs. complexity/time cost.
+
+(If too time-consuming, add ability to upload HTML/email templates directly.)
+
+8. Printable Audit & Action Plan Submission
+
+Schools should be able to print the Audit and Action Plan.
+
+After completing them offline (on paper), they should be able to upload photos or PDFs as submission evidence.
+
+In the Admin Panel:
+
+Add the printable files (already exist) as resources under each relevant step.
+
+Allow schools to submit these uploads as valid completions without taking the quiz.
