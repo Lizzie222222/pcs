@@ -443,10 +443,16 @@ export default function Landing() {
       <section className="py-16 lg:py-24 bg-gradient-to-b from-teal/5 to-ocean-blue/5">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4">
-              {t('instagram.title').split(' ').slice(0, 1).join(' ')} <span className="text-ocean-blue">{t('instagram.title').split(' ').slice(1).join(' ')}</span>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4" data-testid="heading-instagram-title">
+              <Trans 
+                i18nKey="instagram.title"
+                ns="landing"
+                components={{
+                  highlight: <span className="text-ocean-blue" />
+                }}
+              />
             </h2>
-            <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto" data-testid="text-instagram-description">
               {t('instagram.description')}
             </p>
             <div className="flex justify-center mt-6">
