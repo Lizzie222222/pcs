@@ -54,10 +54,10 @@ Preferred communication style: Simple, everyday language.
 -   **Dashboard Features**: Tab-based navigation (Progress, Analytics, Resources, Team, Our Action Plan), dismissible notifications, comprehensive analytics with visualizations, dynamic evidence requirements, and reduction promises management.
 -   **Landing Page**: Hero section, Impact Ribbon, teacher testimonial, program stage overview, CTA, and Instagram feed.
 -   **Analytics System**: Plastic waste audit data automatically converts into visual analytics for both teacher and admin dashboards with date range filtering and AI-powered insights. PDF export functionality is included.
--   **Reduction Promises System**: Schools commit to reducing plastic items, with audit integration, dashboard management, impact tracking, and admin analytics.
+-   **Reduction Promises System (Action Plan)**: Student-led action plans for plastic reduction, independent of audit completion, with printable form downloads, dashboard management, impact tracking, and admin analytics. Action plan completion counts toward investigate stage progression.
 -   **Multi-Step School Registration**: Redesigned 3-step wizard for school registration, adapting fields based on country.
 -   **Multi-Language Support**: Comprehensive i18next-based internationalization system with 14 languages, RTL support, complete UI coverage, user preference persistence, lazy loading, and native language names.
--   **Admin UI Improvements**: Integrated Evidence Requirements, improved navigation, reorganized analytics dashboard, and school detail dialog with editable preferred language.
+-   **Admin UI Improvements**: Integrated Evidence Requirements, two-tier navigation system (5 primary categories with dropdowns: Dashboard, Schools, Content, Program, Communications), reorganized analytics dashboard, and school detail dialog with editable preferred language.
 -   **Events System**: Comprehensive event management with admin creation/editing, user browsing/registration, direct image upload to object storage, email notifications via SendGrid, newsletter integration, and analytics dashboard with recharts visualizations. Luma-inspired modals and responsive design.
 -   **Printable Forms System**: Allows generation and download of blank PDF forms, and upload/management of completed forms with admin review workflows.
 -   **Media Library Admin Panel UI**: Full CRUD operations for media assets, including upload with metadata, search, filter, tag management, and usage tracking.
