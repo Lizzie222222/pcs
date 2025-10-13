@@ -4768,14 +4768,14 @@ function MediaLibraryTab() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Media Type</label>
               <Select 
-                value={filters.mediaType} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, mediaType: value }))}
+                value={filters.mediaType || 'all'} 
+                onValueChange={(value) => setFilters(prev => ({ ...prev, mediaType: value === 'all' ? '' : value }))}
               >
                 <SelectTrigger data-testid="select-media-type-filter">
                   <SelectValue placeholder="All Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="image">Image</SelectItem>
                   <SelectItem value="video">Video</SelectItem>
                   <SelectItem value="document">Document</SelectItem>
@@ -4787,14 +4787,14 @@ function MediaLibraryTab() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
               <Select 
-                value={filters.tags[0] || ''} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, tags: value ? [value] : [] }))}
+                value={filters.tags[0] || 'all'} 
+                onValueChange={(value) => setFilters(prev => ({ ...prev, tags: value === 'all' ? [] : [value] }))}
               >
                 <SelectTrigger data-testid="select-tags-filter">
                   <SelectValue placeholder="All Tags" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All Tags</SelectItem>
+                  <SelectItem value="all">All Tags</SelectItem>
                   {tags.map((tag: any) => (
                     <SelectItem key={tag.id} value={tag.id}>{tag.name}</SelectItem>
                   ))}
