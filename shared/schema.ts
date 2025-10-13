@@ -936,6 +936,36 @@ export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSche
 export type EventAnnouncement = typeof eventAnnouncements.$inferSelect;
 export type InsertEventAnnouncement = z.infer<typeof insertEventAnnouncementSchema>;
 
+// Event Analytics Types
+export interface EventAnalytics {
+  totalEvents: number;
+  eventsByStatus: {
+    draft: number;
+    published: number;
+    completed: number;
+    cancelled: number;
+  };
+  totalRegistrations: number;
+  averageRegistrationsPerEvent: number;
+  registrationConversionRate: number;
+  eventsByType: Array<{
+    type: string;
+    count: number;
+  }>;
+  topEvents: Array<{
+    id: string;
+    title: string;
+    registrations: number;
+    capacity: number | null;
+  }>;
+  registrationsTrend: Array<{
+    date: string;
+    count: number;
+  }>;
+  upcomingEventsCount: number;
+  pastEventsCount: number;
+}
+
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;
 export type RegisterForm = z.infer<typeof registerSchema>;

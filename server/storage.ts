@@ -406,6 +406,36 @@ export interface IStorage {
   getEventAnnouncements(eventId: string): Promise<EventAnnouncement[]>;
   getEventAnnouncementsByAudience(audienceId: string): Promise<Array<EventAnnouncement & { event: Event }>>;
   hasEventBeenAnnounced(eventId: string, audienceId: string): Promise<boolean>;
+
+  // Event Analytics operations
+  getEventAnalytics(): Promise<{
+    totalEvents: number;
+    eventsByStatus: {
+      draft: number;
+      published: number;
+      completed: number;
+      cancelled: number;
+    };
+    totalRegistrations: number;
+    averageRegistrationsPerEvent: number;
+    registrationConversionRate: number;
+    eventsByType: Array<{
+      type: string;
+      count: number;
+    }>;
+    topEvents: Array<{
+      id: string;
+      title: string;
+      registrations: number;
+      capacity: number | null;
+    }>;
+    registrationsTrend: Array<{
+      date: string;
+      count: number;
+    }>;
+    upcomingEventsCount: number;
+    pastEventsCount: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -4015,6 +4045,157 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
     
     return !!result;
+  }
+
+  // Event Analytics operations
+  async getEventAnalytics() {
+    // Get total events count
+    const totalEventsResult = await db
+      .select({ count: count() })
+      .from(events);
+    const totalEvents = totalEventsResult[0]?.count || 0;
+
+    // Get events by status
+    const statusResults = await db
+      .select({
+        status: events.status,
+        count: count(),
+      })
+      .from(events)
+      .groupBy(events.status);
+
+    const eventsByStatus = {
+      draft: 0,
+      published: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+    statusResults.forEach(row => {
+      if (row.status in eventsByStatus) {
+        eventsByStatus[row.status as keyof typeof eventsByStatus] = Number(row.count);
+      }
+    });
+
+    // Get total registrations count
+    const totalRegistrationsResult = await db
+      .select({ count: count() })
+      .from(eventRegistrations)
+      .where(eq(eventRegistrations.status, 'registered'));
+    const totalRegistrations = totalRegistrationsResult[0]?.count || 0;
+
+    // Calculate average registrations per event
+    const averageRegistrationsPerEvent = totalEvents > 0 
+      ? Number(totalRegistrations) / Number(totalEvents) 
+      : 0;
+
+    // Calculate registration conversion rate (registered vs total capacity)
+    const capacityResult = await db
+      .select({
+        totalCapacity: sql<number>`COALESCE(SUM(${events.capacity}), 0)`,
+      })
+      .from(events)
+      .where(sql`${events.capacity} IS NOT NULL`);
+    const totalCapacity = Number(capacityResult[0]?.totalCapacity || 0);
+    const registrationConversionRate = totalCapacity > 0 
+      ? (Number(totalRegistrations) / totalCapacity) * 100 
+      : 0;
+
+    // Get events by type breakdown
+    const typeResults = await db
+      .select({
+        type: events.eventType,
+        count: count(),
+      })
+      .from(events)
+      .groupBy(events.eventType)
+      .orderBy(desc(count()));
+
+    const eventsByType = typeResults.map(row => ({
+      type: row.type,
+      count: Number(row.count),
+    }));
+
+    // Get top 5 most popular events by registration count
+    const topEventsResults = await db
+      .select({
+        id: events.id,
+        title: events.title,
+        capacity: events.capacity,
+        registrations: sql<number>`COUNT(${eventRegistrations.id})`,
+      })
+      .from(events)
+      .leftJoin(eventRegistrations, and(
+        eq(eventRegistrations.eventId, events.id),
+        eq(eventRegistrations.status, 'registered')
+      ))
+      .groupBy(events.id, events.title, events.capacity)
+      .orderBy(desc(sql<number>`COUNT(${eventRegistrations.id})`))
+      .limit(5);
+
+    const topEvents = topEventsResults.map(row => ({
+      id: row.id,
+      title: row.title,
+      registrations: Number(row.registrations),
+      capacity: row.capacity,
+    }));
+
+    // Get registrations trend over last 30 days (daily counts)
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const trendResults = await db
+      .select({
+        date: sql<string>`DATE(${eventRegistrations.registeredAt})`,
+        count: count(),
+      })
+      .from(eventRegistrations)
+      .where(and(
+        sql`${eventRegistrations.registeredAt} >= ${thirtyDaysAgo}`,
+        eq(eventRegistrations.status, 'registered')
+      ))
+      .groupBy(sql`DATE(${eventRegistrations.registeredAt})`)
+      .orderBy(asc(sql`DATE(${eventRegistrations.registeredAt})`));
+
+    const registrationsTrend = trendResults.map(row => ({
+      date: row.date,
+      count: Number(row.count),
+    }));
+
+    // Get upcoming events count
+    const upcomingEventsResult = await db
+      .select({ count: count() })
+      .from(events)
+      .where(and(
+        eq(events.status, 'published'),
+        sql`${events.startDateTime} > NOW()`
+      ));
+    const upcomingEventsCount = upcomingEventsResult[0]?.count || 0;
+
+    // Get past events count
+    const pastEventsResult = await db
+      .select({ count: count() })
+      .from(events)
+      .where(and(
+        or(
+          eq(events.status, 'published'),
+          eq(events.status, 'completed')
+        ),
+        sql`${events.endDateTime} < NOW()`
+      ));
+    const pastEventsCount = pastEventsResult[0]?.count || 0;
+
+    return {
+      totalEvents: Number(totalEvents),
+      eventsByStatus,
+      totalRegistrations: Number(totalRegistrations),
+      averageRegistrationsPerEvent: Math.round(averageRegistrationsPerEvent * 10) / 10,
+      registrationConversionRate: Math.round(registrationConversionRate * 10) / 10,
+      eventsByType,
+      topEvents,
+      registrationsTrend,
+      upcomingEventsCount: Number(upcomingEventsCount),
+      pastEventsCount: Number(pastEventsCount),
+    };
   }
 }
 

@@ -4722,6 +4722,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // ===== ADMIN EVENT ROUTES =====
   
+  // Admin: Get event analytics
+  app.get('/api/admin/events/analytics', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const analytics = await storage.getEventAnalytics();
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching event analytics:", error);
+      res.status(500).json({ message: "Failed to fetch event analytics" });
+    }
+  });
+
   // Admin: Get all events (including drafts)
   app.get('/api/admin/events', isAuthenticated, requireAdmin, async (req, res) => {
     try {

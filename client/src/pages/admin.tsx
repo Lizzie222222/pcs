@@ -4760,6 +4760,39 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     retry: false,
   });
 
+  // Event analytics query
+  const { data: analytics, isLoading: analyticsLoading } = useQuery<{
+    totalEvents: number;
+    eventsByStatus: {
+      draft: number;
+      published: number;
+      completed: number;
+      cancelled: number;
+    };
+    totalRegistrations: number;
+    averageRegistrationsPerEvent: number;
+    registrationConversionRate: number;
+    eventsByType: Array<{
+      type: string;
+      count: number;
+    }>;
+    topEvents: Array<{
+      id: string;
+      title: string;
+      registrations: number;
+      capacity: number | null;
+    }>;
+    registrationsTrend: Array<{
+      date: string;
+      count: number;
+    }>;
+    upcomingEventsCount: number;
+    pastEventsCount: number;
+  }>({
+    queryKey: ['/api/admin/events/analytics'],
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'events'),
+  });
+
   // Send event announcement mutation
   const sendAnnouncementMutation = useMutation({
     mutationFn: async ({ eventId, audienceId }: { eventId: string; audienceId: string }) => {
@@ -6601,6 +6634,240 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   Manage events and registrations for the Plastic Clever Schools community
                 </p>
               </CardHeader>
+            </Card>
+
+            {/* Analytics Section */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <BarChart3 className="h-5 w-5 text-pcs_blue" />
+                  Event Analytics
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {analyticsLoading ? (
+                  <div className="py-8">
+                    <LoadingSpinner message="Loading analytics..." />
+                  </div>
+                ) : !analytics ? (
+                  <EmptyState
+                    title="No analytics available"
+                    description="Analytics data will appear here once events are created"
+                    icon={BarChart3}
+                  />
+                ) : (
+                    <div className="space-y-6">
+                      {/* Key Metrics Cards */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-pcs_blue" />
+                              Total Events
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-3xl font-bold text-pcs_blue" data-testid="metric-total-events">
+                              {analytics.totalEvents}
+                            </div>
+                            <div className="mt-2 space-y-1 text-xs text-gray-600">
+                              <div className="flex justify-between">
+                                <span>Draft:</span>
+                                <span className="font-medium" data-testid="metric-draft-events">{analytics.eventsByStatus.draft}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Published:</span>
+                                <span className="font-medium" data-testid="metric-published-events">{analytics.eventsByStatus.published}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Completed:</span>
+                                <span className="font-medium" data-testid="metric-completed-events">{analytics.eventsByStatus.completed}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span>Cancelled:</span>
+                                <span className="font-medium" data-testid="metric-cancelled-events">{analytics.eventsByStatus.cancelled}</span>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                              <Users className="h-4 w-4 text-pcs_teal" />
+                              Total Registrations
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-3xl font-bold text-pcs_teal" data-testid="metric-total-registrations">
+                              {analytics.totalRegistrations}
+                            </div>
+                            <p className="text-xs text-gray-600 mt-2">
+                              {analytics.registrationConversionRate.toFixed(1)}% conversion rate
+                            </p>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                              <TrendingUp className="h-4 w-4 text-pcs_yellow" />
+                              Avg. Registrations
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="text-3xl font-bold text-pcs_yellow" data-testid="metric-avg-registrations">
+                              {analytics.averageRegistrationsPerEvent.toFixed(1)}
+                            </div>
+                            <p className="text-xs text-gray-600 mt-2">per event</p>
+                          </CardContent>
+                        </Card>
+
+                        <Card>
+                          <CardHeader className="pb-2">
+                            <CardTitle className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-purple-600" />
+                              Event Timeline
+                            </CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            <div className="space-y-2">
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-gray-600">Upcoming:</span>
+                                <span className="text-2xl font-bold text-purple-600" data-testid="metric-upcoming-events">
+                                  {analytics.upcomingEventsCount}
+                                </span>
+                              </div>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm text-gray-600">Past:</span>
+                                <span className="text-2xl font-bold text-gray-500" data-testid="metric-past-events">
+                                  {analytics.pastEventsCount}
+                                </span>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Charts */}
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                        {/* Events by Type */}
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg">Events by Type</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            {analytics.eventsByType.length > 0 ? (
+                              <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={analytics.eventsByType}>
+                                  <CartesianGrid strokeDasharray="3 3" />
+                                  <XAxis 
+                                    dataKey="type" 
+                                    tick={{ fontSize: 12 }}
+                                    tickFormatter={(value) => value.replace('_', ' ').charAt(0).toUpperCase() + value.replace('_', ' ').slice(1)}
+                                  />
+                                  <YAxis />
+                                  <Tooltip 
+                                    formatter={(value) => [value, 'Events']}
+                                    labelFormatter={(label) => label.replace('_', ' ').charAt(0).toUpperCase() + label.replace('_', ' ').slice(1)}
+                                  />
+                                  <Bar dataKey="count" fill="#0B3D5D" />
+                                </BarChart>
+                              </ResponsiveContainer>
+                            ) : (
+                              <div className="h-[300px] flex items-center justify-center text-gray-500">
+                                No data available
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+
+                        {/* Top 5 Most Popular Events */}
+                        <Card>
+                          <CardHeader>
+                            <CardTitle className="text-lg">Top 5 Most Popular Events</CardTitle>
+                          </CardHeader>
+                          <CardContent>
+                            {analytics.topEvents.length > 0 ? (
+                              <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={analytics.topEvents} layout="vertical">
+                                  <CartesianGrid strokeDasharray="3 3" />
+                                  <XAxis type="number" />
+                                  <YAxis 
+                                    dataKey="title" 
+                                    type="category" 
+                                    width={150}
+                                    tick={{ fontSize: 11 }}
+                                    tickFormatter={(value) => value.length > 20 ? value.substring(0, 20) + '...' : value}
+                                  />
+                                  <Tooltip 
+                                    formatter={(value, name, props) => {
+                                      if (name === 'registrations') {
+                                        const capacity = props.payload.capacity;
+                                        return [
+                                          capacity ? `${value} / ${capacity}` : value, 
+                                          'Registrations'
+                                        ];
+                                      }
+                                      return [value, name];
+                                    }}
+                                  />
+                                  <Bar dataKey="registrations" fill="#019ADE" />
+                                </BarChart>
+                              </ResponsiveContainer>
+                            ) : (
+                              <div className="h-[300px] flex items-center justify-center text-gray-500">
+                                No data available
+                              </div>
+                            )}
+                          </CardContent>
+                        </Card>
+                      </div>
+
+                      {/* Registrations Trend (Last 30 Days) */}
+                      <Card>
+                        <CardHeader>
+                          <CardTitle className="text-lg">Registrations Trend (Last 30 Days)</CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          {analytics.registrationsTrend.length > 0 ? (
+                            <ResponsiveContainer width="100%" height={300}>
+                              <LineChart data={analytics.registrationsTrend}>
+                                <CartesianGrid strokeDasharray="3 3" />
+                                <XAxis 
+                                  dataKey="date" 
+                                  tick={{ fontSize: 12 }}
+                                  tickFormatter={(value) => {
+                                    const date = new Date(value);
+                                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                                  }}
+                                />
+                                <YAxis />
+                                <Tooltip 
+                                  formatter={(value) => [value, 'Registrations']}
+                                  labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                                />
+                                <Legend />
+                                <Line 
+                                  type="monotone" 
+                                  dataKey="count" 
+                                  stroke="#02BBB4" 
+                                  strokeWidth={2}
+                                  name="Daily Registrations"
+                                  dot={{ fill: '#02BBB4' }}
+                                />
+                              </LineChart>
+                            </ResponsiveContainer>
+                          ) : (
+                            <div className="h-[300px] flex items-center justify-center text-gray-500">
+                              No registration data in the last 30 days
+                            </div>
+                          )}
+                        </CardContent>
+                      </Card>
+                    </div>
+                )}
+              </CardContent>
             </Card>
 
             <Card>
