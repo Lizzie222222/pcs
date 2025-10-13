@@ -125,6 +125,7 @@ interface SchoolData {
   primaryContactEmail: string | null;
   type?: string;
   address?: string;
+  primaryLanguage?: string | null;
 }
 
 // Analytics interfaces
@@ -4305,6 +4306,8 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [selectedEvidence, setSelectedEvidence] = useState<string[]>([]);
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
   const [viewingSchool, setViewingSchool] = useState<SchoolData | null>(null);
+  const [editingSchoolLanguage, setEditingSchoolLanguage] = useState(false);
+  const [schoolLanguageValue, setSchoolLanguageValue] = useState<string>('');
   const [deletingSchool, setDeletingSchool] = useState<SchoolData | null>(null);
   const [bulkEvidenceDialogOpen, setBulkEvidenceDialogOpen] = useState(false);
   const [bulkSchoolDialogOpen, setBulkSchoolDialogOpen] = useState(false);
@@ -5195,6 +5198,35 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         variant: "destructive",
       });
       setDeletingSchool(null);
+    },
+  });
+
+  // Update school language mutation
+  const updateSchoolLanguageMutation = useMutation({
+    mutationFn: async ({ schoolId, primaryLanguage }: { schoolId: string; primaryLanguage: string }) => {
+      return await apiRequest('PUT', `/api/admin/schools/${schoolId}`, { primaryLanguage });
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Language Updated",
+        description: "School preferred language has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      // Update the viewingSchool state to reflect the change immediately
+      if (viewingSchool) {
+        setViewingSchool({
+          ...viewingSchool,
+          primaryLanguage: variables.primaryLanguage
+        });
+      }
+      setEditingSchoolLanguage(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update school language. Please try again.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -8296,7 +8328,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
       {/* School Detail Dialog */}
       {viewingSchool && (
-        <Dialog open={!!viewingSchool} onOpenChange={() => setViewingSchool(null)}>
+        <Dialog open={!!viewingSchool} onOpenChange={() => {
+          setViewingSchool(null);
+          setEditingSchoolLanguage(false);
+          setSchoolLanguageValue('');
+        }}>
           <DialogContent className="max-w-2xl" data-testid={`dialog-school-detail-${viewingSchool.id}`}>
             <DialogHeader>
               <DialogTitle className="text-2xl" data-testid={`text-school-name-${viewingSchool.id}`}>
@@ -8316,6 +8352,89 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   <p className="text-base capitalize" data-testid={`text-type-${viewingSchool.id}`}>
                     {viewingSchool.type}
                   </p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+                    Preferred Language
+                    {!editingSchoolLanguage && (
+                      <Button 
+                        size="sm" 
+                        variant="ghost" 
+                        className="h-6 px-2"
+                        onClick={() => {
+                          setEditingSchoolLanguage(true);
+                          setSchoolLanguageValue(viewingSchool.primaryLanguage || 'en');
+                        }}
+                        data-testid={`button-edit-language-${viewingSchool.id}`}
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                    )}
+                  </label>
+                  {editingSchoolLanguage ? (
+                    <div className="flex gap-2 items-center">
+                      <Select 
+                        value={schoolLanguageValue} 
+                        onValueChange={setSchoolLanguageValue}
+                      >
+                        <SelectTrigger className="h-9" data-testid={`select-language-${viewingSchool.id}`}>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="es">Spanish</SelectItem>
+                          <SelectItem value="fr">French</SelectItem>
+                          <SelectItem value="de">German</SelectItem>
+                          <SelectItem value="it">Italian</SelectItem>
+                          <SelectItem value="pt">Portuguese</SelectItem>
+                          <SelectItem value="nl">Dutch</SelectItem>
+                          <SelectItem value="ru">Russian</SelectItem>
+                          <SelectItem value="zh">Chinese</SelectItem>
+                          <SelectItem value="ko">Korean</SelectItem>
+                          <SelectItem value="ar">Arabic</SelectItem>
+                          <SelectItem value="id">Indonesian</SelectItem>
+                          <SelectItem value="el">Greek</SelectItem>
+                          <SelectItem value="cy">Welsh</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <Button 
+                        size="sm" 
+                        onClick={() => {
+                          updateSchoolLanguageMutation.mutate({
+                            schoolId: viewingSchool.id,
+                            primaryLanguage: schoolLanguageValue
+                          });
+                        }}
+                        disabled={updateSchoolLanguageMutation.isPending}
+                        data-testid={`button-save-language-${viewingSchool.id}`}
+                      >
+                        {updateSchoolLanguageMutation.isPending ? 'Saving...' : 'Save'}
+                      </Button>
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          setEditingSchoolLanguage(false);
+                          setSchoolLanguageValue('');
+                        }}
+                        data-testid={`button-cancel-language-${viewingSchool.id}`}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-base" data-testid={`text-language-${viewingSchool.id}`}>
+                      {viewingSchool.primaryLanguage ? (() => {
+                        const langMap: Record<string, string> = {
+                          'en': 'English', 'es': 'Spanish', 'fr': 'French', 'de': 'German',
+                          'it': 'Italian', 'pt': 'Portuguese', 'nl': 'Dutch', 'ru': 'Russian',
+                          'zh': 'Chinese', 'ko': 'Korean', 'ar': 'Arabic', 'id': 'Indonesian',
+                          'el': 'Greek', 'cy': 'Welsh'
+                        };
+                        return langMap[viewingSchool.primaryLanguage] || viewingSchool.primaryLanguage;
+                      })() : 'Not set'}
+                    </p>
+                  )}
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-600">Current Stage</label>

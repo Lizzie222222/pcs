@@ -33,7 +33,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Key Data Models
 -   **Users**: Teachers linked to schools with roles.
--   **Schools**: Program progress tracking.
+-   **Schools**: Program progress tracking with preferred language support.
 -   **Evidence**: Stage-specific file submissions with approval workflows.
 -   **EvidenceRequirements**: Admin-configurable checklist.
 -   **Audits**: Plastic waste audit data with approval workflow and analytics integration.
@@ -62,7 +62,7 @@ Preferred communication style: Simple, everyday language.
     -   **User Preference**: Language selection persists in user profile and localStorage
     -   **Lazy Loading**: Translation files load on-demand for performance
     -   **Native Names**: Language switcher displays names in native script (한국어, 中文, العربية, etc.)
--   **Admin UI Improvements**: Integrated Evidence Requirements as a tab within the admin page, improved navigation, and reorganized analytics dashboard with nested tabs.
+-   **Admin UI Improvements**: Integrated Evidence Requirements as a tab within the admin page, improved navigation, and reorganized analytics dashboard with nested tabs. School detail dialog now includes editable preferred language field with inline editing and immediate UI updates.
 -   **Analytics Enhancements**: Improved data quality, added date range filtering, integrated OpenAI GPT-5 for AI-powered insights, and implemented PDF export functionality with PCS branding.
 -   **Events System**: Comprehensive event management with:
     -   **Admin Features**: Create/edit events with direct image upload to object storage, dates, locations, virtual meeting links, capacity limits, waitlists, and registration deadlines
