@@ -40,9 +40,9 @@ Preferred communication style: Simple, everyday language.
 -   **ReductionPromises**: Plastic reduction commitments with impact calculations.
 -   **Resources**: Educational materials.
 -   **Case Studies**: Approved evidence for public display.
--   **Events**: Community events (workshops, webinars, training) with registration management, waitlists, and virtual meeting support.
+-   **Events**: Community events (workshops, webinars, training) with registration management, waitlists, and virtual meeting support. Images stored in Google Cloud Storage.
 -   **EventRegistrations**: User event registrations with status tracking (registered, cancelled, waitlisted).
--   **EventAnnouncements**: Mailchimp campaign history to prevent duplicate newsletter sends.
+-   **EventAnnouncements**: SendGrid campaign history to track email announcements (recipient type, count, send timestamp).
 
 ### UI/UX Decisions
 -   **Color Schemes**: PCS brand colors (Navy, Blue, Inspire Green, Investigate Yellow, Act Red).
@@ -65,11 +65,13 @@ Preferred communication style: Simple, everyday language.
 -   **Admin UI Improvements**: Integrated Evidence Requirements as a tab within the admin page, improved navigation, and reorganized analytics dashboard with nested tabs.
 -   **Analytics Enhancements**: Improved data quality, added date range filtering, integrated OpenAI GPT-5 for AI-powered insights, and implemented PDF export functionality with PCS branding.
 -   **Events System**: Comprehensive event management with:
-    -   **Admin Features**: Create/edit events with images, dates, locations, virtual meeting links, capacity limits, waitlists, and registration deadlines
-    -   **User Features**: Browse upcoming events, register/cancel, view registration status, and access event details
+    -   **Admin Features**: Create/edit events with direct image upload to object storage, dates, locations, virtual meeting links, capacity limits, waitlists, and registration deadlines
+    -   **User Features**: Browse upcoming events with Luma-style modal design, register/cancel, view registration status in polished UI with hero images and responsive layout
+    -   **Image Upload**: Direct file upload to Google Cloud Storage with validation (jpg/png/webp, max 10MB), preview, and public ACL for accessibility
     -   **Email Notifications**: SendGrid integration for registration confirmations, cancellations, event reminders, and update notifications
-    -   **Newsletter Integration**: Mailchimp campaigns for event announcements and weekly digests with duplicate prevention
+    -   **Newsletter Integration**: SendGrid batch email campaigns for event announcements and weekly digests (supports "all teachers" or custom recipient lists)
     -   **Analytics Dashboard**: Event metrics, registration trends, top events, event type distribution, and conversion rates with recharts visualizations
+    -   **UI/UX Design**: Luma-inspired event modals with hero images, two-column responsive layout, sticky info cards, prominent CTAs, and modern visual polish
 
 ## External Dependencies
 ### Core Infrastructure
