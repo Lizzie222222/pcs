@@ -358,7 +358,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit'] });
       toast({
         title: "Success",
-        description: "Reduction promise created successfully!",
+        description: "Action item created successfully!",
       });
       setPromiseDialogOpen(false);
       setEditingPromise(null);
@@ -367,7 +367,7 @@ export default function Home() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error?.message || "Failed to create reduction promise",
+        description: error?.message || "Failed to create action item",
         variant: "destructive",
       });
     },
@@ -383,7 +383,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit'] });
       toast({
         title: "Success",
-        description: "Reduction promise updated successfully!",
+        description: "Action item updated successfully!",
       });
       setPromiseDialogOpen(false);
       setEditingPromise(null);
@@ -392,7 +392,7 @@ export default function Home() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error?.message || "Failed to update reduction promise",
+        description: error?.message || "Failed to update action item",
         variant: "destructive",
       });
     },
@@ -408,7 +408,7 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit'] });
       toast({
         title: "Success",
-        description: "Reduction promise deleted successfully!",
+        description: "Action item deleted successfully!",
       });
       setDeletePromiseDialogOpen(false);
       setPromiseToDelete(null);
@@ -416,7 +416,7 @@ export default function Home() {
     onError: (error: any) => {
       toast({
         title: "Error",
-        description: error?.message || "Failed to delete reduction promise",
+        description: error?.message || "Failed to delete action item",
         variant: "destructive",
       });
       setDeletePromiseDialogOpen(false);
@@ -810,7 +810,7 @@ export default function Home() {
               data-testid="tab-promises"
             >
               <Target className="h-5 w-5 mr-2" />
-              Our Promises
+              Our Action Plan
             </Button>
             <Button
               variant={activeTab === 'events' ? 'default' : 'ghost'}
@@ -855,7 +855,7 @@ export default function Home() {
                           🎉 You've completed your plastic waste audit!
                         </h3>
                         <p className="text-gray-700">
-                          Make your reduction promises to start tracking your impact and see the difference your school can make.
+                          Create your action plan to start tracking your impact and see the difference your school can make.
                         </p>
                       </div>
                       <Button
@@ -864,7 +864,7 @@ export default function Home() {
                         data-testid="button-make-promises-now"
                       >
                         <Target className="h-4 w-4 mr-2" />
-                        Make Promises Now
+                        Create Action Plan Now
                       </Button>
                     </div>
                   </AlertDescription>
@@ -1525,7 +1525,7 @@ export default function Home() {
           </div>
         )}
 
-        {/* Our Promises Tab Content */}
+        {/* Our Action Plan Tab Content */}
         {activeTab === 'promises' && (
           <div className="space-y-8">
             {promisesLoading ? (
@@ -1551,9 +1551,9 @@ export default function Home() {
                       <Target className="h-12 w-12 text-teal" />
                     </div>
                   </div>
-                  <h2 className="text-2xl font-bold text-navy mb-3">No Reduction Promises Yet</h2>
+                  <h2 className="text-2xl font-bold text-navy mb-3">No Action Plan Yet</h2>
                   <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    You haven't made any reduction promises yet. Complete an audit and make your first promises to start tracking your impact!
+                    You haven't created an action plan yet. Complete an audit and create your first action plan to start tracking your impact!
                   </p>
                   <Button
                     onClick={handleAddPromiseClick}
@@ -1561,7 +1561,7 @@ export default function Home() {
                     data-testid="button-add-first-promise"
                   >
                     <Plus className="h-5 w-5 mr-2" />
-                    Make Your First Promise
+                    Create Your First Action Plan
                   </Button>
                 </CardContent>
               </Card>
@@ -1573,14 +1573,14 @@ export default function Home() {
                   return (
                     <>
                       <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-3xl font-bold text-navy">Our Promises Impact</h2>
+                        <h2 className="text-3xl font-bold text-navy">Our Action Plan Impact</h2>
                         <Button
                           onClick={handleAddPromiseClick}
                           className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white shadow-lg"
                           data-testid="button-add-promise"
                         >
                           <Plus className="h-5 w-5 mr-2" />
-                          Add Promise
+                          Add Action Item
                         </Button>
                       </div>
 
@@ -1593,7 +1593,7 @@ export default function Home() {
                                 <Target className="h-8 w-8 text-white" />
                               </div>
                               <div>
-                                <div className="text-sm font-semibold opacity-90">Total Promises</div>
+                                <div className="text-sm font-semibold opacity-90">Total Action Items</div>
                                 <div className="text-3xl font-bold" data-testid="text-total-promises">
                                   {schoolPromises.length}
                                 </div>
@@ -2274,7 +2274,7 @@ export default function Home() {
                     <FormControl>
                       <Textarea 
                         {...field} 
-                        placeholder="Add any additional notes about this promise..."
+                        placeholder="Add any additional notes about this action item..."
                         rows={3}
                         data-testid="input-notes"
                       />
@@ -2306,8 +2306,8 @@ export default function Home() {
                   {createPromiseMutation.isPending || updatePromiseMutation.isPending
                     ? 'Saving...'
                     : editingPromise
-                    ? 'Update Promise'
-                    : 'Create Promise'}
+                    ? 'Update Action Item'
+                    : 'Create Action Item'}
                 </Button>
               </DialogFooter>
             </form>
@@ -2319,9 +2319,9 @@ export default function Home() {
       <AlertDialog open={deletePromiseDialogOpen} onOpenChange={setDeletePromiseDialogOpen}>
         <AlertDialogContent data-testid="dialog-delete-promise-confirmation">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this promise?</AlertDialogTitle>
+            <AlertDialogTitle>Are you sure you want to delete this action item?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your reduction promise and remove it from your impact calculations.
+              This action cannot be undone. This will permanently delete your action item and remove it from your impact calculations.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -2337,7 +2337,7 @@ export default function Home() {
               disabled={deletePromiseMutation.isPending}
               data-testid="button-confirm-delete-promise"
             >
-              {deletePromiseMutation.isPending ? 'Deleting...' : 'Delete Promise'}
+              {deletePromiseMutation.isPending ? 'Deleting...' : 'Delete Action Item'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

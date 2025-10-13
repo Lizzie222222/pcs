@@ -75,7 +75,7 @@ const promiseItemSchema = z.object({
 });
 
 const part5Schema = z.object({
-  promises: z.array(promiseItemSchema).min(2, "At least 2 promises required")
+  promises: z.array(promiseItemSchema).min(2, "At least 2 action items required")
 });
 
 type Part1Data = z.infer<typeof part1Schema>;
@@ -757,7 +757,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
             currentStep === 2 ? "Lunchroom & Staffroom" :
             currentStep === 3 ? "Classrooms & Bathrooms" :
             currentStep === 4 ? "Waste Management" :
-            "Reduction Promises"
+            "Action Plan"
           }
         </CardDescription>
         <Progress value={progress} className="mt-2" />

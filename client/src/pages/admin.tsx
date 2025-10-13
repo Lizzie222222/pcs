@@ -3097,9 +3097,9 @@ function AnalyticsContent() {
           <div>
             <div className="flex items-center gap-3 mb-2">
               <Target className="w-6 h-6 text-pcs_teal" />
-              <h3 className="text-xl font-bold text-navy">Global Reduction Promises Impact</h3>
+              <h3 className="text-xl font-bold text-navy">Global Action Plan Impact</h3>
             </div>
-            <p className="text-gray-600 mb-6">Track the collective impact of all schools' reduction promises</p>
+            <p className="text-gray-600 mb-6">Track the collective impact of all schools' action plans</p>
 
             {adminPromiseMetricsQuery.isLoading && (
               <div className="flex items-center justify-center py-12">
@@ -3111,7 +3111,7 @@ function AnalyticsContent() {
             {adminPromiseMetricsQuery.error && (
               <div className="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
                 <XCircle className="w-12 h-12 text-red-500 mx-auto mb-3" />
-                <p className="text-red-800 font-medium">Failed to load reduction promises metrics</p>
+                <p className="text-red-800 font-medium">Failed to load action plan metrics</p>
                 <p className="text-red-600 text-sm mt-1">Please try refreshing the page</p>
               </div>
             )}
@@ -3121,8 +3121,8 @@ function AnalyticsContent() {
                 {adminPromiseMetricsQuery.data.totalPromises === 0 ? (
                   <div className="bg-gray-50 border border-gray-200 rounded-lg p-8 text-center">
                     <Target className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-600 font-medium text-lg">No reduction promises have been made yet.</p>
-                    <p className="text-gray-500 text-sm mt-2">Encourage schools to make their first reduction promise!</p>
+                    <p className="text-gray-600 font-medium text-lg">No action plans have been created yet.</p>
+                    <p className="text-gray-500 text-sm mt-2">Encourage schools to create their first action plan!</p>
                   </div>
                 ) : (
                   <>
@@ -3130,7 +3130,7 @@ function AnalyticsContent() {
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                   <Card className="border-l-4 border-l-pcs_blue">
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <CardTitle className="text-sm font-medium text-gray-700">Total Promises</CardTitle>
+                      <CardTitle className="text-sm font-medium text-gray-700">Total Action Items</CardTitle>
                       <Target className="h-5 w-5 text-pcs_blue" />
                     </CardHeader>
                     <CardContent>
@@ -8485,7 +8485,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-lg">
                     <Target className="h-5 w-5 text-pcs_blue" />
-                    Reduction Promises
+                    Action Plan
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
