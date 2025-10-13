@@ -16,6 +16,7 @@ import {
   testimonials,
   auditResponses,
   reductionPromises,
+  printableFormSubmissions,
   events,
   eventRegistrations,
   eventAnnouncements,
@@ -53,6 +54,8 @@ import {
   type InsertAuditResponse,
   type ReductionPromise,
   type InsertReductionPromise,
+  type PrintableFormSubmission,
+  type InsertPrintableFormSubmission,
   type Event,
   type InsertEvent,
   type EventRegistration,
@@ -376,6 +379,24 @@ export interface IStorage {
   deleteReductionPromise(id: string): Promise<void>;
   getActivePromisesBySchool(schoolId: string): Promise<ReductionPromise[]>;
   getAllActivePromises(): Promise<ReductionPromise[]>;
+
+  // Printable Form Submission operations
+  createPrintableFormSubmission(data: InsertPrintableFormSubmission): Promise<PrintableFormSubmission>;
+  getPrintableFormSubmission(id: string): Promise<PrintableFormSubmission | undefined>;
+  getPrintableFormSubmissionsBySchool(schoolId: string): Promise<PrintableFormSubmission[]>;
+  getAllPrintableFormSubmissions(filters?: { 
+    status?: string; 
+    formType?: string;
+    schoolId?: string;
+    limit?: number; 
+    offset?: number;
+  }): Promise<Array<PrintableFormSubmission & { school: School; submittedByUser: User }>>;
+  updatePrintableFormSubmissionStatus(
+    id: string, 
+    status: 'approved' | 'rejected' | 'revision_requested',
+    reviewedBy: string,
+    reviewNotes?: string
+  ): Promise<PrintableFormSubmission | undefined>;
 
   // Event operations
   createEvent(event: InsertEvent): Promise<Event>;
@@ -3822,6 +3843,91 @@ export class DatabaseStorage implements IStorage {
       .from(reductionPromises)
       .where(eq(reductionPromises.status, 'active'))
       .orderBy(desc(reductionPromises.createdAt));
+  }
+
+  // Printable Form Submission operations
+  async createPrintableFormSubmission(data: InsertPrintableFormSubmission): Promise<PrintableFormSubmission> {
+    const [newSubmission] = await db
+      .insert(printableFormSubmissions)
+      .values(data)
+      .returning();
+    return newSubmission;
+  }
+
+  async getPrintableFormSubmission(id: string): Promise<PrintableFormSubmission | undefined> {
+    const [submission] = await db
+      .select()
+      .from(printableFormSubmissions)
+      .where(eq(printableFormSubmissions.id, id));
+    return submission;
+  }
+
+  async getPrintableFormSubmissionsBySchool(schoolId: string): Promise<PrintableFormSubmission[]> {
+    return await db
+      .select()
+      .from(printableFormSubmissions)
+      .where(eq(printableFormSubmissions.schoolId, schoolId))
+      .orderBy(desc(printableFormSubmissions.createdAt));
+  }
+
+  async getAllPrintableFormSubmissions(filters?: {
+    status?: string;
+    formType?: string;
+    schoolId?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<Array<PrintableFormSubmission & { school: School; submittedByUser: User }>> {
+    const conditions = [];
+    
+    if (filters?.status) {
+      conditions.push(eq(printableFormSubmissions.status, filters.status as any));
+    }
+    if (filters?.formType) {
+      conditions.push(eq(printableFormSubmissions.formType, filters.formType as any));
+    }
+    if (filters?.schoolId) {
+      conditions.push(eq(printableFormSubmissions.schoolId, filters.schoolId));
+    }
+
+    const results = await db
+      .select({
+        printableFormSubmission: printableFormSubmissions,
+        school: schools,
+        submittedByUser: users,
+      })
+      .from(printableFormSubmissions)
+      .leftJoin(schools, eq(printableFormSubmissions.schoolId, schools.id))
+      .leftJoin(users, eq(printableFormSubmissions.submittedBy, users.id))
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(desc(printableFormSubmissions.createdAt))
+      .limit(filters?.limit || 100)
+      .offset(filters?.offset || 0);
+
+    return results.map(row => ({
+      ...row.printableFormSubmission,
+      school: row.school as School,
+      submittedByUser: row.submittedByUser as User,
+    }));
+  }
+
+  async updatePrintableFormSubmissionStatus(
+    id: string,
+    status: 'approved' | 'rejected' | 'revision_requested',
+    reviewedBy: string,
+    reviewNotes?: string
+  ): Promise<PrintableFormSubmission | undefined> {
+    const [updatedSubmission] = await db
+      .update(printableFormSubmissions)
+      .set({
+        status,
+        reviewedBy,
+        reviewedAt: new Date(),
+        reviewNotes,
+        updatedAt: new Date(),
+      })
+      .where(eq(printableFormSubmissions.id, id))
+      .returning();
+    return updatedSubmission;
   }
 
   // Event operations

@@ -351,6 +351,18 @@ export const registrationStatusEnum = pgEnum('registration_status', [
   'waitlisted'
 ]);
 
+export const formTypeEnum = pgEnum('form_type', [
+  'audit',
+  'action_plan'
+]);
+
+export const submissionStatusEnum = pgEnum('submission_status', [
+  'pending',
+  'approved',
+  'rejected',
+  'revision_requested'
+]);
+
 export const auditResponses = pgTable("audit_responses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
@@ -403,6 +415,25 @@ export const reductionPromises = pgTable("reduction_promises", {
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
   index("idx_reduction_promises_school_status").on(table.schoolId, table.status),
+]);
+
+export const printableFormSubmissions = pgTable("printable_form_submissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
+  submittedBy: varchar("submitted_by").notNull().references(() => users.id),
+  formType: formTypeEnum("form_type").notNull(),
+  filePath: varchar("file_path").notNull(),
+  originalFilename: varchar("original_filename").notNull(),
+  status: submissionStatusEnum("status").default('pending'),
+  submittedAt: timestamp("submitted_at").defaultNow(),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewNotes: text("review_notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_printable_submissions_school").on(table.schoolId),
+  index("idx_printable_submissions_status").on(table.status),
 ]);
 
 export const events = pgTable("events", {
@@ -876,6 +907,16 @@ export const insertReductionPromiseSchema = createInsertSchema(reductionPromises
   updatedAt: true,
 });
 
+export const insertPrintableFormSubmissionSchema = createInsertSchema(printableFormSubmissions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  submittedAt: true,
+  reviewedAt: true,
+  reviewedBy: true,
+  reviewNotes: true,
+});
+
 export const insertEventSchema = createInsertSchema(events, {
   startDateTime: z.coerce.date(),
   endDateTime: z.coerce.date(),
@@ -933,6 +974,8 @@ export type AuditResponse = typeof auditResponses.$inferSelect;
 export type InsertAuditResponse = z.infer<typeof insertAuditResponseSchema>;
 export type ReductionPromise = typeof reductionPromises.$inferSelect;
 export type InsertReductionPromise = z.infer<typeof insertReductionPromiseSchema>;
+export type PrintableFormSubmission = typeof printableFormSubmissions.$inferSelect;
+export type InsertPrintableFormSubmission = z.infer<typeof insertPrintableFormSubmissionSchema>;
 export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type EventRegistration = typeof eventRegistrations.$inferSelect;
