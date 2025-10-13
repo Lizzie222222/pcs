@@ -20,6 +20,10 @@ import {
   events,
   eventRegistrations,
   eventAnnouncements,
+  mediaAssets,
+  mediaTags,
+  mediaAssetTags,
+  mediaAssetUsage,
   type User,
   type UpsertUser,
   type School,
@@ -62,6 +66,14 @@ import {
   type InsertEventRegistration,
   type EventAnnouncement,
   type InsertEventAnnouncement,
+  type MediaAsset,
+  type InsertMediaAsset,
+  type MediaTag,
+  type InsertMediaTag,
+  type MediaAssetTag,
+  type InsertMediaAssetTag,
+  type MediaAssetUsage,
+  type InsertMediaAssetUsage,
   type CreatePasswordUser,
   type CreateOAuthUser,
 } from "@shared/schema";
@@ -458,6 +470,31 @@ export interface IStorage {
     upcomingEventsCount: number;
     pastEventsCount: number;
   }>;
+
+  // Media Assets operations
+  createMediaAsset(asset: InsertMediaAsset): Promise<MediaAsset>;
+  getMediaAsset(id: string): Promise<MediaAsset | null>;
+  listMediaAssets(filters?: {
+    mediaType?: string;
+    tags?: string[];
+    uploaderId?: string;
+    schoolId?: string | null;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<MediaAsset[]>;
+  updateMediaAssetMetadata(id: string, updates: Partial<Pick<MediaAsset, 'altText' | 'description' | 'visibility'>>): Promise<MediaAsset>;
+  deleteMediaAsset(id: string): Promise<void>;
+
+  // Media Tags operations
+  createMediaTag(tag: InsertMediaTag): Promise<MediaTag>;
+  listMediaTags(): Promise<MediaTag[]>;
+  attachMediaTags(assetId: string, tagIds: string[]): Promise<void>;
+  detachMediaTags(assetId: string, tagIds: string[]): Promise<void>;
+
+  // Media Asset Usage tracking
+  recordMediaAssetUsage(assetId: string, usageType: string, referenceId?: string): Promise<void>;
+  listMediaAssetUsage(assetId: string): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -4324,6 +4361,171 @@ export class DatabaseStorage implements IStorage {
       upcomingEventsCount: Number(upcomingEventsCount),
       pastEventsCount: Number(pastEventsCount),
     };
+  }
+
+  // Media Assets operations
+  async createMediaAsset(asset: InsertMediaAsset): Promise<MediaAsset> {
+    const [mediaAsset] = await db
+      .insert(mediaAssets)
+      .values(asset)
+      .returning();
+    return mediaAsset;
+  }
+
+  async getMediaAsset(id: string): Promise<MediaAsset | null> {
+    const [asset] = await db
+      .select()
+      .from(mediaAssets)
+      .where(eq(mediaAssets.id, id));
+    return asset || null;
+  }
+
+  async listMediaAssets(filters?: {
+    mediaType?: string;
+    tags?: string[];
+    uploaderId?: string;
+    schoolId?: string | null;
+    search?: string;
+    limit?: number;
+    offset?: number;
+  }): Promise<MediaAsset[]> {
+    let query = db.select().from(mediaAssets);
+
+    const conditions = [];
+
+    if (filters?.mediaType) {
+      conditions.push(eq(mediaAssets.mediaType, filters.mediaType as any));
+    }
+
+    if (filters?.uploaderId) {
+      conditions.push(eq(mediaAssets.uploadedBy, filters.uploaderId));
+    }
+
+    if (filters?.schoolId !== undefined) {
+      if (filters.schoolId === null) {
+        conditions.push(sql`${mediaAssets.schoolId} IS NULL`);
+      } else {
+        conditions.push(eq(mediaAssets.schoolId, filters.schoolId));
+      }
+    }
+
+    if (filters?.search) {
+      conditions.push(
+        or(
+          ilike(mediaAssets.filename, `%${filters.search}%`),
+          ilike(mediaAssets.altText, `%${filters.search}%`),
+          ilike(mediaAssets.description, `%${filters.search}%`)
+        )
+      );
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    if (filters?.tags && filters.tags.length > 0) {
+      const assetsWithTags = await db
+        .selectDistinct({ assetId: mediaAssetTags.assetId })
+        .from(mediaAssetTags)
+        .where(inArray(mediaAssetTags.tagId, filters.tags));
+
+      const assetIds = assetsWithTags.map(a => a.assetId);
+      
+      if (assetIds.length === 0) {
+        return [];
+      }
+      
+      query = query.where(inArray(mediaAssets.id, assetIds)) as any;
+    }
+
+    query = query.orderBy(desc(mediaAssets.createdAt)) as any;
+
+    if (filters?.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+
+    if (filters?.offset) {
+      query = query.offset(filters.offset) as any;
+    }
+
+    const assets = await query;
+    return assets;
+  }
+
+  async updateMediaAssetMetadata(
+    id: string,
+    updates: Partial<Pick<MediaAsset, 'altText' | 'description' | 'visibility'>>
+  ): Promise<MediaAsset> {
+    const [updated] = await db
+      .update(mediaAssets)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(mediaAssets.id, id))
+      .returning();
+    return updated;
+  }
+
+  async deleteMediaAsset(id: string): Promise<void> {
+    await db.delete(mediaAssets).where(eq(mediaAssets.id, id));
+  }
+
+  // Media Tags operations
+  async createMediaTag(tag: InsertMediaTag): Promise<MediaTag> {
+    const [mediaTag] = await db
+      .insert(mediaTags)
+      .values(tag)
+      .returning();
+    return mediaTag;
+  }
+
+  async listMediaTags(): Promise<MediaTag[]> {
+    const tags = await db.select().from(mediaTags).orderBy(asc(mediaTags.name));
+    return tags;
+  }
+
+  async attachMediaTags(assetId: string, tagIds: string[]): Promise<void> {
+    if (tagIds.length === 0) return;
+
+    const values = tagIds.map(tagId => ({
+      assetId,
+      tagId,
+    }));
+
+    await db.insert(mediaAssetTags).values(values);
+  }
+
+  async detachMediaTags(assetId: string, tagIds: string[]): Promise<void> {
+    if (tagIds.length === 0) return;
+
+    await db
+      .delete(mediaAssetTags)
+      .where(
+        and(
+          eq(mediaAssetTags.assetId, assetId),
+          inArray(mediaAssetTags.tagId, tagIds)
+        )
+      );
+  }
+
+  // Media Asset Usage tracking
+  async recordMediaAssetUsage(
+    assetId: string,
+    usageType: string,
+    referenceId?: string
+  ): Promise<void> {
+    await db.insert(mediaAssetUsage).values({
+      assetId,
+      usageType,
+      referenceId,
+    });
+  }
+
+  async listMediaAssetUsage(assetId: string): Promise<any[]> {
+    const usage = await db
+      .select()
+      .from(mediaAssetUsage)
+      .where(eq(mediaAssetUsage.assetId, assetId))
+      .orderBy(desc(mediaAssetUsage.createdAt));
+    return usage;
   }
 }
 

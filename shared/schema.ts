@@ -65,6 +65,9 @@ export const schoolRoleEnum = pgEnum('school_role', [
   'pending_teacher'
 ]);
 
+export const mediaTypeEnum = pgEnum('media_type', ['image', 'video', 'document', 'audio']);
+export const storageScopeEnum = pgEnum('storage_scope', ['global', 'school']);
+
 // User storage table (supports email/password + Google OAuth)
 export const users = pgTable("users", {
   id: varchar("id").primaryKey(),
@@ -495,6 +498,59 @@ export const eventAnnouncements = pgTable("event_announcements", {
   index("idx_event_announcements_event").on(table.eventId),
 ]);
 
+export const mediaAssets = pgTable("media_assets", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  objectKey: varchar("object_key").notNull(),
+  filename: varchar("filename").notNull(),
+  mimeType: varchar("mime_type").notNull(),
+  fileSize: integer("file_size").notNull(),
+  mediaType: mediaTypeEnum("media_type").notNull(),
+  storageScope: storageScopeEnum("storage_scope").default('global'),
+  width: integer("width"),
+  height: integer("height"),
+  durationSeconds: integer("duration_seconds"),
+  altText: text("alt_text"),
+  description: text("description"),
+  uploadedBy: varchar("uploaded_by").notNull().references(() => users.id),
+  schoolId: varchar("school_id").references(() => schools.id, { onDelete: 'cascade' }),
+  visibility: visibilityEnum("visibility").default('private'),
+  isActive: boolean("is_active").default(true),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_media_assets_media_type_scope").on(table.mediaType, table.storageScope),
+  index("idx_media_assets_uploaded_by").on(table.uploadedBy),
+  index("idx_media_assets_school_id").on(table.schoolId),
+]);
+
+export const mediaTags = pgTable("media_tags", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull().unique(),
+  description: text("description"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const mediaAssetTags = pgTable("media_asset_tags", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  assetId: varchar("asset_id").notNull().references(() => mediaAssets.id, { onDelete: 'cascade' }),
+  tagId: varchar("tag_id").notNull().references(() => mediaTags.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_media_asset_tags_asset_id").on(table.assetId),
+  index("idx_media_asset_tags_tag_id").on(table.tagId),
+]);
+
+export const mediaAssetUsage = pgTable("media_asset_usage", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  assetId: varchar("asset_id").notNull().references(() => mediaAssets.id, { onDelete: 'cascade' }),
+  usageType: varchar("usage_type").notNull(),
+  referenceId: varchar("reference_id"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_media_asset_usage_asset_id").on(table.assetId),
+]);
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   schoolUsers: many(schoolUsers),
@@ -514,6 +570,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   createdPromises: many(reductionPromises),
   createdEvents: many(events),
   eventRegistrations: many(eventRegistrations),
+  uploadedMediaAssets: many(mediaAssets),
 }));
 
 export const schoolsRelations = relations(schools, ({ many, one }) => ({
@@ -530,6 +587,7 @@ export const schoolsRelations = relations(schools, ({ many, one }) => ({
   auditResponses: many(auditResponses),
   reductionPromises: many(reductionPromises),
   eventRegistrations: many(eventRegistrations),
+  mediaAssets: many(mediaAssets),
 }));
 
 export const schoolUsersRelations = relations(schoolUsers, ({ one }) => ({
@@ -709,6 +767,41 @@ export const eventAnnouncementsRelations = relations(eventAnnouncements, ({ one 
   sentBy: one(users, {
     fields: [eventAnnouncements.sentBy],
     references: [users.id],
+  }),
+}));
+
+export const mediaAssetsRelations = relations(mediaAssets, ({ one, many }) => ({
+  uploadedBy: one(users, {
+    fields: [mediaAssets.uploadedBy],
+    references: [users.id],
+  }),
+  school: one(schools, {
+    fields: [mediaAssets.schoolId],
+    references: [schools.id],
+  }),
+  tags: many(mediaAssetTags),
+  usage: many(mediaAssetUsage),
+}));
+
+export const mediaTagsRelations = relations(mediaTags, ({ many }) => ({
+  assets: many(mediaAssetTags),
+}));
+
+export const mediaAssetTagsRelations = relations(mediaAssetTags, ({ one }) => ({
+  asset: one(mediaAssets, {
+    fields: [mediaAssetTags.assetId],
+    references: [mediaAssets.id],
+  }),
+  tag: one(mediaTags, {
+    fields: [mediaAssetTags.tagId],
+    references: [mediaTags.id],
+  }),
+}));
+
+export const mediaAssetUsageRelations = relations(mediaAssetUsage, ({ one }) => ({
+  asset: one(mediaAssets, {
+    fields: [mediaAssetUsage.assetId],
+    references: [mediaAssets.id],
   }),
 }));
 
@@ -939,6 +1032,28 @@ export const insertEventAnnouncementSchema = createInsertSchema(eventAnnouncemen
   sentAt: true,
 });
 
+export const insertMediaAssetSchema = createInsertSchema(mediaAssets).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMediaTagSchema = createInsertSchema(mediaTags).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMediaAssetTagSchema = createInsertSchema(mediaAssetTags).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMediaAssetUsageSchema = createInsertSchema(mediaAssetUsage).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -982,6 +1097,14 @@ export type EventRegistration = typeof eventRegistrations.$inferSelect;
 export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSchema>;
 export type EventAnnouncement = typeof eventAnnouncements.$inferSelect;
 export type InsertEventAnnouncement = z.infer<typeof insertEventAnnouncementSchema>;
+export type MediaAsset = typeof mediaAssets.$inferSelect;
+export type InsertMediaAsset = z.infer<typeof insertMediaAssetSchema>;
+export type MediaTag = typeof mediaTags.$inferSelect;
+export type InsertMediaTag = z.infer<typeof insertMediaTagSchema>;
+export type MediaAssetTag = typeof mediaAssetTags.$inferSelect;
+export type InsertMediaAssetTag = z.infer<typeof insertMediaAssetTagSchema>;
+export type MediaAssetUsage = typeof mediaAssetUsage.$inferSelect;
+export type InsertMediaAssetUsage = z.infer<typeof insertMediaAssetUsageSchema>;
 
 // Event Analytics Types
 export interface EventAnalytics {
