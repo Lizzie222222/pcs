@@ -6786,8 +6786,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           </CardContent>
         </Card>
 
-        {/* Navigation Tabs */}
+        {/* Navigation Tabs - Two Tier Structure */}
         <div className="flex space-x-1 bg-gray-200 p-1 rounded-lg mb-8">
+          {/* Dashboard - No dropdown */}
           <button
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'overview' 
@@ -6795,84 +6796,152 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 : 'text-gray-600 hover:text-navy'
             }`}
             onClick={() => setActiveTab('overview')}
-            data-testid="tab-overview"
+            data-testid="tab-dashboard"
           >
-            Overview
+            Dashboard
           </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors relative ${
-              activeTab === 'reviews' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('reviews')}
-            data-testid="tab-reviews"
-          >
-            Review Queue
-            {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0) && (
-              <span 
-                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
-                data-testid="badge-pending-reviews-count"
+
+          {/* Schools - Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 ${
+                  ['schools', 'teams', 'users'].includes(activeTab)
+                    ? 'bg-white text-navy shadow-sm' 
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                data-testid="tab-schools"
               >
-                {(stats?.pendingEvidence || 0) + pendingAudits.length}
-              </span>
-            )}
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'schools' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('schools')}
-            data-testid="tab-schools"
-          >
-            Schools
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'teams' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('teams')}
-            data-testid="tab-teams"
-          >
-            Teams
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'resources' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('resources')}
-            data-testid="tab-resources"
-          >
-            Resources
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'case-studies' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('case-studies')}
-            data-testid="tab-case-studies"
-          >
-            Case Studies
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'users' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('users')}
-            data-testid="tab-users"
-          >
-            User Management
-          </button>
+                Schools
+                <ChevronDown className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('schools')}
+                className={activeTab === 'schools' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-schools-schools"
+              >
+                Schools
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('teams')}
+                className={activeTab === 'teams' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-schools-teams"
+              >
+                Teams
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('users')}
+                className={activeTab === 'users' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-schools-users"
+              >
+                User Management
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Content - Dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 ${
+                  ['resources', 'case-studies', 'events', 'media-library'].includes(activeTab)
+                    ? 'bg-white text-navy shadow-sm' 
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                data-testid="tab-content"
+              >
+                Content
+                <ChevronDown className="h-4 w-4" />
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('resources')}
+                className={activeTab === 'resources' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-content-resources"
+              >
+                Resources
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('case-studies')}
+                className={activeTab === 'case-studies' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-content-case-studies"
+              >
+                Case Studies
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('events')}
+                className={activeTab === 'events' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-content-events"
+              >
+                Events
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('media-library')}
+                className={activeTab === 'media-library' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-content-media-library"
+              >
+                Media Library
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Program - Dropdown with badge */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <button
+                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 relative ${
+                  ['evidence-requirements', 'reviews', 'printable-forms'].includes(activeTab)
+                    ? 'bg-white text-navy shadow-sm' 
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                data-testid="tab-program"
+              >
+                Program
+                <ChevronDown className="h-4 w-4" />
+                {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0) && (
+                  <span 
+                    className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
+                    data-testid="badge-pending-reviews-count"
+                  >
+                    {(stats?.pendingEvidence || 0) + pendingAudits.length}
+                  </span>
+                )}
+              </button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('evidence-requirements')}
+                className={activeTab === 'evidence-requirements' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-program-evidence-requirements"
+              >
+                Evidence Requirements
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('reviews')}
+                className={`${activeTab === 'reviews' ? 'bg-gray-100 font-medium' : ''} relative`}
+                data-testid="tab-program-review-queue"
+              >
+                Review Queue
+                {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0) && (
+                  <Badge className="ml-2 bg-red-500 text-white">
+                    {(stats?.pendingEvidence || 0) + pendingAudits.length}
+                  </Badge>
+                )}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('printable-forms')}
+                className={activeTab === 'printable-forms' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-program-printable-forms"
+              >
+                Printable Forms
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Communications - No dropdown */}
           <button
             className={`px-4 py-2 rounded-lg font-medium transition-colors ${
               activeTab === 'email-test' 
@@ -6880,53 +6949,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 : 'text-gray-600 hover:text-navy'
             }`}
             onClick={() => setActiveTab('email-test')}
-            data-testid="tab-email-test"
+            data-testid="tab-communications"
           >
-            Email Management
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'evidence-requirements' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('evidence-requirements')}
-            data-testid="tab-evidence-requirements"
-          >
-            Evidence Requirements
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'events' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('events')}
-            data-testid="tab-events"
-          >
-            Events
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'printable-forms' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('printable-forms')}
-            data-testid="tab-printable-forms"
-          >
-            Printable Forms
-          </button>
-          <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-              activeTab === 'media-library' 
-                ? 'bg-white text-navy shadow-sm' 
-                : 'text-gray-600 hover:text-navy'
-            }`}
-            onClick={() => setActiveTab('media-library')}
-            data-testid="tab-media-library"
-          >
-            Media Library
+            Communications
           </button>
         </div>
 

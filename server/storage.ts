@@ -200,7 +200,7 @@ export interface IStorage {
   checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined>;
   getSchoolEvidenceCounts(schoolId: string): Promise<{
     inspire: { total: number; approved: number };
-    investigate: { total: number; approved: number; hasQuiz: boolean };
+    investigate: { total: number; approved: number; hasQuiz: boolean; hasActionPlan: boolean };
     act: { total: number; approved: number };
   }>;
   startNewRound(schoolId: string): Promise<School | undefined>;
@@ -1402,14 +1402,14 @@ export class DatabaseStorage implements IStorage {
   // Progression system operations
   async getSchoolEvidenceCounts(schoolId: string): Promise<{
     inspire: { total: number; approved: number };
-    investigate: { total: number; approved: number; hasQuiz: boolean };
+    investigate: { total: number; approved: number; hasQuiz: boolean; hasActionPlan: boolean };
     act: { total: number; approved: number };
   }> {
     const school = await this.getSchool(schoolId);
     if (!school) {
       return {
         inspire: { total: 0, approved: 0 },
-        investigate: { total: 0, approved: 0, hasQuiz: false },
+        investigate: { total: 0, approved: 0, hasQuiz: false, hasActionPlan: false },
         act: { total: 0, approved: 0 }
       };
     }
@@ -1445,6 +1445,15 @@ export class DatabaseStorage implements IStorage {
 
     const hasQuiz = approvedAudit.length > 0;
 
+    // Check if school has any reduction promises (action plan)
+    const actionPlans = await db
+      .select()
+      .from(reductionPromises)
+      .where(eq(reductionPromises.schoolId, schoolId))
+      .limit(1);
+
+    const hasActionPlan = actionPlans.length > 0;
+
     return {
       inspire: {
         total: inspireEvidence.length,
@@ -1453,7 +1462,8 @@ export class DatabaseStorage implements IStorage {
       investigate: {
         total: investigateEvidence.length,
         approved: investigateEvidence.filter(e => e.status === 'approved').length,
-        hasQuiz
+        hasQuiz,
+        hasActionPlan
       },
       act: {
         total: actEvidence.length,
@@ -1478,8 +1488,8 @@ export class DatabaseStorage implements IStorage {
       hasChanges = true;
     }
 
-    // Check Investigate completion (2 approved items total, counting audit as 1 item)
-    const investigateItemCount = counts.investigate.approved + (counts.investigate.hasQuiz ? 1 : 0);
+    // Check Investigate completion (2 approved items total, counting audit and action plan as 1 item each)
+    const investigateItemCount = counts.investigate.approved + (counts.investigate.hasQuiz ? 1 : 0) + (counts.investigate.hasActionPlan ? 1 : 0);
     if (investigateItemCount >= 2 && !school.investigateCompleted) {
       updates.investigateCompleted = true;
       updates.currentStage = 'act';
