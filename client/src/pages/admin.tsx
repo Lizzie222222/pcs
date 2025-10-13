@@ -75,7 +75,9 @@ import {
   Factory,
   Trash,
   Upload,
-  Image as ImageIcon
+  Image as ImageIcon,
+  FileVideo,
+  Music
 } from "lucide-react";
 
 import { 
@@ -4306,6 +4308,756 @@ function EmailManagementSection({
   );
 }
 
+function MediaLibraryTab() {
+  const { toast } = useToast();
+  const queryClient = useQueryClient();
+  
+  // State management
+  const [filters, setFilters] = useState({
+    mediaType: '',
+    tags: [] as string[],
+    search: '',
+  });
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteWarningDialogOpen, setDeleteWarningDialogOpen] = useState(false);
+  const [createTagDialogOpen, setCreateTagDialogOpen] = useState(false);
+  const [selectedAsset, setSelectedAsset] = useState<any>(null);
+  const [assetUsage, setAssetUsage] = useState<any[]>([]);
+  const [searchDebounce, setSearchDebounce] = useState('');
+  
+  // Upload form state
+  const [uploadFile, setUploadFile] = useState<File | null>(null);
+  const [uploadMediaType, setUploadMediaType] = useState<'image' | 'video' | 'document' | 'audio'>('image');
+  const [uploadAltText, setUploadAltText] = useState('');
+  const [uploadDescription, setUploadDescription] = useState('');
+  const [uploadVisibility, setUploadVisibility] = useState<'private' | 'public'>('private');
+  const [uploadTags, setUploadTags] = useState<string[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  
+  // Edit form state
+  const [editAltText, setEditAltText] = useState('');
+  const [editDescription, setEditDescription] = useState('');
+  const [editVisibility, setEditVisibility] = useState<'private' | 'public'>('private');
+  const [editTags, setEditTags] = useState<string[]>([]);
+  
+  // Tag creation state
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagDescription, setNewTagDescription] = useState('');
+  
+  // Debounce search
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setFilters(prev => ({ ...prev, search: searchDebounce }));
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [searchDebounce]);
+  
+  // Fetch media assets
+  const { data: assets = [], isLoading: assetsLoading } = useQuery({
+    queryKey: ['/api/admin/media-assets', filters],
+    queryFn: async () => {
+      const params = new URLSearchParams();
+      if (filters.mediaType) params.append('mediaType', filters.mediaType);
+      if (filters.search) params.append('search', filters.search);
+      if (filters.tags.length > 0) {
+        filters.tags.forEach(tag => params.append('tags', tag));
+      }
+      
+      const response = await fetch(`/api/admin/media-assets?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch assets');
+      return response.json();
+    },
+  });
+  
+  // Fetch tags
+  const { data: tags = [], isLoading: tagsLoading } = useQuery({
+    queryKey: ['/api/admin/media-tags'],
+    queryFn: async () => {
+      const response = await fetch('/api/admin/media-tags');
+      if (!response.ok) throw new Error('Failed to fetch tags');
+      return response.json();
+    },
+  });
+  
+  // Upload mutation (3-step process)
+  const uploadAssetMutation = useMutation({
+    mutationFn: async (file: File) => {
+      setIsUploading(true);
+      try {
+        // Step 1: Get signed upload URL
+        const urlResponse = await fetch('/api/admin/media-assets/upload-url', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            filename: file.name,
+            mimeType: file.type,
+            fileSize: file.size,
+            mediaType: uploadMediaType,
+          }),
+        });
+        
+        if (!urlResponse.ok) {
+          const error = await urlResponse.json();
+          throw new Error(error.message || 'Failed to get upload URL');
+        }
+        
+        const { uploadUrl, objectKey } = await urlResponse.json();
+        
+        // Step 2: Upload to object storage
+        const uploadResponse = await fetch(uploadUrl, {
+          method: 'PUT',
+          headers: { 'Content-Type': file.type },
+          body: file,
+        });
+        
+        if (!uploadResponse.ok) throw new Error('Failed to upload file');
+        
+        // Step 3: Create media asset record
+        const assetResponse = await fetch('/api/admin/media-assets', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            objectKey,
+            filename: file.name,
+            mimeType: file.type,
+            fileSize: file.size,
+            mediaType: uploadMediaType,
+            storageScope: 'global',
+            altText: uploadAltText || null,
+            description: uploadDescription || null,
+            visibility: uploadVisibility,
+            tagIds: uploadTags,
+          }),
+        });
+        
+        if (!assetResponse.ok) {
+          const error = await assetResponse.json();
+          throw new Error(error.message || 'Failed to create asset record');
+        }
+        
+        return assetResponse.json();
+      } finally {
+        setIsUploading(false);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/media-assets'] });
+      toast({ title: "Success", description: "Media asset uploaded successfully" });
+      setUploadDialogOpen(false);
+      setUploadFile(null);
+      setUploadAltText('');
+      setUploadDescription('');
+      setUploadTags([]);
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Upload Failed", 
+        description: error.message || "Failed to upload media asset",
+        variant: "destructive" 
+      });
+    },
+  });
+  
+  // Update metadata mutation
+  const updateMetadataMutation = useMutation({
+    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
+      const response = await fetch(`/api/admin/media-assets/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates),
+      });
+      if (!response.ok) throw new Error('Failed to update asset');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/media-assets'] });
+      toast({ title: "Success", description: "Asset metadata updated successfully" });
+      setEditDialogOpen(false);
+    },
+    onError: () => {
+      toast({ 
+        title: "Update Failed", 
+        description: "Failed to update asset metadata",
+        variant: "destructive" 
+      });
+    },
+  });
+  
+  // Delete asset mutation
+  const deleteAssetMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await fetch(`/api/admin/media-assets/${id}`, {
+        method: 'DELETE',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete asset');
+      }
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/media-assets'] });
+      toast({ title: "Success", description: "Asset deleted successfully" });
+      setDeleteDialogOpen(false);
+      setSelectedAsset(null);
+    },
+    onError: (error: any) => {
+      toast({ 
+        title: "Delete Failed", 
+        description: error.message || "Failed to delete asset",
+        variant: "destructive" 
+      });
+    },
+  });
+  
+  // Create tag mutation
+  const createTagMutation = useMutation({
+    mutationFn: async (tagData: { name: string; description?: string }) => {
+      const response = await fetch('/api/admin/media-tags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tagData),
+      });
+      if (!response.ok) throw new Error('Failed to create tag');
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/media-tags'] });
+      toast({ title: "Success", description: "Tag created successfully" });
+      setCreateTagDialogOpen(false);
+      setNewTagName('');
+      setNewTagDescription('');
+    },
+    onError: () => {
+      toast({ 
+        title: "Creation Failed", 
+        description: "Failed to create tag",
+        variant: "destructive" 
+      });
+    },
+  });
+  
+  // Update tags mutation
+  const updateTagsMutation = useMutation({
+    mutationFn: async ({ assetId, tagIds, currentTagIds }: { assetId: string; tagIds: string[]; currentTagIds: string[] }) => {
+      const toAttach = tagIds.filter(id => !currentTagIds.includes(id));
+      const toDetach = currentTagIds.filter(id => !tagIds.includes(id));
+      
+      if (toAttach.length > 0) {
+        await fetch(`/api/admin/media-assets/${assetId}/tags`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tagIds: toAttach }),
+        });
+      }
+      
+      if (toDetach.length > 0) {
+        await fetch(`/api/admin/media-assets/${assetId}/tags`, {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ tagIds: toDetach }),
+        });
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/media-assets'] });
+    },
+  });
+  
+  // Check usage before delete
+  const checkUsageAndDelete = async (asset: any) => {
+    const response = await fetch(`/api/admin/media-assets/${asset.id}/usage`);
+    const usage = await response.json();
+    
+    if (usage.length > 0) {
+      setAssetUsage(usage);
+      setDeleteWarningDialogOpen(true);
+    } else {
+      setDeleteDialogOpen(true);
+    }
+    setSelectedAsset(asset);
+  };
+  
+  // Open edit dialog
+  const openEditDialog = (asset: any) => {
+    setSelectedAsset(asset);
+    setEditAltText(asset.altText || '');
+    setEditDescription(asset.description || '');
+    setEditVisibility(asset.visibility || 'private');
+    setEditTags([]); // TODO: Fetch asset tags
+    setEditDialogOpen(true);
+  };
+  
+  // Handle upload
+  const handleUpload = async () => {
+    if (!uploadFile) return;
+    
+    // Validate file size
+    if (uploadFile.size > 50 * 1024 * 1024) {
+      toast({ 
+        title: "File Too Large", 
+        description: "Maximum file size is 50MB",
+        variant: "destructive" 
+      });
+      return;
+    }
+    
+    await uploadAssetMutation.mutateAsync(uploadFile);
+  };
+  
+  // Handle save metadata
+  const handleSaveMetadata = async () => {
+    if (!selectedAsset) return;
+    
+    const updates = {
+      altText: editAltText || null,
+      description: editDescription || null,
+      visibility: editVisibility,
+    };
+    
+    await updateMetadataMutation.mutateAsync({ id: selectedAsset.id, updates });
+    // Also update tags if changed
+    // await updateTagsMutation.mutateAsync({ assetId: selectedAsset.id, tagIds: editTags, currentTagIds: [] });
+  };
+  
+  // Format file size
+  const formatFileSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+  };
+  
+  // Get media icon
+  const getMediaIcon = (mediaType: string) => {
+    switch (mediaType) {
+      case 'video': return <FileVideo className="h-24 w-24 text-gray-400" />;
+      case 'document': return <FileText className="h-24 w-24 text-gray-400" />;
+      case 'audio': return <Music className="h-24 w-24 text-gray-400" />;
+      default: return <ImageIcon className="h-24 w-24 text-gray-400" />;
+    }
+  };
+  
+  return (
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold text-navy">Media Library</h2>
+        <Button 
+          onClick={() => setUploadDialogOpen(true)} 
+          className="bg-pcs_blue hover:bg-pcs_blue/90"
+          data-testid="button-upload-media"
+        >
+          <Upload className="h-4 w-4 mr-2" />
+          Upload Media
+        </Button>
+      </div>
+      
+      {/* Filters */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Media Type</label>
+              <Select 
+                value={filters.mediaType} 
+                onValueChange={(value) => setFilters(prev => ({ ...prev, mediaType: value }))}
+              >
+                <SelectTrigger data-testid="select-media-type-filter">
+                  <SelectValue placeholder="All Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Types</SelectItem>
+                  <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="video">Video</SelectItem>
+                  <SelectItem value="document">Document</SelectItem>
+                  <SelectItem value="audio">Audio</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+              <Select 
+                value={filters.tags[0] || ''} 
+                onValueChange={(value) => setFilters(prev => ({ ...prev, tags: value ? [value] : [] }))}
+              >
+                <SelectTrigger data-testid="select-tags-filter">
+                  <SelectValue placeholder="All Tags" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="">All Tags</SelectItem>
+                  {tags.map((tag: any) => (
+                    <SelectItem key={tag.id} value={tag.id}>{tag.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+              <Input
+                placeholder="Search filename, alt text, description..."
+                value={searchDebounce}
+                onChange={(e) => setSearchDebounce(e.target.value)}
+                data-testid="input-media-search"
+              />
+            </div>
+            
+            <div className="flex items-end">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setFilters({ mediaType: '', tags: [], search: '' });
+                  setSearchDebounce('');
+                }}
+                data-testid="button-clear-filters"
+              >
+                Clear Filters
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      
+      {/* Assets Grid */}
+      {assetsLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {[1, 2, 3, 4].map(i => (
+            <Card key={i} className="animate-pulse">
+              <div className="h-48 bg-gray-200" />
+              <CardContent className="pt-4">
+                <div className="h-4 bg-gray-200 rounded mb-2" />
+                <div className="h-3 bg-gray-200 rounded w-1/2" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : assets.length === 0 ? (
+        <EmptyState 
+          icon={ImageIcon}
+          title="No media assets yet"
+          description="Upload your first media asset to get started"
+        />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
+          {assets.map((asset: any) => (
+            <Card key={asset.id} data-testid={`card-media-asset-${asset.id}`}>
+              <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
+                {asset.mediaType === 'image' ? (
+                  <img 
+                    src={asset.downloadUrl} 
+                    alt={asset.altText || asset.filename}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  getMediaIcon(asset.mediaType)
+                )}
+              </div>
+              <CardContent className="pt-4">
+                <div className="space-y-2">
+                  <h3 className="font-medium text-sm truncate" title={asset.filename}>
+                    {asset.filename}
+                  </h3>
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <Badge variant="outline">{asset.mediaType}</Badge>
+                    <span>{formatFileSize(asset.fileSize)}</span>
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    {new Date(asset.createdAt).toLocaleDateString()}
+                  </div>
+                  <div className="flex gap-2 pt-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => openEditDialog(asset)}
+                      data-testid={`button-edit-asset-${asset.id}`}
+                    >
+                      <Edit className="h-3 w-3" />
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => checkUsageAndDelete(asset)}
+                      data-testid={`button-delete-asset-${asset.id}`}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
+      
+      {/* Upload Dialog */}
+      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle>Upload Media Asset</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Media Type <span className="text-red-500">*</span>
+              </label>
+              <Select value={uploadMediaType} onValueChange={(value: any) => setUploadMediaType(value)}>
+                <SelectTrigger data-testid="select-upload-media-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="image">Image</SelectItem>
+                  <SelectItem value="video">Video</SelectItem>
+                  <SelectItem value="document">Document</SelectItem>
+                  <SelectItem value="audio">Audio</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                File <span className="text-red-500">*</span>
+              </label>
+              <Input 
+                type="file" 
+                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
+                data-testid="input-media-file"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
+              <Input 
+                value={uploadAltText}
+                onChange={(e) => setUploadAltText(e.target.value)}
+                placeholder="Descriptive text for accessibility"
+                data-testid="input-upload-alt-text"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <Textarea 
+                value={uploadDescription}
+                onChange={(e) => setUploadDescription(e.target.value)}
+                placeholder="Optional description"
+                rows={3}
+                data-testid="textarea-upload-description"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
+              <Select value={uploadVisibility} onValueChange={(value: any) => setUploadVisibility(value)}>
+                <SelectTrigger data-testid="select-upload-visibility">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="private">Private</SelectItem>
+                  <SelectItem value="public">Public</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+              <Select 
+                value={uploadTags[0] || ''} 
+                onValueChange={(value) => setUploadTags(value ? [value] : [])}
+              >
+                <SelectTrigger data-testid="select-upload-tags">
+                  <SelectValue placeholder="Select tags" />
+                </SelectTrigger>
+                <SelectContent>
+                  {tags.map((tag: any) => (
+                    <SelectItem key={tag.id} value={tag.id}>{tag.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
+            <Button 
+              onClick={handleUpload} 
+              disabled={!uploadFile || isUploading}
+              data-testid="button-start-upload"
+            >
+              {isUploading ? 'Uploading...' : 'Upload'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Edit Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="max-w-lg" data-testid="dialog-edit-media-asset">
+          <DialogHeader>
+            <DialogTitle>Edit Media Asset</DialogTitle>
+          </DialogHeader>
+          {selectedAsset && (
+            <div className="space-y-4">
+              <div className="h-32 bg-gray-100 flex items-center justify-center">
+                {selectedAsset.mediaType === 'image' ? (
+                  <img src={selectedAsset.downloadUrl} alt={selectedAsset.filename} className="h-full object-contain" />
+                ) : (
+                  getMediaIcon(selectedAsset.mediaType)
+                )}
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Filename</label>
+                <Input value={selectedAsset.filename} disabled />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
+                <Input 
+                  value={editAltText}
+                  onChange={(e) => setEditAltText(e.target.value)}
+                  data-testid="input-edit-alt-text"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <Textarea 
+                  value={editDescription}
+                  onChange={(e) => setEditDescription(e.target.value)}
+                  rows={3}
+                  data-testid="textarea-edit-description"
+                />
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
+                <Select value={editVisibility} onValueChange={(value: any) => setEditVisibility(value)}>
+                  <SelectTrigger data-testid="select-edit-visibility">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="private">Private</SelectItem>
+                    <SelectItem value="public">Public</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+                <Select 
+                  value={editTags[0] || ''} 
+                  onValueChange={(value) => setEditTags(value ? [value] : [])}
+                >
+                  <SelectTrigger data-testid="select-edit-tags">
+                    <SelectValue placeholder="Select tags" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tags.map((tag: any) => (
+                      <SelectItem key={tag.id} value={tag.id}>{tag.name}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)} data-testid="button-cancel-edit">
+              Cancel
+            </Button>
+            <Button onClick={handleSaveMetadata} data-testid="button-save-metadata">
+              Save Changes
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      
+      {/* Delete Warning Dialog */}
+      <AlertDialog open={deleteWarningDialogOpen} onOpenChange={setDeleteWarningDialogOpen}>
+        <AlertDialogContent data-testid="dialog-delete-warning">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cannot Delete Asset</AlertDialogTitle>
+            <AlertDialogDescription>
+              This asset is currently in use and cannot be deleted. Usage:
+              <ul className="mt-2 space-y-1">
+                {assetUsage.map((usage, i) => (
+                  <li key={i} className="text-sm">• {usage.usageType}: {usage.referenceId}</li>
+                ))}
+              </ul>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Close</AlertDialogCancel>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Delete Confirm Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent data-testid="dialog-delete-confirm">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Media Asset</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this asset? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={() => selectedAsset && deleteAssetMutation.mutate(selectedAsset.id)}
+              className="bg-red-500 hover:bg-red-600"
+              data-testid="button-confirm-delete"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      
+      {/* Create Tag Dialog */}
+      <Dialog open={createTagDialogOpen} onOpenChange={setCreateTagDialogOpen}>
+        <DialogContent data-testid="dialog-create-tag">
+          <DialogHeader>
+            <DialogTitle>Create Tag</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tag Name <span className="text-red-500">*</span>
+              </label>
+              <Input 
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                data-testid="input-tag-name"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+              <Textarea 
+                value={newTagDescription}
+                onChange={(e) => setNewTagDescription(e.target.value)}
+                rows={2}
+                data-testid="textarea-tag-description"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCreateTagDialogOpen(false)}>Cancel</Button>
+            <Button 
+              onClick={() => createTagMutation.mutate({ name: newTagName, description: newTagDescription || undefined })}
+              disabled={!newTagName}
+              data-testid="button-create-tag"
+            >
+              Create Tag
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
 function PrintableFormsTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -6056,6 +6808,17 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           >
             Printable Forms
           </button>
+          <button
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'media-library' 
+                ? 'bg-white text-navy shadow-sm' 
+                : 'text-gray-600 hover:text-navy'
+            }`}
+            onClick={() => setActiveTab('media-library')}
+            data-testid="tab-media-library"
+          >
+            Media Library
+          </button>
         </div>
 
         {/* Overview Tab (Analytics Content) */}
@@ -7658,6 +8421,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
         {/* Printable Forms Tab */}
         {activeTab === 'printable-forms' && <PrintableFormsTab />}
+
+        {/* Media Library Tab */}
+        {activeTab === 'media-library' && <MediaLibraryTab />}
       </div>
 
       {/* Create/Edit Event Dialog */}

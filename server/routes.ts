@@ -6,7 +6,8 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, type VerificationRequest, users } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, type VerificationRequest, users } from "@shared/schema";
+import { nanoid } from 'nanoid';
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
@@ -5395,6 +5396,278 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Media Library Routes (admin-only)
+  
+  // GET /api/admin/media-assets - List media assets with filters
+  app.get('/api/admin/media-assets', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { mediaType, tags, search, limit, offset } = req.query;
+      
+      const filters: any = {};
+      
+      if (mediaType) filters.mediaType = mediaType;
+      if (search) filters.search = search;
+      if (limit) filters.limit = parseInt(limit as string);
+      if (offset) filters.offset = parseInt(offset as string);
+      
+      // Parse tags array if provided
+      if (tags) {
+        filters.tags = Array.isArray(tags) ? tags : [tags];
+      }
+      
+      const assets = await storage.listMediaAssets(filters);
+      
+      // Generate signed download URLs for each asset
+      const assetsWithUrls = await Promise.all(
+        assets.map(async (asset) => {
+          const downloadUrl = await objectStorageService.getSignedDownloadUrl(asset.objectKey, 3600);
+          return { ...asset, downloadUrl };
+        })
+      );
+      
+      res.json(assetsWithUrls);
+    } catch (error: any) {
+      console.error('Error listing media assets:', error);
+      res.status(500).json({ message: error.message || 'Failed to list media assets' });
+    }
+  });
+  
+  // POST /api/admin/media-assets/upload-url - Get signed upload URL
+  app.post('/api/admin/media-assets/upload-url', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { filename, mimeType, fileSize, mediaType } = req.body;
+      
+      // Validate required fields
+      if (!filename || !mimeType || !fileSize || !mediaType) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+      
+      // Validate file size (50MB max)
+      const MAX_FILE_SIZE = 50 * 1024 * 1024;
+      if (fileSize > MAX_FILE_SIZE) {
+        return res.status(400).json({ 
+          message: `File size exceeds maximum of 50MB. Size: ${(fileSize / (1024 * 1024)).toFixed(2)}MB` 
+        });
+      }
+      
+      // Validate MIME type matches media type
+      const mimeTypeMap: Record<string, string[]> = {
+        image: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'],
+        video: ['video/mp4', 'video/webm', 'video/ogg', 'video/quicktime'],
+        document: ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
+        audio: ['audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/webm']
+      };
+      
+      if (!mimeTypeMap[mediaType]?.includes(mimeType)) {
+        return res.status(400).json({ 
+          message: `Invalid MIME type '${mimeType}' for media type '${mediaType}'` 
+        });
+      }
+      
+      // Generate object key
+      const objectKey = `media/${mediaType}/${req.user.id}/${nanoid()}-${filename}`;
+      
+      // Parse bucket and object name from private dir
+      const privateDir = objectStorageService.getPrivateObjectDir();
+      const fullPath = `${privateDir}/${objectKey}`;
+      const { bucketName, objectName } = parseObjectPath(fullPath);
+      
+      // Get signed upload URL
+      const uploadUrl = await objectStorageService.getSignedUploadUrl(bucketName, objectName, 900);
+      
+      res.json({ uploadUrl, objectKey: `/objects/${objectKey}` });
+    } catch (error: any) {
+      console.error('Error generating upload URL:', error);
+      res.status(500).json({ message: error.message || 'Failed to generate upload URL' });
+    }
+  });
+  
+  // POST /api/admin/media-assets - Create media asset record
+  app.post('/api/admin/media-assets', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { tagIds, ...assetData } = req.body;
+      
+      // Validate using schema
+      const validatedData = insertMediaAssetSchema.parse({
+        ...assetData,
+        uploadedBy: req.user.id
+      });
+      
+      // Create media asset
+      const asset = await storage.createMediaAsset(validatedData);
+      
+      // Attach tags if provided
+      if (tagIds && Array.isArray(tagIds) && tagIds.length > 0) {
+        await storage.attachMediaTags(asset.id, tagIds);
+      }
+      
+      res.json(asset);
+    } catch (error: any) {
+      console.error('Error creating media asset:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: 'Invalid asset data', errors: error.errors });
+      }
+      res.status(500).json({ message: error.message || 'Failed to create media asset' });
+    }
+  });
+  
+  // PATCH /api/admin/media-assets/:id - Update media asset metadata
+  app.patch('/api/admin/media-assets/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { altText, description, visibility } = req.body;
+      
+      // Validate updates
+      const updateSchema = z.object({
+        altText: z.string().optional(),
+        description: z.string().optional(),
+        visibility: z.enum(['private', 'public']).optional()
+      });
+      
+      const updates = updateSchema.parse({ altText, description, visibility });
+      
+      const updatedAsset = await storage.updateMediaAssetMetadata(id, updates);
+      res.json(updatedAsset);
+    } catch (error: any) {
+      console.error('Error updating media asset:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: 'Invalid update data', errors: error.errors });
+      }
+      res.status(500).json({ message: error.message || 'Failed to update media asset' });
+    }
+  });
+  
+  // DELETE /api/admin/media-assets/:id - Delete media asset
+  app.delete('/api/admin/media-assets/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Get asset details
+      const asset = await storage.getMediaAsset(id);
+      if (!asset) {
+        return res.status(404).json({ message: 'Media asset not found' });
+      }
+      
+      // Check usage
+      const usage = await storage.listMediaAssetUsage(id);
+      if (usage.length > 0) {
+        return res.status(400).json({ 
+          message: 'Cannot delete asset that is in use',
+          usage 
+        });
+      }
+      
+      // Delete from object storage
+      try {
+        await objectStorageService.deleteObject(asset.objectKey);
+      } catch (storageError) {
+        console.error('Error deleting from object storage:', storageError);
+        // Continue with database deletion even if storage delete fails
+      }
+      
+      // Delete from database
+      await storage.deleteMediaAsset(id);
+      
+      res.json({ success: true, message: 'Media asset deleted successfully' });
+    } catch (error: any) {
+      console.error('Error deleting media asset:', error);
+      res.status(500).json({ message: error.message || 'Failed to delete media asset' });
+    }
+  });
+  
+  // GET /api/admin/media-assets/:id/usage - Get asset usage
+  app.get('/api/admin/media-assets/:id/usage', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const usage = await storage.listMediaAssetUsage(id);
+      res.json(usage);
+    } catch (error: any) {
+      console.error('Error getting asset usage:', error);
+      res.status(500).json({ message: error.message || 'Failed to get asset usage' });
+    }
+  });
+  
+  // POST /api/admin/media-assets/:id/tags - Attach tags to asset
+  app.post('/api/admin/media-assets/:id/tags', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { tagIds } = req.body;
+      
+      if (!Array.isArray(tagIds)) {
+        return res.status(400).json({ message: 'tagIds must be an array' });
+      }
+      
+      await storage.attachMediaTags(id, tagIds);
+      res.json({ success: true, message: 'Tags attached successfully' });
+    } catch (error: any) {
+      console.error('Error attaching tags:', error);
+      res.status(500).json({ message: error.message || 'Failed to attach tags' });
+    }
+  });
+  
+  // DELETE /api/admin/media-assets/:id/tags - Detach tags from asset
+  app.delete('/api/admin/media-assets/:id/tags', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { tagIds } = req.body;
+      
+      if (!Array.isArray(tagIds)) {
+        return res.status(400).json({ message: 'tagIds must be an array' });
+      }
+      
+      await storage.detachMediaTags(id, tagIds);
+      res.json({ success: true, message: 'Tags detached successfully' });
+    } catch (error: any) {
+      console.error('Error detaching tags:', error);
+      res.status(500).json({ message: error.message || 'Failed to detach tags' });
+    }
+  });
+  
+  // GET /api/admin/media-tags - List all media tags
+  app.get('/api/admin/media-tags', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const tags = await storage.listMediaTags();
+      res.json(tags);
+    } catch (error: any) {
+      console.error('Error listing media tags:', error);
+      res.status(500).json({ message: error.message || 'Failed to list media tags' });
+    }
+  });
+  
+  // POST /api/admin/media-tags - Create new media tag
+  app.post('/api/admin/media-tags', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const validatedData = insertMediaTagSchema.parse(req.body);
+      const tag = await storage.createMediaTag(validatedData);
+      res.json(tag);
+    } catch (error: any) {
+      console.error('Error creating media tag:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: 'Invalid tag data', errors: error.errors });
+      }
+      res.status(500).json({ message: error.message || 'Failed to create media tag' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Helper function to parse object path
+function parseObjectPath(path: string): { bucketName: string; objectName: string } {
+  if (!path.startsWith("/")) {
+    path = `/${path}`;
+  }
+  const pathParts = path.split("/");
+  if (pathParts.length < 3) {
+    throw new Error("Invalid path: must contain at least a bucket name");
+  }
+
+  const bucketName = pathParts[1];
+  const objectName = pathParts.slice(2).join("/");
+
+  return {
+    bucketName,
+    objectName,
+  };
 }
