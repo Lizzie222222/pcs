@@ -14,7 +14,7 @@ import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Plus, Trash2 } from "lucide-react";
+import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Plus, Trash2, Download } from "lucide-react";
 import type { AuditResponse, ReductionPromise } from "@shared/schema";
 
 interface PlasticWasteAuditProps {
@@ -747,19 +747,47 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
   return (
     <Card className="border-2 border-blue-300">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-navy">
-          <ClipboardCheck className="h-6 w-6 text-blue-600" />
-          Plastic Waste Audit
-        </CardTitle>
-        <CardDescription>
-          Step {currentStep} of 5: {
-            currentStep === 1 ? "About Your School" :
-            currentStep === 2 ? "Lunchroom & Staffroom" :
-            currentStep === 3 ? "Classrooms & Bathrooms" :
-            currentStep === 4 ? "Waste Management" :
-            "Action Plan"
-          }
-        </CardDescription>
+        <div className="flex items-start justify-between">
+          <div className="flex-1">
+            <CardTitle className="flex items-center gap-2 text-navy">
+              <ClipboardCheck className="h-6 w-6 text-blue-600" />
+              Plastic Waste Audit
+            </CardTitle>
+            <CardDescription>
+              Step {currentStep} of 5: {
+                currentStep === 1 ? "About Your School" :
+                currentStep === 2 ? "Lunchroom & Staffroom" :
+                currentStep === 3 ? "Classrooms & Bathrooms" :
+                currentStep === 4 ? "Waste Management" :
+                "Action Plan"
+              }
+            </CardDescription>
+          </div>
+          <div className="flex gap-2 flex-shrink-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.open('/api/printable-forms/audit', '_blank')}
+              data-testid="button-download-audit-form"
+              className="text-xs"
+            >
+              <Download className="h-3 w-3 mr-1" />
+              Audit Form
+            </Button>
+            {currentStep === 5 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => window.open('/api/printable-forms/action-plan', '_blank')}
+                data-testid="button-download-action-plan-form"
+                className="text-xs"
+              >
+                <Download className="h-3 w-3 mr-1" />
+                Action Plan
+              </Button>
+            )}
+          </div>
+        </div>
         <Progress value={progress} className="mt-2" />
       </CardHeader>
       <CardContent className="space-y-6">
