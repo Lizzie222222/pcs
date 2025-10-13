@@ -445,16 +445,20 @@ export const eventRegistrations = pgTable("event_registrations", {
   index("idx_event_registrations_user").on(table.userId),
 ]);
 
+export const recipientTypeEnum = pgEnum('recipient_type', [
+  'all_teachers',
+  'custom'
+]);
+
 export const eventAnnouncements = pgTable("event_announcements", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   eventId: varchar("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
-  audienceId: varchar("audience_id").notNull(),
+  recipientType: recipientTypeEnum("recipient_type").notNull(),
   campaignId: varchar("campaign_id"),
-  campaignWebId: integer("campaign_web_id"),
   announcementType: varchar("announcement_type").notNull(),
   sentBy: varchar("sent_by").notNull().references(() => users.id),
   sentAt: timestamp("sent_at").defaultNow(),
-  recipientCount: integer("recipient_count"),
+  recipientCount: integer("recipient_count").notNull(),
   status: varchar("status").default('sent'),
 }, (table) => [
   index("idx_event_announcements_event").on(table.eventId),

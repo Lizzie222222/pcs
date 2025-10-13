@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -73,7 +73,9 @@ import {
   Heart,
   Leaf,
   Factory,
-  Trash
+  Trash,
+  Upload,
+  Image as ImageIcon
 } from "lucide-react";
 
 import { 
@@ -4372,10 +4374,16 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     tags: '',
   });
 
-  // Newsletter state
+  // Event image upload state
+  const [uploadedEventImage, setUploadedEventImage] = useState<{ name: string; url: string; } | null>(null);
+  const [isUploadingEventImage, setIsUploadingEventImage] = useState(false);
+  const eventImageInputRef = useRef<HTMLInputElement>(null);
+
+  // Newsletter state (SendGrid)
   const [announcingEvent, setAnnouncingEvent] = useState<Event | null>(null);
   const [newsletterDialogOpen, setNewsletterDialogOpen] = useState(false);
-  const [selectedAudienceId, setSelectedAudienceId] = useState<string>('');
+  const [recipientType, setRecipientType] = useState<'all_teachers' | 'custom'>('all_teachers');
+  const [customEmails, setCustomEmails] = useState<string>('');
   const [selectedEventsForDigest, setSelectedEventsForDigest] = useState<Set<string>>(new Set());
   const [digestDialogOpen, setDigestDialogOpen] = useState(false);
 
@@ -4683,6 +4691,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         registrationDeadline: '',
         tags: '',
       });
+      setUploadedEventImage(null);
     },
     onError: (error: any) => {
       toast({
@@ -4721,6 +4730,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         registrationDeadline: '',
         tags: '',
       });
+      setUploadedEventImage(null);
     },
     onError: (error: any) => {
       toast({
@@ -4753,9 +4763,99 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     },
   });
 
-  // Mailchimp audiences query
-  const { data: mailchimpAudiences = [] } = useQuery<Array<{ id: string; name: string; memberCount: number }>>({
-    queryKey: ['/api/mailchimp/audiences'],
+  // Event image upload handler
+  const handleEventImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload an image file (JPG, PNG, or WEBP).",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate file size (10MB)
+    if (file.size > 10 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Image must be less than 10MB.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsUploadingEventImage(true);
+
+    try {
+      // Get upload URL
+      const uploadResponse = await fetch('/api/objects/upload', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to get upload URL');
+      }
+
+      const { uploadURL } = await uploadResponse.json();
+
+      // Upload file to storage
+      const uploadFileResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadFileResponse.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      // Set ACL policy to PUBLIC for event images
+      const aclResponse = await apiRequest('PUT', '/api/evidence-files', {
+        fileURL: uploadURL.split('?')[0],
+        visibility: 'public',
+        filename: file.name,
+      });
+      const { objectPath } = await aclResponse.json();
+
+      // Update state
+      setUploadedEventImage({ name: file.name, url: objectPath });
+      setEventFormData({ ...eventFormData, imageUrl: objectPath });
+
+      toast({
+        title: "Success",
+        description: "Image uploaded successfully.",
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUploadingEventImage(false);
+      if (eventImageInputRef.current) {
+        eventImageInputRef.current.value = '';
+      }
+    }
+  };
+
+  const removeEventImage = () => {
+    setUploadedEventImage(null);
+    setEventFormData({ ...eventFormData, imageUrl: '' });
+  };
+
+  // Teacher emails query for SendGrid
+  const { data: teacherEmailsData } = useQuery<{ emails: string[]; count: number }>({
+    queryKey: ['/api/admin/teachers/emails'],
     enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && (newsletterDialogOpen || digestDialogOpen)),
     retry: false,
   });
@@ -4793,19 +4893,27 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'events'),
   });
 
-  // Send event announcement mutation
+  // Send event announcement mutation (SendGrid)
   const sendAnnouncementMutation = useMutation({
-    mutationFn: async ({ eventId, audienceId }: { eventId: string; audienceId: string }) => {
-      return await apiRequest('POST', `/api/admin/events/${eventId}/announce`, { audienceId });
+    mutationFn: async ({ eventId, recipientType, customEmails }: { 
+      eventId: string; 
+      recipientType: 'all_teachers' | 'custom';
+      customEmails?: string[];
+    }) => {
+      return await apiRequest('POST', `/api/admin/events/${eventId}/announce`, { 
+        recipientType,
+        customEmails: customEmails || []
+      });
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       toast({
         title: "Success",
-        description: "Event announcement sent to newsletter successfully.",
+        description: `Event announcement sent to ${data.recipientCount} recipient(s) successfully.`,
       });
       setNewsletterDialogOpen(false);
       setAnnouncingEvent(null);
-      setSelectedAudienceId('');
+      setRecipientType('all_teachers');
+      setCustomEmails('');
     },
     onError: (error: any) => {
       toast({
@@ -4816,19 +4924,28 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     },
   });
 
-  // Send event digest mutation
+  // Send event digest mutation (SendGrid)
   const sendDigestMutation = useMutation({
-    mutationFn: async ({ eventIds, audienceId }: { eventIds: string[]; audienceId: string }) => {
-      return await apiRequest('POST', '/api/admin/events/digest', { eventIds, audienceId });
+    mutationFn: async ({ eventIds, recipientType, customEmails }: { 
+      eventIds: string[]; 
+      recipientType: 'all_teachers' | 'custom';
+      customEmails?: string[];
+    }) => {
+      return await apiRequest('POST', '/api/admin/events/digest', { 
+        eventIds, 
+        recipientType,
+        customEmails: customEmails || []
+      });
     },
-    onSuccess: () => {
+    onSuccess: (data: any) => {
       toast({
         title: "Success",
-        description: "Event digest sent to newsletter successfully.",
+        description: `Event digest sent to ${data.recipientCount} recipient(s) successfully.`,
       });
       setDigestDialogOpen(false);
       setSelectedEventsForDigest(new Set());
-      setSelectedAudienceId('');
+      setRecipientType('all_teachers');
+      setCustomEmails('');
     },
     onError: (error: any) => {
       toast({
@@ -6893,6 +7010,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                         registrationDeadline: '',
                         tags: '',
                       });
+                      setUploadedEventImage(null);
                       setEventDialogOpen(true);
                     }}
                     className="bg-pcs_blue hover:bg-pcs_blue/90"
@@ -7037,6 +7155,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                       registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
                                       tags: event.tags?.join(', ') || '',
                                     });
+                                    // Set uploaded image if event has an image
+                                    if (event.imageUrl) {
+                                      setUploadedEventImage({ name: 'Event image', url: event.imageUrl });
+                                    } else {
+                                      setUploadedEventImage(null);
+                                    }
                                     setEventDialogOpen(true);
                                   }}
                                   data-testid={`button-edit-${event.id}`}
@@ -7228,17 +7352,83 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Image URL
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Event Image
               </label>
+              
+              {/* Hidden file input */}
               <input
-                type="url"
-                value={eventFormData.imageUrl}
-                onChange={(e) => setEventFormData({ ...eventFormData, imageUrl: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                placeholder="https://..."
-                data-testid="input-image-url"
+                ref={eventImageInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleEventImageUpload}
+                className="hidden"
+                data-testid="input-event-image-file"
               />
+
+              {!uploadedEventImage && !eventFormData.imageUrl ? (
+                /* Upload button */
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => eventImageInputRef.current?.click()}
+                  disabled={isUploadingEventImage}
+                  className="w-full border-dashed border-2 h-32 flex flex-col items-center justify-center gap-2"
+                  data-testid="button-upload-event-image"
+                >
+                  {isUploadingEventImage ? (
+                    <>
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue"></div>
+                      <span className="text-sm text-gray-600">Uploading...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-8 w-8 text-gray-400" />
+                      <span className="text-sm text-gray-600">Click to upload event image</span>
+                      <span className="text-xs text-gray-400">JPG, PNG, WEBP (max 10MB)</span>
+                    </>
+                  )}
+                </Button>
+              ) : (
+                /* Image preview */
+                <div className="relative border border-gray-300 rounded-md overflow-hidden">
+                  <img
+                    src={`/api/objects${eventFormData.imageUrl}`}
+                    alt="Event preview"
+                    className="w-full h-48 object-cover"
+                    data-testid="image-event-preview"
+                  />
+                  <div className="absolute top-2 right-2 flex gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => eventImageInputRef.current?.click()}
+                      className="bg-white/90 hover:bg-white"
+                      data-testid="button-change-event-image"
+                    >
+                      <Upload className="h-4 w-4 mr-1" />
+                      Change
+                    </Button>
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="destructive"
+                      onClick={removeEventImage}
+                      className="bg-red-600/90 hover:bg-red-600"
+                      data-testid="button-remove-event-image"
+                    >
+                      <X className="h-4 w-4 mr-1" />
+                      Remove
+                    </Button>
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white p-2">
+                    <p className="text-xs truncate" data-testid="text-image-filename">
+                      {uploadedEventImage?.name || 'Event image'}
+                    </p>
+                  </div>
+                </div>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -7508,37 +7698,49 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         </DialogContent>
       </Dialog>
 
-      {/* Newsletter Announcement Dialog */}
+      {/* Newsletter Announcement Dialog (SendGrid) */}
       <Dialog open={newsletterDialogOpen} onOpenChange={setNewsletterDialogOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle data-testid="text-newsletter-title">
-              Send Event to Newsletter
+              Send Event Announcement
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-gray-600">
-              Send "{announcingEvent?.title}" to your Mailchimp newsletter subscribers.
+              Send "{announcingEvent?.title}" via email to teachers.
             </p>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Select Mailchimp Audience
+                Recipient Type
               </label>
               <select
-                value={selectedAudienceId}
-                onChange={(e) => setSelectedAudienceId(e.target.value)}
+                value={recipientType}
+                onChange={(e) => setRecipientType(e.target.value as 'all_teachers' | 'custom')}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
-                data-testid="select-audience"
+                data-testid="select-recipient-type"
               >
-                <option value="">Select an audience...</option>
-                {mailchimpAudiences.map((audience) => (
-                  <option key={audience.id} value={audience.id}>
-                    {audience.name} ({audience.memberCount} subscribers)
-                  </option>
-                ))}
+                <option value="all_teachers">All Teachers ({teacherEmailsData?.count || 0} teachers)</option>
+                <option value="custom">Custom Email List</option>
               </select>
             </div>
+
+            {recipientType === 'custom' && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Email Addresses
+                  <span className="text-xs text-gray-500 ml-2">(comma-separated)</span>
+                </label>
+                <textarea
+                  value={customEmails}
+                  onChange={(e) => setCustomEmails(e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[100px]"
+                  placeholder="email1@example.com, email2@example.com"
+                  data-testid="input-custom-emails"
+                />
+              </div>
+            )}
           </div>
           <DialogFooter>
             <Button
@@ -7546,7 +7748,8 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               onClick={() => {
                 setNewsletterDialogOpen(false);
                 setAnnouncingEvent(null);
-                setSelectedAudienceId('');
+                setRecipientType('all_teachers');
+                setCustomEmails('');
               }}
               data-testid="button-cancel-newsletter"
             >
@@ -7554,18 +7757,26 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             </Button>
             <Button
               onClick={() => {
-                if (announcingEvent && selectedAudienceId) {
+                if (announcingEvent) {
+                  const emails = recipientType === 'custom' 
+                    ? customEmails.split(',').map(e => e.trim()).filter(Boolean)
+                    : [];
                   sendAnnouncementMutation.mutate({
                     eventId: announcingEvent.id,
-                    audienceId: selectedAudienceId,
+                    recipientType,
+                    customEmails: emails,
                   });
                 }
               }}
-              disabled={!selectedAudienceId || sendAnnouncementMutation.isPending}
+              disabled={
+                !announcingEvent || 
+                (recipientType === 'custom' && !customEmails.trim()) ||
+                sendAnnouncementMutation.isPending
+              }
               className="bg-pcs_blue hover:bg-pcs_blue/90"
               data-testid="button-confirm-newsletter"
             >
-              {sendAnnouncementMutation.isPending ? 'Sending...' : 'Send to Newsletter'}
+              {sendAnnouncementMutation.isPending ? 'Sending...' : 'Send Announcement'}
             </Button>
           </DialogFooter>
         </DialogContent>

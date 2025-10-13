@@ -1221,3 +1221,406 @@ export async function sendEventUpdatedEmail(
   });
 }
 
+// SendGrid Event Announcement Functions
+
+export async function sendEventAnnouncementEmail(
+  recipients: string[],
+  event: {
+    id: string;
+    title: string;
+    description: string;
+    eventType: string;
+    startDateTime: Date | string;
+    endDateTime: Date | string;
+    timezone?: string;
+    location?: string;
+    isVirtual?: boolean;
+    meetingLink?: string;
+    imageUrl?: string;
+    capacity?: number;
+  }
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  if (!process.env.SENDGRID_API_KEY) {
+    return { success: false, error: 'SendGrid not configured' };
+  }
+
+  if (recipients.length === 0) {
+    return { success: false, error: 'No recipients provided' };
+  }
+
+  const startDate = new Date(event.startDateTime);
+  const endDate = new Date(event.endDateTime);
+  
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    });
+  };
+  
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true 
+    });
+  };
+
+  const eventTypeLabels: { [key: string]: string } = {
+    workshop: '🎨 Workshop',
+    webinar: '💻 Webinar',
+    community_event: '🌍 Community Event',
+    training: '📚 Training',
+    celebration: '🎉 Celebration',
+    other: '📅 Event'
+  };
+
+  const eventTypeLabel = eventTypeLabels[event.eventType] || '📅 Event';
+  const locationInfo = event.isVirtual 
+    ? `<p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+         <strong>🌐 Virtual Event</strong><br/>
+         ${event.meetingLink ? `<a href="${event.meetingLink}" style="color: #019ADE; text-decoration: none;">Join Meeting</a>` : 'Meeting link will be shared before the event'}
+       </p>`
+    : `<p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+         <strong>📍 Location:</strong><br/>
+         ${event.location || 'To be announced'}
+       </p>`;
+
+  const capacityInfo = event.capacity 
+    ? `<div style="margin: 20px 0; padding: 15px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+         <p style="margin: 0; color: #856404; font-size: 14px; line-height: 1.6;">
+           ⚠️ <strong>Limited Spaces:</strong> Only ${event.capacity} spots available - register soon to secure your place!
+         </p>
+       </div>`
+    : '';
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${eventTypeLabel}: ${event.title}</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f5f5f5;">
+        <tr>
+          <td style="padding: 40px 20px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
+                  <h1 style="margin: 0 0 10px 0; color: #ffffff; font-size: 28px; font-weight: 600;">
+                    Plastic Clever Schools
+                  </h1>
+                  <p style="margin: 0; color: #B8E6FF; font-size: 16px;">
+                    ${eventTypeLabel}
+                  </p>
+                </td>
+              </tr>
+              
+              ${event.imageUrl ? `
+              <!-- Event Image -->
+              <tr>
+                <td style="padding: 0;">
+                  <img src="${event.imageUrl}" alt="${event.title}" style="width: 100%; height: auto; display: block; border-radius: 0;" />
+                </td>
+              </tr>
+              ` : ''}
+              
+              <!-- Body -->
+              <tr>
+                <td style="padding: 40px 30px;">
+                  <h2 style="margin: 0 0 20px 0; color: #0B3D5D; font-size: 24px; font-weight: 600;">
+                    ${event.title}
+                  </h2>
+                  
+                  <!-- Event Details Card -->
+                  <div style="margin: 0 0 25px 0; padding: 25px; background-color: #f0f9ff; border-left: 4px solid #019ADE; border-radius: 4px;">
+                    <p style="margin: 0 0 15px 0; color: #0B3D5D; font-size: 18px; font-weight: 600;">
+                      📅 ${formatDate(startDate)}
+                    </p>
+                    
+                    <p style="margin: 0 0 15px 0; color: #0B3D5D; font-size: 16px; line-height: 1.6;">
+                      🕐 ${formatTime(startDate)} - ${formatTime(endDate)}${event.timezone ? ` (${event.timezone})` : ''}
+                    </p>
+                    
+                    ${locationInfo}
+                  </div>
+                  
+                  <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+                    ${event.description}
+                  </p>
+                  
+                  ${capacityInfo}
+                  
+                  <!-- Action Button -->
+                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+                    <tr>
+                      <td style="border-radius: 6px; background-color: #FF595A;">
+                        <a href="${getBaseUrl()}/events/${event.id}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 600; border-radius: 6px;">
+                          Register Now
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                  
+                  <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                    Don't miss this opportunity to connect with fellow educators and advance your plastic reduction journey!
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center; border-top: 1px solid #e9ecef;">
+                  <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                    Plastic Clever Schools
+                  </p>
+                  <p style="margin: 0; color: #999999; font-size: 12px; line-height: 1.6;">
+                    Together, we're making schools plastic clever
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  try {
+    // SendGrid supports batch sending with BCC for privacy
+    const emailData: any = {
+      to: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+      bcc: recipients,
+      from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+      subject: `${eventTypeLabel}: ${event.title}`,
+      html: html,
+    };
+    
+    const response = await mailService.send(emailData);
+    const messageId = response[0]?.headers?.['x-message-id'] || 'unknown';
+
+    // Log the email send
+    await storage.logEmail({
+      recipientEmail: `${recipients.length} recipients`,
+      subject: `${eventTypeLabel}: ${event.title}`,
+      template: 'event_announcement',
+      status: 'sent',
+    });
+
+    return { success: true, messageId };
+  } catch (error: any) {
+    console.error('SendGrid event announcement error:', error);
+    
+    // Log failed email
+    await storage.logEmail({
+      recipientEmail: `${recipients.length} recipients`,
+      subject: `${eventTypeLabel}: ${event.title}`,
+      template: 'event_announcement',
+      status: 'failed',
+    });
+
+    return { success: false, error: error.message || 'Failed to send event announcement' };
+  }
+}
+
+export async function sendEventDigestEmail(
+  recipients: string[],
+  events: Array<{
+    id: string;
+    title: string;
+    description: string;
+    eventType: string;
+    startDateTime: Date | string;
+    endDateTime: Date | string;
+    timezone?: string;
+    location?: string;
+    isVirtual?: boolean;
+    imageUrl?: string;
+  }>
+): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  if (!process.env.SENDGRID_API_KEY) {
+    return { success: false, error: 'SendGrid not configured' };
+  }
+
+  if (recipients.length === 0) {
+    return { success: false, error: 'No recipients provided' };
+  }
+
+  if (events.length === 0) {
+    return { success: false, error: 'No events to include in digest' };
+  }
+
+  const eventTypeLabels: { [key: string]: string } = {
+    workshop: '🎨 Workshop',
+    webinar: '💻 Webinar',
+    community_event: '🌍 Community Event',
+    training: '📚 Training',
+    celebration: '🎉 Celebration',
+    other: '📅 Event'
+  };
+
+  const eventsHtml = events.map(event => {
+    const startDate = new Date(event.startDateTime);
+    const formatDate = (date: Date) => {
+      return date.toLocaleDateString('en-US', { 
+        weekday: 'short', 
+        month: 'short', 
+        day: 'numeric' 
+      });
+    };
+    
+    const formatTime = (date: Date) => {
+      return date.toLocaleTimeString('en-US', { 
+        hour: 'numeric', 
+        minute: '2-digit',
+        hour12: true 
+      });
+    };
+
+    const eventTypeLabel = eventTypeLabels[event.eventType] || '📅 Event';
+    const locationIcon = event.isVirtual ? '💻 Virtual' : `📍 ${event.location || 'TBA'}`;
+    
+    return `
+      <div style="margin: 0 0 25px 0; padding: 20px; background-color: #ffffff; border: 1px solid #e9ecef; border-radius: 8px;">
+        <div style="display: flex; align-items: start; gap: 15px;">
+          ${event.imageUrl ? `
+            <img src="${event.imageUrl}" alt="${event.title}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 6px;" />
+          ` : ''}
+          <div style="flex: 1;">
+            <p style="margin: 0 0 5px 0; color: #019ADE; font-size: 12px; font-weight: 600; text-transform: uppercase;">
+              ${eventTypeLabel}
+            </p>
+            <h3 style="margin: 0 0 10px 0; color: #0B3D5D; font-size: 18px; font-weight: 600;">
+              ${event.title}
+            </h3>
+            <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.5;">
+              <strong>📅 ${formatDate(startDate)} at ${formatTime(startDate)}</strong> | ${locationIcon}
+            </p>
+            <p style="margin: 0 0 15px 0; color: #333333; font-size: 14px; line-height: 1.5;">
+              ${event.description.substring(0, 120)}${event.description.length > 120 ? '...' : ''}
+            </p>
+            <a href="${getBaseUrl()}/events/${event.id}" style="display: inline-block; padding: 10px 20px; background-color: #019ADE; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;">
+              Learn More & Register
+            </a>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Upcoming Events - Plastic Clever Schools</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f5f5f5;">
+        <tr>
+          <td style="padding: 40px 20px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+              <!-- Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
+                  <h1 style="margin: 0 0 10px 0; color: #ffffff; font-size: 28px; font-weight: 600;">
+                    Plastic Clever Schools
+                  </h1>
+                  <p style="margin: 0; color: #B8E6FF; font-size: 16px;">
+                    📅 Upcoming Events Digest
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Body -->
+              <tr>
+                <td style="padding: 40px 30px; background-color: #f8f9fa;">
+                  <h2 style="margin: 0 0 10px 0; color: #0B3D5D; font-size: 24px; font-weight: 600; text-align: center;">
+                    Upcoming Events & Opportunities
+                  </h2>
+                  
+                  <p style="margin: 0 0 30px 0; color: #666666; font-size: 16px; line-height: 1.6; text-align: center;">
+                    Join us for exciting upcoming events designed to help you and your school reduce plastic waste!
+                  </p>
+                  
+                  ${eventsHtml}
+                  
+                  <!-- View All Button -->
+                  <div style="margin: 30px 0 0 0; padding: 30px; background-color: #ffffff; border-radius: 8px; text-align: center;">
+                    <p style="margin: 0 0 20px 0; color: #0B3D5D; font-size: 18px; font-weight: 600;">
+                      Want to see all our events?
+                    </p>
+                    <a href="${getBaseUrl()}/events" style="display: inline-block; padding: 16px 40px; background-color: #FF595A; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 600; border-radius: 6px;">
+                      View All Events
+                    </a>
+                  </div>
+                  
+                  <p style="margin: 30px 0 0 0; color: #666666; font-size: 14px; line-height: 1.6; text-align: center;">
+                    Stay connected with the Plastic Clever Schools community and make a difference together! 🌱
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center; border-top: 1px solid #e9ecef;">
+                  <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.6;">
+                    Plastic Clever Schools
+                  </p>
+                  <p style="margin: 0; color: #999999; font-size: 12px; line-height: 1.6;">
+                    Together, we're making schools plastic clever
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+
+  try {
+    // SendGrid batch sending with BCC for privacy
+    const emailData: any = {
+      to: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+      bcc: recipients,
+      from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+      subject: `📅 Upcoming Events from Plastic Clever Schools`,
+      html: html,
+    };
+    
+    const response = await mailService.send(emailData);
+    const messageId = response[0]?.headers?.['x-message-id'] || 'unknown';
+
+    // Log the email send
+    await storage.logEmail({
+      recipientEmail: `${recipients.length} recipients`,
+      subject: `📅 Upcoming Events Digest - ${events.length} events`,
+      template: 'event_digest',
+      status: 'sent',
+    });
+
+    return { success: true, messageId };
+  } catch (error: any) {
+    console.error('SendGrid event digest error:', error);
+    
+    // Log failed email
+    await storage.logEmail({
+      recipientEmail: `${recipients.length} recipients`,
+      subject: `📅 Upcoming Events Digest - ${events.length} events`,
+      template: 'event_digest',
+      status: 'failed',
+    });
+
+    return { success: false, error: error.message || 'Failed to send event digest' };
+  }
+}
+

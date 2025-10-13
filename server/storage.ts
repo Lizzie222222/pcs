@@ -86,6 +86,7 @@ export interface IStorage {
   // User management (admin operations)
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
   deleteUser(id: string): Promise<boolean>;
+  getTeacherEmails(): Promise<string[]>;
   
   // School operations
   createSchool(school: InsertSchool): Promise<School>;
@@ -568,6 +569,22 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(users)
       .orderBy(asc(users.firstName), asc(users.lastName));
+  }
+
+  async getTeacherEmails(): Promise<string[]> {
+    const teachers = await db
+      .select({ email: users.email })
+      .from(users)
+      .where(
+        and(
+          eq(users.role, 'teacher'),
+          sql`${users.email} IS NOT NULL`
+        )
+      );
+    
+    return teachers
+      .map(t => t.email)
+      .filter((email): email is string => email !== null);
   }
 
   // School operations

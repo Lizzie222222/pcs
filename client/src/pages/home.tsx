@@ -1849,7 +1849,7 @@ export default function Home() {
               <>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {(showAllEvents ? filteredEvents : upcomingEvents).map((event) => {
-                    const eventDate = parseISO(event.startDateTime);
+                    const eventDate = new Date(event.startDateTime);
                     const isEventPast = isPast(eventDate);
                     const registrationsCount = (event as any).registrationsCount || 0;
                     const spotsLeft = event.capacity ? event.capacity - registrationsCount : null;
@@ -1998,7 +1998,7 @@ export default function Home() {
                     });
 
                     return sortedEvents.map((registration) => {
-                      const eventDate = parseISO(registration.event.startDateTime);
+                      const eventDate = new Date(registration.event.startDateTime);
                       const isEventPast = isPast(eventDate);
                       const isEventFuture = isFuture(eventDate);
                       
@@ -2343,26 +2343,26 @@ export default function Home() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Event Detail Modal */}
+      {/* Event Detail Modal - Luma Style */}
       {selectedEvent && (
         <Dialog open={eventDetailOpen} onOpenChange={setEventDetailOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="dialog-event-detail">
-            {selectedEvent.imageUrl && (
-              <div className="w-full h-64 -mx-6 -mt-6 mb-4 overflow-hidden">
+          <DialogContent className="max-w-6xl max-h-[95vh] p-0 gap-0 overflow-hidden" data-testid="dialog-event-detail">
+            {/* Hero Image Section */}
+            {selectedEvent.imageUrl ? (
+              <div className="relative w-full h-[400px] md:h-[500px] overflow-hidden">
                 <img 
                   src={selectedEvent.imageUrl} 
                   alt={selectedEvent.title}
                   className="w-full h-full object-cover"
                 />
-              </div>
-            )}
-            
-            <DialogHeader>
-              <div className="flex items-start justify-between gap-4">
-                <div className="flex-1">
-                  <DialogTitle className="text-3xl font-bold text-navy mb-3">
+                {/* Gradient Overlay for better text readability */}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent"></div>
+                
+                {/* Title Overlay on Image */}
+                <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+                  <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
                     {selectedEvent.title}
-                  </DialogTitle>
+                  </h2>
                   <Badge className={`
                     ${selectedEvent.eventType === 'workshop' ? 'bg-blue-500' : ''}
                     ${selectedEvent.eventType === 'webinar' ? 'bg-purple-500' : ''}
@@ -2370,232 +2370,285 @@ export default function Home() {
                     ${selectedEvent.eventType === 'training' ? 'bg-orange-500' : ''}
                     ${selectedEvent.eventType === 'celebration' ? 'bg-pink-500' : ''}
                     ${selectedEvent.eventType === 'other' ? 'bg-gray-500' : ''}
-                    text-white text-sm px-3 py-1
+                    text-white text-base px-4 py-1.5 shadow-xl
                   `}>
                     {selectedEvent.eventType.replace(/_/g, ' ')}
                   </Badge>
                 </div>
               </div>
-            </DialogHeader>
-
-            <div className="space-y-6 mt-6">
-              {/* Description */}
-              <div>
-                <h4 className="font-semibold text-navy mb-2 flex items-center gap-2">
-                  <Lightbulb className="h-5 w-5 text-pcs_blue" />
-                  About This Event
-                </h4>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                  {selectedEvent.description}
-                </p>
+            ) : (
+              // Gradient Background if no image
+              <div className={`relative w-full h-[400px] md:h-[500px] overflow-hidden bg-gradient-to-br
+                ${selectedEvent.eventType === 'workshop' ? 'from-blue-500 to-blue-700' : ''}
+                ${selectedEvent.eventType === 'webinar' ? 'from-purple-500 to-purple-700' : ''}
+                ${selectedEvent.eventType === 'community_event' ? 'from-green-500 to-green-700' : ''}
+                ${selectedEvent.eventType === 'training' ? 'from-orange-500 to-orange-700' : ''}
+                ${selectedEvent.eventType === 'celebration' ? 'from-pink-500 to-pink-700' : ''}
+                ${selectedEvent.eventType === 'other' ? 'from-gray-500 to-gray-700' : ''}
+              `}>
+                <div className="absolute bottom-0 left-0 right-0 p-8 md:p-12">
+                  <h2 className="text-4xl md:text-5xl font-bold text-white mb-4 leading-tight drop-shadow-lg">
+                    {selectedEvent.title}
+                  </h2>
+                  <Badge className="bg-white/20 backdrop-blur-sm text-white text-base px-4 py-1.5 border border-white/30">
+                    {selectedEvent.eventType.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
               </div>
+            )}
 
-              {/* Event Details Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <div className="flex items-start gap-3">
-                    <Calendar className="h-5 w-5 text-pcs_blue flex-shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-semibold text-navy mb-1">Date & Time</p>
-                      <p className="text-sm text-gray-700">
-                        {format(parseISO(selectedEvent.startDateTime), 'PPP')}
-                      </p>
-                      <p className="text-sm text-gray-600">
-                        {format(parseISO(selectedEvent.startDateTime), 'p')} - {format(parseISO(selectedEvent.endDateTime), 'p')}
-                      </p>
-                      <p className="text-xs text-gray-500 mt-1">
-                        Timezone: {selectedEvent.timezone || 'UTC'}
-                      </p>
-                    </div>
-                  </div>
+            {/* Two-Column Content Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 p-8 md:p-12 overflow-y-auto max-h-[calc(95vh-400px)] md:max-h-[calc(95vh-500px)]">
+              {/* Left Column - Description & Details (2/3 width) */}
+              <div className="lg:col-span-2 space-y-8">
+                {/* Description Section */}
+                <div className="space-y-4">
+                  <h3 className="text-2xl font-bold text-navy flex items-center gap-3">
+                    <Lightbulb className="h-7 w-7 text-pcs_blue" />
+                    About This Event
+                  </h3>
+                  <p className="text-gray-700 text-lg leading-relaxed whitespace-pre-wrap">
+                    {selectedEvent.description}
+                  </p>
                 </div>
 
-                {selectedEvent.location && (
-                  <div className="p-4 bg-purple-50 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      {selectedEvent.isVirtual ? (
-                        <Video className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                      ) : (
-                        <MapPin className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
-                      )}
-                      <div>
-                        <p className="text-sm font-semibold text-navy mb-1">Location</p>
-                        <p className="text-sm text-gray-700">{selectedEvent.location}</p>
-                        {selectedEvent.isVirtual && (
-                          <Badge className="bg-purple-100 text-purple-700 mt-2">
-                            Virtual Event
-                          </Badge>
-                        )}
+                {/* Meeting Link for Registered Virtual Events */}
+                {selectedEvent.isVirtual && selectedEvent.meetingLink && (() => {
+                  const userRegistration = myEvents.find(reg => 
+                    reg.eventId === selectedEvent.id && 
+                    (reg.status === 'registered' || reg.status === 'waitlisted')
+                  );
+                  
+                  if (userRegistration) {
+                    return (
+                      <div className="p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-2xl border-2 border-blue-200 shadow-md">
+                        <div className="flex items-center gap-3 mb-4">
+                          <Video className="h-6 w-6 text-blue-600" />
+                          <h4 className="text-xl font-bold text-navy">Meeting Link</h4>
+                        </div>
+                        <a
+                          href={selectedEvent.meetingLink}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold text-lg hover:underline transition-colors"
+                          data-testid="link-meeting"
+                        >
+                          <span>Join Virtual Event</span>
+                          <ExternalLink className="h-5 w-5" />
+                        </a>
                       </div>
-                    </div>
-                  </div>
-                )}
+                    );
+                  }
+                  return null;
+                })()}
 
-                {selectedEvent.capacity && (
-                  <div className="p-4 bg-green-50 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <Users className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-semibold text-navy mb-1">Capacity</p>
-                        {(() => {
-                          const registrationsCount = (selectedEventDetails as any)?.registrationsCount || 0;
-                          const spotsLeft = selectedEvent.capacity - registrationsCount;
-                          const isFull = registrationsCount >= selectedEvent.capacity;
-                          
-                          return (
-                            <>
-                              <p className="text-sm text-gray-700">
-                                {selectedEvent.capacity} total spots
-                              </p>
-                              {isFull && !selectedEvent.waitlistEnabled ? (
-                                <Badge className="bg-red-500 text-white mt-2">Event Full</Badge>
-                              ) : isFull && selectedEvent.waitlistEnabled ? (
-                                <Badge className="bg-orange-500 text-white mt-2">Waitlist Available</Badge>
-                              ) : (
-                                <p className="text-sm font-semibold text-green-600 mt-1">
-                                  {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} available
-                                </p>
-                              )}
-                            </>
-                          );
-                        })()}
+                {/* Registration Status Banner */}
+                {(() => {
+                  const userRegistration = myEvents.find(reg => reg.eventId === selectedEvent.id);
+                  
+                  if (userRegistration && userRegistration.status !== 'cancelled') {
+                    return (
+                      <div className="p-6 bg-gradient-to-r from-green-50 to-teal-50 rounded-2xl border-2 border-green-200 shadow-md">
+                        <div className="flex items-center gap-4">
+                          <CheckCircle className="h-8 w-8 text-green-600 flex-shrink-0" />
+                          <div>
+                            <h4 className="text-xl font-bold text-navy mb-1">
+                              {userRegistration.status === 'registered' && 'You\'re Registered!'}
+                              {userRegistration.status === 'waitlisted' && 'You\'re on the Waitlist'}
+                              {userRegistration.status === 'attended' && 'You Attended This Event'}
+                            </h4>
+                            <p className="text-gray-600">
+                              {userRegistration.status === 'registered' && 'Looking forward to seeing you there!'}
+                              {userRegistration.status === 'waitlisted' && 'We\'ll notify you if a spot opens up'}
+                              {userRegistration.status === 'attended' && 'Thank you for participating!'}
+                            </p>
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                )}
-
-                {selectedEvent.registrationDeadline && (
-                  <div className="p-4 bg-orange-50 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
-                      <div>
-                        <p className="text-sm font-semibold text-navy mb-1">Registration Deadline</p>
-                        <p className="text-sm text-gray-700">
-                          {format(parseISO(selectedEvent.registrationDeadline), 'PPP')}
-                        </p>
-                        {isPast(parseISO(selectedEvent.registrationDeadline)) && (
-                          <Badge className="bg-red-500 text-white mt-2">Deadline Passed</Badge>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )}
+                    );
+                  }
+                  return null;
+                })()}
               </div>
 
-              {/* Meeting Link for Virtual Events */}
-              {selectedEvent.isVirtual && selectedEvent.meetingLink && (() => {
-                const userRegistration = myEvents.find(reg => 
-                  reg.eventId === selectedEvent.id && 
-                  (reg.status === 'registered' || reg.status === 'waitlisted')
-                );
-                
-                if (userRegistration) {
-                  return (
-                    <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
-                      <div className="flex items-center gap-3 mb-3">
-                        <Video className="h-5 w-5 text-blue-600" />
-                        <h4 className="font-semibold text-navy">Meeting Link</h4>
-                      </div>
-                      <a
-                        href={selectedEvent.meetingLink}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium hover:underline"
-                        data-testid="link-meeting"
-                      >
-                        <span>Join Virtual Event</span>
-                        <ExternalLink className="h-4 w-4" />
-                      </a>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-
-              {/* Registration Status */}
-              {(() => {
-                const userRegistration = myEvents.find(reg => reg.eventId === selectedEvent.id);
-                
-                if (userRegistration && userRegistration.status !== 'cancelled') {
-                  return (
-                    <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg border-2 border-green-200">
+              {/* Right Column - Info Card (1/3 width, sticky on desktop) */}
+              <div className="lg:col-span-1">
+                <Card className="sticky top-0 shadow-xl border-gray-200">
+                  <CardContent className="p-6 space-y-6">
+                    {/* Date & Time */}
+                    <div className="space-y-3">
                       <div className="flex items-center gap-3">
-                        <CheckCircle className="h-6 w-6 text-green-600" />
-                        <div>
-                          <h4 className="font-semibold text-navy">
-                            {userRegistration.status === 'registered' && 'You\'re Registered!'}
-                            {userRegistration.status === 'waitlisted' && 'You\'re on the Waitlist'}
-                            {userRegistration.status === 'attended' && 'You Attended This Event'}
-                          </h4>
-                          <p className="text-sm text-gray-600">
-                            {userRegistration.status === 'registered' && 'Looking forward to seeing you there!'}
-                            {userRegistration.status === 'waitlisted' && 'We\'ll notify you if a spot opens up'}
-                            {userRegistration.status === 'attended' && 'Thank you for participating!'}
+                        <div className="p-3 bg-blue-50 rounded-xl">
+                          <Calendar className="h-6 w-6 text-pcs_blue" />
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide">Date</p>
+                          <p className="text-base font-bold text-navy">
+                            {format(new Date(selectedEvent.startDateTime), 'PPP')}
                           </p>
                         </div>
                       </div>
+                      <div className="pl-14">
+                        <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Time</p>
+                        <p className="text-base font-semibold text-navy">
+                          {format(new Date(selectedEvent.startDateTime), 'p')} - {format(new Date(selectedEvent.endDateTime), 'p')}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {selectedEvent.timezone || 'UTC'}
+                        </p>
+                      </div>
                     </div>
-                  );
-                }
-                return null;
-              })()}
+
+                    <div className="h-px bg-gray-200"></div>
+
+                    {/* Location */}
+                    {selectedEvent.location && (
+                      <>
+                        <div className="flex items-start gap-3">
+                          <div className="p-3 bg-purple-50 rounded-xl flex-shrink-0">
+                            {selectedEvent.isVirtual ? (
+                              <Video className="h-6 w-6 text-purple-600" />
+                            ) : (
+                              <MapPin className="h-6 w-6 text-purple-600" />
+                            )}
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Location</p>
+                            <p className="text-base font-semibold text-navy">{selectedEvent.location}</p>
+                            {selectedEvent.isVirtual && (
+                              <Badge className="bg-purple-100 text-purple-700 mt-2">
+                                Virtual Event
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="h-px bg-gray-200"></div>
+                      </>
+                    )}
+
+                    {/* Capacity */}
+                    {selectedEvent.capacity && (
+                      <>
+                        <div className="flex items-start gap-3">
+                          <div className="p-3 bg-green-50 rounded-xl flex-shrink-0">
+                            <Users className="h-6 w-6 text-green-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Capacity</p>
+                            {(() => {
+                              const registrationsCount = (selectedEventDetails as any)?.registrationsCount || 0;
+                              const spotsLeft = selectedEvent.capacity - registrationsCount;
+                              const isFull = registrationsCount >= selectedEvent.capacity;
+                              
+                              return (
+                                <>
+                                  <p className="text-base font-semibold text-navy mb-2">
+                                    {selectedEvent.capacity} total spots
+                                  </p>
+                                  {isFull && !selectedEvent.waitlistEnabled ? (
+                                    <Badge className="bg-red-500 text-white">Event Full</Badge>
+                                  ) : isFull && selectedEvent.waitlistEnabled ? (
+                                    <Badge className="bg-orange-500 text-white">Waitlist Available</Badge>
+                                  ) : (
+                                    <p className="text-sm font-bold text-green-600">
+                                      {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} available
+                                    </p>
+                                  )}
+                                </>
+                              );
+                            })()}
+                          </div>
+                        </div>
+                        <div className="h-px bg-gray-200"></div>
+                      </>
+                    )}
+
+                    {/* Registration Deadline */}
+                    {selectedEvent.registrationDeadline && (
+                      <>
+                        <div className="flex items-start gap-3">
+                          <div className="p-3 bg-orange-50 rounded-xl flex-shrink-0">
+                            <Clock className="h-6 w-6 text-orange-600" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-1">Registration Deadline</p>
+                            <p className="text-base font-semibold text-navy mb-2">
+                              {format(new Date(selectedEvent.registrationDeadline), 'PPP')}
+                            </p>
+                            {isPast(new Date(selectedEvent.registrationDeadline)) && (
+                              <Badge className="bg-red-500 text-white">Deadline Passed</Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="h-px bg-gray-200"></div>
+                      </>
+                    )}
+
+                    {/* CTA Button */}
+                    <div className="pt-2">
+                      {(() => {
+                        const eventDate = new Date(selectedEvent.startDateTime);
+                        const isEventPast = isPast(eventDate);
+                        const userRegistration = myEvents.find(reg => reg.eventId === selectedEvent.id);
+                        const isRegistered = userRegistration && (userRegistration.status === 'registered' || userRegistration.status === 'waitlisted');
+                        const registrationsCount = (selectedEventDetails as any)?.registrationsCount || 0;
+                        const isFull = selectedEvent.capacity && registrationsCount >= selectedEvent.capacity;
+                        const deadlinePassed = selectedEvent.registrationDeadline && isPast(new Date(selectedEvent.registrationDeadline));
+
+                        if (isEventPast) {
+                          return (
+                            <div className="p-4 bg-gray-50 rounded-xl text-center">
+                              <p className="text-gray-500 font-medium">This event has ended</p>
+                            </div>
+                          );
+                        }
+
+                        if (isRegistered) {
+                          return (
+                            <Button
+                              variant="outline"
+                              onClick={handleCancelRegistration}
+                              disabled={cancelEventMutation.isPending}
+                              className="w-full text-red-600 hover:text-red-800 hover:bg-red-50 border-red-300 font-semibold py-6 text-base"
+                              data-testid="button-cancel-registration"
+                            >
+                              {cancelEventMutation.isPending ? 'Cancelling...' : 'Cancel Registration'}
+                            </Button>
+                          );
+                        }
+
+                        if (deadlinePassed) {
+                          return (
+                            <div className="p-4 bg-red-50 rounded-xl text-center">
+                              <p className="text-red-600 font-semibold">Registration deadline has passed</p>
+                            </div>
+                          );
+                        }
+
+                        if (isFull && !selectedEvent.waitlistEnabled) {
+                          return (
+                            <div className="p-4 bg-red-50 rounded-xl text-center">
+                              <p className="text-red-600 font-semibold">This event is full</p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <Button
+                            onClick={handleRegisterForEvent}
+                            disabled={registerEventMutation.isPending}
+                            className="w-full bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white font-bold py-6 text-base shadow-lg hover:shadow-xl transition-all"
+                            data-testid="button-register-event"
+                          >
+                            {registerEventMutation.isPending ? 'Registering...' : isFull ? 'Join Waitlist' : 'Register for Event'}
+                          </Button>
+                        );
+                      })()}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-
-            <DialogFooter className="mt-6">
-              {(() => {
-                const eventDate = parseISO(selectedEvent.startDateTime);
-                const isEventPast = isPast(eventDate);
-                const isEventFuture = isFuture(eventDate);
-                const userRegistration = myEvents.find(reg => reg.eventId === selectedEvent.id);
-                const isRegistered = userRegistration && (userRegistration.status === 'registered' || userRegistration.status === 'waitlisted');
-                const registrationsCount = (selectedEventDetails as any)?.registrationsCount || 0;
-                const isFull = selectedEvent.capacity && registrationsCount >= selectedEvent.capacity;
-                const deadlinePassed = selectedEvent.registrationDeadline && isPast(parseISO(selectedEvent.registrationDeadline));
-
-                if (isEventPast) {
-                  return (
-                    <p className="text-gray-500 text-sm">This event has already ended</p>
-                  );
-                }
-
-                if (isRegistered) {
-                  return (
-                    <Button
-                      variant="outline"
-                      onClick={handleCancelRegistration}
-                      disabled={cancelEventMutation.isPending}
-                      className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-300"
-                      data-testid="button-cancel-registration"
-                    >
-                      {cancelEventMutation.isPending ? 'Cancelling...' : 'Cancel Registration'}
-                    </Button>
-                  );
-                }
-
-                if (deadlinePassed) {
-                  return (
-                    <p className="text-red-600 text-sm font-medium">Registration deadline has passed</p>
-                  );
-                }
-
-                if (isFull && !selectedEvent.waitlistEnabled) {
-                  return (
-                    <p className="text-red-600 text-sm font-medium">This event is full</p>
-                  );
-                }
-
-                return (
-                  <Button
-                    onClick={handleRegisterForEvent}
-                    disabled={registerEventMutation.isPending}
-                    className="bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white px-8"
-                    data-testid="button-register-event"
-                  >
-                    {registerEventMutation.isPending ? 'Registering...' : isFull ? 'Join Waitlist' : 'Register for Event'}
-                  </Button>
-                );
-              })()}
-            </DialogFooter>
           </DialogContent>
         </Dialog>
       )}

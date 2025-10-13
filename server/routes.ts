@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isSchoolMember } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, type VerificationRequest, users } from "@shared/schema";
 import { z } from "zod";
@@ -2921,6 +2921,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all teacher emails for SendGrid
+  app.get('/api/admin/teachers/emails', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const teacherEmails = await storage.getTeacherEmails();
+      res.json({ emails: teacherEmails, count: teacherEmails.length });
+    } catch (error) {
+      console.error("Error fetching teacher emails:", error);
+      res.status(500).json({ message: "Failed to fetch teacher emails" });
+    }
+  });
+
   // Update user (role, isAdmin, etc.) - Partners cannot perform this action
   app.patch('/api/admin/users/:id', isAuthenticated, requireFullAdmin, async (req: any, res) => {
     try {
@@ -3366,33 +3377,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Mailchimp integration routes
+  // Mailchimp integration routes (DEPRECATED - Keeping for backwards compatibility)
+  // Event announcements now use SendGrid instead of Mailchimp
   
-  // Get Mailchimp audiences
+  // Get Mailchimp audiences (DEPRECATED)
   app.get('/api/mailchimp/audiences', isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const audiences = await mailchimpService.getAudiences();
-      res.json(audiences);
-    } catch (error: any) {
-      console.error("Error fetching Mailchimp audiences:", error);
-      res.status(500).json({ message: error.message || "Failed to fetch audiences" });
-    }
+    res.status(410).json({ 
+      message: "Mailchimp audiences endpoint is deprecated. Event announcements now use SendGrid.",
+      deprecated: true 
+    });
   });
 
-  // Create Mailchimp audience
+  // Create Mailchimp audience (DEPRECATED)
   app.post('/api/mailchimp/audiences', isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const validationResult = insertMailchimpAudienceSchema.safeParse(req.body);
-      if (!validationResult.success) {
-        return res.status(400).json({ message: "Invalid audience data", errors: validationResult.error.issues });
-      }
-
-      const audience = await storage.createMailchimpAudience(validationResult.data);
-      res.status(201).json(audience);
-    } catch (error: any) {
-      console.error("Error creating Mailchimp audience:", error);
-      res.status(500).json({ message: "Failed to create audience" });
-    }
+    res.status(410).json({ 
+      message: "Creating Mailchimp audiences is deprecated. Event announcements now use SendGrid.",
+      deprecated: true 
+    });
   });
 
   // Subscribe user to newsletter
@@ -4962,14 +4963,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin: Send event announcement to Mailchimp
+  // Admin: Send event announcement via SendGrid
   app.post('/api/admin/events/:id/announce', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const eventId = req.params.id;
-      const { audienceId } = req.body;
+      const { recipientType, customEmails } = req.body;
 
-      if (!audienceId) {
-        return res.status(400).json({ message: "Mailchimp audience ID is required" });
+      if (!recipientType || !['all_teachers', 'custom'].includes(recipientType)) {
+        return res.status(400).json({ message: "Valid recipient type is required (all_teachers or custom)" });
+      }
+
+      if (recipientType === 'custom' && (!customEmails || customEmails.length === 0)) {
+        return res.status(400).json({ message: "Custom email list is required for custom recipient type" });
       }
 
       const event = await storage.getEvent(eventId);
@@ -4981,12 +4986,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Only published events can be announced" });
       }
 
-      const hasBeenAnnounced = await storage.hasEventBeenAnnounced(eventId, audienceId);
-      if (hasBeenAnnounced) {
-        return res.status(400).json({ message: "This event has already been announced to this audience" });
+      // Get recipient list
+      let recipients: string[] = [];
+      if (recipientType === 'all_teachers') {
+        recipients = await storage.getTeacherEmails();
+      } else {
+        recipients = customEmails;
       }
 
-      const result = await mailchimpService.sendEventAnnouncement(event, audienceId);
+      if (recipients.length === 0) {
+        return res.status(400).json({ message: "No recipients found" });
+      }
+
+      // Send via SendGrid
+      const result = await sendEventAnnouncementEmail(recipients, event);
       
       if (!result.success) {
         return res.status(500).json({ 
@@ -4994,28 +5007,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Track announcement
       await storage.createEventAnnouncement({
         eventId,
-        audienceId,
-        campaignId: result.campaignId || null,
-        campaignWebId: result.webId || null,
+        recipientType,
+        campaignId: result.messageId || null,
         announcementType: 'single_event',
         sentBy: req.user.id,
-        recipientCount: null,
-        status: 'sent',
-      });
-
-      await storage.logEmail({
-        recipientEmail: 'mailchimp_audience',
-        subject: `Event Announcement: ${event.title}`,
-        template: 'event_announcement',
+        recipientCount: recipients.length,
         status: 'sent',
       });
 
       res.json({ 
         message: "Event announcement sent successfully",
-        campaignId: result.campaignId,
-        webId: result.webId
+        recipientCount: recipients.length,
+        messageId: result.messageId
       });
     } catch (error: any) {
       console.error("Error sending event announcement:", error);
@@ -5023,13 +5029,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin: Send event digest to Mailchimp
+  // Admin: Send event digest via SendGrid
   app.post('/api/admin/events/digest', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
-      const { audienceId, eventIds } = req.body;
+      const { recipientType, customEmails, eventIds } = req.body;
 
-      if (!audienceId) {
-        return res.status(400).json({ message: "Mailchimp audience ID is required" });
+      if (!recipientType || !['all_teachers', 'custom'].includes(recipientType)) {
+        return res.status(400).json({ message: "Valid recipient type is required (all_teachers or custom)" });
+      }
+
+      if (recipientType === 'custom' && (!customEmails || customEmails.length === 0)) {
+        return res.status(400).json({ message: "Custom email list is required for custom recipient type" });
       }
 
       if (!eventIds || !Array.isArray(eventIds) || eventIds.length === 0) {
@@ -5048,7 +5058,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "No published events found to include in digest" });
       }
 
-      const result = await mailchimpService.createEventDigest(eventsToInclude, audienceId);
+      // Get recipient list
+      let recipients: string[] = [];
+      if (recipientType === 'all_teachers') {
+        recipients = await storage.getTeacherEmails();
+      } else {
+        recipients = customEmails;
+      }
+
+      if (recipients.length === 0) {
+        return res.status(400).json({ message: "No recipients found" });
+      }
+
+      // Send via SendGrid
+      const result = await sendEventDigestEmail(recipients, eventsToInclude);
       
       if (!result.success) {
         return res.status(500).json({ 
@@ -5056,33 +5079,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      // Track announcements for each event
       for (const event of eventsToInclude) {
-        const hasBeenAnnounced = await storage.hasEventBeenAnnounced(event.id, audienceId);
-        if (!hasBeenAnnounced) {
-          await storage.createEventAnnouncement({
-            eventId: event.id,
-            audienceId,
-            campaignId: result.campaignId || null,
-            campaignWebId: result.webId || null,
-            announcementType: 'digest',
-            sentBy: req.user.id,
-            recipientCount: null,
-            status: 'sent',
-          });
-        }
+        await storage.createEventAnnouncement({
+          eventId: event.id,
+          recipientType,
+          campaignId: result.messageId || null,
+          announcementType: 'digest',
+          sentBy: req.user.id,
+          recipientCount: recipients.length,
+          status: 'sent',
+        });
       }
-
-      await storage.logEmail({
-        recipientEmail: 'mailchimp_audience',
-        subject: `Event Digest: ${eventsToInclude.length} Upcoming Events`,
-        template: 'event_digest',
-        status: 'sent',
-      });
 
       res.json({ 
         message: `Event digest sent successfully with ${eventsToInclude.length} events`,
-        campaignId: result.campaignId,
-        webId: result.webId
+        recipientCount: recipients.length,
+        messageId: result.messageId
       });
     } catch (error: any) {
       console.error("Error sending event digest:", error);
