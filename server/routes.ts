@@ -5108,6 +5108,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Printable Form Download Routes
+  const { generatePrintableForm, getPrintableFormFilename } = await import('./lib/printableForms');
+  
+  // Download blank audit form PDF
+  app.get('/api/printable-forms/audit', async (req, res) => {
+    try {
+      console.log('[Printable Forms] Generating audit form PDF...');
+      const pdfBuffer = await generatePrintableForm('audit-form');
+      const filename = getPrintableFormFilename('audit');
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('[Printable Forms] Error generating audit form:', error);
+      res.status(500).json({ message: 'Failed to generate audit form PDF' });
+    }
+  });
+  
+  // Download blank action plan form PDF
+  app.get('/api/printable-forms/action-plan', async (req, res) => {
+    try {
+      console.log('[Printable Forms] Generating action plan form PDF...');
+      const pdfBuffer = await generatePrintableForm('action-plan-form');
+      const filename = getPrintableFormFilename('action-plan');
+      
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.send(pdfBuffer);
+    } catch (error) {
+      console.error('[Printable Forms] Error generating action plan form:', error);
+      res.status(500).json({ message: 'Failed to generate action plan form PDF' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
