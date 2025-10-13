@@ -12,6 +12,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Switch } from "@/components/ui/switch";
 import { useCountries } from "@/hooks/useCountries";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
@@ -4122,6 +4123,21 @@ function EmailManagementSection({
               These fields will be passed to your SendGrid template. Make sure your template is set up with the corresponding variables.
             </p>
             
+            {/* Auto-translate toggle */}
+            <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+              <div>
+                <label className="text-sm font-medium text-gray-900">Auto-translate to recipient's language</label>
+                <p className="text-xs text-gray-600 mt-1">
+                  Automatically translate email content to each recipient's preferred school language using AI
+                </p>
+              </div>
+              <Switch
+                checked={emailForm.autoTranslate || false}
+                onCheckedChange={(checked) => setEmailForm((prev: any) => ({ ...prev, autoTranslate: checked }))}
+                data-testid="switch-auto-translate"
+              />
+            </div>
+            
             <div>
               <label className="block text-sm font-medium mb-2">Subject *</label>
               <Input
@@ -5538,7 +5554,8 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     preTitle: '',
     messageContent: '',
     template: 'announcement',
-    recipients: ''
+    recipients: '',
+    autoTranslate: false
   });
   
   // Bulk operations state

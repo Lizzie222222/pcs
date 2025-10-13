@@ -14,6 +14,7 @@ import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { generateAnalyticsInsights } from "./lib/aiInsights";
+import { translateEmailContent } from "./translationService";
 
 // CSV generation helper with proper escaping
 function generateCSV(data: any[], type: string): string {
@@ -3321,6 +3322,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     recipients: z.array(
       z.string().email("Invalid email format")
     ).max(500, "Cannot send to more than 500 custom recipients").optional(),
+    autoTranslate: z.boolean().optional().default(false),
     filters: z.object({
       search: z.string().optional(),
       country: z.string().optional(),
@@ -3412,12 +3414,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const { recipients, subject, preheader, title, preTitle, messageContent, template, recipientType, filters } = validationResult.data;
+      const { recipients, subject, preheader, title, preTitle, messageContent, template, recipientType, filters, autoTranslate } = validationResult.data;
 
       let emailList: string[] = [];
+      let emailToSchoolLanguageMap: Map<string, string> = new Map();
 
       if (recipientType === 'custom' && recipients) {
         emailList = recipients;
+        // For custom recipients, we can't determine school language, so use English
+        recipients.forEach(email => emailToSchoolLanguageMap.set(email, 'en'));
       } else if (recipientType === 'schools') {
         // Get schools based on filters and extract teacher emails from associated users
         const schools = await storage.getSchools({ 
@@ -3425,48 +3430,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
           limit: filters?.limit || 1000, 
           offset: filters?.offset || 0 
         });
+        
+        // Build map of schoolId -> primaryLanguage
+        const schoolLanguageMap = new Map<string, string>();
+        schools.forEach(school => {
+          schoolLanguageMap.set(school.id, school.primaryLanguage || 'en');
+        });
+        
         const schoolIds = schools.map(s => s.id);
         
         // Get all users associated with these specific schools
-        const userIdSet = new Set<string>();
+        const userIdToSchoolIdMap = new Map<string, string>();
         for (const schoolId of schoolIds) {
           const schoolUsers = await storage.getSchoolUsers(schoolId);
-          schoolUsers.forEach(su => userIdSet.add(su.userId));
+          schoolUsers.forEach(su => {
+            // Store the first school for each user (primary school)
+            if (!userIdToSchoolIdMap.has(su.userId)) {
+              userIdToSchoolIdMap.set(su.userId, schoolId);
+            }
+          });
         }
         
         // Get user details for the associated users and filter for teachers with emails
         const allUsers = await storage.getAllUsers();
         emailList = allUsers
-          .filter(user => userIdSet.has(user.id) && user.email && user.role === 'teacher')
-          .map(user => user.email!)
+          .filter(user => userIdToSchoolIdMap.has(user.id) && user.email && user.role === 'teacher')
+          .map(user => {
+            const email = user.email!;
+            const schoolId = userIdToSchoolIdMap.get(user.id)!;
+            const language = schoolLanguageMap.get(schoolId) || 'en';
+            emailToSchoolLanguageMap.set(email, language);
+            return email;
+          })
           .filter(Boolean);
       } else if (recipientType === 'all_teachers') {
         const users = await storage.getAllUsers();
-        emailList = users
-          .filter(user => user.email && user.role === 'teacher')
-          .map(user => user.email!)
-          .filter(Boolean);
+        
+        // Build email list and get primary school for each user
+        for (const user of users) {
+          if (user.email && user.role === 'teacher') {
+            const userSchools = await storage.getUserSchools(user.id);
+            const primarySchool = userSchools.length > 0 ? userSchools[0] : null;
+            const language = primarySchool?.primaryLanguage || 'en';
+            emailToSchoolLanguageMap.set(user.email, language);
+            emailList.push(user.email);
+          }
+        }
       }
 
       if (emailList.length === 0) {
         return res.status(400).json({ message: "No valid email recipients found" });
       }
 
-      const results = await sendBulkEmail({
-        recipients: emailList,
-        subject,
-        preheader: preheader || '',
-        title,
-        preTitle: preTitle || '',
-        messageContent,
-      });
+      let sent = 0;
+      let failed = 0;
+
+      // If auto-translate is enabled, send emails individually with translation
+      if (autoTranslate) {
+        for (const email of emailList) {
+          try {
+            const targetLanguage = emailToSchoolLanguageMap.get(email) || 'en';
+            let emailContent = {
+              subject,
+              preheader: preheader || '',
+              title,
+              preTitle: preTitle || '',
+              messageContent,
+            };
+
+            // Translate if target language is not English
+            if (targetLanguage !== 'en') {
+              emailContent = await translateEmailContent(emailContent, targetLanguage);
+            }
+
+            const results = await sendBulkEmail({
+              recipients: [email],
+              subject: emailContent.subject,
+              preheader: emailContent.preheader,
+              title: emailContent.title,
+              preTitle: emailContent.preTitle,
+              messageContent: emailContent.messageContent,
+            });
+
+            if (results.sent > 0) {
+              sent++;
+            } else {
+              failed++;
+            }
+          } catch (error) {
+            console.error(`Failed to send/translate email to ${email}:`, error);
+            failed++;
+          }
+        }
+      } else {
+        // Send all at once without translation (original behavior)
+        const results = await sendBulkEmail({
+          recipients: emailList,
+          subject,
+          preheader: preheader || '',
+          title,
+          preTitle: preTitle || '',
+          messageContent,
+        });
+        sent = results.sent;
+        failed = results.failed;
+      }
 
       res.json({
         message: "Bulk email sent successfully",
         results: {
           totalRecipients: emailList.length,
-          sent: results.sent,
-          failed: results.failed,
+          sent,
+          failed,
         },
       });
     } catch (error) {
