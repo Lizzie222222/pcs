@@ -115,8 +115,11 @@ i18n.on('languageChanged', async (lng) => {
         i18n.addResourceBundle(lng, namespace, resources, true, true);
       });
       
-      // Emit loaded event with proper payload to trigger react-i18next re-render
-      i18n.emit('loaded', { lng, ns: Object.keys(translations) });
+      // Defer language change to next tick to ensure resources are fully loaded
+      // This triggers re-render of all components including Trans
+      setTimeout(() => {
+        i18n.changeLanguage(lng);
+      }, 0);
     } catch (error) {
       console.warn(`Failed to load ${lng} translations:`, error);
       // Fallback to English if language fails to load
