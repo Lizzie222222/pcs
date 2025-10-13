@@ -1,50 +1,50 @@
 {
   "page": {
-    "title": "Global School Network", 
-    "subtitle": "Explore the worldwide community of schools participating in the Plastic Clever Schools program"
+    "title": "Rete Scolastica Globale", 
+    "subtitle": "Esplora la comunità mondiale di scuole che partecipano al programma Plastic Clever Schools"
   },
   "controls": {
     "legend": {
-      "in_progress": "In Progress",
-      "award_completed": "Award Completed",
-      "featured_schools": "Featured Schools"
+      "in_progress": "In Corso",
+      "award_completed": "Premio Completato",
+      "featured_schools": "Scuole in Evidenza"
     },
     "filters": {
-      "all_countries": "All Countries",
-      "export_data": "Export Data"
+      "all_countries": "Tutti i Paesi",
+      "export_data": "Esporta Dati"
     }
   },
   "map": {
-    "loading_map": "Loading map...",
+    "loading_map": "Caricamento mappa...",
     "marker_popup": {
-      "completed": "Completed",
-      "featured": "Featured"
+      "completed": "Completato",
+      "featured": "In Evidenza"
     }
   },
   "statistics": {
-    "countries": "Countries",
-    "total_schools": "Total Schools", 
-    "awards_completed": "Awards Completed",
-    "featured": "Featured Schools"
+    "countries": "Paesi",
+    "total_schools": "Scuole Totali", 
+    "awards_completed": "Premi Completati",
+    "featured": "Scuole in Evidenza"
   },
   "regional_breakdown": {
-    "title": "Regional Breakdown",
-    "schools": "schools",
-    "completed": "completed",
-    "featured": "featured"
+    "title": "Ripartizione Regionale",
+    "schools": "scuole",
+    "completed": "completato",
+    "featured": "in evidenza"
   },
   "loading": {
-    "skeleton_region": "Loading regional data..."
+    "skeleton_region": "Caricamento dati regionali..."
   },
   "stages": {
-    "inspire": "inspire",
-    "investigate": "investigate", 
-    "act": "act"
+    "inspire": "ispirare",
+    "investigate": "investigare", 
+    "act": "agire"
   },
   "export": {
-    "button_text": "Export Data",
-    "csv_filename": "plastic-clever-schools-data.csv",
-    "success_message": "Data exported successfully",
-    "error_message": "Failed to export data"
+    "button_text": "Esporta Dati",
+    "csv_filename": "dati-plastic-clever-schools.csv",
+    "success_message": "Dati esportati con successo",
+    "error_message": "Esportazione dati fallita"
   }
 }

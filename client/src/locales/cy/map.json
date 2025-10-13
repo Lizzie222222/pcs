@@ -1,50 +1,50 @@
 {
   "page": {
-    "title": "Global School Network", 
-    "subtitle": "Explore the worldwide community of schools participating in the Plastic Clever Schools program"
+    "title": "Rhwydwaith Ysgolion Byd-eang", 
+    "subtitle": "Archwiliwch y gymuned fyd-eang o ysgolion sy'n cymryd rhan yn y rhaglen Plastic Clever Schools"
   },
   "controls": {
     "legend": {
-      "in_progress": "In Progress",
-      "award_completed": "Award Completed",
-      "featured_schools": "Featured Schools"
+      "in_progress": "Ar Waith",
+      "award_completed": "Gwobr wedi'i Chwblhau",
+      "featured_schools": "Ysgolion Arbennig"
     },
     "filters": {
-      "all_countries": "All Countries",
-      "export_data": "Export Data"
+      "all_countries": "Pob Gwlad",
+      "export_data": "Allforio Data"
     }
   },
   "map": {
-    "loading_map": "Loading map...",
+    "loading_map": "Llwytho map...",
     "marker_popup": {
-      "completed": "Completed",
-      "featured": "Featured"
+      "completed": "Cwblhawyd",
+      "featured": "Arbennig"
     }
   },
   "statistics": {
-    "countries": "Countries",
-    "total_schools": "Total Schools", 
-    "awards_completed": "Awards Completed",
-    "featured": "Featured Schools"
+    "countries": "Gwledydd",
+    "total_schools": "Cyfanswm Ysgolion", 
+    "awards_completed": "Gwobrau wedi'u Cwblhau",
+    "featured": "Ysgolion Arbennig"
   },
   "regional_breakdown": {
-    "title": "Regional Breakdown",
-    "schools": "schools",
-    "completed": "completed",
-    "featured": "featured"
+    "title": "Dadansoddiad Rhanbarthol",
+    "schools": "ysgolion",
+    "completed": "cwblhawyd",
+    "featured": "arbennig"
   },
   "loading": {
-    "skeleton_region": "Loading regional data..."
+    "skeleton_region": "Llwytho data rhanbarthol..."
   },
   "stages": {
-    "inspire": "inspire",
-    "investigate": "investigate", 
-    "act": "act"
+    "inspire": "ysbrydoli",
+    "investigate": "ymchwilio", 
+    "act": "gweithredu"
   },
   "export": {
-    "button_text": "Export Data",
-    "csv_filename": "plastic-clever-schools-data.csv",
-    "success_message": "Data exported successfully",
-    "error_message": "Failed to export data"
+    "button_text": "Allforio Data",
+    "csv_filename": "data-plastic-clever-schools.csv",
+    "success_message": "Data wedi'i allforio'n llwyddiannus",
+    "error_message": "Methwyd allforio data"
   }
 }
