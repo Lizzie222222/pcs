@@ -1,92 +1,92 @@
 {
   "page": {
-    "title": "Search Platform",
-    "subtitle": "Find resources, schools, evidence, and case studies using our advanced search capabilities"
+    "title": "Zoekplatform",
+    "subtitle": "Vind bronnen, scholen, bewijs en casestudies met onze geavanceerde zoekmogelijkheden"
   },
   "filters": {
-    "content_type": "Content Type",
-    "stage": "Stage",
-    "country": "Country",
-    "language": "Language",
-    "date_range": "Date Range",
-    "clear_filters": "Clear All Filters",
-    "apply_filters": "Apply Filters"
+    "content_type": "Inhoudstype",
+    "stage": "Fase",
+    "country": "Land",
+    "language": "Taal",
+    "date_range": "Datumbereik",
+    "clear_filters": "Alle Filters Wissen",
+    "apply_filters": "Filters Toepassen"
   },
   "content_types": {
-    "all": "All Content",
-    "resources": "Educational Resources", 
-    "schools": "Schools",
-    "evidence": "Evidence Submissions",
-    "case_studies": "Case Studies"
+    "all": "Alle Inhoud",
+    "resources": "Educatieve Bronnen", 
+    "schools": "Scholen",
+    "evidence": "Bewijs Inzendingen",
+    "case_studies": "Casestudies"
   },
   "search_input": {
-    "placeholder": "Search for resources, schools, evidence...",
-    "search_button": "Search",
-    "clear_search": "Clear search"
+    "placeholder": "Zoek naar bronnen, scholen, bewijs...",
+    "search_button": "Zoeken",
+    "clear_search": "Zoekopdracht wissen"
   },
   "results": {
-    "title": "Search Results",
-    "showing_results": "Showing {{count}} results for \"{{query}}\"",
-    "search_failed": "Search failed. Please try again.",
-    "no_results": "No results found",
-    "no_results_message": "Try adjusting your search terms or filters",
-    "load_more": "Load More Results",
-    "sort_by": "Sort by",
-    "relevance": "Relevance",
-    "date_newest": "Newest First",
-    "date_oldest": "Oldest First",
-    "alphabetical": "Alphabetical"
+    "title": "Zoekresultaten",
+    "showing_results": "{{count}} resultaten tonen voor \"{{query}}\"",
+    "search_failed": "Zoeken mislukt. Probeer het opnieuw.",
+    "no_results": "Geen resultaten gevonden",
+    "no_results_message": "Probeer je zoektermen of filters aan te passen",
+    "load_more": "Meer Resultaten Laden",
+    "sort_by": "Sorteren op",
+    "relevance": "Relevantie",
+    "date_newest": "Nieuwste Eerst",
+    "date_oldest": "Oudste Eerst",
+    "alphabetical": "Alfabetisch"
   },
   "result_types": {
-    "resource": "Resource",
+    "resource": "Bron",
     "school": "School",
-    "evidence": "Evidence", 
-    "case_study": "Case Study"
+    "evidence": "Bewijs", 
+    "case_study": "Casestudie"
   },
   "result_cards": {
     "resource": {
       "downloads": "{{count}} downloads",
-      "file_type": "{{type}} file",
-      "download": "Download"
+      "file_type": "{{type}} bestand",
+      "download": "Downloaden"
     },
     "school": {
-      "students": "{{count}} students",
-      "stage": "Current stage: {{stage}}",
-      "complete": "complete",
-      "view_profile": "View School Profile"
+      "students": "{{count}} leerlingen",
+      "stage": "Huidige fase: {{stage}}",
+      "complete": "voltooid",
+      "view_profile": "Schoolprofiel Bekijken"
     },
     "evidence": {
-      "submitted_by": "Submitted by {{school}}",
-      "stage": "Stage: {{stage}}",
-      "view_evidence": "View Evidence"
+      "submitted_by": "Ingediend door {{school}}",
+      "stage": "Fase: {{stage}}",
+      "view_evidence": "Bewijs Bekijken"
     },
     "case_study": {
-      "featured_school": "Featured School",
-      "high_impact": "High Impact",
-      "read_story": "Read Full Story"
+      "featured_school": "Uitgelichte School",
+      "high_impact": "Grote Impact",
+      "read_story": "Volledig Verhaal Lezen"
     }
   },
   "advanced_search": {
-    "title": "Advanced Search",
-    "description": "Search across all content types with advanced filters and relevance ranking",
-    "boolean_operators": "Boolean Operators",
-    "search_tips": "Search Tips",
-    "tip_quotes": "Use quotes for exact phrases",
-    "tip_wildcards": "Use * for wildcards",
-    "tip_exclude": "Use - to exclude terms",
-    "examples": "Examples",
-    "example_exact": "\"plastic audit\" - exact phrase",
-    "example_wildcard": "sustain* - finds sustainable, sustainability",
-    "example_exclude": "plastic -bottles - plastic but not bottles"
+    "title": "Geavanceerd Zoeken",
+    "description": "Zoek in alle inhoudstypen met geavanceerde filters en relevantierangschikking",
+    "boolean_operators": "Booleaanse Operatoren",
+    "search_tips": "Zoektips",
+    "tip_quotes": "Gebruik aanhalingstekens voor exacte zinnen",
+    "tip_wildcards": "Gebruik * voor jokertekens",
+    "tip_exclude": "Gebruik - om termen uit te sluiten",
+    "examples": "Voorbeelden",
+    "example_exact": "\"plastic audit\" - exacte zin",
+    "example_wildcard": "duurza* - vindt duurzaam, duurzaamheid",
+    "example_exclude": "plastic -flessen - plastic maar geen flessen"
   },
   "saved_searches": {
-    "title": "Saved Searches",
-    "save_search": "Save this search",
-    "remove_search": "Remove saved search",
-    "no_saved_searches": "No saved searches yet"
+    "title": "Opgeslagen Zoekopdrachten",
+    "save_search": "Deze zoekopdracht opslaan",
+    "remove_search": "Opgeslagen zoekopdracht verwijderen",
+    "no_saved_searches": "Nog geen opgeslagen zoekopdrachten"
   },
   "recent_searches": {
-    "title": "Recent Searches",
-    "clear_history": "Clear search history"
+    "title": "Recente Zoekopdrachten",
+    "clear_history": "Zoekgeschiedenis wissen"
   }
 }

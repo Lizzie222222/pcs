@@ -1,92 +1,92 @@
 {
   "page": {
-    "title": "Search Platform",
-    "subtitle": "Find resources, schools, evidence, and case studies using our advanced search capabilities"
+    "title": "搜索平台",
+    "subtitle": "使用我们的高级搜索功能查找资源、学校、证据和案例研究"
   },
   "filters": {
-    "content_type": "Content Type",
-    "stage": "Stage",
-    "country": "Country",
-    "language": "Language",
-    "date_range": "Date Range",
-    "clear_filters": "Clear All Filters",
-    "apply_filters": "Apply Filters"
+    "content_type": "内容类型",
+    "stage": "阶段",
+    "country": "国家",
+    "language": "语言",
+    "date_range": "日期范围",
+    "clear_filters": "清除所有过滤器",
+    "apply_filters": "应用过滤器"
   },
   "content_types": {
-    "all": "All Content",
-    "resources": "Educational Resources", 
-    "schools": "Schools",
-    "evidence": "Evidence Submissions",
-    "case_studies": "Case Studies"
+    "all": "所有内容",
+    "resources": "教育资源", 
+    "schools": "学校",
+    "evidence": "证据提交",
+    "case_studies": "案例研究"
   },
   "search_input": {
-    "placeholder": "Search for resources, schools, evidence...",
-    "search_button": "Search",
-    "clear_search": "Clear search"
+    "placeholder": "搜索资源、学校、证据...",
+    "search_button": "搜索",
+    "clear_search": "清除搜索"
   },
   "results": {
-    "title": "Search Results",
-    "showing_results": "Showing {{count}} results for \"{{query}}\"",
-    "search_failed": "Search failed. Please try again.",
-    "no_results": "No results found",
-    "no_results_message": "Try adjusting your search terms or filters",
-    "load_more": "Load More Results",
-    "sort_by": "Sort by",
-    "relevance": "Relevance",
-    "date_newest": "Newest First",
-    "date_oldest": "Oldest First",
-    "alphabetical": "Alphabetical"
+    "title": "搜索结果",
+    "showing_results": "显示 {{count}} 条\"{{query}}\"的结果",
+    "search_failed": "搜索失败。请重试。",
+    "no_results": "未找到结果",
+    "no_results_message": "尝试调整您的搜索词或过滤器",
+    "load_more": "加载更多结果",
+    "sort_by": "排序方式",
+    "relevance": "相关性",
+    "date_newest": "最新优先",
+    "date_oldest": "最旧优先",
+    "alphabetical": "按字母顺序"
   },
   "result_types": {
-    "resource": "Resource",
-    "school": "School",
-    "evidence": "Evidence", 
-    "case_study": "Case Study"
+    "resource": "资源",
+    "school": "学校",
+    "evidence": "证据", 
+    "case_study": "案例研究"
   },
   "result_cards": {
     "resource": {
-      "downloads": "{{count}} downloads",
-      "file_type": "{{type}} file",
-      "download": "Download"
+      "downloads": "{{count}} 次下载",
+      "file_type": "{{type}} 文件",
+      "download": "下载"
     },
     "school": {
-      "students": "{{count}} students",
-      "stage": "Current stage: {{stage}}",
-      "complete": "complete",
-      "view_profile": "View School Profile"
+      "students": "{{count}} 名学生",
+      "stage": "当前阶段：{{stage}}",
+      "complete": "完成",
+      "view_profile": "查看学校简介"
     },
     "evidence": {
-      "submitted_by": "Submitted by {{school}}",
-      "stage": "Stage: {{stage}}",
-      "view_evidence": "View Evidence"
+      "submitted_by": "由 {{school}} 提交",
+      "stage": "阶段：{{stage}}",
+      "view_evidence": "查看证据"
     },
     "case_study": {
-      "featured_school": "Featured School",
-      "high_impact": "High Impact",
-      "read_story": "Read Full Story"
+      "featured_school": "特色学校",
+      "high_impact": "高影响力",
+      "read_story": "阅读完整故事"
     }
   },
   "advanced_search": {
-    "title": "Advanced Search",
-    "description": "Search across all content types with advanced filters and relevance ranking",
-    "boolean_operators": "Boolean Operators",
-    "search_tips": "Search Tips",
-    "tip_quotes": "Use quotes for exact phrases",
-    "tip_wildcards": "Use * for wildcards",
-    "tip_exclude": "Use - to exclude terms",
-    "examples": "Examples",
-    "example_exact": "\"plastic audit\" - exact phrase",
-    "example_wildcard": "sustain* - finds sustainable, sustainability",
-    "example_exclude": "plastic -bottles - plastic but not bottles"
+    "title": "高级搜索",
+    "description": "使用高级过滤器和相关性排名搜索所有内容类型",
+    "boolean_operators": "布尔运算符",
+    "search_tips": "搜索提示",
+    "tip_quotes": "使用引号进行精确短语搜索",
+    "tip_wildcards": "使用 * 进行通配符搜索",
+    "tip_exclude": "使用 - 排除术语",
+    "examples": "示例",
+    "example_exact": "\"塑料审计\" - 精确短语",
+    "example_wildcard": "可持续* - 查找可持续、可持续性",
+    "example_exclude": "塑料 -瓶子 - 塑料但不包括瓶子"
   },
   "saved_searches": {
-    "title": "Saved Searches",
-    "save_search": "Save this search",
-    "remove_search": "Remove saved search",
-    "no_saved_searches": "No saved searches yet"
+    "title": "已保存的搜索",
+    "save_search": "保存此搜索",
+    "remove_search": "删除已保存的搜索",
+    "no_saved_searches": "尚无已保存的搜索"
   },
   "recent_searches": {
-    "title": "Recent Searches",
-    "clear_history": "Clear search history"
+    "title": "最近的搜索",
+    "clear_history": "清除搜索历史"
   }
 }

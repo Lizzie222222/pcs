@@ -1,92 +1,92 @@
 {
   "page": {
-    "title": "Search Platform",
-    "subtitle": "Find resources, schools, evidence, and case studies using our advanced search capabilities"
+    "title": "منصة البحث",
+    "subtitle": "ابحث عن الموارد والمدارس والأدلة ودراسات الحالة باستخدام قدرات البحث المتقدمة لدينا"
   },
   "filters": {
-    "content_type": "Content Type",
-    "stage": "Stage",
-    "country": "Country",
-    "language": "Language",
-    "date_range": "Date Range",
-    "clear_filters": "Clear All Filters",
-    "apply_filters": "Apply Filters"
+    "content_type": "نوع المحتوى",
+    "stage": "المرحلة",
+    "country": "البلد",
+    "language": "اللغة",
+    "date_range": "نطاق التاريخ",
+    "clear_filters": "مسح جميع الفلاتر",
+    "apply_filters": "تطبيق الفلاتر"
   },
   "content_types": {
-    "all": "All Content",
-    "resources": "Educational Resources", 
-    "schools": "Schools",
-    "evidence": "Evidence Submissions",
-    "case_studies": "Case Studies"
+    "all": "كل المحتوى",
+    "resources": "الموارد التعليمية", 
+    "schools": "المدارس",
+    "evidence": "تقديمات الأدلة",
+    "case_studies": "دراسات الحالة"
   },
   "search_input": {
-    "placeholder": "Search for resources, schools, evidence...",
-    "search_button": "Search",
-    "clear_search": "Clear search"
+    "placeholder": "ابحث عن الموارد والمدارس والأدلة...",
+    "search_button": "بحث",
+    "clear_search": "مسح البحث"
   },
   "results": {
-    "title": "Search Results",
-    "showing_results": "Showing {{count}} results for \"{{query}}\"",
-    "search_failed": "Search failed. Please try again.",
-    "no_results": "No results found",
-    "no_results_message": "Try adjusting your search terms or filters",
-    "load_more": "Load More Results",
-    "sort_by": "Sort by",
-    "relevance": "Relevance",
-    "date_newest": "Newest First",
-    "date_oldest": "Oldest First",
-    "alphabetical": "Alphabetical"
+    "title": "نتائج البحث",
+    "showing_results": "عرض {{count}} نتيجة لـ \"{{query}}\"",
+    "search_failed": "فشل البحث. يرجى المحاولة مرة أخرى.",
+    "no_results": "لم يتم العثور على نتائج",
+    "no_results_message": "حاول تعديل مصطلحات البحث أو الفلاتر",
+    "load_more": "تحميل المزيد من النتائج",
+    "sort_by": "ترتيب حسب",
+    "relevance": "الصلة",
+    "date_newest": "الأحدث أولاً",
+    "date_oldest": "الأقدم أولاً",
+    "alphabetical": "أبجدي"
   },
   "result_types": {
-    "resource": "Resource",
-    "school": "School",
-    "evidence": "Evidence", 
-    "case_study": "Case Study"
+    "resource": "مورد",
+    "school": "مدرسة",
+    "evidence": "دليل", 
+    "case_study": "دراسة حالة"
   },
   "result_cards": {
     "resource": {
-      "downloads": "{{count}} downloads",
-      "file_type": "{{type}} file",
-      "download": "Download"
+      "downloads": "{{count}} تنزيلات",
+      "file_type": "ملف {{type}}",
+      "download": "تنزيل"
     },
     "school": {
-      "students": "{{count}} students",
-      "stage": "Current stage: {{stage}}",
-      "complete": "complete",
-      "view_profile": "View School Profile"
+      "students": "{{count}} طلاب",
+      "stage": "المرحلة الحالية: {{stage}}",
+      "complete": "مكتمل",
+      "view_profile": "عرض ملف المدرسة"
     },
     "evidence": {
-      "submitted_by": "Submitted by {{school}}",
-      "stage": "Stage: {{stage}}",
-      "view_evidence": "View Evidence"
+      "submitted_by": "مُقدم من {{school}}",
+      "stage": "المرحلة: {{stage}}",
+      "view_evidence": "عرض الأدلة"
     },
     "case_study": {
-      "featured_school": "Featured School",
-      "high_impact": "High Impact",
-      "read_story": "Read Full Story"
+      "featured_school": "مدرسة مميزة",
+      "high_impact": "تأثير كبير",
+      "read_story": "قراءة القصة الكاملة"
     }
   },
   "advanced_search": {
-    "title": "Advanced Search",
-    "description": "Search across all content types with advanced filters and relevance ranking",
-    "boolean_operators": "Boolean Operators",
-    "search_tips": "Search Tips",
-    "tip_quotes": "Use quotes for exact phrases",
-    "tip_wildcards": "Use * for wildcards",
-    "tip_exclude": "Use - to exclude terms",
-    "examples": "Examples",
-    "example_exact": "\"plastic audit\" - exact phrase",
-    "example_wildcard": "sustain* - finds sustainable, sustainability",
-    "example_exclude": "plastic -bottles - plastic but not bottles"
+    "title": "البحث المتقدم",
+    "description": "ابحث في جميع أنواع المحتوى باستخدام فلاتر متقدمة وتصنيف حسب الصلة",
+    "boolean_operators": "العوامل المنطقية",
+    "search_tips": "نصائح البحث",
+    "tip_quotes": "استخدم علامات الاقتباس للعبارات الدقيقة",
+    "tip_wildcards": "استخدم * للأحرف البدلية",
+    "tip_exclude": "استخدم - لاستبعاد المصطلحات",
+    "examples": "أمثلة",
+    "example_exact": "\"تدقيق البلاستيك\" - عبارة دقيقة",
+    "example_wildcard": "استدام* - يجد مستدام، استدامة",
+    "example_exclude": "بلاستيك -زجاجات - بلاستيك لكن ليس زجاجات"
   },
   "saved_searches": {
-    "title": "Saved Searches",
-    "save_search": "Save this search",
-    "remove_search": "Remove saved search",
-    "no_saved_searches": "No saved searches yet"
+    "title": "عمليات البحث المحفوظة",
+    "save_search": "حفظ هذا البحث",
+    "remove_search": "إزالة البحث المحفوظ",
+    "no_saved_searches": "لا توجد عمليات بحث محفوظة بعد"
   },
   "recent_searches": {
-    "title": "Recent Searches",
-    "clear_history": "Clear search history"
+    "title": "عمليات البحث الأخيرة",
+    "clear_history": "مسح سجل البحث"
   }
 }

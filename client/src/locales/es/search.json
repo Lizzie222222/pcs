@@ -1,92 +1,92 @@
 {
   "page": {
-    "title": "Search Platform",
-    "subtitle": "Find resources, schools, evidence, and case studies using our advanced search capabilities"
+    "title": "Plataforma de Búsqueda",
+    "subtitle": "Encuentra recursos, escuelas, evidencias y casos de estudio usando nuestras capacidades avanzadas de búsqueda"
   },
   "filters": {
-    "content_type": "Content Type",
-    "stage": "Stage",
-    "country": "Country",
-    "language": "Language",
-    "date_range": "Date Range",
-    "clear_filters": "Clear All Filters",
-    "apply_filters": "Apply Filters"
+    "content_type": "Tipo de Contenido",
+    "stage": "Etapa",
+    "country": "País",
+    "language": "Idioma",
+    "date_range": "Rango de Fechas",
+    "clear_filters": "Limpiar Todos los Filtros",
+    "apply_filters": "Aplicar Filtros"
   },
   "content_types": {
-    "all": "All Content",
-    "resources": "Educational Resources", 
-    "schools": "Schools",
-    "evidence": "Evidence Submissions",
-    "case_studies": "Case Studies"
+    "all": "Todo el Contenido",
+    "resources": "Recursos Educativos", 
+    "schools": "Escuelas",
+    "evidence": "Envíos de Evidencia",
+    "case_studies": "Casos de Estudio"
   },
   "search_input": {
-    "placeholder": "Search for resources, schools, evidence...",
-    "search_button": "Search",
-    "clear_search": "Clear search"
+    "placeholder": "Buscar recursos, escuelas, evidencia...",
+    "search_button": "Buscar",
+    "clear_search": "Limpiar búsqueda"
   },
   "results": {
-    "title": "Search Results",
-    "showing_results": "Showing {{count}} results for \"{{query}}\"",
-    "search_failed": "Search failed. Please try again.",
-    "no_results": "No results found",
-    "no_results_message": "Try adjusting your search terms or filters",
-    "load_more": "Load More Results",
-    "sort_by": "Sort by",
-    "relevance": "Relevance",
-    "date_newest": "Newest First",
-    "date_oldest": "Oldest First",
-    "alphabetical": "Alphabetical"
+    "title": "Resultados de Búsqueda",
+    "showing_results": "Mostrando {{count}} resultados para \"{{query}}\"",
+    "search_failed": "La búsqueda falló. Por favor, inténtalo de nuevo.",
+    "no_results": "No se encontraron resultados",
+    "no_results_message": "Intenta ajustar tus términos de búsqueda o filtros",
+    "load_more": "Cargar Más Resultados",
+    "sort_by": "Ordenar por",
+    "relevance": "Relevancia",
+    "date_newest": "Más Reciente Primero",
+    "date_oldest": "Más Antiguo Primero",
+    "alphabetical": "Alfabético"
   },
   "result_types": {
-    "resource": "Resource",
-    "school": "School",
-    "evidence": "Evidence", 
-    "case_study": "Case Study"
+    "resource": "Recurso",
+    "school": "Escuela",
+    "evidence": "Evidencia", 
+    "case_study": "Caso de Estudio"
   },
   "result_cards": {
     "resource": {
-      "downloads": "{{count}} downloads",
-      "file_type": "{{type}} file",
-      "download": "Download"
+      "downloads": "{{count}} descargas",
+      "file_type": "archivo {{type}}",
+      "download": "Descargar"
     },
     "school": {
-      "students": "{{count}} students",
-      "stage": "Current stage: {{stage}}",
-      "complete": "complete",
-      "view_profile": "View School Profile"
+      "students": "{{count}} estudiantes",
+      "stage": "Etapa actual: {{stage}}",
+      "complete": "completo",
+      "view_profile": "Ver Perfil de Escuela"
     },
     "evidence": {
-      "submitted_by": "Submitted by {{school}}",
-      "stage": "Stage: {{stage}}",
-      "view_evidence": "View Evidence"
+      "submitted_by": "Enviado por {{school}}",
+      "stage": "Etapa: {{stage}}",
+      "view_evidence": "Ver Evidencia"
     },
     "case_study": {
-      "featured_school": "Featured School",
-      "high_impact": "High Impact",
-      "read_story": "Read Full Story"
+      "featured_school": "Escuela Destacada",
+      "high_impact": "Alto Impacto",
+      "read_story": "Leer Historia Completa"
     }
   },
   "advanced_search": {
-    "title": "Advanced Search",
-    "description": "Search across all content types with advanced filters and relevance ranking",
-    "boolean_operators": "Boolean Operators",
-    "search_tips": "Search Tips",
-    "tip_quotes": "Use quotes for exact phrases",
-    "tip_wildcards": "Use * for wildcards",
-    "tip_exclude": "Use - to exclude terms",
-    "examples": "Examples",
-    "example_exact": "\"plastic audit\" - exact phrase",
-    "example_wildcard": "sustain* - finds sustainable, sustainability",
-    "example_exclude": "plastic -bottles - plastic but not bottles"
+    "title": "Búsqueda Avanzada",
+    "description": "Buscar en todos los tipos de contenido con filtros avanzados y clasificación por relevancia",
+    "boolean_operators": "Operadores Booleanos",
+    "search_tips": "Consejos de Búsqueda",
+    "tip_quotes": "Usa comillas para frases exactas",
+    "tip_wildcards": "Usa * para comodines",
+    "tip_exclude": "Usa - para excluir términos",
+    "examples": "Ejemplos",
+    "example_exact": "\"auditoría de plástico\" - frase exacta",
+    "example_wildcard": "sosten* - encuentra sostenible, sostenibilidad",
+    "example_exclude": "plástico -botellas - plástico pero no botellas"
   },
   "saved_searches": {
-    "title": "Saved Searches",
-    "save_search": "Save this search",
-    "remove_search": "Remove saved search",
-    "no_saved_searches": "No saved searches yet"
+    "title": "Búsquedas Guardadas",
+    "save_search": "Guardar esta búsqueda",
+    "remove_search": "Eliminar búsqueda guardada",
+    "no_saved_searches": "Aún no hay búsquedas guardadas"
   },
   "recent_searches": {
-    "title": "Recent Searches",
-    "clear_history": "Clear search history"
+    "title": "Búsquedas Recientes",
+    "clear_history": "Limpiar historial de búsqueda"
   }
 }
