@@ -5143,6 +5143,166 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Printable Form Upload Routes
+  const objectStorageService = new ObjectStorageService();
+
+  // Get signed URL for uploading printable forms
+  app.post('/api/uploads/printable-forms/signed-url', isAuthenticated, async (req, res) => {
+    try {
+      const { formType, filename, fileSize } = req.body;
+
+      // Validate form type
+      if (!formType || !['audit', 'action_plan'].includes(formType)) {
+        return res.status(400).json({ message: 'Invalid form type. Must be "audit" or "action_plan"' });
+      }
+
+      if (!filename) {
+        return res.status(400).json({ message: 'Filename is required' });
+      }
+
+      // Validate PDF extension
+      if (!filename.toLowerCase().endsWith('.pdf')) {
+        return res.status(400).json({ message: 'Only PDF files are allowed. Filename must end with .pdf' });
+      }
+
+      // Validate file size (max 10MB)
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+      if (!fileSize || typeof fileSize !== 'number') {
+        return res.status(400).json({ message: 'File size is required' });
+      }
+
+      if (fileSize > MAX_FILE_SIZE) {
+        return res.status(400).json({ 
+          message: `File size exceeds maximum allowed size of 10MB. File size: ${(fileSize / (1024 * 1024)).toFixed(2)}MB` 
+        });
+      }
+
+      if (fileSize <= 0) {
+        return res.status(400).json({ message: 'Invalid file size' });
+      }
+
+      // Generate unique object path in private directory
+      const privateDir = objectStorageService.getPrivateObjectDir();
+      const objectId = randomUUID();
+      const fullPath = `${privateDir}/printable-forms/${formType}/${objectId}`;
+
+      // Parse path and generate signed URL
+      const pathParts = fullPath.split('/');
+      const bucketName = pathParts[1];
+      const objectName = pathParts.slice(2).join('/');
+
+      const uploadUrl = await objectStorageService.getSignedUploadUrl(bucketName, objectName);
+      const objectPath = `/objects/printable-forms/${formType}/${objectId}`;
+
+      res.json({ uploadUrl, objectPath });
+    } catch (error: any) {
+      console.error('[Printable Forms Upload] Error generating signed URL:', error);
+      res.status(500).json({ message: error.message || 'Failed to generate upload URL' });
+    }
+  });
+
+  // Create printable form submission record
+  app.post('/api/printable-form-submissions', isAuthenticated, async (req, res) => {
+    try {
+      const { schoolId, formType, objectPath, filename, notes } = req.body;
+
+      // Validate required fields
+      if (!schoolId || !formType || !objectPath || !filename) {
+        return res.status(400).json({ message: 'Missing required fields' });
+      }
+
+      // Validate form type
+      if (!['audit', 'action_plan'].includes(formType)) {
+        return res.status(400).json({ message: 'Invalid form type' });
+      }
+
+      // Check if user is member of school
+      const schoolUser = await storage.getSchoolUser(schoolId, req.user.id);
+      if (!schoolUser && !req.user.isAdmin) {
+        return res.status(403).json({ message: 'You are not a member of this school' });
+      }
+
+      // CRITICAL SECURITY: Verify the uploaded object exists and is valid
+      console.log('[Printable Forms Submission] Validating uploaded file:', objectPath);
+      const metadata = await objectStorageService.getObjectMetadata(objectPath);
+
+      if (!metadata.exists) {
+        console.error('[Printable Forms Submission] Object does not exist:', objectPath);
+        return res.status(400).json({ message: 'Uploaded file not found. Please upload the file again.' });
+      }
+
+      // Validate Content-Type is application/pdf
+      if (metadata.contentType !== 'application/pdf') {
+        console.error('[Printable Forms Submission] Invalid content type:', metadata.contentType);
+        // Delete the invalid upload
+        try {
+          await objectStorageService.deleteObject(objectPath);
+          console.log('[Printable Forms Submission] Deleted invalid file:', objectPath);
+        } catch (deleteError) {
+          console.error('[Printable Forms Submission] Failed to delete invalid file:', deleteError);
+        }
+        return res.status(400).json({ 
+          message: `Invalid file type. Only PDF files are allowed. Detected type: ${metadata.contentType || 'unknown'}` 
+        });
+      }
+
+      // Validate file size is ≤10MB
+      const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB in bytes
+      if (!metadata.size) {
+        console.error('[Printable Forms Submission] Could not determine file size');
+        // Delete the file with unknown size
+        try {
+          await objectStorageService.deleteObject(objectPath);
+        } catch (deleteError) {
+          console.error('[Printable Forms Submission] Failed to delete file with unknown size:', deleteError);
+        }
+        return res.status(400).json({ message: 'Could not determine file size. Please upload again.' });
+      }
+
+      if (metadata.size > MAX_FILE_SIZE) {
+        console.error('[Printable Forms Submission] File size exceeds limit:', metadata.size);
+        // Delete the oversized file
+        try {
+          await objectStorageService.deleteObject(objectPath);
+          console.log('[Printable Forms Submission] Deleted oversized file:', objectPath);
+        } catch (deleteError) {
+          console.error('[Printable Forms Submission] Failed to delete oversized file:', deleteError);
+        }
+        return res.status(400).json({ 
+          message: `File size exceeds maximum allowed size of 10MB. File size: ${(metadata.size / (1024 * 1024)).toFixed(2)}MB` 
+        });
+      }
+
+      console.log('[Printable Forms Submission] File validation passed:', {
+        objectPath,
+        contentType: metadata.contentType,
+        size: metadata.size,
+      });
+
+      // Set object ACL to private
+      const normalizedPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        objectPath,
+        { visibility: 'private' },
+        filename
+      );
+
+      // Create submission record
+      const submission = await storage.createPrintableFormSubmission({
+        schoolId,
+        submittedBy: req.user.id,
+        formType,
+        filePath: normalizedPath,
+        originalFilename: filename,
+        status: 'pending',
+      });
+
+      res.json(submission);
+    } catch (error: any) {
+      console.error('[Printable Forms Submission] Error creating submission:', error);
+      res.status(500).json({ message: error.message || 'Failed to create submission' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

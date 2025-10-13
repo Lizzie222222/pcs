@@ -154,6 +154,16 @@ export class ObjectStorageService {
     });
   }
 
+  // Gets a signed upload URL for a specific bucket and object name
+  async getSignedUploadUrl(bucketName: string, objectName: string, ttlSec: number = 900): Promise<string> {
+    return signObjectURL({
+      bucketName,
+      objectName,
+      method: "PUT",
+      ttlSec,
+    });
+  }
+
   // Gets the object entity file from the object path.
   async getObjectEntityFile(objectPath: string): Promise<File> {
     if (!objectPath.startsWith("/objects/")) {
@@ -262,6 +272,35 @@ export class ObjectStorageService {
       requestedPermission: requestedPermission ?? ObjectPermission.READ,
       isAdmin,
     });
+  }
+
+  // Gets metadata for an object at the given path
+  async getObjectMetadata(objectPath: string): Promise<{
+    exists: boolean;
+    contentType?: string;
+    size?: number;
+  }> {
+    try {
+      const objectFile = await this.getObjectEntityFile(objectPath);
+      const [metadata] = await objectFile.getMetadata();
+      
+      return {
+        exists: true,
+        contentType: metadata.contentType,
+        size: metadata.size ? parseInt(metadata.size as string) : undefined,
+      };
+    } catch (error) {
+      if (error instanceof ObjectNotFoundError) {
+        return { exists: false };
+      }
+      throw error;
+    }
+  }
+
+  // Deletes an object at the given path
+  async deleteObject(objectPath: string): Promise<void> {
+    const objectFile = await this.getObjectEntityFile(objectPath);
+    await objectFile.delete();
   }
 }
 

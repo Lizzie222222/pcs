@@ -14,7 +14,7 @@ import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Plus, Trash2, Download } from "lucide-react";
+import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Plus, Trash2, Download, Upload } from "lucide-react";
 import type { AuditResponse, ReductionPromise } from "@shared/schema";
 
 interface PlasticWasteAuditProps {
@@ -187,6 +187,89 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     control: form5.control,
     name: "promises",
   });
+
+  // Upload state and refs
+  const [isUploading, setIsUploading] = useState(false);
+  const auditFileInputRef = useRef<HTMLInputElement>(null);
+  const actionPlanFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Upload mutations
+  const uploadMutation = useMutation({
+    mutationFn: async ({ file, formType }: { file: File; formType: 'audit' | 'action_plan' }) => {
+      // Validate file
+      if (file.type !== 'application/pdf') {
+        throw new Error('Only PDF files are allowed');
+      }
+      if (file.size > 10 * 1024 * 1024) { // 10MB
+        throw new Error('File size must be less than 10MB');
+      }
+
+      // Get signed URL
+      const { uploadUrl, objectPath } = await apiRequest<{ uploadUrl: string; objectPath: string }>({
+        url: '/api/uploads/printable-forms/signed-url',
+        method: 'POST',
+        body: { formType, filename: file.name, fileSize: file.size },
+      });
+
+      // Upload to GCS
+      const uploadResponse = await fetch(uploadUrl, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': 'application/pdf',
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to upload file to storage');
+      }
+
+      // Create submission record
+      const submission = await apiRequest({
+        url: '/api/printable-form-submissions',
+        method: 'POST',
+        body: {
+          schoolId,
+          formType,
+          objectPath,
+          filename: file.name,
+        },
+      });
+
+      return submission;
+    },
+    onSuccess: (data, variables) => {
+      queryClient.invalidateQueries({ queryKey: [`/api/printable-form-submissions/school/${schoolId}`] });
+      toast({
+        title: "Upload Successful",
+        description: `${variables.formType === 'audit' ? 'Audit form' : 'Action plan'} uploaded successfully`,
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Upload Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleFileUpload = async (formType: 'audit' | 'action_plan') => {
+    const inputRef = formType === 'audit' ? auditFileInputRef : actionPlanFileInputRef;
+    const file = inputRef.current?.files?.[0];
+    
+    if (!file) return;
+
+    setIsUploading(true);
+    try {
+      await uploadMutation.mutateAsync({ file, formType });
+    } finally {
+      setIsUploading(false);
+      if (inputRef.current) {
+        inputRef.current.value = '';
+      }
+    }
+  };
 
   // Fetch existing promises if audit exists
   const { data: existingPromises } = useQuery<ReductionPromise[]>({
@@ -774,18 +857,57 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               <Download className="h-3 w-3 mr-1" />
               Audit Form
             </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => auditFileInputRef.current?.click()}
+              disabled={isUploading}
+              data-testid="button-upload-audit-form"
+              className="text-xs"
+            >
+              <Upload className="h-3 w-3 mr-1" />
+              {isUploading ? 'Uploading...' : 'Upload Audit'}
+            </Button>
             {currentStep === 5 && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => window.open('/api/printable-forms/action-plan', '_blank')}
-                data-testid="button-download-action-plan-form"
-                className="text-xs"
-              >
-                <Download className="h-3 w-3 mr-1" />
-                Action Plan
-              </Button>
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open('/api/printable-forms/action-plan', '_blank')}
+                  data-testid="button-download-action-plan-form"
+                  className="text-xs"
+                >
+                  <Download className="h-3 w-3 mr-1" />
+                  Action Plan
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => actionPlanFileInputRef.current?.click()}
+                  disabled={isUploading}
+                  data-testid="button-upload-action-plan-form"
+                  className="text-xs"
+                >
+                  <Upload className="h-3 w-3 mr-1" />
+                  {isUploading ? 'Uploading...' : 'Upload Plan'}
+                </Button>
+              </>
             )}
+            <input
+              ref={auditFileInputRef}
+              type="file"
+              accept="application/pdf"
+              onChange={() => handleFileUpload('audit')}
+              className="hidden"
+              data-testid="input-upload-pdf"
+            />
+            <input
+              ref={actionPlanFileInputRef}
+              type="file"
+              accept="application/pdf"
+              onChange={() => handleFileUpload('action_plan')}
+              className="hidden"
+            />
           </div>
         </div>
         <Progress value={progress} className="mt-2" />
