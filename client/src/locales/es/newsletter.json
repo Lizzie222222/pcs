@@ -1,40 +1,40 @@
 {
   "signup": {
-    "title": "Join Our Newsletter",
-    "title_hero": "Stay Connected",
+    "title": "Únete a Nuestro Newsletter",
+    "title_hero": "Mantente Conectado",
     "title_compact": "Newsletter",
-    "description": "Stay updated with the latest resources, success stories, and tips for tackling plastic pollution in schools.",
-    "description_hero": "Get the latest updates on plastic pollution solutions and educational resources.",
+    "description": "Mantente actualizado con los últimos recursos, historias de éxito y consejos para abordar la contaminación plástica en las escuelas.",
+    "description_hero": "Obtén las últimas actualizaciones sobre soluciones para la contaminación plástica y recursos educativos.",
     "form": {
-      "first_name": "First name",
-      "last_name": "Last name", 
-      "email": "Enter your email address",
-      "email_compact": "Enter your email",
-      "subscribe_button": "Subscribe to Newsletter",
-      "subscribe_button_compact": "Subscribe",
-      "subscribing": "Subscribing...",
+      "first_name": "Nombre",
+      "last_name": "Apellido", 
+      "email": "Ingresa tu dirección de correo electrónico",
+      "email_compact": "Ingresa tu correo",
+      "subscribe_button": "Suscribirse al Newsletter",
+      "subscribe_button_compact": "Suscribirse",
+      "subscribing": "Suscribiendo...",
       "subscribing_compact": "..."
     },
     "success": {
-      "title": "You're all set!",
-      "message": "Thank you for joining our community. Check your email for updates!",
-      "toast_title": "🎉 Welcome to our community!",
-      "toast_message": "You've successfully subscribed to the Plastic Clever Schools newsletter."
+      "title": "¡Todo listo!",
+      "message": "¡Gracias por unirte a nuestra comunidad! ¡Revisa tu correo para recibir actualizaciones!",
+      "toast_title": "🎉 ¡Bienvenido a nuestra comunidad!",
+      "toast_message": "Te has suscrito exitosamente al newsletter de Plastic Clever Schools."
     },
     "errors": {
-      "subscription_failed": "Subscription Failed",
-      "generic_error": "Failed to subscribe to newsletter. Please try again.",
-      "email_required": "Email Required",
-      "email_required_message": "Please enter your email address.",
-      "invalid_email": "Please enter a valid email address",
-      "network_error": "Network error. Please check your connection and try again.",
-      "already_subscribed": "You're already subscribed to our newsletter.",
-      "server_error": "Server error. Please try again later."
+      "subscription_failed": "Suscripción Fallida",
+      "generic_error": "No se pudo suscribir al newsletter. Por favor, inténtalo de nuevo.",
+      "email_required": "Correo Requerido",
+      "email_required_message": "Por favor, ingresa tu dirección de correo electrónico.",
+      "invalid_email": "Por favor, ingresa una dirección de correo válida",
+      "network_error": "Error de red. Por favor, verifica tu conexión e inténtalo de nuevo.",
+      "already_subscribed": "Ya estás suscrito a nuestro newsletter.",
+      "server_error": "Error del servidor. Por favor, inténtalo más tarde."
     },
     "privacy": {
-      "disclaimer": "By subscribing, you agree to receive updates about Plastic Clever Schools. You can unsubscribe at any time.",
-      "terms_link": "Terms of Service",
-      "privacy_link": "Privacy Policy"
+      "disclaimer": "Al suscribirte, aceptas recibir actualizaciones sobre Plastic Clever Schools. Puedes cancelar tu suscripción en cualquier momento.",
+      "terms_link": "Términos de Servicio",
+      "privacy_link": "Política de Privacidad"
     },
     "tags": {
       "newsletter_signup": "newsletter_signup",
@@ -45,27 +45,27 @@
     }
   },
   "preferences": {
-    "title": "Newsletter Preferences",
-    "frequency": "Email Frequency",
-    "frequency_weekly": "Weekly Updates",
-    "frequency_monthly": "Monthly Summary",
-    "frequency_quarterly": "Quarterly Highlights",
-    "content_types": "Content Types",
-    "resources": "New Educational Resources",
-    "success_stories": "School Success Stories",
-    "program_updates": "Program Updates",
-    "events": "Events and Webinars",
-    "save_preferences": "Save Preferences",
-    "preferences_saved": "Your preferences have been saved successfully."
+    "title": "Preferencias del Newsletter",
+    "frequency": "Frecuencia de Correos",
+    "frequency_weekly": "Actualizaciones Semanales",
+    "frequency_monthly": "Resumen Mensual",
+    "frequency_quarterly": "Destacados Trimestrales",
+    "content_types": "Tipos de Contenido",
+    "resources": "Nuevos Recursos Educativos",
+    "success_stories": "Historias de Éxito Escolar",
+    "program_updates": "Actualizaciones del Programa",
+    "events": "Eventos y Webinars",
+    "save_preferences": "Guardar Preferencias",
+    "preferences_saved": "Tus preferencias se han guardado exitosamente."
   },
   "unsubscribe": {
-    "title": "Unsubscribe",
-    "message": "We're sorry to see you go! You have been successfully unsubscribed from our newsletter.",
-    "feedback_title": "Help us improve",
-    "feedback_message": "Would you mind telling us why you're unsubscribing?",
-    "feedback_placeholder": "Your feedback is valuable to us...",
-    "submit_feedback": "Submit Feedback",
-    "skip_feedback": "Skip",
-    "resubscribe": "Changed your mind? Resubscribe here"
+    "title": "Cancelar Suscripción",
+    "message": "¡Lamentamos verte partir! Has sido dado de baja exitosamente de nuestro newsletter.",
+    "feedback_title": "Ayúdanos a mejorar",
+    "feedback_message": "¿Podrías decirnos por qué te estás dando de baja?",
+    "feedback_placeholder": "Tus comentarios son valiosos para nosotros...",
+    "submit_feedback": "Enviar Comentarios",
+    "skip_feedback": "Omitir",
+    "resubscribe": "¿Cambiaste de opinión? Vuelve a suscribirte aquí"
   }
 }

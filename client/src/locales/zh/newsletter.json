@@ -1,40 +1,40 @@
 {
   "signup": {
-    "title": "Join Our Newsletter",
-    "title_hero": "Stay Connected",
-    "title_compact": "Newsletter",
-    "description": "Stay updated with the latest resources, success stories, and tips for tackling plastic pollution in schools.",
-    "description_hero": "Get the latest updates on plastic pollution solutions and educational resources.",
+    "title": "订阅我们的新闻通讯",
+    "title_hero": "保持联系",
+    "title_compact": "新闻通讯",
+    "description": "获取最新资源、成功案例和应对学校塑料污染的技巧。",
+    "description_hero": "获取塑料污染解决方案和教育资源的最新更新。",
     "form": {
-      "first_name": "First name",
-      "last_name": "Last name", 
-      "email": "Enter your email address",
-      "email_compact": "Enter your email",
-      "subscribe_button": "Subscribe to Newsletter",
-      "subscribe_button_compact": "Subscribe",
-      "subscribing": "Subscribing...",
+      "first_name": "名字",
+      "last_name": "姓氏", 
+      "email": "输入您的电子邮件地址",
+      "email_compact": "输入您的邮箱",
+      "subscribe_button": "订阅新闻通讯",
+      "subscribe_button_compact": "订阅",
+      "subscribing": "订阅中...",
       "subscribing_compact": "..."
     },
     "success": {
-      "title": "You're all set!",
-      "message": "Thank you for joining our community. Check your email for updates!",
-      "toast_title": "🎉 Welcome to our community!",
-      "toast_message": "You've successfully subscribed to the Plastic Clever Schools newsletter."
+      "title": "完成了！",
+      "message": "感谢加入我们的社区。请查看您的电子邮件以获取更新！",
+      "toast_title": "🎉 欢迎加入我们的社区！",
+      "toast_message": "您已成功订阅 Plastic Clever Schools 新闻通讯。"
     },
     "errors": {
-      "subscription_failed": "Subscription Failed",
-      "generic_error": "Failed to subscribe to newsletter. Please try again.",
-      "email_required": "Email Required",
-      "email_required_message": "Please enter your email address.",
-      "invalid_email": "Please enter a valid email address",
-      "network_error": "Network error. Please check your connection and try again.",
-      "already_subscribed": "You're already subscribed to our newsletter.",
-      "server_error": "Server error. Please try again later."
+      "subscription_failed": "订阅失败",
+      "generic_error": "订阅新闻通讯失败。请重试。",
+      "email_required": "需要电子邮件",
+      "email_required_message": "请输入您的电子邮件地址。",
+      "invalid_email": "请输入有效的电子邮件地址",
+      "network_error": "网络错误。请检查您的连接并重试。",
+      "already_subscribed": "您已订阅我们的新闻通讯。",
+      "server_error": "服务器错误。请稍后重试。"
     },
     "privacy": {
-      "disclaimer": "By subscribing, you agree to receive updates about Plastic Clever Schools. You can unsubscribe at any time.",
-      "terms_link": "Terms of Service",
-      "privacy_link": "Privacy Policy"
+      "disclaimer": "订阅即表示您同意接收有关 Plastic Clever Schools 的更新。您可以随时取消订阅。",
+      "terms_link": "服务条款",
+      "privacy_link": "隐私政策"
     },
     "tags": {
       "newsletter_signup": "newsletter_signup",
@@ -45,27 +45,27 @@
     }
   },
   "preferences": {
-    "title": "Newsletter Preferences",
-    "frequency": "Email Frequency",
-    "frequency_weekly": "Weekly Updates",
-    "frequency_monthly": "Monthly Summary",
-    "frequency_quarterly": "Quarterly Highlights",
-    "content_types": "Content Types",
-    "resources": "New Educational Resources",
-    "success_stories": "School Success Stories",
-    "program_updates": "Program Updates",
-    "events": "Events and Webinars",
-    "save_preferences": "Save Preferences",
-    "preferences_saved": "Your preferences have been saved successfully."
+    "title": "新闻通讯偏好设置",
+    "frequency": "电子邮件频率",
+    "frequency_weekly": "每周更新",
+    "frequency_monthly": "每月摘要",
+    "frequency_quarterly": "季度要闻",
+    "content_types": "内容类型",
+    "resources": "新的教育资源",
+    "success_stories": "学校成功案例",
+    "program_updates": "项目更新",
+    "events": "活动和网络研讨会",
+    "save_preferences": "保存偏好设置",
+    "preferences_saved": "您的偏好设置已成功保存。"
   },
   "unsubscribe": {
-    "title": "Unsubscribe",
-    "message": "We're sorry to see you go! You have been successfully unsubscribed from our newsletter.",
-    "feedback_title": "Help us improve",
-    "feedback_message": "Would you mind telling us why you're unsubscribing?",
-    "feedback_placeholder": "Your feedback is valuable to us...",
-    "submit_feedback": "Submit Feedback",
-    "skip_feedback": "Skip",
-    "resubscribe": "Changed your mind? Resubscribe here"
+    "title": "取消订阅",
+    "message": "很遗憾看到您离开！您已成功取消订阅我们的新闻通讯。",
+    "feedback_title": "帮助我们改进",
+    "feedback_message": "您能告诉我们为什么要取消订阅吗？",
+    "feedback_placeholder": "您的反馈对我们很重要...",
+    "submit_feedback": "提交反馈",
+    "skip_feedback": "跳过",
+    "resubscribe": "改变主意了？在此重新订阅"
   }
 }

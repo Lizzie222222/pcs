@@ -1,40 +1,40 @@
 {
   "signup": {
-    "title": "Join Our Newsletter",
-    "title_hero": "Stay Connected",
-    "title_compact": "Newsletter",
-    "description": "Stay updated with the latest resources, success stories, and tips for tackling plastic pollution in schools.",
-    "description_hero": "Get the latest updates on plastic pollution solutions and educational resources.",
+    "title": "Schrijf je in voor onze Nieuwsbrief",
+    "title_hero": "Blijf Verbonden",
+    "title_compact": "Nieuwsbrief",
+    "description": "Blijf op de hoogte van de nieuwste bronnen, succesverhalen en tips voor het aanpakken van plasticvervuiling op scholen.",
+    "description_hero": "Ontvang de nieuwste updates over oplossingen voor plasticvervuiling en educatieve bronnen.",
     "form": {
-      "first_name": "First name",
-      "last_name": "Last name", 
-      "email": "Enter your email address",
-      "email_compact": "Enter your email",
-      "subscribe_button": "Subscribe to Newsletter",
-      "subscribe_button_compact": "Subscribe",
-      "subscribing": "Subscribing...",
+      "first_name": "Voornaam",
+      "last_name": "Achternaam", 
+      "email": "Voer je e-mailadres in",
+      "email_compact": "Voer je e-mail in",
+      "subscribe_button": "Abonneren op Nieuwsbrief",
+      "subscribe_button_compact": "Abonneren",
+      "subscribing": "Bezig met abonneren...",
       "subscribing_compact": "..."
     },
     "success": {
-      "title": "You're all set!",
-      "message": "Thank you for joining our community. Check your email for updates!",
-      "toast_title": "🎉 Welcome to our community!",
-      "toast_message": "You've successfully subscribed to the Plastic Clever Schools newsletter."
+      "title": "Klaar!",
+      "message": "Bedankt voor het lid worden van onze gemeenschap. Controleer je e-mail voor updates!",
+      "toast_title": "🎉 Welkom bij onze gemeenschap!",
+      "toast_message": "Je bent succesvol geabonneerd op de Plastic Clever Schools nieuwsbrief."
     },
     "errors": {
-      "subscription_failed": "Subscription Failed",
-      "generic_error": "Failed to subscribe to newsletter. Please try again.",
-      "email_required": "Email Required",
-      "email_required_message": "Please enter your email address.",
-      "invalid_email": "Please enter a valid email address",
-      "network_error": "Network error. Please check your connection and try again.",
-      "already_subscribed": "You're already subscribed to our newsletter.",
-      "server_error": "Server error. Please try again later."
+      "subscription_failed": "Abonnement Mislukt",
+      "generic_error": "Abonneren op nieuwsbrief mislukt. Probeer het opnieuw.",
+      "email_required": "E-mail Vereist",
+      "email_required_message": "Voer je e-mailadres in.",
+      "invalid_email": "Voer een geldig e-mailadres in",
+      "network_error": "Netwerkfout. Controleer je verbinding en probeer het opnieuw.",
+      "already_subscribed": "Je bent al geabonneerd op onze nieuwsbrief.",
+      "server_error": "Serverfout. Probeer het later opnieuw."
     },
     "privacy": {
-      "disclaimer": "By subscribing, you agree to receive updates about Plastic Clever Schools. You can unsubscribe at any time.",
-      "terms_link": "Terms of Service",
-      "privacy_link": "Privacy Policy"
+      "disclaimer": "Door te abonneren, ga je akkoord met het ontvangen van updates over Plastic Clever Schools. Je kunt je op elk moment afmelden.",
+      "terms_link": "Servicevoorwaarden",
+      "privacy_link": "Privacybeleid"
     },
     "tags": {
       "newsletter_signup": "newsletter_signup",
@@ -45,27 +45,27 @@
     }
   },
   "preferences": {
-    "title": "Newsletter Preferences",
-    "frequency": "Email Frequency",
-    "frequency_weekly": "Weekly Updates",
-    "frequency_monthly": "Monthly Summary",
-    "frequency_quarterly": "Quarterly Highlights",
-    "content_types": "Content Types",
-    "resources": "New Educational Resources",
-    "success_stories": "School Success Stories",
-    "program_updates": "Program Updates",
-    "events": "Events and Webinars",
-    "save_preferences": "Save Preferences",
-    "preferences_saved": "Your preferences have been saved successfully."
+    "title": "Nieuwsbrief Voorkeuren",
+    "frequency": "E-mailfrequentie",
+    "frequency_weekly": "Wekelijkse Updates",
+    "frequency_monthly": "Maandelijkse Samenvatting",
+    "frequency_quarterly": "Driemaandelijkse Hoogtepunten",
+    "content_types": "Inhoudstypen",
+    "resources": "Nieuwe Educatieve Bronnen",
+    "success_stories": "School Succesverhalen",
+    "program_updates": "Programma Updates",
+    "events": "Evenementen en Webinars",
+    "save_preferences": "Voorkeuren Opslaan",
+    "preferences_saved": "Je voorkeuren zijn succesvol opgeslagen."
   },
   "unsubscribe": {
-    "title": "Unsubscribe",
-    "message": "We're sorry to see you go! You have been successfully unsubscribed from our newsletter.",
-    "feedback_title": "Help us improve",
-    "feedback_message": "Would you mind telling us why you're unsubscribing?",
-    "feedback_placeholder": "Your feedback is valuable to us...",
-    "submit_feedback": "Submit Feedback",
-    "skip_feedback": "Skip",
-    "resubscribe": "Changed your mind? Resubscribe here"
+    "title": "Afmelden",
+    "message": "Het spijt ons je te zien gaan! Je bent succesvol afgemeld van onze nieuwsbrief.",
+    "feedback_title": "Help ons verbeteren",
+    "feedback_message": "Wil je ons vertellen waarom je je afmeldt?",
+    "feedback_placeholder": "Je feedback is waardevol voor ons...",
+    "submit_feedback": "Feedback Verzenden",
+    "skip_feedback": "Overslaan",
+    "resubscribe": "Van gedachten veranderd? Abonneer je hier opnieuw"
   }
 }

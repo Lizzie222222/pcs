@@ -1,40 +1,40 @@
 {
   "signup": {
-    "title": "Join Our Newsletter",
-    "title_hero": "Stay Connected",
-    "title_compact": "Newsletter",
-    "description": "Stay updated with the latest resources, success stories, and tips for tackling plastic pollution in schools.",
-    "description_hero": "Get the latest updates on plastic pollution solutions and educational resources.",
+    "title": "Ymunwch â'n Cylchlythyr",
+    "title_hero": "Parhewch Mewn Cysylltiad",
+    "title_compact": "Cylchlythyr",
+    "description": "Cadwch yn gyfredol gyda'r adnoddau diweddaraf, straeon llwyddiant a chyngor ar fynd i'r afael â llygredd plastig mewn ysgolion.",
+    "description_hero": "Derbyniwch y diweddariadau diweddaraf ar atebion llygredd plastig ac adnoddau addysgol.",
     "form": {
-      "first_name": "First name",
-      "last_name": "Last name", 
-      "email": "Enter your email address",
-      "email_compact": "Enter your email",
-      "subscribe_button": "Subscribe to Newsletter",
-      "subscribe_button_compact": "Subscribe",
-      "subscribing": "Subscribing...",
+      "first_name": "Enw cyntaf",
+      "last_name": "Cyfenw", 
+      "email": "Rhowch eich cyfeiriad e-bost",
+      "email_compact": "Rhowch eich e-bost",
+      "subscribe_button": "Tanysgrifio i'r Cylchlythyr",
+      "subscribe_button_compact": "Tanysgrifio",
+      "subscribing": "Yn tanysgrifio...",
       "subscribing_compact": "..."
     },
     "success": {
-      "title": "You're all set!",
-      "message": "Thank you for joining our community. Check your email for updates!",
-      "toast_title": "🎉 Welcome to our community!",
-      "toast_message": "You've successfully subscribed to the Plastic Clever Schools newsletter."
+      "title": "Rydych chi'n barod!",
+      "message": "Diolch am ymuno â'n cymuned. Gwiriwch eich e-bost am ddiweddariadau!",
+      "toast_title": "🎉 Croeso i'n cymuned!",
+      "toast_message": "Rydych wedi tanysgrifio'n llwyddiannus i gylchlythyr Plastic Clever Schools."
     },
     "errors": {
-      "subscription_failed": "Subscription Failed",
-      "generic_error": "Failed to subscribe to newsletter. Please try again.",
-      "email_required": "Email Required",
-      "email_required_message": "Please enter your email address.",
-      "invalid_email": "Please enter a valid email address",
-      "network_error": "Network error. Please check your connection and try again.",
-      "already_subscribed": "You're already subscribed to our newsletter.",
-      "server_error": "Server error. Please try again later."
+      "subscription_failed": "Methodd y Tanysgrifiad",
+      "generic_error": "Methodd tanysgrifio i'r cylchlythyr. Rhowch gynnig arall arni.",
+      "email_required": "Mae angen E-bost",
+      "email_required_message": "Rhowch eich cyfeiriad e-bost.",
+      "invalid_email": "Rhowch gyfeiriad e-bost dilys",
+      "network_error": "Gwall rhwydwaith. Gwiriwch eich cysylltiad a rhowch gynnig arall arni.",
+      "already_subscribed": "Rydych eisoes wedi tanysgrifio i'n cylchlythyr.",
+      "server_error": "Gwall gweinydd. Rhowch gynnig arall arni yn nes ymlaen."
     },
     "privacy": {
-      "disclaimer": "By subscribing, you agree to receive updates about Plastic Clever Schools. You can unsubscribe at any time.",
-      "terms_link": "Terms of Service",
-      "privacy_link": "Privacy Policy"
+      "disclaimer": "Trwy danysgrifio, rydych yn cytuno i dderbyn diweddariadau am Plastic Clever Schools. Gallwch ddad-danysgrifio unrhyw bryd.",
+      "terms_link": "Telerau Gwasanaeth",
+      "privacy_link": "Polisi Preifatrwydd"
     },
     "tags": {
       "newsletter_signup": "newsletter_signup",
@@ -45,27 +45,27 @@
     }
   },
   "preferences": {
-    "title": "Newsletter Preferences",
-    "frequency": "Email Frequency",
-    "frequency_weekly": "Weekly Updates",
-    "frequency_monthly": "Monthly Summary",
-    "frequency_quarterly": "Quarterly Highlights",
-    "content_types": "Content Types",
-    "resources": "New Educational Resources",
-    "success_stories": "School Success Stories",
-    "program_updates": "Program Updates",
-    "events": "Events and Webinars",
-    "save_preferences": "Save Preferences",
-    "preferences_saved": "Your preferences have been saved successfully."
+    "title": "Dewisiadau Cylchlythyr",
+    "frequency": "Amlder E-bost",
+    "frequency_weekly": "Diweddariadau Wythnosol",
+    "frequency_monthly": "Crynodeb Misol",
+    "frequency_quarterly": "Uchafbwyntiau Chwarterol",
+    "content_types": "Mathau o Gynnwys",
+    "resources": "Adnoddau Addysgol Newydd",
+    "success_stories": "Straeon Llwyddiant Ysgolion",
+    "program_updates": "Diweddariadau Rhaglen",
+    "events": "Digwyddiadau a Gweminarau",
+    "save_preferences": "Cadw Dewisiadau",
+    "preferences_saved": "Mae eich dewisiadau wedi'u cadw'n llwyddiannus."
   },
   "unsubscribe": {
-    "title": "Unsubscribe",
-    "message": "We're sorry to see you go! You have been successfully unsubscribed from our newsletter.",
-    "feedback_title": "Help us improve",
-    "feedback_message": "Would you mind telling us why you're unsubscribing?",
-    "feedback_placeholder": "Your feedback is valuable to us...",
-    "submit_feedback": "Submit Feedback",
-    "skip_feedback": "Skip",
-    "resubscribe": "Changed your mind? Resubscribe here"
+    "title": "Dad-danysgrifio",
+    "message": "Mae'n ddrwg gennym eich gweld yn mynd! Rydych wedi dad-danysgrifio'n llwyddiannus o'n cylchlythyr.",
+    "feedback_title": "Helpwch ni i wella",
+    "feedback_message": "A fyddech chi'n dweud wrthym pam rydych chi'n dad-danysgrifio?",
+    "feedback_placeholder": "Mae eich adborth yn werthfawr i ni...",
+    "submit_feedback": "Cyflwyno Adborth",
+    "skip_feedback": "Hepgor",
+    "resubscribe": "Wedi newid eich meddwl? Ail-danysgrifiwch yma"
   }
 }

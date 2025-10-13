@@ -1,40 +1,40 @@
 {
   "signup": {
-    "title": "Join Our Newsletter",
-    "title_hero": "Stay Connected",
+    "title": "Bergabung dengan Newsletter Kami",
+    "title_hero": "Tetap Terhubung",
     "title_compact": "Newsletter",
-    "description": "Stay updated with the latest resources, success stories, and tips for tackling plastic pollution in schools.",
-    "description_hero": "Get the latest updates on plastic pollution solutions and educational resources.",
+    "description": "Tetap update dengan sumber daya terbaru, kisah sukses, dan tips untuk mengatasi polusi plastik di sekolah.",
+    "description_hero": "Dapatkan pembaruan terbaru tentang solusi polusi plastik dan sumber daya pendidikan.",
     "form": {
-      "first_name": "First name",
-      "last_name": "Last name", 
-      "email": "Enter your email address",
-      "email_compact": "Enter your email",
-      "subscribe_button": "Subscribe to Newsletter",
-      "subscribe_button_compact": "Subscribe",
-      "subscribing": "Subscribing...",
+      "first_name": "Nama depan",
+      "last_name": "Nama belakang", 
+      "email": "Masukkan alamat email Anda",
+      "email_compact": "Masukkan email Anda",
+      "subscribe_button": "Berlangganan Newsletter",
+      "subscribe_button_compact": "Berlangganan",
+      "subscribing": "Berlangganan...",
       "subscribing_compact": "..."
     },
     "success": {
-      "title": "You're all set!",
-      "message": "Thank you for joining our community. Check your email for updates!",
-      "toast_title": "🎉 Welcome to our community!",
-      "toast_message": "You've successfully subscribed to the Plastic Clever Schools newsletter."
+      "title": "Selesai!",
+      "message": "Terima kasih telah bergabung dengan komunitas kami. Periksa email Anda untuk pembaruan!",
+      "toast_title": "🎉 Selamat datang di komunitas kami!",
+      "toast_message": "Anda telah berhasil berlangganan newsletter Plastic Clever Schools."
     },
     "errors": {
-      "subscription_failed": "Subscription Failed",
-      "generic_error": "Failed to subscribe to newsletter. Please try again.",
-      "email_required": "Email Required",
-      "email_required_message": "Please enter your email address.",
-      "invalid_email": "Please enter a valid email address",
-      "network_error": "Network error. Please check your connection and try again.",
-      "already_subscribed": "You're already subscribed to our newsletter.",
-      "server_error": "Server error. Please try again later."
+      "subscription_failed": "Langganan Gagal",
+      "generic_error": "Gagal berlangganan newsletter. Silakan coba lagi.",
+      "email_required": "Email Diperlukan",
+      "email_required_message": "Silakan masukkan alamat email Anda.",
+      "invalid_email": "Silakan masukkan alamat email yang valid",
+      "network_error": "Kesalahan jaringan. Silakan periksa koneksi Anda dan coba lagi.",
+      "already_subscribed": "Anda sudah berlangganan newsletter kami.",
+      "server_error": "Kesalahan server. Silakan coba lagi nanti."
     },
     "privacy": {
-      "disclaimer": "By subscribing, you agree to receive updates about Plastic Clever Schools. You can unsubscribe at any time.",
-      "terms_link": "Terms of Service",
-      "privacy_link": "Privacy Policy"
+      "disclaimer": "Dengan berlangganan, Anda setuju untuk menerima pembaruan tentang Plastic Clever Schools. Anda dapat berhenti berlangganan kapan saja.",
+      "terms_link": "Syarat Layanan",
+      "privacy_link": "Kebijakan Privasi"
     },
     "tags": {
       "newsletter_signup": "newsletter_signup",
@@ -45,27 +45,27 @@
     }
   },
   "preferences": {
-    "title": "Newsletter Preferences",
-    "frequency": "Email Frequency",
-    "frequency_weekly": "Weekly Updates",
-    "frequency_monthly": "Monthly Summary",
-    "frequency_quarterly": "Quarterly Highlights",
-    "content_types": "Content Types",
-    "resources": "New Educational Resources",
-    "success_stories": "School Success Stories",
-    "program_updates": "Program Updates",
-    "events": "Events and Webinars",
-    "save_preferences": "Save Preferences",
-    "preferences_saved": "Your preferences have been saved successfully."
+    "title": "Preferensi Newsletter",
+    "frequency": "Frekuensi Email",
+    "frequency_weekly": "Pembaruan Mingguan",
+    "frequency_monthly": "Ringkasan Bulanan",
+    "frequency_quarterly": "Sorotan Triwulanan",
+    "content_types": "Jenis Konten",
+    "resources": "Sumber Daya Pendidikan Baru",
+    "success_stories": "Kisah Sukses Sekolah",
+    "program_updates": "Pembaruan Program",
+    "events": "Acara dan Webinar",
+    "save_preferences": "Simpan Preferensi",
+    "preferences_saved": "Preferensi Anda telah berhasil disimpan."
   },
   "unsubscribe": {
-    "title": "Unsubscribe",
-    "message": "We're sorry to see you go! You have been successfully unsubscribed from our newsletter.",
-    "feedback_title": "Help us improve",
-    "feedback_message": "Would you mind telling us why you're unsubscribing?",
-    "feedback_placeholder": "Your feedback is valuable to us...",
-    "submit_feedback": "Submit Feedback",
-    "skip_feedback": "Skip",
-    "resubscribe": "Changed your mind? Resubscribe here"
+    "title": "Berhenti Berlangganan",
+    "message": "Kami menyesal melihat Anda pergi! Anda telah berhasil berhenti berlangganan newsletter kami.",
+    "feedback_title": "Bantu kami meningkatkan",
+    "feedback_message": "Bisakah Anda memberi tahu kami mengapa Anda berhenti berlangganan?",
+    "feedback_placeholder": "Masukan Anda berharga bagi kami...",
+    "submit_feedback": "Kirim Masukan",
+    "skip_feedback": "Lewati",
+    "resubscribe": "Berubah pikiran? Berlangganan lagi di sini"
   }
 }
