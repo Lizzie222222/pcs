@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isSchoolMember } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, type VerificationRequest, users } from "@shared/schema";
 import { z } from "zod";
@@ -4627,6 +4627,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         status: registrationStatus,
       });
       
+      // Send registration confirmation email (don't fail request if email fails)
+      try {
+        await sendEventRegistrationEmail(
+          req.user.email,
+          { firstName: req.user.firstName, lastName: req.user.lastName },
+          {
+            id: event.id,
+            title: event.title,
+            description: event.description,
+            startDateTime: event.startDateTime,
+            endDateTime: event.endDateTime,
+            timezone: event.timezone || undefined,
+            location: event.location || undefined,
+            isVirtual: event.isVirtual || false,
+            meetingLink: event.meetingLink || undefined,
+          }
+        );
+      } catch (emailError) {
+        console.error("Failed to send registration confirmation email:", emailError);
+      }
+      
       res.json({ 
         message: registrationStatus === 'waitlisted' 
           ? "Added to waitlist successfully" 
@@ -4680,6 +4701,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const updatedRegistration = await storage.cancelEventRegistration(registrationId);
+      
+      // Send cancellation confirmation email (don't fail request if email fails)
+      try {
+        await sendEventCancellationEmail(
+          req.user.email,
+          { firstName: req.user.firstName, lastName: req.user.lastName },
+          registration.event
+        );
+      } catch (emailError) {
+        console.error("Failed to send cancellation confirmation email:", emailError);
+      }
+      
       res.json({ message: "Registration cancelled successfully", registration: updatedRegistration });
     } catch (error) {
       console.error("Error cancelling registration:", error);
@@ -4738,7 +4771,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Validate status transitions
-      if (updates.status) {
+      if (updates.status && existingEvent.status) {
         const validTransitions: Record<string, string[]> = {
           'draft': ['published', 'cancelled'],
           'published': ['cancelled', 'completed'],
@@ -4795,7 +4828,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Track changes for email notification
+      const changes: string[] = [];
+      if (updates.title && updates.title !== existingEvent.title) {
+        changes.push(`Event name changed to "${updates.title}"`);
+      }
+      if (updates.startDateTime && new Date(updates.startDateTime).getTime() !== new Date(existingEvent.startDateTime).getTime()) {
+        changes.push(`Start date/time updated`);
+      }
+      if (updates.endDateTime && new Date(updates.endDateTime).getTime() !== new Date(existingEvent.endDateTime).getTime()) {
+        changes.push(`End date/time updated`);
+      }
+      if (updates.location && updates.location !== existingEvent.location) {
+        changes.push(`Location changed to "${updates.location}"`);
+      }
+      if (updates.meetingLink && updates.meetingLink !== existingEvent.meetingLink) {
+        changes.push(`Meeting link updated`);
+      }
+      if (updates.isVirtual !== undefined && updates.isVirtual !== existingEvent.isVirtual) {
+        changes.push(`Event format changed to ${updates.isVirtual ? 'virtual' : 'in-person'}`);
+      }
+      if (updates.description && updates.description !== existingEvent.description) {
+        changes.push(`Event description updated`);
+      }
+      
       const event = await storage.updateEvent(eventId, updates);
+      
+      // Send update emails to registered users (only if there are meaningful changes)
+      if (event && changes.length > 0 && existingEvent.status === 'published') {
+        try {
+          const registrations = await storage.getEventRegistrations(eventId, { status: 'registered' });
+          
+          // Send emails in the background (don't wait for all to complete)
+          registrations.forEach(async (registration) => {
+            try {
+              if (registration.user.email && event) {
+                await sendEventUpdatedEmail(
+                  registration.user.email,
+                  { 
+                    firstName: registration.user.firstName || undefined, 
+                    lastName: registration.user.lastName || undefined 
+                  },
+                  {
+                    id: event.id,
+                    title: event.title,
+                    description: event.description,
+                    startDateTime: event.startDateTime,
+                    endDateTime: event.endDateTime,
+                    timezone: event.timezone || undefined,
+                    location: event.location || undefined,
+                    isVirtual: event.isVirtual || false,
+                    meetingLink: event.meetingLink || undefined,
+                  },
+                  changes
+                );
+              }
+            } catch (emailError) {
+              console.error(`Failed to send event update email to ${registration.user.email}:`, emailError);
+            }
+          });
+        } catch (emailError) {
+          console.error("Failed to send event update emails:", emailError);
+        }
+      }
+      
       res.json({ message: "Event updated successfully", event });
     } catch (error) {
       console.error("Error updating event:", error);
