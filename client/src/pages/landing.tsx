@@ -1,5 +1,5 @@
 import { useState, useRef, lazy, Suspense } from "react";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useConnectionSpeed } from "@/hooks/useConnectionSpeed";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -345,7 +345,15 @@ export default function Landing() {
       <section id="how-it-works" className="py-16 lg:py-24 bg-gradient-to-b from-white to-yellow/10">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4">A Simple <span className="text-ocean-blue">3-Stage Journey</span> to a Plastic Clever School</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4">
+              <Trans 
+                i18nKey="three_stage_program.title"
+                ns="landing"
+                components={{
+                  highlight: <span className="text-ocean-blue" />
+                }}
+              />
+            </h2>
             <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
               {t('three_stage_program.subtitle')}
             </p>
