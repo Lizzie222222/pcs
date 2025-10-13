@@ -203,8 +203,8 @@ export default function Landing() {
             <div className="flex items-start gap-2">
               <Star className="w-5 h-5 sm:w-5 sm:h-5 text-yellow-700 flex-shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm sm:text-sm font-bold text-gray-900 mb-1">Latest News!</p>
-                <p className="text-xs sm:text-xs font-medium text-gray-800 leading-tight">Join our growing community</p>
+                <p className="text-sm sm:text-sm font-bold text-gray-900 mb-1">{t('popup.latest_news')}</p>
+                <p className="text-xs sm:text-xs font-medium text-gray-800 leading-tight">{t('popup.community_message')}</p>
               </div>
             </div>
           </div>
@@ -243,17 +243,17 @@ export default function Landing() {
           <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 text-white text-center px-4">
             <div className="flex items-center gap-2" data-testid="impact-ribbon-schools">
               <span className="text-xl sm:text-2xl md:text-3xl font-bold">{stats?.totalSchools?.toLocaleString() || '0'}</span>
-              <span className="text-sm md:text-base">schools</span>
+              <span className="text-sm md:text-base">{t('stats.schools_label')}</span>
             </div>
             <div className="hidden md:block text-2xl text-white/50">|</div>
             <div className="flex items-center gap-2" data-testid="impact-ribbon-countries">
               <span className="text-xl sm:text-2xl md:text-3xl font-bold">{stats?.countries?.toLocaleString() || '0'}</span>
-              <span className="text-sm md:text-base">countries</span>
+              <span className="text-sm md:text-base">{t('stats.countries_label')}</span>
             </div>
             <div className="hidden md:block text-2xl text-white/50">|</div>
             <div className="flex items-center gap-2" data-testid="impact-ribbon-actions">
               <span className="text-xl sm:text-2xl md:text-3xl font-bold">{stats?.completedAwards?.toLocaleString() || '0'}</span>
-              <span className="text-sm md:text-base">actions taken</span>
+              <span className="text-sm md:text-base">{t('stats.actions_taken_label')}</span>
             </div>
           </div>
         </div>
@@ -282,7 +282,7 @@ export default function Landing() {
                 
                 {/* Quote Text - Mobile optimized */}
                 <blockquote className="text-base sm:text-xl lg:text-2xl font-semibold text-navy leading-relaxed mb-8 relative z-10 italic">
-                  "Plastic Clever Schools has transformed how we approach sustainability. Our students are now passionate environmental advocates!"
+                  "{t('testimonial.quote')}"
                 </blockquote>
                 
                 {/* Author Info */}
@@ -291,8 +291,8 @@ export default function Landing() {
                     JS
                   </div>
                   <div>
-                    <p className="font-bold text-navy text-lg">Jane Smith</p>
-                    <p className="text-ocean-blue text-sm font-medium">Head Teacher, Greenfield Primary</p>
+                    <p className="font-bold text-navy text-lg">{t('testimonial.author_name')}</p>
+                    <p className="text-ocean-blue text-sm font-medium">{t('testimonial.author_title')}</p>
                   </div>
                 </div>
               </div>
@@ -303,7 +303,7 @@ export default function Landing() {
               {/* Heading */}
               <div className="space-y-2">
                 <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
-                  What is Plastic Clever Schools?
+                  {t('video_section.title')}
                 </h3>
                 <div className="w-20 h-1 bg-ocean-blue rounded-full"></div>
               </div>
@@ -314,7 +314,7 @@ export default function Landing() {
                   <iframe
                     className="w-full h-full"
                     src="https://www.youtube.com/embed/sihnakV84Pw"
-                    title="What is Plastic Clever Schools?"
+                    title={t('video_section.title')}
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                     data-testid="iframe-intro-video"
@@ -334,7 +334,7 @@ export default function Landing() {
               
               {/* Caption */}
               <p className="text-sm text-gray-500 italic pl-4 border-l-4 border-ocean-blue/30">
-                Opening quote from teacher to introduce the video - image as placeholder for lazy loading
+                {t('video_section.caption')}
               </p>
             </div>
           </div>
@@ -414,10 +414,10 @@ export default function Landing() {
       <section className="py-16 lg:py-24 bg-pcs_blue">
         <div className="container-width text-center">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6" data-testid="text-cta-heading">
-            Ready to Make a Difference?
+            {t('cta_section.title')}
           </h2>
           <p className="text-base sm:text-lg text-white/90 mb-8 max-w-2xl mx-auto">
-            Join thousands of schools worldwide in creating a plastic-clever future
+            {t('cta_section.subtitle')}
           </p>
           <Button 
             size="lg"
@@ -425,7 +425,7 @@ export default function Landing() {
             onClick={() => window.location.href = '/register'}
             data-testid="button-cta-register"
           >
-            Register Your School
+            {t('cta_section.register_now')}
             <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
           </Button>
         </div>
@@ -435,7 +435,9 @@ export default function Landing() {
       <section className="py-16 lg:py-24 bg-gradient-to-b from-teal/5 to-ocean-blue/5">
         <div className="container-width">
           <div className="text-center mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4">Follow <span className="text-ocean-blue">Our Journey</span></h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4">
+              {t('instagram.title').split(' ').slice(0, 1).join(' ')} <span className="text-ocean-blue">{t('instagram.title').split(' ').slice(1).join(' ')}</span>
+            </h2>
             <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto">
               {t('instagram.description')}
             </p>
@@ -448,8 +450,8 @@ export default function Landing() {
                 data-testid="button-follow-instagram"
               >
                 <Instagram className="w-5 h-5" />
-                <span className="hidden sm:inline">Follow @plastic_clever_schools</span>
-                <span className="sm:hidden">Follow Us</span>
+                <span className="hidden sm:inline">{t('instagram.follow_handle')}</span>
+                <span className="sm:hidden">{t('instagram.follow_short')}</span>
               </a>
             </div>
           </div>
@@ -466,13 +468,13 @@ export default function Landing() {
           
           <div className="text-center mt-12 ">
             <p className="text-base text-gray-600 leading-relaxed text-gray-600 mb-6">
-              Join the conversation and share your school's plastic clever journey with <span className="font-semibold text-teal">#PlasticCleverSchools</span>
+              {t('instagram.hashtag_intro')} <span className="font-semibold text-teal">{t('instagram.main_hashtag')}</span>
             </p>
             <div className="flex flex-wrap justify-center gap-4">
-              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">#SustainableSchools</span>
-              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">#PlasticFree</span>
-              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">#EcoEducation</span>
-              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">#YoungActivists</span>
+              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">{t('instagram.hashtag_sustainable')}</span>
+              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">{t('instagram.hashtag_plastic_free')}</span>
+              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">{t('instagram.hashtag_eco_education')}</span>
+              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">{t('instagram.hashtag_young_activists')}</span>
             </div>
           </div>
         </div>
@@ -484,7 +486,7 @@ export default function Landing() {
           <div className="max-w-4xl mx-auto">
             {/* Title */}
             <h2 className="text-2xl sm:text-3xl font-bold text-navy text-center mb-12 uppercase tracking-wide">
-              Plastic Clever Schools is a<br />collaboration between
+              {t('partnership.collaboration_title')}
             </h2>
             
             {/* Top Row - Common Seas and Kids Against Plastic */}
@@ -522,7 +524,7 @@ export default function Landing() {
             
             {/* Partnership Text */}
             <p className="text-center text-gray-600 text-lg mb-8">
-              in partnership with
+              {t('partnership.partnership_with')}
             </p>
             
             {/* River Cleanup Logo */}
@@ -562,46 +564,46 @@ export default function Landing() {
                 priority={false}
               />
               <p className="text-gray-300 text-sm sm:text-base">
-                Empowering schools worldwide to create plastic-free environments through education, investigation, and action.
+                {t('footer.description')}
               </p>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Program</h4>
+              <h4 className="font-semibold mb-4">{t('footer.program_title')}</h4>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><a href="#" className="hover:text-teal transition-colors">How It Works</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">Resources</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">Success Stories</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">Award Criteria</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.program_how_it_works')}</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.program_resources')}</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.program_success_stories')}</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.program_award_criteria')}</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Support</h4>
+              <h4 className="font-semibold mb-4">{t('footer.support_title')}</h4>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><a href="#" className="hover:text-teal transition-colors">Help Center</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">Contact Us</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">Community</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">Training</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.support_help_center')}</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.support_contact_us')}</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.support_community')}</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.support_training')}</a></li>
               </ul>
             </div>
             
             <div>
-              <h4 className="font-semibold mb-4">Connect</h4>
+              <h4 className="font-semibold mb-4">{t('footer.connect_title')}</h4>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><a href="#" className="hover:text-teal transition-colors">Newsletter</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">Social Media</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">Events</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">Partners</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.connect_newsletter')}</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.connect_social_media')}</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.connect_events')}</a></li>
+                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.connect_partners')}</a></li>
               </ul>
             </div>
           </div>
           
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400 ">
             <p>
-              &copy; 2024 Plastic Clever Schools. All rights reserved. | 
-              <a href="#" className="hover:text-teal transition-colors ml-1">Privacy</a> | 
-              <a href="#" className="hover:text-teal transition-colors ml-1">Terms</a>
+              {t('footer.copyright')} | 
+              <a href="#" className="hover:text-teal transition-colors ml-1">{t('footer.privacy')}</a> | 
+              <a href="#" className="hover:text-teal transition-colors ml-1">{t('footer.terms')}</a>
             </p>
           </div>
         </div>

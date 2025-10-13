@@ -49,9 +49,15 @@
     "certificates": "Certificates",
     "progress_tracking": "Progress Tracking"
   },
+  "popup": {
+    "latest_news": "Latest News!",
+    "community_message": "Join our growing community"
+  },
   "partnership": {
     "title": "Built on Strong Partnerships",
-    "description": "Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education."
+    "description": "Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education.",
+    "collaboration_title": "Plastic Clever Schools is a collaboration between",
+    "partnership_with": "in partnership with"
   },
   "testimonials": {
     "title": "Why Schools Choose Us",
@@ -75,7 +81,15 @@
   "instagram": {
     "title": "Follow Our Journey",
     "description": "See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.",
-    "follow_button": "Follow on Instagram"
+    "follow_button": "Follow on Instagram",
+    "follow_handle": "Follow @plastic_clever_schools",
+    "follow_short": "Follow Us",
+    "hashtag_intro": "Join the conversation and share your school's plastic clever journey with",
+    "main_hashtag": "#PlasticCleverSchools",
+    "hashtag_sustainable": "#SustainableSchools",
+    "hashtag_plastic_free": "#PlasticFree",
+    "hashtag_eco_education": "#EcoEducation",
+    "hashtag_young_activists": "#YoungActivists"
   },
   "newsletter": {
     "title": "Stay Connected",
@@ -92,7 +106,10 @@
     "schools_registered": "Schools Registered",
     "students_impacted": "Students Impacted", 
     "countries_participating": "Countries Participating",
-    "awards_completed": "Awards Completed"
+    "awards_completed": "Awards Completed",
+    "schools_label": "schools",
+    "countries_label": "countries",
+    "actions_taken_label": "actions taken"
   },
   "program": {
     "title": "Our Three-Stage Program",
@@ -166,13 +183,43 @@
     "subtitle": "Working together to create a plastic-free future",
     "description": "We collaborate with leading environmental organizations, educational institutions, and sustainability experts to deliver the highest quality resources and support for your school's journey."
   },
+  "testimonial": {
+    "quote": "Plastic Clever Schools has transformed how we approach sustainability. Our students are now passionate environmental advocates!",
+    "author_name": "Jane Smith",
+    "author_title": "Head Teacher, Greenfield Primary"
+  },
+  "video_section": {
+    "title": "What is Plastic Clever Schools?",
+    "caption": "Opening quote from teacher to introduce the video - image as placeholder for lazy loading"
+  },
   "cta_section": {
     "title": "Ready to Make a Difference?",
-    "subtitle": "Join thousands of schools worldwide in the fight against plastic pollution",
+    "subtitle": "Join thousands of schools worldwide in creating a plastic-clever future",
     "description": "Your school can be part of the solution. Register today and start your journey toward becoming a Plastic Clever School.",
-    "register_now": "Register Your School Now",
+    "register_now": "Register Your School",
     "have_questions": "Have questions?",
     "contact_support": "Contact our support team"
+  },
+  "footer": {
+    "description": "Empowering schools worldwide to create plastic-free environments through education, investigation, and action.",
+    "program_title": "Program",
+    "program_how_it_works": "How It Works",
+    "program_resources": "Resources",
+    "program_success_stories": "Success Stories",
+    "program_award_criteria": "Award Criteria",
+    "support_title": "Support",
+    "support_help_center": "Help Center",
+    "support_contact_us": "Contact Us",
+    "support_community": "Community",
+    "support_training": "Training",
+    "connect_title": "Connect",
+    "connect_newsletter": "Newsletter",
+    "connect_social_media": "Social Media",
+    "connect_events": "Events",
+    "connect_partners": "Partners",
+    "copyright": "© 2024 Plastic Clever Schools. All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms"
   },
   "accessibility": {
     "hero_video_title": "Plastic Clever Schools Introduction Video",

@@ -95,9 +95,15 @@ i18n
 // Supported languages for lazy loading
 const supportedLanguages = ['ar', 'zh', 'nl', 'el', 'fr', 'de', 'id', 'it', 'ko', 'pt', 'ru', 'es', 'cy'];
 
+// RTL languages that require right-to-left layout
+const rtlLanguages = ['ar']; // Arabic
+
 // Load translations when language changes
 i18n.on('languageChanged', async (lng) => {
   document.documentElement.lang = lng;
+  
+  // Set text direction based on language
+  document.documentElement.dir = rtlLanguages.includes(lng) ? 'rtl' : 'ltr';
   
   // Lazy load translations if not already loaded (skip English as it's loaded upfront)
   if (lng !== 'en' && supportedLanguages.includes(lng) && !i18n.hasResourceBundle(lng, 'common')) {
