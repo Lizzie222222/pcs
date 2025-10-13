@@ -69,7 +69,8 @@ import {
   Plus,
   Video,
   Filter,
-  ExternalLink
+  ExternalLink,
+  Download
 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -1551,18 +1552,29 @@ export default function Home() {
                       <Target className="h-12 w-12 text-teal" />
                     </div>
                   </div>
-                  <h2 className="text-2xl font-bold text-navy mb-3">No Action Plan Yet</h2>
+                  <h2 className="text-2xl font-bold text-navy mb-3">Ready to Create Your Action Plan?</h2>
                   <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    You haven't created an action plan yet. Complete an audit and create your first action plan to start tracking your impact!
+                    Your students can lead the way! Create an action plan to reduce plastic waste at your school. You can create it online or download a printable form to complete offline.
                   </p>
-                  <Button
-                    onClick={handleAddPromiseClick}
-                    className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white px-6 py-3 text-lg shadow-lg"
-                    data-testid="button-add-first-promise"
-                  >
-                    <Plus className="h-5 w-5 mr-2" />
-                    Create Your First Action Plan
-                  </Button>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button
+                      onClick={handleAddPromiseClick}
+                      className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white px-6 py-3 text-lg shadow-lg"
+                      data-testid="button-add-first-promise"
+                    >
+                      <Plus className="h-5 w-5 mr-2" />
+                      Create Online Action Plan
+                    </Button>
+                    <Button
+                      onClick={() => window.location.href = '/api/printable-forms/action-plan'}
+                      variant="outline"
+                      className="px-6 py-3 text-lg shadow-lg border-2 border-teal text-teal hover:bg-teal hover:text-white"
+                      data-testid="button-download-action-plan-form"
+                    >
+                      <Download className="h-5 w-5 mr-2" />
+                      Download Printable Form
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
             ) : (
