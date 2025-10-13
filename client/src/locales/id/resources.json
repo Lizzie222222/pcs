@@ -1,58 +1,58 @@
 {
   "page": {
-    "title": "Educational Resources",
-    "subtitle": "High-quality materials to support your plastic-free journey through all three program stages"
+    "title": "Sumber Daya Pendidikan",
+    "subtitle": "Materi berkualitas tinggi untuk mendukung perjalanan bebas plastik Anda melalui ketiga tahap program"
   },
   "search": {
-    "title": "Search & Filter Resources",
-    "placeholder": "Search resources...",
-    "all_stages": "All Stages",
-    "all_countries": "All Countries",
-    "all_languages": "All Languages",
-    "all_status": "All Status",
-    "all_ages": "All Ages"
+    "title": "Cari & Filter Sumber Daya",
+    "placeholder": "Cari sumber daya...",
+    "all_stages": "Semua Tahap",
+    "all_countries": "Semua Negara",
+    "all_languages": "Semua Bahasa",
+    "all_status": "Semua Status",
+    "all_ages": "Semua Usia"
   },
   "filters": {
-    "stage": "Stage",
-    "country": "Country",
-    "language": "Language",
-    "age_range": "Age Range",
-    "file_type": "File Type",
+    "stage": "Tahap",
+    "country": "Negara",
+    "language": "Bahasa",
+    "age_range": "Rentang Usia",
+    "file_type": "Jenis File",
     "status": "Status"
   },
   "stages": {
-    "inspire": "Inspire",
-    "investigate": "Investigate", 
-    "act": "Act"
+    "inspire": "Menginspirasi",
+    "investigate": "Menyelidiki", 
+    "act": "Bertindak"
   },
   "languages": {
-    "english": "English",
-    "spanish": "Spanish",
-    "french": "French",
-    "german": "German",
-    "other": "Other"
+    "english": "Inggris",
+    "spanish": "Spanyol",
+    "french": "Prancis",
+    "german": "Jerman",
+    "other": "Lainnya"
   },
   "age_ranges": {
-    "5_7": "5-7 years",
-    "8_11": "8-11 years",
-    "12_16": "12-16 years",
-    "17_plus": "17+ years"
+    "5_7": "5-7 tahun",
+    "8_11": "8-11 tahun",
+    "12_16": "12-16 tahun",
+    "17_plus": "17+ tahun"
   },
   "file_types": {
-    "pdf": "PDF Document",
+    "pdf": "Dokumen PDF",
     "video": "Video",
-    "image": "Image",
-    "presentation": "Presentation",
-    "worksheet": "Worksheet"
+    "image": "Gambar",
+    "presentation": "Presentasi",
+    "worksheet": "Lembar Kerja"
   },
   "resource_card": {
-    "downloads": "Downloads",
-    "download_count_one": "{{count}} download",
-    "download_count_other": "{{count}} downloads",
-    "file_size": "File size",
-    "age_range": "Age range",
+    "downloads": "Unduhan",
+    "download_count_one": "{{count}} unduhan",
+    "download_count_other": "{{count}} unduhan",
+    "file_size": "Ukuran file",
+    "age_range": "Rentang usia",
     "global": "Global",
-    "download_resource": "Download Resource"
+    "download_resource": "Unduh Sumber Daya"
   },
   "units": {
     "bytes": "Bytes",
@@ -61,24 +61,24 @@
     "gb": "GB"
   },
   "empty_state": {
-    "title": "No Resources Found",
-    "message": "Try adjusting your search criteria or check back later for new resources.",
-    "clear_filters": "Clear Filters"
+    "title": "Tidak Ada Sumber Daya Ditemukan",
+    "message": "Coba sesuaikan kriteria pencarian Anda atau periksa kembali nanti untuk sumber daya baru.",
+    "clear_filters": "Hapus Filter"
   },
   "categories": {
-    "lesson_plans": "Lesson Plans",
-    "worksheets": "Worksheets", 
-    "presentations": "Presentations",
-    "videos": "Videos",
-    "posters": "Posters",
-    "assessment_tools": "Assessment Tools",
-    "case_studies": "Case Studies",
-    "research_materials": "Research Materials"
+    "lesson_plans": "Rencana Pembelajaran",
+    "worksheets": "Lembar Kerja", 
+    "presentations": "Presentasi",
+    "videos": "Video",
+    "posters": "Poster",
+    "assessment_tools": "Alat Penilaian",
+    "case_studies": "Studi Kasus",
+    "research_materials": "Materi Penelitian"
   },
-  "load_more_resources": "Load More Resources",
+  "load_more_resources": "Muat Lebih Banyak Sumber Daya",
   "accessibility": {
-    "download_started": "Download started for {{title}}",
-    "resource_unavailable": "This resource is currently unavailable",
-    "large_file_warning": "This is a large file ({{size}}). Download may take some time."
+    "download_started": "Unduhan dimulai untuk {{title}}",
+    "resource_unavailable": "Sumber daya ini saat ini tidak tersedia",
+    "large_file_warning": "Ini adalah file besar ({{size}}). Unduhan mungkin memakan waktu."
   }
 }

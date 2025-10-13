@@ -1,84 +1,84 @@
 {
   "page": {
-    "title": "Educational Resources",
-    "subtitle": "High-quality materials to support your plastic-free journey through all three program stages"
+    "title": "교육 자료",
+    "subtitle": "세 가지 프로그램 단계를 통해 플라스틱 없는 여정을 지원하는 고품질 자료"
   },
   "search": {
-    "title": "Search & Filter Resources",
-    "placeholder": "Search resources...",
-    "all_stages": "All Stages",
-    "all_countries": "All Countries",
-    "all_languages": "All Languages",
-    "all_status": "All Status",
-    "all_ages": "All Ages"
+    "title": "자료 검색 및 필터링",
+    "placeholder": "자료 검색...",
+    "all_stages": "모든 단계",
+    "all_countries": "모든 국가",
+    "all_languages": "모든 언어",
+    "all_status": "모든 상태",
+    "all_ages": "모든 연령"
   },
   "filters": {
-    "stage": "Stage",
-    "country": "Country",
-    "language": "Language",
-    "age_range": "Age Range",
-    "file_type": "File Type",
-    "status": "Status"
+    "stage": "단계",
+    "country": "국가",
+    "language": "언어",
+    "age_range": "연령대",
+    "file_type": "파일 유형",
+    "status": "상태"
   },
   "stages": {
-    "inspire": "Inspire",
-    "investigate": "Investigate", 
-    "act": "Act"
+    "inspire": "영감 주기",
+    "investigate": "조사하기", 
+    "act": "행동하기"
   },
   "languages": {
-    "english": "English",
-    "spanish": "Spanish",
-    "french": "French",
-    "german": "German",
-    "other": "Other"
+    "english": "영어",
+    "spanish": "스페인어",
+    "french": "프랑스어",
+    "german": "독일어",
+    "other": "기타"
   },
   "age_ranges": {
-    "5_7": "5-7 years",
-    "8_11": "8-11 years",
-    "12_16": "12-16 years",
-    "17_plus": "17+ years"
+    "5_7": "5-7세",
+    "8_11": "8-11세",
+    "12_16": "12-16세",
+    "17_plus": "17세 이상"
   },
   "file_types": {
-    "pdf": "PDF Document",
-    "video": "Video",
-    "image": "Image",
-    "presentation": "Presentation",
-    "worksheet": "Worksheet"
+    "pdf": "PDF 문서",
+    "video": "동영상",
+    "image": "이미지",
+    "presentation": "프레젠테이션",
+    "worksheet": "워크시트"
   },
   "resource_card": {
-    "downloads": "Downloads",
-    "download_count_one": "{{count}} download",
-    "download_count_other": "{{count}} downloads",
-    "file_size": "File size",
-    "age_range": "Age range",
-    "global": "Global",
-    "download_resource": "Download Resource"
+    "downloads": "다운로드",
+    "download_count_one": "{{count}}회 다운로드",
+    "download_count_other": "{{count}}회 다운로드",
+    "file_size": "파일 크기",
+    "age_range": "연령대",
+    "global": "글로벌",
+    "download_resource": "자료 다운로드"
   },
   "units": {
-    "bytes": "Bytes",
+    "bytes": "바이트",
     "kb": "KB",
     "mb": "MB",
     "gb": "GB"
   },
   "empty_state": {
-    "title": "No Resources Found",
-    "message": "Try adjusting your search criteria or check back later for new resources.",
-    "clear_filters": "Clear Filters"
+    "title": "자료를 찾을 수 없음",
+    "message": "검색 조건을 조정하거나 나중에 새 자료를 확인해 주세요.",
+    "clear_filters": "필터 지우기"
   },
   "categories": {
-    "lesson_plans": "Lesson Plans",
-    "worksheets": "Worksheets", 
-    "presentations": "Presentations",
-    "videos": "Videos",
-    "posters": "Posters",
-    "assessment_tools": "Assessment Tools",
-    "case_studies": "Case Studies",
-    "research_materials": "Research Materials"
+    "lesson_plans": "수업 계획",
+    "worksheets": "워크시트", 
+    "presentations": "프레젠테이션",
+    "videos": "동영상",
+    "posters": "포스터",
+    "assessment_tools": "평가 도구",
+    "case_studies": "사례 연구",
+    "research_materials": "연구 자료"
   },
-  "load_more_resources": "Load More Resources",
+  "load_more_resources": "더 많은 자료 로드",
   "accessibility": {
-    "download_started": "Download started for {{title}}",
-    "resource_unavailable": "This resource is currently unavailable",
-    "large_file_warning": "This is a large file ({{size}}). Download may take some time."
+    "download_started": "{{title}} 다운로드가 시작되었습니다",
+    "resource_unavailable": "이 자료는 현재 이용할 수 없습니다",
+    "large_file_warning": "대용량 파일입니다 ({{size}}). 다운로드하는 데 시간이 걸릴 수 있습니다."
   }
 }

@@ -1,84 +1,84 @@
 {
   "page": {
-    "title": "Educational Resources",
-    "subtitle": "High-quality materials to support your plastic-free journey through all three program stages"
+    "title": "Adnoddau Addysgol",
+    "subtitle": "Deunyddiau o ansawdd uchel i gefnogi eich taith heb blastig trwy bob un o'r tair cam rhaglen"
   },
   "search": {
-    "title": "Search & Filter Resources",
-    "placeholder": "Search resources...",
-    "all_stages": "All Stages",
-    "all_countries": "All Countries",
-    "all_languages": "All Languages",
-    "all_status": "All Status",
-    "all_ages": "All Ages"
+    "title": "Chwilio a Hidlo Adnoddau",
+    "placeholder": "Chwilio am adnoddau...",
+    "all_stages": "Pob Cam",
+    "all_countries": "Pob Gwlad",
+    "all_languages": "Pob Iaith",
+    "all_status": "Pob Statws",
+    "all_ages": "Pob Oedran"
   },
   "filters": {
-    "stage": "Stage",
-    "country": "Country",
-    "language": "Language",
-    "age_range": "Age Range",
-    "file_type": "File Type",
-    "status": "Status"
+    "stage": "Cam",
+    "country": "Gwlad",
+    "language": "Iaith",
+    "age_range": "Ystod Oedran",
+    "file_type": "Math o Ffeil",
+    "status": "Statws"
   },
   "stages": {
-    "inspire": "Inspire",
-    "investigate": "Investigate", 
-    "act": "Act"
+    "inspire": "Ysbrydoli",
+    "investigate": "Ymchwilio", 
+    "act": "Gweithredu"
   },
   "languages": {
-    "english": "English",
-    "spanish": "Spanish",
-    "french": "French",
-    "german": "German",
-    "other": "Other"
+    "english": "Saesneg",
+    "spanish": "Sbaeneg",
+    "french": "Ffrangeg",
+    "german": "Almaeneg",
+    "other": "Arall"
   },
   "age_ranges": {
-    "5_7": "5-7 years",
-    "8_11": "8-11 years",
-    "12_16": "12-16 years",
-    "17_plus": "17+ years"
+    "5_7": "5-7 mlwydd oed",
+    "8_11": "8-11 mlwydd oed",
+    "12_16": "12-16 mlwydd oed",
+    "17_plus": "17+ mlwydd oed"
   },
   "file_types": {
-    "pdf": "PDF Document",
-    "video": "Video",
-    "image": "Image",
-    "presentation": "Presentation",
-    "worksheet": "Worksheet"
+    "pdf": "Dogfen PDF",
+    "video": "Fideo",
+    "image": "Delwedd",
+    "presentation": "Cyflwyniad",
+    "worksheet": "Taflen Waith"
   },
   "resource_card": {
-    "downloads": "Downloads",
-    "download_count_one": "{{count}} download",
-    "download_count_other": "{{count}} downloads",
-    "file_size": "File size",
-    "age_range": "Age range",
-    "global": "Global",
-    "download_resource": "Download Resource"
+    "downloads": "Lawrlwythiadau",
+    "download_count_one": "{{count}} lawrlwythiad",
+    "download_count_other": "{{count}} lawrlwythiad",
+    "file_size": "Maint y ffeil",
+    "age_range": "Ystod oedran",
+    "global": "Byd-eang",
+    "download_resource": "Lawrlwytho Adnodd"
   },
   "units": {
-    "bytes": "Bytes",
+    "bytes": "Beitiau",
     "kb": "KB",
     "mb": "MB",
     "gb": "GB"
   },
   "empty_state": {
-    "title": "No Resources Found",
-    "message": "Try adjusting your search criteria or check back later for new resources.",
-    "clear_filters": "Clear Filters"
+    "title": "Dim Adnoddau wedi'u Canfod",
+    "message": "Ceisiwch addasu eich meini prawf chwilio neu dewch yn ôl yn ddiweddarach am adnoddau newydd.",
+    "clear_filters": "Clirio Hidlyddion"
   },
   "categories": {
-    "lesson_plans": "Lesson Plans",
-    "worksheets": "Worksheets", 
-    "presentations": "Presentations",
-    "videos": "Videos",
-    "posters": "Posters",
-    "assessment_tools": "Assessment Tools",
-    "case_studies": "Case Studies",
-    "research_materials": "Research Materials"
+    "lesson_plans": "Cynlluniau Gwersi",
+    "worksheets": "Taflenni Gwaith", 
+    "presentations": "Cyflwyniadau",
+    "videos": "Fideos",
+    "posters": "Posteri",
+    "assessment_tools": "Offer Asesu",
+    "case_studies": "Astudiaethau Achos",
+    "research_materials": "Deunyddiau Ymchwil"
   },
-  "load_more_resources": "Load More Resources",
+  "load_more_resources": "Llwytho Mwy o Adnoddau",
   "accessibility": {
-    "download_started": "Download started for {{title}}",
-    "resource_unavailable": "This resource is currently unavailable",
-    "large_file_warning": "This is a large file ({{size}}). Download may take some time."
+    "download_started": "Dechreuodd lawrlwytho {{title}}",
+    "resource_unavailable": "Nid yw'r adnodd hwn ar gael ar hyn o bryd",
+    "large_file_warning": "Mae hwn yn ffeil fawr ({{size}}). Gall y lawrlwythiad gymryd peth amser."
   }
 }

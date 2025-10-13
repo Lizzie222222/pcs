@@ -1,84 +1,84 @@
 {
   "page": {
-    "title": "Educational Resources",
-    "subtitle": "High-quality materials to support your plastic-free journey through all three program stages"
+    "title": "Образовательные Ресурсы",
+    "subtitle": "Высококачественные материалы для поддержки вашего пути без пластика через все три этапа программы"
   },
   "search": {
-    "title": "Search & Filter Resources",
-    "placeholder": "Search resources...",
-    "all_stages": "All Stages",
-    "all_countries": "All Countries",
-    "all_languages": "All Languages",
-    "all_status": "All Status",
-    "all_ages": "All Ages"
+    "title": "Поиск и Фильтрация Ресурсов",
+    "placeholder": "Поиск ресурсов...",
+    "all_stages": "Все Этапы",
+    "all_countries": "Все Страны",
+    "all_languages": "Все Языки",
+    "all_status": "Все Статусы",
+    "all_ages": "Все Возрасты"
   },
   "filters": {
-    "stage": "Stage",
-    "country": "Country",
-    "language": "Language",
-    "age_range": "Age Range",
-    "file_type": "File Type",
-    "status": "Status"
+    "stage": "Этап",
+    "country": "Страна",
+    "language": "Язык",
+    "age_range": "Возрастная Группа",
+    "file_type": "Тип Файла",
+    "status": "Статус"
   },
   "stages": {
-    "inspire": "Inspire",
-    "investigate": "Investigate", 
-    "act": "Act"
+    "inspire": "Вдохновлять",
+    "investigate": "Исследовать", 
+    "act": "Действовать"
   },
   "languages": {
-    "english": "English",
-    "spanish": "Spanish",
-    "french": "French",
-    "german": "German",
-    "other": "Other"
+    "english": "Английский",
+    "spanish": "Испанский",
+    "french": "Французский",
+    "german": "Немецкий",
+    "other": "Другой"
   },
   "age_ranges": {
-    "5_7": "5-7 years",
-    "8_11": "8-11 years",
-    "12_16": "12-16 years",
-    "17_plus": "17+ years"
+    "5_7": "5-7 лет",
+    "8_11": "8-11 лет",
+    "12_16": "12-16 лет",
+    "17_plus": "17+ лет"
   },
   "file_types": {
-    "pdf": "PDF Document",
-    "video": "Video",
-    "image": "Image",
-    "presentation": "Presentation",
-    "worksheet": "Worksheet"
+    "pdf": "PDF Документ",
+    "video": "Видео",
+    "image": "Изображение",
+    "presentation": "Презентация",
+    "worksheet": "Рабочий Лист"
   },
   "resource_card": {
-    "downloads": "Downloads",
-    "download_count_one": "{{count}} download",
-    "download_count_other": "{{count}} downloads",
-    "file_size": "File size",
-    "age_range": "Age range",
-    "global": "Global",
-    "download_resource": "Download Resource"
+    "downloads": "Загрузки",
+    "download_count_one": "{{count}} загрузка",
+    "download_count_other": "{{count}} загрузок",
+    "file_size": "Размер файла",
+    "age_range": "Возрастная группа",
+    "global": "Глобальный",
+    "download_resource": "Скачать Ресурс"
   },
   "units": {
-    "bytes": "Bytes",
-    "kb": "KB",
-    "mb": "MB",
-    "gb": "GB"
+    "bytes": "Байты",
+    "kb": "КБ",
+    "mb": "МБ",
+    "gb": "ГБ"
   },
   "empty_state": {
-    "title": "No Resources Found",
-    "message": "Try adjusting your search criteria or check back later for new resources.",
-    "clear_filters": "Clear Filters"
+    "title": "Ресурсы Не Найдены",
+    "message": "Попробуйте изменить критерии поиска или вернитесь позже для новых ресурсов.",
+    "clear_filters": "Очистить Фильтры"
   },
   "categories": {
-    "lesson_plans": "Lesson Plans",
-    "worksheets": "Worksheets", 
-    "presentations": "Presentations",
-    "videos": "Videos",
-    "posters": "Posters",
-    "assessment_tools": "Assessment Tools",
-    "case_studies": "Case Studies",
-    "research_materials": "Research Materials"
+    "lesson_plans": "Планы Уроков",
+    "worksheets": "Рабочие Листы", 
+    "presentations": "Презентации",
+    "videos": "Видео",
+    "posters": "Плакаты",
+    "assessment_tools": "Инструменты Оценки",
+    "case_studies": "Тематические Исследования",
+    "research_materials": "Исследовательские Материалы"
   },
-  "load_more_resources": "Load More Resources",
+  "load_more_resources": "Загрузить Больше Ресурсов",
   "accessibility": {
-    "download_started": "Download started for {{title}}",
-    "resource_unavailable": "This resource is currently unavailable",
-    "large_file_warning": "This is a large file ({{size}}). Download may take some time."
+    "download_started": "Загрузка начата для {{title}}",
+    "resource_unavailable": "Этот ресурс в настоящее время недоступен",
+    "large_file_warning": "Это большой файл ({{size}}). Загрузка может занять некоторое время."
   }
 }

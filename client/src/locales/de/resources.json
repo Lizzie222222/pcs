@@ -1,58 +1,58 @@
 {
   "page": {
-    "title": "Educational Resources",
-    "subtitle": "High-quality materials to support your plastic-free journey through all three program stages"
+    "title": "Bildungsressourcen",
+    "subtitle": "Hochwertige Materialien zur Unterstützung Ihrer plastikfreien Reise durch alle drei Programmstadien"
   },
   "search": {
-    "title": "Search & Filter Resources",
-    "placeholder": "Search resources...",
-    "all_stages": "All Stages",
-    "all_countries": "All Countries",
-    "all_languages": "All Languages",
-    "all_status": "All Status",
-    "all_ages": "All Ages"
+    "title": "Ressourcen Suchen und Filtern",
+    "placeholder": "Ressourcen suchen...",
+    "all_stages": "Alle Stufen",
+    "all_countries": "Alle Länder",
+    "all_languages": "Alle Sprachen",
+    "all_status": "Alle Status",
+    "all_ages": "Alle Altersgruppen"
   },
   "filters": {
-    "stage": "Stage",
-    "country": "Country",
-    "language": "Language",
-    "age_range": "Age Range",
-    "file_type": "File Type",
+    "stage": "Stufe",
+    "country": "Land",
+    "language": "Sprache",
+    "age_range": "Altersbereich",
+    "file_type": "Dateityp",
     "status": "Status"
   },
   "stages": {
-    "inspire": "Inspire",
-    "investigate": "Investigate", 
-    "act": "Act"
+    "inspire": "Inspirieren",
+    "investigate": "Untersuchen", 
+    "act": "Handeln"
   },
   "languages": {
-    "english": "English",
-    "spanish": "Spanish",
-    "french": "French",
-    "german": "German",
-    "other": "Other"
+    "english": "Englisch",
+    "spanish": "Spanisch",
+    "french": "Französisch",
+    "german": "Deutsch",
+    "other": "Andere"
   },
   "age_ranges": {
-    "5_7": "5-7 years",
-    "8_11": "8-11 years",
-    "12_16": "12-16 years",
-    "17_plus": "17+ years"
+    "5_7": "5-7 Jahre",
+    "8_11": "8-11 Jahre",
+    "12_16": "12-16 Jahre",
+    "17_plus": "17+ Jahre"
   },
   "file_types": {
-    "pdf": "PDF Document",
+    "pdf": "PDF-Dokument",
     "video": "Video",
-    "image": "Image",
-    "presentation": "Presentation",
-    "worksheet": "Worksheet"
+    "image": "Bild",
+    "presentation": "Präsentation",
+    "worksheet": "Arbeitsblatt"
   },
   "resource_card": {
     "downloads": "Downloads",
-    "download_count_one": "{{count}} download",
-    "download_count_other": "{{count}} downloads",
-    "file_size": "File size",
-    "age_range": "Age range",
+    "download_count_one": "{{count}} Download",
+    "download_count_other": "{{count}} Downloads",
+    "file_size": "Dateigröße",
+    "age_range": "Altersbereich",
     "global": "Global",
-    "download_resource": "Download Resource"
+    "download_resource": "Ressource Herunterladen"
   },
   "units": {
     "bytes": "Bytes",
@@ -61,24 +61,24 @@
     "gb": "GB"
   },
   "empty_state": {
-    "title": "No Resources Found",
-    "message": "Try adjusting your search criteria or check back later for new resources.",
-    "clear_filters": "Clear Filters"
+    "title": "Keine Ressourcen Gefunden",
+    "message": "Versuchen Sie, Ihre Suchkriterien anzupassen oder schauen Sie später nach neuen Ressourcen.",
+    "clear_filters": "Filter Löschen"
   },
   "categories": {
-    "lesson_plans": "Lesson Plans",
-    "worksheets": "Worksheets", 
-    "presentations": "Presentations",
+    "lesson_plans": "Unterrichtspläne",
+    "worksheets": "Arbeitsblätter", 
+    "presentations": "Präsentationen",
     "videos": "Videos",
-    "posters": "Posters",
-    "assessment_tools": "Assessment Tools",
-    "case_studies": "Case Studies",
-    "research_materials": "Research Materials"
+    "posters": "Poster",
+    "assessment_tools": "Bewertungswerkzeuge",
+    "case_studies": "Fallstudien",
+    "research_materials": "Forschungsmaterialien"
   },
-  "load_more_resources": "Load More Resources",
+  "load_more_resources": "Weitere Ressourcen Laden",
   "accessibility": {
-    "download_started": "Download started for {{title}}",
-    "resource_unavailable": "This resource is currently unavailable",
-    "large_file_warning": "This is a large file ({{size}}). Download may take some time."
+    "download_started": "Download gestartet für {{title}}",
+    "resource_unavailable": "Diese Ressource ist derzeit nicht verfügbar",
+    "large_file_warning": "Dies ist eine große Datei ({{size}}). Der Download kann einige Zeit dauern."
   }
 }

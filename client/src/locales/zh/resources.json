@@ -1,84 +1,84 @@
 {
   "page": {
-    "title": "Educational Resources",
-    "subtitle": "High-quality materials to support your plastic-free journey through all three program stages"
+    "title": "教育资源",
+    "subtitle": "高质量的材料，支持您通过三个项目阶段实现无塑料之旅"
   },
   "search": {
-    "title": "Search & Filter Resources",
-    "placeholder": "Search resources...",
-    "all_stages": "All Stages",
-    "all_countries": "All Countries",
-    "all_languages": "All Languages",
-    "all_status": "All Status",
-    "all_ages": "All Ages"
+    "title": "搜索和筛选资源",
+    "placeholder": "搜索资源...",
+    "all_stages": "所有阶段",
+    "all_countries": "所有国家",
+    "all_languages": "所有语言",
+    "all_status": "所有状态",
+    "all_ages": "所有年龄"
   },
   "filters": {
-    "stage": "Stage",
-    "country": "Country",
-    "language": "Language",
-    "age_range": "Age Range",
-    "file_type": "File Type",
-    "status": "Status"
+    "stage": "阶段",
+    "country": "国家",
+    "language": "语言",
+    "age_range": "年龄范围",
+    "file_type": "文件类型",
+    "status": "状态"
   },
   "stages": {
-    "inspire": "Inspire",
-    "investigate": "Investigate", 
-    "act": "Act"
+    "inspire": "启发",
+    "investigate": "调查", 
+    "act": "行动"
   },
   "languages": {
-    "english": "English",
-    "spanish": "Spanish",
-    "french": "French",
-    "german": "German",
-    "other": "Other"
+    "english": "英语",
+    "spanish": "西班牙语",
+    "french": "法语",
+    "german": "德语",
+    "other": "其他"
   },
   "age_ranges": {
-    "5_7": "5-7 years",
-    "8_11": "8-11 years",
-    "12_16": "12-16 years",
-    "17_plus": "17+ years"
+    "5_7": "5-7岁",
+    "8_11": "8-11岁",
+    "12_16": "12-16岁",
+    "17_plus": "17岁以上"
   },
   "file_types": {
-    "pdf": "PDF Document",
-    "video": "Video",
-    "image": "Image",
-    "presentation": "Presentation",
-    "worksheet": "Worksheet"
+    "pdf": "PDF文档",
+    "video": "视频",
+    "image": "图片",
+    "presentation": "演示文稿",
+    "worksheet": "工作表"
   },
   "resource_card": {
-    "downloads": "Downloads",
-    "download_count_one": "{{count}} download",
-    "download_count_other": "{{count}} downloads",
-    "file_size": "File size",
-    "age_range": "Age range",
-    "global": "Global",
-    "download_resource": "Download Resource"
+    "downloads": "下载次数",
+    "download_count_one": "{{count}}次下载",
+    "download_count_other": "{{count}}次下载",
+    "file_size": "文件大小",
+    "age_range": "年龄范围",
+    "global": "全球",
+    "download_resource": "下载资源"
   },
   "units": {
-    "bytes": "Bytes",
+    "bytes": "字节",
     "kb": "KB",
     "mb": "MB",
     "gb": "GB"
   },
   "empty_state": {
-    "title": "No Resources Found",
-    "message": "Try adjusting your search criteria or check back later for new resources.",
-    "clear_filters": "Clear Filters"
+    "title": "未找到资源",
+    "message": "请尝试调整搜索条件或稍后查看新资源。",
+    "clear_filters": "清除筛选"
   },
   "categories": {
-    "lesson_plans": "Lesson Plans",
-    "worksheets": "Worksheets", 
-    "presentations": "Presentations",
-    "videos": "Videos",
-    "posters": "Posters",
-    "assessment_tools": "Assessment Tools",
-    "case_studies": "Case Studies",
-    "research_materials": "Research Materials"
+    "lesson_plans": "课程计划",
+    "worksheets": "工作表", 
+    "presentations": "演示文稿",
+    "videos": "视频",
+    "posters": "海报",
+    "assessment_tools": "评估工具",
+    "case_studies": "案例研究",
+    "research_materials": "研究材料"
   },
-  "load_more_resources": "Load More Resources",
+  "load_more_resources": "加载更多资源",
   "accessibility": {
-    "download_started": "Download started for {{title}}",
-    "resource_unavailable": "This resource is currently unavailable",
-    "large_file_warning": "This is a large file ({{size}}). Download may take some time."
+    "download_started": "已开始下载{{title}}",
+    "resource_unavailable": "此资源目前不可用",
+    "large_file_warning": "这是一个大文件（{{size}}）。下载可能需要一些时间。"
   }
 }
