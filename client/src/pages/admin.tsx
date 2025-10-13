@@ -5510,7 +5510,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library'>(initialTab);
   const [reviewType, setReviewType] = useState<'evidence' | 'audits'>('evidence');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [schoolFilters, setSchoolFilters] = useState({
