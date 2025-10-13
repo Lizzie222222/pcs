@@ -40,6 +40,9 @@ Preferred communication style: Simple, everyday language.
 -   **ReductionPromises**: Plastic reduction commitments with impact calculations.
 -   **Resources**: Educational materials.
 -   **Case Studies**: Approved evidence for public display.
+-   **Events**: Community events (workshops, webinars, training) with registration management, waitlists, and virtual meeting support.
+-   **EventRegistrations**: User event registrations with status tracking (registered, cancelled, waitlisted).
+-   **EventAnnouncements**: Mailchimp campaign history to prevent duplicate newsletter sends.
 
 ### UI/UX Decisions
 -   **Color Schemes**: PCS brand colors (Navy, Blue, Inspire Green, Investigate Yellow, Act Red).
@@ -61,6 +64,12 @@ Preferred communication style: Simple, everyday language.
     -   **Native Names**: Language switcher displays names in native script (한국어, 中文, العربية, etc.)
 -   **Admin UI Improvements**: Integrated Evidence Requirements as a tab within the admin page, improved navigation, and reorganized analytics dashboard with nested tabs.
 -   **Analytics Enhancements**: Improved data quality, added date range filtering, integrated OpenAI GPT-5 for AI-powered insights, and implemented PDF export functionality with PCS branding.
+-   **Events System**: Comprehensive event management with:
+    -   **Admin Features**: Create/edit events with images, dates, locations, virtual meeting links, capacity limits, waitlists, and registration deadlines
+    -   **User Features**: Browse upcoming events, register/cancel, view registration status, and access event details
+    -   **Email Notifications**: SendGrid integration for registration confirmations, cancellations, event reminders, and update notifications
+    -   **Newsletter Integration**: Mailchimp campaigns for event announcements and weekly digests with duplicate prevention
+    -   **Analytics Dashboard**: Event metrics, registration trends, top events, event type distribution, and conversion rates with recharts visualizations
 
 ## External Dependencies
 ### Core Infrastructure
