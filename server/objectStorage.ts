@@ -164,6 +164,27 @@ export class ObjectStorageService {
     });
   }
 
+  // Gets a signed download URL for an object path
+  async getSignedDownloadUrl(objectPath: string, ttlSec: number = 3600): Promise<string> {
+    // Parse the object path directly
+    let entityDir = this.getPrivateObjectDir();
+    if (!entityDir.endsWith("/")) {
+      entityDir = `${entityDir}/`;
+    }
+    
+    // Extract entity ID from the object path
+    const entityId = objectPath.replace('/objects/', '');
+    const fullPath = `${entityDir}${entityId}`;
+    const { bucketName, objectName } = parseObjectPath(fullPath);
+    
+    return signObjectURL({
+      bucketName,
+      objectName,
+      method: "GET",
+      ttlSec,
+    });
+  }
+
   // Gets the object entity file from the object path.
   async getObjectEntityFile(objectPath: string): Promise<File> {
     if (!objectPath.startsWith("/objects/")) {

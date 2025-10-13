@@ -2552,6 +2552,98 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Printable Form Submission Routes
+
+  // Admin: Get all printable form submissions with filters
+  app.get('/api/admin/printable-form-submissions', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { status, formType, schoolId, limit, offset } = req.query;
+      
+      const submissions = await storage.getAllPrintableFormSubmissions({
+        status: status as string | undefined,
+        formType: formType as string | undefined,
+        schoolId: schoolId as string | undefined,
+        limit: limit ? parseInt(limit as string) : undefined,
+        offset: offset ? parseInt(offset as string) : undefined,
+      });
+      
+      res.json(submissions);
+    } catch (error) {
+      console.error("Error fetching printable form submissions:", error);
+      res.status(500).json({ message: "Failed to fetch printable form submissions" });
+    }
+  });
+
+  // Admin: Update printable form submission status
+  app.patch('/api/admin/printable-form-submissions/:id/status', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const statusSchema = z.object({
+        status: z.enum(['approved', 'rejected', 'revision_requested']),
+        reviewNotes: z.string().optional(),
+      });
+      
+      const validatedData = statusSchema.parse(req.body);
+      const adminId = req.user.id;
+      
+      const updatedSubmission = await storage.updatePrintableFormSubmissionStatus(
+        id,
+        validatedData.status,
+        adminId,
+        validatedData.reviewNotes
+      );
+      
+      if (!updatedSubmission) {
+        return res.status(404).json({ message: "Printable form submission not found" });
+      }
+      
+      res.json(updatedSubmission);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Validation error", 
+          errors: error.errors 
+        });
+      }
+      console.error("Error updating printable form submission status:", error);
+      res.status(500).json({ message: "Failed to update submission status" });
+    }
+  });
+
+  // Get printable form submission download URL
+  app.get('/api/printable-form-submissions/:id/download', isAuthenticated, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      const isAdmin = req.user.isAdmin || false;
+      
+      const submission = await storage.getPrintableFormSubmission(id);
+      
+      if (!submission) {
+        return res.status(404).json({ message: "Printable form submission not found" });
+      }
+      
+      // Check access: user must be admin OR submission belongs to user's school
+      if (!isAdmin) {
+        const userSchools = await storage.getUserSchools(userId);
+        const hasAccess = userSchools.some(s => s.id === submission.schoolId);
+        
+        if (!hasAccess) {
+          return res.status(403).json({ message: "Not authorized to download this submission" });
+        }
+      }
+      
+      // Get signed download URL
+      const objectStorageService = new ObjectStorageService();
+      const downloadUrl = await objectStorageService.getSignedDownloadUrl(submission.filePath, 3600);
+      
+      res.json({ downloadUrl });
+    } catch (error) {
+      console.error("Error getting printable form submission download URL:", error);
+      res.status(500).json({ message: "Failed to get download URL" });
+    }
+  });
+
   // Reduction Promises Routes
 
   // Get all reduction promises for a school
