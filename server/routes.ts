@@ -3232,6 +3232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       search: z.string().optional(),
       country: z.string().optional(),
       stage: z.string().optional(),
+      language: z.enum(['all', 'en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ru', 'zh', 'ko', 'ar', 'id', 'el', 'cy']).optional(),
       limit: z.number().optional(),
       offset: z.number().optional(),
     }).optional(),
@@ -3326,7 +3327,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         emailList = recipients;
       } else if (recipientType === 'schools') {
         // Get schools based on filters and extract teacher emails from associated users
-        const schools = await storage.getSchools(filters || { limit: 1000, offset: 0 });
+        const schools = await storage.getSchools({ 
+          ...filters,
+          limit: filters?.limit || 1000, 
+          offset: filters?.offset || 0 
+        });
         const schoolIds = schools.map(s => s.id);
         
         // Get all users associated with these specific schools

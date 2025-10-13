@@ -87,3 +87,31 @@ Preferred communication style: Simple, everyday language.
 -   **Hosting/Deployment**: Replit
 -   **AI Integration**: OpenAI GPT-5
 -   **PDF Generation**: Puppeteer
+
+## Recent Changes (October 2025)
+
+### Task 1: School Preferred Language Field (Completed)
+- Added `primaryLanguage` field to SchoolData interface in database schema
+- Implemented editable preferred language field in admin school detail dialog
+- Added language dropdown with 14 supported languages (en, es, fr, de, it, pt, nl, ru, zh, ko, ar, id, el, cy)
+- Implemented update mutation with immediate UI state synchronization
+- Architect-reviewed and approved
+
+### Task 2: Renamed "Promises" to "Action Plan" (Completed)
+- Updated all user-facing text throughout the UI:
+  - Home page dashboard tabs and sections
+  - Admin panel analytics and management sections
+  - Plastic Waste Audit component dialogs and buttons
+- Changed: tab labels, button text, toast messages, dialog titles, placeholders
+- Internal code (variables, API routes, database tables) kept unchanged for data safety
+- Architect-reviewed and approved
+
+### Task 3: Bulk Email Language Filter (Completed)
+- Added language filter to bulk email functionality in admin panel
+- Backend: Updated `bulkEmailSchema` to validate language parameter (14 languages + "all")
+- Backend: Modified `storage.getSchools` to filter by `primaryLanguage` when specified
+- Backend: Updated bulk email route handler to properly pass language filter to storage layer
+- Frontend: Added language dropdown to school filters in bulk email form
+- UI displays all 14 supported languages with "All Languages" as default
+- End-to-end tested and architect-reviewed
+- Allows admins to target emails to schools by preferred language

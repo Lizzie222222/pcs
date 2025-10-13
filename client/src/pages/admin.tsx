@@ -3955,7 +3955,7 @@ function EmailManagementSection({
                 <p className="text-xs text-gray-600">
                   Configure filters to target specific schools. Emails will be sent to all teachers at filtered schools.
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
                   <div>
                     <label className="block text-xs font-medium text-gray-700 mb-1">Search Schools</label>
                     <Input
@@ -3999,6 +3999,34 @@ function EmailManagementSection({
                         <SelectItem value="Stage 1">Stage 1</SelectItem>
                         <SelectItem value="Stage 2">Stage 2</SelectItem>
                         <SelectItem value="Stage 3">Stage 3</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Language</label>
+                    <Select
+                      value={schoolFilters.language}
+                      onValueChange={(value) => setSchoolFilters((prev: any) => ({ ...prev, language: value }))}
+                    >
+                      <SelectTrigger className="h-9" data-testid="select-school-filter-language">
+                        <SelectValue placeholder="All languages" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Languages</SelectItem>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Spanish</SelectItem>
+                        <SelectItem value="fr">French</SelectItem>
+                        <SelectItem value="de">German</SelectItem>
+                        <SelectItem value="it">Italian</SelectItem>
+                        <SelectItem value="pt">Portuguese</SelectItem>
+                        <SelectItem value="nl">Dutch</SelectItem>
+                        <SelectItem value="ru">Russian</SelectItem>
+                        <SelectItem value="zh">Chinese</SelectItem>
+                        <SelectItem value="ko">Korean</SelectItem>
+                        <SelectItem value="ar">Arabic</SelectItem>
+                        <SelectItem value="id">Indonesian</SelectItem>
+                        <SelectItem value="el">Greek</SelectItem>
+                        <SelectItem value="cy">Welsh</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -4263,6 +4291,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     search: '',
     country: 'all',
     stage: 'all',
+    language: 'all',
   });
   const [caseStudyFilters, setCaseStudyFilters] = useState({
     search: '',

@@ -611,6 +611,7 @@ export class DatabaseStorage implements IStorage {
     stage?: string;
     type?: string;
     showOnMap?: boolean;
+    language?: string;
     limit?: number;
     offset?: number;
   } = {}): Promise<School[]> {
@@ -626,6 +627,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.showOnMap !== undefined) {
       conditions.push(eq(schools.showOnMap, filters.showOnMap));
+    }
+    if (filters.language && filters.language !== 'all') {
+      conditions.push(eq(schools.primaryLanguage, filters.language));
     }
     
     const baseQuery = db
@@ -647,6 +651,7 @@ export class DatabaseStorage implements IStorage {
         featuredSchool: schools.featuredSchool,
         showOnMap: schools.showOnMap,
         primaryContactId: schools.primaryContactId,
+        primaryLanguage: schools.primaryLanguage,
         createdAt: schools.createdAt,
         updatedAt: schools.updatedAt,
         primaryContactEmail: users.email,
