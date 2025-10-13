@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useCountries } from "@/hooks/useCountries";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { subDays } from "date-fns";
 import type { DateRange } from "react-day-picker";
@@ -86,8 +86,9 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
-import type { ReductionPromise } from "@shared/schema";
+import type { ReductionPromise, Event, EventRegistration } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
+import { format, parseISO } from "date-fns";
 
 interface AdminStats {
   totalSchools: number;
@@ -301,6 +302,24 @@ interface EvidenceRequirement {
   resourceUrl: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+interface EventWithRegistrations extends Event {
+  registrationsCount?: number;
+}
+
+interface EventRegistrationWithDetails extends EventRegistration {
+  user: {
+    id: string;
+    firstName: string;
+    lastName: string;
+    email: string;
+  };
+  school: {
+    id: string;
+    name: string;
+    country: string;
+  } | null;
 }
 
 // Color palette for charts
@@ -4229,12 +4248,12 @@ function EmailManagementSection({
   );
 }
 
-export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' } = {}) {
+export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' } = {}) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events'>(initialTab);
   const [reviewType, setReviewType] = useState<'evidence' | 'audits'>('evidence');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [schoolFilters, setSchoolFilters] = useState({
@@ -4306,6 +4325,36 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     title: '',
     description: '',
     resourceUrl: '',
+  });
+
+  // Events state
+  const [eventFilters, setEventFilters] = useState({
+    status: 'all',
+    eventType: 'all',
+    dateFrom: '',
+    dateTo: '',
+  });
+  const [eventDialogOpen, setEventDialogOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
+  const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
+  const [eventDeleteDialogOpen, setEventDeleteDialogOpen] = useState(false);
+  const [viewingEventRegistrations, setViewingEventRegistrations] = useState<Event | null>(null);
+  const [registrationStatusFilter, setRegistrationStatusFilter] = useState<string>('all');
+  const [eventFormData, setEventFormData] = useState({
+    title: '',
+    description: '',
+    eventType: 'workshop' as const,
+    status: 'draft' as const,
+    startDateTime: '',
+    endDateTime: '',
+    location: '',
+    isVirtual: false,
+    meetingLink: '',
+    imageUrl: '',
+    capacity: '',
+    waitlistEnabled: false,
+    registrationDeadline: '',
+    tags: '',
   });
 
   // Redirect if not authenticated or not admin (but only after loading completes)
@@ -4538,6 +4587,165 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       toast({
         title: "Error",
         description: "Failed to reorder requirements.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Events queries
+  const cleanEventFilters = (filters: typeof eventFilters) => {
+    return Object.fromEntries(
+      Object.entries(filters).map(([key, value]) => [key, value === 'all' ? '' : value])
+    );
+  };
+
+  const { data: events = [], isLoading: eventsLoading } = useQuery<EventWithRegistrations[]>({
+    queryKey: ['/api/admin/events', cleanEventFilters(eventFilters)],
+    queryFn: async () => {
+      const filters = cleanEventFilters(eventFilters);
+      const params = new URLSearchParams();
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value) params.append(key, value);
+      });
+      const url = `/api/admin/events${params.toString() ? `?${params.toString()}` : ''}`;
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      return res.json();
+    },
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'events'),
+    retry: false,
+  });
+
+  const { data: eventRegistrations = [], isLoading: registrationsLoading } = useQuery<EventRegistrationWithDetails[]>({
+    queryKey: ['/api/admin/events', viewingEventRegistrations?.id, 'registrations', registrationStatusFilter],
+    queryFn: async () => {
+      if (!viewingEventRegistrations) return [];
+      const params = new URLSearchParams();
+      if (registrationStatusFilter && registrationStatusFilter !== 'all') {
+        params.append('status', registrationStatusFilter);
+      }
+      const url = `/api/admin/events/${viewingEventRegistrations.id}/registrations${params.toString() ? `?${params.toString()}` : ''}`;
+      const res = await fetch(url, { credentials: 'include' });
+      if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
+      return res.json();
+    },
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && viewingEventRegistrations !== null),
+    retry: false,
+  });
+
+  // Events mutations
+  const createEventMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('POST', '/api/admin/events', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Event created successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
+      setEventDialogOpen(false);
+      setEventFormData({
+        title: '',
+        description: '',
+        eventType: 'workshop',
+        status: 'draft',
+        startDateTime: '',
+        endDateTime: '',
+        location: '',
+        isVirtual: false,
+        meetingLink: '',
+        imageUrl: '',
+        capacity: '',
+        waitlistEnabled: false,
+        registrationDeadline: '',
+        tags: '',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create event.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateEventMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return await apiRequest('PUT', `/api/admin/events/${id}`, data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Event updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
+      setEventDialogOpen(false);
+      setEditingEvent(null);
+      setEventFormData({
+        title: '',
+        description: '',
+        eventType: 'workshop',
+        status: 'draft',
+        startDateTime: '',
+        endDateTime: '',
+        location: '',
+        isVirtual: false,
+        meetingLink: '',
+        imageUrl: '',
+        capacity: '',
+        waitlistEnabled: false,
+        registrationDeadline: '',
+        tags: '',
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update event.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteEventMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest('DELETE', `/api/admin/events/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Event deleted successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
+      setEventDeleteDialogOpen(false);
+      setDeletingEvent(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete event.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateRegistrationMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      return await apiRequest('PUT', `/api/admin/events/registrations/${id}`, { status });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Registration updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/events', viewingEventRegistrations?.id, 'registrations'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update registration.",
         variant: "destructive",
       });
     },
@@ -5172,6 +5380,17 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             data-testid="tab-evidence-requirements"
           >
             Evidence Requirements
+          </button>
+          <button
+            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+              activeTab === 'events' 
+                ? 'bg-white text-navy shadow-sm' 
+                : 'text-gray-600 hover:text-navy'
+            }`}
+            onClick={() => setActiveTab('events')}
+            data-testid="tab-events"
+          >
+            Events
           </button>
         </div>
 
@@ -6294,7 +6513,644 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             </Tabs>
           </div>
         )}
+
+        {/* Events Tab */}
+        {activeTab === 'events' && (
+          <div className="space-y-6">
+            <Card className="mb-6">
+              <CardHeader>
+                <CardTitle className="text-3xl font-bold text-navy" data-testid="text-page-title">
+                  Events Management
+                </CardTitle>
+                <p className="text-gray-600 mt-2" data-testid="text-page-description">
+                  Manage events and registrations for the Plastic Clever Schools community
+                </p>
+              </CardHeader>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between mb-4">
+                  <CardTitle>Events</CardTitle>
+                  <Button
+                    onClick={() => {
+                      setEditingEvent(null);
+                      setEventFormData({
+                        title: '',
+                        description: '',
+                        eventType: 'workshop',
+                        status: 'draft',
+                        startDateTime: '',
+                        endDateTime: '',
+                        location: '',
+                        isVirtual: false,
+                        meetingLink: '',
+                        imageUrl: '',
+                        capacity: '',
+                        waitlistEnabled: false,
+                        registrationDeadline: '',
+                        tags: '',
+                      });
+                      setEventDialogOpen(true);
+                    }}
+                    className="bg-pcs_blue hover:bg-pcs_blue/90"
+                    data-testid="button-create-event"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Create Event
+                  </Button>
+                </div>
+                
+                <div className="flex flex-wrap gap-4">
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Status
+                    </label>
+                    <select
+                      value={eventFilters.status}
+                      onChange={(e) => setEventFilters({ ...eventFilters, status: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      data-testid="select-status-filter"
+                    >
+                      <option value="all">All Statuses</option>
+                      <option value="draft">Draft</option>
+                      <option value="published">Published</option>
+                      <option value="cancelled">Cancelled</option>
+                      <option value="completed">Completed</option>
+                    </select>
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Event Type
+                    </label>
+                    <select
+                      value={eventFilters.eventType}
+                      onChange={(e) => setEventFilters({ ...eventFilters, eventType: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      data-testid="select-type-filter"
+                    >
+                      <option value="all">All Types</option>
+                      <option value="workshop">Workshop</option>
+                      <option value="webinar">Webinar</option>
+                      <option value="community_event">Community Event</option>
+                      <option value="training">Training</option>
+                      <option value="celebration">Celebration</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      From Date
+                    </label>
+                    <input
+                      type="date"
+                      value={eventFilters.dateFrom}
+                      onChange={(e) => setEventFilters({ ...eventFilters, dateFrom: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      data-testid="input-date-from"
+                    />
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      To Date
+                    </label>
+                    <input
+                      type="date"
+                      value={eventFilters.dateTo}
+                      onChange={(e) => setEventFilters({ ...eventFilters, dateTo: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                      data-testid="input-date-to"
+                    />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {eventsLoading ? (
+                  <div className="py-8">
+                    <LoadingSpinner message="Loading events..." />
+                  </div>
+                ) : events.length === 0 ? (
+                  <EmptyState
+                    title="No events yet"
+                    description="Create your first event to get started"
+                    icon={Calendar}
+                  />
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full" data-testid="table-events">
+                      <thead>
+                        <tr className="border-b">
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Title</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Type</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Date</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Registrations</th>
+                          <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {events.map((event) => (
+                          <tr key={event.id} className="border-b hover:bg-gray-50" data-testid={`row-event-${event.id}`}>
+                            <td className="px-4 py-3 text-sm text-gray-900" data-testid={`text-title-${event.id}`}>{event.title}</td>
+                            <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-type-${event.id}`}>
+                              {event.eventType.replace('_', ' ').charAt(0).toUpperCase() + event.eventType.replace('_', ' ').slice(1)}
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-date-${event.id}`}>
+                              {format(parseISO(event.startDateTime), 'MMM d, yyyy')}
+                            </td>
+                            <td className="px-4 py-3 text-sm" data-testid={`text-status-${event.id}`}>
+                              <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                                event.status === 'published' ? 'bg-green-100 text-green-700' :
+                                event.status === 'draft' ? 'bg-gray-100 text-gray-700' :
+                                event.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                                'bg-blue-100 text-blue-700'
+                              }`}>
+                                {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-registrations-${event.id}`}>
+                              {event.registrationsCount || 0}
+                              {event.capacity && ` / ${event.capacity}`}
+                            </td>
+                            <td className="px-4 py-3 text-sm">
+                              <div className="flex items-center gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingEvent(event);
+                                    setEventFormData({
+                                      title: event.title,
+                                      description: event.description || '',
+                                      eventType: event.eventType,
+                                      status: event.status,
+                                      startDateTime: event.startDateTime,
+                                      endDateTime: event.endDateTime,
+                                      location: event.location || '',
+                                      isVirtual: event.isVirtual,
+                                      meetingLink: event.meetingLink || '',
+                                      imageUrl: event.imageUrl || '',
+                                      capacity: event.capacity?.toString() || '',
+                                      waitlistEnabled: event.waitlistEnabled,
+                                      registrationDeadline: event.registrationDeadline || '',
+                                      tags: event.tags?.join(', ') || '',
+                                    });
+                                    setEventDialogOpen(true);
+                                  }}
+                                  data-testid={`button-edit-${event.id}`}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setViewingEventRegistrations(event);
+                                    setRegistrationStatusFilter('all');
+                                  }}
+                                  data-testid={`button-view-registrations-${event.id}`}
+                                >
+                                  <Users className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setDeletingEvent(event);
+                                    setEventDeleteDialogOpen(true);
+                                  }}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  data-testid={`button-delete-${event.id}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
       </div>
+
+      {/* Create/Edit Event Dialog */}
+      <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle data-testid="text-event-dialog-title">
+              {editingEvent ? 'Edit Event' : 'Create Event'}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Title <span className="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                value={eventFormData.title}
+                onChange={(e) => setEventFormData({ ...eventFormData, title: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                data-testid="input-event-title"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Description <span className="text-red-500">*</span>
+              </label>
+              <Textarea
+                value={eventFormData.description}
+                onChange={(e) => setEventFormData({ ...eventFormData, description: e.target.value })}
+                rows={4}
+                data-testid="textarea-event-description"
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Event Type <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={eventFormData.eventType}
+                  onChange={(e) => setEventFormData({ ...eventFormData, eventType: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  data-testid="select-event-type"
+                >
+                  <option value="workshop">Workshop</option>
+                  <option value="webinar">Webinar</option>
+                  <option value="community_event">Community Event</option>
+                  <option value="training">Training</option>
+                  <option value="celebration">Celebration</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={eventFormData.status}
+                  onChange={(e) => setEventFormData({ ...eventFormData, status: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  data-testid="select-event-status"
+                >
+                  <option value="draft">Draft</option>
+                  <option value="published">Published</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Start Date & Time <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={eventFormData.startDateTime}
+                  onChange={(e) => setEventFormData({ ...eventFormData, startDateTime: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  data-testid="input-start-datetime"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  End Date & Time <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  value={eventFormData.endDateTime}
+                  onChange={(e) => setEventFormData({ ...eventFormData, endDateTime: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  data-testid="input-end-datetime"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Location
+              </label>
+              <input
+                type="text"
+                value={eventFormData.location}
+                onChange={(e) => setEventFormData({ ...eventFormData, location: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                data-testid="input-event-location"
+              />
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={eventFormData.isVirtual}
+                onChange={(e) => setEventFormData({ ...eventFormData, isVirtual: e.target.checked })}
+                className="h-4 w-4"
+                data-testid="checkbox-is-virtual"
+              />
+              <label className="text-sm font-medium text-gray-700">
+                Is Virtual Event
+              </label>
+            </div>
+            {eventFormData.isVirtual && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Meeting Link
+                </label>
+                <input
+                  type="url"
+                  value={eventFormData.meetingLink}
+                  onChange={(e) => setEventFormData({ ...eventFormData, meetingLink: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  placeholder="https://..."
+                  data-testid="input-meeting-link"
+                />
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Image URL
+              </label>
+              <input
+                type="url"
+                value={eventFormData.imageUrl}
+                onChange={(e) => setEventFormData({ ...eventFormData, imageUrl: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="https://..."
+                data-testid="input-image-url"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Capacity (optional)
+              </label>
+              <input
+                type="number"
+                value={eventFormData.capacity}
+                onChange={(e) => setEventFormData({ ...eventFormData, capacity: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="Leave empty for unlimited"
+                data-testid="input-capacity"
+              />
+            </div>
+            {eventFormData.capacity && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  checked={eventFormData.waitlistEnabled}
+                  onChange={(e) => setEventFormData({ ...eventFormData, waitlistEnabled: e.target.checked })}
+                  className="h-4 w-4"
+                  data-testid="checkbox-waitlist"
+                />
+                <label className="text-sm font-medium text-gray-700">
+                  Enable Waitlist
+                </label>
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Registration Deadline (optional)
+              </label>
+              <input
+                type="datetime-local"
+                value={eventFormData.registrationDeadline}
+                onChange={(e) => setEventFormData({ ...eventFormData, registrationDeadline: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                data-testid="input-registration-deadline"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Tags (comma-separated)
+              </label>
+              <input
+                type="text"
+                value={eventFormData.tags}
+                onChange={(e) => setEventFormData({ ...eventFormData, tags: e.target.value })}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                placeholder="e.g. plastic-free, sustainability, workshop"
+                data-testid="input-tags"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEventDialogOpen(false)}
+              data-testid="button-cancel-event"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (!eventFormData.title || !eventFormData.description || !eventFormData.startDateTime || !eventFormData.endDateTime) {
+                  toast({
+                    title: "Validation Error",
+                    description: "Please fill in all required fields.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                
+                const eventData = {
+                  title: eventFormData.title,
+                  description: eventFormData.description,
+                  eventType: eventFormData.eventType,
+                  status: eventFormData.status,
+                  startDateTime: eventFormData.startDateTime,
+                  endDateTime: eventFormData.endDateTime,
+                  location: eventFormData.location || null,
+                  isVirtual: eventFormData.isVirtual,
+                  meetingLink: eventFormData.meetingLink || null,
+                  imageUrl: eventFormData.imageUrl || null,
+                  capacity: eventFormData.capacity ? parseInt(eventFormData.capacity) : null,
+                  waitlistEnabled: eventFormData.waitlistEnabled,
+                  registrationDeadline: eventFormData.registrationDeadline || null,
+                  tags: eventFormData.tags ? eventFormData.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+                };
+
+                if (editingEvent) {
+                  updateEventMutation.mutate({ id: editingEvent.id, data: eventData });
+                } else {
+                  createEventMutation.mutate(eventData);
+                }
+              }}
+              disabled={createEventMutation.isPending || updateEventMutation.isPending}
+              className="bg-pcs_blue hover:bg-pcs_blue/90"
+              data-testid="button-save-event"
+            >
+              {createEventMutation.isPending || updateEventMutation.isPending ? 'Saving...' : 'Save Event'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Event Dialog */}
+      <Dialog open={eventDeleteDialogOpen} onOpenChange={setEventDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle data-testid="text-delete-event-title">Delete Event</DialogTitle>
+          </DialogHeader>
+          <p className="text-gray-600">
+            Are you sure you want to delete "{deletingEvent?.title}"? This action cannot be undone.
+          </p>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setEventDeleteDialogOpen(false)}
+              data-testid="button-cancel-delete"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                if (deletingEvent) {
+                  deleteEventMutation.mutate(deletingEvent.id);
+                }
+              }}
+              disabled={deleteEventMutation.isPending}
+              className="bg-red-600 hover:bg-red-700"
+              data-testid="button-confirm-delete"
+            >
+              {deleteEventMutation.isPending ? 'Deleting...' : 'Delete'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Registrations Dialog */}
+      <Dialog open={viewingEventRegistrations !== null} onOpenChange={(open) => !open && setViewingEventRegistrations(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle data-testid="text-registrations-title">
+              Registrations for {viewingEventRegistrations?.title}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <label className="text-sm font-medium text-gray-700">
+                  Filter by Status:
+                </label>
+                <select
+                  value={registrationStatusFilter}
+                  onChange={(e) => setRegistrationStatusFilter(e.target.value)}
+                  className="px-3 py-2 border border-gray-300 rounded-md"
+                  data-testid="select-registration-status-filter"
+                >
+                  <option value="all">All</option>
+                  <option value="registered">Registered</option>
+                  <option value="attended">Attended</option>
+                  <option value="cancelled">Cancelled</option>
+                  <option value="waitlisted">Waitlisted</option>
+                </select>
+              </div>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  const headers = ['Name', 'Email', 'School', 'Country', 'Status', 'Registered Date'];
+                  const rows = eventRegistrations.map(reg => [
+                    `${reg.user.firstName} ${reg.user.lastName}`,
+                    reg.user.email,
+                    reg.school?.name || 'N/A',
+                    reg.school?.country || 'N/A',
+                    reg.status,
+                    format(parseISO(reg.createdAt), 'MMM d, yyyy h:mm a')
+                  ]);
+                  
+                  const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
+                  const blob = new Blob([csv], { type: 'text/csv' });
+                  const url = window.URL.createObjectURL(blob);
+                  const a = document.createElement('a');
+                  a.href = url;
+                  a.download = `${viewingEventRegistrations?.title.replace(/\s+/g, '_')}_registrations.csv`;
+                  a.click();
+                  window.URL.revokeObjectURL(url);
+                }}
+                data-testid="button-export-csv"
+              >
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
+            </div>
+            
+            {registrationsLoading ? (
+              <div className="py-8">
+                <LoadingSpinner message="Loading registrations..." />
+              </div>
+            ) : eventRegistrations.length === 0 ? (
+              <EmptyState
+                title="No registrations yet"
+                description="This event has no registrations"
+                icon={Users}
+              />
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full" data-testid="table-registrations">
+                  <thead>
+                    <tr className="border-b">
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Name</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Email</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">School</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Status</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Registered</th>
+                      <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {eventRegistrations.map((registration) => (
+                      <tr key={registration.id} className="border-b hover:bg-gray-50" data-testid={`row-registration-${registration.id}`}>
+                        <td className="px-4 py-3 text-sm text-gray-900" data-testid={`text-name-${registration.id}`}>
+                          {registration.user.firstName} {registration.user.lastName}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-email-${registration.id}`}>
+                          {registration.user.email}
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-school-${registration.id}`}>
+                          {registration.school?.name || 'N/A'}
+                        </td>
+                        <td className="px-4 py-3 text-sm" data-testid={`text-status-${registration.id}`}>
+                          <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
+                            registration.status === 'attended' ? 'bg-green-100 text-green-700' :
+                            registration.status === 'registered' ? 'bg-blue-100 text-blue-700' :
+                            registration.status === 'cancelled' ? 'bg-red-100 text-red-700' :
+                            'bg-yellow-100 text-yellow-700'
+                          }`}>
+                            {registration.status.charAt(0).toUpperCase() + registration.status.slice(1)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-date-${registration.id}`}>
+                          {format(parseISO(registration.createdAt), 'MMM d, yyyy')}
+                        </td>
+                        <td className="px-4 py-3 text-sm">
+                          {registration.status === 'registered' && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                updateRegistrationMutation.mutate({ id: registration.id, status: 'attended' });
+                              }}
+                              disabled={updateRegistrationMutation.isPending}
+                              data-testid={`button-mark-attended-${registration.id}`}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                              Mark Attended
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Review Modal */}
       {reviewData && (

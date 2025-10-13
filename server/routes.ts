@@ -6,7 +6,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, type VerificationRequest, users } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, type VerificationRequest, users } from "@shared/schema";
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
@@ -4517,6 +4517,341 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ success: false, message: "Invalid input data", errors: error.errors });
       }
       res.status(500).json({ success: false, message: "Error sending new evidence notification email" });
+    }
+  });
+
+  // ===== EVENT ROUTES =====
+  
+  // Public: Get upcoming events
+  app.get('/api/events/upcoming', async (req, res) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      const events = await storage.getUpcomingEvents(limit);
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching upcoming events:", error);
+      res.status(500).json({ message: "Failed to fetch upcoming events" });
+    }
+  });
+
+  // Public: Get all published events with filters
+  app.get('/api/events', async (req, res) => {
+    try {
+      const { eventType, upcoming, limit, offset } = req.query;
+      const events = await storage.getEvents({
+        status: 'published',
+        eventType: eventType as string,
+        upcoming: upcoming === 'true',
+        limit: limit ? parseInt(limit as string) : undefined,
+        offset: offset ? parseInt(offset as string) : undefined,
+      });
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      res.status(500).json({ message: "Failed to fetch events" });
+    }
+  });
+
+  // Public: Get single event
+  app.get('/api/events/:id', async (req, res) => {
+    try {
+      const event = await storage.getEvent(req.params.id);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      // Only show published events to non-admin users
+      if (event.status !== 'published' && (!req.user || !req.user.isAdmin)) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      res.json(event);
+    } catch (error) {
+      console.error("Error fetching event:", error);
+      res.status(500).json({ message: "Failed to fetch event" });
+    }
+  });
+
+  // Authenticated: Register for event
+  app.post('/api/events/:id/register', isAuthenticated, async (req: any, res) => {
+    try {
+      const eventId = req.params.id;
+      const userId = req.user.id;
+      
+      // Check if event exists and is published
+      const event = await storage.getEvent(eventId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      if (event.status !== 'published') {
+        return res.status(400).json({ message: "Event is not available for registration" });
+      }
+      
+      // Check if event has ended
+      if (new Date(event.startDateTime) < new Date()) {
+        return res.status(400).json({ message: "Cannot register for past events" });
+      }
+      
+      // Check registration deadline
+      if (event.registrationDeadline && new Date(event.registrationDeadline) < new Date()) {
+        return res.status(400).json({ message: "Registration deadline has passed" });
+      }
+      
+      // Check if already registered
+      const existingRegistration = await storage.getEventRegistration(eventId, userId);
+      if (existingRegistration && existingRegistration.status !== 'cancelled') {
+        return res.status(400).json({ message: "Already registered for this event" });
+      }
+      
+      // Check capacity and handle waitlist - SERVER-SIDE ENFORCEMENT
+      let registrationStatus: 'registered' | 'waitlisted' = 'registered';
+      if (event.capacity) {
+        const registrationCount = await storage.getEventRegistrationCount(eventId);
+        if (registrationCount >= event.capacity) {
+          if (event.waitlistEnabled) {
+            registrationStatus = 'waitlisted';
+          } else {
+            return res.status(400).json({ message: "Event is at full capacity" });
+          }
+        }
+      }
+      
+      // Get user's school if they have one
+      const userSchools = await storage.getUserSchools(userId);
+      const schoolId = userSchools.length > 0 ? userSchools[0].id : null;
+      
+      const registration = await storage.createEventRegistration({
+        eventId,
+        userId,
+        schoolId,
+        status: registrationStatus,
+      });
+      
+      res.json({ 
+        message: registrationStatus === 'waitlisted' 
+          ? "Added to waitlist successfully" 
+          : "Successfully registered for event", 
+        registration 
+      });
+    } catch (error) {
+      console.error("Error registering for event:", error);
+      res.status(500).json({ message: "Failed to register for event" });
+    }
+  });
+
+  // Authenticated: Get user's event registrations
+  app.get('/api/my-events', isAuthenticated, async (req: any, res) => {
+    try {
+      const registrations = await storage.getUserEventRegistrations(req.user.id);
+      res.json(registrations);
+    } catch (error) {
+      console.error("Error fetching user event registrations:", error);
+      res.status(500).json({ message: "Failed to fetch event registrations" });
+    }
+  });
+
+  // Authenticated: Cancel event registration
+  app.delete('/api/events/registrations/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const registrationId = req.params.id;
+      const userId = req.user.id;
+      
+      // Get the registration to verify ownership and check event status
+      const registrations = await storage.getUserEventRegistrations(userId);
+      const registration = registrations.find(r => r.id === registrationId);
+      
+      if (!registration) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+      
+      // Check if the registration belongs to the user
+      if (registration.userId !== userId) {
+        return res.status(403).json({ message: "Not authorized to cancel this registration" });
+      }
+      
+      // Check if event has already started
+      if (new Date(registration.event.startDateTime) < new Date()) {
+        return res.status(400).json({ message: "Cannot cancel registration for events that have already started" });
+      }
+      
+      // Check if already cancelled
+      if (registration.status === 'cancelled') {
+        return res.status(400).json({ message: "Registration is already cancelled" });
+      }
+      
+      const updatedRegistration = await storage.cancelEventRegistration(registrationId);
+      res.json({ message: "Registration cancelled successfully", registration: updatedRegistration });
+    } catch (error) {
+      console.error("Error cancelling registration:", error);
+      res.status(500).json({ message: "Failed to cancel registration" });
+    }
+  });
+
+  // ===== ADMIN EVENT ROUTES =====
+  
+  // Admin: Get all events (including drafts)
+  app.get('/api/admin/events', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { status, eventType, limit, offset } = req.query;
+      const events = await storage.getEvents({
+        status: status as string,
+        eventType: eventType as string,
+        limit: limit ? parseInt(limit as string) : undefined,
+        offset: offset ? parseInt(offset as string) : undefined,
+      });
+      res.json(events);
+    } catch (error) {
+      console.error("Error fetching events:", error);
+      res.status(500).json({ message: "Failed to fetch events" });
+    }
+  });
+
+  // Admin: Create event
+  app.post('/api/admin/events', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const eventData = insertEventSchema.parse({
+        ...req.body,
+        createdBy: req.user.id,
+      });
+      
+      const event = await storage.createEvent(eventData);
+      res.json({ message: "Event created successfully", event });
+    } catch (error) {
+      console.error("Error creating event:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid event data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create event" });
+    }
+  });
+
+  // Admin: Update event
+  app.put('/api/admin/events/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const eventId = req.params.id;
+      const updates = req.body;
+      
+      // Get existing event for validation
+      const existingEvent = await storage.getEvent(eventId);
+      if (!existingEvent) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      // Validate status transitions
+      if (updates.status) {
+        const validTransitions: Record<string, string[]> = {
+          'draft': ['published', 'cancelled'],
+          'published': ['cancelled', 'completed'],
+          'cancelled': [], // Cannot transition from cancelled
+          'completed': [], // Cannot transition from completed
+        };
+        
+        const allowedNextStatuses = validTransitions[existingEvent.status];
+        if (allowedNextStatuses && !allowedNextStatuses.includes(updates.status)) {
+          return res.status(400).json({ 
+            message: `Cannot transition from ${existingEvent.status} to ${updates.status}` 
+          });
+        }
+      }
+      
+      // Validate date changes - cannot reschedule past events
+      if (updates.startDateTime || updates.endDateTime) {
+        const eventHasStarted = new Date(existingEvent.startDateTime) < new Date();
+        if (eventHasStarted) {
+          return res.status(400).json({ 
+            message: "Cannot reschedule events that have already started" 
+          });
+        }
+      }
+      
+      // Validate date logic
+      if (updates.startDateTime && updates.endDateTime) {
+        if (new Date(updates.startDateTime) >= new Date(updates.endDateTime)) {
+          return res.status(400).json({ 
+            message: "Start date must be before end date" 
+          });
+        }
+      } else if (updates.startDateTime && existingEvent.endDateTime) {
+        if (new Date(updates.startDateTime) >= new Date(existingEvent.endDateTime)) {
+          return res.status(400).json({ 
+            message: "Start date must be before end date" 
+          });
+        }
+      } else if (updates.endDateTime && existingEvent.startDateTime) {
+        if (new Date(existingEvent.startDateTime) >= new Date(updates.endDateTime)) {
+          return res.status(400).json({ 
+            message: "Start date must be before end date" 
+          });
+        }
+      }
+      
+      // Validate capacity reduction doesn't affect existing registrations
+      if (updates.capacity !== undefined && updates.capacity < existingEvent.capacity!) {
+        const registrationCount = await storage.getEventRegistrationCount(eventId);
+        if (updates.capacity < registrationCount) {
+          return res.status(400).json({ 
+            message: `Cannot reduce capacity below current registration count (${registrationCount})` 
+          });
+        }
+      }
+      
+      const event = await storage.updateEvent(eventId, updates);
+      res.json({ message: "Event updated successfully", event });
+    } catch (error) {
+      console.error("Error updating event:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid event data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update event" });
+    }
+  });
+
+  // Admin: Delete event
+  app.delete('/api/admin/events/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteEvent(req.params.id);
+      res.json({ message: "Event deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting event:", error);
+      res.status(500).json({ message: "Failed to delete event" });
+    }
+  });
+
+  // Admin: Get event registrations
+  app.get('/api/admin/events/:id/registrations', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const eventId = req.params.id;
+      const { status } = req.query;
+      const registrations = await storage.getEventRegistrations(eventId, {
+        status: status as string,
+      });
+      res.json(registrations);
+    } catch (error) {
+      console.error("Error fetching event registrations:", error);
+      res.status(500).json({ message: "Failed to fetch event registrations" });
+    }
+  });
+
+  // Admin: Update registration status (mark as attended)
+  app.put('/api/admin/events/registrations/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const registrationId = req.params.id;
+      const { status } = req.body;
+      
+      const updates: any = { status };
+      if (status === 'attended') {
+        updates.attendedAt = new Date();
+      }
+      
+      const registration = await storage.updateEventRegistration(registrationId, updates);
+      if (!registration) {
+        return res.status(404).json({ message: "Registration not found" });
+      }
+      
+      res.json({ message: "Registration updated successfully", registration });
+    } catch (error) {
+      console.error("Error updating registration:", error);
+      res.status(500).json({ message: "Failed to update registration" });
     }
   });
 

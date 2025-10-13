@@ -328,6 +328,29 @@ export const promiseStatusEnum = pgEnum('promise_status', [
   'cancelled'
 ]);
 
+export const eventTypeEnum = pgEnum('event_type', [
+  'workshop',
+  'webinar',
+  'community_event',
+  'training',
+  'celebration',
+  'other'
+]);
+
+export const eventStatusEnum = pgEnum('event_status', [
+  'draft',
+  'published',
+  'cancelled',
+  'completed'
+]);
+
+export const registrationStatusEnum = pgEnum('registration_status', [
+  'registered',
+  'attended',
+  'cancelled',
+  'waitlisted'
+]);
+
 export const auditResponses = pgTable("audit_responses", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
@@ -382,6 +405,46 @@ export const reductionPromises = pgTable("reduction_promises", {
   index("idx_reduction_promises_school_status").on(table.schoolId, table.status),
 ]);
 
+export const events = pgTable("events", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title").notNull(),
+  description: text("description").notNull(),
+  eventType: eventTypeEnum("event_type").notNull(),
+  status: eventStatusEnum("status").default('draft'),
+  startDateTime: timestamp("start_date_time").notNull(),
+  endDateTime: timestamp("end_date_time").notNull(),
+  timezone: varchar("timezone").default('UTC'),
+  location: text("location"),
+  isVirtual: boolean("is_virtual").default(false),
+  meetingLink: varchar("meeting_link"),
+  imageUrl: varchar("image_url"),
+  capacity: integer("capacity"),
+  waitlistEnabled: boolean("waitlist_enabled").default(false),
+  registrationDeadline: timestamp("registration_deadline"),
+  tags: text("tags").array().default(sql`ARRAY[]::text[]`),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_events_start_date").on(table.startDateTime),
+  index("idx_events_status").on(table.status),
+]);
+
+export const eventRegistrations = pgTable("event_registrations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventId: varchar("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  schoolId: varchar("school_id").references(() => schools.id, { onDelete: 'cascade' }),
+  status: registrationStatusEnum("status").default('registered'),
+  registeredAt: timestamp("registered_at").defaultNow(),
+  cancelledAt: timestamp("cancelled_at"),
+  attendedAt: timestamp("attended_at"),
+  notes: text("notes"),
+}, (table) => [
+  index("idx_event_registrations_event").on(table.eventId),
+  index("idx_event_registrations_user").on(table.userId),
+]);
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   schoolUsers: many(schoolUsers),
@@ -399,6 +462,8 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   submittedAudits: many(auditResponses, { relationName: "submittedAudits" }),
   reviewedAudits: many(auditResponses, { relationName: "reviewedAudits" }),
   createdPromises: many(reductionPromises),
+  createdEvents: many(events),
+  eventRegistrations: many(eventRegistrations),
 }));
 
 export const schoolsRelations = relations(schools, ({ many, one }) => ({
@@ -414,6 +479,7 @@ export const schoolsRelations = relations(schools, ({ many, one }) => ({
   verificationRequests: many(verificationRequests),
   auditResponses: many(auditResponses),
   reductionPromises: many(reductionPromises),
+  eventRegistrations: many(eventRegistrations),
 }));
 
 export const schoolUsersRelations = relations(schoolUsers, ({ one }) => ({
@@ -558,6 +624,29 @@ export const reductionPromisesRelations = relations(reductionPromises, ({ one })
   createdByUser: one(users, {
     fields: [reductionPromises.createdBy],
     references: [users.id],
+  }),
+}));
+
+export const eventsRelations = relations(events, ({ one, many }) => ({
+  createdBy: one(users, {
+    fields: [events.createdBy],
+    references: [users.id],
+  }),
+  registrations: many(eventRegistrations),
+}));
+
+export const eventRegistrationsRelations = relations(eventRegistrations, ({ one }) => ({
+  event: one(events, {
+    fields: [eventRegistrations.eventId],
+    references: [events.id],
+  }),
+  user: one(users, {
+    fields: [eventRegistrations.userId],
+    references: [users.id],
+  }),
+  school: one(schools, {
+    fields: [eventRegistrations.schoolId],
+    references: [schools.id],
   }),
 }));
 
@@ -756,6 +845,19 @@ export const insertReductionPromiseSchema = createInsertSchema(reductionPromises
   updatedAt: true,
 });
 
+export const insertEventSchema = createInsertSchema(events).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertEventRegistrationSchema = createInsertSchema(eventRegistrations).omit({
+  id: true,
+  registeredAt: true,
+  cancelledAt: true,
+  attendedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -791,6 +893,10 @@ export type AuditResponse = typeof auditResponses.$inferSelect;
 export type InsertAuditResponse = z.infer<typeof insertAuditResponseSchema>;
 export type ReductionPromise = typeof reductionPromises.$inferSelect;
 export type InsertReductionPromise = z.infer<typeof insertReductionPromiseSchema>;
+export type Event = typeof events.$inferSelect;
+export type InsertEvent = z.infer<typeof insertEventSchema>;
+export type EventRegistration = typeof eventRegistrations.$inferSelect;
+export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSchema>;
 
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;

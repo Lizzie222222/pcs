@@ -16,6 +16,8 @@ import {
   testimonials,
   auditResponses,
   reductionPromises,
+  events,
+  eventRegistrations,
   type User,
   type UpsertUser,
   type School,
@@ -50,6 +52,10 @@ import {
   type InsertAuditResponse,
   type ReductionPromise,
   type InsertReductionPromise,
+  type Event,
+  type InsertEvent,
+  type EventRegistration,
+  type InsertEventRegistration,
   type CreatePasswordUser,
   type CreateOAuthUser,
 } from "@shared/schema";
@@ -366,6 +372,31 @@ export interface IStorage {
   deleteReductionPromise(id: string): Promise<void>;
   getActivePromisesBySchool(schoolId: string): Promise<ReductionPromise[]>;
   getAllActivePromises(): Promise<ReductionPromise[]>;
+
+  // Event operations
+  createEvent(event: InsertEvent): Promise<Event>;
+  getEvent(id: string): Promise<Event | undefined>;
+  getEvents(filters?: {
+    status?: string;
+    eventType?: string;
+    upcoming?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<Event[]>;
+  updateEvent(id: string, updates: Partial<Event>): Promise<Event | undefined>;
+  deleteEvent(id: string): Promise<void>;
+  getUpcomingEvents(limit?: number): Promise<Event[]>;
+  getPastEvents(limit?: number): Promise<Event[]>;
+  
+  // Event Registration operations
+  createEventRegistration(registration: InsertEventRegistration): Promise<EventRegistration>;
+  getEventRegistration(eventId: string, userId: string): Promise<EventRegistration | undefined>;
+  getEventRegistrations(eventId: string, filters?: { status?: string }): Promise<Array<EventRegistration & { user: User; school: School | null }>>;
+  getUserEventRegistrations(userId: string): Promise<Array<EventRegistration & { event: Event }>>;
+  updateEventRegistration(id: string, updates: Partial<EventRegistration>): Promise<EventRegistration | undefined>;
+  cancelEventRegistration(id: string): Promise<EventRegistration | undefined>;
+  getEventRegistrationCount(eventId: string): Promise<number>;
+  getEventAttendeesCount(eventId: string): Promise<number>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3730,6 +3761,204 @@ export class DatabaseStorage implements IStorage {
       .from(reductionPromises)
       .where(eq(reductionPromises.status, 'active'))
       .orderBy(desc(reductionPromises.createdAt));
+  }
+
+  // Event operations
+  async createEvent(event: InsertEvent): Promise<Event> {
+    const [newEvent] = await db
+      .insert(events)
+      .values(event)
+      .returning();
+    return newEvent;
+  }
+
+  async getEvent(id: string): Promise<Event | undefined> {
+    const [event] = await db
+      .select()
+      .from(events)
+      .where(eq(events.id, id));
+    return event;
+  }
+
+  async getEvents(filters?: {
+    status?: string;
+    eventType?: string;
+    upcoming?: boolean;
+    limit?: number;
+    offset?: number;
+  }): Promise<Event[]> {
+    let query = db.select().from(events);
+    
+    const conditions = [];
+    if (filters?.status) {
+      conditions.push(eq(events.status, filters.status as any));
+    }
+    if (filters?.eventType) {
+      conditions.push(eq(events.eventType, filters.eventType as any));
+    }
+    if (filters?.upcoming) {
+      conditions.push(sql`${events.startDateTime} > NOW()`);
+    }
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    
+    query = query.orderBy(asc(events.startDateTime)) as any;
+    
+    if (filters?.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+    if (filters?.offset) {
+      query = query.offset(filters.offset) as any;
+    }
+    
+    return await query;
+  }
+
+  async updateEvent(id: string, updates: Partial<Event>): Promise<Event | undefined> {
+    const [updatedEvent] = await db
+      .update(events)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(events.id, id))
+      .returning();
+    return updatedEvent;
+  }
+
+  async deleteEvent(id: string): Promise<void> {
+    await db
+      .delete(events)
+      .where(eq(events.id, id));
+  }
+
+  async getUpcomingEvents(limit: number = 10): Promise<Event[]> {
+    return await db
+      .select()
+      .from(events)
+      .where(and(
+        eq(events.status, 'published'),
+        sql`${events.startDateTime} > NOW()`
+      ))
+      .orderBy(asc(events.startDateTime))
+      .limit(limit);
+  }
+
+  async getPastEvents(limit: number = 10): Promise<Event[]> {
+    return await db
+      .select()
+      .from(events)
+      .where(and(
+        eq(events.status, 'published'),
+        sql`${events.endDateTime} < NOW()`
+      ))
+      .orderBy(desc(events.startDateTime))
+      .limit(limit);
+  }
+
+  // Event Registration operations
+  async createEventRegistration(registration: InsertEventRegistration): Promise<EventRegistration> {
+    const [newRegistration] = await db
+      .insert(eventRegistrations)
+      .values(registration)
+      .returning();
+    return newRegistration;
+  }
+
+  async getEventRegistration(eventId: string, userId: string): Promise<EventRegistration | undefined> {
+    const [registration] = await db
+      .select()
+      .from(eventRegistrations)
+      .where(and(
+        eq(eventRegistrations.eventId, eventId),
+        eq(eventRegistrations.userId, userId)
+      ));
+    return registration;
+  }
+
+  async getEventRegistrations(eventId: string, filters?: { status?: string }): Promise<Array<EventRegistration & { user: User; school: School | null }>> {
+    const conditions = [eq(eventRegistrations.eventId, eventId)];
+    
+    if (filters?.status) {
+      conditions.push(eq(eventRegistrations.status, filters.status as any));
+    }
+
+    const results = await db
+      .select({
+        registration: eventRegistrations,
+        user: users,
+        school: schools,
+      })
+      .from(eventRegistrations)
+      .innerJoin(users, eq(eventRegistrations.userId, users.id))
+      .leftJoin(schools, eq(eventRegistrations.schoolId, schools.id))
+      .where(and(...conditions))
+      .orderBy(desc(eventRegistrations.registeredAt));
+    
+    return results.map(r => ({
+      ...r.registration,
+      user: r.user,
+      school: r.school,
+    }));
+  }
+
+  async getUserEventRegistrations(userId: string): Promise<Array<EventRegistration & { event: Event }>> {
+    const results = await db
+      .select({
+        registration: eventRegistrations,
+        event: events,
+      })
+      .from(eventRegistrations)
+      .innerJoin(events, eq(eventRegistrations.eventId, events.id))
+      .where(eq(eventRegistrations.userId, userId))
+      .orderBy(desc(events.startDateTime));
+    
+    return results.map(r => ({
+      ...r.registration,
+      event: r.event,
+    }));
+  }
+
+  async updateEventRegistration(id: string, updates: Partial<EventRegistration>): Promise<EventRegistration | undefined> {
+    const [updatedRegistration] = await db
+      .update(eventRegistrations)
+      .set(updates)
+      .where(eq(eventRegistrations.id, id))
+      .returning();
+    return updatedRegistration;
+  }
+
+  async cancelEventRegistration(id: string): Promise<EventRegistration | undefined> {
+    const [cancelledRegistration] = await db
+      .update(eventRegistrations)
+      .set({ 
+        status: 'cancelled',
+        cancelledAt: new Date()
+      })
+      .where(eq(eventRegistrations.id, id))
+      .returning();
+    return cancelledRegistration;
+  }
+
+  async getEventRegistrationCount(eventId: string): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(eventRegistrations)
+      .where(and(
+        eq(eventRegistrations.eventId, eventId),
+        eq(eventRegistrations.status, 'registered')
+      ));
+    return result[0]?.count || 0;
+  }
+
+  async getEventAttendeesCount(eventId: string): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(eventRegistrations)
+      .where(and(
+        eq(eventRegistrations.eventId, eventId),
+        eq(eventRegistrations.status, 'attended')
+      ));
+    return result[0]?.count || 0;
   }
 }
 

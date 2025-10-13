@@ -66,7 +66,10 @@ import {
   Leaf,
   TrendingDown,
   Edit,
-  Plus
+  Plus,
+  Video,
+  Filter,
+  ExternalLink
 } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -75,7 +78,8 @@ import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from 'recharts';
 import { PLASTIC_ITEM_WEIGHTS, calculateAggregateMetrics } from "@/../../shared/plasticMetrics";
-import type { ReductionPromise, InsertReductionPromise, AuditResponse } from "@/../../shared/schema";
+import type { ReductionPromise, InsertReductionPromise, AuditResponse, Event, EventRegistration } from "@/../../shared/schema";
+import { format, isPast, isFuture, parseISO } from "date-fns";
 
 interface Certificate {
   id: string;
@@ -186,11 +190,17 @@ export default function Home() {
     const stored = localStorage.getItem('dismissedPromiseNotification');
     return stored === 'true';
   });
-  const [activeTab, setActiveTab] = useState<'progress' | 'analytics' | 'resources' | 'team' | 'promises'>('progress');
+  const [activeTab, setActiveTab] = useState<'progress' | 'analytics' | 'resources' | 'team' | 'promises' | 'events'>('progress');
   const [promiseDialogOpen, setPromiseDialogOpen] = useState(false);
   const [editingPromise, setEditingPromise] = useState<ReductionPromise | null>(null);
   const [deletePromiseDialogOpen, setDeletePromiseDialogOpen] = useState(false);
   const [promiseToDelete, setPromiseToDelete] = useState<string | null>(null);
+  
+  // Events state
+  const [eventFilter, setEventFilter] = useState<string>('all');
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [eventDetailOpen, setEventDetailOpen] = useState(false);
+  const [showAllEvents, setShowAllEvents] = useState(false);
 
   // Redirect admins to admin dashboard
   useEffect(() => {
@@ -478,6 +488,110 @@ export default function Home() {
     setPromiseDialogOpen(true);
   };
 
+  // Events queries and mutations
+  const { data: upcomingEvents = [], isLoading: upcomingEventsLoading } = useQuery<Event[]>({
+    queryKey: ['/api/events/upcoming'],
+    queryFn: async () => {
+      const response = await fetch('/api/events/upcoming?limit=6');
+      if (!response.ok) throw new Error('Failed to fetch upcoming events');
+      return response.json();
+    },
+    enabled: activeTab === 'events',
+    retry: false,
+  });
+
+  const { data: filteredEvents = [], isLoading: filteredEventsLoading } = useQuery<Event[]>({
+    queryKey: ['/api/events', eventFilter, showAllEvents],
+    queryFn: async () => {
+      const params = new URLSearchParams({ upcoming: 'true' });
+      if (eventFilter !== 'all') {
+        params.append('eventType', eventFilter);
+      }
+      const response = await fetch(`/api/events?${params.toString()}`);
+      if (!response.ok) throw new Error('Failed to fetch events');
+      return response.json();
+    },
+    enabled: activeTab === 'events' && showAllEvents,
+    retry: false,
+  });
+
+  const { data: myEvents = [], isLoading: myEventsLoading } = useQuery<Array<EventRegistration & { event: Event }>>({
+    queryKey: ['/api/my-events'],
+    enabled: activeTab === 'events' && isAuthenticated,
+    retry: false,
+  });
+
+  const { data: selectedEventDetails } = useQuery<Event & { registrations?: EventRegistration[], registrationsCount?: number }>({
+    queryKey: ['/api/events', selectedEvent?.id],
+    enabled: !!selectedEvent?.id && eventDetailOpen,
+    retry: false,
+  });
+
+  const registerEventMutation = useMutation({
+    mutationFn: async (eventId: string) => {
+      return apiRequest('POST', `/api/events/${eventId}/register`, {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/my-events'] });
+      toast({
+        title: "Success",
+        description: "Successfully registered for event!",
+      });
+      setEventDetailOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Registration Failed",
+        description: error?.message || "Failed to register for event",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const cancelEventMutation = useMutation({
+    mutationFn: async (registrationId: string) => {
+      return apiRequest('DELETE', `/api/events/registrations/${registrationId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/events'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/my-events'] });
+      toast({
+        title: "Success",
+        description: "Registration cancelled successfully",
+      });
+      setEventDetailOpen(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error?.message || "Failed to cancel registration",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleEventClick = (event: Event) => {
+    setSelectedEvent(event);
+    setEventDetailOpen(true);
+  };
+
+  const handleRegisterForEvent = () => {
+    if (selectedEvent) {
+      registerEventMutation.mutate(selectedEvent.id);
+    }
+  };
+
+  const handleCancelRegistration = () => {
+    if (!selectedEventDetails) return;
+    const userRegistration = myEvents.find(reg => 
+      reg.eventId === selectedEvent?.id && 
+      (reg.status === 'registered' || reg.status === 'waitlisted')
+    );
+    if (userRegistration) {
+      cancelEventMutation.mutate(userRegistration.id);
+    }
+  };
 
   // Handle errors (unauthorized and no school registration)
   useEffect(() => {
@@ -697,6 +811,19 @@ export default function Home() {
             >
               <Target className="h-5 w-5 mr-2" />
               Our Promises
+            </Button>
+            <Button
+              variant={activeTab === 'events' ? 'default' : 'ghost'}
+              className={`flex-1 transition-all duration-300 font-semibold ${
+                activeTab === 'events' 
+                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
+              }`}
+              onClick={() => setActiveTab('events')}
+              data-testid="tab-events"
+            >
+              <Calendar className="h-5 w-5 mr-2" />
+              Events
             </Button>
           </div>
         </div>
@@ -1660,6 +1787,288 @@ export default function Home() {
             )}
           </div>
         )}
+
+        {/* Events Tab Content */}
+        {activeTab === 'events' && (
+          <div className="space-y-8">
+            {/* Filter and Header */}
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div>
+                <h2 className="text-3xl font-bold text-navy mb-2">Upcoming Events</h2>
+                <p className="text-gray-600">Join workshops, webinars, and community events</p>
+              </div>
+              <div className="flex items-center gap-3">
+                <Filter className="h-5 w-5 text-gray-500" />
+                <Select value={eventFilter} onValueChange={setEventFilter}>
+                  <SelectTrigger className="w-48" data-testid="select-event-filter">
+                    <SelectValue placeholder="Filter by type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Events</SelectItem>
+                    <SelectItem value="workshop">Workshops</SelectItem>
+                    <SelectItem value="webinar">Webinars</SelectItem>
+                    <SelectItem value="community_event">Community Events</SelectItem>
+                    <SelectItem value="training">Training</SelectItem>
+                    <SelectItem value="celebration">Celebrations</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Upcoming Events Grid */}
+            {upcomingEventsLoading ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {[...Array(6)].map((_, i) => (
+                  <Card key={i} className="shadow-lg border-0">
+                    <CardContent className="p-6">
+                      <div className="animate-pulse space-y-3">
+                        <div className="h-40 bg-gray-200 rounded"></div>
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            ) : upcomingEvents.length === 0 ? (
+              <Card className="shadow-lg border-0">
+                <CardContent className="p-12 text-center">
+                  <div className="mb-6">
+                    <div className="w-24 h-24 mx-auto bg-gradient-to-br from-pcs_blue/20 to-teal/20 rounded-full flex items-center justify-center">
+                      <Calendar className="h-12 w-12 text-pcs_blue" />
+                    </div>
+                  </div>
+                  <h2 className="text-2xl font-bold text-navy mb-3">No Upcoming Events</h2>
+                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                    There are no upcoming events at the moment. Check back soon for new workshops, webinars, and community events!
+                  </p>
+                </CardContent>
+              </Card>
+            ) : (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {(showAllEvents ? filteredEvents : upcomingEvents).map((event) => {
+                    const eventDate = parseISO(event.startDateTime);
+                    const isEventPast = isPast(eventDate);
+                    const registrationsCount = (event as any).registrationsCount || 0;
+                    const spotsLeft = event.capacity ? event.capacity - registrationsCount : null;
+                    const isFull = event.capacity && registrationsCount >= event.capacity;
+                    const userRegistration = myEvents.find(reg => reg.eventId === event.id);
+                    
+                    return (
+                      <Card 
+                        key={event.id} 
+                        className="shadow-lg border-0 hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
+                        onClick={() => handleEventClick(event)}
+                        data-testid={`event-card-${event.id}`}
+                      >
+                        {event.imageUrl && (
+                          <div className="w-full h-48 overflow-hidden relative">
+                            <img 
+                              src={event.imageUrl} 
+                              alt={event.title}
+                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            />
+                            <div className="absolute top-3 right-3">
+                              <Badge className={`
+                                ${event.eventType === 'workshop' ? 'bg-blue-500' : ''}
+                                ${event.eventType === 'webinar' ? 'bg-purple-500' : ''}
+                                ${event.eventType === 'community_event' ? 'bg-green-500' : ''}
+                                ${event.eventType === 'training' ? 'bg-orange-500' : ''}
+                                ${event.eventType === 'celebration' ? 'bg-pink-500' : ''}
+                                ${event.eventType === 'other' ? 'bg-gray-500' : ''}
+                                text-white shadow-lg
+                              `}>
+                                {event.eventType.replace(/_/g, ' ')}
+                              </Badge>
+                            </div>
+                          </div>
+                        )}
+                        <CardContent className="p-6 space-y-3">
+                          <h3 className="text-lg font-bold text-navy group-hover:text-pcs_blue transition-colors line-clamp-2">
+                            {event.title}
+                          </h3>
+                          <div className="space-y-2 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-pcs_blue flex-shrink-0" />
+                              <span>{format(eventDate, 'PPP')}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Clock className="h-4 w-4 text-pcs_blue flex-shrink-0" />
+                              <span>{format(eventDate, 'p')}</span>
+                            </div>
+                            {event.location && (
+                              <div className="flex items-center gap-2">
+                                {event.isVirtual ? (
+                                  <Video className="h-4 w-4 text-pcs_blue flex-shrink-0" />
+                                ) : (
+                                  <MapPin className="h-4 w-4 text-pcs_blue flex-shrink-0" />
+                                )}
+                                <span className="line-clamp-1">{event.location}</span>
+                              </div>
+                            )}
+                            {event.capacity && (
+                              <div className="flex items-center gap-2">
+                                <Users className="h-4 w-4 text-pcs_blue flex-shrink-0" />
+                                {isFull && !event.waitlistEnabled ? (
+                                  <span className="text-red-600 font-semibold">Event Full</span>
+                                ) : isFull && event.waitlistEnabled ? (
+                                  <span className="text-orange-600 font-semibold">Waitlist Available</span>
+                                ) : (
+                                  <span>{spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} left</span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          {userRegistration && (
+                            <Badge className={`
+                              ${userRegistration.status === 'registered' ? 'bg-green-500' : ''}
+                              ${userRegistration.status === 'waitlisted' ? 'bg-orange-500' : ''}
+                              ${userRegistration.status === 'attended' ? 'bg-blue-500' : ''}
+                              text-white
+                            `} data-testid={`badge-registration-status-${event.id}`}>
+                              {userRegistration.status === 'registered' && '✓ Registered'}
+                              {userRegistration.status === 'waitlisted' && 'Waitlisted'}
+                              {userRegistration.status === 'attended' && 'Attended'}
+                            </Badge>
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+
+                {!showAllEvents && upcomingEvents.length >= 6 && (
+                  <div className="text-center pt-6">
+                    <Button
+                      onClick={() => setShowAllEvents(true)}
+                      className="bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white px-8 py-6 text-lg shadow-lg"
+                      data-testid="button-view-all-events"
+                    >
+                      <ExternalLink className="h-5 w-5 mr-2" />
+                      View All Events
+                    </Button>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* My Events Section */}
+            <div className="mt-12">
+              <h2 className="text-3xl font-bold text-navy mb-6">My Events</h2>
+              {myEventsLoading ? (
+                <div className="space-y-4">
+                  {[...Array(3)].map((_, i) => (
+                    <Card key={i} className="shadow-lg border-0">
+                      <CardContent className="p-6">
+                        <div className="animate-pulse space-y-3">
+                          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                          <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : myEvents.length === 0 ? (
+                <Card className="shadow-lg border-0">
+                  <CardContent className="p-8 text-center">
+                    <div className="mb-4">
+                      <div className="w-16 h-16 mx-auto bg-gray-100 rounded-full flex items-center justify-center">
+                        <Calendar className="h-8 w-8 text-gray-400" />
+                      </div>
+                    </div>
+                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Registered Events</h3>
+                    <p className="text-gray-500">You haven't registered for any events yet. Browse upcoming events and join us!</p>
+                  </CardContent>
+                </Card>
+              ) : (
+                <div className="space-y-4">
+                  {(() => {
+                    const sortedEvents = [...myEvents].sort((a, b) => {
+                      const dateA = new Date(a.event.startDateTime);
+                      const dateB = new Date(b.event.startDateTime);
+                      const nowDate = new Date();
+                      const aIsPast = dateA < nowDate;
+                      const bIsPast = dateB < nowDate;
+                      
+                      if (aIsPast && !bIsPast) return 1;
+                      if (!aIsPast && bIsPast) return -1;
+                      return dateA.getTime() - dateB.getTime();
+                    });
+
+                    return sortedEvents.map((registration) => {
+                      const eventDate = parseISO(registration.event.startDateTime);
+                      const isEventPast = isPast(eventDate);
+                      const isEventFuture = isFuture(eventDate);
+                      
+                      return (
+                        <Card 
+                          key={registration.id} 
+                          className="shadow-lg border-0 hover:shadow-xl transition-shadow cursor-pointer"
+                          onClick={() => handleEventClick(registration.event)}
+                          data-testid={`my-event-${registration.id}`}
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between gap-4">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h3 className="text-lg font-bold text-navy">{registration.event.title}</h3>
+                                  <Badge className={`
+                                    ${registration.status === 'registered' ? 'bg-green-500' : ''}
+                                    ${registration.status === 'waitlisted' ? 'bg-orange-500' : ''}
+                                    ${registration.status === 'attended' ? 'bg-blue-500' : ''}
+                                    ${registration.status === 'cancelled' ? 'bg-gray-500' : ''}
+                                    text-white
+                                  `} data-testid={`badge-status-${registration.id}`}>
+                                    {registration.status === 'registered' && 'Registered'}
+                                    {registration.status === 'waitlisted' && 'Waitlisted'}
+                                    {registration.status === 'attended' && 'Attended'}
+                                    {registration.status === 'cancelled' && 'Cancelled'}
+                                  </Badge>
+                                </div>
+                                <div className="space-y-1 text-sm text-gray-600">
+                                  <div className="flex items-center gap-2">
+                                    <Calendar className="h-4 w-4 text-pcs_blue" />
+                                    <span>{format(eventDate, 'PPP')} at {format(eventDate, 'p')}</span>
+                                  </div>
+                                  {registration.event.location && (
+                                    <div className="flex items-center gap-2">
+                                      {registration.event.isVirtual ? (
+                                        <Video className="h-4 w-4 text-pcs_blue" />
+                                      ) : (
+                                        <MapPin className="h-4 w-4 text-pcs_blue" />
+                                      )}
+                                      <span>{registration.event.location}</span>
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              {isEventFuture && registration.status !== 'cancelled' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    cancelEventMutation.mutate(registration.id);
+                                  }}
+                                  className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-300"
+                                  data-testid={`button-cancel-${registration.id}`}
+                                >
+                                  Cancel
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    });
+                  })()}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Evidence Submission Form */}
@@ -1933,6 +2342,263 @@ export default function Home() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Event Detail Modal */}
+      {selectedEvent && (
+        <Dialog open={eventDetailOpen} onOpenChange={setEventDetailOpen}>
+          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto" data-testid="dialog-event-detail">
+            {selectedEvent.imageUrl && (
+              <div className="w-full h-64 -mx-6 -mt-6 mb-4 overflow-hidden">
+                <img 
+                  src={selectedEvent.imageUrl} 
+                  alt={selectedEvent.title}
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+            
+            <DialogHeader>
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <DialogTitle className="text-3xl font-bold text-navy mb-3">
+                    {selectedEvent.title}
+                  </DialogTitle>
+                  <Badge className={`
+                    ${selectedEvent.eventType === 'workshop' ? 'bg-blue-500' : ''}
+                    ${selectedEvent.eventType === 'webinar' ? 'bg-purple-500' : ''}
+                    ${selectedEvent.eventType === 'community_event' ? 'bg-green-500' : ''}
+                    ${selectedEvent.eventType === 'training' ? 'bg-orange-500' : ''}
+                    ${selectedEvent.eventType === 'celebration' ? 'bg-pink-500' : ''}
+                    ${selectedEvent.eventType === 'other' ? 'bg-gray-500' : ''}
+                    text-white text-sm px-3 py-1
+                  `}>
+                    {selectedEvent.eventType.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
+              </div>
+            </DialogHeader>
+
+            <div className="space-y-6 mt-6">
+              {/* Description */}
+              <div>
+                <h4 className="font-semibold text-navy mb-2 flex items-center gap-2">
+                  <Lightbulb className="h-5 w-5 text-pcs_blue" />
+                  About This Event
+                </h4>
+                <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                  {selectedEvent.description}
+                </p>
+              </div>
+
+              {/* Event Details Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="p-4 bg-blue-50 rounded-lg">
+                  <div className="flex items-start gap-3">
+                    <Calendar className="h-5 w-5 text-pcs_blue flex-shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-sm font-semibold text-navy mb-1">Date & Time</p>
+                      <p className="text-sm text-gray-700">
+                        {format(parseISO(selectedEvent.startDateTime), 'PPP')}
+                      </p>
+                      <p className="text-sm text-gray-600">
+                        {format(parseISO(selectedEvent.startDateTime), 'p')} - {format(parseISO(selectedEvent.endDateTime), 'p')}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Timezone: {selectedEvent.timezone || 'UTC'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {selectedEvent.location && (
+                  <div className="p-4 bg-purple-50 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      {selectedEvent.isVirtual ? (
+                        <Video className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                      ) : (
+                        <MapPin className="h-5 w-5 text-purple-600 flex-shrink-0 mt-0.5" />
+                      )}
+                      <div>
+                        <p className="text-sm font-semibold text-navy mb-1">Location</p>
+                        <p className="text-sm text-gray-700">{selectedEvent.location}</p>
+                        {selectedEvent.isVirtual && (
+                          <Badge className="bg-purple-100 text-purple-700 mt-2">
+                            Virtual Event
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedEvent.capacity && (
+                  <div className="p-4 bg-green-50 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <Users className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-navy mb-1">Capacity</p>
+                        {(() => {
+                          const registrationsCount = (selectedEventDetails as any)?.registrationsCount || 0;
+                          const spotsLeft = selectedEvent.capacity - registrationsCount;
+                          const isFull = registrationsCount >= selectedEvent.capacity;
+                          
+                          return (
+                            <>
+                              <p className="text-sm text-gray-700">
+                                {selectedEvent.capacity} total spots
+                              </p>
+                              {isFull && !selectedEvent.waitlistEnabled ? (
+                                <Badge className="bg-red-500 text-white mt-2">Event Full</Badge>
+                              ) : isFull && selectedEvent.waitlistEnabled ? (
+                                <Badge className="bg-orange-500 text-white mt-2">Waitlist Available</Badge>
+                              ) : (
+                                <p className="text-sm font-semibold text-green-600 mt-1">
+                                  {spotsLeft} {spotsLeft === 1 ? 'spot' : 'spots'} available
+                                </p>
+                              )}
+                            </>
+                          );
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {selectedEvent.registrationDeadline && (
+                  <div className="p-4 bg-orange-50 rounded-lg">
+                    <div className="flex items-start gap-3">
+                      <Clock className="h-5 w-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-sm font-semibold text-navy mb-1">Registration Deadline</p>
+                        <p className="text-sm text-gray-700">
+                          {format(parseISO(selectedEvent.registrationDeadline), 'PPP')}
+                        </p>
+                        {isPast(parseISO(selectedEvent.registrationDeadline)) && (
+                          <Badge className="bg-red-500 text-white mt-2">Deadline Passed</Badge>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Meeting Link for Virtual Events */}
+              {selectedEvent.isVirtual && selectedEvent.meetingLink && (() => {
+                const userRegistration = myEvents.find(reg => 
+                  reg.eventId === selectedEvent.id && 
+                  (reg.status === 'registered' || reg.status === 'waitlisted')
+                );
+                
+                if (userRegistration) {
+                  return (
+                    <div className="p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border-2 border-blue-200">
+                      <div className="flex items-center gap-3 mb-3">
+                        <Video className="h-5 w-5 text-blue-600" />
+                        <h4 className="font-semibold text-navy">Meeting Link</h4>
+                      </div>
+                      <a
+                        href={selectedEvent.meetingLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium hover:underline"
+                        data-testid="link-meeting"
+                      >
+                        <span>Join Virtual Event</span>
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+
+              {/* Registration Status */}
+              {(() => {
+                const userRegistration = myEvents.find(reg => reg.eventId === selectedEvent.id);
+                
+                if (userRegistration && userRegistration.status !== 'cancelled') {
+                  return (
+                    <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg border-2 border-green-200">
+                      <div className="flex items-center gap-3">
+                        <CheckCircle className="h-6 w-6 text-green-600" />
+                        <div>
+                          <h4 className="font-semibold text-navy">
+                            {userRegistration.status === 'registered' && 'You\'re Registered!'}
+                            {userRegistration.status === 'waitlisted' && 'You\'re on the Waitlist'}
+                            {userRegistration.status === 'attended' && 'You Attended This Event'}
+                          </h4>
+                          <p className="text-sm text-gray-600">
+                            {userRegistration.status === 'registered' && 'Looking forward to seeing you there!'}
+                            {userRegistration.status === 'waitlisted' && 'We\'ll notify you if a spot opens up'}
+                            {userRegistration.status === 'attended' && 'Thank you for participating!'}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
+                return null;
+              })()}
+            </div>
+
+            <DialogFooter className="mt-6">
+              {(() => {
+                const eventDate = parseISO(selectedEvent.startDateTime);
+                const isEventPast = isPast(eventDate);
+                const isEventFuture = isFuture(eventDate);
+                const userRegistration = myEvents.find(reg => reg.eventId === selectedEvent.id);
+                const isRegistered = userRegistration && (userRegistration.status === 'registered' || userRegistration.status === 'waitlisted');
+                const registrationsCount = (selectedEventDetails as any)?.registrationsCount || 0;
+                const isFull = selectedEvent.capacity && registrationsCount >= selectedEvent.capacity;
+                const deadlinePassed = selectedEvent.registrationDeadline && isPast(parseISO(selectedEvent.registrationDeadline));
+
+                if (isEventPast) {
+                  return (
+                    <p className="text-gray-500 text-sm">This event has already ended</p>
+                  );
+                }
+
+                if (isRegistered) {
+                  return (
+                    <Button
+                      variant="outline"
+                      onClick={handleCancelRegistration}
+                      disabled={cancelEventMutation.isPending}
+                      className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-300"
+                      data-testid="button-cancel-registration"
+                    >
+                      {cancelEventMutation.isPending ? 'Cancelling...' : 'Cancel Registration'}
+                    </Button>
+                  );
+                }
+
+                if (deadlinePassed) {
+                  return (
+                    <p className="text-red-600 text-sm font-medium">Registration deadline has passed</p>
+                  );
+                }
+
+                if (isFull && !selectedEvent.waitlistEnabled) {
+                  return (
+                    <p className="text-red-600 text-sm font-medium">This event is full</p>
+                  );
+                }
+
+                return (
+                  <Button
+                    onClick={handleRegisterForEvent}
+                    disabled={registerEventMutation.isPending}
+                    className="bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white px-8"
+                    data-testid="button-register-event"
+                  >
+                    {registerEventMutation.isPending ? 'Registering...' : isFull ? 'Join Waitlist' : 'Register for Event'}
+                  </Button>
+                );
+              })()}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 }
