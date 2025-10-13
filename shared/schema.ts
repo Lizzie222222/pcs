@@ -845,7 +845,11 @@ export const insertReductionPromiseSchema = createInsertSchema(reductionPromises
   updatedAt: true,
 });
 
-export const insertEventSchema = createInsertSchema(events).omit({
+export const insertEventSchema = createInsertSchema(events, {
+  startDateTime: z.coerce.date(),
+  endDateTime: z.coerce.date(),
+  registrationDeadline: z.coerce.date().optional().nullable(),
+}).omit({
   id: true,
   createdAt: true,
   updatedAt: true,

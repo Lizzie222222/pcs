@@ -4340,11 +4340,26 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [eventDeleteDialogOpen, setEventDeleteDialogOpen] = useState(false);
   const [viewingEventRegistrations, setViewingEventRegistrations] = useState<Event | null>(null);
   const [registrationStatusFilter, setRegistrationStatusFilter] = useState<string>('all');
-  const [eventFormData, setEventFormData] = useState({
+  const [eventFormData, setEventFormData] = useState<{
+    title: string;
+    description: string;
+    eventType: 'workshop' | 'webinar' | 'community_event' | 'training' | 'celebration' | 'other';
+    status: 'draft' | 'published' | 'cancelled' | 'completed';
+    startDateTime: string;
+    endDateTime: string;
+    location: string;
+    isVirtual: boolean;
+    meetingLink: string;
+    imageUrl: string;
+    capacity: string;
+    waitlistEnabled: boolean;
+    registrationDeadline: string;
+    tags: string;
+  }>({
     title: '',
     description: '',
-    eventType: 'workshop' as const,
-    status: 'draft' as const,
+    eventType: 'workshop',
+    status: 'draft',
     startDateTime: '',
     endDateTime: '',
     location: '',
@@ -6656,7 +6671,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                               {event.eventType.replace('_', ' ').charAt(0).toUpperCase() + event.eventType.replace('_', ' ').slice(1)}
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-date-${event.id}`}>
-                              {format(parseISO(event.startDateTime), 'MMM d, yyyy')}
+                              {format(new Date(event.startDateTime), 'MMM d, yyyy')}
                             </td>
                             <td className="px-4 py-3 text-sm" data-testid={`text-status-${event.id}`}>
                               <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
@@ -6665,7 +6680,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                 event.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                                 'bg-blue-100 text-blue-700'
                               }`}>
-                                {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                                {event.status ? event.status.charAt(0).toUpperCase() + event.status.slice(1) : 'Unknown'}
                               </span>
                             </td>
                             <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-registrations-${event.id}`}>
@@ -6683,16 +6698,16 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                       title: event.title,
                                       description: event.description || '',
                                       eventType: event.eventType,
-                                      status: event.status,
-                                      startDateTime: event.startDateTime,
-                                      endDateTime: event.endDateTime,
+                                      status: event.status || 'draft',
+                                      startDateTime: new Date(event.startDateTime).toISOString().slice(0, 16),
+                                      endDateTime: new Date(event.endDateTime).toISOString().slice(0, 16),
                                       location: event.location || '',
-                                      isVirtual: event.isVirtual,
+                                      isVirtual: event.isVirtual ?? false,
                                       meetingLink: event.meetingLink || '',
                                       imageUrl: event.imageUrl || '',
                                       capacity: event.capacity?.toString() || '',
-                                      waitlistEnabled: event.waitlistEnabled,
-                                      registrationDeadline: event.registrationDeadline || '',
+                                      waitlistEnabled: event.waitlistEnabled ?? false,
+                                      registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
                                       tags: event.tags?.join(', ') || '',
                                     });
                                     setEventDialogOpen(true);
@@ -7059,7 +7074,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     reg.school?.name || 'N/A',
                     reg.school?.country || 'N/A',
                     reg.status,
-                    format(parseISO(reg.createdAt), 'MMM d, yyyy h:mm a')
+                    reg.registeredAt ? format(new Date(reg.registeredAt), 'MMM d, yyyy h:mm a') : 'N/A'
                   ]);
                   
                   const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -7120,11 +7135,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                             registration.status === 'cancelled' ? 'bg-red-100 text-red-700' :
                             'bg-yellow-100 text-yellow-700'
                           }`}>
-                            {registration.status.charAt(0).toUpperCase() + registration.status.slice(1)}
+                            {registration.status ? registration.status.charAt(0).toUpperCase() + registration.status.slice(1) : 'Unknown'}
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-date-${registration.id}`}>
-                          {format(parseISO(registration.createdAt), 'MMM d, yyyy')}
+                          {registration.registeredAt ? format(new Date(registration.registeredAt), 'MMM d, yyyy') : 'N/A'}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           {registration.status === 'registered' && (
