@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plastic Waste Audit Form</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 20mm;
+      background: white;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 3px solid #0066cc;
+      padding-bottom: 20px;
+    }
+    
+    .header h1 {
+      color: #0066cc;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+      page-break-inside: avoid;
+    }
+    
+    .section-title {
+      background: #0066cc;
+      color: white;
+      padding: 10px 15px;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    
+    .subsection {
+      margin-bottom: 20px;
+    }
+    
+    .subsection-title {
+      font-size: 16px;
+      font-weight: bold;
+      color: #0066cc;
+      margin-bottom: 10px;
+      border-bottom: 2px solid #e0e0e0;
+      padding-bottom: 5px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #444;
+    }
+    
+    .form-input {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid #333;
+      padding: 5px 0;
+      min-height: 25px;
+    }
+    
+    .form-textarea {
+      width: 100%;
+      border: 1px solid #333;
+      padding: 8px;
+      min-height: 60px;
+    }
+    
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .count-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px dotted #ccc;
+    }
+    
+    .count-item label {
+      font-weight: 500;
+    }
+    
+    .count-box {
+      width: 80px;
+      height: 30px;
+      border: 1px solid #333;
+      display: inline-block;
+    }
+    
+    .checkbox-item {
+      display: flex;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+    
+    .checkbox {
+      width: 20px;
+      height: 20px;
+      border: 2px solid #333;
+      display: inline-block;
+      margin-right: 10px;
+    }
+    
+    .instructions {
+      background: #f5f5f5;
+      border-left: 4px solid #0066cc;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      border-top: 2px solid #e0e0e0;
+      padding-top: 20px;
+    }
+    
+    @media print {
+      body {
+        padding: 10mm;
+      }
+      
+      .section {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🌊 Plastic Waste Audit Form</h1>
+    <p>Plastic Clever Schools Initiative</p>
+  </div>
+
+  <div class="instructions">
+    <strong>Instructions:</strong> Complete all sections of this audit form. Count plastic items used in your school over a typical day or week. Be as accurate as possible. This data will help create your Plastic Reduction Action Plan.
+  </div>
+
+  <!-- PART 1: SCHOOL INFORMATION -->
+  <div class="section">
+    <div class="section-title">Part 1: About Your School</div>
+    
+    <div class="form-group">
+      <label class="form-label">School Name:</label>
+      <div class="form-input"></div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Number of Students:</label>
+        <div class="form-input"></div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Number of Staff:</label>
+        <div class="form-input"></div>
+      </div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Audit Date:</label>
+        <div class="form-input"></div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Audit Team Members:</label>
+        <div class="form-input"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PART 2: LUNCHROOM & STAFFROOM -->
+  <div class="section">
+    <div class="section-title">Part 2: Lunchroom & Staffroom</div>
+    
+    <div class="subsection">
+      <div class="subsection-title">Lunchroom Items (Daily Count)</div>
+      
+      <div class="count-item">
+        <label>Plastic Bottles:</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Plastic Cups:</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Plastic Cutlery (forks, spoons, knives):</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Plastic Straws:</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Food Packaging (wrappers, containers):</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Cling Film / Plastic Wrap:</label>
+        <div class="count-box"></div>
+      </div>
+    </div>
+    
+    <div class="subsection">
+      <div class="subsection-title">Staffroom Items (Daily Count)</div>
+      
+      <div class="count-item">
+        <label>Plastic Bottles:</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Plastic Cups:</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Food Packaging:</label>
+        <div class="count-box"></div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Additional Notes (Lunchroom/Staffroom):</label>
+      <div class="form-textarea"></div>
+    </div>
+  </div>
+
+  <!-- PART 3: CLASSROOMS & BATHROOMS -->
+  <div class="section">
+    <div class="section-title">Part 3: Classrooms & Bathrooms</div>
+    
+    <div class="subsection">
+      <div class="subsection-title">Classroom Items</div>
+      
+      <div class="count-item">
+        <label>Plastic Pens & Pencils:</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Other Plastic Stationery:</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Plastic Display Materials:</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Plastic Toys/Equipment:</label>
+        <div class="count-box"></div>
+      </div>
+    </div>
+    
+    <div class="subsection">
+      <div class="subsection-title">Bathroom Items</div>
+      
+      <div class="count-item">
+        <label>Plastic Soap Bottles:</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Plastic Bin Liners:</label>
+        <div class="count-box"></div>
+      </div>
+      
+      <div class="count-item">
+        <label>Plastic Cups/Dispensers:</label>
+        <div class="count-box"></div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Additional Notes (Classrooms/Bathrooms):</label>
+      <div class="form-textarea"></div>
+    </div>
+  </div>
+
+  <!-- PART 4: WASTE MANAGEMENT -->
+  <div class="section">
+    <div class="section-title">Part 4: Waste Management Practices</div>
+    
+    <div class="checkbox-item">
+      <div class="checkbox"></div>
+      <label>School has recycling bins</label>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Recycling Bin Locations (if applicable):</label>
+      <div class="form-input"></div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Where does plastic waste go? (Check one)</label>
+      <div style="margin-left: 20px; margin-top: 10px;">
+        <div class="checkbox-item">
+          <div class="checkbox"></div>
+          <label>General Waste (Landfill)</label>
+        </div>
+        <div class="checkbox-item">
+          <div class="checkbox"></div>
+          <label>Recycling Center</label>
+        </div>
+        <div class="checkbox-item">
+          <div class="checkbox"></div>
+          <label>Mixed (Some recycled, some to landfill)</label>
+        </div>
+        <div class="checkbox-item">
+          <div class="checkbox"></div>
+          <label>Unknown</label>
+        </div>
+      </div>
+    </div>
+    
+    <div class="checkbox-item">
+      <div class="checkbox"></div>
+      <label>School composts organic waste</label>
+    </div>
+    
+    <div class="checkbox-item">
+      <div class="checkbox"></div>
+      <label>School has a plastic reduction policy</label>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Policy Details (if applicable):</label>
+      <div class="form-textarea"></div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">Additional Notes (Waste Management):</label>
+      <div class="form-textarea"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Plastic Clever Schools | Making a difference, one plastic item at a time</p>
+    <p>For more information, visit our website or contact your program coordinator</p>
+  </div>
+</body>
+</html>

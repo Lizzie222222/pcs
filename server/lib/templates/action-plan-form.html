@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plastic Reduction Action Plan</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 20mm;
+      background: white;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 3px solid #00a651;
+      padding-bottom: 20px;
+    }
+    
+    .header h1 {
+      color: #00a651;
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+    
+    .header p {
+      color: #666;
+      font-size: 14px;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+    }
+    
+    .section-title {
+      background: #00a651;
+      color: white;
+      padding: 10px 15px;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #444;
+    }
+    
+    .form-input {
+      width: 100%;
+      border: none;
+      border-bottom: 1px solid #333;
+      padding: 5px 0;
+      min-height: 25px;
+    }
+    
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+    
+    .instructions {
+      background: #f5f5f5;
+      border-left: 4px solid #00a651;
+      padding: 15px;
+      margin-bottom: 20px;
+      font-size: 14px;
+    }
+    
+    .action-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      page-break-inside: avoid;
+    }
+    
+    .action-table th {
+      background: #00a651;
+      color: white;
+      padding: 12px 8px;
+      text-align: left;
+      font-size: 14px;
+      border: 1px solid #00a651;
+    }
+    
+    .action-table td {
+      padding: 30px 8px;
+      border: 1px solid #333;
+      vertical-align: top;
+    }
+    
+    .action-table tr {
+      page-break-inside: avoid;
+    }
+    
+    .action-number {
+      background: #00a651;
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+    
+    .commitment-box {
+      background: #f9f9f9;
+      border: 2px solid #00a651;
+      padding: 20px;
+      margin-top: 30px;
+      page-break-inside: avoid;
+    }
+    
+    .commitment-title {
+      color: #00a651;
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+    
+    .signature-line {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 30px;
+      gap: 40px;
+    }
+    
+    .signature-field {
+      flex: 1;
+    }
+    
+    .signature-field label {
+      display: block;
+      font-weight: 600;
+      margin-bottom: 30px;
+    }
+    
+    .signature-field .line {
+      border-bottom: 2px solid #333;
+      margin-bottom: 5px;
+    }
+    
+    .signature-field .sublabel {
+      font-size: 12px;
+      color: #666;
+    }
+    
+    .footer {
+      margin-top: 40px;
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      border-top: 2px solid #e0e0e0;
+      padding-top: 20px;
+    }
+    
+    @media print {
+      body {
+        padding: 10mm;
+      }
+      
+      .action-table tr {
+        page-break-inside: avoid;
+      }
+      
+      .commitment-box {
+        page-break-inside: avoid;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🌱 Plastic Reduction Action Plan</h1>
+    <p>Plastic Clever Schools Initiative</p>
+  </div>
+
+  <div class="instructions">
+    <strong>Instructions:</strong> Based on your Plastic Waste Audit, commit to reducing at least 2 types of plastic items. Set realistic, measurable targets. Be specific about quantities and timeframes. Review and update your action plan regularly to track progress.
+  </div>
+
+  <!-- SCHOOL INFORMATION -->
+  <div class="section">
+    <div class="section-title">School Information</div>
+    
+    <div class="form-group">
+      <label class="form-label">School Name:</label>
+      <div class="form-input"></div>
+    </div>
+    
+    <div class="grid-2">
+      <div class="form-group">
+        <label class="form-label">Action Plan Date:</label>
+        <div class="form-input"></div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Review Date:</label>
+        <div class="form-input"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTION ITEMS -->
+  <div class="section">
+    <div class="section-title">Reduction Action Items (Minimum 2 Required)</div>
+    
+    <table class="action-table">
+      <thead>
+        <tr>
+          <th style="width: 5%;">#</th>
+          <th style="width: 18%;">Plastic Item</th>
+          <th style="width: 12%;">Current Usage</th>
+          <th style="width: 12%;">Target</th>
+          <th style="width: 13%;">Timeframe</th>
+          <th style="width: 40%;">Notes / Strategy</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><div class="action-number">1</div></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><div class="action-number">2</div></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><div class="action-number">3</div></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><div class="action-number">4</div></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+        <tr>
+          <td><div class="action-number">5</div></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+          <td></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- COMMITMENT SECTION -->
+  <div class="commitment-box">
+    <div class="commitment-title">Our Commitment</div>
+    <p style="margin-bottom: 20px;">
+      We, the students and staff of our school, commit to implementing this Plastic Reduction Action Plan. 
+      We understand the importance of reducing plastic waste for the health of our planet and pledge to 
+      work together to achieve our reduction targets.
+    </p>
+    
+    <div class="signature-line">
+      <div class="signature-field">
+        <label>School Representative:</label>
+        <div class="line"></div>
+        <div class="sublabel">Name & Signature</div>
+      </div>
+      
+      <div class="signature-field">
+        <label>Date:</label>
+        <div class="line"></div>
+        <div class="sublabel">&nbsp;</div>
+      </div>
+    </div>
+    
+    <div class="signature-line">
+      <div class="signature-field">
+        <label>Teacher/Coordinator:</label>
+        <div class="line"></div>
+        <div class="sublabel">Name & Signature</div>
+      </div>
+      
+      <div class="signature-field">
+        <label>Date:</label>
+        <div class="line"></div>
+        <div class="sublabel">&nbsp;</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <p>Plastic Clever Schools | Making a difference, one plastic item at a time</p>
+    <p><strong>Next Steps:</strong> Display this action plan in your school, review progress monthly, and celebrate your achievements!</p>
+  </div>
+</body>
+</html>
