@@ -1208,6 +1208,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/evidence', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      // Check if user is admin or partner
+      const isAdminOrPartner = user?.isAdmin || user?.role === 'partner';
+      
       const evidenceData = insertEvidenceSchema.parse({
         ...req.body,
         submittedBy: userId,
@@ -1219,7 +1224,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "School not found" });
       }
 
-      // Check if stage is unlocked
+      // If not admin/partner, verify user is a member of the school
+      if (!isAdminOrPartner) {
+        const schoolUser = await storage.getSchoolUser(evidenceData.schoolId, userId);
+        if (!schoolUser) {
+          return res.status(403).json({ 
+            message: "You must be a member of the school to submit evidence" 
+          });
+        }
+      }
+
+      // Check if stage is unlocked (admins/partners can bypass this check)
       const isStageUnlocked = (stage: string): boolean => {
         if (stage === 'inspire') return true;
         if (stage === 'investigate') return school.inspireCompleted === true;
@@ -1227,7 +1242,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return false;
       };
 
-      if (!isStageUnlocked(evidenceData.stage)) {
+      if (!isAdminOrPartner && !isStageUnlocked(evidenceData.stage)) {
         return res.status(403).json({ 
           message: "Cannot submit evidence to locked stage. Complete the previous stage first." 
         });
@@ -1865,6 +1880,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to verify admin status" });
     }
   };
+
+  // PUT /api/admin/schools/:schoolId/progression - Manually update school stage and round (admin/partner only)
+  app.put('/api/admin/schools/:schoolId/progression', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+      
+      // Validate request body
+      const progressionSchema = z.object({
+        currentStage: z.enum(['inspire', 'investigate', 'act']).optional(),
+        currentRound: z.number().int().positive().optional(),
+        inspireCompleted: z.boolean().optional(),
+        investigateCompleted: z.boolean().optional(),
+        actCompleted: z.boolean().optional(),
+        progressPercentage: z.number().int().min(0).max(100).optional(),
+      });
+      const updates = progressionSchema.parse(req.body);
+      
+      console.log(`[Manual Progression Update] Admin/Partner ${userId} updating progression for school ${schoolId}`, updates);
+      
+      // Update the school progression
+      const updatedSchool = await storage.manuallyUpdateSchoolProgression(schoolId, updates);
+      
+      if (!updatedSchool) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      console.log(`[Manual Progression Update] School ${schoolId} progression updated successfully`);
+      
+      res.json({ 
+        message: "School progression updated successfully",
+        school: updatedSchool
+      });
+    } catch (error) {
+      console.error("[Manual Progression Update] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update school progression" });
+    }
+  });
 
   // Get admin dashboard stats
   app.get('/api/admin/stats', isAuthenticated, requireAdmin, async (req, res) => {

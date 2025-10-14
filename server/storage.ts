@@ -116,6 +116,14 @@ export interface IStorage {
     offset?: number;
   }): Promise<School[]>;
   updateSchool(id: string, updates: Partial<School>): Promise<School | undefined>;
+  manuallyUpdateSchoolProgression(id: string, updates: {
+    currentStage?: 'inspire' | 'investigate' | 'act';
+    currentRound?: number;
+    inspireCompleted?: boolean;
+    investigateCompleted?: boolean;
+    actCompleted?: boolean;
+    progressPercentage?: number;
+  }): Promise<School | undefined>;
   getSchoolStats(): Promise<{
     totalSchools: number;
     completedAwards: number;
@@ -736,6 +744,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateSchool(id: string, updates: Partial<School>): Promise<School | undefined> {
+    const [school] = await db
+      .update(schools)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(schools.id, id))
+      .returning();
+    return school;
+  }
+
+  async manuallyUpdateSchoolProgression(id: string, updates: {
+    currentStage?: 'inspire' | 'investigate' | 'act';
+    currentRound?: number;
+    inspireCompleted?: boolean;
+    investigateCompleted?: boolean;
+    actCompleted?: boolean;
+    progressPercentage?: number;
+  }): Promise<School | undefined> {
     const [school] = await db
       .update(schools)
       .set({ ...updates, updatedAt: new Date() })

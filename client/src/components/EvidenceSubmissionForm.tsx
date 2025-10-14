@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
@@ -39,9 +39,10 @@ const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.ob
 
 interface EvidenceSubmissionFormProps {
   onClose: () => void;
-  schoolId: string;
+  schoolId?: string;
   evidenceRequirementId?: string;
   preSelectedStage?: 'inspire' | 'investigate' | 'act';
+  isAdminOrPartner?: boolean;
 }
 
 interface UploadedFile {
@@ -51,11 +52,18 @@ interface UploadedFile {
   type: string;
 }
 
+interface School {
+  id: string;
+  name: string;
+  country: string;
+}
+
 export default function EvidenceSubmissionForm({ 
   onClose, 
-  schoolId, 
+  schoolId: initialSchoolId, 
   evidenceRequirementId,
-  preSelectedStage 
+  preSelectedStage,
+  isAdminOrPartner = false
 }: EvidenceSubmissionFormProps) {
   const { t } = useTranslation(['forms', 'common']);
   const { toast } = useToast();
@@ -64,8 +72,15 @@ export default function EvidenceSubmissionForm({
   const [consentFiles, setConsentFiles] = useState<UploadedFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isUploadingConsent, setIsUploadingConsent] = useState(false);
+  const [selectedSchoolId, setSelectedSchoolId] = useState<string>(initialSchoolId || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const consentInputRef = useRef<HTMLInputElement>(null);
+  
+  // Fetch schools list for admin/partner
+  const { data: schools = [] } = useQuery<School[]>({
+    queryKey: ['/api/admin/schools'],
+    enabled: isAdminOrPartner,
+  });
   
   const evidenceSchema = createEvidenceSchema(t);
 
@@ -83,9 +98,12 @@ export default function EvidenceSubmissionForm({
 
   const submitEvidenceMutation = useMutation({
     mutationFn: async (data: z.infer<typeof evidenceSchema> & { files: UploadedFile[]; parentalConsentFiles: UploadedFile[] }) => {
+      if (!selectedSchoolId) {
+        throw new Error('Please select a school');
+      }
       await apiRequest('POST', '/api/evidence', {
         ...data,
-        schoolId,
+        schoolId: selectedSchoolId,
         evidenceRequirementId,
         files: data.files,
         parentalConsentFiles: data.parentalConsentFiles,
@@ -337,6 +355,33 @@ export default function EvidenceSubmissionForm({
 
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* School Selector - only show for admin/partner */}
+              {isAdminOrPartner && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium text-gray-700">
+                    Select School *
+                  </label>
+                  <Select 
+                    value={selectedSchoolId} 
+                    onValueChange={setSelectedSchoolId}
+                  >
+                    <SelectTrigger data-testid="select-school">
+                      <SelectValue placeholder="Choose a school..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {schools.map((school) => (
+                        <SelectItem key={school.id} value={school.id}>
+                          {school.name} ({school.country})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {!selectedSchoolId && (
+                    <p className="text-xs text-red-600">Please select a school before submitting evidence</p>
+                  )}
+                </div>
+              )}
+              
               {/* Program Stage - only show if not pre-selected */}
               {!preSelectedStage && (
                 <FormField

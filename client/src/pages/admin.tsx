@@ -123,6 +123,10 @@ interface SchoolData {
   country: string;
   currentStage: string;
   progressPercentage: number;
+  currentRound?: number;
+  inspireCompleted?: boolean;
+  investigateCompleted?: boolean;
+  actCompleted?: boolean;
   studentCount: number;
   createdAt: string;
   primaryContactId: string;
@@ -5565,6 +5569,14 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [viewingSchool, setViewingSchool] = useState<SchoolData | null>(null);
   const [editingSchoolLanguage, setEditingSchoolLanguage] = useState(false);
   const [schoolLanguageValue, setSchoolLanguageValue] = useState<string>('');
+  const [editingProgression, setEditingProgression] = useState(false);
+  const [progressionFormData, setProgressionFormData] = useState({
+    currentStage: 'inspire' as 'inspire' | 'investigate' | 'act',
+    currentRound: 1,
+    inspireCompleted: false,
+    investigateCompleted: false,
+    actCompleted: false,
+  });
   const [deletingSchool, setDeletingSchool] = useState<SchoolData | null>(null);
   const [bulkEvidenceDialogOpen, setBulkEvidenceDialogOpen] = useState(false);
   const [bulkSchoolDialogOpen, setBulkSchoolDialogOpen] = useState(false);
@@ -6482,6 +6494,45 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       toast({
         title: "Update Failed",
         description: error.message || "Failed to update school language. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Update school progression mutation
+  const updateSchoolProgressionMutation = useMutation({
+    mutationFn: async ({ schoolId, updates }: { 
+      schoolId: string; 
+      updates: {
+        currentStage?: 'inspire' | 'investigate' | 'act';
+        currentRound?: number;
+        inspireCompleted?: boolean;
+        investigateCompleted?: boolean;
+        actCompleted?: boolean;
+      }
+    }) => {
+      return await apiRequest('PUT', `/api/admin/schools/${schoolId}/progression`, updates);
+    },
+    onSuccess: (data, variables) => {
+      toast({
+        title: "Progression Updated",
+        description: "School progression has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/school-progress'] });
+      // Update the viewingSchool state to reflect the change immediately
+      if (viewingSchool && data.school) {
+        setViewingSchool({
+          ...viewingSchool,
+          ...data.school
+        });
+      }
+      setEditingProgression(false);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update school progression. Please try again.",
         variant: "destructive",
       });
     },
@@ -9768,6 +9819,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   </div>
                 </div>
                 <div>
+                  <label className="text-sm font-medium text-gray-600">Current Round</label>
+                  <p className="text-base" data-testid={`text-round-${viewingSchool.id}`}>
+                    {viewingSchool.currentRound || 1}
+                  </p>
+                </div>
+                <div>
                   <label className="text-sm font-medium text-gray-600">Student Count</label>
                   <p className="text-base" data-testid={`text-students-${viewingSchool.id}`}>
                     {viewingSchool.studentCount || 'N/A'}
@@ -9789,6 +9846,162 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   </p>
                 </div>
               )}
+
+              {/* Manage Progression Card */}
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center justify-between text-lg">
+                    <div className="flex items-center gap-2">
+                      <Target className="h-5 w-5 text-pcs_blue" />
+                      Manage Progression
+                    </div>
+                    {!editingProgression && (
+                      <Button 
+                        size="sm" 
+                        variant="outline"
+                        onClick={() => {
+                          setEditingProgression(true);
+                          setProgressionFormData({
+                            currentStage: viewingSchool.currentStage as 'inspire' | 'investigate' | 'act',
+                            currentRound: viewingSchool.currentRound || 1,
+                            inspireCompleted: viewingSchool.inspireCompleted || false,
+                            investigateCompleted: viewingSchool.investigateCompleted || false,
+                            actCompleted: viewingSchool.actCompleted || false,
+                          });
+                        }}
+                        data-testid={`button-edit-progression-${viewingSchool.id}`}
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        Edit Progression
+                      </Button>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {editingProgression ? (
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Current Stage</label>
+                          <Select
+                            value={progressionFormData.currentStage}
+                            onValueChange={(value) => 
+                              setProgressionFormData({
+                                ...progressionFormData,
+                                currentStage: value as 'inspire' | 'investigate' | 'act'
+                              })
+                            }
+                          >
+                            <SelectTrigger data-testid={`select-stage-${viewingSchool.id}`}>
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="inspire">Inspire</SelectItem>
+                              <SelectItem value="investigate">Investigate</SelectItem>
+                              <SelectItem value="act">Act</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div>
+                          <label className="text-sm font-medium text-gray-700">Current Round</label>
+                          <Input
+                            type="number"
+                            min="1"
+                            value={progressionFormData.currentRound}
+                            onChange={(e) => 
+                              setProgressionFormData({
+                                ...progressionFormData,
+                                currentRound: parseInt(e.target.value) || 1
+                              })
+                            }
+                            data-testid={`input-round-${viewingSchool.id}`}
+                          />
+                        </div>
+                      </div>
+                      <div className="space-y-2">
+                        <label className="text-sm font-medium text-gray-700">Stage Completion</label>
+                        <div className="flex items-center gap-4">
+                          <label className="flex items-center gap-2">
+                            <Checkbox
+                              checked={progressionFormData.inspireCompleted}
+                              onCheckedChange={(checked) => 
+                                setProgressionFormData({
+                                  ...progressionFormData,
+                                  inspireCompleted: checked as boolean
+                                })
+                              }
+                              data-testid={`checkbox-inspire-${viewingSchool.id}`}
+                            />
+                            <span className="text-sm">Inspire Completed</span>
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <Checkbox
+                              checked={progressionFormData.investigateCompleted}
+                              onCheckedChange={(checked) => 
+                                setProgressionFormData({
+                                  ...progressionFormData,
+                                  investigateCompleted: checked as boolean
+                                })
+                              }
+                              data-testid={`checkbox-investigate-${viewingSchool.id}`}
+                            />
+                            <span className="text-sm">Investigate Completed</span>
+                          </label>
+                          <label className="flex items-center gap-2">
+                            <Checkbox
+                              checked={progressionFormData.actCompleted}
+                              onCheckedChange={(checked) => 
+                                setProgressionFormData({
+                                  ...progressionFormData,
+                                  actCompleted: checked as boolean
+                                })
+                              }
+                              data-testid={`checkbox-act-${viewingSchool.id}`}
+                            />
+                            <span className="text-sm">Act Completed</span>
+                          </label>
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button 
+                          variant="outline"
+                          onClick={() => setEditingProgression(false)}
+                          data-testid={`button-cancel-progression-${viewingSchool.id}`}
+                        >
+                          Cancel
+                        </Button>
+                        <Button 
+                          onClick={() => {
+                            updateSchoolProgressionMutation.mutate({
+                              schoolId: viewingSchool.id,
+                              updates: progressionFormData
+                            });
+                          }}
+                          disabled={updateSchoolProgressionMutation.isPending}
+                          className="bg-pcs_blue hover:bg-pcs_blue/90"
+                          data-testid={`button-save-progression-${viewingSchool.id}`}
+                        >
+                          {updateSchoolProgressionMutation.isPending ? 'Saving...' : 'Save Changes'}
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-sm text-gray-600">
+                      <p>Use this section to manually set the school's progression stage, round, and completion status. This allows you to override the automatic progression based on evidence submission.</p>
+                      <div className="mt-3 space-y-1">
+                        <p><strong>Current Stage:</strong> {viewingSchool.currentStage}</p>
+                        <p><strong>Current Round:</strong> {viewingSchool.currentRound || 1}</p>
+                        <p><strong>Stage Completion:</strong></p>
+                        <ul className="ml-4 list-disc">
+                          <li>Inspire: {viewingSchool.inspireCompleted ? '✓ Completed' : '○ Not completed'}</li>
+                          <li>Investigate: {viewingSchool.investigateCompleted ? '✓ Completed' : '○ Not completed'}</li>
+                          <li>Act: {viewingSchool.actCompleted ? '✓ Completed' : '○ Not completed'}</li>
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
 
               {/* Reduction Promises Impact Card */}
               <Card className="mt-4">
