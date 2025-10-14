@@ -6,7 +6,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, type VerificationRequest, users } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users } from "@shared/schema";
 import { nanoid } from 'nanoid';
 import { z } from "zod";
 import * as XLSX from 'xlsx';
@@ -3023,6 +3023,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error updating case study featured status:", error);
       res.status(500).json({ message: "Failed to update case study" });
+    }
+  });
+
+  // Create new case study
+  app.post('/api/admin/case-studies', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const validatedData = insertCaseStudySchema.parse(req.body);
+      
+      const caseStudy = await storage.createCaseStudy(validatedData);
+      
+      // Fetch the case study with school info joined
+      const caseStudyWithSchool = await storage.getCaseStudyById(caseStudy.id);
+      
+      res.status(201).json(caseStudyWithSchool || caseStudy);
+    } catch (error) {
+      console.error("Error creating case study:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create case study" });
+    }
+  });
+
+  // Update case study
+  app.put('/api/admin/case-studies/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const validatedData = insertCaseStudySchema.partial().parse(req.body);
+      
+      const caseStudy = await storage.updateCaseStudy(req.params.id, validatedData);
+      
+      if (!caseStudy) {
+        return res.status(404).json({ message: "Case study not found" });
+      }
+
+      // Fetch the updated case study with school info joined
+      const caseStudyWithSchool = await storage.getCaseStudyById(caseStudy.id);
+      
+      res.json(caseStudyWithSchool || caseStudy);
+    } catch (error) {
+      console.error("Error updating case study:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Validation error", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update case study" });
+    }
+  });
+
+  // Delete case study
+  app.delete('/api/admin/case-studies/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const deleted = await storage.deleteCaseStudy(req.params.id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Case study not found" });
+      }
+
+      res.json({ message: "Case study deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting case study:", error);
+      res.status(500).json({ message: "Failed to delete case study" });
     }
   });
 

@@ -100,7 +100,8 @@ import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
-import type { ReductionPromise, Event, EventRegistration, EvidenceWithSchool } from "@shared/schema";
+import { CaseStudyEditor } from "@/components/admin/CaseStudyEditor";
+import type { ReductionPromise, Event, EventRegistration, EvidenceWithSchool, CaseStudy } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
 import { format, parseISO } from "date-fns";
 
@@ -5659,14 +5660,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     stage: '',
     featured: '',
   });
-  const [createCaseStudyData, setCreateCaseStudyData] = useState<{
-    evidenceId: string;
-    title: string;
-    description: string;
-    impact: string;
-    imageUrl: string;
-    featured: boolean;
-  } | null>(null);
+  const [editorOpen, setEditorOpen] = useState(false);
+  const [editingCaseStudy, setEditingCaseStudy] = useState<CaseStudy | null>(null);
+  const [deletingCaseStudy, setDeletingCaseStudy] = useState<CaseStudy | null>(null);
   const [reviewData, setReviewData] = useState<{
     evidenceId: string;
     action: 'approved' | 'rejected';
@@ -5957,13 +5953,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       return res.json();
     },
     enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'reviews'),
-    retry: false,
-  });
-
-  // Approved public evidence query for case study creation
-  const { data: approvedPublicEvidence = [] } = useQuery<PendingEvidence[]>({
-    queryKey: ['/api/admin/evidence/approved-public'],
-    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && createCaseStudyData !== null),
     retry: false,
   });
 
@@ -6913,30 +6902,73 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   });
 
   // Case study mutations
-  const createCaseStudyFromEvidenceMutation = useMutation({
-    mutationFn: async (data: {
-      evidenceId: string;
-      title: string;
-      description: string;
-      impact: string;
-      imageUrl: string;
-      featured: boolean;
-    }) => {
-      await apiRequest('POST', '/api/admin/case-studies/from-evidence', data);
+  const createCaseStudyMutation = useMutation({
+    mutationFn: async (caseStudy: any) => {
+      // Transform to insert schema - remove id and auto-generated fields
+      const { id, createdAt, updatedAt, schoolName, schoolCountry, ...insertData } = caseStudy;
+      return await apiRequest('POST', '/api/admin/case-studies', insertData);
     },
     onSuccess: () => {
       toast({
         title: "Case Study Created",
-        description: "Case study has been successfully created from evidence.",
+        description: "Case study has been successfully created.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
-      setCreateCaseStudyData(null);
+      setEditorOpen(false);
+      setEditingCaseStudy(null);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       toast({
         title: "Creation Failed",
-        description: "Failed to create case study. Please try again.",
+        description: error.message || "Failed to create case study. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateCaseStudyMutation = useMutation({
+    mutationFn: async (data: any) => {
+      // Remove id and auto-generated/computed fields before sending update
+      const { id, createdAt, updatedAt, schoolName, schoolCountry, ...updates } = data;
+      return await apiRequest('PUT', `/api/admin/case-studies/${id}`, updates);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Case Study Updated",
+        description: "Case study has been successfully updated.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      setEditorOpen(false);
+      setEditingCaseStudy(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Update Failed",
+        description: error.message || "Failed to update case study. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteCaseStudyMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest('DELETE', `/api/admin/case-studies/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Case Study Deleted",
+        description: "Case study has been successfully deleted.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      setDeletingCaseStudy(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete case study. Please try again.",
         variant: "destructive",
       });
     },
@@ -8228,19 +8260,15 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     </SelectContent>
                   </Select>
                   <Button
-                    onClick={() => setCreateCaseStudyData({
-                      evidenceId: '',
-                      title: '',
-                      description: '',
-                      impact: '',
-                      imageUrl: '',
-                      featured: false
-                    })}
+                    onClick={() => {
+                      setEditingCaseStudy(null);
+                      setEditorOpen(true);
+                    }}
                     className="bg-pcs_blue hover:bg-pcs_blue/90"
                     data-testid="button-create-case-study"
                   >
                     <Plus className="h-4 w-4 mr-2" />
-                    Create from Evidence
+                    Create Case Study
                   </Button>
                 </div>
 
@@ -8289,19 +8317,53 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                             </div>
                           </div>
                           <div className="flex flex-col gap-2">
-                            <Button
-                              size="sm"
-                              variant={caseStudy.featured ? "default" : "outline"}
-                              onClick={() => updateCaseStudyFeaturedMutation.mutate({
-                                id: caseStudy.id,
-                                featured: !caseStudy.featured
-                              })}
-                              disabled={updateCaseStudyFeaturedMutation.isPending}
-                              data-testid={`button-toggle-featured-${caseStudy.id}`}
-                            >
-                              <Star className="h-4 w-4 mr-1" />
-                              {caseStudy.featured ? 'Unfeature' : 'Feature'}
-                            </Button>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => window.open(`/case-studies/${caseStudy.id}`, '_blank')}
+                                data-testid={`button-preview-${caseStudy.id}`}
+                              >
+                                <Eye className="h-4 w-4 mr-1" />
+                                Preview
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  setEditingCaseStudy(caseStudy as CaseStudy);
+                                  setEditorOpen(true);
+                                }}
+                                data-testid={`button-edit-${caseStudy.id}`}
+                              >
+                                <Edit className="h-4 w-4 mr-1" />
+                                Edit
+                              </Button>
+                            </div>
+                            <div className="flex gap-2">
+                              <Button
+                                size="sm"
+                                variant={caseStudy.featured ? "default" : "outline"}
+                                onClick={() => updateCaseStudyFeaturedMutation.mutate({
+                                  id: caseStudy.id,
+                                  featured: !caseStudy.featured
+                                })}
+                                disabled={updateCaseStudyFeaturedMutation.isPending}
+                                data-testid={`button-toggle-featured-${caseStudy.id}`}
+                                className="flex-1"
+                              >
+                                <Star className="h-4 w-4 mr-1" />
+                                {caseStudy.featured ? 'Unfeature' : 'Feature'}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => setDeletingCaseStudy(caseStudy as CaseStudy)}
+                                data-testid={`button-delete-${caseStudy.id}`}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                         </div>
                       </CardContent>
@@ -10343,220 +10405,47 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         </div>
       )}
 
-      {/* Create Case Study Dialog */}
-      {createCaseStudyData && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold text-navy mb-4">
-              Create Case Study from Evidence
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Select Evidence <span className="text-red-500">*</span>
-                </label>
-                <p className="text-sm text-gray-500 mb-3">
-                  Choose from approved public evidence submissions
-                </p>
-                {approvedPublicEvidence.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
-                    <p>No approved public evidence available</p>
-                    <p className="text-sm mt-1">Evidence must be approved and set to public visibility</p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3 max-h-64 overflow-y-auto border rounded-lg p-3">
-                    {approvedPublicEvidence.map((evidence) => (
-                      <div
-                        key={evidence.id}
-                        className={`relative cursor-pointer border-2 rounded-lg overflow-hidden transition-all ${
-                          createCaseStudyData.evidenceId === evidence.id
-                            ? 'border-pcs_blue ring-2 ring-pcs_blue'
-                            : 'border-gray-200 hover:border-pcs_blue'
-                        }`}
-                        onClick={() => setCreateCaseStudyData(prev => prev ? { ...prev, evidenceId: evidence.id } : null)}
-                        data-testid={`evidence-thumbnail-${evidence.id}`}
-                      >
-                        <div className="aspect-video bg-gray-100 flex items-center justify-center">
-                          {evidence.files && evidence.files.length > 0 && evidence.files[0].type?.includes('image') ? (
-                            <img
-                              src={evidence.files[0].url}
-                              alt={evidence.title}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="text-gray-400 text-center p-2">
-                              <span className="text-2xl">📄</span>
-                              <p className="text-xs mt-1">No image</p>
-                            </div>
-                          )}
-                        </div>
-                        <div className="p-2 bg-white">
-                          <p className="text-xs font-medium text-navy line-clamp-2">{evidence.title}</p>
-                          <p className="text-xs text-gray-500">{evidence.stage}</p>
-                        </div>
-                        {createCaseStudyData.evidenceId === evidence.id && (
-                          <div className="absolute top-1 right-1 bg-pcs_blue text-white rounded-full p-1">
-                            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                              <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                            </svg>
-                          </div>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Case Study Title <span className="text-red-500">*</span>
-                </label>
-                <Input
-                  value={createCaseStudyData.title}
-                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, title: e.target.value } : null)}
-                  placeholder="Enter compelling case study title..."
-                  data-testid="input-case-study-title"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Description
-                </label>
-                <Textarea
-                  value={createCaseStudyData.description}
-                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, description: e.target.value } : null)}
-                  placeholder="Describe the case study (will use evidence description if left empty)..."
-                  rows={3}
-                  data-testid="textarea-case-study-description"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Impact Statement
-                </label>
-                <Textarea
-                  value={createCaseStudyData.impact}
-                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, impact: e.target.value } : null)}
-                  placeholder="Describe the impact and outcomes achieved..."
-                  rows={3}
-                  data-testid="textarea-case-study-impact"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Case Study Image
-                </label>
-                <div className="space-y-3">
-                  <div>
-                    <label className="block text-xs text-gray-500 mb-1">Upload Image</label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        if (file) {
-                          const formData = new FormData();
-                          formData.append('file', file);
-                          formData.append('directory', 'public');
-                          
-                          try {
-                            const response = await fetch('/api/object-storage/upload', {
-                              method: 'POST',
-                              body: formData,
-                            });
-                            
-                            if (response.ok) {
-                              const data = await response.json();
-                              setCreateCaseStudyData(prev => prev ? { ...prev, imageUrl: data.url } : null);
-                              toast({
-                                title: "Image Uploaded",
-                                description: "Image uploaded successfully!",
-                              });
-                            } else {
-                              throw new Error('Upload failed');
-                            }
-                          } catch (error) {
-                            toast({
-                              title: "Upload Error",
-                              description: "Failed to upload image. Please try again.",
-                              variant: "destructive",
-                            });
-                          }
-                        }
-                      }}
-                      className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-pcs_blue file:text-white hover:file:bg-pcs_blue/90"
-                      data-testid="input-case-study-image-upload"
-                    />
-                  </div>
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-gray-200" />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-white px-2 text-gray-500">Or enter URL</span>
-                    </div>
-                  </div>
-                  <Input
-                    value={createCaseStudyData.imageUrl}
-                    onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, imageUrl: e.target.value } : null)}
-                    placeholder="Enter image URL..."
-                    data-testid="input-case-study-image-url"
-                  />
-                  {createCaseStudyData.imageUrl && (
-                    <div className="mt-2">
-                      <img 
-                        src={createCaseStudyData.imageUrl} 
-                        alt="Preview" 
-                        className="w-full h-32 object-cover rounded-md border border-gray-200"
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-              <div className="flex items-center space-x-2">
-                <input
-                  type="checkbox"
-                  id="featured"
-                  checked={createCaseStudyData.featured}
-                  onChange={(e) => setCreateCaseStudyData(prev => prev ? { ...prev, featured: e.target.checked } : null)}
-                  data-testid="checkbox-case-study-featured"
-                />
-                <label htmlFor="featured" className="text-sm font-medium text-gray-700">
-                  Mark as featured for Global Movement section
-                </label>
-              </div>
-              
-              <div className="flex gap-3 pt-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setCreateCaseStudyData(null)}
-                  className="flex-1"
-                  data-testid="button-cancel-case-study"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  className="flex-1 bg-pcs_blue hover:bg-pcs_blue/90"
-                  onClick={() => {
-                    if (!createCaseStudyData.evidenceId.trim() || !createCaseStudyData.title.trim()) {
-                      toast({
-                        title: "Required Fields Missing",
-                        description: "Please provide evidence ID and title.",
-                        variant: "destructive",
-                      });
-                      return;
-                    }
-                    createCaseStudyFromEvidenceMutation.mutate(createCaseStudyData);
-                  }}
-                  disabled={createCaseStudyFromEvidenceMutation.isPending}
-                  data-testid="button-create-case-study-confirm"
-                >
-                  {createCaseStudyFromEvidenceMutation.isPending ? 'Creating...' : 'Create Case Study'}
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Case Study Editor Dialog */}
+      <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
+        <DialogContent className="max-w-7xl max-h-[95vh] p-0" data-testid="dialog-case-study-editor">
+          <CaseStudyEditor
+            caseStudy={editingCaseStudy || undefined}
+            onSave={(data) => {
+              if (editingCaseStudy) {
+                updateCaseStudyMutation.mutate({ ...data, id: editingCaseStudy.id });
+              } else {
+                createCaseStudyMutation.mutate({ ...data, createdBy: user?.id || '' });
+              }
+            }}
+            onCancel={() => {
+              setEditorOpen(false);
+              setEditingCaseStudy(null);
+            }}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Case Study Confirmation */}
+      <AlertDialog open={!!deletingCaseStudy} onOpenChange={() => setDeletingCaseStudy(null)}>
+        <AlertDialogContent data-testid="dialog-delete-case-study">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Case Study</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{deletingCaseStudy?.title}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => deletingCaseStudy && deleteCaseStudyMutation.mutate(deletingCaseStudy.id)}
+              className="bg-red-600 hover:bg-red-700"
+              data-testid="button-confirm-delete"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* School Detail Dialog */}
       {viewingSchool && (

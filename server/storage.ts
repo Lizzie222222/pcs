@@ -231,7 +231,9 @@ export interface IStorage {
     limit?: number;
     offset?: number;
   }): Promise<CaseStudy[]>;
+  updateCaseStudy(id: string, updates: Partial<InsertCaseStudy>): Promise<CaseStudy | undefined>;
   updateCaseStudyFeatured(id: string, featured: boolean): Promise<CaseStudy | undefined>;
+  deleteCaseStudy(id: string): Promise<boolean>;
   getGlobalMovementData(): Promise<{
     featuredCaseStudies: CaseStudy[];
     statistics: {
@@ -1839,6 +1841,23 @@ export class DatabaseStorage implements IStorage {
       .where(eq(caseStudies.id, id))
       .returning();
     return caseStudy;
+  }
+
+  async updateCaseStudy(id: string, updates: Partial<InsertCaseStudy>): Promise<CaseStudy | undefined> {
+    const [caseStudy] = await db
+      .update(caseStudies)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(caseStudies.id, id))
+      .returning();
+    return caseStudy;
+  }
+
+  async deleteCaseStudy(id: string): Promise<boolean> {
+    const result = await db
+      .delete(caseStudies)
+      .where(eq(caseStudies.id, id))
+      .returning();
+    return result.length > 0;
   }
 
   async getGlobalMovementData(): Promise<{
