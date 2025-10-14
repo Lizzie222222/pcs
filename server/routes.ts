@@ -1790,6 +1790,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get upload URL for case study files
+  app.post("/api/case-studies/upload", isAuthenticated, async (req, res) => {
+    const objectStorageService = new ObjectStorageService();
+    try {
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      res.json({ uploadURL });
+    } catch (error) {
+      console.error("Error getting upload URL:", error);
+      res.status(500).json({ error: "Failed to get upload URL" });
+    }
+  });
+
+  // Set ACL policy for uploaded case study files
+  app.put("/api/case-studies/set-acl", isAuthenticated, async (req: any, res) => {
+    if (!req.body.fileURL) {
+      return res.status(400).json({ error: "fileURL is required" });
+    }
+
+    const userId = req.user?.id;
+    const visibility = req.body.visibility || 'public';
+    const filename = req.body.filename;
+
+    try {
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.fileURL,
+        {
+          owner: userId,
+          visibility: visibility,
+        },
+        filename,
+      );
+
+      res.status(200).json({ objectPath });
+    } catch (error) {
+      console.error("Error setting file ACL:", error);
+      res.status(500).json({ error: "Failed to set file permissions" });
+    }
+  });
+
   // Set ACL policy for uploaded evidence files
   app.put("/api/evidence-files", isAuthenticated, async (req: any, res) => {
     if (!req.body.fileURL) {
@@ -5630,16 +5670,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
 
       // Set object ACL to private
+      const userId = req.user?.id || '';
       const normalizedPath = await objectStorageService.trySetObjectEntityAclPolicy(
         objectPath,
-        { visibility: 'private' },
+        { 
+          owner: userId,
+          visibility: 'private'
+        },
         filename
       );
 
       // Create submission record
       const submission = await storage.createPrintableFormSubmission({
         schoolId,
-        submittedBy: req.user.id,
+        submittedBy: userId,
         formType,
         filePath: normalizedPath,
         originalFilename: filename,
