@@ -4,7 +4,10 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { CheckCircle, Circle, Lock, Lightbulb, Search, Hand, Clock, X, ExternalLink } from "lucide-react";
+import { CheckCircle, Circle, Lock, Clock, X, ExternalLink } from "lucide-react";
+import inspireIcon from "@assets/PSC - Inspire_1760461719847.png";
+import investigateIcon from "@assets/PSC - Investigate_1760461719848.png";
+import actIcon from "@assets/PSC - Act_1760461719847.png";
 import { useTranslation } from "react-i18next";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import { PlasticWasteAudit } from "@/components/PlasticWasteAudit";
@@ -78,7 +81,7 @@ export default function ProgressTracker({
       id: 'inspire',
       title: t('progress.inspire.title'),
       description: t('progress.inspire.description'),
-      icon: Lightbulb,
+      icon: inspireIcon,
       completed: inspireCompleted,
       color: 'teal',
     },
@@ -86,7 +89,7 @@ export default function ProgressTracker({
       id: 'investigate',
       title: t('progress.investigate.title'), 
       description: t('progress.investigate.description'),
-      icon: Search,
+      icon: investigateIcon,
       completed: investigateCompleted,
       color: 'yellow',
     },
@@ -94,7 +97,7 @@ export default function ProgressTracker({
       id: 'act',
       title: t('progress.act.title'),
       description: t('progress.act.description'),
-      icon: Hand,
+      icon: actIcon,
       completed: actCompleted,
       color: 'coral',
     },
@@ -236,7 +239,7 @@ export default function ProgressTracker({
                       status === 'current' ? getStageGradientClasses(stage.color) :
                       'bg-gray-300 text-gray-600'
                     }`}>
-                      <Icon className="h-8 w-8" />
+                      <img src={Icon} alt={stage.title} className="h-10 w-10 object-contain" />
                     </div>
                     {status === 'completed' && (
                       <div className="absolute -top-1 -right-1 w-7 h-7 bg-green-600 rounded-full flex items-center justify-center text-white shadow-lg animate-bounce">

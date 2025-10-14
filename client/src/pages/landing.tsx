@@ -19,9 +19,9 @@ const createBlurPlaceholder = (color: string) => generateBlurDataURL(`
   </svg>
 `);
 import logoUrl from "@assets/Logo_1757848498470.png";
-import inspireIcon from "@assets/Inspire_1757862013793.png";
-import investigateIcon from "@assets/Investigate_1757862013794.png";
-import actIcon from "@assets/plastic_bottles_and_glass_in_recycling_boxes_static_1757862163412.png";
+import inspireIcon from "@assets/PSC - Inspire_1760461719847.png";
+import investigateIcon from "@assets/PSC - Investigate_1760461719848.png";
+import actIcon from "@assets/PSC - Act_1760461719847.png";
 import inspireVideo from "@assets/inspire_1757867031379.mp4";
 import investigateVideo from "@assets/investigate_1757867031380.mp4";
 import actVideo from "@assets/ACT_1757867031379.mp4";
