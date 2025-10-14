@@ -80,7 +80,9 @@ import {
   Upload,
   Image as ImageIcon,
   FileVideo,
-  Music
+  Music,
+  Building,
+  Check
 } from "lucide-react";
 
 import { 
@@ -4421,410 +4423,210 @@ function EmailManagementSection({
   );
 }
 
-function MediaLibraryTab() {
+function EvidenceGalleryTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
   // State management
   const [filters, setFilters] = useState({
-    mediaType: '',
-    tags: [] as string[],
-    search: '',
+    status: '',
+    stage: '',
+    country: '',
+    visibility: '',
   });
-  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
-  const [editDialogOpen, setEditDialogOpen] = useState(false);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteWarningDialogOpen, setDeleteWarningDialogOpen] = useState(false);
-  const [createTagDialogOpen, setCreateTagDialogOpen] = useState(false);
-  const [selectedAsset, setSelectedAsset] = useState<any>(null);
-  const [assetUsage, setAssetUsage] = useState<any[]>([]);
-  const [searchDebounce, setSearchDebounce] = useState('');
+  const [selectedEvidence, setSelectedEvidence] = useState<any>(null);
+  const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
+  const [schoolHistoryDialogOpen, setSchoolHistoryDialogOpen] = useState(false);
+  const [selectedSchool, setSelectedSchool] = useState<any>(null);
   
-  // Upload form state
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploadMediaType, setUploadMediaType] = useState<'image' | 'video' | 'document' | 'audio'>('image');
-  const [uploadAltText, setUploadAltText] = useState('');
-  const [uploadDescription, setUploadDescription] = useState('');
-  const [uploadVisibility, setUploadVisibility] = useState<'private' | 'public'>('private');
-  const [uploadTags, setUploadTags] = useState<string[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-  
-  // Edit form state
-  const [editAltText, setEditAltText] = useState('');
-  const [editDescription, setEditDescription] = useState('');
-  const [editVisibility, setEditVisibility] = useState<'private' | 'public'>('private');
-  const [editTags, setEditTags] = useState<string[]>([]);
-  
-  // Tag creation state
-  const [newTagName, setNewTagName] = useState('');
-  const [newTagDescription, setNewTagDescription] = useState('');
-  
-  // Debounce search
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      setFilters(prev => ({ ...prev, search: searchDebounce }));
-    }, 300);
-    return () => clearTimeout(timeout);
-  }, [searchDebounce]);
-  
-  // Fetch media assets
-  const { data: assets = [], isLoading: assetsLoading } = useQuery({
-    queryKey: ['/api/admin/media-assets', filters],
+  // Fetch all evidence with filters
+  const { data: evidenceList = [], isLoading } = useQuery({
+    queryKey: ['/api/admin/evidence', filters],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.mediaType) params.append('mediaType', filters.mediaType);
-      if (filters.search) params.append('search', filters.search);
-      if (filters.tags.length > 0) {
-        filters.tags.forEach(tag => params.append('tags', tag));
-      }
+      if (filters.status) params.append('status', filters.status);
+      if (filters.stage) params.append('stage', filters.stage);
+      if (filters.country) params.append('country', filters.country);
+      if (filters.visibility) params.append('visibility', filters.visibility);
       
-      const response = await fetch(`/api/admin/media-assets?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch assets');
+      const response = await fetch(`/api/admin/evidence?${params}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch evidence');
       return response.json();
     },
   });
-  
-  // Fetch tags
-  const { data: tags = [], isLoading: tagsLoading } = useQuery({
-    queryKey: ['/api/admin/media-tags'],
+
+  // Fetch school history when selected
+  const { data: schoolHistory = [], isLoading: schoolHistoryLoading } = useQuery({
+    queryKey: ['/api/admin/evidence', { schoolId: selectedSchool?.id }],
     queryFn: async () => {
-      const response = await fetch('/api/admin/media-tags');
-      if (!response.ok) throw new Error('Failed to fetch tags');
+      if (!selectedSchool?.id) return [];
+      const params = new URLSearchParams({ schoolId: selectedSchool.id });
+      const response = await fetch(`/api/admin/evidence?${params}`, {
+        credentials: 'include',
+      });
+      if (!response.ok) throw new Error('Failed to fetch school history');
       return response.json();
     },
+    enabled: !!selectedSchool?.id,
   });
-  
-  // Upload mutation (3-step process)
-  const uploadAssetMutation = useMutation({
-    mutationFn: async (file: File) => {
-      setIsUploading(true);
-      try {
-        // Step 1: Get signed upload URL
-        const urlResponse = await fetch('/api/admin/media-assets/upload-url', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            filename: file.name,
-            mimeType: file.type,
-            fileSize: file.size,
-            mediaType: uploadMediaType,
-          }),
-        });
-        
-        if (!urlResponse.ok) {
-          const error = await urlResponse.json();
-          throw new Error(error.message || 'Failed to get upload URL');
-        }
-        
-        const { uploadUrl, objectKey } = await urlResponse.json();
-        
-        // Step 2: Upload to object storage
-        const uploadResponse = await fetch(uploadUrl, {
-          method: 'PUT',
-          headers: { 'Content-Type': file.type },
-          body: file,
-        });
-        
-        if (!uploadResponse.ok) throw new Error('Failed to upload file');
-        
-        // Step 3: Create media asset record
-        const assetResponse = await fetch('/api/admin/media-assets', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            objectKey,
-            filename: file.name,
-            mimeType: file.type,
-            fileSize: file.size,
-            mediaType: uploadMediaType,
-            storageScope: 'global',
-            altText: uploadAltText || null,
-            description: uploadDescription || null,
-            visibility: uploadVisibility,
-            tagIds: uploadTags,
-          }),
-        });
-        
-        if (!assetResponse.ok) {
-          const error = await assetResponse.json();
-          throw new Error(error.message || 'Failed to create asset record');
-        }
-        
-        return assetResponse.json();
-      } finally {
-        setIsUploading(false);
-      }
+
+  // Fetch countries for filter
+  const { data: countries = [] } = useQuery<string[]>({
+    queryKey: ['/api/countries'],
+  });
+
+  // Update evidence status mutation
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: 'approved' | 'rejected' }) => {
+      const response = await apiRequest('PATCH', `/api/admin/evidence/${id}/status`, { status });
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/media-assets'] });
-      toast({ title: "Success", description: "Media asset uploaded successfully" });
-      setUploadDialogOpen(false);
-      setUploadFile(null);
-      setUploadAltText('');
-      setUploadDescription('');
-      setUploadTags([]);
-    },
-    onError: (error: any) => {
-      toast({ 
-        title: "Upload Failed", 
-        description: error.message || "Failed to upload media asset",
-        variant: "destructive" 
-      });
-    },
-  });
-  
-  // Update metadata mutation
-  const updateMetadataMutation = useMutation({
-    mutationFn: async ({ id, updates }: { id: string; updates: any }) => {
-      const response = await fetch(`/api/admin/media-assets/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(updates),
-      });
-      if (!response.ok) throw new Error('Failed to update asset');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/media-assets'] });
-      toast({ title: "Success", description: "Asset metadata updated successfully" });
-      setEditDialogOpen(false);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
+      toast({ title: "Success", description: "Evidence status updated" });
     },
     onError: () => {
-      toast({ 
-        title: "Update Failed", 
-        description: "Failed to update asset metadata",
-        variant: "destructive" 
-      });
+      toast({ title: "Error", description: "Failed to update evidence status", variant: "destructive" });
     },
   });
-  
-  // Delete asset mutation
-  const deleteAssetMutation = useMutation({
-    mutationFn: async (id: string) => {
-      const response = await fetch(`/api/admin/media-assets/${id}`, {
-        method: 'DELETE',
-      });
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Failed to delete asset');
-      }
-      return response.json();
+
+  // Toggle featured mutation
+  const toggleFeaturedMutation = useMutation({
+    mutationFn: async ({ id, isFeatured }: { id: string; isFeatured: boolean }) => {
+      const response = await apiRequest('PATCH', `/api/admin/evidence/${id}/featured`, { isFeatured: !isFeatured });
+      return response;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/media-assets'] });
-      toast({ title: "Success", description: "Asset deleted successfully" });
-      setDeleteDialogOpen(false);
-      setSelectedAsset(null);
-    },
-    onError: (error: any) => {
-      toast({ 
-        title: "Delete Failed", 
-        description: error.message || "Failed to delete asset",
-        variant: "destructive" 
-      });
-    },
-  });
-  
-  // Create tag mutation
-  const createTagMutation = useMutation({
-    mutationFn: async (tagData: { name: string; description?: string }) => {
-      const response = await fetch('/api/admin/media-tags', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(tagData),
-      });
-      if (!response.ok) throw new Error('Failed to create tag');
-      return response.json();
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/media-tags'] });
-      toast({ title: "Success", description: "Tag created successfully" });
-      setCreateTagDialogOpen(false);
-      setNewTagName('');
-      setNewTagDescription('');
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
+      toast({ title: "Success", description: "Evidence featured status updated" });
     },
     onError: () => {
-      toast({ 
-        title: "Creation Failed", 
-        description: "Failed to create tag",
-        variant: "destructive" 
-      });
+      toast({ title: "Error", description: "Failed to update featured status", variant: "destructive" });
     },
   });
-  
-  // Update tags mutation
-  const updateTagsMutation = useMutation({
-    mutationFn: async ({ assetId, tagIds, currentTagIds }: { assetId: string; tagIds: string[]; currentTagIds: string[] }) => {
-      const toAttach = tagIds.filter(id => !currentTagIds.includes(id));
-      const toDetach = currentTagIds.filter(id => !tagIds.includes(id));
-      
-      if (toAttach.length > 0) {
-        await fetch(`/api/admin/media-assets/${assetId}/tags`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tagIds: toAttach }),
-        });
-      }
-      
-      if (toDetach.length > 0) {
-        await fetch(`/api/admin/media-assets/${assetId}/tags`, {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tagIds: toDetach }),
-        });
-      }
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/media-assets'] });
-    },
-  });
-  
-  // Check usage before delete
-  const checkUsageAndDelete = async (asset: any) => {
-    const response = await fetch(`/api/admin/media-assets/${asset.id}/usage`);
-    const usage = await response.json();
-    
-    if (usage.length > 0) {
-      setAssetUsage(usage);
-      setDeleteWarningDialogOpen(true);
-    } else {
-      setDeleteDialogOpen(true);
-    }
-    setSelectedAsset(asset);
-  };
-  
-  // Open edit dialog
-  const openEditDialog = (asset: any) => {
-    setSelectedAsset(asset);
-    setEditAltText(asset.altText || '');
-    setEditDescription(asset.description || '');
-    setEditVisibility(asset.visibility || 'private');
-    setEditTags([]); // TODO: Fetch asset tags
-    setEditDialogOpen(true);
-  };
-  
-  // Handle upload
-  const handleUpload = async () => {
-    if (!uploadFile) return;
-    
-    // Validate file size
-    if (uploadFile.size > 50 * 1024 * 1024) {
-      toast({ 
-        title: "File Too Large", 
-        description: "Maximum file size is 50MB",
-        variant: "destructive" 
-      });
-      return;
-    }
-    
-    await uploadAssetMutation.mutateAsync(uploadFile);
-  };
-  
-  // Handle save metadata
-  const handleSaveMetadata = async () => {
-    if (!selectedAsset) return;
-    
-    const updates = {
-      altText: editAltText || null,
-      description: editDescription || null,
-      visibility: editVisibility,
-    };
-    
-    await updateMetadataMutation.mutateAsync({ id: selectedAsset.id, updates });
-    // Also update tags if changed
-    // await updateTagsMutation.mutateAsync({ assetId: selectedAsset.id, tagIds: editTags, currentTagIds: [] });
-  };
-  
-  // Format file size
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-  };
-  
-  // Get media icon
-  const getMediaIcon = (mediaType: string) => {
-    switch (mediaType) {
-      case 'video': return <FileVideo className="h-24 w-24 text-gray-400" />;
-      case 'document': return <FileText className="h-24 w-24 text-gray-400" />;
-      case 'audio': return <Music className="h-24 w-24 text-gray-400" />;
-      default: return <ImageIcon className="h-24 w-24 text-gray-400" />;
+
+  // Get status badge color
+  const getStatusBadgeColor = (status: string) => {
+    switch (status) {
+      case 'approved': return 'bg-green-100 text-green-800';
+      case 'rejected': return 'bg-red-100 text-red-800';
+      case 'pending': return 'bg-yellow-100 text-yellow-800';
+      default: return 'bg-gray-100 text-gray-800';
     }
   };
-  
+
+  // Get stage badge color
+  const getStageBadgeColor = (stage: string) => {
+    switch (stage) {
+      case 'inspire': return 'bg-purple-100 text-purple-800';
+      case 'investigate': return 'bg-blue-100 text-blue-800';
+      case 'act': return 'bg-green-100 text-green-800';
+      default: return 'bg-gray-100 text-gray-800';
+    }
+  };
+
+  // Get thumbnail from files
+  const getThumbnail = (evidence: any) => {
+    const imageFile = evidence.files?.find((f: any) => 
+      f.mimeType?.startsWith('image/')
+    );
+    return imageFile?.signedUrl || null;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold text-navy">Media Library</h2>
-        <Button 
-          onClick={() => setUploadDialogOpen(true)} 
-          className="bg-pcs_blue hover:bg-pcs_blue/90"
-          data-testid="button-upload-media"
-        >
-          <Upload className="h-4 w-4 mr-2" />
-          Upload Media
-        </Button>
+        <div>
+          <h2 className="text-2xl font-bold text-navy">Evidence Gallery</h2>
+          <p className="text-gray-600 text-sm mt-1">Browse and manage all evidence submissions</p>
+        </div>
+        <div className="text-sm text-gray-600">
+          {evidenceList.length} {evidenceList.length === 1 ? 'submission' : 'submissions'}
+        </div>
       </div>
       
       {/* Filters */}
       <Card>
         <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Media Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Stage</label>
               <Select 
-                value={filters.mediaType || 'all'} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, mediaType: value === 'all' ? '' : value }))}
+                value={filters.stage || 'all'} 
+                onValueChange={(value) => setFilters(prev => ({ ...prev, stage: value === 'all' ? '' : value }))}
               >
-                <SelectTrigger data-testid="select-media-type-filter">
-                  <SelectValue placeholder="All Types" />
+                <SelectTrigger data-testid="select-stage-filter">
+                  <SelectValue placeholder="All Stages" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="image">Image</SelectItem>
-                  <SelectItem value="video">Video</SelectItem>
-                  <SelectItem value="document">Document</SelectItem>
-                  <SelectItem value="audio">Audio</SelectItem>
+                  <SelectItem value="all">All Stages</SelectItem>
+                  <SelectItem value="inspire">Inspire</SelectItem>
+                  <SelectItem value="investigate">Investigate</SelectItem>
+                  <SelectItem value="act">Act</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
               <Select 
-                value={filters.tags[0] || 'all'} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, tags: value === 'all' ? [] : [value] }))}
+                value={filters.country || 'all'} 
+                onValueChange={(value) => setFilters(prev => ({ ...prev, country: value === 'all' ? '' : value }))}
               >
-                <SelectTrigger data-testid="select-tags-filter">
-                  <SelectValue placeholder="All Tags" />
+                <SelectTrigger data-testid="select-country-filter">
+                  <SelectValue placeholder="All Countries" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Tags</SelectItem>
-                  {tags.map((tag: any) => (
-                    <SelectItem key={tag.id} value={tag.id}>{tag.name}</SelectItem>
+                  <SelectItem value="all">All Countries</SelectItem>
+                  {countries.map((country: string) => (
+                    <SelectItem key={country} value={country}>{country}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-              <Input
-                placeholder="Search filename, alt text, description..."
-                value={searchDebounce}
-                onChange={(e) => setSearchDebounce(e.target.value)}
-                data-testid="input-media-search"
-              />
+              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <Select 
+                value={filters.status || 'all'} 
+                onValueChange={(value) => setFilters(prev => ({ ...prev, status: value === 'all' ? '' : value }))}
+              >
+                <SelectTrigger data-testid="select-status-filter">
+                  <SelectValue placeholder="All Statuses" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="approved">Approved</SelectItem>
+                  <SelectItem value="rejected">Rejected</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
+              <Select 
+                value={filters.visibility || 'all'} 
+                onValueChange={(value) => setFilters(prev => ({ ...prev, visibility: value === 'all' ? '' : value }))}
+              >
+                <SelectTrigger data-testid="select-visibility-filter">
+                  <SelectValue placeholder="All Visibility" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Visibility</SelectItem>
+                  <SelectItem value="public">Public</SelectItem>
+                  <SelectItem value="private">Private</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             <div className="flex items-end">
               <Button 
                 variant="outline" 
-                onClick={() => {
-                  setFilters({ mediaType: '', tags: [], search: '' });
-                  setSearchDebounce('');
-                }}
+                onClick={() => setFilters({ status: '', stage: '', country: '', visibility: '' })}
                 data-testid="button-clear-filters"
               >
                 Clear Filters
@@ -4834,68 +4636,135 @@ function MediaLibraryTab() {
         </CardContent>
       </Card>
       
-      {/* Assets Grid */}
-      {assetsLoading ? (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map(i => (
+      {/* Evidence Grid */}
+      {isLoading ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
             <Card key={i} className="animate-pulse">
               <div className="h-48 bg-gray-200" />
-              <CardContent className="pt-4">
-                <div className="h-4 bg-gray-200 rounded mb-2" />
+              <CardContent className="pt-4 space-y-2">
+                <div className="h-4 bg-gray-200 rounded" />
+                <div className="h-3 bg-gray-200 rounded w-3/4" />
                 <div className="h-3 bg-gray-200 rounded w-1/2" />
               </CardContent>
             </Card>
           ))}
         </div>
-      ) : assets.length === 0 ? (
+      ) : evidenceList.length === 0 ? (
         <EmptyState 
-          icon={ImageIcon}
-          title="No media assets yet"
-          description="Upload your first media asset to get started"
+          icon={FileText}
+          title="No evidence submissions yet"
+          description="Evidence submissions will appear here once schools start uploading"
         />
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {assets.map((asset: any) => (
-            <Card key={asset.id} data-testid={`card-media-asset-${asset.id}`}>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {evidenceList.map((evidence: any) => (
+            <Card key={evidence.id} className="overflow-hidden hover:shadow-lg transition-shadow" data-testid={`card-evidence-${evidence.id}`}>
+              {/* Thumbnail */}
               <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
-                {asset.mediaType === 'image' ? (
+                {getThumbnail(evidence) ? (
                   <img 
-                    src={asset.downloadUrl} 
-                    alt={asset.altText || asset.filename}
+                    src={getThumbnail(evidence)} 
+                    alt={evidence.title}
                     className="w-full h-full object-cover"
                   />
                 ) : (
-                  getMediaIcon(asset.mediaType)
+                  <FileText className="h-24 w-24 text-gray-400" />
                 )}
               </div>
+              
               <CardContent className="pt-4">
-                <div className="space-y-2">
-                  <h3 className="font-medium text-sm truncate" title={asset.filename}>
-                    {asset.filename}
+                <div className="space-y-3">
+                  {/* Title */}
+                  <h3 className="font-semibold text-sm line-clamp-2" title={evidence.title}>
+                    {evidence.title}
                   </h3>
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <Badge variant="outline">{asset.mediaType}</Badge>
-                    <span>{formatFileSize(asset.fileSize)}</span>
+                  
+                  {/* School Info */}
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <Building className="h-3 w-3" />
+                    <button
+                      onClick={() => {
+                        setSelectedSchool(evidence.school);
+                        setSchoolHistoryDialogOpen(true);
+                      }}
+                      className="hover:underline truncate"
+                      data-testid={`button-school-history-${evidence.id}`}
+                    >
+                      {evidence.school?.name || 'Unknown School'}
+                    </button>
                   </div>
-                  <div className="text-xs text-gray-500">
-                    {new Date(asset.createdAt).toLocaleDateString()}
+                  
+                  {/* Country */}
+                  <div className="flex items-center gap-2 text-xs text-gray-600">
+                    <Globe className="h-3 w-3" />
+                    <span>{evidence.school?.country || 'Unknown'}</span>
                   </div>
+                  
+                  {/* Badges */}
+                  <div className="flex flex-wrap gap-1">
+                    <Badge className={getStageBadgeColor(evidence.stage)}>
+                      {evidence.stage}
+                    </Badge>
+                    <Badge className={getStatusBadgeColor(evidence.status)}>
+                      {evidence.status}
+                    </Badge>
+                    {evidence.visibility === 'public' && (
+                      <Badge variant="outline" className="text-xs">
+                        <Eye className="h-3 w-3 mr-1" />
+                        Public
+                      </Badge>
+                    )}
+                    {evidence.isFeatured && (
+                      <Badge className="bg-amber-100 text-amber-800">
+                        <Star className="h-3 w-3 mr-1" />
+                        Featured
+                      </Badge>
+                    )}
+                  </div>
+                  
+                  {/* Actions */}
                   <div className="flex gap-2 pt-2">
                     <Button 
                       size="sm" 
                       variant="outline"
-                      onClick={() => openEditDialog(asset)}
-                      data-testid={`button-edit-asset-${asset.id}`}
+                      className="flex-1"
+                      onClick={() => {
+                        setSelectedEvidence(evidence);
+                        setDetailsDialogOpen(true);
+                      }}
+                      data-testid={`button-view-evidence-${evidence.id}`}
                     >
-                      <Edit className="h-3 w-3" />
+                      <Eye className="h-3 w-3 mr-1" />
+                      View
                     </Button>
+                    {evidence.status === 'pending' && (
+                      <>
+                        <Button 
+                          size="sm" 
+                          className="bg-green-500 hover:bg-green-600"
+                          onClick={() => updateStatusMutation.mutate({ id: evidence.id, status: 'approved' })}
+                          data-testid={`button-approve-evidence-${evidence.id}`}
+                        >
+                          <Check className="h-3 w-3" />
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="destructive"
+                          onClick={() => updateStatusMutation.mutate({ id: evidence.id, status: 'rejected' })}
+                          data-testid={`button-reject-evidence-${evidence.id}`}
+                        >
+                          <X className="h-3 w-3" />
+                        </Button>
+                      </>
+                    )}
                     <Button 
                       size="sm" 
-                      variant="destructive"
-                      onClick={() => checkUsageAndDelete(asset)}
-                      data-testid={`button-delete-asset-${asset.id}`}
+                      variant={evidence.isFeatured ? "default" : "outline"}
+                      onClick={() => toggleFeaturedMutation.mutate({ id: evidence.id, isFeatured: evidence.isFeatured })}
+                      data-testid={`button-feature-evidence-${evidence.id}`}
                     >
-                      <Trash2 className="h-3 w-3" />
+                      <Star className="h-3 w-3" />
                     </Button>
                   </div>
                 </div>
@@ -4904,267 +4773,120 @@ function MediaLibraryTab() {
           ))}
         </div>
       )}
-      
-      {/* Upload Dialog */}
-      <Dialog open={uploadDialogOpen} onOpenChange={setUploadDialogOpen}>
-        <DialogContent className="max-w-lg">
+
+      {/* Evidence Details Dialog */}
+      <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="dialog-evidence-details">
           <DialogHeader>
-            <DialogTitle>Upload Media Asset</DialogTitle>
+            <DialogTitle>Evidence Details</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Media Type <span className="text-red-500">*</span>
-              </label>
-              <Select value={uploadMediaType} onValueChange={(value: any) => setUploadMediaType(value)}>
-                <SelectTrigger data-testid="select-upload-media-type">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="image">Image</SelectItem>
-                  <SelectItem value="video">Video</SelectItem>
-                  <SelectItem value="document">Document</SelectItem>
-                  <SelectItem value="audio">Audio</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                File <span className="text-red-500">*</span>
-              </label>
-              <Input 
-                type="file" 
-                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-                data-testid="input-media-file"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
-              <Input 
-                value={uploadAltText}
-                onChange={(e) => setUploadAltText(e.target.value)}
-                placeholder="Descriptive text for accessibility"
-                data-testid="input-upload-alt-text"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <Textarea 
-                value={uploadDescription}
-                onChange={(e) => setUploadDescription(e.target.value)}
-                placeholder="Optional description"
-                rows={3}
-                data-testid="textarea-upload-description"
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
-              <Select value={uploadVisibility} onValueChange={(value: any) => setUploadVisibility(value)}>
-                <SelectTrigger data-testid="select-upload-visibility">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="private">Private</SelectItem>
-                  <SelectItem value="public">Public</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
-              <Select 
-                value={uploadTags[0] || ''} 
-                onValueChange={(value) => setUploadTags(value ? [value] : [])}
-              >
-                <SelectTrigger data-testid="select-upload-tags">
-                  <SelectValue placeholder="Select tags" />
-                </SelectTrigger>
-                <SelectContent>
-                  {tags.map((tag: any) => (
-                    <SelectItem key={tag.id} value={tag.id}>{tag.name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setUploadDialogOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={handleUpload} 
-              disabled={!uploadFile || isUploading}
-              data-testid="button-start-upload"
-            >
-              {isUploading ? 'Uploading...' : 'Upload'}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-      
-      {/* Edit Dialog */}
-      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
-        <DialogContent className="max-w-lg" data-testid="dialog-edit-media-asset">
-          <DialogHeader>
-            <DialogTitle>Edit Media Asset</DialogTitle>
-          </DialogHeader>
-          {selectedAsset && (
+          {selectedEvidence && (
             <div className="space-y-4">
-              <div className="h-32 bg-gray-100 flex items-center justify-center">
-                {selectedAsset.mediaType === 'image' ? (
-                  <img src={selectedAsset.downloadUrl} alt={selectedAsset.filename} className="h-full object-contain" />
-                ) : (
-                  getMediaIcon(selectedAsset.mediaType)
-                )}
-              </div>
-              
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Filename</label>
-                <Input value={selectedAsset.filename} disabled />
+                <label className="text-sm font-medium text-gray-700">Title</label>
+                <p className="text-sm mt-1">{selectedEvidence.title}</p>
               </div>
-              
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alt Text</label>
-                <Input 
-                  value={editAltText}
-                  onChange={(e) => setEditAltText(e.target.value)}
-                  data-testid="input-edit-alt-text"
-                />
+                <label className="text-sm font-medium text-gray-700">Description</label>
+                <p className="text-sm mt-1">{selectedEvidence.description || 'No description'}</p>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                <Textarea 
-                  value={editDescription}
-                  onChange={(e) => setEditDescription(e.target.value)}
-                  rows={3}
-                  data-testid="textarea-edit-description"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm font-medium text-gray-700">School</label>
+                  <p className="text-sm mt-1">{selectedEvidence.school?.name}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Country</label>
+                  <p className="text-sm mt-1">{selectedEvidence.school?.country}</p>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Stage</label>
+                  <Badge className={getStageBadgeColor(selectedEvidence.stage)}>
+                    {selectedEvidence.stage}
+                  </Badge>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Status</label>
+                  <Badge className={getStatusBadgeColor(selectedEvidence.status)}>
+                    {selectedEvidence.status}
+                  </Badge>
+                </div>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
-                <Select value={editVisibility} onValueChange={(value: any) => setEditVisibility(value)}>
-                  <SelectTrigger data-testid="select-edit-visibility">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="private">Private</SelectItem>
-                    <SelectItem value="public">Public</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tags</label>
-                <Select 
-                  value={editTags[0] || ''} 
-                  onValueChange={(value) => setEditTags(value ? [value] : [])}
-                >
-                  <SelectTrigger data-testid="select-edit-tags">
-                    <SelectValue placeholder="Select tags" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {tags.map((tag: any) => (
-                      <SelectItem key={tag.id} value={tag.id}>{tag.name}</SelectItem>
+              {selectedEvidence.files && selectedEvidence.files.length > 0 && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700">Files ({selectedEvidence.files.length})</label>
+                  <div className="grid grid-cols-2 gap-2 mt-2">
+                    {selectedEvidence.files.map((file: any, idx: number) => (
+                      <a
+                        key={idx}
+                        href={file.signedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50"
+                      >
+                        <Download className="h-4 w-4" />
+                        <span className="text-xs truncate">{file.filename}</span>
+                      </a>
                     ))}
-                  </SelectContent>
-                </Select>
-              </div>
+                  </div>
+                </div>
+              )}
             </div>
           )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditDialogOpen(false)} data-testid="button-cancel-edit">
-              Cancel
-            </Button>
-            <Button onClick={handleSaveMetadata} data-testid="button-save-metadata">
-              Save Changes
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
-      
-      {/* Delete Warning Dialog */}
-      <AlertDialog open={deleteWarningDialogOpen} onOpenChange={setDeleteWarningDialogOpen}>
-        <AlertDialogContent data-testid="dialog-delete-warning">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Cannot Delete Asset</AlertDialogTitle>
-            <AlertDialogDescription>
-              This asset is currently in use and cannot be deleted. Usage:
-              <ul className="mt-2 space-y-1">
-                {assetUsage.map((usage, i) => (
-                  <li key={i} className="text-sm">• {usage.usageType}: {usage.referenceId}</li>
-                ))}
-              </ul>
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Close</AlertDialogCancel>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      
-      {/* Delete Confirm Dialog */}
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent data-testid="dialog-delete-confirm">
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Media Asset</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this asset? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={() => selectedAsset && deleteAssetMutation.mutate(selectedAsset.id)}
-              className="bg-red-500 hover:bg-red-600"
-              data-testid="button-confirm-delete"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
-      
-      {/* Create Tag Dialog */}
-      <Dialog open={createTagDialogOpen} onOpenChange={setCreateTagDialogOpen}>
-        <DialogContent data-testid="dialog-create-tag">
+
+      {/* School History Dialog */}
+      <Dialog open={schoolHistoryDialogOpen} onOpenChange={setSchoolHistoryDialogOpen}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" data-testid="dialog-school-history">
           <DialogHeader>
-            <DialogTitle>Create Tag</DialogTitle>
+            <DialogTitle>
+              {selectedSchool?.name} - All Submissions ({schoolHistory.length})
+            </DialogTitle>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tag Name <span className="text-red-500">*</span>
-              </label>
-              <Input 
-                value={newTagName}
-                onChange={(e) => setNewTagName(e.target.value)}
-                data-testid="input-tag-name"
-              />
+          {schoolHistoryLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full" />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-              <Textarea 
-                value={newTagDescription}
-                onChange={(e) => setNewTagDescription(e.target.value)}
-                rows={2}
-                data-testid="textarea-tag-description"
-              />
+          ) : schoolHistory.length === 0 ? (
+            <EmptyState 
+              icon={FileText}
+              title="No submissions yet"
+              description="This school hasn't submitted any evidence yet"
+            />
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {schoolHistory.map((evidence: any) => (
+                <Card key={evidence.id} className="overflow-hidden" data-testid={`card-school-evidence-${evidence.id}`}>
+                  <div className="h-32 bg-gray-100 flex items-center justify-center overflow-hidden">
+                    {getThumbnail(evidence) ? (
+                      <img 
+                        src={getThumbnail(evidence)} 
+                        alt={evidence.title}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <FileText className="h-16 w-16 text-gray-400" />
+                    )}
+                  </div>
+                  <CardContent className="pt-3">
+                    <h4 className="font-medium text-sm line-clamp-2">{evidence.title}</h4>
+                    <div className="flex gap-1 mt-2">
+                      <Badge className={getStageBadgeColor(evidence.stage)} variant="outline">
+                        {evidence.stage}
+                      </Badge>
+                      <Badge className={getStatusBadgeColor(evidence.status)}>
+                        {evidence.status}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      {new Date(evidence.submittedAt).toLocaleDateString()}
+                    </p>
+                  </CardContent>
+                </Card>
+              ))}
             </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setCreateTagDialogOpen(false)}>Cancel</Button>
-            <Button 
-              onClick={() => createTagMutation.mutate({ name: newTagName, description: newTagDescription || undefined })}
-              disabled={!newTagName}
-              data-testid="button-create-tag"
-            >
-              Create Tag
-            </Button>
-          </DialogFooter>
+          )}
         </DialogContent>
       </Dialog>
     </div>
@@ -6935,9 +6657,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               <DropdownMenuItem 
                 onClick={() => setActiveTab('media-library')}
                 className={activeTab === 'media-library' ? 'bg-gray-100 font-medium' : ''}
-                data-testid="tab-content-media-library"
+                data-testid="tab-content-evidence-gallery"
               >
-                Media Library
+                Evidence Gallery
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -8610,8 +8332,8 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         {/* Printable Forms Tab */}
         {activeTab === 'printable-forms' && <PrintableFormsTab />}
 
-        {/* Media Library Tab */}
-        {activeTab === 'media-library' && <MediaLibraryTab />}
+        {/* Evidence Gallery Tab */}
+        {activeTab === 'media-library' && <EvidenceGalleryTab />}
       </div>
 
       {/* Create/Edit Event Dialog */}
