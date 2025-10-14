@@ -30,6 +30,7 @@ import videoPlaceholder from "@assets/Screenshot 2025-10-07 at 08.55.43_17598218
 import commonSeasLogo from "@assets/common-seas_1759934515099.png";
 import kidsAgainstPlasticLogo from "@assets/KAP-logo-png-300x300_1759934515099.png";
 import riverCleanupLogo from "@assets/RiverCleanup_logo_rgb_pos-WhiteBG-01-2-256x256_1759934515099.png";
+import blueWaveBackground from "@assets/BlueWave_1760462619618.png";
 import { 
   Star,
   ArrowRight,
@@ -412,8 +413,17 @@ export default function Landing() {
       </section>
 
       {/* Ready to Make a Difference CTA */}
-      <section className="py-16 lg:py-24 bg-pcs_blue">
-        <div className="container-width text-center">
+      <section className="py-16 lg:py-24 bg-pcs_blue relative overflow-hidden">
+        <div 
+          className="absolute inset-0 opacity-30"
+          style={{
+            backgroundImage: `url(${blueWaveBackground})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat'
+          }}
+        />
+        <div className="container-width text-center relative z-10">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-6" data-testid="text-cta-heading">
             {t('cta_section.title')}
           </h2>
