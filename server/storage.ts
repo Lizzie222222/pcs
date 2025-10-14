@@ -79,7 +79,7 @@ import {
   type CreateOAuthUser,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, asc, ilike, count, sql, inArray } from "drizzle-orm";
+import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns } from "drizzle-orm";
 import * as bcrypt from "bcrypt";
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
 
@@ -1732,44 +1732,13 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCaseStudyById(id: string): Promise<CaseStudy | undefined> {
-    const result = await db
-      .select({
-        id: caseStudies.id,
-        title: caseStudies.title,
-        description: caseStudies.description,
-        stage: caseStudies.stage,
-        impact: caseStudies.impact,
-        imageUrl: caseStudies.imageUrl,
-        featured: caseStudies.featured,
-        evidenceId: caseStudies.evidenceId,
-        evidenceLink: evidence.fileUrl,
-        evidenceFiles: evidence.files,
-        schoolId: caseStudies.schoolId,
-        schoolName: schools.name,
-        schoolCountry: schools.country,
-        location: caseStudies.location,
-        createdAt: caseStudies.createdAt,
-        createdBy: caseStudies.createdBy,
-        firstName: users.firstName,
-        lastName: users.lastName,
-      })
+    const [caseStudy] = await db
+      .select()
       .from(caseStudies)
-      .leftJoin(schools, eq(caseStudies.schoolId, schools.id))
-      .leftJoin(evidence, eq(caseStudies.evidenceId, evidence.id))
-      .leftJoin(users, eq(caseStudies.createdBy, users.id))
       .where(eq(caseStudies.id, id))
       .limit(1);
-
-    const row = result[0];
-    if (!row) return undefined;
-
-    // Compute createdByName in JavaScript for database compatibility
-    return {
-      ...row,
-      createdByName: row.firstName && row.lastName 
-        ? `${row.firstName} ${row.lastName}` 
-        : 'Unknown',
-    } as any;
+    
+    return caseStudy;
   }
 
   async getCaseStudies(filters: {

@@ -55,8 +55,9 @@ interface VideoItem {
 
 interface StudentQuote {
   name: string;
-  quote: string;
-  photoUrl?: string;
+  text: string;
+  photo?: string;
+  role?: string;
   age?: number;
 }
 
@@ -129,12 +130,12 @@ function AnimatedCounter({ value, duration = 2000 }: { value: string; duration?:
   const ref = useRef<HTMLSpanElement>(null);
   
   // Parse value to extract prefix, number, and suffix
-  // Supports formats like: "£5.5k", "95%", "$1000", "500"
+  // Supports formats like: "£5.5k", "95%", "$1000", "500", "2,500+"
   const parseValue = (val: string) => {
-    const match = val.match(/^([^\d.-]*)?([\d.]+)(.*)$/);
+    const match = val.match(/^([^\d.-]*)?([\d.,]+)(.*)$/);
     if (match) {
       const prefix = match[1] || '';
-      const number = parseFloat(match[2]) || 0;
+      const number = parseFloat(match[2].replace(/,/g, '')) || 0;
       const suffix = match[3] || '';
       return { prefix, number, suffix };
     }
@@ -643,11 +644,11 @@ export default function CaseStudyDetail() {
                 >
                   <CardContent className="p-6">
                     <Quote className="w-8 h-8 text-teal/40 mb-4" />
-                    <p className="text-gray-700 italic mb-6 leading-relaxed">"{quote.quote}"</p>
+                    <p className="text-gray-700 italic mb-6 leading-relaxed">"{quote.text}"</p>
                     <div className="flex items-center gap-4">
-                      {quote.photoUrl ? (
+                      {quote.photo ? (
                         <OptimizedImage
-                          src={quote.photoUrl}
+                          src={quote.photo}
                           alt={quote.name}
                           width={48}
                           height={48}
