@@ -60,7 +60,8 @@ Preferred communication style: Simple, everyday language.
 -   **Admin UI Improvements**: Integrated Evidence Requirements, two-tier navigation system (5 primary categories with dropdowns: Dashboard, Schools, Content, Program, Communications), reorganized analytics dashboard, school detail dialog with editable preferred language, manual school progression management, and admin/partner evidence submission on behalf of schools.
 -   **Events System**: Comprehensive event management with admin creation/editing, user browsing/registration, direct image upload to object storage, email notifications via SendGrid, newsletter integration, and analytics dashboard with recharts visualizations. Luma-inspired modals and responsive design.
 -   **Printable Forms System**: Allows generation and download of blank PDF forms, and upload/management of completed forms with admin review workflows.
--   **Media Library Admin Panel UI**: Full CRUD operations for media assets, including upload with metadata, search, filter, tag management, and usage tracking.
+-   **Evidence Gallery**: Comprehensive admin panel for browsing all evidence submissions, replacing Media Library. Features advanced filtering (stage, country, status, visibility), PDF thumbnails using pdfjs-dist, school submission history, and bulk operations support. PDF files display rendered thumbnails on canvas for quick preview.
+-   **PDF Viewer Integration**: Evidence files (both images and PDFs) use EvidenceFilesGallery component with full PDF viewing in iframe, thumbnail generation using pdfjs-dist, and download functionality.
 -   **Bulk Email Editor**: Enhanced with an image picker integrated with the Media Library and AI-powered auto-translation for emails based on school's preferred language.
 
 ## External Dependencies

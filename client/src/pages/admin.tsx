@@ -95,6 +95,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
+import { PDFThumbnail } from "@/components/PDFThumbnail";
 import type { ReductionPromise, Event, EventRegistration, EvidenceWithSchool } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
 import { format, parseISO } from "date-fns";
@@ -4527,12 +4528,23 @@ function EvidenceGalleryTab() {
     }
   };
 
-  // Get thumbnail from files
-  const getThumbnail = (evidence: EvidenceWithSchool) => {
-    const imageFile = evidence.files?.find((f: any) => 
+  // Get file for thumbnail (image or PDF)
+  const getFileForThumbnail = (evidence: EvidenceWithSchool) => {
+    const files = evidence.files as any[] || [];
+    
+    // First try to find an image
+    const imageFile = files.find((f: any) => 
       f.mimeType?.startsWith('image/') || f.type?.startsWith('image/')
     );
-    return imageFile?.url || null;
+    if (imageFile) return { type: 'image', url: imageFile.url };
+    
+    // Then try PDF
+    const pdfFile = files.find((f: any) => 
+      f.mimeType?.includes('pdf') || f.type?.includes('pdf')
+    );
+    if (pdfFile) return { type: 'pdf', url: pdfFile.url };
+    
+    return null;
   };
 
   return (
@@ -4662,15 +4674,27 @@ function EvidenceGalleryTab() {
             <Card key={evidence.id} className="overflow-hidden hover:shadow-lg transition-shadow" data-testid={`card-evidence-${evidence.id}`}>
               {/* Thumbnail */}
               <div className="h-48 bg-gray-100 flex items-center justify-center overflow-hidden">
-                {getThumbnail(evidence) ? (
-                  <img 
-                    src={getThumbnail(evidence)} 
-                    alt={evidence.title}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <FileText className="h-24 w-24 text-gray-400" />
-                )}
+                {(() => {
+                  const file = getFileForThumbnail(evidence);
+                  if (file?.type === 'image') {
+                    return (
+                      <img 
+                        src={file.url} 
+                        alt={evidence.title}
+                        className="w-full h-full object-cover"
+                      />
+                    );
+                  } else if (file?.type === 'pdf') {
+                    return (
+                      <PDFThumbnail 
+                        url={file.url}
+                        className="w-full h-full"
+                      />
+                    );
+                  } else {
+                    return <FileText className="h-24 w-24 text-gray-400" />;
+                  }
+                })()}
               </div>
               
               <CardContent className="pt-4">
@@ -4812,23 +4836,16 @@ function EvidenceGalleryTab() {
                   </Badge>
                 </div>
               </div>
-              {selectedEvidence.files && selectedEvidence.files.length > 0 && (
+              {selectedEvidence.files && (selectedEvidence.files as any[]).length > 0 && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Files ({selectedEvidence.files.length})</label>
-                  <div className="grid grid-cols-2 gap-2 mt-2">
-                    {selectedEvidence.files.map((file: any, idx: number) => (
-                      <a
-                        key={idx}
-                        href={file.signedUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-2 p-2 border rounded hover:bg-gray-50"
-                      >
-                        <Download className="h-4 w-4" />
-                        <span className="text-xs truncate">{file.filename}</span>
-                      </a>
-                    ))}
-                  </div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Files ({(selectedEvidence.files as any[]).length})</label>
+                  <EvidenceFilesGallery files={selectedEvidence.files as any[]} />
+                </div>
+              )}
+              {selectedEvidence.videoLinks && (
+                <div>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">Video Links</label>
+                  <EvidenceVideoLinks videoLinks={selectedEvidence.videoLinks as string} />
                 </div>
               )}
             </div>
@@ -4859,15 +4876,27 @@ function EvidenceGalleryTab() {
               {schoolHistory.map((evidence: any) => (
                 <Card key={evidence.id} className="overflow-hidden" data-testid={`card-school-evidence-${evidence.id}`}>
                   <div className="h-32 bg-gray-100 flex items-center justify-center overflow-hidden">
-                    {getThumbnail(evidence) ? (
-                      <img 
-                        src={getThumbnail(evidence)} 
-                        alt={evidence.title}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <FileText className="h-16 w-16 text-gray-400" />
-                    )}
+                    {(() => {
+                      const file = getFileForThumbnail(evidence);
+                      if (file?.type === 'image') {
+                        return (
+                          <img 
+                            src={file.url} 
+                            alt={evidence.title}
+                            className="w-full h-full object-cover"
+                          />
+                        );
+                      } else if (file?.type === 'pdf') {
+                        return (
+                          <PDFThumbnail 
+                            url={file.url}
+                            className="w-full h-full"
+                          />
+                        );
+                      } else {
+                        return <FileText className="h-16 w-16 text-gray-400" />;
+                      }
+                    })()}
                   </div>
                   <CardContent className="pt-3">
                     <h4 className="font-medium text-sm line-clamp-2">{evidence.title}</h4>
