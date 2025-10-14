@@ -117,66 +117,70 @@ export default function EventLivePage() {
   const hasEnded = endDate < new Date();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-16">
       {/* Hero Section */}
-      <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-4 py-12">
+      <div className="relative bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 border-b border-gray-200 shadow-sm overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-t from-white/50 to-transparent pointer-events-none"></div>
+        <div className="relative max-w-6xl mx-auto px-4 py-16 md:py-20">
           {event.imageUrl && (
-            <div className="mb-8">
+            <div className="mb-10">
               <img
                 src={event.imageUrl}
                 alt={event.title}
-                className="max-h-32 mx-auto object-contain"
+                className="max-h-40 mx-auto object-contain drop-shadow-lg transition-opacity duration-300"
                 data-testid="img-event-logo"
+                onError={(e) => {
+                  e.currentTarget.style.display = 'none';
+                }}
               />
             </div>
           )}
           
-          <h1 className="text-4xl md:text-5xl font-bold text-center mb-4" data-testid="text-event-title">
+          <h1 className="text-5xl md:text-6xl font-bold text-center mb-6 text-gray-900 leading-tight tracking-tight" data-testid="text-event-title">
             {event.title}
           </h1>
           
-          <div className="flex flex-wrap justify-center gap-6 text-gray-600 mb-6">
-            <div className="flex items-center gap-2" data-testid="div-event-date">
-              <Calendar className="w-5 h-5" />
-              <span>{format(startDate, 'EEEE, MMMM d, yyyy')}</span>
+          <div className="flex flex-wrap justify-center gap-6 text-gray-700 mb-8">
+            <div className="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full shadow-sm" data-testid="div-event-date">
+              <Calendar className="w-5 h-5 text-pcs_blue" />
+              <span className="font-medium">{format(startDate, 'EEEE, MMMM d, yyyy')}</span>
             </div>
             
-            <div className="flex items-center gap-2" data-testid="div-event-time">
-              <Users className="w-5 h-5" />
-              <span>{format(startDate, 'h:mm a')} - {format(endDate, 'h:mm a')}</span>
+            <div className="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full shadow-sm" data-testid="div-event-time">
+              <Users className="w-5 h-5 text-pcs_blue" />
+              <span className="font-medium">{format(startDate, 'h:mm a')} - {format(endDate, 'h:mm a')}</span>
             </div>
             
             {event.location && !event.isVirtual && (
-              <div className="flex items-center gap-2" data-testid="div-event-location">
-                <MapPin className="w-5 h-5" />
-                <span>{event.location}</span>
+              <div className="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full shadow-sm" data-testid="div-event-location">
+                <MapPin className="w-5 h-5 text-pcs_blue" />
+                <span className="font-medium">{event.location}</span>
               </div>
             )}
             
             {event.isVirtual && (
-              <div className="flex items-center gap-2" data-testid="div-event-virtual">
-                <ExternalLink className="w-5 h-5" />
-                <span>Virtual Event</span>
+              <div className="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full shadow-sm" data-testid="div-event-virtual">
+                <ExternalLink className="w-5 h-5 text-pcs_blue" />
+                <span className="font-medium">Virtual Event</span>
               </div>
             )}
           </div>
 
-          <p className="text-lg text-center text-gray-700 max-w-3xl mx-auto" data-testid="text-event-description">
+          <p className="text-lg md:text-xl text-center text-gray-700 max-w-3xl mx-auto leading-relaxed" data-testid="text-event-description">
             {event.description}
           </p>
 
           {!hasStarted && (
-            <div className="mt-8 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-              <p className="text-blue-800 font-medium" data-testid="text-event-upcoming">
+            <div className="mt-10 p-5 bg-blue-50 border-2 border-blue-200 rounded-xl text-center shadow-sm">
+              <p className="text-blue-800 font-medium text-lg" data-testid="text-event-upcoming">
                 This event hasn't started yet. Please check back on {format(startDate, 'MMMM d, yyyy at h:mm a')}
               </p>
             </div>
           )}
 
           {hasEnded && (
-            <div className="mt-8 p-4 bg-gray-100 border border-gray-300 rounded-lg text-center">
-              <p className="text-gray-700 font-medium" data-testid="text-event-ended">
+            <div className="mt-10 p-5 bg-gray-100 border-2 border-gray-300 rounded-xl text-center shadow-sm">
+              <p className="text-gray-700 font-medium text-lg" data-testid="text-event-ended">
                 This event has ended. You can still watch the recordings below.
               </p>
             </div>
@@ -188,18 +192,18 @@ export default function EventLivePage() {
       <div className="max-w-6xl mx-auto px-4 py-12">
         {/* YouTube Videos Section */}
         {event.youtubeVideos && event.youtubeVideos.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold mb-8" data-testid="text-videos-title">
+          <div className="mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-10 text-gray-900" data-testid="text-videos-title">
               Watch the Event
             </h2>
             <div className="space-y-12">
               {event.youtubeVideos.map((video, index) => (
-                <div key={index} className="bg-white rounded-lg shadow-md p-6" data-testid={`div-video-${index}`}>
-                  <h3 className="text-2xl font-semibold mb-2" data-testid={`text-video-title-${index}`}>
+                <div key={index} className="bg-white rounded-xl shadow-lg p-8 transition-shadow hover:shadow-xl" data-testid={`div-video-${index}`}>
+                  <h3 className="text-2xl md:text-3xl font-semibold mb-3 text-gray-900" data-testid={`text-video-title-${index}`}>
                     {video.title}
                   </h3>
                   {video.description && (
-                    <p className="text-gray-600 mb-4" data-testid={`text-video-description-${index}`}>
+                    <p className="text-gray-600 mb-6 text-lg" data-testid={`text-video-description-${index}`}>
                       {video.description}
                     </p>
                   )}
@@ -212,31 +216,31 @@ export default function EventLivePage() {
 
         {/* Event Pack Files Section */}
         {event.eventPackFiles && event.eventPackFiles.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold mb-8" data-testid="text-resources-title">
+          <div className="mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-10 text-gray-900" data-testid="text-resources-title">
               Event Resources
             </h2>
-            <div className="grid md:grid-cols-2 gap-4">
+            <div className="grid md:grid-cols-2 gap-6">
               {event.eventPackFiles.map((file, index) => (
-                <Card key={index} className="p-6 hover:shadow-lg transition-shadow" data-testid={`card-resource-${index}`}>
+                <Card key={index} className="p-6 hover:shadow-xl transition-all duration-200 border-2 border-transparent hover:border-pcs_blue/20" data-testid={`card-resource-${index}`}>
                   <div className="flex items-start gap-4">
-                    <div className="p-3 bg-blue-100 rounded-lg">
-                      <Download className="w-6 h-6 text-blue-600" />
+                    <div className="p-3 bg-gradient-to-br from-pcs_blue to-ocean-blue rounded-xl shadow-md">
+                      <Download className="w-6 h-6 text-white" />
                     </div>
                     <div className="flex-1">
-                      <h3 className="font-semibold text-lg mb-1" data-testid={`text-resource-title-${index}`}>
+                      <h3 className="font-semibold text-xl mb-2 text-gray-900" data-testid={`text-resource-title-${index}`}>
                         {file.title}
                       </h3>
                       {file.description && (
-                        <p className="text-gray-600 text-sm mb-2" data-testid={`text-resource-description-${index}`}>
+                        <p className="text-gray-600 text-sm mb-3 leading-relaxed" data-testid={`text-resource-description-${index}`}>
                           {file.description}
                         </p>
                       )}
                       {file.fileName && (
-                        <p className="text-gray-500 text-xs mb-1">{file.fileName}</p>
+                        <p className="text-gray-500 text-xs mb-1 font-medium">{file.fileName}</p>
                       )}
                       {file.fileSize && (
-                        <p className="text-gray-500 text-xs mb-3">
+                        <p className="text-gray-500 text-xs mb-4">
                           {(file.fileSize / 1024 / 1024).toFixed(2)} MB
                         </p>
                       )}
@@ -244,6 +248,7 @@ export default function EventLivePage() {
                         asChild
                         variant="outline"
                         size="sm"
+                        className="border-pcs_blue text-pcs_blue hover:bg-pcs_blue hover:text-white transition-colors"
                         data-testid={`button-download-${index}`}
                       >
                         <a href={file.fileUrl} target="_blank" rel="noopener noreferrer" download>
@@ -261,23 +266,23 @@ export default function EventLivePage() {
 
         {/* Testimonials Section */}
         {event.testimonials && event.testimonials.length > 0 && (
-          <div className="mb-12">
-            <h2 className="text-3xl font-bold mb-8" data-testid="text-testimonials-title">
+          <div className="mb-16">
+            <h2 className="text-3xl md:text-4xl font-bold mb-10 text-gray-900" data-testid="text-testimonials-title">
               What People Are Saying
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
               {event.testimonials.map((testimonial, index) => (
-                <Card key={index} className="p-6 bg-white" data-testid={`card-testimonial-${index}`}>
-                  <blockquote className="text-lg italic text-gray-700 mb-4" data-testid={`text-testimonial-quote-${index}`}>
+                <Card key={index} className="p-8 bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-xl transition-shadow border-l-4 border-teal" data-testid={`card-testimonial-${index}`}>
+                  <blockquote className="text-lg md:text-xl italic text-gray-700 mb-6 leading-relaxed" data-testid={`text-testimonial-quote-${index}`}>
                     "{testimonial.quote}"
                   </blockquote>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <div>
-                      <p className="font-semibold" data-testid={`text-testimonial-author-${index}`}>
+                      <p className="font-semibold text-gray-900 text-lg" data-testid={`text-testimonial-author-${index}`}>
                         {testimonial.author}
                       </p>
                       {testimonial.role && (
-                        <p className="text-sm text-gray-600" data-testid={`text-testimonial-role-${index}`}>
+                        <p className="text-sm text-gray-600 font-medium" data-testid={`text-testimonial-role-${index}`}>
                           {testimonial.role}
                         </p>
                       )}
@@ -290,17 +295,18 @@ export default function EventLivePage() {
         )}
 
         {/* CTA Section */}
-        <div className="bg-white rounded-lg shadow-md p-8 text-center">
-          <h3 className="text-2xl font-bold mb-4" data-testid="text-cta-title">
+        <div className="bg-gradient-to-br from-pcs_blue to-ocean-blue rounded-2xl shadow-2xl p-10 md:p-12 text-center text-white">
+          <h3 className="text-3xl md:text-4xl font-bold mb-4" data-testid="text-cta-title">
             Ready to Submit Your Evidence?
           </h3>
-          <p className="text-gray-600 mb-6" data-testid="text-cta-description">
+          <p className="text-lg md:text-xl mb-8 text-blue-50" data-testid="text-cta-description">
             Login to your Plastic Clever Schools profile to upload your amazing work.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button
               onClick={() => navigate('/login')}
               size="lg"
+              className="bg-white text-pcs_blue hover:bg-gray-100 font-semibold text-lg px-8 py-6"
               data-testid="button-login"
             >
               Submit Your Evidence
@@ -309,6 +315,7 @@ export default function EventLivePage() {
               onClick={() => navigate('/register')}
               variant="outline"
               size="lg"
+              className="border-2 border-white text-white hover:bg-white/10 font-semibold text-lg px-8 py-6"
               data-testid="button-register"
             >
               Create Profile

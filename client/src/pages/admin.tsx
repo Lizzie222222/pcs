@@ -5803,8 +5803,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [digestDialogOpen, setDigestDialogOpen] = useState(false);
 
   // Page Builder state
-  const [activeEventTab, setActiveEventTab] = useState<'details' | 'page-builder'>('details');
+  const [currentEventStep, setCurrentEventStep] = useState<1 | 2 | 3>(1);
   const [uploadingPackFiles, setUploadingPackFiles] = useState<Record<number, boolean>>({});
+  const [showPageBuilderWarning, setShowPageBuilderWarning] = useState(false);
 
   // Page Builder form schema
   const pageBuilderSchema = z.object({
@@ -5868,10 +5869,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     name: "testimonials",
   });
 
-  // Reset tab when dialog opens/closes
+  // Reset step when dialog opens/closes
   useEffect(() => {
     if (!eventDialogOpen) {
-      setActiveEventTab('details');
+      setCurrentEventStep(1);
+      setShowPageBuilderWarning(false);
     }
   }, [eventDialogOpen]);
 
@@ -8958,23 +8960,32 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         {activeTab === 'media-library' && <EvidenceGalleryTab />}
       </div>
 
-      {/* Create/Edit Event Dialog */}
+      {/* Create/Edit Event Dialog - Multi-Step Wizard */}
       <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle data-testid="text-event-dialog-title">
               {editingEvent ? 'Edit Event' : 'Create Event'}
             </DialogTitle>
           </DialogHeader>
           
-          <Tabs value={activeEventTab} onValueChange={(value) => setActiveEventTab(value as 'details' | 'page-builder')} className="w-full">
-            <TabsList className="grid w-full grid-cols-2" data-testid="tabs-event-dialog">
-              <TabsTrigger value="details" data-testid="tab-details">Details</TabsTrigger>
-              <TabsTrigger value="page-builder" data-testid="tab-page-builder">Page Builder</TabsTrigger>
+          <Tabs defaultValue="details" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="details" data-testid="tab-trigger-details">
+                Event Details
+              </TabsTrigger>
+              <TabsTrigger value="page-builder" data-testid="tab-trigger-page-builder" className="relative">
+                Page Builder
+                {(eventFormData.isVirtual || eventFormData.eventType === 'webinar') && (
+                  <Badge className="ml-2 bg-amber-500 hover:bg-amber-600 text-white" data-testid="page-builder-badge">
+                    Important
+                  </Badge>
+                )}
+              </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="details" className="mt-4"  data-testid="tab-content-details">
-          <div className="space-y-4">
+            <TabsContent value="details" data-testid="tab-content-details">
+              <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Title <span className="text-red-500">*</span>
@@ -9084,6 +9095,21 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 Is Virtual Event
               </label>
             </div>
+            {(eventFormData.isVirtual || eventFormData.eventType === 'webinar') && (
+              <div className="p-4 bg-blue-50 border-l-4 border-pcs_blue rounded-md" data-testid="virtual-event-notice">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">📺</div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-pcs_blue mb-1">
+                      This is a virtual event!
+                    </p>
+                    <p className="text-sm text-gray-700">
+                      Don't forget to configure your Event Page with live stream links after saving.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
             {eventFormData.isVirtual && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -9278,7 +9304,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               className="bg-pcs_blue hover:bg-pcs_blue/90"
               data-testid="button-save-event"
             >
-              {createEventMutation.isPending || updateEventMutation.isPending ? 'Saving...' : 'Save Event'}
+              {createEventMutation.isPending || updateEventMutation.isPending 
+                ? 'Saving...' 
+                : (eventFormData.isVirtual || eventFormData.eventType === 'webinar') 
+                  ? 'Save & Configure Event Page →' 
+                  : 'Save Event'
+              }
             </Button>
           </div>
             </TabsContent>
@@ -9290,7 +9321,27 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   <p>Please save the event details first before configuring the page builder.</p>
                 </div>
               ) : (
-                <Form {...pageBuilderForm}>
+                <>
+                  {(eventFormData.isVirtual || eventFormData.eventType === 'webinar') && (
+                    <div className="mb-6 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-md" data-testid="page-builder-banner">
+                      <div className="flex items-start gap-3">
+                        <div className="text-2xl">⚠️</div>
+                        <div className="flex-1">
+                          <p className="text-sm font-semibold text-amber-800 mb-2">
+                            IMPORTANT: Virtual events require Page Builder setup for attendees to access live streams!
+                          </p>
+                          <p className="text-sm text-gray-700 mb-3">
+                            Without configuring this page, attendees won't be able to access your event content or live stream links. Use the sections below to add YouTube videos, download files, and testimonials.
+                          </p>
+                          <div className="bg-white border border-amber-200 rounded p-3">
+                            <p className="text-xs font-medium text-gray-600 mb-1">Example - What attendees will see without setup:</p>
+                            <p className="text-xs text-gray-500 italic">"Event page content not configured yet. Please check back later."</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  <Form {...pageBuilderForm}>
                   <form onSubmit={pageBuilderForm.handleSubmit((data) => {
                     updateEventPageContentMutation.mutate({ id: editingEvent.id, data });
                   })} className="space-y-6">
@@ -9701,6 +9752,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     </div>
                   </form>
                 </Form>
+                </>
               )}
             </TabsContent>
           </Tabs>
