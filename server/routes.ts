@@ -12,7 +12,7 @@ import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
-import { eq } from "drizzle-orm";
+import { eq, and } from "drizzle-orm";
 import { generateAnalyticsInsights } from "./lib/aiInsights";
 import { translateEmailContent } from "./translationService";
 import { promises as fs } from 'fs';
@@ -251,13 +251,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get case studies/inspiration
-  app.get('/api/case-studies', async (req, res) => {
+  app.get('/api/case-studies', async (req: any, res) => {
     try {
-      const { stage, country, search, limit, offset } = req.query;
+      const { stage, country, search, categories, tags, status, limit, offset } = req.query;
+      
+      // Check if user is authenticated and is admin
+      const isAdmin = req.isAuthenticated && req.isAuthenticated() && req.user?.isAdmin;
+      
+      // Parse comma-separated categories and tags into arrays
+      const categoriesArray = categories && typeof categories === 'string' 
+        ? categories.split(',').map(c => c.trim()).filter(c => c.length > 0)
+        : undefined;
+        
+      const tagsArray = tags && typeof tags === 'string'
+        ? tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
+        : undefined;
+      
+      // Draft Protection: Only admins can see drafts
+      // For non-admin users, always filter to 'published' status
+      const statusFilter = isAdmin && status ? (status as 'draft' | 'published') : 'published';
+      
       const caseStudies = await storage.getCaseStudies({
         stage: stage as string,
         country: country as string,
         search: search as string,
+        categories: categoriesArray,
+        tags: tagsArray,
+        status: statusFilter,
         limit: limit ? parseInt(limit as string) : 20,
         offset: offset ? parseInt(offset as string) : 0,
       });
@@ -269,12 +289,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get single case study by ID
-  app.get('/api/case-studies/:id', async (req, res) => {
+  app.get('/api/case-studies/:id', async (req: any, res) => {
     try {
       const caseStudy = await storage.getCaseStudyById(req.params.id);
       if (!caseStudy) {
         return res.status(404).json({ message: "Case study not found" });
       }
+      
+      // Draft Protection: Only admins can view draft case studies
+      const isAdmin = req.isAuthenticated && req.isAuthenticated() && req.user?.isAdmin;
+      if (caseStudy.status === 'draft' && !isAdmin) {
+        return res.status(404).json({ message: "Case study not found" });
+      }
+      
       res.json(caseStudy);
     } catch (error) {
       console.error("Error fetching case study:", error);
@@ -2983,12 +3010,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all case studies for admin management
   app.get('/api/admin/case-studies', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const { stage, country, featured, search, limit, offset } = req.query;
+      const { stage, country, featured, search, categories, tags, status, limit, offset } = req.query;
+      
+      // Parse comma-separated categories and tags into arrays
+      const categoriesArray = categories && typeof categories === 'string' 
+        ? categories.split(',').map(c => c.trim()).filter(c => c.length > 0)
+        : undefined;
+        
+      const tagsArray = tags && typeof tags === 'string'
+        ? tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
+        : undefined;
+      
       const caseStudies = await storage.getCaseStudies({
         stage: stage as string,
         country: country as string,
         featured: featured === 'true' ? true : featured === 'false' ? false : undefined,
         search: search as string,
+        categories: categoriesArray,
+        tags: tagsArray,
+        status: status as 'draft' | 'published' | undefined, // Admins can filter by any status
         limit: limit ? parseInt(limit as string) : 50,
         offset: offset ? parseInt(offset as string) : 0,
       });
@@ -6159,6 +6199,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { id } = req.params;
       
       // Fetch case study data directly with only the fields needed for meta tags
+      // Draft Protection: Only fetch published case studies for public SEO/meta tags
       const result = await db
         .select({
           id: caseStudies.id,
@@ -6166,16 +6207,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
           description: caseStudies.description,
           imageUrl: caseStudies.imageUrl,
           images: caseStudies.images,
+          status: caseStudies.status,
         })
         .from(caseStudies)
-        .where(eq(caseStudies.id, id))
+        .where(and(
+          eq(caseStudies.id, id),
+          eq(caseStudies.status, 'published') // Only show published case studies
+        ))
         .limit(1);
       
       const caseStudy = result[0];
       
-      // If case study not found, let SPA handle 404
+      // If case study not found or is draft, let SPA handle 404
       if (!caseStudy) {
-        console.log(`[Meta Tags] Case study ${id} not found, falling back to SPA`);
+        console.log(`[Meta Tags] Case study ${id} not found or is draft, falling back to SPA`);
         return next();
       }
       

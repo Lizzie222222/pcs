@@ -228,6 +228,9 @@ export interface IStorage {
     country?: string;
     featured?: boolean;
     search?: string;
+    categories?: string[];
+    tags?: string[];
+    status?: 'draft' | 'published';
     limit?: number;
     offset?: number;
   }): Promise<CaseStudy[]>;
@@ -1774,6 +1777,9 @@ export class DatabaseStorage implements IStorage {
     country?: string;
     featured?: boolean;
     search?: string;
+    categories?: string[];
+    tags?: string[];
+    status?: 'draft' | 'published';
     limit?: number;
     offset?: number;
   } = {}): Promise<CaseStudy[]> {
@@ -1796,6 +1802,21 @@ export class DatabaseStorage implements IStorage {
       if (searchCondition) {
         conditions.push(searchCondition);
       }
+    }
+    
+    // Filter by categories (array overlap - any match)
+    if (filters.categories && filters.categories.length > 0) {
+      conditions.push(sql`${caseStudies.categories} && ${filters.categories}::jsonb`);
+    }
+    
+    // Filter by tags (array overlap - any match)
+    if (filters.tags && filters.tags.length > 0) {
+      conditions.push(sql`${caseStudies.tags} && ${filters.tags}::jsonb`);
+    }
+    
+    // Filter by status
+    if (filters.status) {
+      conditions.push(eq(caseStudies.status, filters.status));
     }
     
     let query = db
@@ -1870,8 +1891,10 @@ export class DatabaseStorage implements IStorage {
     };
   }> {
     // Get featured case studies, ordered by priority and newest first
+    // Only show published case studies to protect drafts from leaking
     const featuredCaseStudies = await this.getCaseStudies({ 
-      featured: true, 
+      featured: true,
+      status: 'published',
       limit: 3 
     });
 
