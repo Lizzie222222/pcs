@@ -485,7 +485,7 @@ export default function CaseStudyDetail() {
               <div className="absolute inset-0">
                 <OptimizedImage
                   src={caseStudy.beforeImage}
-                  alt="Before"
+                  alt={`Before plastic reduction transformation at ${caseStudy.schoolName}`}
                   width={800}
                   height={400}
                   className="w-full h-full object-cover"
@@ -502,7 +502,7 @@ export default function CaseStudyDetail() {
               >
                 <OptimizedImage
                   src={caseStudy.afterImage}
-                  alt="After"
+                  alt={`After plastic reduction transformation at ${caseStudy.schoolName}`}
                   width={800}
                   height={400}
                   className="w-full h-full object-cover"

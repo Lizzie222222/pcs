@@ -6410,6 +6410,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           imageUrl: caseStudies.imageUrl,
           images: caseStudies.images,
           status: caseStudies.status,
+          createdAt: caseStudies.createdAt,
+          updatedAt: caseStudies.updatedAt,
         })
         .from(caseStudies)
         .where(and(
@@ -6465,6 +6467,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const host = req.get('host');
       const fullUrl = `${protocol}://${host}${req.originalUrl}`;
       
+      // Build JSON-LD structured data for rich snippets
+      const structuredData = {
+        "@context": "https://schema.org",
+        "@type": "Article",
+        "headline": caseStudy.title,
+        "description": description,
+        "image": imageUrl,
+        "author": {
+          "@type": "Organization",
+          "name": "Plastic Clever Schools"
+        },
+        "publisher": {
+          "@type": "Organization",
+          "name": "Plastic Clever Schools",
+          "logo": {
+            "@type": "ImageObject",
+            "url": `${protocol}://${host}/logo.png`
+          }
+        },
+        "datePublished": caseStudy.createdAt ? new Date(caseStudy.createdAt).toISOString() : new Date().toISOString(),
+        "dateModified": caseStudy.updatedAt 
+          ? new Date(caseStudy.updatedAt).toISOString() 
+          : (caseStudy.createdAt ? new Date(caseStudy.createdAt).toISOString() : new Date().toISOString())
+      };
+      
+      // Build structured data script tag (JSON doesn't need HTML escaping within script tag)
+      const structuredDataScript = `<script type="application/ld+json">${JSON.stringify(structuredData)}</script>`;
+      
       // Build meta tags with escaped content
       const metaTags = `
     <!-- Case Study Meta Tags (Server-Side Injected) -->
@@ -6479,7 +6509,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     <meta name="twitter:description" content="${escapeHtml(description)}" />
     <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
     <meta name="description" content="${escapeHtml(description)}" />
-    <title>${escapeHtml(caseStudy.title)} | Plastic Clever Schools</title>`;
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="${escapeHtml(fullUrl)}" />
+    <title>${escapeHtml(caseStudy.title)} | Plastic Clever Schools</title>
+    ${structuredDataScript}`;
       
       // Inject meta tags before </head>
       html = html.replace('</head>', `${metaTags}\n  </head>`);

@@ -123,48 +123,144 @@ Dedicated public pages for online events that allow registered users to access l
 **Environment Variables**:
 - CRON_SECRET: Secret token for cron endpoint authentication (must be set for reminders to work)
 
-## Server-Side Meta Tag Injection for Social Media
+## SEO Optimization for Case Study Pages
 ### Overview
-Implemented server-side meta tag injection for case study pages to ensure social media crawlers (Facebook, Twitter, LinkedIn, etc.) can properly generate rich preview cards when case studies are shared.
+Comprehensive SEO optimization implemented for case study pages including server-side meta tag injection, JSON-LD structured data for Google rich snippets, proper heading hierarchy, and descriptive image alt text.
 
 ### Problem Solved
-Social media crawlers don't execute JavaScript, so they couldn't see the meta tags that were being set client-side by React. This resulted in missing or generic preview cards when sharing case study links.
+- Social media crawlers don't execute JavaScript, so they couldn't see client-side meta tags, resulting in missing or generic preview cards
+- Search engines need structured data to generate rich snippets in search results
+- Accessibility and SEO require proper heading hierarchy and descriptive image alt text
 
-### Implementation
+### Server-Side Meta Tag Injection
 **Route Handler**: GET /case-study/:id
 - Placed BEFORE Vite/SPA catch-all route to intercept case study requests
-- Queries database directly for case study data (title, description, images)
+- Queries database directly for case study data (title, description, images, createdAt, updatedAt)
 - Reads HTML template from disk (client/index.html in dev, public/index.html in production)
 - Injects meta tags with case study data into HTML <head>
 - Falls back to SPA for 404 handling if case study not found
 - Error handling with fallback to normal SPA serving
 
 **Meta Tags Injected**:
-- og:title, og:description, og:image, og:url, og:type, og:site_name
-- twitter:card, twitter:title, twitter:description, twitter:image
-- meta description and page title
+- **Open Graph**: og:title, og:description, og:image, og:url, og:type, og:site_name
+- **Twitter Cards**: twitter:card, twitter:title, twitter:description, twitter:image
+- **SEO Meta**: meta description, canonical URL, robots (index, follow)
+- **Page Title**: "{Case Study Title} | Plastic Clever Schools" format
+- **JSON-LD Structured Data**: Schema.org Article markup for Google rich snippets
 
-**Helper Functions**:
+### JSON-LD Structured Data Implementation
+Structured data is injected as `<script type="application/ld+json">` in the page head:
+
+```json
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Case Study Title",
+  "description": "Case study description (150 chars)",
+  "image": "https://example.com/image.jpg",
+  "author": {
+    "@type": "Organization",
+    "name": "Plastic Clever Schools"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Plastic Clever Schools",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://domain.com/logo.png"
+    }
+  },
+  "datePublished": "2024-01-01T00:00:00.000Z",
+  "dateModified": "2024-01-02T00:00:00.000Z"
+}
+```
+
+**Benefits**:
+- Enables Google rich snippets in search results
+- Provides publication and modification dates for freshness signals
+- Identifies publisher and author information
+- Improves click-through rates from search results
+
+### Heading Hierarchy Guidelines
+Proper heading structure for accessibility and SEO:
+
+**Structure**:
+- **h1**: Page title (case study title) - One per page
+- **h2**: Main sections (Impact Achieved, Student Voices, Our Journey, Photo Gallery, etc.)
+- **h3**: Subsections (timeline items, video titles, evidence sections)
+- **No skipped levels**: Never jump from h1 to h3 without h2
+
+**Implementation in case-study-detail.tsx**:
+```jsx
+<h1>{caseStudy.title}</h1>              // Main page title
+<h2>The Transformation</h2>              // Section heading
+<h2>Impact Achieved</h2>                 // Section heading
+<h2>Our Journey</h2>                     // Section heading
+<h3>{timeline.title}</h3>                // Subsection within timeline
+<h2>Student Voices</h2>                  // Section heading
+<h2>Photo Gallery</h2>                   // Section heading
+<h2>Related Success Stories</h2>         // Section heading
+```
+
+### Image Alt Text Requirements
+All images have descriptive alt text for accessibility and SEO:
+
+**Alt Text Patterns**:
+- **Before/After Images**: "Before/After plastic reduction transformation at {School Name}"
+- **Gallery Images**: Image caption or case study title as fallback
+- **Quote Author Photos**: Author name (e.g., "John Smith")
+- **Related Story Thumbnails**: Story title
+
+**Implementation Examples**:
+```jsx
+<OptimizedImage 
+  src={beforeImage} 
+  alt={`Before plastic reduction transformation at ${schoolName}`} 
+/>
+
+<OptimizedImage 
+  src={galleryImage} 
+  alt={imageCaption || caseStudyTitle || 'Case study image'} 
+/>
+
+<OptimizedImage 
+  src={authorPhoto} 
+  alt={authorName} 
+/>
+```
+
+### Helper Functions
 - `stripHtml()`: Removes HTML tags from description for clean meta content
 - `escapeHtml()`: Prevents XSS attacks by escaping special characters in meta tags
 
-**Security**:
+### Security
 - All content properly escaped using escapeHtml() to prevent XSS
 - HTML tags stripped from descriptions
+- JSON structured data generated from trusted database fields
 - Graceful error handling with SPA fallback
 
-**Client-Side Fallback**:
+### Client-Side Fallback
 - SocialMetaTags component remains for SPA navigation (client-side routing)
 - Server-side injection takes precedence for initial page loads and crawlers
 
-### Testing
-Test with social media debuggers:
+### Testing & Validation
+**Structured Data Testing**:
+- Google Rich Results Test: https://search.google.com/test/rich-results
+- Schema.org Validator: https://validator.schema.org/
+
+**Social Media Preview Testing**:
 - Facebook Sharing Debugger: https://developers.facebook.com/tools/debug/
 - Twitter Card Validator: https://cards-dev.twitter.com/validator
 - LinkedIn Post Inspector: https://www.linkedin.com/post-inspector/
+
+**Accessibility Testing**:
+- Use browser dev tools to verify heading hierarchy
+- Run accessibility audits (Lighthouse, axe DevTools)
+- Verify all images have meaningful alt text
 
 ### Technical Details
 **Development**: Reads from client/index.html
 **Production**: Reads from server/public/index.html (built dist folder)
 **Image Priority**: Uses first image from images array, falls back to imageUrl field
 **Description**: Truncated to 150 characters after HTML stripping
+**Dates**: Uses createdAt for datePublished, updatedAt for dateModified (fallbacks to createdAt or current date)
