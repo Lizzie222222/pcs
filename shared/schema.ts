@@ -67,6 +67,7 @@ export const schoolRoleEnum = pgEnum('school_role', [
 
 export const mediaTypeEnum = pgEnum('media_type', ['image', 'video', 'document', 'audio']);
 export const storageScopeEnum = pgEnum('storage_scope', ['global', 'school']);
+export const caseStudyStatusEnum = pgEnum('case_study_status', ['draft', 'published']);
 
 // User storage table (supports email/password + Google OAuth)
 export const users = pgTable("users", {
@@ -250,6 +251,19 @@ export const caseStudies = pgTable("case_studies", {
   imageUrl: varchar("image_url"),
   featured: boolean("featured").default(false),
   priority: integer("priority").default(0),
+  images: jsonb("images").default('[]'),
+  videos: jsonb("videos").default('[]'),
+  studentQuotes: jsonb("student_quotes").default('[]'),
+  impactMetrics: jsonb("impact_metrics").default('{}'),
+  timelineSections: jsonb("timeline_sections").default('[]'),
+  categories: jsonb("categories").default('[]'),
+  tags: jsonb("tags").default('[]'),
+  status: caseStudyStatusEnum("status").default('draft'),
+  templateType: varchar("template_type"),
+  beforeImage: varchar("before_image"),
+  afterImage: varchar("after_image"),
+  metaDescription: text("meta_description"),
+  metaKeywords: text("meta_keywords"),
   createdBy: varchar("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -929,10 +943,52 @@ export const insertEvidenceSchema = createInsertSchema(evidence).omit({
   isFeatured: true,
 });
 
+// Case Study JSONB schemas for rich content
+export const caseStudyImageSchema = z.object({
+  url: z.string().url(),
+  caption: z.string().optional(),
+  altText: z.string().optional(),
+});
+
+export const caseStudyVideoSchema = z.object({
+  url: z.string().url(),
+  platform: z.enum(['youtube', 'vimeo', 'other']).optional(),
+  embedId: z.string().optional(),
+});
+
+export const studentQuoteSchema = z.object({
+  name: z.string(),
+  role: z.string().optional(),
+  quote: z.string(),
+  photoUrl: z.string().url().optional(),
+});
+
+export const impactMetricSchema = z.object({
+  label: z.string(),
+  value: z.union([z.string(), z.number()]),
+  unit: z.string().optional(),
+  icon: z.string().optional(),
+});
+
+export const timelineSectionSchema = z.object({
+  title: z.string(),
+  content: z.string(),
+  imageUrl: z.string().url().optional(),
+  order: z.number(),
+});
+
 export const insertCaseStudySchema = createInsertSchema(caseStudies).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  images: z.array(caseStudyImageSchema).optional(),
+  videos: z.array(caseStudyVideoSchema).optional(),
+  studentQuotes: z.array(studentQuoteSchema).optional(),
+  impactMetrics: z.array(impactMetricSchema).optional(),
+  timelineSections: z.array(timelineSectionSchema).optional(),
+  categories: z.array(z.string()).optional(),
+  tags: z.array(z.string()).optional(),
 });
 
 export const insertEmailLogSchema = createInsertSchema(emailLogs).omit({
@@ -1081,6 +1137,11 @@ export type EvidenceWithSchool = Evidence & {
 };
 export type CaseStudy = typeof caseStudies.$inferSelect;
 export type InsertCaseStudy = z.infer<typeof insertCaseStudySchema>;
+export type CaseStudyImage = z.infer<typeof caseStudyImageSchema>;
+export type CaseStudyVideo = z.infer<typeof caseStudyVideoSchema>;
+export type StudentQuote = z.infer<typeof studentQuoteSchema>;
+export type ImpactMetric = z.infer<typeof impactMetricSchema>;
+export type TimelineSection = z.infer<typeof timelineSectionSchema>;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type InsertEmailLog = z.infer<typeof insertEmailLogSchema>;
 export type MailchimpAudience = typeof mailchimpAudiences.$inferSelect;
