@@ -362,15 +362,12 @@ export default function Landing() {
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stage 1: Inspire */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-6 sm:p-8 text-center -left">
-              <div className="w-32 h-32 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <HoverVideo 
-                  src={inspireVideo}
-                  poster={inspireIcon}
+              <div className="w-40 h-40 bg-ocean-blue/10 rounded-full flex items-center justify-center mx-auto mb-6 p-6 overflow-visible">
+                <img 
+                  src={inspireIcon}
                   alt={t('accessibility.inspire_stage_alt')}
-                  className="w-30 h-30"
-                  containerClassName="w-full h-full"
+                  className="w-full h-full object-contain"
                 />
-                {/* Stage icon loaded lazily */}
               </div>
               <div className="w-8 h-8 bg-ocean-blue rounded-full flex items-center justify-center mx-auto mb-4">
                 <span className="text-white font-bold text-sm">1</span>
@@ -381,13 +378,11 @@ export default function Landing() {
 
             {/* Stage 2: Investigate */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-6 sm:p-8 text-center ">
-              <div className="w-32 h-32 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <HoverVideo 
-                  src={investigateVideo}
-                  poster={investigateIcon}
+              <div className="w-40 h-40 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-6 p-6 overflow-visible">
+                <img 
+                  src={investigateIcon}
                   alt={t('accessibility.investigate_stage_alt')}
-                  className="w-30 h-30"
-                  containerClassName="w-full h-full"
+                  className="w-full h-full object-contain"
                 />
               </div>
               <div className="w-8 h-8 bg-teal rounded-full flex items-center justify-center mx-auto mb-4">
@@ -399,13 +394,11 @@ export default function Landing() {
 
             {/* Stage 3: Act */}
             <div className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300 hover:scale-105 p-6 sm:p-8 text-center -right">
-              <div className="w-32 h-32 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6">
-                <HoverVideo 
-                  src={actVideo}
-                  poster={actIcon}
+              <div className="w-40 h-40 bg-navy/10 rounded-full flex items-center justify-center mx-auto mb-6 p-6 overflow-visible">
+                <img 
+                  src={actIcon}
                   alt={t('accessibility.act_stage_alt')}
-                  className="w-30 h-30"
-                  containerClassName="w-full h-full"
+                  className="w-full h-full object-contain"
                 />
               </div>
               <div className="w-8 h-8 bg-navy rounded-full flex items-center justify-center mx-auto mb-4">

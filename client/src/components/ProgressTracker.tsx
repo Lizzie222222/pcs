@@ -234,12 +234,12 @@ export default function ProgressTracker({
                 {/* Header */}
                 <div className="text-center mb-6 flex-shrink-0">
                   <div className="relative inline-flex items-center justify-center mb-4">
-                    <div className={`w-20 h-20 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 group-hover:scale-110 ${
+                    <div className={`w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 group-hover:scale-110 p-4 overflow-visible ${
                       status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' :
                       status === 'current' ? getStageGradientClasses(stage.color) :
                       'bg-gray-300 text-gray-600'
                     }`}>
-                      <img src={Icon} alt={stage.title} className="h-10 w-10 object-contain" />
+                      <img src={Icon} alt={stage.title} className="w-full h-full object-contain" />
                     </div>
                     {status === 'completed' && (
                       <div className="absolute -top-1 -right-1 w-7 h-7 bg-green-600 rounded-full flex items-center justify-center text-white shadow-lg animate-bounce">
