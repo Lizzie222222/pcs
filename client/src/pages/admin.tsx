@@ -4644,29 +4644,66 @@ function EmailManagementSection({
             <DialogTitle className="flex items-center gap-2">
               <Eye className="h-5 w-5" />
               Email Preview
+              {currentViewingLanguage !== 'en' && translations[currentViewingLanguage] && (
+                <Badge variant="outline" className="ml-2">
+                  {(() => {
+                    const langNames: Record<string, string> = {
+                      es: 'Spanish', fr: 'French', de: 'German',
+                      it: 'Italian', pt: 'Portuguese', nl: 'Dutch', ru: 'Russian',
+                      zh: 'Chinese', ko: 'Korean', ar: 'Arabic', id: 'Indonesian',
+                      el: 'Greek', cy: 'Welsh'
+                    };
+                    return langNames[currentViewingLanguage] || currentViewingLanguage;
+                  })()}
+                </Badge>
+              )}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="border-b pb-3">
               <p className="text-xs text-gray-500 mb-1">Subject:</p>
-              <p className="text-lg font-semibold" data-testid="text-preview-subject">{emailForm.subject}</p>
+              <p className="text-lg font-semibold" data-testid="text-preview-subject">
+                {currentViewingLanguage !== 'en' && translations[currentViewingLanguage]
+                  ? translations[currentViewingLanguage].subject
+                  : emailForm.subject}
+              </p>
             </div>
-            {emailForm.preheader && (
+            {(currentViewingLanguage !== 'en' && translations[currentViewingLanguage]
+              ? translations[currentViewingLanguage].preheader
+              : emailForm.preheader) && (
               <div className="border-b pb-3">
                 <p className="text-xs text-gray-500 mb-1">Preheader:</p>
-                <p className="text-sm text-gray-600" data-testid="text-preview-preheader">{emailForm.preheader}</p>
+                <p className="text-sm text-gray-600" data-testid="text-preview-preheader">
+                  {currentViewingLanguage !== 'en' && translations[currentViewingLanguage]
+                    ? translations[currentViewingLanguage].preheader
+                    : emailForm.preheader}
+                </p>
               </div>
             )}
             <div className="border rounded-lg p-6 bg-gradient-to-b from-gray-50 to-white">
               <div className="space-y-4">
                 <div className="border-b pb-4">
-                  <h2 className="text-2xl font-bold text-navy" data-testid="text-preview-title">{emailForm.title}</h2>
-                  {emailForm.preTitle && (
-                    <p className="text-base text-gray-600 mt-2" data-testid="text-preview-pretitle">{emailForm.preTitle}</p>
+                  <h2 className="text-2xl font-bold text-navy" data-testid="text-preview-title">
+                    {currentViewingLanguage !== 'en' && translations[currentViewingLanguage]
+                      ? translations[currentViewingLanguage].title
+                      : emailForm.title}
+                  </h2>
+                  {(currentViewingLanguage !== 'en' && translations[currentViewingLanguage]
+                    ? translations[currentViewingLanguage].preTitle
+                    : emailForm.preTitle) && (
+                    <p className="text-base text-gray-600 mt-2" data-testid="text-preview-pretitle">
+                      {currentViewingLanguage !== 'en' && translations[currentViewingLanguage]
+                        ? translations[currentViewingLanguage].preTitle
+                        : emailForm.preTitle}
+                    </p>
                   )}
                 </div>
                 <div 
-                  dangerouslySetInnerHTML={{ __html: emailForm.messageContent }}
+                  dangerouslySetInnerHTML={{ 
+                    __html: currentViewingLanguage !== 'en' && translations[currentViewingLanguage]
+                      ? translations[currentViewingLanguage].messageContent
+                      : emailForm.messageContent
+                  }}
                   data-testid="preview-html-content"
                   className="prose prose-sm max-w-none"
                 />
