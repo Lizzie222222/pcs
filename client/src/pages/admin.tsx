@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
+import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import { Link } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5577,6 +5578,8 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     investigateCompleted: false,
     actCompleted: false,
   });
+  const [showAdminEvidenceForm, setShowAdminEvidenceForm] = useState(false);
+  const [evidenceFormSchoolId, setEvidenceFormSchoolId] = useState<string | null>(null);
   const [deletingSchool, setDeletingSchool] = useState<SchoolData | null>(null);
   const [bulkEvidenceDialogOpen, setBulkEvidenceDialogOpen] = useState(false);
   const [bulkSchoolDialogOpen, setBulkSchoolDialogOpen] = useState(false);
@@ -10115,7 +10118,23 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 </CardContent>
               </Card>
 
-              <div className="flex justify-end gap-2 pt-4">
+              <div className="flex justify-between pt-4">
+                <Button
+                  onClick={() => {
+                    const schoolId = viewingSchool.id;
+                    setViewingSchool(null); // Close school dialog first
+                    setTimeout(() => {
+                      // Open evidence form after dialog closes
+                      setEvidenceFormSchoolId(schoolId);
+                      setShowAdminEvidenceForm(true);
+                    }, 100);
+                  }}
+                  className="bg-teal hover:bg-teal/90"
+                  data-testid="button-submit-evidence-for-school"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Submit Evidence for This School
+                </Button>
                 <Button 
                   variant="outline" 
                   onClick={() => setViewingSchool(null)}
@@ -10127,6 +10146,18 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             </div>
           </DialogContent>
         </Dialog>
+      )}
+
+      {/* Admin Evidence Submission Form */}
+      {showAdminEvidenceForm && evidenceFormSchoolId && (
+        <EvidenceSubmissionForm
+          onClose={() => {
+            setShowAdminEvidenceForm(false);
+            setEvidenceFormSchoolId(null);
+          }}
+          schoolId={evidenceFormSchoolId}
+          isAdminOrPartner={true}
+        />
       )}
 
       {/* Delete School Confirmation Dialog */}
