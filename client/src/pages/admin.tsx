@@ -3449,6 +3449,20 @@ function EmailManagementSection({
 
     setTestEmailSending(true);
     try {
+      // Determine which content to send based on current viewing language
+      let contentToSend = {
+        subject: emailForm.subject,
+        preheader: emailForm.preheader,
+        title: emailForm.title,
+        preTitle: emailForm.preTitle,
+        messageContent: emailForm.messageContent,
+      };
+
+      // If viewing a translation, use that instead
+      if (currentViewingLanguage !== 'en' && translations[currentViewingLanguage]) {
+        contentToSend = translations[currentViewingLanguage];
+      }
+
       const response = await fetch('/api/admin/bulk-email/test', {
         method: 'POST',
         headers: {
@@ -3456,11 +3470,7 @@ function EmailManagementSection({
         },
         credentials: 'include',
         body: JSON.stringify({
-          subject: emailForm.subject,
-          preheader: emailForm.preheader,
-          title: emailForm.title,
-          preTitle: emailForm.preTitle,
-          messageContent: emailForm.messageContent,
+          ...contentToSend,
           testEmail: testEmail,
         }),
       });
@@ -3470,9 +3480,17 @@ function EmailManagementSection({
         throw new Error(error.message || 'Failed to send test email');
       }
 
+      const langNames: Record<string, string> = {
+        en: 'English', es: 'Spanish', fr: 'French', de: 'German',
+        it: 'Italian', pt: 'Portuguese', nl: 'Dutch', ru: 'Russian',
+        zh: 'Chinese', ko: 'Korean', ar: 'Arabic', id: 'Indonesian',
+        el: 'Greek', cy: 'Welsh'
+      };
+      const languageName = langNames[currentViewingLanguage] || 'English';
+
       toast({
         title: "Test Email Sent",
-        description: `Test email sent successfully to ${testEmail}`,
+        description: `Test email sent successfully to ${testEmail} in ${languageName}`,
       });
       setTestEmail('');
     } catch (error: any) {
