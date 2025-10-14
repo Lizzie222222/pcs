@@ -3488,7 +3488,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         messageContent,
       };
 
-      const translations: Record<string, typeof emailContent> = {};
+      const translations: Record<string, { subject: string; preheader: string; title: string; preTitle: string; messageContent: string }> = {};
 
       // Generate translations for each selected language
       for (const lang of languages) {
@@ -3498,7 +3498,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         } else {
           try {
             const translated = await translateEmailContent(emailContent, lang);
-            translations[lang] = translated;
+            translations[lang] = {
+              subject: translated.subject,
+              preheader: translated.preheader || '',
+              title: translated.title,
+              preTitle: translated.preTitle || '',
+              messageContent: translated.messageContent,
+            };
           } catch (error) {
             console.error(`Translation failed for language ${lang}:`, error);
             // If translation fails, use original content

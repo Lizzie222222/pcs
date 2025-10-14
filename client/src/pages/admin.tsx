@@ -3332,7 +3332,15 @@ function EmailManagementSection({
   handleSendBulkEmail,
   schoolFilters,
   setSchoolFilters,
-  countryOptions
+  countryOptions,
+  translations,
+  setTranslations,
+  selectedPreviewLanguages,
+  setSelectedPreviewLanguages,
+  currentViewingLanguage,
+  setCurrentViewingLanguage,
+  isGeneratingTranslations,
+  setIsGeneratingTranslations
 }: { 
   emailForm: any;
   setEmailForm: any;
@@ -3340,6 +3348,14 @@ function EmailManagementSection({
   schoolFilters: any;
   setSchoolFilters: any;
   countryOptions: any[];
+  translations: Record<string, { subject: string; preheader: string; title: string; preTitle: string; messageContent: string; }>;
+  setTranslations: (translations: Record<string, any>) => void;
+  selectedPreviewLanguages: string[];
+  setSelectedPreviewLanguages: (languages: string[]) => void;
+  currentViewingLanguage: string;
+  setCurrentViewingLanguage: (language: string) => void;
+  isGeneratingTranslations: boolean;
+  setIsGeneratingTranslations: (generating: boolean) => void;
 }) {
   const { toast } = useToast();
   
@@ -4142,70 +4158,339 @@ function EmailManagementSection({
               </div>
               <Switch
                 checked={emailForm.autoTranslate || false}
-                onCheckedChange={(checked) => setEmailForm((prev: any) => ({ ...prev, autoTranslate: checked }))}
+                onCheckedChange={(checked) => {
+                  setEmailForm((prev: any) => ({ ...prev, autoTranslate: checked }));
+                  // Reset translation state when toggling off
+                  if (!checked) {
+                    setTranslations({});
+                    setSelectedPreviewLanguages([]);
+                    setCurrentViewingLanguage('en');
+                  }
+                }}
                 data-testid="switch-auto-translate"
               />
             </div>
             
+            {/* Translation Preview Section */}
+            {emailForm.autoTranslate && (
+              <div className="space-y-4 p-4 bg-green-50 rounded-lg border border-green-200">
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-gray-900 mb-1">Translation Preview & Editing</h4>
+                    <p className="text-xs text-gray-600">
+                      Select languages to preview translations. You can edit each translation before sending.
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1.5">Select Languages to Preview</label>
+                    <Select
+                      value={selectedPreviewLanguages.length > 0 ? selectedPreviewLanguages[selectedPreviewLanguages.length - 1] : ''}
+                      onValueChange={(value) => {
+                        if (!selectedPreviewLanguages.includes(value)) {
+                          setSelectedPreviewLanguages([...selectedPreviewLanguages, value]);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="h-9" data-testid="select-preview-language">
+                        <SelectValue placeholder="Add language..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="en">English</SelectItem>
+                        <SelectItem value="es">Spanish</SelectItem>
+                        <SelectItem value="fr">French</SelectItem>
+                        <SelectItem value="de">German</SelectItem>
+                        <SelectItem value="it">Italian</SelectItem>
+                        <SelectItem value="pt">Portuguese</SelectItem>
+                        <SelectItem value="nl">Dutch</SelectItem>
+                        <SelectItem value="ru">Russian</SelectItem>
+                        <SelectItem value="zh">Chinese</SelectItem>
+                        <SelectItem value="ko">Korean</SelectItem>
+                        <SelectItem value="ar">Arabic</SelectItem>
+                        <SelectItem value="id">Indonesian</SelectItem>
+                        <SelectItem value="el">Greek</SelectItem>
+                        <SelectItem value="cy">Welsh</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex items-end">
+                    <Button
+                      variant="default"
+                      onClick={async () => {
+                        if (selectedPreviewLanguages.length === 0) {
+                          toast({
+                            title: "No Languages Selected",
+                            description: "Please select at least one language to preview.",
+                            variant: "destructive",
+                          });
+                          return;
+                        }
+                        
+                        setIsGeneratingTranslations(true);
+                        try {
+                          const response = await fetch('/api/admin/bulk-email/translate-preview', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                              subject: emailForm.subject,
+                              preheader: emailForm.preheader,
+                              title: emailForm.title,
+                              preTitle: emailForm.preTitle,
+                              messageContent: emailForm.messageContent,
+                              languages: selectedPreviewLanguages,
+                            }),
+                          });
+                          
+                          if (!response.ok) throw new Error('Failed to generate translations');
+                          
+                          const data = await response.json();
+                          setTranslations(data.translations);
+                          toast({
+                            title: "Translations Generated",
+                            description: `Successfully generated translations for ${selectedPreviewLanguages.length} language(s).`,
+                          });
+                        } catch (error) {
+                          toast({
+                            title: "Translation Failed",
+                            description: "Failed to generate translations. Please try again.",
+                            variant: "destructive",
+                          });
+                        } finally {
+                          setIsGeneratingTranslations(false);
+                        }
+                      }}
+                      disabled={!emailForm.subject || !emailForm.title || !emailForm.messageContent || selectedPreviewLanguages.length === 0 || isGeneratingTranslations}
+                      className="bg-pcs_blue hover:bg-blue-600 h-9"
+                      data-testid="button-generate-translations"
+                    >
+                      {isGeneratingTranslations ? (
+                        <>
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                          Generating...
+                        </>
+                      ) : (
+                        <>
+                          <Globe className="h-4 w-4 mr-2" />
+                          Preview Translations
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                
+                {/* Selected Languages Pills */}
+                {selectedPreviewLanguages.length > 0 && (
+                  <div className="flex flex-wrap gap-2">
+                    {selectedPreviewLanguages.map(lang => {
+                      const langNames: Record<string, string> = {
+                        en: 'English', es: 'Spanish', fr: 'French', de: 'German',
+                        it: 'Italian', pt: 'Portuguese', nl: 'Dutch', ru: 'Russian',
+                        zh: 'Chinese', ko: 'Korean', ar: 'Arabic', id: 'Indonesian',
+                        el: 'Greek', cy: 'Welsh'
+                      };
+                      return (
+                        <Badge key={lang} variant="secondary" className="flex items-center gap-1">
+                          {langNames[lang]}
+                          <button
+                            onClick={() => {
+                              setSelectedPreviewLanguages(selectedPreviewLanguages.filter(l => l !== lang));
+                              const newTranslations = { ...translations };
+                              delete newTranslations[lang];
+                              setTranslations(newTranslations);
+                              if (currentViewingLanguage === lang) {
+                                setCurrentViewingLanguage('en');
+                              }
+                            }}
+                            className="ml-1 hover:bg-gray-300 rounded-full p-0.5"
+                            data-testid={`remove-language-${lang}`}
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {/* Language Switcher */}
+                {Object.keys(translations).length > 0 && (
+                  <div className="border-t pt-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-2">View/Edit Translation</label>
+                    <Select
+                      value={currentViewingLanguage}
+                      onValueChange={setCurrentViewingLanguage}
+                    >
+                      <SelectTrigger className="h-9" data-testid="select-viewing-language">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Object.keys(translations).map(lang => {
+                          const langNames: Record<string, string> = {
+                            en: 'English', es: 'Spanish', fr: 'French', de: 'German',
+                            it: 'Italian', pt: 'Portuguese', nl: 'Dutch', ru: 'Russian',
+                            zh: 'Chinese', ko: 'Korean', ar: 'Arabic', id: 'Indonesian',
+                            el: 'Greek', cy: 'Welsh'
+                          };
+                          return (
+                            <SelectItem key={lang} value={lang}>
+                              {langNames[lang]} {lang === 'en' ? '(Original)' : ''}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            )}
+            
             <div>
-              <label className="block text-sm font-medium mb-2">Subject *</label>
+              <label className="block text-sm font-medium mb-2">
+                Subject * {currentViewingLanguage !== 'en' && translations[currentViewingLanguage] && (
+                  <Badge variant="outline" className="ml-2 text-xs">Editing Translation</Badge>
+                )}
+              </label>
               <Input
                 placeholder="Email subject line"
-                value={emailForm.subject}
-                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, subject: e.target.value }))}
+                value={currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                  ? emailForm.subject 
+                  : translations[currentViewingLanguage].subject}
+                onChange={(e) => {
+                  if (currentViewingLanguage === 'en' || !translations[currentViewingLanguage]) {
+                    setEmailForm((prev: any) => ({ ...prev, subject: e.target.value }));
+                  } else {
+                    setTranslations({
+                      ...translations,
+                      [currentViewingLanguage]: {
+                        ...translations[currentViewingLanguage],
+                        subject: e.target.value
+                      }
+                    });
+                  }
+                }}
                 data-testid="input-email-subject"
                 maxLength={200}
               />
               <p className="text-xs text-gray-500 mt-1">
-                {emailForm.subject.length}/200 characters • The main subject line for the email
+                {(currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                  ? emailForm.subject 
+                  : translations[currentViewingLanguage].subject).length}/200 characters • The main subject line for the email
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Preheader</label>
+              <label className="block text-sm font-medium mb-2">
+                Preheader {currentViewingLanguage !== 'en' && translations[currentViewingLanguage] && (
+                  <Badge variant="outline" className="ml-2 text-xs">Editing Translation</Badge>
+                )}
+              </label>
               <Input
                 placeholder="Preview text shown in email clients (optional)"
-                value={emailForm.preheader}
-                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, preheader: e.target.value }))}
+                value={currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                  ? emailForm.preheader 
+                  : translations[currentViewingLanguage].preheader}
+                onChange={(e) => {
+                  if (currentViewingLanguage === 'en' || !translations[currentViewingLanguage]) {
+                    setEmailForm((prev: any) => ({ ...prev, preheader: e.target.value }));
+                  } else {
+                    setTranslations({
+                      ...translations,
+                      [currentViewingLanguage]: {
+                        ...translations[currentViewingLanguage],
+                        preheader: e.target.value
+                      }
+                    });
+                  }
+                }}
                 data-testid="input-email-preheader"
                 maxLength={100}
               />
               <p className="text-xs text-gray-500 mt-1">
-                {emailForm.preheader.length}/100 characters • Optional preview text that appears in email inbox
+                {(currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                  ? emailForm.preheader 
+                  : translations[currentViewingLanguage].preheader).length}/100 characters • Optional preview text that appears in email inbox
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Title *</label>
+              <label className="block text-sm font-medium mb-2">
+                Title * {currentViewingLanguage !== 'en' && translations[currentViewingLanguage] && (
+                  <Badge variant="outline" className="ml-2 text-xs">Editing Translation</Badge>
+                )}
+              </label>
               <Input
                 placeholder="Large heading inside the email"
-                value={emailForm.title}
-                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, title: e.target.value }))}
+                value={currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                  ? emailForm.title 
+                  : translations[currentViewingLanguage].title}
+                onChange={(e) => {
+                  if (currentViewingLanguage === 'en' || !translations[currentViewingLanguage]) {
+                    setEmailForm((prev: any) => ({ ...prev, title: e.target.value }));
+                  } else {
+                    setTranslations({
+                      ...translations,
+                      [currentViewingLanguage]: {
+                        ...translations[currentViewingLanguage],
+                        title: e.target.value
+                      }
+                    });
+                  }
+                }}
                 data-testid="input-email-title"
                 maxLength={200}
               />
               <p className="text-xs text-gray-500 mt-1">
-                {emailForm.title.length}/200 characters • The main heading displayed in the email body
+                {(currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                  ? emailForm.title 
+                  : translations[currentViewingLanguage].title).length}/200 characters • The main heading displayed in the email body
               </p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-2">Pre-title (Subtitle)</label>
+              <label className="block text-sm font-medium mb-2">
+                Pre-title (Subtitle) {currentViewingLanguage !== 'en' && translations[currentViewingLanguage] && (
+                  <Badge variant="outline" className="ml-2 text-xs">Editing Translation</Badge>
+                )}
+              </label>
               <Input
                 placeholder="Subtitle under the title (optional)"
-                value={emailForm.preTitle}
-                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, preTitle: e.target.value }))}
+                value={currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                  ? emailForm.preTitle 
+                  : translations[currentViewingLanguage].preTitle}
+                onChange={(e) => {
+                  if (currentViewingLanguage === 'en' || !translations[currentViewingLanguage]) {
+                    setEmailForm((prev: any) => ({ ...prev, preTitle: e.target.value }));
+                  } else {
+                    setTranslations({
+                      ...translations,
+                      [currentViewingLanguage]: {
+                        ...translations[currentViewingLanguage],
+                        preTitle: e.target.value
+                      }
+                    });
+                  }
+                }}
                 data-testid="input-email-pretitle"
                 maxLength={200}
               />
               <p className="text-xs text-gray-500 mt-1">
-                {emailForm.preTitle.length}/200 characters • Optional subtitle text below the title
+                {(currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                  ? emailForm.preTitle 
+                  : translations[currentViewingLanguage].preTitle).length}/200 characters • Optional subtitle text below the title
               </p>
             </div>
 
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-sm font-medium">Message Content *</label>
+                <label className="block text-sm font-medium">
+                  Message Content * {currentViewingLanguage !== 'en' && translations[currentViewingLanguage] && (
+                    <Badge variant="outline" className="ml-2 text-xs">Editing Translation</Badge>
+                  )}
+                </label>
                 <div className="flex items-center gap-2">
                   <Button
                     type="button"
@@ -4222,18 +4507,36 @@ function EmailManagementSection({
               </div>
               <Textarea
                 placeholder="Enter the main message content. HTML tags are supported for formatting."
-                value={emailForm.messageContent}
-                onChange={(e) => setEmailForm((prev: any) => ({ ...prev, messageContent: e.target.value }))}
+                value={currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                  ? emailForm.messageContent 
+                  : translations[currentViewingLanguage].messageContent}
+                onChange={(e) => {
+                  if (currentViewingLanguage === 'en' || !translations[currentViewingLanguage]) {
+                    setEmailForm((prev: any) => ({ ...prev, messageContent: e.target.value }));
+                  } else {
+                    setTranslations({
+                      ...translations,
+                      [currentViewingLanguage]: {
+                        ...translations[currentViewingLanguage],
+                        messageContent: e.target.value
+                      }
+                    });
+                  }
+                }}
                 rows={10}
                 data-testid="textarea-email-content"
                 className="font-mono text-sm"
               />
               <div className="flex items-center justify-between mt-1">
                 <p className="text-xs text-gray-500">
-                  {emailForm.messageContent.length}/10,000 characters
+                  {(currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                    ? emailForm.messageContent 
+                    : translations[currentViewingLanguage].messageContent).length}/10,000 characters
                 </p>
                 <p className="text-xs text-gray-500">
-                  ~{Math.ceil(emailForm.messageContent.split(/\s+/).filter((w: string) => w).length / 200)} min read
+                  ~{Math.ceil((currentViewingLanguage === 'en' || !translations[currentViewingLanguage] 
+                    ? emailForm.messageContent 
+                    : translations[currentViewingLanguage].messageContent).split(/\s+/).filter((w: string) => w).length / 200)} min read
                 </p>
               </div>
             </div>
@@ -6451,6 +6754,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             emailForm.recipients.split(/[,\n]/).map(email => email.trim()).filter(Boolean) : 
             undefined,
           filters: emailForm.recipientType === 'schools' ? cleanFilters(schoolFilters) : undefined,
+          editedTranslations: Object.keys(translations).length > 0 ? translations : undefined,
         }),
       });
 
@@ -6468,8 +6772,14 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         preTitle: '',
         messageContent: '',
         template: 'announcement',
-        recipients: ''
+        recipients: '',
+        autoTranslate: false
       });
+      
+      // Reset translation state
+      setTranslations({});
+      setSelectedPreviewLanguages([]);
+      setCurrentViewingLanguage('en');
       
       toast({
         title: "Emails Sent Successfully",
@@ -7553,6 +7863,14 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               schoolFilters={schoolFilters}
               setSchoolFilters={setSchoolFilters}
               countryOptions={countryOptions}
+              translations={translations}
+              setTranslations={setTranslations}
+              selectedPreviewLanguages={selectedPreviewLanguages}
+              setSelectedPreviewLanguages={setSelectedPreviewLanguages}
+              currentViewingLanguage={currentViewingLanguage}
+              setCurrentViewingLanguage={setCurrentViewingLanguage}
+              isGeneratingTranslations={isGeneratingTranslations}
+              setIsGeneratingTranslations={setIsGeneratingTranslations}
             />
           </div>
         )}
