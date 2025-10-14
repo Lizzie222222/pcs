@@ -1065,6 +1065,13 @@ export type Resource = typeof resources.$inferSelect;
 export type InsertResource = z.infer<typeof insertResourceSchema>;
 export type Evidence = typeof evidence.$inferSelect;
 export type InsertEvidence = z.infer<typeof insertEvidenceSchema>;
+export type EvidenceWithSchool = Evidence & {
+  school: {
+    id: string;
+    name: string;
+    country: string;
+  };
+};
 export type CaseStudy = typeof caseStudies.$inferSelect;
 export type InsertCaseStudy = z.infer<typeof insertCaseStudySchema>;
 export type EmailLog = typeof emailLogs.$inferSelect;

@@ -34,6 +34,7 @@ import {
   type InsertResource,
   type Evidence,
   type InsertEvidence,
+  type EvidenceWithSchool,
   type EvidenceRequirement,
   type InsertEvidenceRequirement,
   type CaseStudy,
@@ -190,7 +191,7 @@ export interface IStorage {
     schoolId?: string;
     country?: string;
     visibility?: 'public' | 'private';
-  }): Promise<any[]>;
+  }): Promise<EvidenceWithSchool[]>;
   getApprovedPublicEvidence(): Promise<Evidence[]>;
   updateEvidenceStatus(
     id: string, 
@@ -1288,7 +1289,7 @@ export class DatabaseStorage implements IStorage {
     schoolId?: string;
     country?: string;
     visibility?: 'public' | 'private';
-  }): Promise<any[]> {
+  }): Promise<EvidenceWithSchool[]> {
     // Build WHERE conditions
     const conditions = [];
     

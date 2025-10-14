@@ -95,7 +95,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
-import type { ReductionPromise, Event, EventRegistration } from "@shared/schema";
+import type { ReductionPromise, Event, EventRegistration, EvidenceWithSchool } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
 import { format, parseISO } from "date-fns";
 
@@ -4434,13 +4434,13 @@ function EvidenceGalleryTab() {
     country: '',
     visibility: '',
   });
-  const [selectedEvidence, setSelectedEvidence] = useState<any>(null);
+  const [selectedEvidence, setSelectedEvidence] = useState<EvidenceWithSchool | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [schoolHistoryDialogOpen, setSchoolHistoryDialogOpen] = useState(false);
-  const [selectedSchool, setSelectedSchool] = useState<any>(null);
+  const [selectedSchool, setSelectedSchool] = useState<EvidenceWithSchool['school'] | null>(null);
   
   // Fetch all evidence with filters
-  const { data: evidenceList = [], isLoading } = useQuery({
+  const { data: evidenceList = [], isLoading } = useQuery<EvidenceWithSchool[]>({
     queryKey: ['/api/admin/evidence', filters],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -4458,7 +4458,7 @@ function EvidenceGalleryTab() {
   });
 
   // Fetch school history when selected
-  const { data: schoolHistory = [], isLoading: schoolHistoryLoading } = useQuery({
+  const { data: schoolHistory = [], isLoading: schoolHistoryLoading } = useQuery<EvidenceWithSchool[]>({
     queryKey: ['/api/admin/evidence', { schoolId: selectedSchool?.id }],
     queryFn: async () => {
       if (!selectedSchool?.id) return [];
