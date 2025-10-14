@@ -17,6 +17,7 @@ import { generateAnalyticsInsights } from "./lib/aiInsights";
 import { translateEmailContent } from "./translationService";
 import { promises as fs } from 'fs';
 import path from 'path';
+import puppeteer from 'puppeteer';
 
 // CSV generation helper with proper escaping
 function generateCSV(data: any[], type: string): string {
@@ -88,6 +89,143 @@ function escapeHtml(text: string | null | undefined): string {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#039;');
+}
+
+// Helper function to sanitize filenames for downloads
+function sanitizeFilename(filename: string): string {
+  return filename
+    .replace(/[^a-z0-9]/gi, '_')
+    .replace(/_{2,}/g, '_')
+    .replace(/^_|_$/g, '')
+    .substring(0, 100) || 'case_study';
+}
+
+// Helper function to generate beautiful HTML for PDF
+function generatePdfHtml(caseStudy: any): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+          font-family: 'Arial', sans-serif; 
+          line-height: 1.6; 
+          color: #333;
+          padding: 20px;
+        }
+        h1 { 
+          color: #0066cc; 
+          font-size: 32px; 
+          margin-bottom: 20px; 
+          border-bottom: 3px solid #0066cc;
+          padding-bottom: 10px;
+        }
+        h2 { 
+          color: #0066cc; 
+          font-size: 24px; 
+          margin-top: 30px; 
+          margin-bottom: 15px; 
+        }
+        .meta { 
+          font-size: 14px; 
+          color: #666; 
+          margin-bottom: 20px; 
+        }
+        .section { margin-bottom: 30px; }
+        img { max-width: 100%; height: auto; margin: 20px 0; }
+        .quote { 
+          border-left: 4px solid #0066cc; 
+          padding-left: 20px; 
+          margin: 20px 0; 
+          font-style: italic; 
+        }
+        .metric { 
+          display: inline-block; 
+          margin: 10px 20px 10px 0; 
+          padding: 10px; 
+          background: #f0f0f0; 
+        }
+        .timeline-item { 
+          margin-bottom: 15px; 
+          padding-left: 20px; 
+          border-left: 2px solid #0066cc; 
+        }
+        @page { margin: 20mm; }
+      </style>
+    </head>
+    <body>
+      <h1>${escapeHtml(caseStudy.title)}</h1>
+      <div class="meta">
+        ${caseStudy.schoolName ? `<strong>School:</strong> ${escapeHtml(caseStudy.schoolName)} | ` : ''}
+        ${caseStudy.schoolCountry ? `<strong>Country:</strong> ${escapeHtml(caseStudy.schoolCountry)} | ` : ''}
+        ${caseStudy.stage ? `<strong>Stage:</strong> ${escapeHtml(caseStudy.stage.charAt(0).toUpperCase() + caseStudy.stage.slice(1))}` : ''}
+      </div>
+      
+      <!-- Main image -->
+      ${caseStudy.imageUrl ? `<img src="${caseStudy.imageUrl}" alt="Hero image" />` : ''}
+      
+      <!-- Description -->
+      <div class="section">
+        ${caseStudy.description || ''}
+      </div>
+      
+      <!-- Impact -->
+      ${caseStudy.impact ? `
+        <h2>Impact Achieved</h2>
+        <div class="section">
+          ${escapeHtml(caseStudy.impact)}
+        </div>
+      ` : ''}
+      
+      <!-- Impact Metrics -->
+      ${caseStudy.impactMetrics?.length ? `
+        <h2>Impact Metrics</h2>
+        <div class="section">
+          ${caseStudy.impactMetrics.map((m: any) => `
+            <div class="metric">
+              <strong>${escapeHtml(m.label)}</strong><br/>
+              ${escapeHtml(m.value)}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+      
+      <!-- Student Quotes -->
+      ${caseStudy.studentQuotes?.length ? `
+        <h2>Student Testimonials</h2>
+        ${caseStudy.studentQuotes.map((q: any) => `
+          <div class="quote section">
+            "${escapeHtml(q.quote)}"<br/>
+            <strong>— ${escapeHtml(q.name)}${q.age ? `, Age ${q.age}` : ''}</strong>
+          </div>
+        `).join('')}
+      ` : ''}
+      
+      <!-- Timeline -->
+      ${caseStudy.timelineSections?.length ? `
+        <h2>Timeline</h2>
+        <div class="section">
+          ${caseStudy.timelineSections.map((t: any) => `
+            <div class="timeline-item">
+              <strong>${escapeHtml(t.title)}</strong>${t.date ? ` - ${escapeHtml(t.date)}` : ''}<br/>
+              ${escapeHtml(t.description || '')}
+            </div>
+          `).join('')}
+        </div>
+      ` : ''}
+      
+      <!-- Categories/Tags -->
+      ${caseStudy.categories?.length || caseStudy.tags?.length ? `
+        <div class="section">
+          ${caseStudy.categories?.length ? `<strong>Categories:</strong> ${caseStudy.categories.map(escapeHtml).join(', ')}` : ''}
+          ${caseStudy.tags?.length ? `<br/><strong>Tags:</strong> ${caseStudy.tags.map(escapeHtml).join(', ')}` : ''}
+        </div>
+      ` : ''}
+    </body>
+    </html>
+  `;
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -319,6 +457,70 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching related case studies:", error);
       res.status(500).json({ message: "Failed to fetch related case studies" });
+    }
+  });
+
+  // Download case study as PDF
+  app.get('/api/case-studies/:id/pdf', async (req: any, res) => {
+    try {
+      const caseStudy = await storage.getCaseStudyById(req.params.id);
+      if (!caseStudy) {
+        return res.status(404).json({ error: 'Case study not found' });
+      }
+      
+      // Draft Protection: Only admins can download draft case studies
+      const isAdmin = req.isAuthenticated && req.isAuthenticated() && req.user?.isAdmin;
+      if (caseStudy.status === 'draft' && !isAdmin) {
+        return res.status(404).json({ error: 'Case study not found' });
+      }
+      
+      console.log('[PDF] Starting PDF generation for case study:', caseStudy.id);
+      
+      // Use system Chromium for Replit/NixOS compatibility
+      const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || 
+                            '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium';
+      
+      const browser = await puppeteer.launch({
+        headless: true,
+        executablePath,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-dev-shm-usage',
+          '--disable-gpu',
+          '--disable-software-rasterizer'
+        ]
+      });
+      
+      console.log('[PDF] Browser launched successfully');
+      
+      const page = await browser.newPage();
+      
+      // Generate beautiful HTML for PDF
+      const htmlContent = generatePdfHtml(caseStudy);
+      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
+      
+      console.log('[PDF] HTML content loaded, generating PDF...');
+      
+      // Generate PDF with options
+      const pdf = await page.pdf({
+        format: 'A4',
+        printBackground: true,
+        margin: { top: '20mm', right: '15mm', bottom: '20mm', left: '15mm' }
+      });
+      
+      await browser.close();
+      
+      console.log('[PDF] PDF generated successfully');
+      
+      // Set headers
+      const filename = sanitizeFilename(caseStudy.title);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}.pdf"`);
+      res.send(Buffer.from(pdf));
+    } catch (error) {
+      console.error('[PDF] PDF generation error:', error);
+      res.status(500).json({ error: 'Failed to generate PDF' });
     }
   });
 

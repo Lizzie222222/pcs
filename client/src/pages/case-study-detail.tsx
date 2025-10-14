@@ -18,6 +18,7 @@ import {
   Clock,
   ChevronLeft,
   ChevronRight,
+  Download,
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
@@ -32,6 +33,7 @@ import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { SocialMetaTags } from "@/components/SocialMetaTags";
 import { ShareDialog } from "@/components/ShareDialog";
+import { useToast } from "@/hooks/use-toast";
 
 interface EvidenceFile {
   name: string;
@@ -242,6 +244,8 @@ export default function CaseStudyDetail() {
   const caseStudyId = params.id;
   const [beforeAfterSlider, setBeforeAfterSlider] = useState(50);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
+  const [isDownloading, setIsDownloading] = useState(false);
+  const { toast } = useToast();
 
   useScrollReveal();
 
@@ -272,6 +276,32 @@ export default function CaseStudyDetail() {
 
   const handleShare = () => {
     setShareDialogOpen(true);
+  };
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsDownloading(true);
+      const response = await fetch(`/api/case-studies/${caseStudyId}/pdf`, {
+        credentials: 'include'
+      });
+      if (!response.ok) throw new Error('Failed to generate PDF');
+      
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `${caseStudy?.title || 'case_study'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+      
+      toast({ title: 'PDF downloaded successfully' });
+    } catch (error) {
+      toast({ title: 'Failed to download PDF', variant: 'destructive' });
+    } finally {
+      setIsDownloading(false);
+    }
   };
 
   const scrollToContent = () => {
@@ -767,6 +797,15 @@ export default function CaseStudyDetail() {
           >
             <Share2 className="w-4 h-4 mr-2" />
             Share This Story
+          </Button>
+          <Button
+            onClick={handleDownloadPdf}
+            variant="outline"
+            disabled={isDownloading}
+            data-testid="button-download-pdf"
+          >
+            <Download className="w-4 h-4 mr-2" />
+            {isDownloading ? 'Generating PDF...' : 'Download PDF'}
           </Button>
           <Button
             onClick={() => setLocation('/register')}
