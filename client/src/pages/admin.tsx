@@ -4231,6 +4231,18 @@ function EmailManagementSection({
                         
                         setIsGeneratingTranslations(true);
                         try {
+                          // Only generate translations for languages that don't already exist
+                          const languagesToGenerate = selectedPreviewLanguages.filter(lang => !translations[lang]);
+                          
+                          if (languagesToGenerate.length === 0) {
+                            toast({
+                              title: "Translations Already Available",
+                              description: "All selected languages already have translations. You can edit them directly in the form fields.",
+                            });
+                            setIsGeneratingTranslations(false);
+                            return;
+                          }
+                          
                           const response = await fetch('/api/admin/bulk-email/translate-preview', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -4241,17 +4253,18 @@ function EmailManagementSection({
                               title: emailForm.title,
                               preTitle: emailForm.preTitle,
                               messageContent: emailForm.messageContent,
-                              languages: selectedPreviewLanguages,
+                              languages: languagesToGenerate,
                             }),
                           });
                           
                           if (!response.ok) throw new Error('Failed to generate translations');
                           
                           const data = await response.json();
-                          setTranslations(data.translations);
+                          // Merge new translations with existing ones, preserving edited translations
+                          setTranslations(prev => ({ ...prev, ...data.translations }));
                           toast({
                             title: "Translations Generated",
-                            description: `Successfully generated translations for ${selectedPreviewLanguages.length} language(s).`,
+                            description: `Successfully generated translations for ${languagesToGenerate.length} language(s).`,
                           });
                         } catch (error) {
                           toast({
@@ -4298,9 +4311,8 @@ function EmailManagementSection({
                           <button
                             onClick={() => {
                               setSelectedPreviewLanguages(selectedPreviewLanguages.filter(l => l !== lang));
-                              const newTranslations = { ...translations };
-                              delete newTranslations[lang];
-                              setTranslations(newTranslations);
+                              // Keep the translation in memory to preserve edits
+                              // Only remove from preview list, not from translations
                               if (currentViewingLanguage === lang) {
                                 setCurrentViewingLanguage('en');
                               }
@@ -4316,7 +4328,7 @@ function EmailManagementSection({
                   </div>
                 )}
                 
-                {/* Language Switcher */}
+                {/* Language Switcher - Shows whenever translations exist, regardless of preview selection */}
                 {Object.keys(translations).length > 0 && (
                   <div className="border-t pt-3">
                     <label className="block text-xs font-medium text-gray-700 mb-2">View/Edit Translation</label>
@@ -4328,16 +4340,19 @@ function EmailManagementSection({
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {Object.keys(translations).map(lang => {
+                        {/* Always include English (source language) */}
+                        <SelectItem value="en">English (Original)</SelectItem>
+                        {/* Then show all translated languages */}
+                        {Object.keys(translations).filter(lang => lang !== 'en').map(lang => {
                           const langNames: Record<string, string> = {
-                            en: 'English', es: 'Spanish', fr: 'French', de: 'German',
+                            es: 'Spanish', fr: 'French', de: 'German',
                             it: 'Italian', pt: 'Portuguese', nl: 'Dutch', ru: 'Russian',
                             zh: 'Chinese', ko: 'Korean', ar: 'Arabic', id: 'Indonesian',
                             el: 'Greek', cy: 'Welsh'
                           };
                           return (
                             <SelectItem key={lang} value={lang}>
-                              {langNames[lang]} {lang === 'en' ? '(Original)' : ''}
+                              {langNames[lang]}
                             </SelectItem>
                           );
                         })}
