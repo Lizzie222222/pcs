@@ -122,3 +122,49 @@ Dedicated public pages for online events that allow registered users to access l
 ### Configuration Required
 **Environment Variables**:
 - CRON_SECRET: Secret token for cron endpoint authentication (must be set for reminders to work)
+
+## Server-Side Meta Tag Injection for Social Media
+### Overview
+Implemented server-side meta tag injection for case study pages to ensure social media crawlers (Facebook, Twitter, LinkedIn, etc.) can properly generate rich preview cards when case studies are shared.
+
+### Problem Solved
+Social media crawlers don't execute JavaScript, so they couldn't see the meta tags that were being set client-side by React. This resulted in missing or generic preview cards when sharing case study links.
+
+### Implementation
+**Route Handler**: GET /case-study/:id
+- Placed BEFORE Vite/SPA catch-all route to intercept case study requests
+- Queries database directly for case study data (title, description, images)
+- Reads HTML template from disk (client/index.html in dev, public/index.html in production)
+- Injects meta tags with case study data into HTML <head>
+- Falls back to SPA for 404 handling if case study not found
+- Error handling with fallback to normal SPA serving
+
+**Meta Tags Injected**:
+- og:title, og:description, og:image, og:url, og:type, og:site_name
+- twitter:card, twitter:title, twitter:description, twitter:image
+- meta description and page title
+
+**Helper Functions**:
+- `stripHtml()`: Removes HTML tags from description for clean meta content
+- `escapeHtml()`: Prevents XSS attacks by escaping special characters in meta tags
+
+**Security**:
+- All content properly escaped using escapeHtml() to prevent XSS
+- HTML tags stripped from descriptions
+- Graceful error handling with SPA fallback
+
+**Client-Side Fallback**:
+- SocialMetaTags component remains for SPA navigation (client-side routing)
+- Server-side injection takes precedence for initial page loads and crawlers
+
+### Testing
+Test with social media debuggers:
+- Facebook Sharing Debugger: https://developers.facebook.com/tools/debug/
+- Twitter Card Validator: https://cards-dev.twitter.com/validator
+- LinkedIn Post Inspector: https://www.linkedin.com/post-inspector/
+
+### Technical Details
+**Development**: Reads from client/index.html
+**Production**: Reads from server/public/index.html (built dist folder)
+**Image Priority**: Uses first image from images array, falls back to imageUrl field
+**Description**: Truncated to 150 characters after HTML stripping

@@ -6,7 +6,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, caseStudies } from "@shared/schema";
 import { nanoid } from 'nanoid';
 import { z } from "zod";
 import * as XLSX from 'xlsx';
@@ -15,6 +15,8 @@ import { db } from "./db";
 import { eq } from "drizzle-orm";
 import { generateAnalyticsInsights } from "./lib/aiInsights";
 import { translateEmailContent } from "./translationService";
+import { promises as fs } from 'fs';
+import path from 'path';
 
 // CSV generation helper with proper escaping
 function generateCSV(data: any[], type: string): string {
@@ -69,6 +71,23 @@ function generateExcel(data: any[], type: string): Buffer {
   const workbook = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(workbook, worksheet, type.charAt(0).toUpperCase() + type.slice(1));
   return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
+}
+
+// Helper function to strip HTML tags from text
+function stripHtml(html: string | null | undefined): string {
+  if (!html) return '';
+  return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+// Helper function to escape HTML for safe inclusion in meta tags
+function escapeHtml(text: string | null | undefined): string {
+  if (!text) return '';
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
 }
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -6130,6 +6149,102 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('[Event Reminders Cron] Error:', error);
       res.status(500).json({ message: 'Failed to process event reminders' });
+    }
+  });
+
+  // Server-side meta tag injection for case study pages
+  // This route MUST be before Vite/SPA catch-all to intercept case study requests
+  app.get('/case-study/:id', async (req, res, next) => {
+    try {
+      const { id } = req.params;
+      
+      // Fetch case study data directly with only the fields needed for meta tags
+      const result = await db
+        .select({
+          id: caseStudies.id,
+          title: caseStudies.title,
+          description: caseStudies.description,
+          imageUrl: caseStudies.imageUrl,
+          images: caseStudies.images,
+        })
+        .from(caseStudies)
+        .where(eq(caseStudies.id, id))
+        .limit(1);
+      
+      const caseStudy = result[0];
+      
+      // If case study not found, let SPA handle 404
+      if (!caseStudy) {
+        console.log(`[Meta Tags] Case study ${id} not found, falling back to SPA`);
+        return next();
+      }
+      
+      console.log(`[Meta Tags] Injecting meta tags for case study: ${caseStudy.title}`);
+      
+      // Determine HTML template path based on environment
+      let indexPath: string;
+      if (process.env.NODE_ENV === 'production') {
+        // In production, read from dist/public directory
+        indexPath = path.join(import.meta.dirname, 'public', 'index.html');
+      } else {
+        // In development, read from client directory
+        indexPath = path.join(import.meta.dirname, '..', 'client', 'index.html');
+      }
+      
+      // Read HTML template
+      let html: string;
+      try {
+        html = await fs.readFile(indexPath, 'utf-8');
+      } catch (readError) {
+        console.error('[Meta Tags] Failed to read index.html:', readError);
+        return next();
+      }
+      
+      // Extract and prepare meta tag content
+      const description = stripHtml(caseStudy.description).substring(0, 150);
+      
+      // Get image URL from images array or fallback to imageUrl
+      let imageUrl = '';
+      if (caseStudy.images && Array.isArray(caseStudy.images) && caseStudy.images.length > 0) {
+        const firstImage = caseStudy.images[0] as any;
+        imageUrl = firstImage?.url || '';
+      }
+      if (!imageUrl && caseStudy.imageUrl) {
+        imageUrl = caseStudy.imageUrl;
+      }
+      
+      // Build full URL for og:url
+      const protocol = req.get('x-forwarded-proto') || req.protocol;
+      const host = req.get('host');
+      const fullUrl = `${protocol}://${host}${req.originalUrl}`;
+      
+      // Build meta tags with escaped content
+      const metaTags = `
+    <!-- Case Study Meta Tags (Server-Side Injected) -->
+    <meta property="og:title" content="${escapeHtml(caseStudy.title)}" />
+    <meta property="og:description" content="${escapeHtml(description)}" />
+    <meta property="og:image" content="${escapeHtml(imageUrl)}" />
+    <meta property="og:url" content="${escapeHtml(fullUrl)}" />
+    <meta property="og:type" content="article" />
+    <meta property="og:site_name" content="Plastic Clever Schools" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="${escapeHtml(caseStudy.title)}" />
+    <meta name="twitter:description" content="${escapeHtml(description)}" />
+    <meta name="twitter:image" content="${escapeHtml(imageUrl)}" />
+    <meta name="description" content="${escapeHtml(description)}" />
+    <title>${escapeHtml(caseStudy.title)} | Plastic Clever Schools</title>`;
+      
+      // Inject meta tags before </head>
+      html = html.replace('</head>', `${metaTags}\n  </head>`);
+      
+      // Send the modified HTML
+      res.status(200).set({ 'Content-Type': 'text/html' }).send(html);
+      
+      console.log(`[Meta Tags] Successfully injected meta tags for case study: ${caseStudy.title}`);
+    } catch (error) {
+      console.error('[Meta Tags] Error injecting meta tags:', error);
+      // Fallback to normal SPA serving on error
+      next();
     }
   });
 

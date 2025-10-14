@@ -30,6 +30,8 @@ import {
 } from "@/components/ui/carousel";
 import { useEffect, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { SocialMetaTags } from "@/components/SocialMetaTags";
+import { ShareDialog } from "@/components/ShareDialog";
 
 interface EvidenceFile {
   name: string;
@@ -239,6 +241,7 @@ export default function CaseStudyDetail() {
   const [, setLocation] = useLocation();
   const caseStudyId = params.id;
   const [beforeAfterSlider, setBeforeAfterSlider] = useState(50);
+  const [shareDialogOpen, setShareDialogOpen] = useState(false);
 
   useScrollReveal();
 
@@ -267,21 +270,8 @@ export default function CaseStudyDetail() {
     }
   };
 
-  const handleShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title: caseStudy?.title,
-          text: caseStudy?.description,
-          url: window.location.href,
-        });
-      } catch (err) {
-        console.log('Error sharing:', err);
-      }
-    } else {
-      navigator.clipboard.writeText(window.location.href);
-      alert('Link copied to clipboard!');
-    }
+  const handleShare = () => {
+    setShareDialogOpen(true);
   };
 
   const scrollToContent = () => {
@@ -320,8 +310,21 @@ export default function CaseStudyDetail() {
   const heroVideo = caseStudy.videos?.[0];
   const heroImage = caseStudy.images?.[0]?.url || caseStudy.imageUrl;
 
+  const extractTextFromHtml = (html: string, maxLength: number = 150) => {
+    const text = html.replace(/<[^>]*>/g, '');
+    return text.length > maxLength ? text.substring(0, maxLength) : text;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
+      <SocialMetaTags
+        title={caseStudy.title}
+        description={extractTextFromHtml(caseStudy.description)}
+        image={heroImage}
+        url={typeof window !== 'undefined' ? window.location.href : ''}
+        type="article"
+        siteName="Plastic Clever Schools"
+      />
       <ReadingProgress />
 
       {/* Full-Screen Hero Section with Parallax */}
@@ -795,6 +798,15 @@ export default function CaseStudyDetail() {
 
       {/* Related Success Stories */}
       <RelatedCaseStudies caseStudyId={caseStudyId!} currentStage={caseStudy.stage} />
+
+      {/* Share Dialog */}
+      <ShareDialog
+        open={shareDialogOpen}
+        onOpenChange={setShareDialogOpen}
+        url={typeof window !== 'undefined' ? window.location.href : ''}
+        title={caseStudy.title}
+        description={extractTextFromHtml(caseStudy.description)}
+      />
     </div>
   );
 }
