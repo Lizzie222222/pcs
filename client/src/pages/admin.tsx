@@ -5806,6 +5806,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [currentEventStep, setCurrentEventStep] = useState<1 | 2 | 3>(1);
   const [uploadingPackFiles, setUploadingPackFiles] = useState<Record<number, boolean>>({});
   const [showPageBuilderWarning, setShowPageBuilderWarning] = useState(false);
+  const [eventDialogTab, setEventDialogTab] = useState<'details' | 'page-builder'>('details');
 
   // Page Builder form schema
   const pageBuilderSchema = z.object({
@@ -5869,11 +5870,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     name: "testimonials",
   });
 
-  // Reset step when dialog opens/closes
+  // Reset step and tab when dialog opens/closes
   useEffect(() => {
     if (!eventDialogOpen) {
       setCurrentEventStep(1);
       setShowPageBuilderWarning(false);
+      setEventDialogTab('details');
     }
   }, [eventDialogOpen]);
 
@@ -6175,32 +6177,70 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   // Events mutations
   const createEventMutation = useMutation({
     mutationFn: async (data: any) => {
-      return await apiRequest('POST', '/api/admin/events', data);
+      const res = await apiRequest('POST', '/api/admin/events', data);
+      return await res.json();
     },
-    onSuccess: () => {
+    onSuccess: (createdEvent: Event) => {
       toast({
         title: "Success",
         description: "Event created successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
-      setEventDialogOpen(false);
-      setEventFormData({
-        title: '',
-        description: '',
-        eventType: 'workshop',
-        status: 'draft',
-        startDateTime: '',
-        endDateTime: '',
-        location: '',
-        isVirtual: false,
-        meetingLink: '',
-        imageUrl: '',
-        capacity: '',
-        waitlistEnabled: false,
-        registrationDeadline: '',
-        tags: '',
-      });
-      setUploadedEventImage(null);
+      
+      // Check if this is a virtual event or webinar - keep modal open and switch to Page Builder
+      const isVirtualOrWebinar = createdEvent.isVirtual || createdEvent.eventType === 'webinar';
+      
+      if (isVirtualOrWebinar) {
+        // Set the newly created event as the editing event
+        setEditingEvent(createdEvent);
+        // Update form data with created event details
+        setEventFormData({
+          title: createdEvent.title,
+          description: createdEvent.description || '',
+          eventType: createdEvent.eventType,
+          status: createdEvent.status || 'draft',
+          startDateTime: new Date(createdEvent.startDateTime).toISOString().slice(0, 16),
+          endDateTime: new Date(createdEvent.endDateTime).toISOString().slice(0, 16),
+          location: createdEvent.location || '',
+          isVirtual: createdEvent.isVirtual ?? false,
+          meetingLink: createdEvent.meetingLink || '',
+          imageUrl: createdEvent.imageUrl || '',
+          capacity: createdEvent.capacity?.toString() || '',
+          waitlistEnabled: createdEvent.waitlistEnabled ?? false,
+          registrationDeadline: createdEvent.registrationDeadline ? new Date(createdEvent.registrationDeadline).toISOString().slice(0, 16) : '',
+          tags: createdEvent.tags?.join(', ') || '',
+        });
+        // Switch to Page Builder tab
+        setEventDialogTab('page-builder');
+        // Initialize page builder form with event data
+        pageBuilderForm.reset({
+          publicSlug: createdEvent.publicSlug || generateSlug(createdEvent.title),
+          youtubeVideos: (createdEvent.youtubeVideos as any[]) || [],
+          eventPackFiles: (createdEvent.eventPackFiles as any[]) || [],
+          testimonials: (createdEvent.testimonials as any[]) || [],
+        });
+        // Keep modal open - do NOT call setEventDialogOpen(false)
+      } else {
+        // For non-virtual events, close modal as usual
+        setEventDialogOpen(false);
+        setEventFormData({
+          title: '',
+          description: '',
+          eventType: 'workshop',
+          status: 'draft',
+          startDateTime: '',
+          endDateTime: '',
+          location: '',
+          isVirtual: false,
+          meetingLink: '',
+          imageUrl: '',
+          capacity: '',
+          waitlistEnabled: false,
+          registrationDeadline: '',
+          tags: '',
+        });
+        setUploadedEventImage(null);
+      }
     },
     onError: (error: any) => {
       toast({
@@ -8969,7 +9009,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             </DialogTitle>
           </DialogHeader>
           
-          <Tabs defaultValue="details" className="w-full">
+          <Tabs value={eventDialogTab} onValueChange={(value) => setEventDialogTab(value as 'details' | 'page-builder')} className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
               <TabsTrigger value="details" data-testid="tab-trigger-details">
                 Event Details

@@ -125,12 +125,15 @@ export default function EventLivePage() {
           {event.imageUrl && (
             <div className="mb-10">
               <img
-                src={event.imageUrl}
+                src={`/api/objects${event.imageUrl}`}
                 alt={event.title}
                 className="max-h-40 mx-auto object-contain drop-shadow-lg transition-opacity duration-300"
                 data-testid="img-event-logo"
                 onError={(e) => {
-                  e.currentTarget.style.display = 'none';
+                  const parent = e.currentTarget.parentElement;
+                  if (parent) {
+                    parent.style.display = 'none';
+                  }
                 }}
               />
             </div>
