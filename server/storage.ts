@@ -433,6 +433,7 @@ export interface IStorage {
     status?: string;
     eventType?: string;
     upcoming?: boolean;
+    publicSlug?: string;
     limit?: number;
     offset?: number;
   }): Promise<Event[]>;
@@ -4106,6 +4107,7 @@ export class DatabaseStorage implements IStorage {
     status?: string;
     eventType?: string;
     upcoming?: boolean;
+    publicSlug?: string;
     limit?: number;
     offset?: number;
   }): Promise<Event[]> {
@@ -4120,6 +4122,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters?.upcoming) {
       conditions.push(sql`${events.startDateTime} > NOW()`);
+    }
+    if (filters?.publicSlug) {
+      conditions.push(eq(events.publicSlug, filters.publicSlug));
     }
     
     if (conditions.length > 0) {

@@ -456,12 +456,19 @@ export const events = pgTable("events", {
   waitlistEnabled: boolean("waitlist_enabled").default(false),
   registrationDeadline: timestamp("registration_deadline"),
   tags: text("tags").array().default(sql`ARRAY[]::text[]`),
+  publicSlug: varchar("public_slug"),
+  youtubeVideos: jsonb("youtube_videos"),
+  eventPackFiles: jsonb("event_pack_files"),
+  testimonials: jsonb("testimonials"),
+  accessToken: varchar("access_token"),
+  reminderSentAt: timestamp("reminder_sent_at"),
   createdBy: varchar("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
   index("idx_events_start_date").on(table.startDateTime),
   index("idx_events_status").on(table.status),
+  index("idx_events_public_slug").on(table.publicSlug),
 ]);
 
 export const eventRegistrations = pgTable("event_registrations", {

@@ -4876,6 +4876,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public: Get event by public slug
+  app.get('/api/events/slug/:slug', async (req, res) => {
+    try {
+      const events = await storage.getEvents({ publicSlug: req.params.slug, status: 'published' });
+      if (events.length === 0) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      res.json(events[0]);
+    } catch (error) {
+      console.error("Error fetching event by slug:", error);
+      res.status(500).json({ message: "Failed to fetch event" });
+    }
+  });
+
   // Authenticated: Register for event
   app.post('/api/events/:id/register', isAuthenticated, async (req: any, res) => {
     try {
@@ -5225,6 +5239,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting event:", error);
       res.status(500).json({ message: "Failed to delete event" });
+    }
+  });
+
+  // Admin: Update event landing page content
+  app.patch('/api/admin/events/:id/page-content', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const eventId = req.params.id;
+      const { publicSlug, youtubeVideos, eventPackFiles, testimonials, accessToken } = req.body;
+      
+      const event = await storage.getEvent(eventId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      // Validate public slug uniqueness if provided and changed
+      if (publicSlug !== undefined && publicSlug !== event.publicSlug && publicSlug !== '') {
+        const existingEvents = await storage.getEvents({ publicSlug });
+        const conflictingEvent = existingEvents.find(e => e.id !== eventId);
+        if (conflictingEvent) {
+          return res.status(400).json({ 
+            message: `Public slug "${publicSlug}" is already in use by another event: "${conflictingEvent.title}"`,
+            field: "publicSlug"
+          });
+        }
+      }
+      
+      const updates: Partial<Event> = {};
+      if (publicSlug !== undefined) updates.publicSlug = publicSlug;
+      if (youtubeVideos !== undefined) updates.youtubeVideos = youtubeVideos;
+      if (eventPackFiles !== undefined) updates.eventPackFiles = eventPackFiles;
+      if (testimonials !== undefined) updates.testimonials = testimonials;
+      if (accessToken !== undefined) updates.accessToken = accessToken;
+      
+      const updatedEvent = await storage.updateEvent(eventId, updates);
+      res.json({ message: "Event page content updated successfully", event: updatedEvent });
+    } catch (error) {
+      console.error("Error updating event page content:", error);
+      res.status(500).json({ message: "Failed to update event page content" });
     }
   });
 
@@ -5851,6 +5903,116 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: 'Invalid tag data', errors: error.errors });
       }
       res.status(500).json({ message: error.message || 'Failed to create media tag' });
+    }
+  });
+
+  // ===== CRON ENDPOINTS =====
+  
+  // GET /api/cron/event-reminders - Send reminders for events starting in 1 hour
+  app.get('/api/cron/event-reminders', async (req, res) => {
+    try {
+      // Verify cron secret token for security
+      const cronSecret = req.headers['x-cron-secret'] || req.query.secret;
+      const expectedSecret = process.env.CRON_SECRET;
+      
+      if (!expectedSecret) {
+        console.warn('[Event Reminders Cron] CRON_SECRET not configured - endpoint disabled for security');
+        return res.status(503).json({ message: 'Cron service not configured' });
+      }
+      
+      if (cronSecret !== expectedSecret) {
+        console.warn('[Event Reminders Cron] Invalid cron secret provided');
+        return res.status(401).json({ message: 'Unauthorized' });
+      }
+      
+      console.log('[Event Reminders Cron] Starting event reminder check...');
+      
+      // Calculate time window: events starting between 45 and 75 minutes from now
+      const now = new Date();
+      const startWindow = new Date(now.getTime() + 45 * 60 * 1000);
+      const endWindow = new Date(now.getTime() + 75 * 60 * 1000);
+      
+      // Get all published events
+      const allEvents = await storage.getEvents({ status: 'published' });
+      
+      // Filter events in the time window that haven't been reminded yet
+      const eventsToRemind = allEvents.filter(event => {
+        const eventStart = new Date(event.startDateTime);
+        const inTimeWindow = eventStart >= startWindow && eventStart <= endWindow;
+        const notReminded = !event.reminderSentAt;
+        return inTimeWindow && notReminded;
+      });
+      
+      console.log(`[Event Reminders Cron] Found ${eventsToRemind.length} events needing reminders`);
+      
+      let remindersSent = 0;
+      let remindersFailed = 0;
+      
+      for (const event of eventsToRemind) {
+        try {
+          // Get all registered users for this event
+          const registrations = await storage.getEventRegistrations(event.id, {
+            status: 'registered'
+          });
+          
+          console.log(`[Event Reminders Cron] Event "${event.title}" has ${registrations.length} registrations`);
+          
+          // Send reminder to each registered user
+          for (const registration of registrations) {
+            if (!registration.user.email) continue;
+            
+            try {
+              await sendEventReminderEmail(
+                registration.user.email,
+                {
+                  firstName: registration.user.firstName || undefined,
+                  lastName: registration.user.lastName || undefined
+                },
+                {
+                  id: event.id,
+                  title: event.title,
+                  description: event.description,
+                  startDateTime: event.startDateTime,
+                  endDateTime: event.endDateTime,
+                  timezone: event.timezone || undefined,
+                  location: event.location || undefined,
+                  isVirtual: event.isVirtual || false,
+                  meetingLink: event.meetingLink || undefined,
+                },
+                1
+              );
+              remindersSent++;
+            } catch (emailError) {
+              console.error(`[Event Reminders Cron] Failed to send reminder to ${registration.user.email}:`, emailError);
+              remindersFailed++;
+            }
+          }
+          
+          // Mark reminder as sent
+          await storage.updateEvent(event.id, {
+            reminderSentAt: new Date()
+          });
+          
+          console.log(`[Event Reminders Cron] Reminder sent successfully for event "${event.title}"`);
+        } catch (eventError) {
+          console.error(`[Event Reminders Cron] Error processing event ${event.id}:`, eventError);
+          remindersFailed++;
+        }
+      }
+      
+      const summary = {
+        eventsChecked: allEvents.length,
+        eventsToRemind: eventsToRemind.length,
+        remindersSent,
+        remindersFailed,
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('[Event Reminders Cron] Summary:', summary);
+      res.json(summary);
+    } catch (error) {
+      console.error('[Event Reminders Cron] Error:', error);
+      res.status(500).json({ message: 'Failed to process event reminders' });
     }
   });
 

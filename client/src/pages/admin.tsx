@@ -19,6 +19,10 @@ import { useCountries } from "@/hooks/useCountries";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { DateRangePicker } from "@/components/ui/date-range-picker";
 import { subDays } from "date-fns";
+import { useForm, useFieldArray, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import type { DateRange } from "react-day-picker";
 import { 
   AlertDialog,
@@ -5798,6 +5802,98 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [selectedEventsForDigest, setSelectedEventsForDigest] = useState<Set<string>>(new Set());
   const [digestDialogOpen, setDigestDialogOpen] = useState(false);
 
+  // Page Builder state
+  const [activeEventTab, setActiveEventTab] = useState<'details' | 'page-builder'>('details');
+  const [uploadingPackFiles, setUploadingPackFiles] = useState<Record<number, boolean>>({});
+
+  // Page Builder form schema
+  const pageBuilderSchema = z.object({
+    publicSlug: z.string().optional(),
+    youtubeVideos: z.array(z.object({
+      title: z.string().min(1, "Title is required"),
+      url: z.string().url("Must be a valid URL").refine((url) => {
+        return url.includes('youtube.com') || url.includes('youtu.be');
+      }, "Must be a valid YouTube URL"),
+      description: z.string().optional(),
+    })).optional(),
+    eventPackFiles: z.array(z.object({
+      title: z.string().min(1, "Title is required"),
+      fileUrl: z.string().min(1, "File is required"),
+      fileName: z.string().optional(),
+      fileSize: z.number().optional(),
+      description: z.string().optional(),
+    })).optional(),
+    testimonials: z.array(z.object({
+      quote: z.string().min(1, "Quote is required"),
+      author: z.string().min(1, "Author name is required"),
+      role: z.string().optional(),
+    })).optional(),
+  });
+
+  type PageBuilderFormData = z.infer<typeof pageBuilderSchema>;
+
+  // Helper function to generate slug from title
+  const generateSlug = (title: string): string => {
+    return title
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
+  };
+
+  // Page Builder form
+  const pageBuilderForm = useForm<PageBuilderFormData>({
+    resolver: zodResolver(pageBuilderSchema),
+    defaultValues: {
+      publicSlug: '',
+      youtubeVideos: [],
+      eventPackFiles: [],
+      testimonials: [],
+    },
+  });
+
+  const { fields: videoFields, append: appendVideo, remove: removeVideo, move: moveVideo } = useFieldArray({
+    control: pageBuilderForm.control,
+    name: "youtubeVideos",
+  });
+
+  const { fields: packFileFields, append: appendPackFile, remove: removePackFile } = useFieldArray({
+    control: pageBuilderForm.control,
+    name: "eventPackFiles",
+  });
+
+  const { fields: testimonialFields, append: appendTestimonial, remove: removeTestimonial } = useFieldArray({
+    control: pageBuilderForm.control,
+    name: "testimonials",
+  });
+
+  // Reset tab when dialog opens/closes
+  useEffect(() => {
+    if (!eventDialogOpen) {
+      setActiveEventTab('details');
+    }
+  }, [eventDialogOpen]);
+
+  // Initialize page builder form when editing event
+  useEffect(() => {
+    if (editingEvent && eventDialogOpen) {
+      pageBuilderForm.reset({
+        publicSlug: editingEvent.publicSlug || '',
+        youtubeVideos: (editingEvent.youtubeVideos as any[]) || [],
+        eventPackFiles: (editingEvent.eventPackFiles as any[]) || [],
+        testimonials: (editingEvent.testimonials as any[]) || [],
+      });
+    } else if (!editingEvent && eventDialogOpen) {
+      pageBuilderForm.reset({
+        publicSlug: '',
+        youtubeVideos: [],
+        eventPackFiles: [],
+        testimonials: [],
+      });
+    }
+  }, [editingEvent, eventDialogOpen]);
+
   // Redirect if not authenticated or not admin (but only after loading completes)
   useEffect(() => {
     console.log('Admin page - access check:', {
@@ -6174,6 +6270,26 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     },
   });
 
+  const updateEventPageContentMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: PageBuilderFormData }) => {
+      return await apiRequest('PATCH', `/api/admin/events/${id}/page-content`, data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Event page content updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update event page content.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Event image upload handler
   const handleEventImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -6262,6 +6378,83 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const removeEventImage = () => {
     setUploadedEventImage(null);
     setEventFormData({ ...eventFormData, imageUrl: '' });
+  };
+
+  // PDF file upload handler for event pack files
+  const handlePackFileUpload = async (file: File, index: number): Promise<{ fileUrl: string; fileName: string; fileSize: number } | null> => {
+    // Validate file type
+    if (file.type !== 'application/pdf') {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload a PDF file.",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    // Validate file size (20MB)
+    if (file.size > 20 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "PDF must be less than 20MB.",
+        variant: "destructive",
+      });
+      return null;
+    }
+
+    setUploadingPackFiles(prev => ({ ...prev, [index]: true }));
+
+    try {
+      // Get upload URL
+      const uploadResponse = await fetch('/api/objects/upload', {
+        method: 'POST',
+        credentials: 'include',
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error('Failed to get upload URL');
+      }
+
+      const { uploadURL } = await uploadResponse.json();
+
+      // Upload file to storage
+      const uploadFileResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: file,
+        headers: {
+          'Content-Type': file.type,
+        },
+      });
+
+      if (!uploadFileResponse.ok) {
+        throw new Error('Failed to upload file');
+      }
+
+      // Set ACL policy to PUBLIC for event pack files
+      const aclResponse = await apiRequest('PUT', '/api/evidence-files', {
+        fileURL: uploadURL.split('?')[0],
+        visibility: 'public',
+        filename: file.name,
+      });
+      const { objectPath } = await aclResponse.json();
+
+      toast({
+        title: "Success",
+        description: "PDF uploaded successfully.",
+      });
+
+      return { fileUrl: objectPath, fileName: file.name, fileSize: file.size };
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload PDF. Please try again.",
+        variant: "destructive",
+      });
+      return null;
+    } finally {
+      setUploadingPackFiles(prev => ({ ...prev, [index]: false }));
+    }
   };
 
   // Teacher emails query for SendGrid
@@ -8767,12 +8960,20 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
       {/* Create/Edit Event Dialog */}
       <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle data-testid="text-event-dialog-title">
               {editingEvent ? 'Edit Event' : 'Create Event'}
             </DialogTitle>
           </DialogHeader>
+          
+          <Tabs value={activeEventTab} onValueChange={(value) => setActiveEventTab(value as 'details' | 'page-builder')} className="w-full">
+            <TabsList className="grid w-full grid-cols-2" data-testid="tabs-event-dialog">
+              <TabsTrigger value="details" data-testid="tab-details">Details</TabsTrigger>
+              <TabsTrigger value="page-builder" data-testid="tab-page-builder">Page Builder</TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="details" className="mt-4"  data-testid="tab-content-details">
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -9030,11 +9231,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               />
             </div>
           </div>
-          <DialogFooter>
+
+          <div className="flex justify-end gap-2 mt-4">
             <Button
               variant="outline"
               onClick={() => setEventDialogOpen(false)}
-              data-testid="button-cancel-event"
+              data-testid="button-cancel-event-details"
             >
               Cancel
             </Button>
@@ -9078,7 +9280,430 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             >
               {createEventMutation.isPending || updateEventMutation.isPending ? 'Saving...' : 'Save Event'}
             </Button>
-          </DialogFooter>
+          </div>
+            </TabsContent>
+
+            <TabsContent value="page-builder" className="mt-4" data-testid="tab-content-page-builder">
+              {!editingEvent ? (
+                <div className="text-center py-8 text-gray-500">
+                  <BookOpen className="h-12 w-12 mx-auto mb-3 text-gray-400" />
+                  <p>Please save the event details first before configuring the page builder.</p>
+                </div>
+              ) : (
+                <Form {...pageBuilderForm}>
+                  <form onSubmit={pageBuilderForm.handleSubmit((data) => {
+                    updateEventPageContentMutation.mutate({ id: editingEvent.id, data });
+                  })} className="space-y-6">
+                    
+                    {/* Public Slug Section */}
+                    <div className="space-y-3">
+                      <h3 className="text-lg font-semibold text-gray-900">Public Event Page</h3>
+                      <FormField
+                        control={pageBuilderForm.control}
+                        name="publicSlug"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>URL Slug</FormLabel>
+                            <div className="flex gap-2">
+                              <FormControl>
+                                <Input
+                                  {...field}
+                                  placeholder="international-day-of-action"
+                                  data-testid="input-public-slug"
+                                />
+                              </FormControl>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                onClick={() => {
+                                  if (eventFormData.title) {
+                                    const slug = generateSlug(eventFormData.title);
+                                    pageBuilderForm.setValue('publicSlug', slug);
+                                  }
+                                }}
+                                data-testid="button-generate-slug"
+                              >
+                                Auto-generate
+                              </Button>
+                            </div>
+                            {field.value && (
+                              <FormDescription data-testid="text-slug-preview">
+                                Preview: <a href={`/events/${field.value}`} target="_blank" rel="noopener noreferrer" className="text-pcs_blue hover:underline">/events/{field.value}</a>
+                              </FormDescription>
+                            )}
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    {/* YouTube Videos Section */}
+                    <div className="space-y-3 pt-4 border-t">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">YouTube Videos</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => appendVideo({ title: '', url: '', description: '' })}
+                          data-testid="button-add-video"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Video
+                        </Button>
+                      </div>
+                      
+                      {videoFields.length === 0 ? (
+                        <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
+                          No videos added yet. Click "Add Video" to get started.
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {videoFields.map((field, index) => (
+                            <div key={field.id} className="p-4 border rounded-md space-y-3" data-testid={`video-item-${index}`}>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-gray-700">Video {index + 1}</span>
+                                <div className="flex gap-2">
+                                  {index > 0 && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => moveVideo(index, index - 1)}
+                                      data-testid={`button-move-up-video-${index}`}
+                                    >
+                                      <ChevronUp className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  {index < videoFields.length - 1 && (
+                                    <Button
+                                      type="button"
+                                      variant="ghost"
+                                      size="sm"
+                                      onClick={() => moveVideo(index, index + 1)}
+                                      data-testid={`button-move-down-video-${index}`}
+                                    >
+                                      <ChevronDown className="h-4 w-4" />
+                                    </Button>
+                                  )}
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => removeVideo(index)}
+                                    data-testid={`button-remove-video-${index}`}
+                                  >
+                                    <X className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                              
+                              <FormField
+                                control={pageBuilderForm.control}
+                                name={`youtubeVideos.${index}.title`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Title *</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} data-testid={`input-video-title-${index}`} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={pageBuilderForm.control}
+                                name={`youtubeVideos.${index}.url`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>YouTube URL *</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="https://www.youtube.com/watch?v=..." data-testid={`input-video-url-${index}`} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={pageBuilderForm.control}
+                                name={`youtubeVideos.${index}.description`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Description (optional)</FormLabel>
+                                    <FormControl>
+                                      <Textarea {...field} rows={2} data-testid={`textarea-video-description-${index}`} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Event Pack Files Section */}
+                    <div className="space-y-3 pt-4 border-t">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Event Pack Files</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => appendPackFile({ title: '', fileUrl: '', fileName: '', fileSize: 0, description: '' })}
+                          data-testid="button-add-pack-file"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add File
+                        </Button>
+                      </div>
+                      
+                      {packFileFields.length === 0 ? (
+                        <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
+                          No files added yet. Click "Add File" to get started.
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {packFileFields.map((field, index) => (
+                            <div key={field.id} className="p-4 border rounded-md space-y-3" data-testid={`pack-file-item-${index}`}>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-gray-700">File {index + 1}</span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removePackFile(index)}
+                                  data-testid={`button-remove-pack-file-${index}`}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              
+                              <FormField
+                                control={pageBuilderForm.control}
+                                name={`eventPackFiles.${index}.title`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Title *</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} data-testid={`input-pack-file-title-${index}`} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={pageBuilderForm.control}
+                                name={`eventPackFiles.${index}.fileUrl`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>PDF File *</FormLabel>
+                                    <FormControl>
+                                      <div className="space-y-2">
+                                        {!field.value ? (
+                                          <div>
+                                            <input
+                                              type="file"
+                                              accept="application/pdf"
+                                              onChange={async (e) => {
+                                                const file = e.target.files?.[0];
+                                                if (file) {
+                                                  const result = await handlePackFileUpload(file, index);
+                                                  if (result) {
+                                                    pageBuilderForm.setValue(`eventPackFiles.${index}.fileUrl`, result.fileUrl);
+                                                    pageBuilderForm.setValue(`eventPackFiles.${index}.fileName`, result.fileName);
+                                                    pageBuilderForm.setValue(`eventPackFiles.${index}.fileSize`, result.fileSize);
+                                                  }
+                                                }
+                                                e.target.value = '';
+                                              }}
+                                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-pcs_blue file:text-white hover:file:bg-pcs_blue/90"
+                                              data-testid={`input-pack-file-upload-${index}`}
+                                              disabled={uploadingPackFiles[index]}
+                                            />
+                                            {uploadingPackFiles[index] && (
+                                              <p className="text-sm text-gray-600">Uploading...</p>
+                                            )}
+                                          </div>
+                                        ) : (
+                                          <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                                            <div className="flex items-center gap-2">
+                                              <FileText className="h-5 w-5 text-gray-600" />
+                                              <div>
+                                                <p className="text-sm font-medium text-gray-900" data-testid={`text-pack-file-name-${index}`}>
+                                                  {pageBuilderForm.watch(`eventPackFiles.${index}.fileName`) || 'File uploaded'}
+                                                </p>
+                                                {pageBuilderForm.watch(`eventPackFiles.${index}.fileSize`) && (
+                                                  <p className="text-xs text-gray-500" data-testid={`text-pack-file-size-${index}`}>
+                                                    {((pageBuilderForm.watch(`eventPackFiles.${index}.fileSize`) || 0) / 1024 / 1024).toFixed(2)} MB
+                                                  </p>
+                                                )}
+                                              </div>
+                                            </div>
+                                            <div className="flex gap-2">
+                                              <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => window.open(`/api/objects${field.value}`, '_blank')}
+                                                data-testid={`button-download-pack-file-${index}`}
+                                              >
+                                                <Download className="h-4 w-4" />
+                                              </Button>
+                                              <Button
+                                                type="button"
+                                                variant="ghost"
+                                                size="sm"
+                                                onClick={() => {
+                                                  pageBuilderForm.setValue(`eventPackFiles.${index}.fileUrl`, '');
+                                                  pageBuilderForm.setValue(`eventPackFiles.${index}.fileName`, '');
+                                                  pageBuilderForm.setValue(`eventPackFiles.${index}.fileSize`, 0);
+                                                }}
+                                                data-testid={`button-remove-uploaded-file-${index}`}
+                                              >
+                                                <Trash className="h-4 w-4" />
+                                              </Button>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={pageBuilderForm.control}
+                                name={`eventPackFiles.${index}.description`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Description (optional)</FormLabel>
+                                    <FormControl>
+                                      <Textarea {...field} rows={2} data-testid={`textarea-pack-file-description-${index}`} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Testimonials Section */}
+                    <div className="space-y-3 pt-4 border-t">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-gray-900">Testimonials</h3>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => appendTestimonial({ quote: '', author: '', role: '' })}
+                          data-testid="button-add-testimonial"
+                        >
+                          <Plus className="h-4 w-4 mr-1" />
+                          Add Testimonial
+                        </Button>
+                      </div>
+                      
+                      {testimonialFields.length === 0 ? (
+                        <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
+                          No testimonials added yet. Click "Add Testimonial" to get started.
+                        </div>
+                      ) : (
+                        <div className="space-y-4">
+                          {testimonialFields.map((field, index) => (
+                            <div key={field.id} className="p-4 border rounded-md space-y-3" data-testid={`testimonial-item-${index}`}>
+                              <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium text-gray-700">Testimonial {index + 1}</span>
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => removeTestimonial(index)}
+                                  data-testid={`button-remove-testimonial-${index}`}
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
+                              
+                              <FormField
+                                control={pageBuilderForm.control}
+                                name={`testimonials.${index}.quote`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Quote *</FormLabel>
+                                    <FormControl>
+                                      <Textarea {...field} rows={3} data-testid={`textarea-testimonial-quote-${index}`} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={pageBuilderForm.control}
+                                name={`testimonials.${index}.author`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Author Name *</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} data-testid={`input-testimonial-author-${index}`} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                              
+                              <FormField
+                                control={pageBuilderForm.control}
+                                name={`testimonials.${index}.role`}
+                                render={({ field }) => (
+                                  <FormItem>
+                                    <FormLabel>Role/Title (optional)</FormLabel>
+                                    <FormControl>
+                                      <Input {...field} placeholder="e.g. Teacher, School Principal" data-testid={`input-testimonial-role-${index}`} />
+                                    </FormControl>
+                                    <FormMessage />
+                                  </FormItem>
+                                )}
+                              />
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Form Actions */}
+                    <div className="flex justify-end gap-2 pt-4 border-t">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => setEventDialogOpen(false)}
+                        data-testid="button-cancel-page-builder"
+                      >
+                        Cancel
+                      </Button>
+                      <Button
+                        type="submit"
+                        disabled={updateEventPageContentMutation.isPending}
+                        className="bg-pcs_blue hover:bg-pcs_blue/90"
+                        data-testid="button-save-page-content"
+                      >
+                        {updateEventPageContentMutation.isPending ? 'Saving...' : 'Save Page Content'}
+                      </Button>
+                    </div>
+                  </form>
+                </Form>
+              )}
+            </TabsContent>
+          </Tabs>
         </DialogContent>
       </Dialog>
 
