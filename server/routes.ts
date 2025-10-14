@@ -2188,11 +2188,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get evidence with optional status filter
+  // Get evidence with optional filters
   app.get('/api/admin/evidence', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const status = req.query.status as 'pending' | 'approved' | 'rejected' | undefined;
-      const evidence = await storage.getAllEvidence(status);
+      const filters = {
+        status: req.query.status as 'pending' | 'approved' | 'rejected' | undefined,
+        stage: req.query.stage as 'inspire' | 'investigate' | 'act' | undefined,
+        schoolId: req.query.schoolId as string | undefined,
+        country: req.query.country as string | undefined,
+        visibility: req.query.visibility as 'public' | 'private' | undefined,
+      };
+      
+      // Remove undefined values
+      const cleanFilters = Object.fromEntries(
+        Object.entries(filters).filter(([_, v]) => v !== undefined)
+      );
+      
+      const evidence = await storage.getAllEvidence(cleanFilters);
       res.json(evidence);
     } catch (error) {
       console.error("Error fetching evidence:", error);

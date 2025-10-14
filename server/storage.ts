@@ -184,7 +184,13 @@ export interface IStorage {
   getEvidence(id: string): Promise<Evidence | undefined>;
   getSchoolEvidence(schoolId: string): Promise<Evidence[]>;
   getPendingEvidence(): Promise<Evidence[]>;
-  getAllEvidence(statusFilter?: 'pending' | 'approved' | 'rejected'): Promise<Evidence[]>;
+  getAllEvidence(filters?: {
+    status?: 'pending' | 'approved' | 'rejected';
+    stage?: 'inspire' | 'investigate' | 'act';
+    schoolId?: string;
+    country?: string;
+    visibility?: 'public' | 'private';
+  }): Promise<any[]>;
   getApprovedPublicEvidence(): Promise<Evidence[]>;
   updateEvidenceStatus(
     id: string, 
@@ -1276,18 +1282,70 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(evidence.submittedAt));
   }
 
-  async getAllEvidence(statusFilter?: 'pending' | 'approved' | 'rejected'): Promise<Evidence[]> {
-    if (statusFilter) {
-      return await db
-        .select()
-        .from(evidence)
-        .where(eq(evidence.status, statusFilter))
-        .orderBy(desc(evidence.submittedAt));
+  async getAllEvidence(filters?: {
+    status?: 'pending' | 'approved' | 'rejected';
+    stage?: 'inspire' | 'investigate' | 'act';
+    schoolId?: string;
+    country?: string;
+    visibility?: 'public' | 'private';
+  }): Promise<any[]> {
+    // Build WHERE conditions
+    const conditions = [];
+    
+    if (filters?.status) {
+      conditions.push(eq(evidence.status, filters.status));
     }
-    return await db
-      .select()
+    if (filters?.stage) {
+      conditions.push(eq(evidence.stage, filters.stage));
+    }
+    if (filters?.schoolId) {
+      conditions.push(eq(evidence.schoolId, filters.schoolId));
+    }
+    if (filters?.visibility) {
+      conditions.push(eq(evidence.visibility, filters.visibility));
+    }
+    if (filters?.country) {
+      conditions.push(eq(schools.country, filters.country));
+    }
+
+    // Query with JOIN to include school data
+    const query = db
+      .select({
+        id: evidence.id,
+        schoolId: evidence.schoolId,
+        submittedBy: evidence.submittedBy,
+        evidenceRequirementId: evidence.evidenceRequirementId,
+        title: evidence.title,
+        description: evidence.description,
+        stage: evidence.stage,
+        status: evidence.status,
+        visibility: evidence.visibility,
+        files: evidence.files,
+        videoLinks: evidence.videoLinks,
+        reviewedBy: evidence.reviewedBy,
+        reviewedAt: evidence.reviewedAt,
+        reviewNotes: evidence.reviewNotes,
+        isFeatured: evidence.isFeatured,
+        isAuditQuiz: evidence.isAuditQuiz,
+        roundNumber: evidence.roundNumber,
+        hasChildren: evidence.hasChildren,
+        parentalConsentFiles: evidence.parentalConsentFiles,
+        submittedAt: evidence.submittedAt,
+        updatedAt: evidence.updatedAt,
+        school: {
+          id: schools.id,
+          name: schools.name,
+          country: schools.country,
+        },
+      })
       .from(evidence)
-      .orderBy(desc(evidence.submittedAt));
+      .leftJoin(schools, eq(evidence.schoolId, schools.id));
+
+    if (conditions.length > 0) {
+      return await query.where(and(...conditions)).orderBy(desc(evidence.submittedAt));
+    }
+    
+    return await query.orderBy(desc(evidence.submittedAt));
   }
 
   async getApprovedPublicEvidence(): Promise<Evidence[]> {
