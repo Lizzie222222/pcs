@@ -263,6 +263,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get related case studies by ID
+  app.get('/api/case-studies/:id/related', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 4;
+      const relatedCaseStudies = await storage.getRelatedCaseStudies(id, limit);
+      res.json(relatedCaseStudies);
+    } catch (error) {
+      console.error("Error fetching related case studies:", error);
+      res.status(500).json({ message: "Failed to fetch related case studies" });
+    }
+  });
+
   // Get global movement data for landing page
   app.get('/api/landing/global-movement', async (req, res) => {
     try {

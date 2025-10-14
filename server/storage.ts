@@ -242,6 +242,7 @@ export interface IStorage {
       countriesInvolved: number;
     };
   }>;
+  getRelatedCaseStudies(caseStudyId: string, limit?: number): Promise<CaseStudy[]>;
   
   // Email operations
   logEmail(emailLog: InsertEmailLog): Promise<EmailLog>;
@@ -1885,6 +1886,91 @@ export class DatabaseStorage implements IStorage {
         countriesInvolved: stats.countries,
       },
     };
+  }
+
+  async getRelatedCaseStudies(caseStudyId: string, limit: number = 4): Promise<CaseStudy[]> {
+    const currentCaseStudy = await db
+      .select({
+        id: caseStudies.id,
+        stage: caseStudies.stage,
+        schoolId: caseStudies.schoolId,
+        categories: caseStudies.categories,
+        status: caseStudies.status,
+      })
+      .from(caseStudies)
+      .leftJoin(schools, eq(caseStudies.schoolId, schools.id))
+      .where(eq(caseStudies.id, caseStudyId))
+      .limit(1);
+
+    if (!currentCaseStudy || currentCaseStudy.length === 0) {
+      return [];
+    }
+
+    const current = currentCaseStudy[0];
+    
+    const schoolData = await db
+      .select({
+        country: schools.country,
+      })
+      .from(schools)
+      .where(eq(schools.id, current.schoolId))
+      .limit(1);
+
+    const currentCountry = schoolData[0]?.country;
+    const currentCategories = (current.categories as string[]) || [];
+
+    const relatedCaseStudies = await db
+      .select({
+        id: caseStudies.id,
+        title: caseStudies.title,
+        description: caseStudies.description,
+        stage: caseStudies.stage,
+        impact: caseStudies.impact,
+        imageUrl: caseStudies.imageUrl,
+        images: caseStudies.images,
+        featured: caseStudies.featured,
+        priority: caseStudies.priority,
+        schoolId: caseStudies.schoolId,
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        categories: caseStudies.categories,
+        createdAt: caseStudies.createdAt,
+        updatedAt: caseStudies.updatedAt,
+        createdBy: caseStudies.createdBy,
+      })
+      .from(caseStudies)
+      .innerJoin(schools, eq(caseStudies.schoolId, schools.id))
+      .where(
+        and(
+          sql`${caseStudies.id} != ${caseStudyId}`,
+          eq(caseStudies.status, 'published')
+        )
+      )
+      .limit(20);
+
+    const scoredResults = relatedCaseStudies.map((cs) => {
+      let score = 0;
+      
+      if (cs.stage === current.stage) {
+        score += 100;
+      }
+      
+      if (cs.schoolCountry === currentCountry) {
+        score += 50;
+      }
+      
+      const csCategories = (cs.categories as string[]) || [];
+      const matchingCategories = csCategories.filter(cat => 
+        currentCategories.includes(cat)
+      ).length;
+      score += matchingCategories * 10;
+      
+      return { ...cs, score };
+    });
+
+    scoredResults.sort((a, b) => b.score - a.score);
+
+    return scoredResults.slice(0, limit).map(({ score, ...cs }) => cs as CaseStudy);
   }
 
   // Email operations

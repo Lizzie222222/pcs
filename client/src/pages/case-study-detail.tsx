@@ -1,4 +1,4 @@
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -791,6 +791,165 @@ export default function CaseStudyDetail() {
             </Button>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Related Success Stories */}
+      <RelatedCaseStudies caseStudyId={caseStudyId!} currentStage={caseStudy.stage} />
+    </div>
+  );
+}
+
+// Related Case Studies Component
+interface RelatedCaseStudiesProps {
+  caseStudyId: string;
+  currentStage: string;
+}
+
+interface RelatedCaseStudy {
+  id: string;
+  title: string;
+  description: string;
+  stage: 'inspire' | 'investigate' | 'act';
+  imageUrl: string;
+  images?: { url: string; caption?: string }[];
+  schoolName: string;
+  schoolCountry: string;
+}
+
+function RelatedCaseStudies({ caseStudyId, currentStage }: RelatedCaseStudiesProps) {
+  const { data: relatedCaseStudies, isLoading, error } = useQuery<RelatedCaseStudy[]>({
+    queryKey: ['/api/case-studies', caseStudyId, 'related'],
+    queryFn: async () => {
+      const response = await fetch(`/api/case-studies/${caseStudyId}/related?limit=4`);
+      if (!response.ok) throw new Error('Failed to fetch related case studies');
+      return response.json();
+    },
+    enabled: !!caseStudyId,
+  });
+
+  const getStageColor = (stage: string) => {
+    switch (stage) {
+      case 'inspire': return 'bg-pcs_blue text-white';
+      case 'investigate': return 'bg-yellow text-white';
+      case 'act': return 'bg-coral text-white';
+      default: return 'bg-gray-500 text-white';
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="bg-gray-50 py-16">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold text-navy mb-8">Related Success Stories</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="animate-pulse">
+                <div className="bg-gray-200 h-48 rounded-t-lg" />
+                <div className="bg-white p-4 rounded-b-lg space-y-3">
+                  <div className="h-4 bg-gray-200 rounded w-3/4" />
+                  <div className="h-3 bg-gray-200 rounded w-1/2" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    console.error('Failed to load related case studies:', error);
+    return null;
+  }
+
+  if (!relatedCaseStudies || relatedCaseStudies.length === 0) {
+    return null;
+  }
+
+  return (
+    <div className="bg-gray-50 py-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h2 className="text-3xl font-bold text-navy mb-2" data-testid="heading-related-stories">
+          Related Success Stories
+        </h2>
+        <p className="text-gray-600 mb-8">
+          Discover more inspiring stories from schools making a difference
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {relatedCaseStudies.map((story) => {
+            const thumbnailImage = story.images && story.images.length > 0 
+              ? story.images[0].url 
+              : story.imageUrl;
+
+            return (
+              <Link 
+                key={story.id} 
+                href={`/inspiration/${story.id}`}
+                data-testid={`related-case-study-${story.id}`}
+              >
+                <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group">
+                  {/* Image */}
+                  <div className="relative h-48 overflow-hidden bg-gray-200">
+                    {thumbnailImage ? (
+                      <OptimizedImage
+                        src={thumbnailImage}
+                        alt={story.title}
+                        width={400}
+                        height={300}
+                        className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-ocean-blue/10 to-teal/10">
+                        <School className="w-16 h-16 text-ocean-blue/30" />
+                      </div>
+                    )}
+                    
+                    {/* Stage Badge */}
+                    <div className="absolute top-3 right-3">
+                      <Badge 
+                        className={`${getStageColor(story.stage)} capitalize shadow-lg`}
+                        data-testid={`badge-stage-${story.id}`}
+                      >
+                        {story.stage}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <CardContent className="p-4">
+                    <h3 
+                      className="font-bold text-navy mb-2 line-clamp-2 group-hover:text-ocean-blue transition-colors"
+                      data-testid={`text-title-${story.id}`}
+                    >
+                      {story.title}
+                    </h3>
+                    
+                    <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
+                      <School className="w-4 h-4" />
+                      <span className="truncate" data-testid={`text-school-${story.id}`}>
+                        {story.schoolName}
+                      </span>
+                    </div>
+                    
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <MapPin className="w-4 h-4" />
+                      <span data-testid={`text-country-${story.id}`}>
+                        {story.schoolCountry}
+                      </span>
+                    </div>
+
+                    {story.description && (
+                      <p className="text-sm text-gray-600 mt-3 line-clamp-2">
+                        {story.description.replace(/<[^>]*>/g, '')}
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+              </Link>
+            );
+          })}
+        </div>
       </div>
     </div>
   );
