@@ -3467,6 +3467,53 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Generate translation previews for selected languages
+  app.post('/api/admin/bulk-email/translate-preview', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { subject, preheader, title, preTitle, messageContent, languages } = req.body;
+      
+      if (!subject || !title || !messageContent) {
+        return res.status(400).json({ message: "Subject, title, and message content are required" });
+      }
+
+      if (!languages || !Array.isArray(languages) || languages.length === 0) {
+        return res.status(400).json({ message: "At least one language must be selected" });
+      }
+
+      const emailContent = {
+        subject,
+        preheader: preheader || '',
+        title,
+        preTitle: preTitle || '',
+        messageContent,
+      };
+
+      const translations: Record<string, typeof emailContent> = {};
+
+      // Generate translations for each selected language
+      for (const lang of languages) {
+        if (lang === 'en') {
+          // English is the source, just copy it
+          translations[lang] = emailContent;
+        } else {
+          try {
+            const translated = await translateEmailContent(emailContent, lang);
+            translations[lang] = translated;
+          } catch (error) {
+            console.error(`Translation failed for language ${lang}:`, error);
+            // If translation fails, use original content
+            translations[lang] = emailContent;
+          }
+        }
+      }
+
+      res.json({ translations });
+    } catch (error) {
+      console.error("Error generating translation previews:", error);
+      res.status(500).json({ message: "Failed to generate translations" });
+    }
+  });
+
   // Bulk email API for admin
   app.post('/api/admin/send-bulk-email', isAuthenticated, requireAdmin, async (req, res) => {
     try {
@@ -3483,6 +3530,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { recipients, subject, preheader, title, preTitle, messageContent, template, recipientType, filters, autoTranslate } = validationResult.data;
+      
+      // Get edited translations from request body if provided
+      const editedTranslations = req.body.editedTranslations || {};
 
       let emailList: string[] = [];
       let emailToSchoolLanguageMap: Map<string, string> = new Map();
@@ -3566,9 +3616,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
               messageContent,
             };
 
-            // Translate if target language is not English
+            // Use edited translation if available, otherwise translate on the fly
             if (targetLanguage !== 'en') {
-              emailContent = await translateEmailContent(emailContent, targetLanguage);
+              if (editedTranslations[targetLanguage]) {
+                // Use the edited translation
+                emailContent = editedTranslations[targetLanguage];
+              } else {
+                // Generate fresh translation
+                emailContent = await translateEmailContent(emailContent, targetLanguage);
+              }
             }
 
             const results = await sendBulkEmail({

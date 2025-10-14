@@ -5315,6 +5315,18 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     autoTranslate: false
   });
   
+  // Translation preview state
+  const [translations, setTranslations] = useState<Record<string, {
+    subject: string;
+    preheader: string;
+    title: string;
+    preTitle: string;
+    messageContent: string;
+  }>>({});
+  const [selectedPreviewLanguages, setSelectedPreviewLanguages] = useState<string[]>([]);
+  const [currentViewingLanguage, setCurrentViewingLanguage] = useState<string>('en');
+  const [isGeneratingTranslations, setIsGeneratingTranslations] = useState(false);
+  
   // Bulk operations state
   const [selectedEvidence, setSelectedEvidence] = useState<string[]>([]);
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
