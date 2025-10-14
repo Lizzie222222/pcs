@@ -4528,11 +4528,11 @@ function EvidenceGalleryTab() {
   };
 
   // Get thumbnail from files
-  const getThumbnail = (evidence: any) => {
+  const getThumbnail = (evidence: EvidenceWithSchool) => {
     const imageFile = evidence.files?.find((f: any) => 
-      f.mimeType?.startsWith('image/')
+      f.mimeType?.startsWith('image/') || f.type?.startsWith('image/')
     );
-    return imageFile?.signedUrl || null;
+    return imageFile?.url || null;
   };
 
   return (
