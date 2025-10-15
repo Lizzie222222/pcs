@@ -2,37 +2,11 @@ import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { FileText, Eye, EyeOff, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Sparkles } from "lucide-react";
 
 interface TemplateStatusSectionProps {
   form: UseFormReturn<any>;
 }
-
-const TEMPLATE_TYPES = [
-  {
-    value: "standard",
-    label: "Standard",
-    description: "Classic case study layout with all sections visible",
-  },
-  {
-    value: "visual",
-    label: "Visual Story",
-    description: "Image-focused layout emphasizing visual impact",
-  },
-  {
-    value: "timeline",
-    label: "Timeline",
-    description: "Chronological layout highlighting project progression",
-  },
-  {
-    value: "metrics",
-    label: "Impact Focused",
-    description: "Data-driven layout showcasing quantifiable results",
-  },
-];
 
 const PROGRAM_STAGES = [
   { value: "inspire", label: "Inspire" },
@@ -70,56 +44,6 @@ export function TemplateStatusSection({ form }: TemplateStatusSectionProps) {
             <FormDescription>
               Which stage of the Plastic Clever Schools program does this case study belong to?
             </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {/* Template Type */}
-      <FormField
-        control={form.control}
-        name="templateType"
-        render={({ field }) => (
-          <FormItem className="space-y-4">
-            <div className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              <FormLabel>Template Type</FormLabel>
-            </div>
-            <FormControl>
-              <RadioGroup
-                onValueChange={field.onChange}
-                value={field.value || "standard"}
-                className="grid grid-cols-1 md:grid-cols-2 gap-4"
-              >
-                {TEMPLATE_TYPES.map((template) => (
-                  <Card
-                    key={template.value}
-                    className={`cursor-pointer transition-colors ${
-                      field.value === template.value
-                        ? "border-primary bg-primary/5"
-                        : "hover:border-primary/50"
-                    }`}
-                    onClick={() => field.onChange(template.value)}
-                  >
-                    <CardHeader className="p-4">
-                      <div className="flex items-center gap-2">
-                        <RadioGroupItem
-                          value={template.value}
-                          id={template.value}
-                          data-testid={`radio-template-${template.value}`}
-                        />
-                        <Label htmlFor={template.value} className="cursor-pointer font-semibold">
-                          {template.label}
-                        </Label>
-                      </div>
-                      <CardDescription className="text-sm">
-                        {template.description}
-                      </CardDescription>
-                    </CardHeader>
-                  </Card>
-                ))}
-              </RadioGroup>
-            </FormControl>
             <FormMessage />
           </FormItem>
         )}

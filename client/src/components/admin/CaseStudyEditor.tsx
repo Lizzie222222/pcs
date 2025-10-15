@@ -43,6 +43,7 @@ import { ImpactMetricsBuilder } from "./case-study-sections/ImpactMetricsBuilder
 import { TimelineBuilder } from "./case-study-sections/TimelineBuilder";
 import { CategorisationSection } from "./case-study-sections/CategorisationSection";
 import { TemplateStatusSection } from "./case-study-sections/TemplateStatusSection";
+import { TemplateTypeSelector } from "./case-study-sections/TemplateTypeSelector";
 
 interface CaseStudyEditorProps {
   caseStudy?: CaseStudy;
@@ -301,6 +302,11 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
               </TabsList>
 
               <TabsContent value="content" className="mt-0">
+                <Card className="mb-6">
+                  <CardContent className="pt-6">
+                    <TemplateTypeSelector form={form} />
+                  </CardContent>
+                </Card>
                 <Card>
                   <CardContent className="pt-6">
                     <RichTextSection form={form} />
