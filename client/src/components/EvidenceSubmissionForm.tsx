@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { X, Upload, File, Trash2, AlertCircle } from "lucide-react";
+import { X, Upload, File, Trash2, AlertCircle, Lock } from "lucide-react";
 
 // Factory function for translated schema
 const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.object({
@@ -33,7 +33,7 @@ const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.ob
   }
   return true;
 }, {
-  message: "Parental consent required when images contain children",
+  message: t('forms:evidence_submission.parental_consent_validation'),
   path: ["hasChildren"],
 });
 
@@ -56,6 +56,17 @@ interface School {
   id: string;
   name: string;
   country: string;
+}
+
+interface SchoolDashboardData {
+  school: {
+    id: string;
+    name: string;
+    country: string;
+    inspireCompleted: boolean;
+    investigateCompleted: boolean;
+    actCompleted: boolean;
+  };
 }
 
 export default function EvidenceSubmissionForm({ 
@@ -89,6 +100,19 @@ export default function EvidenceSubmissionForm({
     enabled: isAdminOrPartner,
   });
   
+  // Fetch school stage completion data
+  const { data: schoolData } = useQuery<SchoolDashboardData>({
+    queryKey: ['/api/dashboard'],
+    enabled: !!selectedSchoolId && !isAdminOrPartner,
+  });
+  
+  // Calculate which stages are locked based on completion status
+  const lockedStages = {
+    inspire: false, // Always unlocked
+    investigate: !schoolData?.school?.inspireCompleted,
+    act: !schoolData?.school?.investigateCompleted,
+  };
+  
   const evidenceSchema = createEvidenceSchema(t);
 
   const form = useForm<z.infer<typeof evidenceSchema>>({
@@ -106,15 +130,16 @@ export default function EvidenceSubmissionForm({
   const submitEvidenceMutation = useMutation({
     mutationFn: async (data: z.infer<typeof evidenceSchema> & { files: UploadedFile[]; parentalConsentFiles: UploadedFile[] }) => {
       if (!selectedSchoolId) {
-        throw new Error('Please select a school');
+        throw new Error(t('forms:evidence_submission.select_school_error'));
       }
-      await apiRequest('POST', '/api/evidence', {
+      const response = await apiRequest('POST', '/api/evidence', {
         ...data,
         schoolId: selectedSchoolId,
         evidenceRequirementId,
         files: data.files,
         parentalConsentFiles: data.parentalConsentFiles,
       });
+      return response;
     },
     onSuccess: () => {
       toast({
@@ -125,13 +150,23 @@ export default function EvidenceSubmissionForm({
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
       onClose();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Evidence submission error:", error);
-      toast({
-        title: t('forms:evidence_submission.error_title'),
-        description: t('forms:evidence_submission.error_message'),
-        variant: "destructive",
-      });
+      
+      // Check for 403 Forbidden error (locked stage)
+      if (error?.message?.includes('403') || error?.message?.includes('locked stage') || error?.message?.includes('Cannot submit evidence to locked stage')) {
+        toast({
+          title: t('forms:evidence_submission.stage_locked_title'),
+          description: t('forms:evidence_submission.stage_locked_error_message'),
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: t('forms:evidence_submission.error_title'),
+          description: error?.message || t('forms:evidence_submission.error_message'),
+          variant: "destructive",
+        });
+      }
     },
   });
 
@@ -145,8 +180,8 @@ export default function EvidenceSubmissionForm({
       for (const file of files) {
         if (file.size > 157286400) {
           toast({
-            title: "File Too Large",
-            description: `${file.name} exceeds 150MB limit.`,
+            title: t('forms:evidence_submission.file_too_large_title'),
+            description: t('forms:evidence_submission.file_too_large_message', { filename: file.name, limit: 150 }),
             variant: "destructive",
           });
           continue;
@@ -191,14 +226,14 @@ export default function EvidenceSubmissionForm({
       }
       
       toast({
-        title: "Success",
-        description: `${files.length} file(s) uploaded successfully.`,
+        title: t('forms:evidence_submission.upload_success_title'),
+        description: t('forms:evidence_submission.upload_success_message', { count: files.length }),
       });
     } catch (error) {
       console.error('Upload error:', error);
       toast({
-        title: "Upload Failed",
-        description: "Failed to upload files. Please try again.",
+        title: t('forms:evidence_submission.upload_failed_title'),
+        description: t('forms:evidence_submission.upload_failed_message'),
         variant: "destructive",
       });
     } finally {
@@ -223,8 +258,8 @@ export default function EvidenceSubmissionForm({
       for (const file of files) {
         if (file.size > 157286400) {
           toast({
-            title: "File Too Large",
-            description: `${file.name} exceeds 150MB limit.`,
+            title: t('forms:evidence_submission.file_too_large_title'),
+            description: t('forms:evidence_submission.file_too_large_message', { filename: file.name, limit: 150 }),
             variant: "destructive",
           });
           continue;
@@ -269,14 +304,14 @@ export default function EvidenceSubmissionForm({
       }
       
       toast({
-        title: "Success",
-        description: `${files.length} consent file(s) uploaded successfully.`,
+        title: t('forms:evidence_submission.upload_success_title'),
+        description: t('forms:evidence_submission.upload_success_consent_message', { count: files.length }),
       });
     } catch (error) {
       console.error('Upload error:', error);
       toast({
-        title: "Upload Failed",
-        description: "Failed to upload consent files. Please try again.",
+        title: t('forms:evidence_submission.upload_failed_title'),
+        description: t('forms:evidence_submission.upload_failed_consent_message'),
         variant: "destructive",
       });
     } finally {
@@ -309,8 +344,8 @@ export default function EvidenceSubmissionForm({
   const onSubmit = (data: z.infer<typeof evidenceSchema>) => {
     if (uploadedFiles.length === 0 && !data.videoLinks?.trim()) {
       toast({
-        title: "Evidence Required",
-        description: "Please upload at least one file or provide a video link.",
+        title: t('forms:evidence_submission.evidence_required_title'),
+        description: t('forms:evidence_submission.evidence_required_message'),
         variant: "destructive",
       });
       return;
@@ -318,8 +353,20 @@ export default function EvidenceSubmissionForm({
 
     if (data.hasChildren && consentFiles.length === 0) {
       toast({
-        title: "Parental Consent Required",
-        description: "Please upload parental consent documentation when images contain children.",
+        title: t('forms:evidence_submission.parental_consent_required_title'),
+        description: t('forms:evidence_submission.parental_consent_required_message'),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check if selected stage is locked
+    const selectedStage = data.stage as 'inspire' | 'investigate' | 'act';
+    if (lockedStages[selectedStage]) {
+      const previousStage = selectedStage === 'act' ? t('forms:evidence_submission.stage_name_investigate') : t('forms:evidence_submission.stage_name_inspire');
+      toast({
+        title: t('forms:evidence_submission.stage_locked_title'),
+        description: t('forms:evidence_submission.stage_locked_message', { previousStage }),
         variant: "destructive",
       });
       return;
@@ -366,14 +413,14 @@ export default function EvidenceSubmissionForm({
               {isAdminOrPartner && (
                 <div className="space-y-2">
                   <label className="text-sm font-medium text-gray-700">
-                    Select School *
+                    {t('forms:evidence_submission.select_school')} *
                   </label>
                   <Select 
                     value={selectedSchoolId} 
                     onValueChange={setSelectedSchoolId}
                   >
                     <SelectTrigger data-testid="select-school">
-                      <SelectValue placeholder="Choose a school..." />
+                      <SelectValue placeholder={t('forms:evidence_submission.select_school_placeholder')} />
                     </SelectTrigger>
                     <SelectContent>
                       {schools.map((school) => (
@@ -384,7 +431,7 @@ export default function EvidenceSubmissionForm({
                     </SelectContent>
                   </Select>
                   {!selectedSchoolId && (
-                    <p className="text-xs text-red-600">Please select a school before submitting evidence</p>
+                    <p className="text-xs text-red-600">{t('forms:evidence_submission.select_school_required')}</p>
                   )}
                 </div>
               )}
@@ -404,11 +451,39 @@ export default function EvidenceSubmissionForm({
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="inspire">{t('forms:evidence_submission.stage_inspire')}</SelectItem>
-                          <SelectItem value="investigate">{t('forms:evidence_submission.stage_investigate')}</SelectItem>
-                          <SelectItem value="act">{t('forms:evidence_submission.stage_act')}</SelectItem>
+                          <SelectItem value="inspire">
+                            {t('forms:evidence_submission.stage_inspire')}
+                          </SelectItem>
+                          <SelectItem 
+                            value="investigate" 
+                            disabled={lockedStages.investigate}
+                          >
+                            <div className="flex items-center gap-2">
+                              {lockedStages.investigate && <Lock className="h-4 w-4 text-gray-400" />}
+                              {t('forms:evidence_submission.stage_investigate')}
+                            </div>
+                          </SelectItem>
+                          <SelectItem 
+                            value="act" 
+                            disabled={lockedStages.act}
+                          >
+                            <div className="flex items-center gap-2">
+                              {lockedStages.act && <Lock className="h-4 w-4 text-gray-400" />}
+                              {t('forms:evidence_submission.stage_act')}
+                            </div>
+                          </SelectItem>
                         </SelectContent>
                       </Select>
+                      {lockedStages.investigate && field.value === 'investigate' && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {t('forms:evidence_submission.complete_inspire_first')}
+                        </p>
+                      )}
+                      {lockedStages.act && field.value === 'act' && (
+                        <p className="text-xs text-red-600 mt-1">
+                          {t('forms:evidence_submission.complete_investigate_first')}
+                        </p>
+                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -611,10 +686,10 @@ export default function EvidenceSubmissionForm({
                       </FormControl>
                       <div className="grid gap-1.5 leading-none flex-1">
                         <FormLabel className="text-sm font-medium">
-                          Does this evidence contain images of children?
+                          {t('forms:evidence_submission.has_children_label')}
                         </FormLabel>
                         <FormDescription className="text-xs">
-                          If your evidence includes photographs or videos of children, you must provide parental consent documentation
+                          {t('forms:evidence_submission.has_children_description')}
                         </FormDescription>
                       </div>
                     </div>
@@ -626,9 +701,9 @@ export default function EvidenceSubmissionForm({
               {/* Conditional Parental Consent Upload */}
               {form.watch('hasChildren') && (
                 <div className="space-y-4 border-l-4 border-coral pl-4">
-                  <FormLabel className="text-coral font-semibold">Parental Consent Required *</FormLabel>
+                  <FormLabel className="text-coral font-semibold">{t('forms:evidence_submission.parental_consent_section_title')} *</FormLabel>
                   <p className="text-sm text-gray-600">
-                    Please upload signed parental consent forms for all children shown in the evidence.
+                    {t('forms:evidence_submission.parental_consent_section_description')}
                   </p>
                   <div className="border-2 border-dashed border-coral/30 rounded-lg p-6 bg-coral/5">
                     <input
@@ -653,10 +728,10 @@ export default function EvidenceSubmissionForm({
                         data-testid="button-upload-consent"
                       >
                         <Upload className="h-5 w-5 mr-2" />
-                        {isUploadingConsent ? "Uploading..." : "Upload Consent Forms"}
+                        {isUploadingConsent ? t('forms:evidence_submission.uploading_consent') : t('forms:evidence_submission.upload_consent_forms')}
                       </Button>
                       <p className="text-sm text-gray-500">
-                        PDF or image files (max 150MB each)
+                        {t('forms:evidence_submission.consent_file_help')}
                       </p>
                     </label>
                   </div>
@@ -664,7 +739,7 @@ export default function EvidenceSubmissionForm({
                   {/* Consent Files Preview */}
                   {consentFiles.length > 0 && (
                     <div className="space-y-2">
-                      <h4 className="font-medium text-navy">Uploaded Consent Documents</h4>
+                      <h4 className="font-medium text-navy">{t('forms:evidence_submission.uploaded_consent_documents')}</h4>
                       {consentFiles.map((file, index) => (
                         <div 
                           key={index}
@@ -719,13 +794,32 @@ export default function EvidenceSubmissionForm({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={submitEvidenceMutation.isPending || isUploading}
+                  disabled={
+                    submitEvidenceMutation.isPending || 
+                    isUploading || 
+                    (form.watch('stage') && lockedStages[form.watch('stage') as 'inspire' | 'investigate' | 'act'])
+                  }
                   className="flex-1 bg-coral hover:bg-coral/90"
                   data-testid="button-submit-evidence"
                 >
                   {submitEvidenceMutation.isPending ? t('forms:evidence_submission.submitting') : t('forms:evidence_submission.submit_button')}
                 </Button>
               </div>
+              
+              {/* Show locked stage warning below submit button */}
+              {form.watch('stage') && lockedStages[form.watch('stage') as 'inspire' | 'investigate' | 'act'] && (
+                <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                  <div className="text-sm text-red-700">
+                    <div className="font-medium">{t('forms:evidence_submission.stage_locked_warning_title')}</div>
+                    <div>
+                      {t('forms:evidence_submission.stage_locked_warning_message', { 
+                        stageName: form.watch('stage') === 'act' ? t('forms:evidence_submission.stage_name_investigate') : t('forms:evidence_submission.stage_name_inspire')
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
             </form>
           </Form>
         </div>
