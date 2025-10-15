@@ -45,8 +45,8 @@ export default function PrintableFormsTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [filters, setFilters] = useState({
-    status: '',
-    formType: '',
+    status: 'all',
+    formType: 'all',
     schoolSearch: '',
   });
   const [reviewingSubmission, setReviewingSubmission] = useState<PrintableFormSubmissionWithDetails | null>(null);
@@ -59,8 +59,8 @@ export default function PrintableFormsTab() {
     queryKey: ['/api/admin/printable-form-submissions', filters.status, filters.formType, filters.schoolSearch],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filters.status) params.append('status', filters.status);
-      if (filters.formType) params.append('formType', filters.formType);
+      if (filters.status && filters.status !== 'all') params.append('status', filters.status);
+      if (filters.formType && filters.formType !== 'all') params.append('formType', filters.formType);
       if (filters.schoolSearch) params.append('schoolId', filters.schoolSearch);
       
       const response = await fetch(`/api/admin/printable-form-submissions?${params}`);
@@ -75,7 +75,10 @@ export default function PrintableFormsTab() {
       return apiRequest('PATCH', `/api/admin/printable-form-submissions/${id}/status`, { status, reviewNotes });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/printable-form-submissions'] });
+      queryClient.invalidateQueries({ 
+        queryKey: ['/api/admin/printable-form-submissions'],
+        refetchType: 'all'
+      });
       toast({
         title: "Success",
         description: "Submission status updated successfully",
@@ -168,7 +171,7 @@ export default function PrintableFormsTab() {
                   <SelectValue placeholder="All statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All statuses</SelectItem>
+                  <SelectItem value="all">All statuses</SelectItem>
                   <SelectItem value="pending">Pending</SelectItem>
                   <SelectItem value="approved">Approved</SelectItem>
                   <SelectItem value="rejected">Rejected</SelectItem>
@@ -185,7 +188,7 @@ export default function PrintableFormsTab() {
                   <SelectValue placeholder="All types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All types</SelectItem>
+                  <SelectItem value="all">All types</SelectItem>
                   <SelectItem value="audit">Audit</SelectItem>
                   <SelectItem value="action_plan">Action Plan</SelectItem>
                 </SelectContent>
