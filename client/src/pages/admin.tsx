@@ -10407,7 +10407,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
       {/* Case Study Editor Dialog */}
       <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
-        <DialogContent className="max-w-7xl max-h-[95vh] p-0" data-testid="dialog-case-study-editor">
+        <DialogContent className="max-w-7xl max-h-[95vh] overflow-y-auto p-0" data-testid="dialog-case-study-editor">
           <CaseStudyEditor
             caseStudy={editingCaseStudy || undefined}
             onSave={(data) => {
