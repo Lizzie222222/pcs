@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useCountries } from "@/hooks/useCountries";
 import useEmblaCarousel from "embla-carousel-react";
+import { stripHtmlTags } from "@/lib/utils";
 
 interface CaseStudy {
   id: string;
@@ -233,7 +234,7 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
         
         {/* Description */}
         <p className="text-gray-600 text-sm mb-4 line-clamp-3">
-          {caseStudy.description}
+          {stripHtmlTags(caseStudy.description)}
         </p>
 
         {/* Impact Metrics */}
