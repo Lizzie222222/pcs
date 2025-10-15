@@ -65,3 +65,18 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
   - Student testimonials render with proper text field mapping
   - Impact metrics display with correct array structure
 - **Database Migration**: Schema changes pushed successfully with npm run db:push --force
+
+### Case Study UX Improvements & Additional Bug Fixes (October 15, 2025)
+- **Fixed Inspiration Page HTML Display**: Created stripHtmlTags utility to remove HTML tags from case study descriptions on cards
+- **Fixed Admin Modal Scrolling**: Added overflow-y-auto to case study editor dialog for proper content scrolling
+- **Fixed Preview Button 404**: Corrected route from /case-studies/:id to /case-study/:id in admin preview button
+- **Fixed Case Study Detail Page Loading**: 
+  - Removed scroll-reveal animation from critical content (description) for immediate visibility
+  - Optimized IntersectionObserver threshold from 0.1 to 0.05 and rootMargin for faster content reveal
+  - Fixed blank content issue where animations prevented content from displaying
+- **Fixed Related Stories 404**: Corrected related case studies links from /inspiration/:id to /case-study/:id
+- **Improved Case Study Creation Workflow**:
+  - Created TemplateTypeSelector component with visual SVG previews for all 4 template types (Standard, Visual Story, Timeline, Impact Focused)
+  - Moved template selection from Settings tab (last step) to Content tab (first step)
+  - Template choice now appears first in workflow, helping users choose layout before adding content
+  - Cleaned up Settings tab to focus on publication settings (status, featured, SEO)
