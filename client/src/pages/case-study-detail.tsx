@@ -117,7 +117,16 @@ function useScrollReveal() {
     );
 
     const elements = document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale');
-    elements.forEach((el) => observer.observe(el));
+    
+    // Immediately reveal elements already in viewport
+    elements.forEach((el) => {
+      const rect = el.getBoundingClientRect();
+      const isInViewport = rect.top < window.innerHeight && rect.bottom > 0;
+      if (isInViewport) {
+        el.classList.add('revealed');
+      }
+      observer.observe(el);
+    });
 
     return () => observer.disconnect();
   }, []);
