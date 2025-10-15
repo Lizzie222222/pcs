@@ -666,7 +666,7 @@ export default function Inspiration() {
                     {featuredStory.title}
                   </h2>
                   <p className="text-lg mb-6 text-white/90">
-                    {featuredStory.description}
+                    {stripHtmlTags(featuredStory.description)}
                   </p>
                   <div className="flex items-center gap-6 mb-6 text-white/90">
                     <div className="flex items-center gap-2">
