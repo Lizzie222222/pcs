@@ -728,6 +728,14 @@ function VerificationRequestsList() {
   );
 }
 
+/**
+ * @description Main admin panel component orchestrating all administrative functionality including evidence review, school management, case studies, events, and email campaigns. Manages state for multiple tabs and handles admin-only access control with automatic redirects.
+ * @param {Object} props - Component props
+ * @param {string} props.initialTab - Initial active tab (default: 'overview')
+ * @returns {JSX.Element} Admin dashboard with tabbed interface
+ * @location client/src/pages/admin.tsx#L731
+ * @related server/routes.ts (registerRoutes), shared/schema.ts (users, schools, evidence, caseStudies, events), server/auth.ts (isAuthenticated)
+ */
 export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' } = {}) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();

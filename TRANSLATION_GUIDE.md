@@ -12,11 +12,20 @@ client/src/locales/{language}/{namespace}.json
 ```
 
 ### Available Languages
+- `ar/` - Arabic
+- `cy/` - Welsh
+- `de/` - German
+- `el/` - Greek
 - `en/` - English (primary)
 - `es/` - Spanish
 - `fr/` - French
+- `id/` - Indonesian
+- `it/` - Italian
+- `ko/` - Korean
+- `nl/` - Dutch
 - `pt/` - Portuguese
-- `ar/` - Arabic
+- `ru/` - Russian
+- `zh/` - Chinese
 
 ### Translation Namespaces
 

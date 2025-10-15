@@ -11,32 +11,32 @@ interface CategorisationSectionProps {
   form: UseFormReturn<any>;
 }
 
-const SUGGESTED_CATEGORIES = [
-  "Plastic Reduction",
-  "Recycling Initiative",
-  "Student Leadership",
-  "Community Engagement",
-  "Educational Campaign",
-  "Waste Audit",
-  "Policy Change",
-  "Innovation",
-];
-
-const SUGGESTED_TAGS = [
-  "single-use-plastic",
-  "recycling",
-  "composting",
-  "awareness",
-  "students",
-  "teachers",
-  "community",
-  "impact",
-  "sustainability",
-  "ocean-conservation",
-];
-
 export function CategorisationSection({ form }: CategorisationSectionProps) {
   const { t } = useTranslation('admin');
+  
+  const SUGGESTED_CATEGORIES = [
+    t('case_study.category_plastic_reduction'),
+    t('case_study.category_recycling_initiative'),
+    t('case_study.category_student_leadership'),
+    t('case_study.category_community_engagement'),
+    t('case_study.category_educational_campaign'),
+    t('case_study.category_waste_audit'),
+    t('case_study.category_policy_change'),
+    t('case_study.category_innovation'),
+  ];
+
+  const SUGGESTED_TAGS = [
+    t('case_study.tag_single_use_plastic'),
+    t('case_study.tag_recycling'),
+    t('case_study.tag_composting'),
+    t('case_study.tag_awareness'),
+    t('case_study.tag_students'),
+    t('case_study.tag_teachers'),
+    t('case_study.tag_community'),
+    t('case_study.tag_impact'),
+    t('case_study.tag_sustainability'),
+    t('case_study.tag_ocean_conservation'),
+  ];
   const [categoryInput, setCategoryInput] = useState("");
   const [tagInput, setTagInput] = useState("");
 
@@ -144,7 +144,7 @@ export function CategorisationSection({ form }: CategorisationSectionProps) {
         {/* Selected Categories */}
         {categories.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm font-medium">Selected Categories:</p>
+            <p className="text-sm font-medium">{t('case_study.selected_categories')}:</p>
             <div className="flex flex-wrap gap-2">
               {categories.map((category: string) => (
                 <Badge
@@ -234,7 +234,7 @@ export function CategorisationSection({ form }: CategorisationSectionProps) {
         {/* Selected Tags */}
         {tags.length > 0 && (
           <div className="space-y-2">
-            <p className="text-sm font-medium">Selected Tags:</p>
+            <p className="text-sm font-medium">{t('case_study.selected_tags')}:</p>
             <div className="flex flex-wrap gap-2">
               {tags.map((tag: string) => (
                 <Badge

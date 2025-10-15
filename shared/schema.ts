@@ -26,7 +26,11 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// Define enums before tables
+/**
+ * @description User role enumeration defining access levels (teacher, admin, partner, school). Determines permission scopes across the application.
+ * @location shared/schema.ts#L30
+ * @related users table, server/auth.ts (role-based middleware)
+ */
 export const userRoleEnum = pgEnum('user_role', [
   'teacher',
   'admin',
@@ -42,12 +46,22 @@ export const schoolTypeEnum = pgEnum('school_type', [
   'other'
 ]);
 
+/**
+ * @description Program stage enumeration for the 3-phase Plastic Clever Schools journey (inspire → investigate → act). Controls progression and evidence requirements.
+ * @location shared/schema.ts#L45
+ * @related schools table (currentStage), evidence table (stage), server/routes.ts (stage locking logic), client/src/pages/admin.tsx
+ */
 export const programStageEnum = pgEnum('program_stage', [
   'inspire',
   'investigate', 
   'act'
 ]);
 
+/**
+ * @description Evidence review status enumeration for admin approval workflow. Tracks evidence submission lifecycle.
+ * @location shared/schema.ts#L51
+ * @related evidence table, server/routes.ts (evidence review endpoints), client/src/pages/admin.tsx (review handlers)
+ */
 export const evidenceStatusEnum = pgEnum('evidence_status', [
   'pending',
   'approved',
@@ -69,7 +83,11 @@ export const mediaTypeEnum = pgEnum('media_type', ['image', 'video', 'document',
 export const storageScopeEnum = pgEnum('storage_scope', ['global', 'school']);
 export const caseStudyStatusEnum = pgEnum('case_study_status', ['draft', 'published']);
 
-// User storage table (supports email/password + Google OAuth)
+/**
+ * @description Core users table supporting both email/password and Google OAuth authentication. Central entity linking to schools, evidence submissions, and all user-generated content.
+ * @location shared/schema.ts#L73
+ * @related schoolUsers table (many-to-many with schools), evidence table (submittedBy), server/auth.ts, client/src/hooks/useAuth.ts
+ */
 export const users = pgTable("users", {
   id: varchar("id").primaryKey(),
   email: varchar("email").unique(),
@@ -102,6 +120,11 @@ export const requestTypeEnum = pgEnum('request_type', [
   'join_school'
 ]);
 
+/**
+ * @description Schools table tracking program progress through 3 stages (inspire/investigate/act), geographic location, and completion status. Core entity for all school-related data.
+ * @location shared/schema.ts#L105
+ * @related schoolUsers table (team members), evidence table (submissions), server/routes.ts (schools CRUD), client/src/pages/admin.tsx (school management)
+ */
 export const schools = pgTable("schools", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   name: varchar("name").notNull(),
@@ -133,6 +156,11 @@ export const schools = pgTable("schools", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+/**
+ * @description Junction table managing many-to-many relationship between users and schools with role-based access (head_teacher, teacher). Handles team membership and verification status.
+ * @location shared/schema.ts#L136
+ * @related users table, schools table, teacherInvitations table, server/routes.ts (team management endpoints), client/src/pages/TeamManagement.tsx
+ */
 export const schoolUsers = pgTable("school_users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
@@ -216,6 +244,11 @@ export const evidenceRequirements = pgTable("evidence_requirements", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+/**
+ * @description Evidence submissions table tracking student work across 3 program stages with file attachments, video links, and admin review workflow. Supports parental consent tracking.
+ * @location shared/schema.ts#L219
+ * @related schools table, users table (submittedBy, reviewedBy), evidenceRequirements table, server/routes.ts (evidence CRUD, review endpoints), client/src/pages/admin.tsx (evidence review)
+ */
 export const evidence = pgTable("evidence", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
@@ -240,6 +273,11 @@ export const evidence = pgTable("evidence", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+/**
+ * @description Case studies table for showcasing school success stories with rich media (images, videos), student quotes, impact metrics, and timeline. Supports draft/published workflow with SEO metadata.
+ * @location shared/schema.ts#L243
+ * @related evidence table (optional link), schools table, server/routes.ts (case studies CRUD, PDF export), client/src/pages/admin.tsx (CaseStudyEditor), client/src/pages/inspiration.tsx
+ */
 export const caseStudies = pgTable("case_studies", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   evidenceId: varchar("evidence_id").references(() => evidence.id, { onDelete: 'set null' }),
@@ -415,6 +453,11 @@ export const auditResponses = pgTable("audit_responses", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+/**
+ * @description Reduction promises table tracking schools' commitments to reduce specific plastic items with baseline/target quantities and timeframes. Links to audit responses for data-driven goals.
+ * @location shared/schema.ts#L418
+ * @related schools table, auditResponses table, server/routes.ts (promises CRUD), client/src/pages/admin.tsx (metrics display), shared/plasticMetrics.ts (impact calculations)
+ */
 export const reductionPromises = pgTable("reduction_promises", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
@@ -453,6 +496,11 @@ export const printableFormSubmissions = pgTable("printable_form_submissions", {
   index("idx_printable_submissions_status").on(table.status),
 ]);
 
+/**
+ * @description Events table managing workshops, webinars, and community gatherings with registration capacity, virtual meeting links, and live page builder support (YouTube videos, PDFs, testimonials).
+ * @location shared/schema.ts#L456
+ * @related eventRegistrations table, users table (createdBy), server/routes.ts (events CRUD, registration, announcements), client/src/pages/admin.tsx (events management), client/src/pages/event-live.tsx
+ */
 export const events = pgTable("events", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   title: varchar("title").notNull(),
@@ -908,6 +956,11 @@ export const createOAuthUserSchema = createInsertSchema(users).omit({
   emailVerified: z.boolean().default(true),
 });
 
+/**
+ * @description Validation schema for school creation/updates with omitted auto-generated fields. Used for form validation and API request validation.
+ * @location shared/schema.ts#L959
+ * @related schools table, server/routes.ts (POST /api/schools, PATCH /api/schools/:id), client/src/components/MultiStepSchoolRegistration.tsx
+ */
 export const insertSchoolSchema = createInsertSchema(schools).omit({
   id: true,
   createdAt: true,
@@ -933,6 +986,11 @@ export const insertResourceSchema = createInsertSchema(resources).omit({
   downloadCount: true,
 });
 
+/**
+ * @description Validation schema for evidence submission with file attachments, video links, and stage/visibility fields. Validates evidence data before database insert.
+ * @location shared/schema.ts#L978
+ * @related evidence table, server/routes.ts (POST /api/evidence), client/src/components/EvidenceSubmissionForm.tsx
+ */
 export const insertEvidenceSchema = createInsertSchema(evidence).omit({
   id: true,
   submittedAt: true,
@@ -979,6 +1037,11 @@ export const timelineSectionSchema = z.object({
   order: z.number(),
 });
 
+/**
+ * @description Validation schema for case study creation with rich media arrays (images, videos, quotes, metrics, timeline). Includes custom Zod refinements for structured data.
+ * @location shared/schema.ts#L1028
+ * @related caseStudies table, server/routes.ts (POST /api/admin/case-studies), client/src/components/admin/CaseStudyEditor.tsx
+ */
 export const insertCaseStudySchema = createInsertSchema(caseStudies).omit({
   id: true,
   createdAt: true,
@@ -1075,6 +1138,11 @@ export const insertPrintableFormSubmissionSchema = createInsertSchema(printableF
   reviewNotes: true,
 });
 
+/**
+ * @description Validation schema for event creation with date coercion and page builder fields (YouTube videos, PDFs, testimonials). Handles virtual and in-person events.
+ * @location shared/schema.ts#L1124
+ * @related events table, server/routes.ts (POST /api/admin/events), client/src/pages/admin.tsx (event form handlers)
+ */
 export const insertEventSchema = createInsertSchema(events, {
   startDateTime: z.coerce.date(),
   endDateTime: z.coerce.date(),

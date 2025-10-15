@@ -20,7 +20,14 @@ import path from 'path';
 import puppeteer from 'puppeteer';
 import { apiCache, CACHE_TTL } from "./cache";
 
-// CSV generation helper with proper escaping
+/**
+ * @description Generates CSV formatted string from array of objects with proper escaping for special characters (quotes, commas, newlines). Used for analytics and data exports.
+ * @param {any[]} data - Array of objects to convert to CSV
+ * @param {string} type - Type of export ('schools', 'evidence', 'users', 'analytics')
+ * @returns {string} CSV formatted string with headers and escaped values
+ * @location server/routes.ts#L24
+ * @related getCSVHeaders, generateExcel, client/src/pages/admin.tsx (export handlers)
+ */
 function generateCSV(data: any[], type: string): string {
   if (data.length === 0) return '';
 
@@ -51,6 +58,13 @@ function generateCSV(data: any[], type: string): string {
   return csvRows.join('\n');
 }
 
+/**
+ * @description Returns appropriate CSV headers based on export type. Maps entity types to their relevant column names.
+ * @param {string} type - Export type ('schools', 'evidence', 'users', 'analytics')
+ * @returns {string[]} Array of header column names
+ * @location server/routes.ts#L54
+ * @related generateCSV, generateExcel
+ */
 function getCSVHeaders(type: string): string[] {
   switch (type) {
     case 'schools':
@@ -66,7 +80,14 @@ function getCSVHeaders(type: string): string[] {
   }
 }
 
-// Excel generation helper
+/**
+ * @description Generates Excel (.xlsx) file buffer from data using XLSX library. Creates workbook with single sheet containing data.
+ * @param {any[]} data - Array of objects to convert to Excel
+ * @param {string} type - Type of export for sheet naming
+ * @returns {Buffer} Excel file buffer ready for download
+ * @location server/routes.ts#L70
+ * @related generateCSV, getCSVHeaders, client/src/pages/admin.tsx (export handlers)
+ */
 function generateExcel(data: any[], type: string): Buffer {
   const headers = getCSVHeaders(type);
   const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
@@ -75,13 +96,25 @@ function generateExcel(data: any[], type: string): Buffer {
   return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
 }
 
-// Helper function to strip HTML tags from text
+/**
+ * @description Removes all HTML tags from text and normalizes whitespace. Used for meta descriptions and plain text exports.
+ * @param {string | null | undefined} html - HTML string to strip
+ * @returns {string} Plain text with HTML removed
+ * @location server/routes.ts#L78
+ * @related escapeHtml, generatePdfHtml
+ */
 function stripHtml(html: string | null | undefined): string {
   if (!html) return '';
   return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
-// Helper function to escape HTML for safe inclusion in meta tags
+/**
+ * @description Escapes HTML special characters for safe inclusion in meta tags and attributes. Prevents XSS in PDF generation and meta tags.
+ * @param {string | null | undefined} text - Text to escape
+ * @returns {string} HTML-escaped text
+ * @location server/routes.ts#L85
+ * @related stripHtml, generatePdfHtml
+ */
 function escapeHtml(text: string | null | undefined): string {
   if (!text) return '';
   return text
@@ -92,7 +125,13 @@ function escapeHtml(text: string | null | undefined): string {
     .replace(/'/g, '&#039;');
 }
 
-// Helper function to sanitize filenames for downloads
+/**
+ * @description Sanitizes filename for safe downloads by removing special characters and limiting length. Prevents path traversal and filesystem issues.
+ * @param {string} filename - Original filename to sanitize
+ * @returns {string} Sanitized filename safe for downloads
+ * @location server/routes.ts#L96
+ * @related generatePdfHtml
+ */
 function sanitizeFilename(filename: string): string {
   return filename
     .replace(/[^a-z0-9]/gi, '_')
@@ -101,7 +140,13 @@ function sanitizeFilename(filename: string): string {
     .substring(0, 100) || 'case_study';
 }
 
-// Helper function to generate beautiful HTML for PDF
+/**
+ * @description Generates beautifully formatted HTML for case study PDF export with embedded styles. Includes images, quotes, timeline, and metrics sections.
+ * @param {any} caseStudy - Case study data object with all fields
+ * @returns {string} Complete HTML document ready for PDF conversion
+ * @location server/routes.ts#L105
+ * @related escapeHtml, shared/schema.ts (caseStudies table), client/src/pages/admin.tsx (CaseStudyEditor)
+ */
 function generatePdfHtml(caseStudy: any): string {
   return `
     <!DOCTYPE html>
@@ -229,6 +274,13 @@ function generatePdfHtml(caseStudy: any): string {
   `;
 }
 
+/**
+ * @description Main route registration function setting up all API endpoints including auth, schools, evidence, case studies, events, email, and file uploads. Applies authentication middleware and ACL policies.
+ * @param {Express} app - Express application instance
+ * @returns {Promise<Server>} HTTP server instance
+ * @location server/routes.ts#L232
+ * @related server/auth.ts (setupAuth, isAuthenticated, isSchoolMember), server/storage.ts, shared/schema.ts (all tables), client/src/pages/admin.tsx
+ */
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
@@ -405,7 +457,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get case studies/inspiration
+  /**
+   * @description GET /api/case-studies - Public endpoint for retrieving case studies with filtering by stage, country, categories, tags. Only published case studies shown to non-admin users.
+   * @returns {CaseStudy[]} Array of case study objects with pagination
+   * @location server/routes.ts#L461
+   * @related shared/schema.ts (caseStudies table), client/src/pages/inspiration.tsx, client/src/pages/admin.tsx (CaseStudyEditor)
+   */
   app.get('/api/case-studies', async (req: any, res) => {
     try {
       const { stage, country, search, categories, tags, status, limit, offset } = req.query;
@@ -477,7 +534,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Download case study as PDF
+  /**
+   * @description GET /api/case-studies/:id/pdf - Generates and downloads beautifully formatted PDF of case study using Puppeteer. Includes images, metrics, timeline, and quotes.
+   * @param {string} id - Case study ID from URL params
+   * @returns {Buffer} PDF file buffer for download
+   * @location server/routes.ts#L533
+   * @related generatePdfHtml, shared/schema.ts (caseStudies table), client/src/pages/inspiration.tsx
+   */
   app.get('/api/case-studies/:id/pdf', async (req: any, res) => {
     try {
       const caseStudy = await storage.getCaseStudyById(req.params.id);
@@ -589,7 +652,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get all schools (for join school flow)
+  /**
+   * @description GET /api/schools - Retrieves list of schools with optional filtering by country, type, and search term. Used for join school flow and public directory.
+   * @returns {School[]} Array of school objects with pagination
+   * @location server/routes.ts#L645
+   * @related shared/schema.ts (schools table), client/src/components/JoinSchoolFlow.tsx
+   */
   app.get('/api/schools', async (req, res) => {
     try {
       const { country, type, search, limit, offset } = req.query;
@@ -701,7 +769,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // School registration (public)
+  /**
+   * @description POST /api/schools/register - Public endpoint for school registration creating user account, school record, and establishing head_teacher relationship. Sends welcome email and triggers Mailchimp automation.
+   * @returns {Object} Created school and user objects with session
+   * @location server/routes.ts#L757
+   * @related shared/schema.ts (schools, users, schoolUsers tables), server/email.ts (sendWelcomeEmail), client/src/components/MultiStepSchoolRegistration.tsx
+   */
   app.post('/api/schools/register', async (req, res) => {
     try {
       // Validate school data
@@ -1490,7 +1563,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Submit evidence
+  /**
+   * @description POST /api/evidence - Authenticated endpoint for submitting evidence with files/videos. Validates stage locking (unlocked stages only unless admin/partner), sends confirmation and admin notification emails.
+   * @returns {Evidence} Created evidence object
+   * @location server/routes.ts#L1546
+   * @related shared/schema.ts (evidence table, insertEvidenceSchema), server/email.ts (sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail), client/src/components/EvidenceSubmissionForm.tsx
+   */
   app.post('/api/evidence', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
@@ -2514,7 +2592,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get evidence with optional filters
+  /**
+   * @description GET /api/admin/evidence - Admin-only endpoint for retrieving all evidence submissions with flexible filtering by status, stage, school, country, and visibility.
+   * @returns {Evidence[]} Array of evidence objects matching filters
+   * @location server/routes.ts#L2570
+   * @related shared/schema.ts (evidence table), client/src/pages/admin.tsx (evidence review tab)
+   */
   app.get('/api/admin/evidence', isAuthenticated, requireAdmin, async (req, res) => {
     try {
       const filters = {
@@ -2599,7 +2682,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Review evidence (approve/reject)
+  /**
+   * @description PUT /api/admin/evidence/:id/review - Admin-only endpoint for approving or rejecting evidence submissions. Updates school progression on approval and sends notification emails (approval or revision request).
+   * @param {string} id - Evidence ID from URL params
+   * @returns {Evidence} Updated evidence object with review status
+   * @location server/routes.ts#L2655
+   * @related shared/schema.ts (evidence table), server/email.ts (sendEvidenceApprovalEmail, sendEvidenceRejectionEmail), client/src/pages/admin.tsx (evidence review handlers)
+   */
   app.put('/api/admin/evidence/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const { status, reviewNotes } = req.body;
@@ -2775,7 +2864,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Audit Routes
   
-  // Create or update audit (save progress)
+  /**
+   * @description POST /api/audits - Authenticated endpoint for creating or updating waste audit responses. Supports draft saving and progress tracking for multi-step audit forms.
+   * @returns {AuditResponse} Created or updated audit object
+   * @location server/routes.ts#L2857
+   * @related shared/schema.ts (auditResponses table, insertAuditResponseSchema), client/src/pages/audit.tsx
+   */
   app.post('/api/audits', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
@@ -5253,7 +5347,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Public: Get all published events with filters
+  /**
+   * @description GET /api/events - Public endpoint for retrieving published events with filtering by type and upcoming status. Powers events listing and event calendar.
+   * @returns {Event[]} Array of published event objects with pagination
+   * @location server/routes.ts#L5335
+   * @related shared/schema.ts (events table), client/src/pages/events.tsx, client/src/pages/event-live.tsx
+   */
   app.get('/api/events', async (req, res) => {
     try {
       const { eventType, upcoming, limit, offset } = req.query;
@@ -5305,7 +5404,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Authenticated: Register for event
+  /**
+   * @description POST /api/events/:id/register - Authenticated endpoint for registering to events with capacity checking and waitlist support. Sends confirmation email and handles Mailchimp tagging.
+   * @param {string} id - Event ID from URL params
+   * @returns {EventRegistration} Created registration object with status
+   * @location server/routes.ts#L5387
+   * @related shared/schema.ts (eventRegistrations table), server/email.ts (sendEventRegistrationEmail), client/src/pages/events.tsx
+   */
   app.post('/api/events/:id/register', isAuthenticated, async (req: any, res) => {
     try {
       const eventId = req.params.id;
@@ -5483,7 +5588,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Admin: Create event
+  /**
+   * @description POST /api/admin/events - Admin-only endpoint for creating events with full details including page builder content (YouTube videos, PDFs, testimonials). Validates dates and capacity.
+   * @returns {Event} Created event object
+   * @location server/routes.ts#L5565
+   * @related shared/schema.ts (events table, insertEventSchema), client/src/pages/admin.tsx (event form handlers)
+   */
   app.post('/api/admin/events', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const eventData = insertEventSchema.parse({
