@@ -48,6 +48,13 @@
   body {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
   }
+  
+  /* Optimize font loading - prevent invisible text during load */
+  @font-face {
+    font-family: 'Inter';
+    font-display: swap; /* Show fallback font immediately, swap when Inter loads */
+    src: local('Inter'), local('system-ui');
+  }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Inter', system-ui, -apple-system, sans-serif;

@@ -18,6 +18,7 @@ import { translateEmailContent } from "./translationService";
 import { promises as fs } from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
+import { apiCache, CACHE_TTL } from "./cache";
 
 // CSV generation helper with proper escaping
 function generateCSV(data: any[], type: string): string {
@@ -235,10 +236,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Public routes
   
-  // Get site statistics
+  // Get site statistics (cached for 5 minutes)
   app.get('/api/stats', async (req, res) => {
     try {
+      const cacheKey = 'stats';
+      const cached = apiCache.get(cacheKey);
+      
+      if (cached) {
+        return res.json(cached);
+      }
+      
       const stats = await storage.getSchoolStats();
+      apiCache.set(cacheKey, stats, CACHE_TTL.SHORT);
       res.json(stats);
     } catch (error) {
       console.error("Error fetching stats:", error);
@@ -246,9 +255,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get comprehensive list of countries
+  // Get comprehensive list of countries (cached for 1 hour - static data)
   app.get('/api/countries', async (req, res) => {
     try {
+      const cacheKey = 'countries';
+      const cached = apiCache.get(cacheKey);
+      
+      if (cached) {
+        return res.json(cached);
+      }
+      
       const countries = [
         "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Antigua and Barbuda", "Argentina", "Armenia", 
         "Australia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", 
@@ -275,6 +291,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         "Uganda", "Ukraine", "United Arab Emirates", "United Kingdom", "United States", "Uruguay", "Uzbekistan", 
         "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe", "Other"
       ];
+      apiCache.set(cacheKey, countries, CACHE_TTL.STATIC);
       res.json(countries);
     } catch (error) {
       console.error("Error fetching countries:", error);
@@ -535,10 +552,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get schools for map
+  // Get schools for map (cached for 15 minutes, per country)
   app.get('/api/schools/map', async (req, res) => {
     try {
       const { country } = req.query;
+      const cacheKey = `schools-map-${country || 'all'}`;
+      const cached = apiCache.get(cacheKey);
+      
+      if (cached) {
+        return res.json(cached);
+      }
+      
       const schools = await storage.getSchools({
         country: country as string,
         showOnMap: true, // Only show schools that have consented to be on the map
@@ -557,6 +581,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         featuredSchool: school.featuredSchool,
       }));
       
+      apiCache.set(cacheKey, mapData, CACHE_TTL.MEDIUM);
       res.json(mapData);
     } catch (error) {
       console.error("Error fetching schools for map:", error);

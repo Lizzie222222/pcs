@@ -27,6 +27,7 @@ import {
 import { useCountries } from "@/hooks/useCountries";
 import useEmblaCarousel from "embla-carousel-react";
 import { stripHtmlTags } from "@/lib/utils";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface CaseStudy {
   id: string;
@@ -76,11 +77,12 @@ function ImageCarousel({ images, title }: { images: { url: string; caption?: str
   if (displayImages.length === 1) {
     return (
       <div className="relative overflow-hidden group">
-        <img 
+        <OptimizedImage 
           src={displayImages[0].url} 
           alt={title}
           className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-          loading="lazy"
+          priority={false}
+          respectConnectionSpeed={true}
         />
       </div>
     );
@@ -91,11 +93,12 @@ function ImageCarousel({ images, title }: { images: { url: string; caption?: str
       <div className="flex">
         {displayImages.map((image, index) => (
           <div key={index} className="relative flex-[0_0_100%] min-w-0">
-            <img 
+            <OptimizedImage 
               src={image.url} 
               alt={image.caption || title}
               className="w-full h-64 object-cover transition-transform duration-500 hover:scale-110"
-              loading="lazy"
+              priority={false}
+              respectConnectionSpeed={true}
             />
           </div>
         ))}
@@ -172,22 +175,24 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
       {hasBeforeAfter ? (
         <div className="grid grid-cols-2 gap-0.5 bg-gray-200">
           <div className="relative overflow-hidden group/img">
-            <img 
-              src={caseStudy.beforeImage} 
+            <OptimizedImage 
+              src={caseStudy.beforeImage!} 
               alt="Before"
               className="w-full h-48 object-cover transition-transform duration-500 group-hover/img:scale-110"
-              loading="lazy"
+              priority={false}
+              respectConnectionSpeed={true}
             />
             <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
               Before
             </div>
           </div>
           <div className="relative overflow-hidden group/img">
-            <img 
-              src={caseStudy.afterImage} 
+            <OptimizedImage 
+              src={caseStudy.afterImage!} 
               alt="After"
               className="w-full h-48 object-cover transition-transform duration-500 group-hover/img:scale-110"
-              loading="lazy"
+              priority={false}
+              respectConnectionSpeed={true}
             />
             <div className="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded text-xs font-medium">
               After
@@ -198,11 +203,12 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
         <ImageCarousel images={caseStudy.images} title={caseStudy.title} />
       ) : caseStudy.imageUrl ? (
         <div className="relative overflow-hidden group">
-          <img 
+          <OptimizedImage 
             src={caseStudy.imageUrl} 
             alt={caseStudy.title}
             className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-            loading="lazy"
+            priority={false}
+            respectConnectionSpeed={true}
           />
         </div>
       ) : null}

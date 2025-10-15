@@ -1,9 +1,29 @@
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
+import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
+
+// Enable gzip/brotli compression for all responses
+// This reduces JSON API responses by 60-80% for faster AI agent edits
+app.use(compression({
+  // Only compress responses larger than 1kb
+  threshold: 1024,
+  // Compression level (1-9, higher = better compression but slower)
+  level: 6,
+  // Filter function to decide what to compress
+  filter: (req, res) => {
+    // Don't compress if explicitly requested not to
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Use compression filter
+    return compression.filter(req, res);
+  }
+}));
+
 app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ extended: false, limit: '200mb' }));
 
