@@ -394,19 +394,6 @@ export default function CaseStudyDetail() {
         <div className="absolute inset-0 flex items-end">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 w-full">
             <div>
-              {/* Breadcrumb */}
-              <nav className="mb-6 flex items-center gap-2 text-white/80 text-sm">
-                <button 
-                  onClick={() => setLocation('/inspiration')}
-                  className="hover:text-white transition-colors"
-                  data-testid="breadcrumb-home"
-                >
-                  Success Stories
-                </button>
-                <ChevronRight className="w-4 h-4" />
-                <span className="text-white" data-testid="breadcrumb-current">{caseStudy.title}</span>
-              </nav>
-
               {/* Badges */}
               <div className="flex flex-wrap items-center gap-3 mb-6">
                 <Badge className={getStageColor(caseStudy.stage)} data-testid="badge-stage">
