@@ -370,8 +370,8 @@ export default function CaseStudyDetail() {
       />
       <ReadingProgress />
 
-      {/* Full-Screen Hero Section - fixed to viewport top */}
-      <div className="fixed top-0 left-0 right-0 h-screen overflow-hidden z-0">
+      {/* Full-Screen Hero Section */}
+      <div className="relative h-screen overflow-hidden">
         {/* Hero Media */}
         {heroVideo ? (
           <div className="absolute inset-0 w-full h-full">
@@ -476,8 +476,8 @@ export default function CaseStudyDetail() {
         </button>
       </div>
 
-      {/* Main Content - positioned after hero */}
-      <div className="relative z-10 mt-[100vh] max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16 bg-gray-50">
+      {/* Main Content */}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         {/* Back Button */}
         <Button
           variant="ghost"
