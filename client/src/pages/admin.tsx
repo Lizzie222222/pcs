@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -89,11 +89,6 @@ import {
   Check
 } from "lucide-react";
 
-import { 
-  BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
-  XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
-  ScatterChart, Scatter
-} from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
@@ -104,7 +99,7 @@ import { CaseStudyEditor } from "@/components/admin/CaseStudyEditor";
 import AssignTeacherForm from "@/components/admin/AssignTeacherForm";
 import UserManagementTab from "@/components/admin/UserManagementTab";
 import ResourcesManagement from "@/components/admin/ResourcesManagement";
-import AnalyticsContent from "@/components/admin/AnalyticsContent";
+const AnalyticsContent = lazy(() => import("@/components/admin/AnalyticsContent"));
 import EmailManagementSection from "@/components/admin/EmailManagementSection";
 import EvidenceGalleryTab from "@/components/admin/EvidenceGalleryTab";
 import PrintableFormsTab from "@/components/admin/PrintableFormsTab";
@@ -2509,7 +2504,13 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         {/* Overview Tab (Analytics Content) */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            <AnalyticsContent />
+            <Suspense fallback={
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full" />
+              </div>
+            }>
+              <AnalyticsContent />
+            </Suspense>
           </div>
         )}
 
