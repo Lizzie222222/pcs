@@ -343,7 +343,8 @@ export default function CaseStudyDetail() {
   const heroVideo = caseStudy.videos?.[0];
   const heroImage = caseStudy.images?.[0]?.url || caseStudy.imageUrl;
 
-  const extractTextFromHtml = (html: string, maxLength: number = 150) => {
+  const extractTextFromHtml = (html: string | null | undefined, maxLength: number = 150) => {
+    if (!html) return '';
     const text = html.replace(/<[^>]*>/g, '');
     return text.length > maxLength ? text.substring(0, maxLength) : text;
   };
@@ -543,7 +544,7 @@ export default function CaseStudyDetail() {
         <div className="mb-16">
           <div 
             className="prose prose-lg max-w-none prose-headings:text-navy prose-p:text-gray-700 prose-a:text-ocean-blue"
-            dangerouslySetInnerHTML={{ __html: caseStudy.description }}
+            dangerouslySetInnerHTML={{ __html: caseStudy.description || '<p>No description available.</p>' }}
             data-testid="text-description"
           />
         </div>

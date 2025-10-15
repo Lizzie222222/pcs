@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -75,6 +75,13 @@ export default function EvidenceSubmissionForm({
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>(initialSchoolId || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
   const consentInputRef = useRef<HTMLInputElement>(null);
+  
+  // Sync selectedSchoolId when initialSchoolId changes (e.g., when admin selects a school)
+  useEffect(() => {
+    if (initialSchoolId) {
+      setSelectedSchoolId(initialSchoolId);
+    }
+  }, [initialSchoolId]);
   
   // Fetch schools list for admin/partner
   const { data: schools = [] } = useQuery<School[]>({

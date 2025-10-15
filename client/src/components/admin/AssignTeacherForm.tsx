@@ -90,16 +90,35 @@ export default function AssignTeacherForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const selectedUser = usersWithSchools.find(u => u.user.id === selectedUserId);
-    const userEmail = selectedUser?.user.email;
     
-    if (!selectedSchool || !userEmail) {
+    if (!selectedSchool) {
       toast({
         title: "Missing Information",
-        description: "Please select a school and a user.",
+        description: "Please select a school.",
         variant: "destructive",
       });
       return;
     }
+
+    if (!selectedUserId) {
+      toast({
+        title: "Missing Information",
+        description: "Please select a user.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const userEmail = selectedUser?.user.email;
+    if (!userEmail) {
+      toast({
+        title: "Email Missing",
+        description: "The selected user does not have an email address on file. Please ensure the user has a valid email before assigning them.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     assignTeacherMutation.mutate({ schoolId: selectedSchool, userEmail, role });
   };
 
