@@ -25,7 +25,12 @@ import actIcon from "@assets/PSC - Act_1760461719847.png";
 import inspireVideo from "@assets/inspire_1757867031379.mp4";
 import investigateVideo from "@assets/investigate_1757867031380.mp4";
 import actVideo from "@assets/ACT_1757867031379.mp4";
-import heroImage from "@assets/1W0A3542_1759747398974.jpg";
+import heroMobileWebP from "@assets/hero-mobile.webp";
+import heroMobileJPG from "@assets/hero-mobile.jpg";
+import heroTabletWebP from "@assets/hero-tablet.webp";
+import heroTabletJPG from "@assets/hero-tablet.jpg";
+import heroDesktopWebP from "@assets/hero-desktop.webp";
+import heroDesktopJPG from "@assets/hero-desktop.jpg";
 import videoPlaceholder from "@assets/Screenshot 2025-10-07 at 08.55.43_1759821888486.png";
 import commonSeasLogo from "@assets/common-seas_1759934515099.png";
 import kidsAgainstPlasticLogo from "@assets/KAP-logo-png-300x300_1759934515099.png";
@@ -175,21 +180,57 @@ export default function Landing() {
 
       {/* Clean Hero Section with Student Image */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
-        {/* Optimized Hero Image */}
+        {/* Optimized Responsive Hero Image */}
         <div className="absolute inset-0 w-full h-full z-0">
-          <OptimizedImage
-            src={heroImage}
-            alt="Students holding Plastic Clever Schools reusable water bottles"
-            width={1920}
-            height={1080}
-            className="w-full h-full object-cover object-center md:object-[center_30%]"
-            priority={true}
-            responsive={true}
-            quality={50}
-            sizes="(max-width: 480px) 480px, (max-width: 640px) 640px, (max-width: 828px) 828px, (max-width: 1200px) 1200px, 1920px"
-            placeholder="blur"
-            blurDataURL={createBlurPlaceholder('#f3f4f6')}
-          />
+          <picture className="w-full h-full">
+            {/* WebP sources for modern browsers */}
+            <source 
+              media="(max-width: 640px)" 
+              srcSet={heroMobileWebP}
+              type="image/webp"
+            />
+            <source 
+              media="(max-width: 1024px)" 
+              srcSet={heroTabletWebP}
+              type="image/webp"
+            />
+            <source 
+              media="(min-width: 1025px)" 
+              srcSet={heroDesktopWebP}
+              type="image/webp"
+            />
+            
+            {/* JPEG fallback sources for older browsers */}
+            <source 
+              media="(max-width: 640px)" 
+              srcSet={heroMobileJPG}
+              type="image/jpeg"
+            />
+            <source 
+              media="(max-width: 1024px)" 
+              srcSet={heroTabletJPG}
+              type="image/jpeg"
+            />
+            <source 
+              media="(min-width: 1025px)" 
+              srcSet={heroDesktopJPG}
+              type="image/jpeg"
+            />
+            
+            {/* Fallback img tag for browsers that don't support picture */}
+            <img 
+              src={heroDesktopJPG}
+              alt="Students holding Plastic Clever Schools reusable water bottles"
+              className="w-full h-full object-cover object-center md:object-[center_30%]"
+              loading="eager"
+              width={1920}
+              height={1080}
+              style={{
+                backgroundImage: createBlurPlaceholder('#f3f4f6'),
+                backgroundSize: 'cover'
+              }}
+            />
+          </picture>
         </div>
 
         {/* Post-it Note Style News/Events Popup - Hidden on very small screens (< 375px) */}

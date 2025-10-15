@@ -1682,7 +1682,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
   // Handle unauthorized errors
   useEffect(() => {
-    const errors = [statsError, evidenceError, schoolsError, caseStudiesError].filter(Boolean);
+    const errors = [statsError, evidenceError, schoolsError].filter(Boolean);
     for (const error of errors) {
       if (isUnauthorizedError(error as Error)) {
         toast({
