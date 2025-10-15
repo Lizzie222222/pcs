@@ -51,3 +51,17 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 -   **Hosting/Deployment**: Replit
 -   **AI Integration**: OpenAI GPT-5 (specifically GPT-4o-mini for translations)
 -   **PDF Generation**: Puppeteer
+
+## Recent Updates (October 2025)
+
+### Case Study Platform Bug Fixes & Schema Updates
+- **Added Admin GET Route**: Fixed missing GET /api/admin/case-studies/:id endpoint (was returning HTML, now returns JSON)
+- **Schema Alignment**: Updated studentQuote schema from quote/photoUrl to text/photo fields to match frontend interface
+- **Impact Metrics Fix**: Changed impactMetrics database default from '{}' (object) to '[]' (array) for proper array handling
+- **Video Schema Enhancement**: Added title field to caseStudyVideoSchema for video metadata
+- **PDF Generator Update**: Updated PDF generation to use q.text || q.quote for backwards compatibility with legacy data
+- **Bug Fixes Applied**:
+  - AnimatedCounter now handles comma-formatted numbers correctly (e.g., "2,500+" displays properly)
+  - Student testimonials render with proper text field mapping
+  - Impact metrics display with correct array structure
+- **Database Migration**: Schema changes pushed successfully with npm run db:push --force

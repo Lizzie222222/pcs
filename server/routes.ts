@@ -197,7 +197,7 @@ function generatePdfHtml(caseStudy: any): string {
         <h2>Student Testimonials</h2>
         ${caseStudy.studentQuotes.map((q: any) => `
           <div class="quote section">
-            "${escapeHtml(q.quote)}"<br/>
+            "${escapeHtml(q.text || q.quote || '')}"<br/>
             <strong>— ${escapeHtml(q.name)}${q.age ? `, Age ${q.age}` : ''}</strong>
           </div>
         `).join('')}
@@ -3238,6 +3238,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching case studies:", error);
       res.status(500).json({ message: "Failed to fetch case studies" });
+    }
+  });
+
+  // Get single case study by ID (admin - no draft protection)
+  app.get('/api/admin/case-studies/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const caseStudy = await storage.getCaseStudyById(req.params.id);
+      
+      if (!caseStudy) {
+        return res.status(404).json({ message: "Case study not found" });
+      }
+      
+      res.json(caseStudy);
+    } catch (error) {
+      console.error("Error fetching case study:", error);
+      res.status(500).json({ message: "Failed to fetch case study" });
     }
   });
 

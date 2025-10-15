@@ -254,7 +254,7 @@ export const caseStudies = pgTable("case_studies", {
   images: jsonb("images").default('[]'),
   videos: jsonb("videos").default('[]'),
   studentQuotes: jsonb("student_quotes").default('[]'),
-  impactMetrics: jsonb("impact_metrics").default('{}'),
+  impactMetrics: jsonb("impact_metrics").default('[]'),
   timelineSections: jsonb("timeline_sections").default('[]'),
   categories: jsonb("categories").default('[]'),
   tags: jsonb("tags").default('[]'),
@@ -952,6 +952,7 @@ export const caseStudyImageSchema = z.object({
 
 export const caseStudyVideoSchema = z.object({
   url: z.string().url(),
+  title: z.string().optional(),
   platform: z.enum(['youtube', 'vimeo', 'other']).optional(),
   embedId: z.string().optional(),
 });
@@ -959,8 +960,9 @@ export const caseStudyVideoSchema = z.object({
 export const studentQuoteSchema = z.object({
   name: z.string(),
   role: z.string().optional(),
-  quote: z.string(),
-  photoUrl: z.string().url().optional(),
+  text: z.string(),
+  photo: z.string().url().optional(),
+  age: z.number().optional(),
 });
 
 export const impactMetricSchema = z.object({
