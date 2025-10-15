@@ -4284,7 +4284,7 @@ function EmailManagementSection({
                           
                           const data = await response.json();
                           // Merge new translations with existing ones, preserving edited translations
-                          setTranslations(prev => ({ ...prev, ...data.translations }));
+                          setTranslations((prev: Record<string, any>) => ({ ...prev, ...data.translations }));
                           toast({
                             title: "Translations Generated",
                             description: `Successfully generated translations for ${languagesToGenerate.length} language(s).`,
@@ -5209,8 +5209,8 @@ function EvidenceGalleryTab() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-700">Status</label>
-                  <Badge className={getStatusBadgeColor(selectedEvidence.status)}>
-                    {selectedEvidence.status}
+                  <Badge className={getStatusBadgeColor(selectedEvidence.status || 'pending')}>
+                    {selectedEvidence.status || 'pending'}
                   </Badge>
                 </div>
               </div>
@@ -5331,10 +5331,7 @@ function PrintableFormsTab() {
   // Update submission status mutation
   const updateStatusMutation = useMutation({
     mutationFn: async ({ id, status, reviewNotes }: { id: string; status: string; reviewNotes?: string }) => {
-      return apiRequest(`/api/admin/printable-form-submissions/${id}/status`, {
-        method: 'PATCH',
-        body: JSON.stringify({ status, reviewNotes }),
-      });
+      return apiRequest('PATCH', `/api/admin/printable-form-submissions/${id}/status`, { status, reviewNotes });
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/printable-form-submissions'] });
@@ -5990,7 +5987,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
   // Case studies query
   const { data: caseStudies = [], error: caseStudiesError } = useQuery<any[]>({
-    queryKey: ['/api/admin/case-studies', cleanFilters(caseStudyFilters)],
+    queryKey: ['/api/admin/case-studies', {
+      search: caseStudyFilters.search || '',
+      country: caseStudyFilters.country || '',
+      stage: caseStudyFilters.stage || '',
+      language: caseStudyFilters.language || ''
+    }],
     queryFn: async () => {
       const filters = cleanFilters(caseStudyFilters);
       const params = new URLSearchParams();
@@ -6884,10 +6886,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/school-progress'] });
       // Update the viewingSchool state to reflect the change immediately
-      if (viewingSchool && data.school) {
+      const responseData = data as any;
+      if (viewingSchool && responseData.school) {
         setViewingSchool({
           ...viewingSchool,
-          ...data.school
+          ...responseData.school
         });
       }
       setEditingProgression(false);

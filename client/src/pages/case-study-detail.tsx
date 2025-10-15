@@ -264,6 +264,8 @@ export default function CaseStudyDetail() {
   const { data: caseStudy, isLoading, error } = useQuery<CaseStudy>({
     queryKey: ['/api/case-studies', caseStudyId],
     enabled: !!caseStudyId,
+    staleTime: 5 * 60 * 1000, // 5 minutes - fresh enough but not too aggressive
+    refetchOnMount: true, // Always fetch on mount to ensure data is fresh
   });
 
   const getStageColor = (stage: string) => {
