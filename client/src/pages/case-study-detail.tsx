@@ -113,7 +113,7 @@ function useScrollReveal() {
           }
         });
       },
-      { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+      { threshold: 0.05, rootMargin: '0px 0px 150px 0px' }
     );
 
     const elements = document.querySelectorAll('.scroll-reveal, .scroll-reveal-left, .scroll-reveal-right, .scroll-reveal-scale');
@@ -538,7 +538,7 @@ export default function CaseStudyDetail() {
         )}
 
         {/* Rich Content Description */}
-        <div className="mb-16 scroll-reveal">
+        <div className="mb-16">
           <div 
             className="prose prose-lg max-w-none prose-headings:text-navy prose-p:text-gray-700 prose-a:text-ocean-blue"
             dangerouslySetInnerHTML={{ __html: caseStudy.description }}
