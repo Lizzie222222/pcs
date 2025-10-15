@@ -937,7 +937,7 @@ function RelatedCaseStudies({ caseStudyId, currentStage }: RelatedCaseStudiesPro
             return (
               <Link 
                 key={story.id} 
-                href={`/inspiration/${story.id}`}
+                href={`/case-study/${story.id}`}
                 data-testid={`related-case-study-${story.id}`}
               >
                 <Card className="h-full overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 cursor-pointer group">
