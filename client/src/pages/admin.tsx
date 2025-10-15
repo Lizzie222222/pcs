@@ -88,6 +88,18 @@ import {
   Building,
   Check
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ResponsiveContainer
+} from "recharts";
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -735,6 +747,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     country: '',
     stage: '',
     featured: '',
+    language: '',
   });
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingCaseStudy, setEditingCaseStudy] = useState<CaseStudy | null>(null);
@@ -3807,12 +3820,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                   <XAxis 
                                     dataKey="type" 
                                     tick={{ fontSize: 12 }}
-                                    tickFormatter={(value) => value.replace('_', ' ').charAt(0).toUpperCase() + value.replace('_', ' ').slice(1)}
+                                    tickFormatter={(value: string) => value.replace('_', ' ').charAt(0).toUpperCase() + value.replace('_', ' ').slice(1)}
                                   />
                                   <YAxis />
                                   <Tooltip 
-                                    formatter={(value) => [value, 'Events']}
-                                    labelFormatter={(label) => label.replace('_', ' ').charAt(0).toUpperCase() + label.replace('_', ' ').slice(1)}
+                                    formatter={(value: number) => [value, 'Events']}
+                                    labelFormatter={(label: string) => label.replace('_', ' ').charAt(0).toUpperCase() + label.replace('_', ' ').slice(1)}
                                   />
                                   <Bar dataKey="count" fill="#0B3D5D" />
                                 </BarChart>
@@ -3841,10 +3854,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                     type="category" 
                                     width={150}
                                     tick={{ fontSize: 11 }}
-                                    tickFormatter={(value) => value.length > 20 ? value.substring(0, 20) + '...' : value}
+                                    tickFormatter={(value: string) => value.length > 20 ? value.substring(0, 20) + '...' : value}
                                   />
                                   <Tooltip 
-                                    formatter={(value, name, props) => {
+                                    formatter={(value: number, name: string, props: any) => {
                                       if (name === 'registrations') {
                                         const capacity = props.payload.capacity;
                                         return [
@@ -3880,15 +3893,15 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                 <XAxis 
                                   dataKey="date" 
                                   tick={{ fontSize: 12 }}
-                                  tickFormatter={(value) => {
+                                  tickFormatter={(value: string) => {
                                     const date = new Date(value);
                                     return `${date.getMonth() + 1}/${date.getDate()}`;
                                   }}
                                 />
                                 <YAxis />
                                 <Tooltip 
-                                  formatter={(value) => [value, 'Registrations']}
-                                  labelFormatter={(label) => new Date(label).toLocaleDateString()}
+                                  formatter={(value: number) => [value, 'Registrations']}
+                                  labelFormatter={(label: string) => new Date(label).toLocaleDateString()}
                                 />
                                 <Legend />
                                 <Line 
