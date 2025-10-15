@@ -8321,7 +8321,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => window.open(`/case-studies/${caseStudy.id}`, '_blank')}
+                                onClick={() => window.open(`/case-study/${caseStudy.id}`, '_blank')}
                                 data-testid={`button-preview-${caseStudy.id}`}
                               >
                                 <Eye className="h-4 w-4 mr-1" />
