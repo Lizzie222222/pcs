@@ -144,14 +144,30 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
     - Blur placeholder loading states
   - Applied to all case study images on inspiration page
 
-- **Admin Page Optimization Attempt**:
-  - Created AdminAnalyticsCharts wrapper for potential Recharts lazy loading
-  - Component ready but not integrated into admin.tsx due to complexity (11K+ lines)
-  - Future improvement opportunity: Integrate lazy loading when refactoring admin page
+- **Admin Page Phase 1 Refactoring** (COMPLETED):
+  - Extracted 6 major components from 11K+ line admin.tsx:
+    - `components/admin/UserManagementTab.tsx` - User management interface
+    - `components/admin/ResourcesManagement.tsx` - Resource upload and management
+    - `components/admin/AnalyticsContent.tsx` - Charts and analytics (LAZY LOADED)
+    - `components/admin/EmailManagementSection.tsx` - Bulk email composition
+    - `components/admin/EvidenceGalleryTab.tsx` - Evidence gallery with filtering
+    - `components/admin/PrintableFormsTab.tsx` - Printable forms review
+  - Implemented lazy loading for AnalyticsContent:
+    - ~60KB Recharts bundle deferred from initial admin page load
+    - Charts only load when user clicks Dashboard tab
+    - Proper Suspense boundaries with loading states
+  - Bug fixes:
+    - Fixed SelectItem empty value issue in PrintableFormsTab (Radix UI constraint)
+    - Implemented proper filter state handling ("all" sentinel value)
+    - Added refetchType: 'all' for correct cache invalidation
+  - All components include data-refactor-source attributes for error tracking
+  - Comprehensive E2E testing passed with no regressions
 
 **Impact Summary:**
 - API responses 60-80% smaller (compression)
 - Cached endpoints respond instantly on subsequent requests
 - Inspiration page images load progressively with connection awareness
 - Text visible immediately during font loading
-- Foundation laid for future admin page code-splitting
+- **Admin page: ~60KB Recharts bundle deferred via lazy loading**
+- Admin page: 6 major components extracted for better maintainability
+- Foundation laid for Phase 2: Further componentization and lazy loading
