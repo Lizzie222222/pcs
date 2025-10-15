@@ -359,7 +359,7 @@ export default function CaseStudyDetail() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 -mt-16 pt-16">
       <SocialMetaTags
         title={caseStudy.title}
         description={extractTextFromHtml(caseStudy.description)}
@@ -370,8 +370,8 @@ export default function CaseStudyDetail() {
       />
       <ReadingProgress />
 
-      {/* Full-Screen Hero Section with Parallax - starts at top behind nav */}
-      <div className="relative h-screen overflow-hidden -mt-20">
+      {/* Full-Screen Hero Section with nav overlay */}
+      <div className="relative h-screen overflow-hidden -mt-16">
         {/* Hero Media */}
         {heroVideo ? (
           <div className="absolute inset-0 w-full h-full">
