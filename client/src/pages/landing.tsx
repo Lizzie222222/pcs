@@ -5,12 +5,12 @@ import { useConnectionSpeed } from "@/hooks/useConnectionSpeed";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import SchoolSignUpForm from "@/components/SchoolSignUpForm";
 import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedImage";
 import ConnectionSpeedControl from "@/components/ConnectionSpeedControl";
 
 // Lazy load heavy components below the fold
 const InstagramCarousel = lazy(() => import("@/components/InstagramCarousel"));
+const SchoolSignUpForm = lazy(() => import("@/components/SchoolSignUpForm"));
 
 // Generate blur placeholders for large images
 const createBlurPlaceholder = (color: string) => generateBlurDataURL(`
@@ -185,8 +185,8 @@ export default function Landing() {
             className="w-full h-full object-cover object-center md:object-[center_30%]"
             priority={true}
             responsive={true}
-            quality={60}
-            sizes="(max-width: 480px) 480px, (max-width: 640px) 640px, (max-width: 828px) 828px, (max-width: 1080px) 1080px, (max-width: 1920px) 1920px, 100vw"
+            quality={50}
+            sizes="(max-width: 480px) 480px, (max-width: 640px) 640px, (max-width: 828px) 828px, (max-width: 1200px) 1200px, 1920px"
             placeholder="blur"
             blurDataURL={createBlurPlaceholder('#f3f4f6')}
           />
@@ -628,7 +628,9 @@ export default function Landing() {
 
       {/* Sign Up Modal */}
       {showSignUp && (
-        <SchoolSignUpForm onClose={() => setShowSignUp(false)} />
+        <Suspense fallback={<div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50"><div className="animate-spin h-8 w-8 border-4 border-white border-t-transparent rounded-full" /></div>}>
+          <SchoolSignUpForm onClose={() => setShowSignUp(false)} />
+        </Suspense>
       )}
 
       {/* Connection Speed Control */}

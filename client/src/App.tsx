@@ -9,6 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Navigation from "@/components/Navigation";
 import { updatePageSEO, addStructuredData, defaultStructuredData } from "@/lib/seoUtils";
 import { useTranslation } from "react-i18next";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 // Page Loading Component
 const PageLoadingFallback = () => (
@@ -107,43 +108,45 @@ function Router() {
         role="main"
         className="focus:outline-none"
       >
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Switch>
-            <Route path="/" component={Landing} />
-            <Route path="/login" component={Login} />
-            <Route path="/register" component={Register} />
-            <Route path="/invitations/:token" component={InvitationAccept} />
-            <Route path="/admin-invitations/:token" component={AdminInvitationAccept} />
-            {import.meta.env.DEV && <Route path="/test-login" component={TestLogin} />}
-            <Route path="/resources" component={Resources} />
-            <Route path="/inspiration" component={Inspiration} />
-            <Route path="/case-study/:id" component={CaseStudyDetail} />
-            <Route path="/schools-map" component={SchoolsMap} />
-            <Route path="/search" component={Search} />
-            <Route path="/events/:slug" component={EventLive} />
-            {isAuthenticated && (
-              <>
-                <Route path="/dashboard">
-                  {() => {
-                    if (user?.isAdmin) {
-                      window.location.href = "/admin";
-                      return null;
-                    }
-                    return <Home />;
-                  }}
-                </Route>
-                <Route path="/dashboard/team-management" component={TeamManagement} />
-                <Route path="/admin/evidence-requirements">
-                  {() => <Admin initialTab="evidence-requirements" />}
-                </Route>
-                <Route path="/admin">
-                  {() => <Admin />}
-                </Route>
-              </>
-            )}
-            <Route component={NotFound} />
-          </Switch>
-        </Suspense>
+        <ErrorBoundary>
+          <Suspense fallback={<PageLoadingFallback />}>
+            <Switch>
+              <Route path="/" component={Landing} />
+              <Route path="/login" component={Login} />
+              <Route path="/register" component={Register} />
+              <Route path="/invitations/:token" component={InvitationAccept} />
+              <Route path="/admin-invitations/:token" component={AdminInvitationAccept} />
+              {import.meta.env.DEV && <Route path="/test-login" component={TestLogin} />}
+              <Route path="/resources" component={Resources} />
+              <Route path="/inspiration" component={Inspiration} />
+              <Route path="/case-study/:id" component={CaseStudyDetail} />
+              <Route path="/schools-map" component={SchoolsMap} />
+              <Route path="/search" component={Search} />
+              <Route path="/events/:slug" component={EventLive} />
+              {isAuthenticated && (
+                <>
+                  <Route path="/dashboard">
+                    {() => {
+                      if (user?.isAdmin) {
+                        window.location.href = "/admin";
+                        return null;
+                      }
+                      return <Home />;
+                    }}
+                  </Route>
+                  <Route path="/dashboard/team-management" component={TeamManagement} />
+                  <Route path="/admin/evidence-requirements">
+                    {() => <Admin initialTab="evidence-requirements" />}
+                  </Route>
+                  <Route path="/admin">
+                    {() => <Admin />}
+                  </Route>
+                </>
+              )}
+              <Route component={NotFound} />
+            </Switch>
+          </Suspense>
+        </ErrorBoundary>
       </main>
     </div>
   );
