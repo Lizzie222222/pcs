@@ -393,7 +393,7 @@ export default function CaseStudyDetail() {
         {/* Hero Content */}
         <div className="absolute inset-0 flex items-end">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20 w-full">
-            <div className="scroll-reveal">
+            <div>
               {/* Breadcrumb */}
               <nav className="mb-6 flex items-center gap-2 text-white/80 text-sm">
                 <button 
