@@ -370,8 +370,8 @@ export default function CaseStudyDetail() {
       />
       <ReadingProgress />
 
-      {/* Full-Screen Hero Section with Parallax */}
-      <div className="relative h-screen overflow-hidden">
+      {/* Full-Screen Hero Section with Parallax - starts at top behind nav */}
+      <div className="relative h-screen overflow-hidden -mt-20">
         {/* Hero Media */}
         {heroVideo ? (
           <div className="absolute inset-0 w-full h-full">
