@@ -1,10 +1,12 @@
 import { ExternalLink } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface EvidenceVideoLinksProps {
   videoLinks: string | null;
 }
 
 export function EvidenceVideoLinks({ videoLinks }: EvidenceVideoLinksProps) {
+  const { t } = useTranslation();
   if (!videoLinks || videoLinks.trim() === '') {
     return null;
   }
@@ -18,7 +20,7 @@ export function EvidenceVideoLinks({ videoLinks }: EvidenceVideoLinksProps) {
 
   return (
     <div className="mt-3 space-y-2">
-      <p className="text-sm font-semibold text-gray-700">Video Links:</p>
+      <p className="text-sm font-semibold text-gray-700">{t('messages.video_links')}</p>
       <ul className="space-y-1">
         {links.map((link, index) => (
           <li key={index} className="flex items-center gap-2">

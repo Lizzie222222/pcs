@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -35,6 +36,7 @@ const SUGGESTED_TAGS = [
 ];
 
 export function CategorisationSection({ form }: CategorisationSectionProps) {
+  const { t } = useTranslation('admin');
   const [categoryInput, setCategoryInput] = useState("");
   const [tagInput, setTagInput] = useState("");
 
@@ -77,10 +79,10 @@ export function CategorisationSection({ form }: CategorisationSectionProps) {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <FolderTree className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">Categories</h3>
+          <h3 className="text-lg font-semibold">{t('case_study.categories')}</h3>
         </div>
         <p className="text-sm text-muted-foreground">
-          Organize your case study by selecting relevant categories
+          {t('case_study.organize_case_study_categories')}
         </p>
 
         <FormField
@@ -88,11 +90,11 @@ export function CategorisationSection({ form }: CategorisationSectionProps) {
           name="categories"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Add Categories</FormLabel>
+              <FormLabel>{t('case_study.add_categories')}</FormLabel>
               <FormControl>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Enter a category"
+                    placeholder={t('case_study.enter_category')}
                     value={categoryInput}
                     onChange={(e) => setCategoryInput(e.target.value)}
                     onKeyPress={(e) => {
@@ -114,7 +116,7 @@ export function CategorisationSection({ form }: CategorisationSectionProps) {
                 </div>
               </FormControl>
               <FormDescription>
-                Press Enter or click + to add a category
+                {t('case_study.press_enter_or_click_plus_category')}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -123,7 +125,7 @@ export function CategorisationSection({ form }: CategorisationSectionProps) {
 
         {/* Suggested Categories */}
         <div className="space-y-2">
-          <p className="text-sm font-medium">Suggested Categories:</p>
+          <p className="text-sm font-medium">{t('case_study.suggested_categories')}:</p>
           <div className="flex flex-wrap gap-2">
             {SUGGESTED_CATEGORIES.filter((cat) => !categories.includes(cat)).map((category) => (
               <Badge
@@ -167,10 +169,10 @@ export function CategorisationSection({ form }: CategorisationSectionProps) {
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <Tag className="h-5 w-5" />
-          <h3 className="text-lg font-semibold">Tags</h3>
+          <h3 className="text-lg font-semibold">{t('case_study.tags')}</h3>
         </div>
         <p className="text-sm text-muted-foreground">
-          Add tags to help others discover your case study
+          {t('case_study.add_descriptive_tags')}
         </p>
 
         <FormField
@@ -178,11 +180,11 @@ export function CategorisationSection({ form }: CategorisationSectionProps) {
           name="tags"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Add Tags</FormLabel>
+              <FormLabel>{t('case_study.add_tags')}</FormLabel>
               <FormControl>
                 <div className="flex gap-2">
                   <Input
-                    placeholder="Enter a tag (will be converted to lowercase-with-dashes)"
+                    placeholder={t('case_study.enter_tag')}
                     value={tagInput}
                     onChange={(e) => setTagInput(e.target.value)}
                     onKeyPress={(e) => {
@@ -204,7 +206,7 @@ export function CategorisationSection({ form }: CategorisationSectionProps) {
                 </div>
               </FormControl>
               <FormDescription>
-                Press Enter or click + to add a tag
+                {t('case_study.press_enter_or_click_plus_tag')}
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -213,7 +215,7 @@ export function CategorisationSection({ form }: CategorisationSectionProps) {
 
         {/* Suggested Tags */}
         <div className="space-y-2">
-          <p className="text-sm font-medium">Suggested Tags:</p>
+          <p className="text-sm font-medium">{t('case_study.suggested_tags')}:</p>
           <div className="flex flex-wrap gap-2">
             {SUGGESTED_TAGS.filter((tag) => !tags.includes(tag)).map((tag) => (
               <Badge

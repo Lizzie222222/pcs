@@ -1,4 +1,5 @@
 import { UseFormReturn, useFieldArray } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ interface ImpactMetricsBuilderProps {
 }
 
 export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
+  const { t } = useTranslation('admin');
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "impactMetrics",
@@ -29,9 +31,9 @@ export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Impact Metrics</h3>
+          <h3 className="text-lg font-semibold">{t('case_study.impact_metrics')}</h3>
           <p className="text-sm text-muted-foreground">
-            Add quantifiable metrics to showcase the project's impact
+            {t('case_study.add_quantifiable_metrics')}
           </p>
         </div>
         <Button
@@ -42,7 +44,7 @@ export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
           data-testid="button-add-metric"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add Metric
+          {t('case_study.add_metric')}
         </Button>
       </div>
 
@@ -51,7 +53,7 @@ export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
           <CardContent className="flex flex-col items-center justify-center py-8 text-center">
             <BarChart3 className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-sm text-muted-foreground">
-              No impact metrics yet. Click "Add Metric" to get started.
+              {t('case_study.no_impact_metrics_yet')}
             </p>
           </CardContent>
         </Card>
@@ -63,7 +65,7 @@ export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
                 <div className="flex items-center gap-2">
                   <BarChart3 className="h-4 w-4" />
                   <span>
-                    {form.watch(`impactMetrics.${index}.label`) || `Metric ${index + 1}`}
+                    {form.watch(`impactMetrics.${index}.label`) || t('case_study.metric_number', { number: index + 1 })}
                   </span>
                 </div>
               </AccordionTrigger>
@@ -74,10 +76,10 @@ export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
                     name={`impactMetrics.${index}.label`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Metric Label *</FormLabel>
+                        <FormLabel>{t('case_study.metric_label_required')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="e.g., Plastic Items Reduced"
+                            placeholder={t('case_study.metric_label_placeholder')}
                             {...field}
                             data-testid={`input-metric-label-${index}`}
                           />
@@ -92,10 +94,10 @@ export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
                     name={`impactMetrics.${index}.value`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Value *</FormLabel>
+                        <FormLabel>{t('case_study.metric_value_required')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="e.g., 500 or 85%"
+                            placeholder={t('case_study.metric_value_placeholder')}
                             {...field}
                             data-testid={`input-metric-value-${index}`}
                           />
@@ -110,10 +112,10 @@ export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
                     name={`impactMetrics.${index}.unit`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Unit</FormLabel>
+                        <FormLabel>{t('case_study.metric_unit')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="e.g., items/week, kg, %"
+                            placeholder={t('case_study.metric_unit_placeholder')}
                             {...field}
                             value={field.value || ""}
                             data-testid={`input-metric-unit-${index}`}
@@ -129,10 +131,10 @@ export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
                     name={`impactMetrics.${index}.icon`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Icon Name (optional)</FormLabel>
+                        <FormLabel>{t('case_study.metric_icon')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="e.g., Recycle, Leaf, TrendingDown"
+                            placeholder={t('case_study.metric_icon_placeholder')}
                             {...field}
                             value={field.value || ""}
                             data-testid={`input-metric-icon-${index}`}

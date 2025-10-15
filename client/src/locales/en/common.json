@@ -69,7 +69,12 @@
     "changes_saved": "Changes saved successfully",
     "item_deleted": "Item deleted successfully",
     "are_you_sure": "Are you sure?",
-    "this_action_cannot_be_undone": "This action cannot be undone."
+    "this_action_cannot_be_undone": "This action cannot be undone.",
+    "error_occurred_loading": "An error occurred while loading this content. Please try again.",
+    "technical_details": "Technical details",
+    "try_again": "Try Again",
+    "go_home": "Go Home",
+    "video_links": "Video Links:"
   },
   "time": {
     "just_now": "Just now",

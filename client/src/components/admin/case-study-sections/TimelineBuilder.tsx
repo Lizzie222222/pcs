@@ -1,4 +1,5 @@
 import { UseFormReturn, useFieldArray } from "react-hook-form";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ interface TimelineBuilderProps {
 }
 
 export function TimelineBuilder({ form }: TimelineBuilderProps) {
+  const { t } = useTranslation('admin');
   const { fields, append, remove, move } = useFieldArray({
     control: form.control,
     name: "timelineSections",
@@ -51,9 +53,9 @@ export function TimelineBuilder({ form }: TimelineBuilderProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Project Timeline</h3>
+          <h3 className="text-lg font-semibold">{t('case_study.project_timeline')}</h3>
           <p className="text-sm text-muted-foreground">
-            Create a chronological timeline of key milestones and events
+            {t('case_study.create_chronological_timeline')}
           </p>
         </div>
         <Button
@@ -64,7 +66,7 @@ export function TimelineBuilder({ form }: TimelineBuilderProps) {
           data-testid="button-add-timeline-section"
         >
           <Plus className="h-4 w-4 mr-2" />
-          Add Section
+          {t('case_study.add_section')}
         </Button>
       </div>
 
@@ -73,7 +75,7 @@ export function TimelineBuilder({ form }: TimelineBuilderProps) {
           <CardContent className="flex flex-col items-center justify-center py-8 text-center">
             <Calendar className="h-12 w-12 text-muted-foreground mb-4" />
             <p className="text-sm text-muted-foreground">
-              No timeline sections yet. Click "Add Section" to get started.
+              {t('case_study.no_timeline_sections_yet')}
             </p>
           </CardContent>
         </Card>
@@ -85,7 +87,7 @@ export function TimelineBuilder({ form }: TimelineBuilderProps) {
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4" />
                   <span>
-                    {form.watch(`timelineSections.${index}.title`) || `Section ${index + 1}`}
+                    {form.watch(`timelineSections.${index}.title`) || t('case_study.section_number', { number: index + 1 })}
                   </span>
                 </div>
               </AccordionTrigger>
@@ -119,10 +121,10 @@ export function TimelineBuilder({ form }: TimelineBuilderProps) {
                     name={`timelineSections.${index}.title`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Section Title *</FormLabel>
+                        <FormLabel>{t('case_study.section_title_required')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="e.g., Project Launch, Week 1"
+                            placeholder={t('case_study.section_title_placeholder')}
                             {...field}
                             data-testid={`input-timeline-title-${index}`}
                           />
@@ -137,10 +139,10 @@ export function TimelineBuilder({ form }: TimelineBuilderProps) {
                     name={`timelineSections.${index}.content`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Content *</FormLabel>
+                        <FormLabel>{t('case_study.section_content')}</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Describe what happened during this phase"
+                            placeholder={t('case_study.section_content_placeholder')}
                             className="min-h-[80px]"
                             {...field}
                             data-testid={`textarea-timeline-content-${index}`}
@@ -156,10 +158,10 @@ export function TimelineBuilder({ form }: TimelineBuilderProps) {
                     name={`timelineSections.${index}.imageUrl`}
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Image URL</FormLabel>
+                        <FormLabel>{t('case_study.section_image_url')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="https://..."
+                            placeholder={t('case_study.section_image_placeholder')}
                             {...field}
                             value={field.value || ""}
                             data-testid={`input-timeline-image-${index}`}

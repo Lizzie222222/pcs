@@ -2,6 +2,7 @@ import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface ErrorStateProps {
   title?: string;
@@ -16,8 +17,8 @@ interface ErrorStateProps {
 }
 
 export function ErrorState({ 
-  title = "Something went wrong",
-  description = "An error occurred while loading this content. Please try again.",
+  title,
+  description,
   error,
   onRetry,
   onGoHome,
@@ -26,6 +27,7 @@ export function ErrorState({
   variant = "default",
   className
 }: ErrorStateProps) {
+  const { t } = useTranslation();
   // Extract error message if available
   const errorMessage = error instanceof Error ? error.message : 
                       typeof error === 'string' ? error : null;
@@ -47,17 +49,17 @@ export function ErrorState({
       </div>
       
       <h3 className="text-lg font-semibold text-foreground mb-2">
-        {title}
+        {title || t('messages.something_went_wrong')}
       </h3>
       
       <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-        {description}
+        {description || t('messages.error_occurred_loading')}
       </p>
       
       {errorMessage && (
         <details className="mb-6 text-left max-w-md mx-auto">
           <summary className="cursor-pointer text-sm text-muted-foreground hover:text-foreground">
-            Technical details
+            {t('messages.technical_details')}
           </summary>
           <pre className="mt-2 p-3 bg-muted rounded text-xs overflow-auto">
             {errorMessage}
@@ -74,7 +76,7 @@ export function ErrorState({
             data-testid="button-retry"
           >
             <RefreshCw className="h-4 w-4 mr-2" aria-hidden="true" />
-            Try Again
+            {t('messages.try_again')}
           </Button>
         )}
         
@@ -86,7 +88,7 @@ export function ErrorState({
             data-testid="button-go-home"
           >
             <Home className="h-4 w-4 mr-2" aria-hidden="true" />
-            Go Home
+            {t('messages.go_home')}
           </Button>
         )}
       </div>

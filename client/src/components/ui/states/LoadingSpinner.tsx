@@ -1,5 +1,6 @@
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 interface LoadingSpinnerProps {
   size?: "sm" | "md" | "lg" | "xl";
@@ -17,10 +18,12 @@ const sizeClasses = {
 
 export function LoadingSpinner({ 
   size = "md", 
-  message = "Loading...", 
+  message, 
   className,
   fullScreen = false 
 }: LoadingSpinnerProps) {
+  const { t } = useTranslation();
+  const displayMessage = message || t('status.loading');
   const content = (
     <div 
       className={cn(
@@ -39,12 +42,12 @@ export function LoadingSpinner({
         )}
         aria-hidden="true"
       />
-      {message && (
+      {displayMessage && (
         <p className="mt-2 text-sm text-muted-foreground">
-          {message}
+          {displayMessage}
         </p>
       )}
-      <span className="sr-only">{message}</span>
+      <span className="sr-only">{displayMessage}</span>
     </div>
   );
 
