@@ -48,6 +48,12 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { 
   Upload, 
   BookOpen, 
@@ -77,7 +83,6 @@ import { PLASTIC_ITEM_WEIGHTS, calculateAggregateMetrics } from "@/../../shared/
 import type { ReductionPromise, InsertReductionPromise, AuditResponse } from "@/../../shared/schema";
 
 // Lazy load heavy components
-const AnalyticsSection = lazy(() => import("@/components/dashboard/AnalyticsSection"));
 const EventsSection = lazy(() => import("@/components/dashboard/EventsSection"));
 const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
 
@@ -137,7 +142,7 @@ export default function Home() {
     const stored = localStorage.getItem('dismissedPromiseNotification');
     return stored === 'true';
   });
-  const [activeTab, setActiveTab] = useState<'progress' | 'analytics' | 'resources' | 'team' | 'promises' | 'events'>('progress');
+  const [activeTab, setActiveTab] = useState<'progress' | 'resources' | 'team' | 'promises' | 'events'>('progress');
   const [promiseDialogOpen, setPromiseDialogOpen] = useState(false);
   const [editingPromise, setEditingPromise] = useState<ReductionPromise | null>(null);
   const [deletePromiseDialogOpen, setDeletePromiseDialogOpen] = useState(false);
@@ -594,19 +599,6 @@ export default function Home() {
               Progress
             </Button>
             <Button
-              variant={activeTab === 'analytics' ? 'default' : 'ghost'}
-              className={`flex-1 transition-all duration-300 font-semibold ${
-                activeTab === 'analytics' 
-                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
-                  : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
-              }`}
-              onClick={() => setActiveTab('analytics')}
-              data-testid="tab-analytics"
-            >
-              <BarChart3 className="h-5 w-5 mr-2" />
-              Analytics
-            </Button>
-            <Button
               variant={activeTab === 'resources' ? 'default' : 'ghost'}
               className={`flex-1 transition-all duration-300 font-semibold ${
                 activeTab === 'resources' 
@@ -1016,16 +1008,6 @@ export default function Home() {
               </Card>
             </div>
           </>
-        )}
-
-        {/* Analytics Tab Content */}
-        {activeTab === 'analytics' && (
-          <Suspense fallback={<LoadingSpinner message="Loading analytics..." />}>
-            <AnalyticsSection 
-              schoolId={dashboardData?.school?.id || ''} 
-              isActive={activeTab === 'analytics'} 
-            />
-          </Suspense>
         )}
 
         {/* Resources Tab Content */}
