@@ -176,6 +176,7 @@ export interface IStorage {
     language?: string;
     ageRange?: string;
     search?: string;
+    visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
   }): Promise<Resource[]>;
@@ -1221,6 +1222,7 @@ export class DatabaseStorage implements IStorage {
     language?: string;
     ageRange?: string;
     search?: string;
+    visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
   } = {}): Promise<Resource[]> {
@@ -1237,6 +1239,9 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.ageRange) {
       conditions.push(eq(resources.ageRange, filters.ageRange));
+    }
+    if (filters.visibility) {
+      conditions.push(eq(resources.visibility, filters.visibility as any));
     }
     if (filters.search) {
       const searchCondition = or(
