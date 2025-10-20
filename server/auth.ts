@@ -30,6 +30,7 @@ declare global {
       role: string | null;
       isAdmin: boolean | null;
       preferredLanguage: string | null;
+      hasSeenOnboarding: boolean | null;
       createdAt: Date | null;
       updatedAt: Date | null;
     }
@@ -371,8 +372,40 @@ export async function setupAuth(app: Express) {
         emailVerified: req.user.emailVerified,
         profileImageUrl: req.user.profileImageUrl,
         preferredLanguage: req.user.preferredLanguage,
+        hasSeenOnboarding: req.user.hasSeenOnboarding,
       }
     });
+  });
+
+  // POST /api/auth/onboarding-complete - Mark onboarding as complete
+  app.post("/api/auth/onboarding-complete", async (req, res) => {
+    if (!req.isAuthenticated() || !req.user) {
+      return res.status(401).json({
+        success: false,
+        message: "Not authenticated"
+      });
+    }
+
+    try {
+      const updatedUser = await storage.markOnboardingComplete(req.user.id);
+      if (!updatedUser) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Onboarding marked as complete"
+      });
+    } catch (error) {
+      console.error('Error marking onboarding complete:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to mark onboarding as complete"
+      });
+    }
   });
 
   // GET /api/auth/google - Initiate Google OAuth flow

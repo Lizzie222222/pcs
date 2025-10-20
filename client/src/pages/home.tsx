@@ -8,6 +8,8 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 import ProgressTracker from "@/components/ProgressTracker";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import ConnectionSpeedControl from "@/components/ConnectionSpeedControl";
+import { WelcomeModal } from "@/components/WelcomeModal";
+import { InteractiveTour } from "@/components/InteractiveTour";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner, ErrorState } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
@@ -147,6 +149,9 @@ export default function Home() {
   const [editingPromise, setEditingPromise] = useState<ReductionPromise | null>(null);
   const [deletePromiseDialogOpen, setDeletePromiseDialogOpen] = useState(false);
   const [promiseToDelete, setPromiseToDelete] = useState<string | null>(null);
+  const [showWelcomeModal, setShowWelcomeModal] = useState(false);
+  const [showTour, setShowTour] = useState(false);
+  const [hasAttemptedOnboarding, setHasAttemptedOnboarding] = useState(false);
 
   // Redirect admins to admin dashboard
   useEffect(() => {
@@ -366,6 +371,60 @@ export default function Home() {
     },
   });
 
+  // Mark onboarding complete mutation
+  const markOnboardingCompleteMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('POST', '/api/auth/onboarding-complete');
+    },
+    onSuccess: () => {
+      // Optimistically update the cache to reflect onboarding complete
+      queryClient.setQueryData(['/api/auth/user'], (oldData: any) => {
+        if (oldData?.user) {
+          return { ...oldData, user: { ...oldData.user, hasSeenOnboarding: true } };
+        }
+        return oldData;
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    },
+    onError: () => {
+      // Keep the modal closed even if API fails - user can still use the app
+      toast({
+        title: "Notice",
+        description: "We couldn't save your onboarding preference, but you can continue using the app.",
+        variant: "default",
+      });
+    },
+  });
+
+  // Show welcome modal on first login
+  useEffect(() => {
+    if (user && !user.hasSeenOnboarding && !hasAttemptedOnboarding && dashboardData && !isLoading && !isDashboardLoading) {
+      setShowWelcomeModal(true);
+    }
+  }, [user, dashboardData, isLoading, isDashboardLoading, hasAttemptedOnboarding]);
+
+  const handleWelcomeModalClose = () => {
+    setShowWelcomeModal(false);
+    setHasAttemptedOnboarding(true);
+    markOnboardingCompleteMutation.mutate();
+  };
+
+  const handleStartTour = () => {
+    setShowTour(true);
+  };
+
+  const handleTourComplete = () => {
+    setShowTour(false);
+  };
+
+  const handleTourSkip = () => {
+    setShowTour(false);
+  };
+
+  const handleRestartTour = () => {
+    setShowTour(true);
+  };
+
   const handlePromiseSubmit = (values: z.infer<typeof promiseFormSchema>) => {
     if (!dashboardData?.school?.id || !user?.id) return;
 
@@ -576,6 +635,18 @@ export default function Home() {
                     </div>
                   </div>
                   <div className="text-sm font-semibold text-gray-700">{t('progress.overall_progress')}</div>
+                  {user?.hasSeenOnboarding && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={handleRestartTour}
+                      className="mt-3"
+                      data-testid="button-restart-tour"
+                    >
+                      <Lightbulb className="h-4 w-4 mr-2" />
+                      Take Tour Again
+                    </Button>
+                  )}
                 </div>
               </div>
             </CardContent>
@@ -594,6 +665,7 @@ export default function Home() {
               }`}
               onClick={() => setActiveTab('progress')}
               data-testid="tab-progress"
+              data-tour="progress-tab"
             >
               <BarChart3 className="h-5 w-5 mr-2" />
               Progress
@@ -607,6 +679,7 @@ export default function Home() {
               }`}
               onClick={() => setActiveTab('resources')}
               data-testid="tab-resources"
+              data-tour="resources-tab"
             >
               <BookOpen className="h-5 w-5 mr-2" />
               Resources
@@ -620,6 +693,7 @@ export default function Home() {
               }`}
               onClick={() => setActiveTab('team')}
               data-testid="tab-team"
+              data-tour="team-tab"
             >
               <Users className="h-5 w-5 mr-2" />
               Team
@@ -633,6 +707,7 @@ export default function Home() {
               }`}
               onClick={() => setActiveTab('promises')}
               data-testid="tab-promises"
+              data-tour="action-plan-tab"
             >
               <Target className="h-5 w-5 mr-2" />
               Our Action Plan
@@ -646,6 +721,7 @@ export default function Home() {
               }`}
               onClick={() => setActiveTab('events')}
               data-testid="tab-events"
+              data-tour="events-tab"
             >
               <Calendar className="h-5 w-5 mr-2" />
               Events
@@ -1778,6 +1854,19 @@ export default function Home() {
 
       {/* Connection Speed Control */}
       <ConnectionSpeedControl />
+
+      {/* Onboarding Components */}
+      <WelcomeModal 
+        open={showWelcomeModal}
+        onClose={handleWelcomeModalClose}
+        onStartTour={handleStartTour}
+      />
+
+      <InteractiveTour 
+        isActive={showTour}
+        onComplete={handleTourComplete}
+        onSkip={handleTourSkip}
+      />
     </div>
   );
 }

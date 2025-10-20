@@ -104,6 +104,7 @@ export interface IStorage {
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
   deleteUser(id: string): Promise<boolean>;
   getTeacherEmails(): Promise<string[]>;
+  markOnboardingComplete(userId: string): Promise<User | undefined>;
   
   // School operations
   createSchool(school: InsertSchool): Promise<School>;
@@ -628,6 +629,15 @@ export class DatabaseStorage implements IStorage {
       console.error('Error deleting user:', error);
       return false;
     }
+  }
+
+  async markOnboardingComplete(userId: string): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ hasSeenOnboarding: true, updatedAt: new Date() })
+      .where(eq(users.id, userId))
+      .returning();
+    return user;
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {

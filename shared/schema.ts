@@ -100,6 +100,7 @@ export const users = pgTable("users", {
   role: varchar("role").default("teacher"), // Supports: teacher, admin, partner, school
   isAdmin: boolean("is_admin").default(false),
   preferredLanguage: varchar("preferred_language").default("en"),
+  hasSeenOnboarding: boolean("has_seen_onboarding").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
