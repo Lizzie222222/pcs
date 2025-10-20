@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { UseFormReturn, useFieldArray } from "react-hook-form";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -24,11 +24,20 @@ export function MediaGallerySection({ form }: MediaGallerySectionProps) {
   const [uploadingImage, setUploadingImage] = useState(false);
   const [uploadingBefore, setUploadingBefore] = useState(false);
   const [uploadingAfter, setUploadingAfter] = useState(false);
+  const [expandedImageIndex, setExpandedImageIndex] = useState<string | undefined>(undefined);
 
   const { fields: imageFields, append: appendImage, remove: removeImage } = useFieldArray({
     control: form.control,
     name: "images",
   });
+
+  // Auto-expand the most recently added image
+  useEffect(() => {
+    if (imageFields.length > 0) {
+      const lastIndex = imageFields.length - 1;
+      setExpandedImageIndex(`image-${lastIndex}`);
+    }
+  }, [imageFields.length]);
 
   const { fields: videoFields, append: appendVideo, remove: removeVideo } = useFieldArray({
     control: form.control,
@@ -92,6 +101,7 @@ export function MediaGallerySection({ form }: MediaGallerySectionProps) {
           };
           appendImage(newImage);
           setUploadingImage(false);
+          // useEffect will auto-expand the new image
         } else if (type === 'before') {
           form.setValue('beforeImage', imageUrl);
           setUploadingBefore(false);
@@ -269,13 +279,19 @@ export function MediaGallerySection({ form }: MediaGallerySectionProps) {
             </CardContent>
           </Card>
         ) : (
-          <Accordion type="single" collapsible className="w-full">
+          <Accordion 
+            type="single" 
+            collapsible 
+            className="w-full"
+            value={expandedImageIndex}
+            onValueChange={setExpandedImageIndex}
+          >
             {imageFields.map((field, index) => (
               <AccordionItem key={field.id} value={`image-${index}`}>
                 <AccordionTrigger data-testid={`accordion-image-${index}`}>
                   <div className="flex items-center gap-2">
                     <ImageIcon className="h-4 w-4" />
-                    <span>Image {index + 1}</span>
+                    <span>Image {index + 1} {!form.watch(`images.${index}.caption`) && <span className="text-destructive ml-2">• Caption required</span>}</span>
                   </div>
                 </AccordionTrigger>
                 <AccordionContent>
