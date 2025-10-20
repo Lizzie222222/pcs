@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useCountries } from "@/hooks/useCountries";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,7 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/ui/states";
-import { BookOpen, Plus, Search, Edit, Trash2, X, FileText } from "lucide-react";
+import { BookOpen, Plus, Search, Edit, Trash2, X, FileText, Upload } from "lucide-react";
+import { ObjectUploader } from "@/components/ObjectUploader";
+import type { UploadResult } from "@uppy/core";
 
 interface Resource {
   id: string;
@@ -23,6 +26,7 @@ interface Resource {
   fileType: string | null;
   fileSize: number | null;
   downloadCount: number;
+  visibility: 'public' | 'private';
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -34,8 +38,10 @@ function ResourceForm({ resource, onClose, onSuccess }: {
   onSuccess: () => void;
 }) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const { data: countryOptions = [] } = useCountries();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: resource?.title || '',
     description: resource?.description || '',
@@ -46,6 +52,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
     fileUrl: resource?.fileUrl || '',
     fileType: resource?.fileType || '',
     fileSize: resource?.fileSize || 0,
+    visibility: resource?.visibility || 'public',
     isActive: resource?.isActive ?? true,
   });
 
@@ -53,23 +60,83 @@ function ResourceForm({ resource, onClose, onSuccess }: {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const handleGetUploadParameters = async () => {
+    try {
+      const response = await fetch('/api/objects/upload', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to get upload URL');
+      }
+      
+      const data = await response.json();
+      return {
+        method: 'PUT' as const,
+        url: data.uploadURL,
+      };
+    } catch (error) {
+      toast({
+        title: "Upload Error",
+        description: "Failed to get upload URL",
+        variant: "destructive",
+      });
+      throw error;
+    }
+  };
 
-    const mockFileUrl = `https://storage.example.com/resources/${file.name}`;
-    
-    setFormData(prev => ({
-      ...prev,
-      fileUrl: mockFileUrl,
-      fileType: file.type,
-      fileSize: file.size,
-    }));
+  const handleFileUploadComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+    if (result.successful && result.successful.length > 0) {
+      const uploadedFile = result.successful[0];
+      const fileUrl = uploadedFile.uploadURL?.split('?')[0] || '';
 
-    toast({
-      title: "File Selected",
-      description: `${file.name} has been selected for upload.`,
-    });
+      try {
+        if (!user?.id) {
+          throw new Error("User not authenticated");
+        }
+
+        // Set ACL policy for the uploaded file
+        const aclResponse = await fetch('/api/evidence-files', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            fileURL: fileUrl,
+            visibility: formData.visibility,
+            filename: uploadedFile.name || `resource-${Date.now()}`,
+            owner: user.id,
+          }),
+        });
+
+        if (!aclResponse.ok) {
+          const errorData = await aclResponse.json();
+          throw new Error(errorData.message || 'Failed to set file permissions');
+        }
+
+        // Update form data with file information
+        setFormData(prev => ({
+          ...prev,
+          fileUrl: fileUrl,
+          fileType: uploadedFile.type || '',
+          fileSize: uploadedFile.size || 0,
+        }));
+
+        setIsUploading(false);
+
+        toast({
+          title: "File Uploaded",
+          description: `${uploadedFile.name || 'File'} has been successfully uploaded.`,
+        });
+      } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : "Failed to upload file";
+        toast({
+          title: "Upload Error",
+          description: errorMessage,
+          variant: "destructive",
+        });
+        setIsUploading(false);
+      }
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -237,14 +304,37 @@ function ResourceForm({ resource, onClose, onSuccess }: {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
+                Visibility *
+              </label>
+              <Select 
+                value={formData.visibility} 
+                onValueChange={(value) => handleInputChange('visibility', value)}
+              >
+                <SelectTrigger data-testid="select-resource-visibility">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="public">Public (visible to everyone)</SelectItem>
+                  <SelectItem value="private">Registered Only (requires login)</SelectItem>
+                </SelectContent>
+              </Select>
+              <p className="text-xs text-gray-500 mt-1">
+                {formData.visibility === 'public' 
+                  ? 'This resource will be visible to all website visitors'
+                  : 'This resource will only be visible to registered schools'}
+              </p>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Resource File
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 {formData.fileUrl ? (
                   <div className="space-y-2">
-                    <FileText className="h-8 w-8 text-gray-400 mx-auto" />
-                    <p className="text-sm text-gray-600">
-                      File selected: {formData.fileUrl.split('/').pop()}
+                    <FileText className="h-8 w-8 text-pcs_blue mx-auto" />
+                    <p className="text-sm text-gray-600 font-medium">
+                      {formData.fileUrl.split('/').pop()}
                     </p>
                     <p className="text-xs text-gray-500">
                       {(formData.fileSize / 1024 / 1024).toFixed(2)} MB
@@ -253,32 +343,38 @@ function ResourceForm({ resource, onClose, onSuccess }: {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onClick={() => handleInputChange('fileUrl', '')}
+                      onClick={() => {
+                        setFormData(prev => ({
+                          ...prev,
+                          fileUrl: '',
+                          fileType: '',
+                          fileSize: 0
+                        }));
+                      }}
+                      data-testid="button-remove-file"
                     >
                       Remove File
                     </Button>
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <FileText className="h-8 w-8 text-gray-400 mx-auto" />
+                    <Upload className="h-8 w-8 text-gray-400 mx-auto" />
                     <p className="text-sm text-gray-600">
-                      Upload a resource file (PDF, DOC, etc.)
+                      Upload a resource file (PDF, DOC, PPT, XLS, etc.)
                     </p>
-                    <input
-                      type="file"
-                      accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx"
-                      onChange={handleFileUpload}
-                      className="hidden"
-                      id="file-upload"
-                      data-testid="input-resource-file"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById('file-upload')?.click()}
+                    <p className="text-xs text-gray-500">
+                      Maximum file size: 150MB
+                    </p>
+                    <ObjectUploader
+                      maxNumberOfFiles={1}
+                      maxFileSize={157286400}
+                      onGetUploadParameters={handleGetUploadParameters}
+                      onComplete={handleFileUploadComplete}
+                      buttonClassName="bg-pcs_blue hover:bg-blue-600 text-white"
                     >
-                      Choose File
-                    </Button>
+                      <Upload className="h-4 w-4 mr-2" />
+                      {isUploading ? 'Uploading...' : 'Upload File'}
+                    </ObjectUploader>
                   </div>
                 )}
               </div>
