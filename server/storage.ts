@@ -179,6 +179,8 @@ export interface IStorage {
     limit?: number;
     offset?: number;
   }): Promise<Resource[]>;
+  updateResource(id: string, updates: Partial<InsertResource>): Promise<Resource | undefined>;
+  deleteResource(id: string): Promise<boolean>;
   updateResourceDownloads(id: string): Promise<void>;
   
   // Evidence operations
@@ -1265,6 +1267,23 @@ export class DatabaseStorage implements IStorage {
       .update(resources)
       .set({ downloadCount: sql`download_count + 1` })
       .where(eq(resources.id, id));
+  }
+
+  async updateResource(id: string, updates: Partial<InsertResource>): Promise<Resource | undefined> {
+    const [resource] = await db
+      .update(resources)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(resources.id, id))
+      .returning();
+    return resource;
+  }
+
+  async deleteResource(id: string): Promise<boolean> {
+    const result = await db
+      .delete(resources)
+      .where(eq(resources.id, id))
+      .returning();
+    return result.length > 0;
   }
 
   // Evidence operations
