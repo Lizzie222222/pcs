@@ -51,3 +51,40 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 -   **Hosting/Deployment**: Replit
 -   **AI Integration**: OpenAI GPT-5 (specifically GPT-4o-mini for translations)
 -   **PDF Generation**: Puppeteer
+
+## Recent Changes
+
+### Dashboard UX Improvements (October 20, 2025)
+**Streamlined navigation and enhanced metric clarity:**
+
+- **Analytics Tab Removal**:
+  - Removed separate analytics tab from school dashboard to simplify navigation
+  - Analytics functionality remains available through dedicated analytics pages
+  - Cleaner tab structure focuses on core actions: Progress, Resources, Team, Action Plan, Events
+
+- **Action Plan Metric Tooltips**:
+  - Added hover tooltips to all action plan metrics explaining calculations
+  - Summary cards include tooltips for: Total Action Items, Items Reduced/Year, Weight Reduced/Year
+  - Ocean Impact metrics (bottles, fish, sea turtles) with educational context
+  - Environmental Impact metrics (CO₂, oil, tons) with conversion factor explanations
+  - All tooltips provide accurate, clear explanations of how metrics are calculated
+
+- **Verified Calculations**:
+  - Total Action Items: Simple count of all reduction promises
+  - Items Reduced/Year: (Baseline - Target) × Frequency Multiplier (52 weekly, 12 monthly, 1 yearly)
+  - Weight Reduced/Year: Items × Standard Weights (e.g., bottles: 15g, cups: 5g, straws: 0.42g) × Frequency
+  - CO₂ Prevented: ~6kg CO₂ per kg plastic produced
+  - Oil Saved: ~2 liters oil per kg plastic produced
+  - All calculations verified against plasticMetrics.ts conversion factors
+
+**Technical Implementation:**
+- Tooltips use shadcn/ui Tooltip component with TooltipProvider
+- Cursor changes to help icon on hover for better UX
+- Max-width set on tooltip content for readability
+- No changes to underlying calculation logic - purely educational UI enhancement
+
+**Impact:**
+- Users can now understand exactly how metrics are calculated
+- Improved transparency builds trust in the data
+- Educational tooltips help schools appreciate the real environmental impact
+- Simplified dashboard navigation reduces cognitive load
