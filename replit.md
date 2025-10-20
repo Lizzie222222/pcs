@@ -54,6 +54,42 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 
 ## Recent Changes
 
+### Case Study Wizard Redesign (October 20, 2025)
+**Complete redesign of admin case study creation from confusing tabs to intuitive step-by-step wizard:**
+
+- **5-Step Wizard Flow**:
+  1. Template & Basics: Choose from 4 templates (Standard, Visual Story, Timeline, Impact Focused) with visual previews
+  2. Content: Enter description and impact summary with template-specific guidance
+  3. Media: Upload images from Evidence Gallery or custom uploads with caption/alt text editing
+  4. Enhancements: Add quotes, metrics, or timeline based on selected template
+  5. Review & Publish: Final review with validation checklist showing all requirements
+
+- **Template-Driven Validation**:
+  - Standard: Minimum 1 image with caption
+  - Visual Story: Requires before/after images
+  - Timeline: Minimum 3 timeline events
+  - Impact Focused: Minimum 2 metrics + 1 image
+  - Template selection required before proceeding
+  - Publish blocked until all template requirements met
+
+- **UX Improvements**:
+  - Progress stepper shows current step and completion status
+  - Step validation prevents navigation with incomplete data
+  - Auto-expanding accordion when images uploaded (makes caption inputs immediately visible)
+  - Clear requirement indicators show what's needed vs optional
+  - Evidence Gallery integration allows selecting from approved public submissions
+  - Visual template cards with descriptions and requirement previews
+
+- **Technical Implementation**:
+  - WizardStepper component for progress visualization
+  - WizardNavigation with smart enable/disable based on validation
+  - templateConfigurations.ts defines all template requirements and field visibility
+  - useFieldArray for dynamic image/quote/metric/timeline management
+  - useEffect-based accordion auto-expansion fix (resolves caption input visibility)
+  - Publish-time validation enforces all template-specific minimums
+
+**Impact**: Transforms confusing tab-based interface into guided workflow that prevents incomplete case studies and reduces admin cognitive load.
+
 ### Resource Management Visibility Controls (October 20, 2025)
 **Added comprehensive visibility controls for educational resources:**
 
