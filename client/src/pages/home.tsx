@@ -65,7 +65,9 @@ import {
   Leaf,
   TrendingDown,
   Edit,
-  Plus
+  Plus,
+  X,
+  Download
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
