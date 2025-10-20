@@ -457,6 +457,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create new resource (admin only)
+  app.post('/api/resources', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const resource = await storage.createResource(req.body);
+      res.json(resource);
+    } catch (error) {
+      console.error("Error creating resource:", error);
+      res.status(500).json({ message: "Failed to create resource" });
+    }
+  });
+
+  // Update resource (admin only)
+  app.put('/api/resources/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const resource = await storage.updateResource(req.params.id, req.body);
+      if (!resource) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+      res.json(resource);
+    } catch (error) {
+      console.error("Error updating resource:", error);
+      res.status(500).json({ message: "Failed to update resource" });
+    }
+  });
+
+  // Delete resource (admin only)
+  app.delete('/api/resources/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const success = await storage.deleteResource(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting resource:", error);
+      res.status(500).json({ message: "Failed to delete resource" });
+    }
+  });
+
   /**
    * @description GET /api/case-studies - Public endpoint for retrieving case studies with filtering by stage, country, categories, tags. Only published case studies shown to non-admin users.
    * @returns {CaseStudy[]} Array of case study objects with pagination
