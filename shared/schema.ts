@@ -69,8 +69,8 @@ export const evidenceStatusEnum = pgEnum('evidence_status', [
 ]);
 
 export const visibilityEnum = pgEnum('visibility', [
-  'private',
-  'public'
+  'public',
+  'registered'
 ]);
 
 export const schoolRoleEnum = pgEnum('school_role', [
