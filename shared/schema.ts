@@ -229,6 +229,7 @@ export const resources = pgTable("resources", {
   fileType: varchar("file_type"),
   fileSize: integer("file_size"),
   downloadCount: integer("download_count").default(0),
+  visibility: visibilityEnum("visibility").default('public'),
   isActive: boolean("is_active").default(true),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
