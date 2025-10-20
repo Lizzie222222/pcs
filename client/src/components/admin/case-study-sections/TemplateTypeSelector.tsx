@@ -3,7 +3,8 @@ import { FormField, FormItem, FormControl, FormMessage } from "@/components/ui/f
 import { Card, CardDescription, CardHeader } from "@/components/ui/card";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { FileText, Image, Clock, TrendingUp } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { FileText, Image, Clock, TrendingUp, Eye } from "lucide-react";
 
 interface TemplateTypeSelectorProps {
   form: UseFormReturn<any>;
@@ -15,24 +16,52 @@ const TEMPLATE_TYPES = [
     label: "Standard",
     description: "Classic case study layout with all sections visible",
     icon: FileText,
+    exampleFeatures: [
+      "Hero image with title overlay",
+      "Full description and impact sections",
+      "Image galleries and student quotes",
+      "Before/After comparisons"
+    ],
+    bestFor: "Comprehensive stories with diverse content types"
   },
   {
     value: "visual",
     label: "Visual Story",
     description: "Image-focused layout emphasizing visual impact",
     icon: Image,
+    exampleFeatures: [
+      "Large, prominent photo galleries",
+      "Visual-first content flow",
+      "Image carousels and grids",
+      "Minimal text, maximum imagery"
+    ],
+    bestFor: "Stories with stunning photos and visual transformation"
   },
   {
     value: "timeline",
     label: "Timeline",
     description: "Chronological layout highlighting project progression",
     icon: Clock,
+    exampleFeatures: [
+      "Vertical timeline with milestones",
+      "Chronological story progression",
+      "Date-stamped achievements",
+      "Journey visualization"
+    ],
+    bestFor: "Long-term projects showing evolution over time"
   },
   {
     value: "metrics",
     label: "Impact Focused",
     description: "Data-driven layout showcasing quantifiable results",
     icon: TrendingUp,
+    exampleFeatures: [
+      "Large impact metric displays",
+      "Animated counters and statistics",
+      "Data visualization focus",
+      "Quantifiable achievements highlighted"
+    ],
+    bestFor: "Stories with impressive measurable results and data"
   },
 ];
 
@@ -113,42 +142,80 @@ export function TemplateTypeSelector({ form }: TemplateTypeSelectorProps) {
                   const IconComponent = template.icon;
                   
                   return (
-                    <Card
-                      key={template.value}
-                      className={`cursor-pointer transition-all hover:shadow-lg ${
-                        field.value === template.value
-                          ? "border-primary border-2 shadow-md bg-primary/5"
-                          : "hover:border-primary/50"
-                      }`}
-                      onClick={() => field.onChange(template.value)}
-                      data-testid={`card-template-${template.value}`}
-                    >
-                      <CardHeader className="p-4 pb-3">
-                        <div className="flex items-center gap-3 mb-3">
-                          <RadioGroupItem
-                            value={template.value}
-                            id={template.value}
-                            data-testid={`radio-template-${template.value}`}
-                            className="shrink-0"
-                          />
-                          <div className="flex items-center gap-2 flex-1">
+                    <Tooltip key={template.value} delayDuration={300}>
+                      <TooltipTrigger asChild>
+                        <Card
+                          className={`cursor-pointer transition-all hover:shadow-lg relative ${
+                            field.value === template.value
+                              ? "border-primary border-2 shadow-md bg-primary/5"
+                              : "hover:border-primary/50"
+                          }`}
+                          onClick={() => field.onChange(template.value)}
+                          data-testid={`card-template-${template.value}`}
+                        >
+                          <CardHeader className="p-4 pb-3">
+                            <div className="flex items-center gap-3 mb-3">
+                              <RadioGroupItem
+                                value={template.value}
+                                id={template.value}
+                                data-testid={`radio-template-${template.value}`}
+                                className="shrink-0"
+                              />
+                              <div className="flex items-center gap-2 flex-1">
+                                <IconComponent className="h-5 w-5 text-primary" />
+                                <Label htmlFor={template.value} className="cursor-pointer font-semibold text-base">
+                                  {template.label}
+                                </Label>
+                              </div>
+                              <Eye className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                            
+                            {/* Visual Preview */}
+                            <div className="bg-muted/30 rounded-lg p-3 mb-3">
+                              <PreviewComponent />
+                            </div>
+                            
+                            <CardDescription className="text-sm">
+                              {template.description}
+                            </CardDescription>
+                          </CardHeader>
+                        </Card>
+                      </TooltipTrigger>
+                      <TooltipContent 
+                        side="bottom" 
+                        className="max-w-96 p-4" 
+                        data-testid={`hover-preview-${template.value}`}
+                      >
+                        <div className="space-y-3">
+                          <div className="flex items-center gap-2">
                             <IconComponent className="h-5 w-5 text-primary" />
-                            <Label htmlFor={template.value} className="cursor-pointer font-semibold text-base">
-                              {template.label}
-                            </Label>
+                            <h3 className="font-semibold text-base">{template.label} Template</h3>
+                          </div>
+                          
+                          <div className="bg-primary/5 rounded-lg p-3 border border-primary/20">
+                            <PreviewComponent />
+                          </div>
+                          
+                          <div>
+                            <p className="text-sm font-medium text-muted-foreground mb-2">This template includes:</p>
+                            <ul className="space-y-1 text-sm">
+                              {template.exampleFeatures.map((feature, idx) => (
+                                <li key={idx} className="flex items-start gap-2">
+                                  <span className="text-primary mt-1">•</span>
+                                  <span>{feature}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          
+                          <div className="pt-2 border-t">
+                            <p className="text-sm text-muted-foreground">
+                              <span className="font-medium">Best for:</span> {template.bestFor}
+                            </p>
                           </div>
                         </div>
-                        
-                        {/* Visual Preview */}
-                        <div className="bg-muted/30 rounded-lg p-3 mb-3">
-                          <PreviewComponent />
-                        </div>
-                        
-                        <CardDescription className="text-sm">
-                          {template.description}
-                        </CardDescription>
-                      </CardHeader>
-                    </Card>
+                      </TooltipContent>
+                    </Tooltip>
                   );
                 })}
               </RadioGroup>

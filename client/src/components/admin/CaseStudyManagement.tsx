@@ -287,11 +287,13 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => window.open(`/case-study/${caseStudy.id}`, '_blank')}
+                          asChild
                           data-testid={`button-preview-${caseStudy.id}`}
                         >
-                          <Eye className="h-4 w-4 mr-1" />
-                          Preview
+                          <a href={`/case-study/${caseStudy.id}`} target="_blank" rel="noopener noreferrer">
+                            <Eye className="h-4 w-4 mr-1" />
+                            Preview
+                          </a>
                         </Button>
                         <Button
                           size="sm"

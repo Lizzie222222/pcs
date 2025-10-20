@@ -6547,12 +6547,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Server-side meta tag injection for case study pages
   // This route MUST be before Vite/SPA catch-all to intercept case study requests
-  app.get('/case-study/:id', async (req, res, next) => {
+  app.get('/case-study/:id', async (req: any, res, next) => {
     try {
       const { id } = req.params;
       
+      // Check if user is authenticated and is admin
+      const isAdmin = req.isAuthenticated && req.isAuthenticated() && req.user?.isAdmin;
+      
       // Fetch case study data directly with only the fields needed for meta tags
-      // Draft Protection: Only fetch published case studies for public SEO/meta tags
+      // Draft Protection: Admins can view all case studies, public users only see published
+      const whereConditions = [eq(caseStudies.id, id)];
+      if (!isAdmin) {
+        whereConditions.push(eq(caseStudies.status, 'published'));
+      }
+      
       const result = await db
         .select({
           id: caseStudies.id,
@@ -6565,17 +6573,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           updatedAt: caseStudies.updatedAt,
         })
         .from(caseStudies)
-        .where(and(
-          eq(caseStudies.id, id),
-          eq(caseStudies.status, 'published') // Only show published case studies
-        ))
+        .where(and(...whereConditions))
         .limit(1);
       
       const caseStudy = result[0];
       
-      // If case study not found or is draft, let SPA handle 404
+      // If case study not found, let SPA handle 404
       if (!caseStudy) {
-        console.log(`[Meta Tags] Case study ${id} not found or is draft, falling back to SPA`);
+        console.log(`[Meta Tags] Case study ${id} not found${!isAdmin ? ' or is draft' : ''}, falling back to SPA`);
         return next();
       }
       
