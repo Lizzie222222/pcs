@@ -171,3 +171,32 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 - **Admin page: ~60KB Recharts bundle deferred via lazy loading**
 - Admin page: 6 major components extracted for better maintainability
 - Foundation laid for Phase 2: Further componentization and lazy loading
+
+### Case Study Preview & Template Selection Enhancements (October 20, 2025)
+**Improving admin workflow and case study creation UX:**
+
+- **Case Study Preview Fix**:
+  - Enhanced server-side route at `/case-study/:id` to properly handle draft case studies for admin users
+  - Fixed preview button mechanism: Changed from `window.open()` to proper `<a target="_blank">` for better session cookie sharing across tabs
+  - Server-side meta tag injection confirmed working correctly (og:title, og:description, og:image)
+  - Draft protection: Admins can view all case studies (draft + published), public users see only published
+
+- **Template Selector Interactive Previews**:
+  - Added hover tooltips to all 4 template types (Standard, Visual Story, Timeline, Impact Focused)
+  - Each tooltip includes:
+    - Template name and visual icon
+    - Feature list (e.g., "Structured sections", "Student testimonials", "Photo grid")
+    - "Best for" description to guide users
+  - 300ms hover delay for smooth UX
+  - Helps users understand template differences before selection
+
+**Technical Implementation:**
+- Server route uses conditional filtering: `isAdmin ? all : published only`
+- Preview button uses shadcn Button with `asChild` prop for semantic HTML
+- Template tooltips built with Radix UI Tooltip component
+- All interactive elements include proper `data-testid` attributes for testing
+
+**Impact:**
+- Admin preview workflow now seamless - no more blank pages when previewing drafts
+- Users can make informed template choices with visual previews
+- Better SEO with server-side meta tag injection for case study pages
