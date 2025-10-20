@@ -54,6 +54,39 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 
 ## Recent Changes
 
+### Resource Management Visibility Controls (October 20, 2025)
+**Added comprehensive visibility controls for educational resources:**
+
+- **Visibility System**:
+  - Resources can now be set as "Public" (visible to everyone) or "Registered Only" (requires login)
+  - Updated visibility enum from ['private', 'public'] to ['public', 'registered'] for clarity
+  - Public resources encourage registration while registered-only resources provide value to logged-in schools
+
+- **Backend Implementation**:
+  - GET /api/resources filters by authentication status automatically
+  - Unauthenticated users only see public resources
+  - Authenticated users see both public and registered-only resources
+  - Admin endpoints (POST, PUT, DELETE) for managing resources with visibility controls
+
+- **File Upload Integration**:
+  - Replaced mock file uploads with real ObjectUploader component
+  - Integrated with Google Cloud Storage following same pattern as case studies
+  - Supports up to 150MB files (PDF, DOC, PPT, XLS formats)
+  - Automatic ACL policy setting based on visibility preference
+
+- **Admin UI Enhancements**:
+  - Visibility selector in resource form with clear labels
+  - Visual badges in resource table: green for Public, orange for Registered Only
+  - Visibility filter dropdown to quickly find resources by access level
+  - Inline visibility status display with color-coded badges
+
+- **Database Schema**:
+  - Updated visibility enum across resources, evidence, and media_assets tables
+  - Migrated existing 'private' values to 'registered' for consistency
+  - Default visibility for resources: 'public', for evidence/media: 'registered'
+
+**Purpose**: Allows admins to strategically control resource access - public resources showcase value to drive registration, while registered-only resources provide exclusive content to engaged schools.
+
 ### Dashboard UX Improvements (October 20, 2025)
 **Streamlined navigation and enhanced metric clarity:**
 
