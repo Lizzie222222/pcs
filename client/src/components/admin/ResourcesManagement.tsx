@@ -26,7 +26,7 @@ interface Resource {
   fileType: string | null;
   fileSize: number | null;
   downloadCount: number;
-  visibility: 'public' | 'private';
+  visibility: 'public' | 'registered';
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -315,7 +315,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="public">Public (visible to everyone)</SelectItem>
-                  <SelectItem value="private">Registered Only (requires login)</SelectItem>
+                  <SelectItem value="registered">Registered Only (requires login)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-gray-500 mt-1">
@@ -590,7 +590,7 @@ export default function ResourcesManagement() {
               <SelectContent>
                 <SelectItem value="all">All Visibility</SelectItem>
                 <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="private">Registered Only</SelectItem>
+                <SelectItem value="registered">Registered Only</SelectItem>
               </SelectContent>
             </Select>
             <Select 

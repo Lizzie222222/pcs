@@ -176,7 +176,7 @@ export interface IStorage {
     language?: string;
     ageRange?: string;
     search?: string;
-    visibility?: 'public' | 'private';
+    visibility?: 'public' | 'registered';
     limit?: number;
     offset?: number;
   }): Promise<Resource[]>;
@@ -194,7 +194,7 @@ export interface IStorage {
     stage?: 'inspire' | 'investigate' | 'act';
     schoolId?: string;
     country?: string;
-    visibility?: 'public' | 'private';
+    visibility?: 'public' | 'registered';
   }): Promise<EvidenceWithSchool[]>;
   getApprovedPublicEvidence(): Promise<Evidence[]>;
   updateEvidenceStatus(
@@ -1222,7 +1222,7 @@ export class DatabaseStorage implements IStorage {
     language?: string;
     ageRange?: string;
     search?: string;
-    visibility?: 'public' | 'private';
+    visibility?: 'public' | 'registered';
     limit?: number;
     offset?: number;
   } = {}): Promise<Resource[]> {
@@ -1329,7 +1329,7 @@ export class DatabaseStorage implements IStorage {
     stage?: 'inspire' | 'investigate' | 'act';
     schoolId?: string;
     country?: string;
-    visibility?: 'public' | 'private';
+    visibility?: 'public' | 'registered';
   }): Promise<EvidenceWithSchool[]> {
     // Build WHERE conditions
     const conditions = [];
