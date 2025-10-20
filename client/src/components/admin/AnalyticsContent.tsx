@@ -855,7 +855,7 @@ export default function AnalyticsContent() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold text-pcs_blue" data-testid="admin-metric-schools-participating">
-                        {adminPromiseMetricsQuery.data.totalSchoolsWithPromises.toLocaleString()}
+                        {(adminPromiseMetricsQuery.data.totalSchoolsWithPromises || 0).toLocaleString()}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">Making a difference</p>
                     </CardContent>

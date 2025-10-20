@@ -201,10 +201,11 @@ export default function Home() {
     retry: false,
   });
 
-  // Fetch all promises for school (for Our Promises tab)
+  // Fetch all promises for school via audit (for Our Action Plan tab)
+  // Using audit endpoint instead of school endpoint to avoid permission issues
   const { data: schoolPromises = [], isLoading: promisesLoading } = useQuery<ReductionPromise[]>({
-    queryKey: ['/api/reduction-promises/school', dashboardData?.school?.id],
-    enabled: activeTab === 'promises' && !!dashboardData?.school?.id,
+    queryKey: ['/api/reduction-promises/audit', schoolAudit?.id],
+    enabled: activeTab === 'promises' && !!schoolAudit?.id,
     retry: false,
   });
 
@@ -284,8 +285,10 @@ export default function Home() {
       return apiRequest('POST', '/api/reduction-promises', data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/school', dashboardData?.school?.id] });
-      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit'] });
+      // Invalidate audit-based query and analytics
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit', schoolAudit?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'analytics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'audit-analytics'] });
       toast({
         title: "Success",
         description: "Action item created successfully!",
@@ -309,8 +312,10 @@ export default function Home() {
       return apiRequest('PATCH', `/api/reduction-promises/${id}`, data);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/school', dashboardData?.school?.id] });
-      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit'] });
+      // Invalidate audit-based query and analytics
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit', schoolAudit?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'analytics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'audit-analytics'] });
       toast({
         title: "Success",
         description: "Action item updated successfully!",
@@ -334,8 +339,10 @@ export default function Home() {
       return apiRequest('DELETE', `/api/reduction-promises/${promiseId}`);
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/school', dashboardData?.school?.id] });
-      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit'] });
+      // Invalidate audit-based query and analytics
+      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit', schoolAudit?.id] });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'analytics'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'audit-analytics'] });
       toast({
         title: "Success",
         description: "Action item deleted successfully!",
