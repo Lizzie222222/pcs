@@ -431,6 +431,7 @@ export default function ResourcesManagement() {
     stage: 'all',
     country: 'all',
     language: 'all',
+    visibility: 'all',
     isActive: 'all',
   });
 
@@ -524,7 +525,7 @@ export default function ResourcesManagement() {
           </div>
         </CardHeader>
         <CardContent>
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="mb-6 grid grid-cols-1 md:grid-cols-6 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
@@ -580,6 +581,19 @@ export default function ResourcesManagement() {
               </SelectContent>
             </Select>
             <Select 
+              value={resourceFilters.visibility} 
+              onValueChange={(value) => handleFilterChange('visibility', value)}
+            >
+              <SelectTrigger data-testid="select-visibility-filter">
+                <SelectValue placeholder="All Visibility" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Visibility</SelectItem>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="private">Registered Only</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select 
               value={resourceFilters.isActive} 
               onValueChange={(value) => handleFilterChange('isActive', value)}
             >
@@ -600,6 +614,7 @@ export default function ResourcesManagement() {
                 <tr className="border-b bg-gray-50">
                   <th className="text-left p-3 font-medium text-gray-700">Title</th>
                   <th className="text-left p-3 font-medium text-gray-700">Stage</th>
+                  <th className="text-left p-3 font-medium text-gray-700">Visibility</th>
                   <th className="text-left p-3 font-medium text-gray-700">Country</th>
                   <th className="text-left p-3 font-medium text-gray-700">Language</th>
                   <th className="text-left p-3 font-medium text-gray-700">File Size</th>
@@ -622,6 +637,15 @@ export default function ResourcesManagement() {
                     <td className="p-3">
                       <Badge className={getStageColor(resource.stage)}>
                         {resource.stage}
+                      </Badge>
+                    </td>
+                    <td className="p-3">
+                      <Badge 
+                        variant={resource.visibility === 'public' ? 'default' : 'secondary'}
+                        className={resource.visibility === 'public' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'}
+                        data-testid={`badge-visibility-${resource.id}`}
+                      >
+                        {resource.visibility === 'public' ? 'Public' : 'Registered Only'}
                       </Badge>
                     </td>
                     <td className="p-3 text-gray-600">{resource.country || 'Global'}</td>
