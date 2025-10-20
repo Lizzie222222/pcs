@@ -1222,114 +1222,181 @@ export default function Home() {
                       </div>
 
                       {/* Summary Cards */}
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                        <Card className="shadow-xl border-0 bg-gradient-to-br from-teal to-pcs_blue text-white">
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                                <Target className="h-8 w-8 text-white" />
-                              </div>
-                              <div>
-                                <div className="text-sm font-semibold opacity-90">Total Action Items</div>
-                                <div className="text-3xl font-bold" data-testid="text-total-promises">
-                                  {schoolPromises.length}
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                      <TooltipProvider>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Card className="shadow-xl border-0 bg-gradient-to-br from-teal to-pcs_blue text-white cursor-help">
+                                <CardContent className="p-6">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                                      <Target className="h-8 w-8 text-white" />
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-semibold opacity-90">Total Action Items</div>
+                                      <div className="text-3xl font-bold" data-testid="text-total-promises">
+                                        {schoolPromises.length}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>The total number of plastic reduction commitments your school has made. Each action item represents a specific type of plastic your school plans to reduce.</p>
+                            </TooltipContent>
+                          </Tooltip>
 
-                        <Card className="shadow-xl border-0 bg-gradient-to-br from-green-500 to-green-600 text-white">
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                                <TrendingDown className="h-8 w-8 text-white" />
-                              </div>
-                              <div>
-                                <div className="text-sm font-semibold opacity-90">Items Reduced/Year</div>
-                                <div className="text-3xl font-bold" data-testid="text-items-reduced">
-                                  {metrics.byItemType.reduce((sum, item) => sum + item.totalReduction, 0).toLocaleString()}
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Card className="shadow-xl border-0 bg-gradient-to-br from-green-500 to-green-600 text-white cursor-help">
+                                <CardContent className="p-6">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                                      <TrendingDown className="h-8 w-8 text-white" />
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-semibold opacity-90">Items Reduced/Year</div>
+                                      <div className="text-3xl font-bold" data-testid="text-items-reduced">
+                                        {metrics.byItemType.reduce((sum, item) => sum + item.totalReduction, 0).toLocaleString()}
+                                      </div>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>Total plastic items your school aims to eliminate annually. This is calculated by taking the difference between baseline and target quantities, then multiplying by frequency (52 for weekly, 12 for monthly, or 1 for yearly).</p>
+                            </TooltipContent>
+                          </Tooltip>
 
-                        <Card className="shadow-xl border-0 bg-gradient-to-br from-coral to-red-400 text-white">
-                          <CardContent className="p-6">
-                            <div className="flex items-center gap-4">
-                              <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                                <Leaf className="h-8 w-8 text-white" />
-                              </div>
-                              <div>
-                                <div className="text-sm font-semibold opacity-90">Weight Reduced/Year</div>
-                                <div className="text-3xl font-bold" data-testid="text-weight-reduced">
-                                  {metrics.seriousMetrics.kilograms.toFixed(1)} kg
-                                </div>
-                              </div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </div>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Card className="shadow-xl border-0 bg-gradient-to-br from-coral to-red-400 text-white cursor-help">
+                                <CardContent className="p-6">
+                                  <div className="flex items-center gap-4">
+                                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
+                                      <Leaf className="h-8 w-8 text-white" />
+                                    </div>
+                                    <div>
+                                      <div className="text-sm font-semibold opacity-90">Weight Reduced/Year</div>
+                                      <div className="text-3xl font-bold" data-testid="text-weight-reduced">
+                                        {metrics.seriousMetrics.kilograms.toFixed(1)} kg
+                                      </div>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            </TooltipTrigger>
+                            <TooltipContent className="max-w-xs">
+                              <p>Total weight of plastic waste prevented annually. Each plastic item type has a standard weight (e.g., bottles: 15g, cups: 5g, straws: 0.42g) that's multiplied by the number of items reduced.</p>
+                            </TooltipContent>
+                          </Tooltip>
+                        </div>
+                      </TooltipProvider>
 
                       {/* Fun & Serious Metrics */}
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                        <Card className="shadow-lg border-0">
-                          <CardHeader>
-                            <CardTitle className="text-xl font-bold text-navy flex items-center gap-2">
-                              🌊 Ocean Impact
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="p-4 bg-blue-50 rounded-lg">
-                              <p className="text-sm font-semibold text-navy mb-1">Plastic Bottles Prevented</p>
-                              <p className="text-2xl font-bold text-pcs_blue" data-testid="text-ocean-bottles">
-                                {Math.floor(metrics.funMetrics.oceanPlasticBottles).toLocaleString()}
-                              </p>
-                            </div>
-                            <div className="p-4 bg-green-50 rounded-lg">
-                              <p className="text-sm font-semibold text-navy mb-1">Fish Potentially Saved</p>
-                              <p className="text-2xl font-bold text-green-600" data-testid="text-fish-saved">
-                                {Math.floor(metrics.funMetrics.fishSaved).toLocaleString()}
-                              </p>
-                            </div>
-                            <div className="p-4 bg-teal-50 rounded-lg">
-                              <p className="text-sm font-semibold text-navy mb-1">Sea Turtles Worth of Plastic</p>
-                              <p className="text-2xl font-bold text-teal" data-testid="text-sea-turtles">
-                                {metrics.funMetrics.seaTurtles.toFixed(3)}
-                              </p>
-                            </div>
-                          </CardContent>
-                        </Card>
+                      <TooltipProvider>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                          <Card className="shadow-lg border-0">
+                            <CardHeader>
+                              <CardTitle className="text-xl font-bold text-navy flex items-center gap-2">
+                                🌊 Ocean Impact
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="p-4 bg-blue-50 rounded-lg cursor-help">
+                                    <p className="text-sm font-semibold text-navy mb-1">Plastic Bottles Prevented</p>
+                                    <p className="text-2xl font-bold text-pcs_blue" data-testid="text-ocean-bottles">
+                                      {Math.floor(metrics.funMetrics.oceanPlasticBottles).toLocaleString()}
+                                    </p>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>Equivalent plastic bottles kept out of the ocean. Based on standard 15g bottles, this shows the scale of your impact in relatable terms.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="p-4 bg-green-50 rounded-lg cursor-help">
+                                    <p className="text-sm font-semibold text-navy mb-1">Fish Potentially Saved</p>
+                                    <p className="text-2xl font-bold text-green-600" data-testid="text-fish-saved">
+                                      {Math.floor(metrics.funMetrics.fishSaved).toLocaleString()}
+                                    </p>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>Fish protected from plastic ingestion. Studies show that 50g of plastic can be harmful to marine life, so this estimates the number of fish potentially saved.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="p-4 bg-teal-50 rounded-lg cursor-help">
+                                    <p className="text-sm font-semibold text-navy mb-1">Sea Turtles Worth of Plastic</p>
+                                    <p className="text-2xl font-bold text-teal" data-testid="text-sea-turtles">
+                                      {metrics.funMetrics.seaTurtles.toFixed(3)}
+                                    </p>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>Your plastic reduction measured in sea turtle weights. An average sea turtle weighs about 140kg, providing a powerful visualization of your impact.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </CardContent>
+                          </Card>
 
-                        <Card className="shadow-lg border-0">
-                          <CardHeader>
-                            <CardTitle className="text-xl font-bold text-navy flex items-center gap-2">
-                              📊 Environmental Impact
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="space-y-4">
-                            <div className="p-4 bg-orange-50 rounded-lg">
-                              <p className="text-sm font-semibold text-navy mb-1">CO₂ Emissions Prevented</p>
-                              <p className="text-2xl font-bold text-orange-600" data-testid="text-co2-prevented">
-                                {metrics.seriousMetrics.co2Prevented.toFixed(1)} kg
-                              </p>
-                            </div>
-                            <div className="p-4 bg-purple-50 rounded-lg">
-                              <p className="text-sm font-semibold text-navy mb-1">Oil Saved</p>
-                              <p className="text-2xl font-bold text-purple-600" data-testid="text-oil-saved">
-                                {metrics.seriousMetrics.oilSaved.toFixed(1)} liters
-                              </p>
-                            </div>
-                            <div className="p-4 bg-indigo-50 rounded-lg">
-                              <p className="text-sm font-semibold text-navy mb-1">Tons of Plastic Prevented</p>
-                              <p className="text-2xl font-bold text-indigo-600" data-testid="text-tons-prevented">
-                                {metrics.seriousMetrics.tons.toFixed(4)}
-                              </p>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      </div>
+                          <Card className="shadow-lg border-0">
+                            <CardHeader>
+                              <CardTitle className="text-xl font-bold text-navy flex items-center gap-2">
+                                📊 Environmental Impact
+                              </CardTitle>
+                            </CardHeader>
+                            <CardContent className="space-y-4">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="p-4 bg-orange-50 rounded-lg cursor-help">
+                                    <p className="text-sm font-semibold text-navy mb-1">CO₂ Emissions Prevented</p>
+                                    <p className="text-2xl font-bold text-orange-600" data-testid="text-co2-prevented">
+                                      {metrics.seriousMetrics.co2Prevented.toFixed(1)} kg
+                                    </p>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>Carbon dioxide emissions prevented by reducing plastic production. Producing 1kg of plastic generates approximately 6kg of CO₂ emissions.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="p-4 bg-purple-50 rounded-lg cursor-help">
+                                    <p className="text-sm font-semibold text-navy mb-1">Oil Saved</p>
+                                    <p className="text-2xl font-bold text-purple-600" data-testid="text-oil-saved">
+                                      {metrics.seriousMetrics.oilSaved.toFixed(1)} liters
+                                    </p>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>Fossil fuel oil conserved by avoiding plastic production. About 2kg (approximately 2 liters) of oil is needed to produce 1kg of plastic.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="p-4 bg-indigo-50 rounded-lg cursor-help">
+                                    <p className="text-sm font-semibold text-navy mb-1">Tons of Plastic Prevented</p>
+                                    <p className="text-2xl font-bold text-indigo-600" data-testid="text-tons-prevented">
+                                      {metrics.seriousMetrics.tons.toFixed(4)}
+                                    </p>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>Total plastic waste prevented measured in metric tons. This shows the cumulative weight of all plastic items your school commits to reducing.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </CardContent>
+                          </Card>
+                        </div>
+                      </TooltipProvider>
                     </>
                   );
                 })()}
