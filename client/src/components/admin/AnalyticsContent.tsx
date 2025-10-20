@@ -842,7 +842,7 @@ export default function AnalyticsContent() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold text-pcs_blue" data-testid="admin-metric-total-promises">
-                        {adminPromiseMetricsQuery.data.totalPromises.toLocaleString()}
+                        {(adminPromiseMetricsQuery.data.totalPromises || 0).toLocaleString()}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">Commitments made</p>
                     </CardContent>
@@ -868,7 +868,7 @@ export default function AnalyticsContent() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold text-pcs_blue" data-testid="admin-metric-items-reduced">
-                        {adminPromiseMetricsQuery.data.totalAnnualReduction.toLocaleString()}
+                        {(adminPromiseMetricsQuery.data.totalAnnualReduction || 0).toLocaleString()}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">Items per year</p>
                     </CardContent>
@@ -881,7 +881,7 @@ export default function AnalyticsContent() {
                     </CardHeader>
                     <CardContent>
                       <div className="text-3xl font-bold text-pcs_blue" data-testid="admin-metric-weight-reduced">
-                        {adminPromiseMetricsQuery.data.totalAnnualWeightKg.toFixed(2)}
+                        {(adminPromiseMetricsQuery.data.totalAnnualWeightKg || 0).toFixed(2)}
                       </div>
                       <p className="text-xs text-gray-500 mt-1">kg per year</p>
                     </CardContent>
@@ -902,7 +902,7 @@ export default function AnalyticsContent() {
                       </CardHeader>
                       <CardContent>
                         <div className="text-3xl font-bold text-pcs_teal" data-testid="admin-metric-ocean-bottles">
-                          {adminPromiseMetricsQuery.data.funMetrics.oceanPlasticBottles.toFixed(0).toLocaleString()}
+                          {((adminPromiseMetricsQuery.data.funMetrics?.oceanPlasticBottles || 0).toFixed(0)).toLocaleString()}
                         </div>
                         <p className="text-xs text-gray-600 mt-1">Plastic bottles saved from oceans</p>
                       </CardContent>
@@ -915,7 +915,7 @@ export default function AnalyticsContent() {
                       </CardHeader>
                       <CardContent>
                         <div className="text-3xl font-bold text-pcs_teal" data-testid="admin-metric-fish-saved">
-                          {adminPromiseMetricsQuery.data.funMetrics.fishSaved.toFixed(0).toLocaleString()}
+                          {((adminPromiseMetricsQuery.data.funMetrics?.fishSaved || 0).toFixed(0)).toLocaleString()}
                         </div>
                         <p className="text-xs text-gray-600 mt-1">Potential fish saved from plastic</p>
                       </CardContent>
@@ -928,7 +928,7 @@ export default function AnalyticsContent() {
                       </CardHeader>
                       <CardContent>
                         <div className="text-3xl font-bold text-pcs_teal" data-testid="admin-metric-sea-turtles">
-                          {adminPromiseMetricsQuery.data.funMetrics.seaTurtles.toFixed(2)}
+                          {(adminPromiseMetricsQuery.data.funMetrics?.seaTurtles || 0).toFixed(2)}
                         </div>
                         <p className="text-xs text-gray-600 mt-1">Sea turtle equivalents protected</p>
                       </CardContent>
@@ -950,7 +950,7 @@ export default function AnalyticsContent() {
                           </CardHeader>
                           <CardContent>
                             <div className="text-3xl font-bold text-green-600" data-testid="admin-metric-co2-prevented">
-                              {adminPromiseMetricsQuery.data.seriousMetrics.co2Prevented.toFixed(2).toLocaleString()}
+                              {((adminPromiseMetricsQuery.data.seriousMetrics?.co2Prevented || 0).toFixed(2)).toLocaleString()}
                             </div>
                             <p className="text-xs text-gray-600 mt-1">kg of CO₂ emissions prevented</p>
                           </CardContent>
@@ -963,7 +963,7 @@ export default function AnalyticsContent() {
                           </CardHeader>
                           <CardContent>
                             <div className="text-3xl font-bold text-green-600" data-testid="admin-metric-oil-saved">
-                              {adminPromiseMetricsQuery.data.seriousMetrics.oilSaved.toFixed(2).toLocaleString()}
+                              {((adminPromiseMetricsQuery.data.seriousMetrics?.oilSaved || 0).toFixed(2)).toLocaleString()}
                             </div>
                             <p className="text-xs text-gray-600 mt-1">liters of oil conserved</p>
                           </CardContent>
@@ -976,7 +976,7 @@ export default function AnalyticsContent() {
                           </CardHeader>
                           <CardContent>
                             <div className="text-3xl font-bold text-green-600" data-testid="admin-metric-waste-prevented">
-                              {adminPromiseMetricsQuery.data.seriousMetrics.tons.toFixed(4)}
+                              {(adminPromiseMetricsQuery.data.seriousMetrics?.tons || 0).toFixed(4)}
                             </div>
                             <p className="text-xs text-gray-600 mt-1">tons of plastic waste avoided</p>
                           </CardContent>
