@@ -1774,19 +1774,23 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(caseStudies.stage, filters.stage as any));
     }
     if (filters.country) {
-      conditions.push(eq(schools.country, filters.country));
+      const schoolConditions = await db.select({ id: schools.id })
+        .from(schools)
+        .where(eq(schools.country, filters.country));
+      const schoolIds = schoolConditions.map(s => s.id);
+      if (schoolIds.length > 0) {
+        conditions.push(sql`${caseStudies.schoolId} IN (${sql.join(schoolIds.map(id => sql`${id}`), sql`, `)})`);
+      } else {
+        // No schools match the country filter, return empty
+        return [];
+      }
     }
     if (filters.featured !== undefined) {
       conditions.push(eq(caseStudies.featured, filters.featured));
     }
     if (filters.search) {
-      const searchCondition = or(
-        ilike(caseStudies.title, `%${filters.search}%`),
-        ilike(schools.name, `%${filters.search}%`)
-      );
-      if (searchCondition) {
-        conditions.push(searchCondition);
-      }
+      const searchCondition = ilike(caseStudies.title, `%${filters.search}%`);
+      conditions.push(searchCondition);
     }
     
     // Filter by categories (array overlap - any match)
@@ -1804,56 +1808,19 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(caseStudies.status, filters.status));
     }
     
-    let query = db
-      .select({
-        id: caseStudies.id,
-        evidenceId: caseStudies.evidenceId,
-        schoolId: caseStudies.schoolId,
-        title: caseStudies.title,
-        description: caseStudies.description,
-        stage: caseStudies.stage,
-        impact: caseStudies.impact,
-        imageUrl: caseStudies.imageUrl,
-        featured: caseStudies.featured,
-        priority: caseStudies.priority,
-        images: caseStudies.images,
-        videos: caseStudies.videos,
-        studentQuotes: caseStudies.studentQuotes,
-        impactMetrics: caseStudies.impactMetrics,
-        timelineSections: caseStudies.timelineSections,
-        categories: caseStudies.categories,
-        tags: caseStudies.tags,
-        status: caseStudies.status,
-        templateType: caseStudies.templateType,
-        beforeImage: caseStudies.beforeImage,
-        afterImage: caseStudies.afterImage,
-        metaDescription: caseStudies.metaDescription,
-        metaKeywords: caseStudies.metaKeywords,
-        reviewStatus: caseStudies.reviewStatus,
-        submittedAt: caseStudies.submittedAt,
-        reviewedBy: caseStudies.reviewedBy,
-        reviewedAt: caseStudies.reviewedAt,
-        reviewNotes: caseStudies.reviewNotes,
-        createdBy: caseStudies.createdBy,
-        createdAt: caseStudies.createdAt,
-        updatedAt: caseStudies.updatedAt,
-        schoolName: schools.name,
-        schoolCountry: schools.country,
-      })
-      .from(caseStudies)
-      .innerJoin(schools, eq(caseStudies.schoolId, schools.id));
+    let query = db.select().from(caseStudies);
     
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
     
-    query = query.orderBy(desc(caseStudies.priority), desc(caseStudies.createdAt));
+    query = query.orderBy(desc(caseStudies.priority), desc(caseStudies.createdAt)) as any;
     
     if (filters.limit) {
-      query = query.limit(filters.limit);
+      query = query.limit(filters.limit) as any;
     }
     if (filters.offset) {
-      query = query.offset(filters.offset);
+      query = query.offset(filters.offset) as any;
     }
     
     return await query;
