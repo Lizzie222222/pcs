@@ -22,7 +22,7 @@ import {
   timelineSectionSchema
 } from "@shared/schema";
 
-import { WizardStepper } from "./wizard/WizardStepper";
+import { SidebarWizardNav } from "./wizard/SidebarWizardNav";
 import { WizardNavigation } from "./wizard/WizardNavigation";
 import { Step1TemplateBasics } from "./wizard/steps/Step1TemplateBasics";
 import { Step2Content } from "./wizard/steps/Step2Content";
@@ -30,6 +30,7 @@ import { Step3Media } from "./wizard/steps/Step3Media";
 import { Step4Enhancements } from "./wizard/steps/Step4Enhancements";
 import { Step5Review } from "./wizard/steps/Step5Review";
 import { getTemplateConfig } from "./wizard/templateConfigurations";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface CaseStudyEditorProps {
   caseStudy?: CaseStudy;
@@ -121,9 +122,17 @@ const WIZARD_STEPS = [
 
 export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditorProps) {
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [isSaving, setIsSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [stepValidation, setStepValidation] = useState<Record<number, { valid: boolean; warnings: string[]; errors: string[] }>>({
+    1: { valid: false, warnings: [], errors: [] },
+    2: { valid: false, warnings: [], errors: [] },
+    3: { valid: false, warnings: [], errors: [] },
+    4: { valid: false, warnings: [], errors: [] },
+    5: { valid: false, warnings: [], errors: [] },
+  });
 
   const form = useForm<CaseStudyFormData>({
     resolver: zodResolver(caseStudyFormSchema),
@@ -179,28 +188,49 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
     },
   });
 
-  // Validate current step
-  const validateStep = async (step: number): Promise<boolean> => {
+  // Get detailed validation for a step
+  const getStepValidationDetails = (step: number): { valid: boolean; warnings: string[]; errors: string[] } => {
     const values = form.getValues();
     const config = getTemplateConfig(values.templateType || "standard");
+    const errors: string[] = [];
+    const warnings: string[] = [];
 
     switch (step) {
       case 1:
         // Template & Basics
-        return !!(values.schoolId && values.title && values.stage && values.templateType);
+        if (!values.schoolId) errors.push("School is required");
+        if (!values.title) errors.push("Title is required");
+        if (!values.stage) errors.push("Program stage is required");
+        if (!values.templateType) errors.push("Template is required");
+        break;
       
       case 2:
         // Content
-        if (config.requiredFields.description && !values.description) return false;
-        if (config.requiredFields.impact && !values.impact) return false;
-        return true;
+        if (config.requiredFields.description && !values.description) {
+          errors.push("Description is required");
+        }
+        if (config.requiredFields.impact && !values.impact) {
+          errors.push("Impact is required");
+        }
+        if (values.description && values.description.length < 50) {
+          warnings.push("Description is quite short");
+        }
+        break;
       
       case 3:
         // Media
         const imagesCount = values.images?.length || 0;
-        if (imagesCount < config.requiredFields.minImages) return false;
-        if (config.requiredFields.requiresBeforeAfter && (!values.beforeImage || !values.afterImage)) return false;
-        return true;
+        if (imagesCount < config.requiredFields.minImages) {
+          errors.push(`Need at least ${config.requiredFields.minImages} images (currently ${imagesCount})`);
+        }
+        if (config.requiredFields.requiresBeforeAfter) {
+          if (!values.beforeImage) errors.push("Before image is required");
+          if (!values.afterImage) errors.push("After image is required");
+        }
+        if (imagesCount > 0 && imagesCount < 3) {
+          warnings.push("Consider adding more images for better engagement");
+        }
+        break;
       
       case 4:
         // Enhancements
@@ -208,18 +238,51 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         const metricsCount = values.impactMetrics?.length || 0;
         const timelineCount = values.timelineSections?.length || 0;
         
-        if (config.requiredFields.requiresQuotes && quotesCount < (config.requiredFields.minQuotes || 0)) return false;
-        if (config.requiredFields.requiresMetrics && metricsCount < (config.requiredFields.minMetrics || 0)) return false;
-        if (config.requiredFields.requiresTimeline && timelineCount < (config.requiredFields.minTimelineSections || 0)) return false;
-        return true;
+        if (config.requiredFields.requiresQuotes && quotesCount < (config.requiredFields.minQuotes || 0)) {
+          errors.push(`Need at least ${config.requiredFields.minQuotes} quotes (currently ${quotesCount})`);
+        }
+        if (config.requiredFields.requiresMetrics && metricsCount < (config.requiredFields.minMetrics || 0)) {
+          errors.push(`Need at least ${config.requiredFields.minMetrics} metrics (currently ${metricsCount})`);
+        }
+        if (config.requiredFields.requiresTimeline && timelineCount < (config.requiredFields.minTimelineSections || 0)) {
+          errors.push(`Need at least ${config.requiredFields.minTimelineSections} timeline sections (currently ${timelineCount})`);
+        }
+        
+        if (quotesCount === 0 && !config.requiredFields.requiresQuotes) {
+          warnings.push("Consider adding student quotes for authenticity");
+        }
+        if (metricsCount === 0 && !config.requiredFields.requiresMetrics) {
+          warnings.push("Consider adding impact metrics to showcase results");
+        }
+        break;
       
       case 5:
-        // Review - all previous validations
-        return await validateStep(1) && await validateStep(2) && await validateStep(3) && await validateStep(4);
+        // Review - aggregate all previous validations
+        for (let i = 1; i < 5; i++) {
+          const stepVal = getStepValidationDetails(i);
+          errors.push(...stepVal.errors);
+          warnings.push(...stepVal.warnings);
+        }
+        if (!values.metaDescription) {
+          warnings.push("Consider adding a meta description for better SEO");
+        }
+        break;
       
       default:
-        return true;
+        break;
     }
+
+    return {
+      valid: errors.length === 0,
+      warnings,
+      errors,
+    };
+  };
+
+  // Validate current step (simple boolean)
+  const validateStep = async (step: number): Promise<boolean> => {
+    const validation = getStepValidationDetails(step);
+    return validation.valid;
   };
 
   const handleNext = async () => {
@@ -244,6 +307,40 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
 
   const handlePrevious = () => {
     setCurrentStep(Math.max(currentStep - 1, 1));
+  };
+
+  const handleStepChange = async (targetStep: number) => {
+    // Always allow backward navigation
+    if (targetStep < currentStep) {
+      setCurrentStep(targetStep);
+      return;
+    }
+
+    // For forward navigation, validate all steps between current and target
+    const validSteps: number[] = [];
+    for (let i = currentStep; i < targetStep; i++) {
+      const isValid = await validateStep(i);
+      if (!isValid) {
+        const validation = getStepValidationDetails(i);
+        toast({
+          title: "Cannot Skip Steps",
+          description: `Step ${i} has ${validation.errors.length} error(s) that must be resolved first.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      validSteps.push(i);
+    }
+
+    // Mark all validated steps as completed in a single update
+    setCompletedSteps(prev => {
+      const newCompleted = new Set(prev);
+      validSteps.forEach(step => newCompleted.add(step));
+      return Array.from(newCompleted);
+    });
+
+    // All intermediate steps are valid, navigate to target
+    setCurrentStep(targetStep);
   };
 
   const handleSave = async (data: CaseStudyFormData, publishStatus?: "draft" | "published") => {
@@ -298,10 +395,35 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
   // State to track if current step is valid
   const [canProceedState, setCanProceedState] = useState(true);
 
-  // Check validation whenever form values or step changes
+  // Watch only the critical fields that affect validation
+  const schoolId = form.watch('schoolId');
+  const title = form.watch('title');
+  const stage = form.watch('stage');
+  const templateType = form.watch('templateType');
+  const description = form.watch('description');
+  const impact = form.watch('impact');
+  const images = form.watch('images');
+  const beforeImage = form.watch('beforeImage');
+  const afterImage = form.watch('afterImage');
+  const quotes = form.watch('studentQuotes');
+  const metrics = form.watch('impactMetrics');
+  const timeline = form.watch('timelineSections');
+
+  // Update validation state whenever step changes or watched fields change
   useEffect(() => {
-    validateStep(currentStep).then(setCanProceedState);
-  }, [currentStep, form.watch()]);
+    const updateValidation = () => {
+      const newValidation: Record<number, { valid: boolean; warnings: string[]; errors: string[] }> = {};
+      for (let i = 1; i <= WIZARD_STEPS.length; i++) {
+        newValidation[i] = getStepValidationDetails(i);
+      }
+      setStepValidation(newValidation);
+      
+      // Update canProceed for current step
+      setCanProceedState(newValidation[currentStep].valid);
+    };
+
+    updateValidation();
+  }, [currentStep, schoolId, title, stage, templateType, description, impact, images, beforeImage, afterImage, quotes, metrics, timeline]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -328,55 +450,62 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
               Cancel
             </Button>
           </div>
-
-          {/* Progress Stepper */}
-          <WizardStepper 
-            steps={WIZARD_STEPS} 
-            currentStep={currentStep} 
-            completedSteps={completedSteps}
-          />
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="container mx-auto px-4 py-8">
-        <Form {...form}>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <div className="max-w-4xl mx-auto">
-              {/* Step Content */}
-              {currentStep === 1 && (
-                <Step1TemplateBasics form={form} isEditing={!!caseStudy} />
-              )}
-              {currentStep === 2 && (
-                <Step2Content form={form} />
-              )}
-              {currentStep === 3 && (
-                <Step3Media form={form} />
-              )}
-              {currentStep === 4 && (
-                <Step4Enhancements form={form} />
-              )}
-              {currentStep === 5 && (
-                <Step5Review form={form} />
-              )}
+      {/* Main Content - Two Column Layout */}
+      <Form {...form}>
+        <form onSubmit={(e) => e.preventDefault()}>
+          <div className={isMobile ? "flex flex-col" : "grid grid-cols-[280px_1fr]"}>
+            {/* Left: Sidebar Navigation (Desktop) or Mobile Button */}
+            <SidebarWizardNav
+              steps={WIZARD_STEPS}
+              currentStep={currentStep}
+              completedSteps={completedSteps}
+              stepValidation={stepValidation}
+              onStepChange={handleStepChange}
+            />
 
-              {/* Navigation */}
-              <WizardNavigation
-                currentStep={currentStep}
-                totalSteps={WIZARD_STEPS.length}
-                onNext={handleNext}
-                onPrevious={handlePrevious}
-                onSaveDraft={handleSaveDraft}
-                onPublish={handlePublish}
-                isFirstStep={currentStep === 1}
-                isLastStep={currentStep === WIZARD_STEPS.length}
-                isSaving={isSaving}
-                canProceed={canProceedState}
-              />
+            {/* Right: Step Content */}
+            <div className="flex-1 overflow-y-auto">
+              <div className="container mx-auto px-4 py-8">
+                <div className="max-w-4xl mx-auto">
+                  {/* Step Content */}
+                  {currentStep === 1 && (
+                    <Step1TemplateBasics form={form} isEditing={!!caseStudy} />
+                  )}
+                  {currentStep === 2 && (
+                    <Step2Content form={form} />
+                  )}
+                  {currentStep === 3 && (
+                    <Step3Media form={form} />
+                  )}
+                  {currentStep === 4 && (
+                    <Step4Enhancements form={form} />
+                  )}
+                  {currentStep === 5 && (
+                    <Step5Review form={form} />
+                  )}
+
+                  {/* Navigation */}
+                  <WizardNavigation
+                    currentStep={currentStep}
+                    totalSteps={WIZARD_STEPS.length}
+                    onNext={handleNext}
+                    onPrevious={handlePrevious}
+                    onSaveDraft={handleSaveDraft}
+                    onPublish={handlePublish}
+                    isFirstStep={currentStep === 1}
+                    isLastStep={currentStep === WIZARD_STEPS.length}
+                    isSaving={isSaving}
+                    canProceed={canProceedState}
+                  />
+                </div>
+              </div>
             </div>
-          </form>
-        </Form>
-      </div>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }
