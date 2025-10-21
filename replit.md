@@ -51,3 +51,31 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 -   **Hosting/Deployment**: Replit
 -   **AI Integration**: OpenAI GPT-5 (specifically GPT-4o-mini for translations)
 -   **PDF Generation**: Puppeteer
+
+## Recent Updates
+
+### Case Study Wizard Redesign (October 21, 2025)
+**Complete redesign of admin case study creation interface:**
+
+**Completed Features:**
+1. **Sidebar Navigation** - Replaced horizontal stepper with collapsible vertical sidebar showing real-time validation, progress badges, and click-to-navigate functionality
+2. **Typography Cleanup** - Established semantic H1→H2→H3→H4 hierarchy, removed duplicate headers, applied consistent spacing
+3. **Media Workflow Refactor** - Organized Step 3 into subsections: Evidence Grid, Upload Panel, Before/After Builder, Gallery Grid
+4. **Drag-and-Drop Image Reordering** - @dnd-kit integration with keyboard accessibility, stable nanoid IDs, and defensive guards
+5. **Before/After Preview** - Reusable BeforeAfterSlider component with interactive clipPath reveal slider
+6. **Rich Text Editor** - TipTap editor for description/impact fields with formatting toolbar (Bold, Italic, Headings, Lists, Blockquotes)
+
+**Technical Implementation:**
+- Drag-and-drop uses @dnd-kit/core with stable unique IDs (nanoid), keyboard sensors, focusable button handles, ARIA labels
+- BeforeAfterSlider shared between admin wizard and public pages, eliminates code duplication
+- RichTextEditor integrated with react-hook-form, outputs HTML, supports edit flows
+- All components have proper test IDs for playwright testing
+
+**Pending Tasks:**
+- Fix template-switching bug (Before/After section visibility)
+- Live preview panel
+- Enhanced Review step
+- Version control system
+- Approval workflow
+- Enhanced tagging system
+- Accessibility improvements
