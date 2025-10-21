@@ -1,10 +1,9 @@
 import { UseFormReturn } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { getTemplateConfig } from "../templateConfigurations";
 import { Info } from "lucide-react";
+import { RichTextEditor } from "@/components/admin/RichTextEditor";
 
 interface Step2ContentProps {
   form: UseFormReturn<any>;
@@ -35,56 +34,28 @@ export function Step2Content({ form }: Step2ContentProps) {
           </Alert>
 
           {/* Description */}
-          <FormField
-            control={form.control}
+          <RichTextEditor
             name="description"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>
-                  Description {config.requiredFields.description && "*"}
-                </FormLabel>
-                <FormControl>
-                  <Textarea
-                    placeholder="Tell the story of your school's journey... What was the challenge? What actions did you take? What were the outcomes?"
-                    className="min-h-[200px]"
-                    {...field}
-                    value={field.value || ""}
-                    data-testid="textarea-description"
-                  />
-                </FormControl>
-                <FormDescription>
-                  The main narrative of your case study. Be specific and use concrete examples.
-                  {templateType === "visual" && " Keep it concise - the images will tell much of your story."}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
+            label={`Description ${config.requiredFields.description ? "*" : ""}`}
+            placeholder="Tell the story of your school's journey... What was the challenge? What actions did you take? What were the outcomes?"
+            description={`The main narrative of your case study. Be specific and use concrete examples.${
+              templateType === "visual" ? " Keep it concise - the images will tell much of your story." : ""
+            }`}
+            minHeight="min-h-[200px]"
+            testId="rich-text-description"
           />
 
           {/* Impact - conditional based on template */}
           {config.requiredFields.impact && (
-            <FormField
-              control={form.control}
+            <RichTextEditor
               name="impact"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Impact Summary *</FormLabel>
-                  <FormControl>
-                    <Textarea
-                      placeholder="Summarize the key impact and outcomes of this initiative..."
-                      className="min-h-[150px]"
-                      {...field}
-                      value={field.value || ""}
-                      data-testid="textarea-impact"
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Highlight the most significant results and lasting changes.
-                    {templateType === "metrics" && " This will appear alongside your impact metrics."}
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
+              label="Impact Summary *"
+              placeholder="Summarize the key impact and outcomes of this initiative..."
+              description={`Highlight the most significant results and lasting changes.${
+                templateType === "metrics" ? " This will appear alongside your impact metrics." : ""
+              }`}
+              minHeight="min-h-[150px]"
+              testId="rich-text-impact"
             />
           )}
 

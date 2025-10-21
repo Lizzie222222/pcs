@@ -23,9 +23,11 @@ interface RichTextEditorProps {
   label?: string;
   placeholder?: string;
   description?: string;
+  minHeight?: string;
+  testId?: string;
 }
 
-export function RichTextEditor({ name, label, placeholder, description }: RichTextEditorProps) {
+export function RichTextEditor({ name, label, placeholder, description, minHeight, testId }: RichTextEditorProps) {
   const { control } = useFormContext();
 
   return (
@@ -40,6 +42,8 @@ export function RichTextEditor({ name, label, placeholder, description }: RichTe
               value={field.value || ''}
               onChange={field.onChange}
               placeholder={placeholder}
+              minHeight={minHeight}
+              testId={testId}
             />
           </FormControl>
           {description && <FormDescription>{description}</FormDescription>}
@@ -54,9 +58,11 @@ interface TiptapEditorProps {
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
+  minHeight?: string;
+  testId?: string;
 }
 
-function TiptapEditor({ value, onChange, placeholder }: TiptapEditorProps) {
+function TiptapEditor({ value, onChange, placeholder, minHeight = 'min-h-[150px]', testId }: TiptapEditorProps) {
   const editor = useEditor({
     extensions: [
       StarterKit,
@@ -70,7 +76,7 @@ function TiptapEditor({ value, onChange, placeholder }: TiptapEditorProps) {
     },
     editorProps: {
       attributes: {
-        class: 'prose prose-sm max-w-none min-h-[150px] p-3 focus:outline-none',
+        class: `prose prose-sm max-w-none ${minHeight} p-3 focus:outline-none`,
       },
     },
   });
@@ -187,7 +193,7 @@ function TiptapEditor({ value, onChange, placeholder }: TiptapEditorProps) {
           <Redo className="h-4 w-4" />
         </Toggle>
       </div>
-      <EditorContent editor={editor} data-testid="rich-text-content" />
+      <EditorContent editor={editor} data-testid={testId || "rich-text-content"} />
     </div>
   );
 }

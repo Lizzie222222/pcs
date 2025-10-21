@@ -534,9 +534,11 @@ export default function CaseStudyDetail() {
                 <TrendingUp className="w-6 h-6 text-ocean-blue" />
                 <h2 className="text-2xl font-semibold text-navy">Impact Achieved</h2>
               </div>
-              <p className="text-gray-700 leading-relaxed whitespace-pre-wrap" data-testid="text-impact">
-                {caseStudy.impact}
-              </p>
+              <div 
+                className="prose prose-lg max-w-none prose-headings:text-navy prose-p:text-gray-700 prose-a:text-ocean-blue"
+                dangerouslySetInnerHTML={{ __html: caseStudy.impact }}
+                data-testid="text-impact"
+              />
             </CardContent>
           </Card>
         )}
