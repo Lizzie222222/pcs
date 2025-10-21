@@ -6,6 +6,7 @@ import {
   evidence,
   evidenceRequirements,
   caseStudies,
+  caseStudyVersions,
   emailLogs,
   mailchimpAudiences,
   mailchimpSubscriptions,
@@ -39,6 +40,8 @@ import {
   type InsertEvidenceRequirement,
   type CaseStudy,
   type InsertCaseStudy,
+  type CaseStudyVersion,
+  type InsertCaseStudyVersion,
   type EmailLog,
   type InsertEmailLog,
   type MailchimpAudience,
@@ -250,6 +253,11 @@ export interface IStorage {
     };
   }>;
   getRelatedCaseStudies(caseStudyId: string, limit?: number): Promise<CaseStudy[]>;
+  
+  // Case Study Version Management
+  createCaseStudyVersion(version: InsertCaseStudyVersion): Promise<CaseStudyVersion>;
+  getCaseStudyVersions(caseStudyId: string): Promise<CaseStudyVersion[]>;
+  getCaseStudyVersion(versionId: string): Promise<CaseStudyVersion | undefined>;
   
   // Email operations
   logEmail(emailLog: InsertEmailLog): Promise<EmailLog>;
@@ -1834,6 +1842,24 @@ export class DatabaseStorage implements IStorage {
         imageUrl: caseStudies.imageUrl,
         featured: caseStudies.featured,
         priority: caseStudies.priority,
+        images: caseStudies.images,
+        videos: caseStudies.videos,
+        studentQuotes: caseStudies.studentQuotes,
+        impactMetrics: caseStudies.impactMetrics,
+        timelineSections: caseStudies.timelineSections,
+        categories: caseStudies.categories,
+        tags: caseStudies.tags,
+        status: caseStudies.status,
+        templateType: caseStudies.templateType,
+        beforeImage: caseStudies.beforeImage,
+        afterImage: caseStudies.afterImage,
+        metaDescription: caseStudies.metaDescription,
+        metaKeywords: caseStudies.metaKeywords,
+        reviewStatus: caseStudies.reviewStatus,
+        submittedAt: caseStudies.submittedAt,
+        reviewedBy: caseStudies.reviewedBy,
+        reviewedAt: caseStudies.reviewedAt,
+        reviewNotes: caseStudies.reviewNotes,
         createdBy: caseStudies.createdBy,
         createdAt: caseStudies.createdAt,
         updatedAt: caseStudies.updatedAt,
@@ -1948,21 +1974,38 @@ export class DatabaseStorage implements IStorage {
     const relatedCaseStudies = await db
       .select({
         id: caseStudies.id,
+        evidenceId: caseStudies.evidenceId,
+        schoolId: caseStudies.schoolId,
         title: caseStudies.title,
         description: caseStudies.description,
         stage: caseStudies.stage,
         impact: caseStudies.impact,
         imageUrl: caseStudies.imageUrl,
-        images: caseStudies.images,
         featured: caseStudies.featured,
         priority: caseStudies.priority,
-        schoolId: caseStudies.schoolId,
-        schoolName: schools.name,
-        schoolCountry: schools.country,
+        images: caseStudies.images,
+        videos: caseStudies.videos,
+        studentQuotes: caseStudies.studentQuotes,
+        impactMetrics: caseStudies.impactMetrics,
+        timelineSections: caseStudies.timelineSections,
         categories: caseStudies.categories,
+        tags: caseStudies.tags,
+        status: caseStudies.status,
+        templateType: caseStudies.templateType,
+        beforeImage: caseStudies.beforeImage,
+        afterImage: caseStudies.afterImage,
+        metaDescription: caseStudies.metaDescription,
+        metaKeywords: caseStudies.metaKeywords,
+        reviewStatus: caseStudies.reviewStatus,
+        submittedAt: caseStudies.submittedAt,
+        reviewedBy: caseStudies.reviewedBy,
+        reviewedAt: caseStudies.reviewedAt,
+        reviewNotes: caseStudies.reviewNotes,
+        createdBy: caseStudies.createdBy,
         createdAt: caseStudies.createdAt,
         updatedAt: caseStudies.updatedAt,
-        createdBy: caseStudies.createdBy,
+        schoolName: schools.name,
+        schoolCountry: schools.country,
       })
       .from(caseStudies)
       .innerJoin(schools, eq(caseStudies.schoolId, schools.id))
@@ -1996,7 +2039,29 @@ export class DatabaseStorage implements IStorage {
 
     scoredResults.sort((a, b) => b.score - a.score);
 
-    return scoredResults.slice(0, limit).map(({ score, ...cs }) => cs as CaseStudy);
+    return scoredResults.slice(0, limit).map(({ score, ...cs }) => cs as unknown as CaseStudy);
+  }
+
+  // Case Study Version Management
+  async createCaseStudyVersion(version: InsertCaseStudyVersion): Promise<CaseStudyVersion> {
+    const [created] = await db.insert(caseStudyVersions).values(version).returning();
+    return created;
+  }
+
+  async getCaseStudyVersions(caseStudyId: string): Promise<CaseStudyVersion[]> {
+    return await db
+      .select()
+      .from(caseStudyVersions)
+      .where(eq(caseStudyVersions.caseStudyId, caseStudyId))
+      .orderBy(desc(caseStudyVersions.versionNumber));
+  }
+
+  async getCaseStudyVersion(versionId: string): Promise<CaseStudyVersion | undefined> {
+    const [version] = await db
+      .select()
+      .from(caseStudyVersions)
+      .where(eq(caseStudyVersions.id, versionId));
+    return version;
   }
 
   // Email operations

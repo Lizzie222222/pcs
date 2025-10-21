@@ -3551,6 +3551,119 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Create a version snapshot
+  app.post("/api/admin/case-studies/:id/versions", isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      // Get the current case study
+      const caseStudy = await storage.getCaseStudyById(id);
+      if (!caseStudy) {
+        return res.status(404).json({ success: false, message: "Case study not found" });
+      }
+      
+      // Get the next version number
+      const existingVersions = await storage.getCaseStudyVersions(id);
+      const nextVersionNumber = existingVersions.length > 0 
+        ? Math.max(...existingVersions.map(v => v.versionNumber)) + 1 
+        : 1;
+      
+      // Create version snapshot
+      const version = await storage.createCaseStudyVersion({
+        caseStudyId: id,
+        versionNumber: nextVersionNumber,
+        title: caseStudy.title,
+        description: caseStudy.description,
+        stage: caseStudy.stage,
+        status: caseStudy.status || 'draft',
+        impact: caseStudy.impact,
+        images: caseStudy.images as any,
+        videos: caseStudy.videos as any,
+        studentQuotes: caseStudy.studentQuotes as any,
+        impactMetrics: caseStudy.impactMetrics as any,
+        timelineSections: caseStudy.timelineSections as any,
+        templateType: caseStudy.templateType,
+        beforeImage: caseStudy.beforeImage,
+        afterImage: caseStudy.afterImage,
+        snapshot: caseStudy as any, // Full snapshot as JSON
+        createdBy: req.user!.id,
+      });
+      
+      res.json({ success: true, version });
+    } catch (error: any) {
+      console.error("Error creating case study version:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+  // List all versions for a case study
+  app.get("/api/admin/case-studies/:id/versions", isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      const versions = await storage.getCaseStudyVersions(id);
+      res.json({ success: true, versions });
+    } catch (error: any) {
+      console.error("Error getting case study versions:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
+  // Restore a specific version
+  app.post("/api/admin/case-studies/:id/versions/:versionId/restore", isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { id, versionId } = req.params;
+      
+      // Get the version to restore
+      const version = await storage.getCaseStudyVersion(versionId);
+      if (!version || version.caseStudyId !== id) {
+        return res.status(404).json({ success: false, message: "Version not found" });
+      }
+      
+      // Use snapshot field for complete restoration
+      const snapshot = version.snapshot as any;
+      
+      // Update case study with ALL fields from version and snapshot
+      const updated = await storage.updateCaseStudy(id, {
+        // Core fields from version table
+        title: version.title,
+        description: version.description,
+        stage: version.stage,
+        status: version.status || snapshot?.status || 'draft',
+        impact: version.impact,
+        
+        // Media from version table
+        images: version.images as any,
+        videos: version.videos as any,
+        studentQuotes: version.studentQuotes as any,
+        impactMetrics: version.impactMetrics as any,
+        timelineSections: version.timelineSections as any,
+        
+        // Template fields from version table
+        templateType: version.templateType,
+        beforeImage: version.beforeImage,
+        afterImage: version.afterImage,
+        
+        // Additional fields from snapshot (these are not in version table columns)
+        categories: snapshot?.categories,
+        tags: snapshot?.tags,
+        metaDescription: snapshot?.metaDescription,
+        metaKeywords: snapshot?.metaKeywords,
+        imageUrl: snapshot?.imageUrl,
+        featured: snapshot?.featured,
+        priority: snapshot?.priority,
+        evidenceId: snapshot?.evidenceId,
+        
+        // Note: Review workflow fields (reviewStatus, submittedAt, reviewedBy, reviewedAt, reviewNotes)
+        // are NOT restored as they track the current approval state, not historical state
+      });
+      
+      res.json({ success: true, caseStudy: updated });
+    } catch (error: any) {
+      console.error("Error restoring case study version:", error);
+      res.status(500).json({ success: false, message: error.message });
+    }
+  });
+
   // Bulk school update endpoint
   app.post('/api/admin/schools/bulk-update', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
