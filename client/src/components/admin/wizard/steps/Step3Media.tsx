@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useEffect } from "react";
 import { UseFormReturn } from "react-hook-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
@@ -24,10 +24,11 @@ interface Evidence {
 
 interface Step3MediaProps {
   form: UseFormReturn<any>;
+  templateType?: string;
 }
 
-export function Step3Media({ form }: Step3MediaProps) {
-  const templateType = form.watch("templateType") || "standard";
+export function Step3Media({ form, templateType: propTemplateType }: Step3MediaProps) {
+  const templateType = propTemplateType || form.watch("templateType") || "standard";
   
   // Use useMemo to ensure config updates when templateType changes
   const config = useMemo(() => getTemplateConfig(templateType), [templateType]);
@@ -36,6 +37,20 @@ export function Step3Media({ form }: Step3MediaProps) {
   
   // Debug: Log template type to console
   console.log('[Step3Media] Current templateType:', templateType);
+
+  // Clear before/after images when switching away from Visual template
+  useEffect(() => {
+    if (templateType !== 'visual') {
+      const currentBefore = form.getValues('beforeImage');
+      const currentAfter = form.getValues('afterImage');
+      
+      if (currentBefore || currentAfter) {
+        form.setValue('beforeImage', '');
+        form.setValue('afterImage', '');
+        console.log('[Step3Media] Cleared before/after images - template changed to:', templateType);
+      }
+    }
+  }, [templateType, form]);
 
   // Fetch approved public evidence submissions for this school
   const { data: evidenceList, isLoading: isLoadingEvidence } = useQuery<Evidence[]>({
