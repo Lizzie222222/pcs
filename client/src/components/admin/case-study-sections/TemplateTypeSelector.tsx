@@ -116,15 +116,6 @@ const previewComponents = {
 export function TemplateTypeSelector({ form }: TemplateTypeSelectorProps) {
   return (
     <div className="space-y-6">
-      <div className="space-y-2">
-        <h2 className="text-2xl font-bold" data-testid="text-template-selector-title">
-          Choose Your Story Template
-        </h2>
-        <p className="text-muted-foreground" data-testid="text-template-selector-description">
-          Select a template that best showcases your school's plastic reduction journey
-        </p>
-      </div>
-
       <FormField
         control={form.control}
         name="templateType"
