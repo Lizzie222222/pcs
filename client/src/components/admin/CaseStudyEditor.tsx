@@ -1,10 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
+import { useQuery } from "@tanstack/react-query";
 import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useDebounce } from "@/hooks/useDebounce";
 import { X } from "lucide-react";
 import type { 
   CaseStudy, 
@@ -32,6 +34,8 @@ import { Step5Review } from "./wizard/steps/Step5Review";
 import { getTemplateConfig } from "./wizard/templateConfigurations";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PreviewContainer, PreviewToggleButton } from "./PreviewContainer";
+import { CaseStudyPreview } from "@/components/case-study-preview";
+import { transformFormToPreview } from "./formToPreviewTransformer";
 
 interface CaseStudyEditorProps {
   caseStudy?: CaseStudy;
@@ -188,6 +192,24 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
       createdBy: "",
     },
   });
+
+  // Watch all form fields for live preview
+  const formValues = form.watch();
+  
+  // Debounce for 300ms to avoid excessive re-renders
+  const debouncedFormValues = useDebounce(formValues, 300);
+  
+  // Fetch school data based on selected schoolId
+  const { data: school } = useQuery<{ id: string; name: string; country?: string; location?: string }>({
+    queryKey: ['/api/schools', debouncedFormValues.schoolId],
+    enabled: !!debouncedFormValues.schoolId,
+  });
+  
+  // Transform form data to preview data
+  const previewData = useMemo(
+    () => transformFormToPreview(debouncedFormValues, school),
+    [debouncedFormValues, school]
+  );
 
   // Get detailed validation for a step
   const getStepValidationDetails = (step: number): { valid: boolean; warnings: string[]; errors: string[] } => {
@@ -429,10 +451,12 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
   return (
     <PreviewContainer
       preview={
-        <div className="text-center text-muted-foreground p-8" data-testid="preview-placeholder">
-          <p>Preview will appear here as you edit</p>
-          <p className="text-sm mt-2">(Form state connection coming in next task)</p>
-        </div>
+        <CaseStudyPreview
+          caseStudy={previewData}
+          showHero={false}
+          animate={false}
+          className="scale-90 origin-top"
+        />
       }
     >
       <div className="min-h-screen bg-background">
