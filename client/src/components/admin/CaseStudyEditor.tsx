@@ -7,7 +7,7 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
-import { X } from "lucide-react";
+import { X, Clock } from "lucide-react";
 import type { 
   CaseStudy, 
   CaseStudyImage, 
@@ -36,6 +36,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { PreviewContainer, PreviewToggleButton } from "./PreviewContainer";
 import { CaseStudyPreview } from "@/components/case-study-preview";
 import { transformFormToPreview } from "./formToPreviewTransformer";
+import { VersionHistoryDialog } from "./VersionHistoryDialog";
 
 interface CaseStudyEditorProps {
   caseStudy?: CaseStudy;
@@ -131,6 +132,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
   const [isSaving, setIsSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
+  const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
   const [stepValidation, setStepValidation] = useState<Record<number, { valid: boolean; warnings: string[]; errors: string[] }>>({
     1: { valid: false, warnings: [], errors: [] },
     2: { valid: false, warnings: [], errors: [] },
@@ -473,6 +475,17 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
                 </p>
               </div>
               <div className="flex items-center gap-2">
+                {caseStudy?.id && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setVersionHistoryOpen(true)}
+                    data-testid="button-view-versions"
+                  >
+                    <Clock className="h-4 w-4 mr-2" />
+                    Version History
+                  </Button>
+                )}
                 <PreviewToggleButton />
                 <Button
                   type="button"
@@ -545,6 +558,14 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
           </form>
         </Form>
       </div>
+      
+      {caseStudy?.id && (
+        <VersionHistoryDialog
+          caseStudyId={caseStudy.id}
+          open={versionHistoryOpen}
+          onOpenChange={setVersionHistoryOpen}
+        />
+      )}
     </PreviewContainer>
   );
 }

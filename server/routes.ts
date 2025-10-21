@@ -3512,14 +3512,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update case study
-  app.put('/api/admin/case-studies/:id', isAuthenticated, requireAdmin, async (req, res) => {
+  app.put('/api/admin/case-studies/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const validatedData = insertCaseStudySchema.partial().parse(req.body);
+      
+      // Get original case study to check if status is changing to published
+      const originalCaseStudy = await storage.getCaseStudyById(req.params.id);
       
       const caseStudy = await storage.updateCaseStudy(req.params.id, validatedData);
       
       if (!caseStudy) {
         return res.status(404).json({ message: "Case study not found" });
+      }
+
+      // Auto-create version when publishing
+      if (validatedData.status === 'published' && originalCaseStudy?.status !== 'published') {
+        try {
+          // Get the next version number
+          const existingVersions = await storage.getCaseStudyVersions(req.params.id);
+          const nextVersionNumber = existingVersions.length > 0 
+            ? Math.max(...existingVersions.map(v => v.versionNumber)) + 1 
+            : 1;
+          
+          // Create version snapshot
+          await storage.createCaseStudyVersion({
+            caseStudyId: req.params.id,
+            versionNumber: nextVersionNumber,
+            title: caseStudy.title,
+            description: caseStudy.description,
+            stage: caseStudy.stage,
+            status: caseStudy.status || 'draft',
+            impact: caseStudy.impact,
+            images: caseStudy.images as any,
+            videos: caseStudy.videos as any,
+            studentQuotes: caseStudy.studentQuotes as any,
+            impactMetrics: caseStudy.impactMetrics as any,
+            timelineSections: caseStudy.timelineSections as any,
+            templateType: caseStudy.templateType,
+            beforeImage: caseStudy.beforeImage,
+            afterImage: caseStudy.afterImage,
+            snapshot: caseStudy as any,
+            createdBy: req.user!.id,
+          });
+          
+          console.log(`[Version] Auto-created version ${nextVersionNumber} for case study ${req.params.id}`);
+        } catch (versionError) {
+          // Log version creation error but don't fail the update
+          console.error("Error auto-creating version:", versionError);
+        }
       }
 
       // Fetch the updated case study with school info joined
