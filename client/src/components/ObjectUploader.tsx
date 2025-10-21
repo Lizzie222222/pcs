@@ -20,6 +20,7 @@ interface ObjectUploaderProps {
   ) => void;
   buttonClassName?: string;
   children: ReactNode;
+  dataTestId?: string;
 }
 
 /**
@@ -57,6 +58,7 @@ export function ObjectUploader({
   onComplete,
   buttonClassName,
   children,
+  dataTestId,
 }: ObjectUploaderProps) {
   const [showModal, setShowModal] = useState(false);
   const [uppy] = useState(() =>
@@ -78,7 +80,7 @@ export function ObjectUploader({
 
   return (
     <div>
-      <Button onClick={() => setShowModal(true)} className={buttonClassName}>
+      <Button onClick={() => setShowModal(true)} className={buttonClassName} data-testid={dataTestId}>
         {children}
       </Button>
 
