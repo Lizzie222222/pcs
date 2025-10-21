@@ -1,6 +1,7 @@
 import { sql } from 'drizzle-orm';
 import {
   index,
+  uniqueIndex,
   jsonb,
   pgTable,
   timestamp,
@@ -82,6 +83,13 @@ export const schoolRoleEnum = pgEnum('school_role', [
 export const mediaTypeEnum = pgEnum('media_type', ['image', 'video', 'document', 'audio']);
 export const storageScopeEnum = pgEnum('storage_scope', ['global', 'school']);
 export const caseStudyStatusEnum = pgEnum('case_study_status', ['draft', 'published']);
+export const reviewStatusEnum = pgEnum('review_status', [
+  'draft',
+  'pending_review',
+  'approved',
+  'rejected',
+  'published'
+]);
 
 /**
  * @description Core users table supporting both email/password and Google OAuth authentication. Central entity linking to schools, evidence submissions, and all user-generated content.
@@ -304,10 +312,71 @@ export const caseStudies = pgTable("case_studies", {
   afterImage: varchar("after_image"),
   metaDescription: text("meta_description"),
   metaKeywords: text("meta_keywords"),
+  reviewStatus: reviewStatusEnum("review_status").default('draft'),
+  submittedAt: timestamp("submitted_at"),
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"),
   createdBy: varchar("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+export const caseStudyVersions = pgTable("case_study_versions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  caseStudyId: varchar("case_study_id").notNull().references(() => caseStudies.id, { onDelete: 'cascade' }),
+  versionNumber: integer("version_number").notNull(),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  stage: programStageEnum("stage").notNull(),
+  status: caseStudyStatusEnum("status").default('draft'),
+  impact: text("impact"),
+  images: jsonb("images").default('[]'),
+  videos: jsonb("videos").default('[]'),
+  studentQuotes: jsonb("student_quotes").default('[]'),
+  impactMetrics: jsonb("impact_metrics").default('[]'),
+  timelineSections: jsonb("timeline_sections").default('[]'),
+  templateType: varchar("template_type"),
+  beforeImage: varchar("before_image"),
+  afterImage: varchar("after_image"),
+  snapshot: jsonb("snapshot"),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("case_study_versions_case_study_id_idx").on(table.caseStudyId),
+  // Unique constraint ensures no duplicate version numbers per case study
+  uniqueIndex("case_study_versions_unique_version_idx").on(table.caseStudyId, table.versionNumber)
+]);
+
+export const caseStudyTags = pgTable("case_study_tags", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: varchar("name").notNull().unique(),
+  slug: varchar("slug").notNull().unique(),
+  description: text("description"),
+  createdBy: varchar("created_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const caseStudyTagRelations = pgTable("case_study_tag_relations", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  caseStudyId: varchar("case_study_id").notNull().references(() => caseStudies.id, { onDelete: 'cascade' }),
+  tagId: varchar("tag_id").notNull().references(() => caseStudyTags.id, { onDelete: 'cascade' }),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("case_study_tag_relations_case_study_idx").on(table.caseStudyId),
+  index("case_study_tag_relations_tag_idx").on(table.tagId)
+]);
+
+export const caseStudyReviewComments = pgTable("case_study_review_comments", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  caseStudyId: varchar("case_study_id").notNull().references(() => caseStudies.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").notNull().references(() => users.id),
+  comment: text("comment").notNull(),
+  action: varchar("action"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("case_study_review_comments_case_study_idx").on(table.caseStudyId)
+]);
 
 export const emailLogs = pgTable("email_logs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
@@ -699,7 +768,7 @@ export const evidenceRelations = relations(evidence, ({ one }) => ({
   caseStudy: one(caseStudies),
 }));
 
-export const caseStudiesRelations = relations(caseStudies, ({ one }) => ({
+export const caseStudiesRelations = relations(caseStudies, ({ one, many }) => ({
   evidence: one(evidence, {
     fields: [caseStudies.evidenceId],
     references: [evidence.id],
@@ -711,6 +780,51 @@ export const caseStudiesRelations = relations(caseStudies, ({ one }) => ({
   createdBy: one(users, {
     fields: [caseStudies.createdBy],
     references: [users.id],
+  }),
+  versions: many(caseStudyVersions),
+  tagRelations: many(caseStudyTagRelations),
+  reviewComments: many(caseStudyReviewComments),
+  reviewer: one(users, { 
+    fields: [caseStudies.reviewedBy], 
+    references: [users.id],
+    relationName: "reviewedCaseStudies"
+  }),
+}));
+
+export const caseStudyVersionsRelations = relations(caseStudyVersions, ({ one }) => ({
+  caseStudy: one(caseStudies, { 
+    fields: [caseStudyVersions.caseStudyId], 
+    references: [caseStudies.id] 
+  }),
+  creator: one(users, { 
+    fields: [caseStudyVersions.createdBy], 
+    references: [users.id] 
+  }),
+}));
+
+export const caseStudyTagsRelations = relations(caseStudyTags, ({ many }) => ({
+  caseStudyRelations: many(caseStudyTagRelations),
+}));
+
+export const caseStudyTagRelationsRelations = relations(caseStudyTagRelations, ({ one }) => ({
+  caseStudy: one(caseStudies, { 
+    fields: [caseStudyTagRelations.caseStudyId], 
+    references: [caseStudies.id] 
+  }),
+  tag: one(caseStudyTags, { 
+    fields: [caseStudyTagRelations.tagId], 
+    references: [caseStudyTags.id] 
+  }),
+}));
+
+export const caseStudyReviewCommentsRelations = relations(caseStudyReviewComments, ({ one }) => ({
+  caseStudy: one(caseStudies, { 
+    fields: [caseStudyReviewComments.caseStudyId], 
+    references: [caseStudies.id] 
+  }),
+  user: one(users, { 
+    fields: [caseStudyReviewComments.userId], 
+    references: [users.id] 
   }),
 }));
 
@@ -1058,6 +1172,28 @@ export const insertCaseStudySchema = createInsertSchema(caseStudies).omit({
   tags: z.array(z.string()).optional(),
 });
 
+export const insertCaseStudyVersionSchema = createInsertSchema(caseStudyVersions).omit({ 
+  id: true, 
+  createdAt: true 
+}).extend({
+  status: z.enum(['draft', 'published']).optional(),
+});
+
+export const insertCaseStudyTagSchema = createInsertSchema(caseStudyTags).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export const insertCaseStudyTagRelationSchema = createInsertSchema(caseStudyTagRelations).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
+export const insertCaseStudyReviewCommentSchema = createInsertSchema(caseStudyReviewComments).omit({ 
+  id: true, 
+  createdAt: true 
+});
+
 export const insertEmailLogSchema = createInsertSchema(emailLogs).omit({
   id: true,
   sentAt: true,
@@ -1214,6 +1350,14 @@ export type CaseStudyVideo = z.infer<typeof caseStudyVideoSchema>;
 export type StudentQuote = z.infer<typeof studentQuoteSchema>;
 export type ImpactMetric = z.infer<typeof impactMetricSchema>;
 export type TimelineSection = z.infer<typeof timelineSectionSchema>;
+export type InsertCaseStudyVersion = z.infer<typeof insertCaseStudyVersionSchema>;
+export type CaseStudyVersion = typeof caseStudyVersions.$inferSelect;
+export type InsertCaseStudyTag = z.infer<typeof insertCaseStudyTagSchema>;
+export type CaseStudyTag = typeof caseStudyTags.$inferSelect;
+export type InsertCaseStudyTagRelation = z.infer<typeof insertCaseStudyTagRelationSchema>;
+export type CaseStudyTagRelation = typeof caseStudyTagRelations.$inferSelect;
+export type InsertCaseStudyReviewComment = z.infer<typeof insertCaseStudyReviewCommentSchema>;
+export type CaseStudyReviewComment = typeof caseStudyReviewComments.$inferSelect;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type InsertEmailLog = z.infer<typeof insertEmailLogSchema>;
 export type MailchimpAudience = typeof mailchimpAudiences.$inferSelect;
