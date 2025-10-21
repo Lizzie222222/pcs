@@ -55,27 +55,40 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 ## Recent Updates
 
 ### Case Study Wizard Redesign (October 21, 2025)
-**Complete redesign of admin case study creation interface:**
+**Complete redesign of admin case study creation interface - CORE FEATURES COMPLETE**
 
-**Completed Features:**
+**Completed Features (10/15 tasks):**
 1. **Sidebar Navigation** - Replaced horizontal stepper with collapsible vertical sidebar showing real-time validation, progress badges, and click-to-navigate functionality
 2. **Typography Cleanup** - Established semantic H1→H2→H3→H4 hierarchy, removed duplicate headers, applied consistent spacing
 3. **Media Workflow Refactor** - Organized Step 3 into subsections: Evidence Grid, Upload Panel, Before/After Builder, Gallery Grid
 4. **Drag-and-Drop Image Reordering** - @dnd-kit integration with keyboard accessibility, stable nanoid IDs, and defensive guards
 5. **Before/After Preview** - Reusable BeforeAfterSlider component with interactive clipPath reveal slider
 6. **Rich Text Editor** - TipTap editor for description/impact fields with formatting toolbar (Bold, Italic, Headings, Lists, Blockquotes)
+7. **Live Preview System (Complete):**
+   - **7a. Preview Component Extraction** - Refactored CaseStudyPreview module with 11 reusable components, eliminated code duplication between admin and public pages
+   - **7b. Preview Container** - Responsive split layout (60/40 desktop, full mobile), collapse control, keyboard-accessible toggle with ARIA attributes, localStorage persistence
+   - **7c. Form-to-Preview Transformer** - Debounced form watching (300ms), memoized transformation, placeholder fallbacks, school data integration
+   - **7d. Preview Integration** - UI hints in Step 5 Review, sidebar navigation tips, mobile notices, preview indicators
 
 **Technical Implementation:**
 - Drag-and-drop uses @dnd-kit/core with stable unique IDs (nanoid), keyboard sensors, focusable button handles, ARIA labels
 - BeforeAfterSlider shared between admin wizard and public pages, eliminates code duplication
 - RichTextEditor integrated with react-hook-form, outputs HTML, supports edit flows
+- Live preview uses React Context, useDebounce hook, useMemo optimization, nullable context pattern for safe hook usage
 - All components have proper test IDs for playwright testing
+- All React Hook rules followed (hooks called unconditionally at top level)
 
-**Pending Tasks:**
-- Fix template-switching bug (Before/After section visibility)
-- Live preview panel
-- Enhanced Review step
-- Version control system
-- Approval workflow
-- Enhanced tagging system
-- Accessibility improvements
+**Key Files:**
+- CaseStudyEditor.tsx, SidebarWizardNav.tsx, Step3Media.tsx, Step5Review.tsx
+- BeforeAfterSlider.tsx, RichTextEditor.tsx
+- PreviewContainer.tsx, formToPreviewTransformer.ts, useDebounce.ts
+- CaseStudyPreview.tsx, case-study-preview/index.ts (11 extracted components)
+- templateConfigurations.ts
+
+**Remaining Tasks (5/15 - Future Enhancements):**
+- Fix template-switching bug (Before/After section visibility) - documented for later investigation
+- Enhanced Review step (grouped summaries, requirement checklist)
+- Version control system (case_study_versions table, draft/published tracking)
+- Approval workflow (review_status enum, admin assignment, notifications)
+- Enhanced tagging system (case_study_tags table, autocomplete, multi-select)
+- Accessibility improvements (aria-live announcements, enhanced screen reader support)
