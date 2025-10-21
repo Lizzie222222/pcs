@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
+import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
 import {
   Carousel,
   CarouselContent,
@@ -252,7 +253,6 @@ export default function CaseStudyDetail() {
   const params = useParams();
   const [, setLocation] = useLocation();
   const caseStudyId = params.id;
-  const [beforeAfterSlider, setBeforeAfterSlider] = useState(50);
   const [shareDialogOpen, setShareDialogOpen] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const { toast } = useToast();
@@ -480,59 +480,12 @@ export default function CaseStudyDetail() {
         {caseStudy.beforeImage && caseStudy.afterImage && (
           <div className="mb-16 scroll-reveal-scale">
             <h2 className="text-3xl font-bold text-navy mb-8">The Transformation</h2>
-            <div className="relative h-96 rounded-xl overflow-hidden group">
-              {/* Before Image */}
-              <div className="absolute inset-0">
-                <OptimizedImage
-                  src={caseStudy.beforeImage}
-                  alt={`Before plastic reduction transformation at ${caseStudy.schoolName}`}
-                  width={800}
-                  height={400}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 left-4 bg-black/60 text-white px-4 py-2 rounded-lg font-semibold">
-                  Before
-                </div>
-              </div>
-              
-              {/* After Image with Slider */}
-              <div 
-                className="absolute inset-0 transition-all duration-300"
-                style={{ clipPath: `inset(0 ${100 - beforeAfterSlider}% 0 0)` }}
-              >
-                <OptimizedImage
-                  src={caseStudy.afterImage}
-                  alt={`After plastic reduction transformation at ${caseStudy.schoolName}`}
-                  width={800}
-                  height={400}
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute top-4 right-4 bg-ocean-blue text-white px-4 py-2 rounded-lg font-semibold">
-                  After
-                </div>
-              </div>
-
-              {/* Slider */}
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={beforeAfterSlider}
-                onChange={(e) => setBeforeAfterSlider(Number(e.target.value))}
-                className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-10"
-              />
-              
-              {/* Slider Line */}
-              <div 
-                className="absolute top-0 bottom-0 w-1 bg-white shadow-lg pointer-events-none"
-                style={{ left: `${beforeAfterSlider}%` }}
-              >
-                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-10 h-10 bg-white rounded-full shadow-lg flex items-center justify-center">
-                  <ChevronLeft className="w-4 h-4 -ml-1" />
-                  <ChevronRight className="w-4 h-4 -mr-1" />
-                </div>
-              </div>
-            </div>
+            <BeforeAfterSlider
+              beforeImage={caseStudy.beforeImage}
+              afterImage={caseStudy.afterImage}
+              beforeAlt={`Before plastic reduction transformation at ${caseStudy.schoolName}`}
+              afterAlt={`After plastic reduction transformation at ${caseStudy.schoolName}`}
+            />
           </div>
         )}
 

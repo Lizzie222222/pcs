@@ -7,6 +7,7 @@ import { CategorisationSection } from "../../case-study-sections/CategorisationS
 import { TemplateStatusSection } from "../../case-study-sections/TemplateStatusSection";
 import { CheckCircle2, AlertTriangle, Image as ImageIcon, MessageSquare, BarChart3, Calendar } from "lucide-react";
 import { getTemplateConfig } from "../templateConfigurations";
+import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
 
 interface Step5ReviewProps {
   form: UseFormReturn<any>;
@@ -16,6 +17,8 @@ export function Step5Review({ form }: Step5ReviewProps) {
   const formValues = form.watch();
   const templateType = formValues.templateType || "standard";
   const config = getTemplateConfig(templateType);
+  const beforeImage = formValues.beforeImage;
+  const afterImage = formValues.afterImage;
 
   // Validation checks
   const validationChecks = {
@@ -226,6 +229,33 @@ export function Step5Review({ form }: Step5ReviewProps) {
           </div>
         </CardContent>
       </Card>
+
+      {/* Before/After Preview (Visual Story only) */}
+      {templateType === 'visual' && beforeImage && afterImage && (
+        <Card data-testid="card-before-after-preview">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ImageIcon className="h-5 w-5" />
+              Transformation Preview
+            </CardTitle>
+            <CardDescription>
+              This is how your before & after comparison will appear on the public page
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <BeforeAfterSlider
+              beforeImage={beforeImage}
+              afterImage={afterImage}
+              beforeAlt="Before transformation"
+              afterAlt="After transformation"
+              height="h-64 md:h-96"
+            />
+            <p className="text-sm text-muted-foreground mt-4 text-center italic">
+              💡 Visitors can drag the slider to reveal the transformation
+            </p>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Categories & Tags */}
       <Card>

@@ -80,6 +80,33 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 
 **Impact**: Improved scannability, clearer visual hierarchy, better accessibility, and smoother navigation through the case study creation process.
 
+- **Drag-and-Drop Image Reordering**:
+  - Integrated @dnd-kit/core, @dnd-kit/sortable, and @dnd-kit/utilities for smooth drag-and-drop
+  - SortableImageCard component with useSortable hook for draggable gallery images
+  - ImagePreviewCard static component for DragOverlay (prevents hook context errors)
+  - Focusable button drag handles (GripVertical icon) for keyboard accessibility
+  - Full keyboard navigation support: Tab to focus, Space to grab, Arrow keys to reorder, Space to drop
+  - ARIA labels and hidden instructions for screen readers
+  - Visible focus rings for keyboard users
+  - Stable unique IDs (nanoid) prevent React DOM reuse issues after reorder/deletion
+  - Synchronous useMemo normalization (not useEffect) prevents race conditions
+  - Defensive guards in ImagePreviewCard and DragOverlay prevent crashes
+  - Visual feedback during drag: opacity 0.6, shadow, rotation effects
+  - Form state updates correctly with arrayMove and shouldDirty/shouldTouch flags
+  - Source badges differentiate Evidence vs Custom images
+  - Remove functionality works alongside drag-and-drop
+  - onDragCancel handler clears overlay on ESC key
+
+**Technical Details:**
+- DndContext with closestCenter collision detection
+- PointerSensor and KeyboardSensor for mouse and keyboard interactions
+- SortableContext with rectSortingStrategy for grid layout
+- handleDragEnd uses ID-based findIndex for stable tracking
+- Migration logic adds IDs to legacy images before first render
+- All images created in CustomUploadManager and EvidenceSelector include nanoid() IDs
+
+**Impact**: Admins can now easily reorder gallery images with mouse or keyboard, improving workflow efficiency and meeting accessibility standards.
+
 ### Case Study Wizard Redesign (October 20, 2025)
 **Complete redesign of admin case study creation from confusing tabs to intuitive step-by-step wizard:**
 
