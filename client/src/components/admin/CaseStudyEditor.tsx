@@ -521,7 +521,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
                         <Step4Enhancements form={form} />
                       )}
                       {currentStep === 5 && (
-                        <Step5Review form={form} />
+                        <Step5Review form={form} onStepChange={handleStepChange} />
                       )}
                     </section>
 
