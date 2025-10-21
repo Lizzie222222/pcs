@@ -54,6 +54,32 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 
 ## Recent Changes
 
+### Case Study Wizard UX Improvements (October 21, 2025)
+**Enhanced navigation and visual hierarchy for better usability:**
+
+- **Vertical Sidebar Navigation**:
+  - Replaced horizontal progress stepper with 280px vertical sidebar (collapsible to mobile sheet)
+  - Real-time validation badges show step completion status (checkmark/error count)
+  - Click-to-navigate functionality allows jumping to any step with valid prerequisites
+  - Mobile-responsive sheet drawer for smaller screens
+  - Fixed infinite render loop bug while maintaining real-time validation updates
+  - Individual field watches (schoolId, title, stage, templateType, etc.) ensure validation state updates on form changes
+
+- **Typography & Visual Hierarchy**:
+  - Established semantic heading structure: H1 (page) → H2 (steps) → H3 (cards) → H4 (subsections)
+  - Removed duplicate headers (e.g., "Media & Images" appearing multiple times)
+  - Applied consistent spacing tokens: space-y-10 (sections), space-y-8 (cards), space-y-6 (subsections)
+  - Proper aria-labelledby linking for accessibility
+  - MediaGallerySection accepts headingLevel prop for flexible hierarchy when embedded
+
+- **Testing & Validation**:
+  - End-to-end playwright tests confirm smooth navigation through all wizard steps
+  - Real-time validation updates as users fill form fields
+  - Next button enables automatically when step requirements met
+  - No infinite loop errors or maximum update depth issues
+
+**Impact**: Improved scannability, clearer visual hierarchy, better accessibility, and smoother navigation through the case study creation process.
+
 ### Case Study Wizard Redesign (October 20, 2025)
 **Complete redesign of admin case study creation from confusing tabs to intuitive step-by-step wizard:**
 
