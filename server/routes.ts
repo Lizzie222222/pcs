@@ -14,7 +14,7 @@ import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import { generateAnalyticsInsights } from "./lib/aiInsights";
-import { translateEmailContent } from "./translationService";
+import { translateEmailContent, type EmailContent } from "./translationService";
 import { promises as fs } from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
@@ -4332,11 +4332,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         for (const email of emailList) {
           try {
             const targetLanguage = emailToSchoolLanguageMap.get(email) || 'en';
-            let emailContent = {
+            let emailContent: EmailContent = {
               subject,
-              preheader: preheader || '',
+              preheader: preheader || undefined,
               title,
-              preTitle: preTitle || '',
+              preTitle: preTitle || undefined,
               messageContent,
             };
 

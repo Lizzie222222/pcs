@@ -4,7 +4,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-interface EmailContent {
+export interface EmailContent {
   subject: string;
   preheader?: string;
   title: string;

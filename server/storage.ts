@@ -734,48 +734,22 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(schools.primaryLanguage, filters.language));
     }
     
-    const baseQuery = db
-      .select({
-        id: schools.id,
-        name: schools.name,
-        type: schools.type,
-        country: schools.country,
-        address: schools.address,
-        studentCount: schools.studentCount,
-        latitude: schools.latitude,
-        longitude: schools.longitude,
-        currentStage: schools.currentStage,
-        progressPercentage: schools.progressPercentage,
-        inspireCompleted: schools.inspireCompleted,
-        investigateCompleted: schools.investigateCompleted,
-        actCompleted: schools.actCompleted,
-        awardCompleted: schools.awardCompleted,
-        featuredSchool: schools.featuredSchool,
-        showOnMap: schools.showOnMap,
-        primaryContactId: schools.primaryContactId,
-        primaryLanguage: schools.primaryLanguage,
-        createdAt: schools.createdAt,
-        updatedAt: schools.updatedAt,
-        primaryContactEmail: users.email,
-      })
-      .from(schools)
-      .leftJoin(users, eq(schools.primaryContactId, users.id))
-      .$dynamic();
+    let query = db.select().from(schools);
     
     if (conditions.length > 0) {
-      baseQuery.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
     
-    baseQuery.orderBy(desc(schools.createdAt));
+    query = query.orderBy(desc(schools.createdAt)) as any;
     
     if (filters.limit) {
-      baseQuery.limit(filters.limit);
+      query = query.limit(filters.limit) as any;
     }
     if (filters.offset) {
-      baseQuery.offset(filters.offset);
+      query = query.offset(filters.offset) as any;
     }
     
-    return await baseQuery;
+    return await query;
   }
 
   async updateSchool(id: string, updates: Partial<School>): Promise<School | undefined> {
