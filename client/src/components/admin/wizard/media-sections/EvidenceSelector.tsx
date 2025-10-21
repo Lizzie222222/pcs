@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Info, CheckCircle2, Image as ImageIcon } from "lucide-react";
 import { useState } from "react";
+import { nanoid } from 'nanoid';
 
 interface Evidence {
   id: string;
@@ -58,6 +59,7 @@ export function EvidenceSelector({ form, evidence, isLoading, schoolId }: Eviden
     } else {
       // Add the image with evidence metadata
       const newImage = {
+        id: nanoid(),
         url: imageUrl,
         caption: evidenceTitle,
         altText: evidenceTitle,

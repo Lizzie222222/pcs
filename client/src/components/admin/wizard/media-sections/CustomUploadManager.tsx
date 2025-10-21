@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import type { TemplateConfig } from "../templateConfigurations";
 import type { CaseStudyVideo } from "@shared/schema";
 import type { UploadResult } from "@uppy/core";
+import { nanoid } from 'nanoid';
 
 interface CustomUploadManagerProps {
   form: UseFormReturn<any>;
@@ -94,6 +95,7 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
         }
 
         const newImage = {
+          id: nanoid(),
           url: imageUrl,
           caption: "",
           altText: "",

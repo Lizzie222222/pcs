@@ -1,10 +1,29 @@
+import { useState, useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+  DragOverlay,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from '@dnd-kit/sortable';
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { CheckCircle2, AlertCircle, Trash2, Image as ImageIcon, Video } from "lucide-react";
+import { CheckCircle2, AlertCircle, Image as ImageIcon, Video } from "lucide-react";
 import type { TemplateConfig } from "../templateConfigurations";
+import { SortableImageCard } from './SortableImageCard';
+import { ImagePreviewCard } from './ImagePreviewCard';
+import { nanoid } from 'nanoid';
 
 interface SelectedMediaSummaryProps {
   form: UseFormReturn<any>;
@@ -12,7 +31,24 @@ interface SelectedMediaSummaryProps {
 }
 
 export function SelectedMediaSummary({ form, templateConfig }: SelectedMediaSummaryProps) {
-  const currentImages = form.watch("images") || [];
+  const [activeId, setActiveId] = useState<string | null>(null);
+  
+  const rawImages = form.watch("images") || [];
+  const currentImages = useMemo(() => {
+    const needsIds = rawImages.some((img: any) => !img.id);
+    
+    if (needsIds) {
+      const normalized = rawImages.map((img: any) => ({
+        ...img,
+        id: img.id || nanoid()
+      }));
+      form.setValue('images', normalized);
+      return normalized;
+    }
+    
+    return rawImages;
+  }, [rawImages, form]);
+
   const beforeImage = form.watch("beforeImage");
   const afterImage = form.watch("afterImage");
   const videos = form.watch("videos") || [];
@@ -25,17 +61,44 @@ export function SelectedMediaSummary({ form, templateConfig }: SelectedMediaSumm
   const meetsBeforeAfter = !templateConfig.requiredFields.requiresBeforeAfter || (beforeImage && afterImage);
   const meetsAllRequirements = meetsMinimum && meetsBeforeAfter;
 
-  const removeImage = (index: number) => {
-    const updatedImages = currentImages.filter((_: any, idx: number) => idx !== index);
-    form.setValue("images", updatedImages);
+  // Configure sensors for drag interaction
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Handle drag end - reorder images
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+    
+    if (over && active.id !== over.id) {
+      const oldIndex = currentImages.findIndex((img: any) => img.id === active.id);
+      const newIndex = currentImages.findIndex((img: any) => img.id === over.id);
+      
+      const reorderedImages = arrayMove(currentImages, oldIndex, newIndex);
+      form.setValue('images', reorderedImages, { shouldDirty: true, shouldTouch: true });
+      
+      // Announce to screen readers
+      console.log(`[SelectedMediaSummary] Reordered image from position ${oldIndex + 1} to ${newIndex + 1}`);
+    }
+    
+    setActiveId(null);
   };
 
-  const getSourceBadge = (image: any) => {
-    if (image.source === 'evidence') {
-      return <Badge variant="secondary" className="text-xs">Evidence Gallery</Badge>;
-    }
-    return <Badge variant="outline" className="text-xs">Custom Upload</Badge>;
+  // Handle drag cancel - prevents lingering overlay
+  const handleDragCancel = () => {
+    setActiveId(null);
   };
+
+  const removeImage = (imageId: string) => {
+    const updatedImages = currentImages.filter((img: any) => img.id !== imageId);
+    form.setValue('images', updatedImages, { shouldDirty: true });
+  };
+
+  // Generate unique IDs for sortable items
+  const imageIds = currentImages.map((image: any) => image.id);
 
   return (
     <div className="space-y-6">
@@ -130,53 +193,53 @@ export function SelectedMediaSummary({ form, templateConfig }: SelectedMediaSumm
         </Alert>
       )}
 
-      {/* Gallery Images Grid */}
-      {totalImages > 0 && (
+      {/* Gallery Images with Drag-and-Drop */}
+      {totalImages > 0 ? (
         <div className="space-y-4">
-          <h4 className="text-sm font-semibold">Selected Gallery Images ({totalImages})</h4>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {currentImages.map((image: any, index: number) => (
-              <div
-                key={index}
-                className="relative group rounded-lg overflow-hidden border-2 border-border hover:border-primary/50 transition-all"
-                data-testid={`summary-image-${index}`}
-              >
-                <div className="aspect-square bg-muted">
-                  <img
-                    src={image.url}
-                    alt={image.altText || image.caption || `Image ${index + 1}`}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                
-                {/* Source badge */}
-                <div className="absolute top-2 left-2">
-                  {getSourceBadge(image)}
-                </div>
-
-                {/* Remove button on hover */}
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => removeImage(index)}
-                    data-testid={`button-summary-remove-${index}`}
-                  >
-                    <Trash2 className="h-4 w-4 mr-1" />
-                    Remove
-                  </Button>
-                </div>
-
-                {/* Caption on hover */}
-                {image.caption && (
-                  <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2 text-white text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="line-clamp-2">{image.caption}</p>
-                  </div>
-                )}
-              </div>
-            ))}
+          <div className="flex items-center justify-between">
+            <h4 className="text-sm font-semibold">Selected Gallery Images ({totalImages})</h4>
+            <p className="text-sm text-muted-foreground">
+              Drag to reorder • {totalImages} image{totalImages !== 1 ? 's' : ''}
+            </p>
           </div>
+
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragStart={(event) => setActiveId(event.active.id as string)}
+            onDragEnd={handleDragEnd}
+            onDragCancel={handleDragCancel}
+          >
+            <SortableContext items={imageIds} strategy={rectSortingStrategy}>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {currentImages.map((image: any, index: number) => (
+                  <SortableImageCard
+                    key={image.id}
+                    id={image.id}
+                    image={image}
+                    index={index}
+                    onRemove={() => removeImage(image.id)}
+                  />
+                ))}
+              </div>
+            </SortableContext>
+
+            <DragOverlay>
+              {activeId && (() => {
+                const activeImage = currentImages.find((img: any) => img.id === activeId);
+                
+                if (!activeImage) {
+                  return null;
+                }
+                
+                return (
+                  <div className="shadow-2xl transform rotate-2 scale-105">
+                    <ImagePreviewCard image={activeImage} />
+                  </div>
+                );
+              })()}
+            </DragOverlay>
+          </DndContext>
 
           {/* Breakdown by source */}
           <div className="flex gap-4 text-sm text-muted-foreground">
@@ -184,7 +247,7 @@ export function SelectedMediaSummary({ form, templateConfig }: SelectedMediaSumm
             <span>• Custom Uploads: {customImages.length}</span>
           </div>
         </div>
-      )}
+      ) : null}
 
       {/* Before/After Summary */}
       {templateConfig.requiredFields.requiresBeforeAfter && (beforeImage || afterImage) && (
@@ -239,10 +302,6 @@ export function SelectedMediaSummary({ form, templateConfig }: SelectedMediaSumm
           </CardContent>
         </Card>
       )}
-
-      <p className="text-sm text-muted-foreground italic">
-        💡 Tip: Drag-and-drop reordering will be available in a future update
-      </p>
     </div>
   );
 }
