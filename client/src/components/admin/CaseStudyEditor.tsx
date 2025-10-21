@@ -471,21 +471,23 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
               <div className="container mx-auto px-4 py-8">
                 <div className="max-w-4xl mx-auto">
                   {/* Step Content */}
-                  {currentStep === 1 && (
-                    <Step1TemplateBasics form={form} isEditing={!!caseStudy} />
-                  )}
-                  {currentStep === 2 && (
-                    <Step2Content form={form} />
-                  )}
-                  {currentStep === 3 && (
-                    <Step3Media form={form} />
-                  )}
-                  {currentStep === 4 && (
-                    <Step4Enhancements form={form} />
-                  )}
-                  {currentStep === 5 && (
-                    <Step5Review form={form} />
-                  )}
+                  <section aria-labelledby={`step-${currentStep}-heading`} className="space-y-10">
+                    {currentStep === 1 && (
+                      <Step1TemplateBasics form={form} isEditing={!!caseStudy} />
+                    )}
+                    {currentStep === 2 && (
+                      <Step2Content form={form} />
+                    )}
+                    {currentStep === 3 && (
+                      <Step3Media form={form} />
+                    )}
+                    {currentStep === 4 && (
+                      <Step4Enhancements form={form} />
+                    )}
+                    {currentStep === 5 && (
+                      <Step5Review form={form} />
+                    )}
+                  </section>
 
                   {/* Navigation */}
                   <WizardNavigation

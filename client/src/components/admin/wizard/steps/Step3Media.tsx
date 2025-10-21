@@ -71,10 +71,12 @@ export function Step3Media({ form }: Step3MediaProps) {
   const afterImage = form.watch("afterImage");
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <h2 id="step-3-heading" className="text-2xl font-semibold">Step 3 · Media</h2>
+      
       <Card>
         <CardHeader>
-          <CardTitle data-testid="text-step3-title">Media & Images</CardTitle>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight" data-testid="text-step3-title">Media Requirements</h3>
           <CardDescription>
             Add images to bring your case study to life
           </CardDescription>
@@ -188,8 +190,8 @@ export function Step3Media({ form }: Step3MediaProps) {
           </Tabs>
 
           {/* Current selection summary */}
-          <div className="border-t pt-4">
-            <h3 className="font-semibold mb-2">Current Selection</h3>
+          <div className="border-t pt-6 mt-6">
+            <h4 className="font-semibold mb-2">Current Selection</h4>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
                 <span className="text-muted-foreground">Gallery Images:</span>

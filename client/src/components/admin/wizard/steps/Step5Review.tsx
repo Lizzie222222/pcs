@@ -45,11 +45,13 @@ export function Step5Review({ form }: Step5ReviewProps) {
   const isReadyToPublish = allChecks.every(Boolean);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <h2 id="step-5-heading" className="text-2xl font-semibold">Step 5 · Review & Publish</h2>
+      
       {/* Validation Summary */}
       <Card>
         <CardHeader>
-          <CardTitle data-testid="text-step5-title">Readiness Check</CardTitle>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight" data-testid="text-step5-title">Readiness Check</h3>
           <CardDescription>
             Review your case study before publishing
           </CardDescription>
@@ -126,7 +128,7 @@ export function Step5Review({ form }: Step5ReviewProps) {
           </div>
 
           {!isReadyToPublish && (
-            <Alert variant="destructive">
+            <Alert variant="destructive" className="mt-6">
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
                 Please complete all required fields before publishing. You can save as draft to continue later.
@@ -139,7 +141,7 @@ export function Step5Review({ form }: Step5ReviewProps) {
       {/* Content Summary */}
       <Card>
         <CardHeader>
-          <CardTitle>Content Summary</CardTitle>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">Content Summary</h3>
           <CardDescription>
             Preview of your case study content
           </CardDescription>
@@ -228,7 +230,7 @@ export function Step5Review({ form }: Step5ReviewProps) {
       {/* Categories & Tags */}
       <Card>
         <CardHeader>
-          <CardTitle>Categories & Tags</CardTitle>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">Categories & Tags</h3>
           <CardDescription>
             Help others discover your case study
           </CardDescription>
@@ -241,7 +243,7 @@ export function Step5Review({ form }: Step5ReviewProps) {
       {/* Publication Settings */}
       <Card>
         <CardHeader>
-          <CardTitle>Publication Settings</CardTitle>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">Publication Settings</h3>
           <CardDescription>
             Control visibility and SEO
           </CardDescription>

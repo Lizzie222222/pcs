@@ -26,10 +26,12 @@ export function Step1TemplateBasics({ form, isEditing }: Step1TemplateBasicsProp
 
   return (
     <div className="space-y-8">
+      <h2 id="step-1-heading" className="text-2xl font-semibold">Step 1 · Template & Basics</h2>
+      
       {/* Template Selection */}
       <Card>
         <CardHeader>
-          <CardTitle data-testid="text-step1-title">Choose Your Template</CardTitle>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight" data-testid="text-step1-title">Choose Your Template</h3>
           <CardDescription>
             Select the layout that best showcases your school's story. Each template is optimized for different types of content.
           </CardDescription>
@@ -42,7 +44,7 @@ export function Step1TemplateBasics({ form, isEditing }: Step1TemplateBasicsProp
       {/* Basic Information */}
       <Card>
         <CardHeader>
-          <CardTitle>Basic Information</CardTitle>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight">Basic Information</h3>
           <CardDescription>
             Essential details about your case study
           </CardDescription>

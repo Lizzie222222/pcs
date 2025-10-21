@@ -16,9 +16,11 @@ export function Step2Content({ form }: Step2ContentProps) {
 
   return (
     <div className="space-y-8">
+      <h2 id="step-2-heading" className="text-2xl font-semibold">Step 2 · Content</h2>
+      
       <Card>
         <CardHeader>
-          <CardTitle data-testid="text-step2-title">Story Content</CardTitle>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight" data-testid="text-step2-title">Story Content</h3>
           <CardDescription>
             Tell your school's plastic reduction story in a compelling way
           </CardDescription>

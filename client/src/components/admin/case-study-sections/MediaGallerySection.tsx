@@ -16,9 +16,10 @@ import type { UploadResult } from "@uppy/core";
 
 interface MediaGallerySectionProps {
   form: UseFormReturn<any>;
+  headingLevel?: 2 | 3;
 }
 
-export function MediaGallerySection({ form }: MediaGallerySectionProps) {
+export function MediaGallerySection({ form, headingLevel = 3 }: MediaGallerySectionProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -154,11 +155,13 @@ export function MediaGallerySection({ form }: MediaGallerySectionProps) {
     form.setValue(`videos.${index}.embedId`, embedId);
   };
 
+  const HeadingTag = `h${headingLevel}` as keyof JSX.IntrinsicElements;
+
   return (
     <div className="space-y-8">
       {/* Before/After Images */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">Before & After Images</h3>
+      <div className="space-y-6">
+        <HeadingTag className="text-lg font-semibold">Before & After Images</HeadingTag>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <FormField
             control={form.control}
@@ -251,10 +254,10 @@ export function MediaGallerySection({ form }: MediaGallerySectionProps) {
       </div>
 
       {/* Image Gallery */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold">Image Gallery</h3>
+            <HeadingTag className="text-lg font-semibold">Image Gallery</HeadingTag>
             <p className="text-sm text-muted-foreground">
               Upload multiple images to showcase your project
             </p>
@@ -359,10 +362,10 @@ export function MediaGallerySection({ form }: MediaGallerySectionProps) {
       </div>
 
       {/* Embedded Videos */}
-      <div className="space-y-4">
+      <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-semibold">Embedded Videos</h3>
+            <HeadingTag className="text-lg font-semibold">Embedded Videos</HeadingTag>
             <p className="text-sm text-muted-foreground">
               Add YouTube or Vimeo videos to your case study
             </p>

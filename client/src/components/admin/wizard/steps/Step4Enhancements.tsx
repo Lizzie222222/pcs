@@ -28,10 +28,12 @@ export function Step4Enhancements({ form }: Step4EnhancementsProps) {
   // If no enhancements are available for this template
   if (availableCount === 0) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-8">
+        <h2 id="step-4-heading" className="text-2xl font-semibold">Step 4 · Enhancements</h2>
+        
         <Card>
           <CardHeader>
-            <CardTitle data-testid="text-step4-title">Enhancements</CardTitle>
+            <h3 className="text-2xl font-semibold leading-none tracking-tight" data-testid="text-step4-title">Enhancement Options</h3>
             <CardDescription>
               Additional content to strengthen your case study
             </CardDescription>
@@ -63,10 +65,12 @@ export function Step4Enhancements({ form }: Step4EnhancementsProps) {
   const timelineSectionsCount = form.watch("timelineSections")?.length || 0;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      <h2 id="step-4-heading" className="text-2xl font-semibold">Step 4 · Enhancements</h2>
+      
       <Card>
         <CardHeader>
-          <CardTitle data-testid="text-step4-title">Enhancements</CardTitle>
+          <h3 className="text-2xl font-semibold leading-none tracking-tight" data-testid="text-step4-title">Enhancement Options</h3>
           <CardDescription>
             Add supporting content to make your case study more compelling
           </CardDescription>
