@@ -5,15 +5,18 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { CategorisationSection } from "../../case-study-sections/CategorisationSection";
 import { TemplateStatusSection } from "../../case-study-sections/TemplateStatusSection";
-import { CheckCircle2, AlertTriangle, Image as ImageIcon, MessageSquare, BarChart3, Calendar } from "lucide-react";
+import { CheckCircle2, AlertTriangle, Image as ImageIcon, MessageSquare, BarChart3, Calendar, Eye } from "lucide-react";
 import { getTemplateConfig } from "../templateConfigurations";
 import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
+import { PreviewToggleButton, usePreviewContext } from "../../PreviewContainer";
 
 interface Step5ReviewProps {
   form: UseFormReturn<any>;
 }
 
 export function Step5Review({ form }: Step5ReviewProps) {
+  const previewContext = usePreviewContext();
+  const isMobile = previewContext?.isMobile ?? false;
   const formValues = form.watch();
   const templateType = formValues.templateType || "standard";
   const config = getTemplateConfig(templateType);
@@ -50,6 +53,31 @@ export function Step5Review({ form }: Step5ReviewProps) {
   return (
     <div className="space-y-8">
       <h2 id="step-5-heading" className="text-2xl font-semibold">Step 5 · Review & Publish</h2>
+      
+      {/* Preview Callout */}
+      <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg" data-testid="callout-preview-available">
+        <div className="flex items-start gap-3">
+          <Eye className="h-5 w-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" aria-hidden="true" />
+          <div className="flex-1">
+            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-1">
+              Live Preview Available
+            </h3>
+            <p className="text-sm text-blue-700 dark:text-blue-300 mb-2">
+              See how your case study will appear to visitors in real-time. The preview updates as you make changes.
+            </p>
+            {!isMobile && <PreviewToggleButton />}
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Notice */}
+      {isMobile && (
+        <div className="p-3 bg-yellow-50 dark:bg-yellow-950 border-l-4 border-yellow-400 text-sm" data-testid="notice-mobile-preview">
+          <p className="text-yellow-800 dark:text-yellow-200">
+            Preview is available on larger screens. View your case study after publishing.
+          </p>
+        </div>
+      )}
       
       {/* Validation Summary */}
       <Card>

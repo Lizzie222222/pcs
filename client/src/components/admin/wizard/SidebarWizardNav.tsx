@@ -1,4 +1,4 @@
-import { Check, AlertCircle, AlertTriangle, Menu } from "lucide-react";
+import { Check, AlertCircle, AlertTriangle, Menu, Eye } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { usePreviewContext } from "../PreviewContainer";
 
 interface Step {
   id: number;
@@ -37,12 +38,14 @@ function StepItem({
   isCompleted,
   validation,
   onStepChange,
+  isPreviewOpen,
 }: {
   step: Step;
   isCurrent: boolean;
   isCompleted: boolean;
   validation: StepValidation;
   onStepChange: (stepId: number) => void;
+  isPreviewOpen?: boolean;
 }) {
   const hasErrors = validation.errors.length > 0;
   const hasWarnings = validation.warnings.length > 0;
@@ -86,17 +89,22 @@ function StepItem({
 
         {/* Step Content */}
         <div className="flex-1 min-w-0">
-          <p
-            className={cn(
-              "font-medium text-sm mb-0.5 transition-colors",
-              isCurrent && "text-foreground",
-              !isCurrent && isCompleted && "text-foreground/80",
-              !isCurrent && !isCompleted && "text-muted-foreground"
+          <div className="flex items-center gap-2">
+            <p
+              className={cn(
+                "font-medium text-sm mb-0.5 transition-colors",
+                isCurrent && "text-foreground",
+                !isCurrent && isCompleted && "text-foreground/80",
+                !isCurrent && !isCompleted && "text-muted-foreground"
+              )}
+              data-testid={`step-label-${step.id}`}
+            >
+              {step.label}
+            </p>
+            {isCurrent && isPreviewOpen && (
+              <Eye className="h-3 w-3 text-blue-500 ml-auto" aria-label="Preview active" data-testid="icon-preview-active" />
             )}
-            data-testid={`step-label-${step.id}`}
-          >
-            {step.label}
-          </p>
+          </div>
           {step.description && (
             <p className="text-xs text-muted-foreground">
               {step.description}
@@ -137,24 +145,43 @@ function SidebarContent({
   stepValidation,
   onStepChange,
 }: Omit<SidebarWizardNavProps, 'onStepChange'> & { onStepChange: (stepId: number) => void }) {
-  return (
-    <div className="space-y-2">
-      {steps.map((step) => {
-        const isCurrent = currentStep === step.id;
-        const isCompleted = completedSteps.includes(step.id);
-        const validation = stepValidation[step.id] || { valid: true, warnings: [], errors: [] };
+  const previewContext = usePreviewContext();
+  const isPreviewOpen = previewContext?.isPreviewOpen ?? false;
 
-        return (
-          <StepItem
-            key={step.id}
-            step={step}
-            isCurrent={isCurrent}
-            isCompleted={isCompleted}
-            validation={validation}
-            onStepChange={onStepChange}
-          />
-        );
-      })}
+  return (
+    <div className="flex flex-col h-full">
+      <div className="space-y-2 flex-1">
+        {steps.map((step) => {
+          const isCurrent = currentStep === step.id;
+          const isCompleted = completedSteps.includes(step.id);
+          const validation = stepValidation[step.id] || { valid: true, warnings: [], errors: [] };
+
+          return (
+            <StepItem
+              key={step.id}
+              step={step}
+              isCurrent={isCurrent}
+              isCompleted={isCompleted}
+              validation={validation}
+              onStepChange={onStepChange}
+              isPreviewOpen={isPreviewOpen}
+            />
+          );
+        })}
+      </div>
+
+      {/* Preview Tip - Add at bottom of sidebar */}
+      <div className="mt-auto pt-4 border-t" data-testid="tip-preview">
+        <div className="p-3 bg-muted rounded-md">
+          <div className="flex items-center gap-2 mb-1">
+            <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
+            <span className="text-xs font-semibold">Live Preview</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Toggle the preview panel to see your case study in real-time
+          </p>
+        </div>
+      </div>
     </div>
   );
 }

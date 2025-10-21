@@ -17,9 +17,6 @@ const PreviewContext = createContext<PreviewContextValue | null>(null);
 
 export function usePreviewContext() {
   const context = useContext(PreviewContext);
-  if (!context) {
-    throw new Error('usePreviewContext must be used within PreviewContainer');
-  }
   return context;
 }
 
@@ -107,7 +104,13 @@ export function PreviewContainer({
 
 // Helper component for toggle button to be used in the header
 export function PreviewToggleButton() {
-  const { isPreviewOpen, togglePreview } = usePreviewContext();
+  const previewContext = usePreviewContext();
+  
+  if (!previewContext) {
+    return null;
+  }
+  
+  const { isPreviewOpen, togglePreview } = previewContext;
   
   return (
     <button
