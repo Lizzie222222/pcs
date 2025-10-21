@@ -31,6 +31,11 @@ export function VersionHistoryDialog({ caseStudyId, open, onOpenChange, onRestor
   
   const { data: versionsData, isLoading, error } = useQuery<VersionsResponse>({
     queryKey: ["/api/admin/case-studies", caseStudyId, "versions"],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/case-studies/${caseStudyId}/versions`);
+      if (!response.ok) throw new Error("Failed to fetch versions");
+      return response.json();
+    },
     enabled: open && !!caseStudyId,
   });
   

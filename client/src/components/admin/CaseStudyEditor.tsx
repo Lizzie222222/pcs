@@ -564,6 +564,13 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
           caseStudyId={caseStudy.id}
           open={versionHistoryOpen}
           onOpenChange={setVersionHistoryOpen}
+          onRestore={() => {
+            toast({
+              title: "Version restored",
+              description: "The case study has been restored to the selected version.",
+            });
+            window.location.reload();
+          }}
         />
       )}
     </PreviewContainer>
