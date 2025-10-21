@@ -4273,10 +4273,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
           offset: filters?.offset || 0 
         });
         
-        // Build map of schoolId -> primaryLanguage
+        // For bulk email, default to English since getSchools doesn't return primaryLanguage for security
         const schoolLanguageMap = new Map<string, string>();
         schools.forEach(school => {
-          schoolLanguageMap.set(school.id, school.primaryLanguage || 'en');
+          schoolLanguageMap.set(school.id, 'en'); // Default to English for admin bulk emails
         });
         
         const schoolIds = schools.map(s => s.id);

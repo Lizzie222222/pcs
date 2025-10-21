@@ -716,7 +716,7 @@ export class DatabaseStorage implements IStorage {
     language?: string;
     limit?: number;
     offset?: number;
-  } = {}): Promise<School[]> {
+  } = {}): Promise<Array<Pick<School, 'id' | 'name' | 'type' | 'country' | 'address' | 'studentCount' | 'latitude' | 'longitude' | 'currentStage' | 'progressPercentage' | 'inspireCompleted' | 'investigateCompleted' | 'actCompleted' | 'awardCompleted' | 'featuredSchool' | 'showOnMap' | 'createdAt' | 'updatedAt'>>> {
     const conditions = [];
     if (filters.country) {
       conditions.push(eq(schools.country, filters.country));
@@ -734,7 +734,28 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(schools.primaryLanguage, filters.language));
     }
     
-    let query = db.select().from(schools);
+    let query = db
+      .select({
+        id: schools.id,
+        name: schools.name,
+        type: schools.type,
+        country: schools.country,
+        address: schools.address,
+        studentCount: schools.studentCount,
+        latitude: schools.latitude,
+        longitude: schools.longitude,
+        currentStage: schools.currentStage,
+        progressPercentage: schools.progressPercentage,
+        inspireCompleted: schools.inspireCompleted,
+        investigateCompleted: schools.investigateCompleted,
+        actCompleted: schools.actCompleted,
+        awardCompleted: schools.awardCompleted,
+        featuredSchool: schools.featuredSchool,
+        showOnMap: schools.showOnMap,
+        createdAt: schools.createdAt,
+        updatedAt: schools.updatedAt,
+      })
+      .from(schools);
     
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as any;
