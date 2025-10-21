@@ -31,6 +31,7 @@ import { Step4Enhancements } from "./wizard/steps/Step4Enhancements";
 import { Step5Review } from "./wizard/steps/Step5Review";
 import { getTemplateConfig } from "./wizard/templateConfigurations";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { PreviewContainer, PreviewToggleButton } from "./PreviewContainer";
 
 interface CaseStudyEditorProps {
   caseStudy?: CaseStudy;
@@ -426,88 +427,100 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
   }, [currentStep, schoolId, title, stage, templateType, description, impact, images, beforeImage, afterImage, quotes, metrics, timeline]);
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Sticky Header */}
-      <div className="sticky top-0 z-50 bg-background border-b shadow-sm">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-bold" data-testid="text-editor-title">
-                {caseStudy ? "Edit Case Study" : "Create Case Study"}
-              </h1>
-              <p className="text-sm text-muted-foreground mt-1">
-                {form.watch("title") || "Untitled Case Study"}
-              </p>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={onCancel}
-              disabled={isSaving}
-              data-testid="button-cancel"
-            >
-              <X className="h-4 w-4 mr-2" />
-              Cancel
-            </Button>
-          </div>
+    <PreviewContainer
+      preview={
+        <div className="text-center text-muted-foreground p-8" data-testid="preview-placeholder">
+          <p>Preview will appear here as you edit</p>
+          <p className="text-sm mt-2">(Form state connection coming in next task)</p>
         </div>
-      </div>
-
-      {/* Main Content - Two Column Layout */}
-      <Form {...form}>
-        <form onSubmit={(e) => e.preventDefault()}>
-          <div className={isMobile ? "flex flex-col" : "grid grid-cols-[280px_1fr]"}>
-            {/* Left: Sidebar Navigation (Desktop) or Mobile Button */}
-            <SidebarWizardNav
-              steps={WIZARD_STEPS}
-              currentStep={currentStep}
-              completedSteps={completedSteps}
-              stepValidation={stepValidation}
-              onStepChange={handleStepChange}
-            />
-
-            {/* Right: Step Content */}
-            <div className="flex-1 overflow-y-auto">
-              <div className="container mx-auto px-4 py-8">
-                <div className="max-w-4xl mx-auto">
-                  {/* Step Content */}
-                  <section aria-labelledby={`step-${currentStep}-heading`} className="space-y-10">
-                    {currentStep === 1 && (
-                      <Step1TemplateBasics form={form} isEditing={!!caseStudy} />
-                    )}
-                    {currentStep === 2 && (
-                      <Step2Content form={form} />
-                    )}
-                    {currentStep === 3 && (
-                      <Step3Media key={`step3-${templateType}`} form={form} templateType={templateType} />
-                    )}
-                    {currentStep === 4 && (
-                      <Step4Enhancements form={form} />
-                    )}
-                    {currentStep === 5 && (
-                      <Step5Review form={form} />
-                    )}
-                  </section>
-
-                  {/* Navigation */}
-                  <WizardNavigation
-                    currentStep={currentStep}
-                    totalSteps={WIZARD_STEPS.length}
-                    onNext={handleNext}
-                    onPrevious={handlePrevious}
-                    onSaveDraft={handleSaveDraft}
-                    onPublish={handlePublish}
-                    isFirstStep={currentStep === 1}
-                    isLastStep={currentStep === WIZARD_STEPS.length}
-                    isSaving={isSaving}
-                    canProceed={canProceedState}
-                  />
-                </div>
+      }
+    >
+      <div className="min-h-screen bg-background">
+        {/* Sticky Header */}
+        <div className="sticky top-0 z-50 bg-background border-b shadow-sm">
+          <div className="container mx-auto px-4 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-bold" data-testid="text-editor-title">
+                  {caseStudy ? "Edit Case Study" : "Create Case Study"}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                  {form.watch("title") || "Untitled Case Study"}
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <PreviewToggleButton />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={onCancel}
+                  disabled={isSaving}
+                  data-testid="button-cancel"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Cancel
+                </Button>
               </div>
             </div>
           </div>
-        </form>
-      </Form>
-    </div>
+        </div>
+
+        {/* Main Content - Two Column Layout */}
+        <Form {...form}>
+          <form onSubmit={(e) => e.preventDefault()}>
+            <div className={isMobile ? "flex flex-col" : "grid grid-cols-[280px_1fr]"}>
+              {/* Left: Sidebar Navigation (Desktop) or Mobile Button */}
+              <SidebarWizardNav
+                steps={WIZARD_STEPS}
+                currentStep={currentStep}
+                completedSteps={completedSteps}
+                stepValidation={stepValidation}
+                onStepChange={handleStepChange}
+              />
+
+              {/* Right: Step Content */}
+              <div className="flex-1 overflow-y-auto">
+                <div className="container mx-auto px-4 py-8">
+                  <div className="max-w-4xl mx-auto">
+                    {/* Step Content */}
+                    <section aria-labelledby={`step-${currentStep}-heading`} className="space-y-10">
+                      {currentStep === 1 && (
+                        <Step1TemplateBasics form={form} isEditing={!!caseStudy} />
+                      )}
+                      {currentStep === 2 && (
+                        <Step2Content form={form} />
+                      )}
+                      {currentStep === 3 && (
+                        <Step3Media key={`step3-${templateType}`} form={form} templateType={templateType} />
+                      )}
+                      {currentStep === 4 && (
+                        <Step4Enhancements form={form} />
+                      )}
+                      {currentStep === 5 && (
+                        <Step5Review form={form} />
+                      )}
+                    </section>
+
+                    {/* Navigation */}
+                    <WizardNavigation
+                      currentStep={currentStep}
+                      totalSteps={WIZARD_STEPS.length}
+                      onNext={handleNext}
+                      onPrevious={handlePrevious}
+                      onSaveDraft={handleSaveDraft}
+                      onPublish={handlePublish}
+                      isFirstStep={currentStep === 1}
+                      isLastStep={currentStep === WIZARD_STEPS.length}
+                      isSaving={isSaving}
+                      canProceed={canProceedState}
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </form>
+        </Form>
+      </div>
+    </PreviewContainer>
   );
 }
