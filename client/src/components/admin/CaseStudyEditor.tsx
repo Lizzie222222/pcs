@@ -515,7 +515,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
                         <Step2Content form={form} />
                       )}
                       {currentStep === 3 && (
-                        <Step3Media key={`step3-${templateType}`} form={form} templateType={templateType} />
+                        <Step3Media form={form} templateType={templateType} />
                       )}
                       {currentStep === 4 && (
                         <Step4Enhancements form={form} />

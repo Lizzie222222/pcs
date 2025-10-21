@@ -35,20 +35,41 @@ export function Step3Media({ form, templateType: propTemplateType }: Step3MediaP
   
   const schoolId = form.watch("schoolId");
   
-  // Debug: Log template type to console
-  console.log('[Step3Media] Current templateType:', templateType);
+  // Debug: Enhanced logging for template changes
+  console.log('[Step3Media] RENDER - propTemplateType:', propTemplateType, '| form.watch("templateType"):', form.watch("templateType"), '| final templateType:', templateType);
+  console.log('[Step3Media] Current before/after in form:', { 
+    beforeImage: form.getValues('beforeImage'), 
+    afterImage: form.getValues('afterImage') 
+  });
+  console.log('[Step3Media] Will show Before/After section?', templateType === 'visual');
+
+  // Component mount/unmount tracking
+  useEffect(() => {
+    console.log('[Step3Media] MOUNTED with templateType:', templateType);
+    return () => {
+      console.log('[Step3Media] UNMOUNTING');
+    };
+  }, []);
 
   // Clear before/after images when switching away from Visual template
   useEffect(() => {
+    console.log('[Step3Media] useEffect triggered - templateType:', templateType);
     if (templateType !== 'visual') {
       const currentBefore = form.getValues('beforeImage');
       const currentAfter = form.getValues('afterImage');
       
+      console.log('[Step3Media] Template is NOT visual. Checking if cleanup needed...', { currentBefore, currentAfter });
+      
       if (currentBefore || currentAfter) {
+        console.log('[Step3Media] Clearing before/after images...');
         form.setValue('beforeImage', '');
         form.setValue('afterImage', '');
-        console.log('[Step3Media] Cleared before/after images - template changed to:', templateType);
+        console.log('[Step3Media] ✅ Cleared before/after images - template is now:', templateType);
+      } else {
+        console.log('[Step3Media] No cleanup needed - before/after already empty');
       }
+    } else {
+      console.log('[Step3Media] Template is visual - keeping before/after section visible');
     }
   }, [templateType, form]);
 

@@ -119,15 +119,25 @@ export function TemplateTypeSelector({ form }: TemplateTypeSelectorProps) {
       <FormField
         control={form.control}
         name="templateType"
-        render={({ field }) => (
-          <FormItem className="space-y-4">
-            <FormControl>
-              <RadioGroup
-                onValueChange={field.onChange}
-                value={field.value || "standard"}
-                className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                data-testid="radio-group-template-type"
-              >
+        render={({ field }) => {
+          // Debug logging for template changes
+          console.log('[TemplateTypeSelector] Current field.value:', field.value);
+          
+          const handleTemplateChange = (newValue: string) => {
+            console.log('[TemplateTypeSelector] 🔄 Template changing from', field.value, 'to', newValue);
+            field.onChange(newValue);
+            console.log('[TemplateTypeSelector] ✅ onChange called with:', newValue);
+          };
+          
+          return (
+            <FormItem className="space-y-4">
+              <FormControl>
+                <RadioGroup
+                  onValueChange={handleTemplateChange}
+                  value={field.value || "standard"}
+                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                  data-testid="radio-group-template-type"
+                >
                 {TEMPLATE_TYPES.map((template) => {
                   const PreviewComponent = previewComponents[template.value as keyof typeof previewComponents];
                   const IconComponent = template.icon;
@@ -141,7 +151,7 @@ export function TemplateTypeSelector({ form }: TemplateTypeSelectorProps) {
                               ? "border-primary border-2 shadow-md bg-primary/5"
                               : "hover:border-primary/50"
                           }`}
-                          onClick={() => field.onChange(template.value)}
+                          onClick={() => handleTemplateChange(template.value)}
                           data-testid={`card-template-${template.value}`}
                         >
                           <CardHeader className="p-4 pb-3">
@@ -213,7 +223,8 @@ export function TemplateTypeSelector({ form }: TemplateTypeSelectorProps) {
             </FormControl>
             <FormMessage />
           </FormItem>
-        )}
+        );
+      }}
       />
     </div>
   );
