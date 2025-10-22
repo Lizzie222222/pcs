@@ -199,10 +199,10 @@ export function SidebarWizardNav({
   if (!isMobile) {
     return (
       <aside
-        className="w-[280px] flex-shrink-0 bg-muted/30 border-r border-border sticky top-0 h-screen overflow-y-auto"
+        className="w-[280px] flex-shrink-0 bg-muted/30 border-r border-border sticky top-[90px] h-[calc(100vh-90px)] overflow-hidden"
         data-testid="sidebar-wizard-nav"
       >
-        <div className="p-4">
+        <div className="h-full overflow-y-auto p-4">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
             Steps
           </h2>

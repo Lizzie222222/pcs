@@ -34,7 +34,7 @@ export function CaseStudyTimelineSection({ timelineSections }: CaseStudyTimeline
                       </div>
                     )}
                     <h3 className="text-xl font-bold text-navy mb-3">{section.title}</h3>
-                    <p className="text-gray-700 leading-relaxed">{section.description}</p>
+                    <p className="text-gray-700 leading-relaxed">{section.content}</p>
                   </CardContent>
                 </Card>
               </div>

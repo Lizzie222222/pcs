@@ -22,8 +22,8 @@ export function QuotesManager({ form }: QuotesManagerProps) {
     append({
       name: "",
       role: "",
-      quote: "",
-      photoUrl: "",
+      text: "",
+      photo: "",
     });
   };
 
@@ -110,7 +110,7 @@ export function QuotesManager({ form }: QuotesManagerProps) {
 
                   <FormField
                     control={form.control}
-                    name={`studentQuotes.${index}.quote`}
+                    name={`studentQuotes.${index}.text`}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Quote *</FormLabel>
@@ -129,7 +129,7 @@ export function QuotesManager({ form }: QuotesManagerProps) {
 
                   <FormField
                     control={form.control}
-                    name={`studentQuotes.${index}.photoUrl`}
+                    name={`studentQuotes.${index}.photo`}
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Photo URL</FormLabel>

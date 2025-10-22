@@ -33,9 +33,10 @@ export interface ImpactMetric {
 
 export interface TimelineSection {
   title: string;
-  description: string;
+  content: string;
   date?: string;
   order: number;
+  imageUrl?: string;
 }
 
 export interface CaseStudyData {
