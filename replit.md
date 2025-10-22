@@ -156,7 +156,7 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 1. **Wizard Expansion** - Expanded wizard from 5 to 6 steps by splitting template and basic info
 2. **Step Organization** - Created separate Step1Template.tsx and Step2BasicInfo.tsx components
 3. **Sidebar Scroll Fix** - Only step list scrolls now, sidebar container stays static, Live Preview tip permanently stuck at bottom
-4. **Upload UI Fix** - Uncommented Uppy CSS imports to fix broken drag-and-drop modal appearance
+4. **Upload UI Fix** - Fixed Uppy CSS imports using correct `/css/style.min.css` paths (not `/dist/style.css`)
 
 **New Wizard Structure:**
 - Step 1: Template (Choose layout)
@@ -171,7 +171,7 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 - Updated all step validation logic to handle 6 steps instead of 5
 - Updated conditional rendering in CaseStudyEditor to use correct step components
 - Fixed sidebar layout: parent uses `flex flex-col`, steps list has `overflow-y-auto pr-2`, preview tip has `flex-shrink-0`
-- Uncommented `@uppy/core/dist/style.css` and `@uppy/dashboard/dist/style.css` imports in ObjectUploader.tsx
+- Fixed Uppy CSS imports to use `@uppy/core/css/style.min.css` and `@uppy/dashboard/css/style.min.css` (correct paths for Vite)
 
 **Key Files:**
 - Step1Template.tsx (new - template selection only)
