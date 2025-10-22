@@ -95,3 +95,33 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 
 **Optional Enhancement:**
 - Accessibility improvements (aria-live announcements, enhanced screen reader support)
+
+### Case Study Wizard Bug Fixes (October 22, 2025)
+**Critical field name and validation fixes - PRODUCTION READY**
+
+**Completed Fixes (5/5 tasks):**
+1. **Student Quotes Field Names** - Fixed QuotesManager to use "text" and "photo" fields matching studentQuoteSchema (was using "quote" and "photoUrl")
+2. **Timeline Section Field Names** - Fixed preview components to use "content" field matching timelineSectionSchema (was using "description")
+3. **Sidebar Fixed Positioning** - Adjusted SidebarWizardNav to use top-[90px] offset to account for header height, sidebar now stays visible during content scroll
+4. **Step 3 Media Validation** - Changed media requirements from blocking errors to warnings for draft workflow, allows users to skip media and save incomplete drafts
+5. **Publish Validation** - Enhanced handlePublish to properly validate Zod schema (including refine() rules) before publishing, prevents publishing case studies that don't meet template requirements
+
+**Technical Implementation:**
+- Quote and timeline field names now match database schema exactly
+- Sidebar uses sticky positioning with precise 90px header offset
+- Step 3 validation uses warnings for draft flexibility
+- Publishing enforces all template requirements via form.trigger() Zod validation
+- Clear error messages guide users on missing requirements
+- Status resets to draft if publish validation fails
+
+**Key Files:**
+- QuotesManager.tsx (text/photo fields)
+- CaseStudyTimelineSection.tsx, types.ts (content field)
+- SidebarWizardNav.tsx (90px sticky offset)
+- CaseStudyEditor.tsx (Step 3 warnings, handlePublish validation)
+
+**Impact:**
+- Data integrity: Field names match schema, preventing display bugs
+- UX: Users can create drafts without being blocked by media requirements
+- Quality: Publishing still enforces all template requirements
+- Navigation: Sidebar remains accessible during editing
