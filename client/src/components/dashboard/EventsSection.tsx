@@ -29,10 +29,11 @@ import {
   Filter,
   ExternalLink,
   Download,
-  Link2,
   PlayCircle,
+  Quote,
 } from "lucide-react";
 import { format, isPast, isFuture, differenceInMinutes } from "date-fns";
+import { useLocation } from "wouter";
 import type { Event, EventRegistration } from "@/../../shared/schema";
 
 interface EventsSectionProps {
@@ -76,26 +77,6 @@ function generateCalendarFile(event: Event) {
   document.body.removeChild(link);
 }
 
-// Helper function to copy event link
-function copyEventLink(event: Event, toast: any) {
-  const url = event.publicSlug 
-    ? `${window.location.origin}/event-live/${event.publicSlug}`
-    : `${window.location.origin}/events`;
-  
-  navigator.clipboard.writeText(url).then(() => {
-    toast({
-      title: "Link Copied!",
-      description: "Event link copied to clipboard",
-    });
-  }).catch(() => {
-    toast({
-      title: "Failed to copy",
-      description: "Please try again",
-      variant: "destructive",
-    });
-  });
-}
-
 // Helper function to check event timing status
 function getEventTimingStatus(event: Event) {
   const now = new Date();
@@ -114,8 +95,22 @@ function getEventTimingStatus(event: Event) {
   return null;
 }
 
+// Helper function to get event type badge color
+function getEventTypeBadgeColor(eventType: string) {
+  const colorMap: Record<string, string> = {
+    workshop: 'bg-blue-500',
+    webinar: 'bg-purple-500',
+    community_event: 'bg-green-500',
+    training: 'bg-orange-500',
+    celebration: 'bg-pink-500',
+    other: 'bg-gray-500',
+  };
+  return colorMap[eventType] || 'bg-gray-500';
+}
+
 export default function EventsSection({ schoolId, isActive, isAuthenticated }: EventsSectionProps) {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [eventFilter, setEventFilter] = useState<string>('all');
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [eventDetailOpen, setEventDetailOpen] = useState(false);
@@ -236,7 +231,13 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
     if (event.meetingLink) {
       window.open(event.meetingLink, '_blank');
     } else if (event.publicSlug) {
-      window.open(`/event-live/${event.publicSlug}`, '_blank');
+      window.open(`/events/${event.publicSlug}`, '_blank');
+    }
+  };
+
+  const handleGoToEventPage = () => {
+    if (selectedEvent?.publicSlug) {
+      setLocation(`/events/${selectedEvent.publicSlug}`);
     }
   };
 
@@ -554,6 +555,33 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-event-detail">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-navy">{selectedEvent.title}</DialogTitle>
+              
+              {/* Event Type Badge */}
+              <div className="flex items-center gap-2 pt-2">
+                <Badge 
+                  className={`${getEventTypeBadgeColor(selectedEvent.eventType)} text-white`}
+                  data-testid="badge-event-type"
+                >
+                  {selectedEvent.eventType.replace(/_/g, ' ')}
+                </Badge>
+              </div>
+
+              {/* Tags Section */}
+              {selectedEvent.tags && Array.isArray(selectedEvent.tags) && selectedEvent.tags.length > 0 && (
+                <div className="flex flex-wrap gap-2 pt-2" data-testid="section-tags">
+                  {selectedEvent.tags.map((tag, index) => (
+                    <Badge 
+                      key={index} 
+                      variant="outline" 
+                      className="text-xs"
+                      data-testid={`badge-tag-${index}`}
+                    >
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              )}
+              
               <DialogDescription>
                 {selectedEvent.description || "Learn more about this event"}
               </DialogDescription>
@@ -569,7 +597,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
               </div>
             )}
 
-            <div className="space-y-4">
+            <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Calendar className="h-5 w-5 text-pcs_blue" />
@@ -614,6 +642,118 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                 )}
               </div>
 
+              {/* Resources Section */}
+              {selectedEvent.eventPackFiles && Array.isArray(selectedEvent.eventPackFiles) && selectedEvent.eventPackFiles.length > 0 && (
+                <div className="space-y-3" data-testid="section-resources">
+                  <h3 className="text-lg font-semibold text-navy">Event Resources</h3>
+                  <div className="space-y-2">
+                    {selectedEvent.eventPackFiles.map((file: any, index: number) => (
+                      <Card key={index} className="p-4" data-testid={`resource-${index}`}>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-sm">{file.name}</h4>
+                            {file.description && (
+                              <p className="text-xs text-gray-600 mt-1">{file.description}</p>
+                            )}
+                            {file.size && (
+                              <p className="text-xs text-gray-500 mt-1">{file.size}</p>
+                            )}
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => window.open(file.url, '_blank')}
+                            data-testid={`button-download-resource-${index}`}
+                          >
+                            <Download className="h-4 w-4 mr-1" />
+                            Download
+                          </Button>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* YouTube Videos Section */}
+              {selectedEvent.youtubeVideos && Array.isArray(selectedEvent.youtubeVideos) && selectedEvent.youtubeVideos.length > 0 && (
+                <div className="space-y-3" data-testid="section-videos">
+                  <h3 className="text-lg font-semibold text-navy">Watch</h3>
+                  <div className="space-y-4">
+                    {selectedEvent.youtubeVideos.map((video: any, index: number) => {
+                      const videoId = video.videoId || video.url?.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/)?.[1];
+                      
+                      return (
+                        <div key={index} className="space-y-2" data-testid={`video-${index}`}>
+                          {video.title && (
+                            <h4 className="font-semibold text-sm">{video.title}</h4>
+                          )}
+                          {videoId ? (
+                            <div className="relative w-full" style={{ paddingBottom: '56.25%' }}>
+                              <iframe
+                                className="absolute top-0 left-0 w-full h-full rounded-lg"
+                                src={`https://www.youtube.com/embed/${videoId}`}
+                                title={video.title || 'Event Video'}
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                                data-testid={`iframe-video-${index}`}
+                              />
+                            </div>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              onClick={() => window.open(video.url, '_blank')}
+                              className="w-full"
+                              data-testid={`button-video-link-${index}`}
+                            >
+                              <ExternalLink className="h-4 w-4 mr-2" />
+                              Watch Video
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Testimonials Section */}
+              {selectedEvent.testimonials && Array.isArray(selectedEvent.testimonials) && selectedEvent.testimonials.length > 0 && (
+                <div className="space-y-3" data-testid="section-testimonials">
+                  <h3 className="text-lg font-semibold text-navy">What Participants Say</h3>
+                  <div className="space-y-3">
+                    {selectedEvent.testimonials.map((testimonial: any, index: number) => (
+                      <Card key={index} className="p-4" data-testid={`testimonial-${index}`}>
+                        <div className="flex gap-3">
+                          {testimonial.imageUrl && (
+                            <div className="flex-shrink-0">
+                              <img 
+                                src={testimonial.imageUrl} 
+                                alt={testimonial.name}
+                                className="w-12 h-12 rounded-full object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-1">
+                            <div className="flex items-start gap-2 mb-2">
+                              <Quote className="h-4 w-4 text-pcs_blue flex-shrink-0 mt-1" />
+                              <p className="text-sm text-gray-700 italic">{testimonial.text}</p>
+                            </div>
+                            <div className="text-xs">
+                              <p className="font-semibold text-navy">{testimonial.name}</p>
+                              {testimonial.role && (
+                                <p className="text-gray-600">{testimonial.role}</p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               {/* Quick Actions */}
               <div className="flex gap-2 flex-wrap">
                 <Button
@@ -625,15 +765,17 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                   <Download className="h-4 w-4 mr-2" />
                   Add to Calendar
                 </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => copyEventLink(selectedEvent, toast)}
-                  data-testid="button-copy-link"
-                >
-                  <Link2 className="h-4 w-4 mr-2" />
-                  Copy Link
-                </Button>
+                {selectedEvent.publicSlug && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleGoToEventPage}
+                    data-testid="button-go-to-event-page"
+                  >
+                    <ExternalLink className="h-4 w-4 mr-2" />
+                    Go to Event Page
+                  </Button>
+                )}
               </div>
             </div>
 
