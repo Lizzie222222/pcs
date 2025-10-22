@@ -765,17 +765,17 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                   <Download className="h-4 w-4 mr-2" />
                   Add to Calendar
                 </Button>
-                {selectedEvent.publicSlug && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={handleGoToEventPage}
-                    data-testid="button-go-to-event-page"
-                  >
-                    <ExternalLink className="h-4 w-4 mr-2" />
-                    Go to Event Page
-                  </Button>
-                )}
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleGoToEventPage}
+                  disabled={!selectedEvent.publicSlug}
+                  data-testid="button-go-to-event-page"
+                  title={!selectedEvent.publicSlug ? "This event doesn't have a public page yet" : "View event details page"}
+                >
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  Go to Event Page
+                </Button>
               </div>
             </div>
 
