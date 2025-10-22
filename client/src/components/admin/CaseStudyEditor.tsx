@@ -222,6 +222,25 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
     [debouncedFormValues, school]
   );
 
+  // Helper to check if HTML content is actually meaningful (not just empty tags or entities)
+  const hasActualContent = (html: string | null | undefined): boolean => {
+    if (!html) return false;
+    
+    // Create a temporary element to decode HTML entities using browser's built-in parser
+    const temp = document.createElement('div');
+    temp.innerHTML = html;
+    
+    // Get text content (strips tags and decodes ALL HTML entities automatically)
+    let textContent = temp.textContent || temp.innerText || '';
+    
+    // Remove zero-width characters and whitespace
+    textContent = textContent
+      .replace(/[\u200B-\u200D\uFEFF]/g, '') // Remove zero-width chars
+      .trim();
+    
+    return textContent.length > 0;
+  };
+
   // Get detailed validation for a step
   const getStepValidationDetails = (step: number): { valid: boolean; warnings: string[]; errors: string[] } => {
     const values = form.getValues();
@@ -243,15 +262,18 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         break;
       
       case 3:
-        // Content
-        if (config.requiredFields.description && !values.description) {
+        // Content - check for actual text content, not just HTML tags
+        if (config.requiredFields.description && !hasActualContent(values.description)) {
           errors.push("Description is required");
         }
-        if (config.requiredFields.impact && !values.impact) {
+        if (config.requiredFields.impact && !hasActualContent(values.impact)) {
           errors.push("Impact is required");
         }
-        if (values.description && values.description.length < 50) {
-          warnings.push("Description is quite short");
+        if (values.description && hasActualContent(values.description)) {
+          const textLength = values.description.replace(/<[^>]*>/g, '').trim().length;
+          if (textLength < 50) {
+            warnings.push("Description is quite short");
+          }
         }
         break;
       

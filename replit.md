@@ -57,8 +57,8 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 ### Case Study Wizard UX Fixes (October 22, 2025)
 **Production-ready improvements to 8-step wizard - All issues resolved**
 
-**Completed Fixes (10/10 tasks):**
-1. ✅ **Sidebar Scrolling** - Fixed body scroll prevention using `.wizard-sidebar-visible` CSS class applied via useEffect
+**Completed Fixes (12/12 tasks):**
+1. ✅ **Sidebar Scrolling** - Fixed by changing Dialog overflow and restructuring editor layout with flexbox
 2. ✅ **Step Numbering** - Corrected step header numbering (Content=3, Media=4, Enhancements=5) to match wizard structure
 3. ✅ **Image Loading** - Added comprehensive error logging and safe DOM-based fallback UI for failed image loads
 4. ✅ **School Dropdown Counts** - New `/api/schools-with-image-counts` endpoint shows approved evidence image counts per school
@@ -68,22 +68,26 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 8. ✅ **Validation Messages** - Enhanced error messages with specific counts and quick step navigation links
 9. ✅ **TypeScript Errors** - Fixed all 17 LSP errors in server/routes.ts
 10. ✅ **XSS Security** - Eliminated innerHTML vulnerability in SortableImageCard and ImagePreviewCard error handlers
+11. ✅ **Step 3 Content Validation** - Fixed HTML content detection using hasActualContent helper (strips empty tags)
+12. ✅ **Dialog Scroll Fix** - DialogContent changed to overflow-hidden, editor uses proper flexbox layout
 
 **Technical Implementation:**
-- **Sidebar**: useEffect hook adds/removes `wizard-sidebar-visible` class to document.body on component mount/unmount
+- **Sidebar Fixed Position**: Dialog overflow-hidden, editor flexbox layout (h-[95vh] flex flex-col), only content area scrolls
 - **Step Headers**: Updated Step2Content.tsx, Step3Media.tsx, Step4Enhancements.tsx to display correct step numbers
 - **Image Debugging**: Safe DOM element creation using createElement/createElementNS with textContent (prevents XSS)
 - **School API**: New endpoint aggregates approved evidence per school with efficient queries
 - **Priority Control**: Select component with options: Normal (0), High (50), Highest (100)
 - **Validation UI**: Step8Review shows specific deficit counts (e.g., "Need 2 more images - have 1, need 3 minimum")
+- **Content Validation**: hasActualContent() helper strips HTML tags and checks for real text (fixes TipTap empty `<p></p>` issue)
 
 **Security Enhancements:**
 - Replaced all `innerHTML` assignments with safe DOM construction methods
 - User-controlled image URLs now set via `textContent` to prevent script injection
 - Comprehensive input validation and type safety improvements
 
-**Files Modified (11 total):**
-- client/src/components/admin/CaseStudyEditor.tsx
+**Files Modified (12 total):**
+- client/src/components/admin/CaseStudyEditor.tsx (validation + layout fixes)
+- client/src/components/admin/CaseStudyManagement.tsx (Dialog overflow fix)
 - client/src/components/admin/wizard/steps/Step2Content.tsx
 - client/src/components/admin/wizard/steps/Step3Media.tsx
 - client/src/components/admin/wizard/steps/Step4Enhancements.tsx
@@ -96,7 +100,9 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 - server/routes.ts
 
 **Impact:**
+- **Fixed Scrolling**: Sidebar stays completely static when scrolling content (tested and verified)
 - **Better UX**: Static sidebar, consistent step numbering, clear validation feedback
+- **Working Validation**: Step 3 now properly detects when description/impact are filled
 - **Easier Selection**: School dropdown shows image availability for informed decisions
 - **Improved Security**: XSS vulnerabilities eliminated, type safety enhanced
 - **Production Ready**: All issues architect-reviewed and verified working
