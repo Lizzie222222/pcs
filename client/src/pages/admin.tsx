@@ -1251,6 +1251,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       if (isVirtualOrWebinar) {
         // Set the newly created event as the editing event
         setEditingEvent(createdEvent);
+        
         // Update form data with created event details
         setEventFormData({
           title: createdEvent.title,
@@ -1268,8 +1269,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           registrationDeadline: createdEvent.registrationDeadline ? new Date(createdEvent.registrationDeadline).toISOString().slice(0, 16) : '',
           tags: createdEvent.tags?.join(', ') || '',
         });
-        // Switch to Page Builder tab
-        setEventDialogTab('page-builder');
+        
         // Initialize page builder form with event data
         pageBuilderForm.reset({
           publicSlug: createdEvent.publicSlug || generateSlug(createdEvent.title),
@@ -1277,6 +1277,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           eventPackFiles: (createdEvent.eventPackFiles as any[]) || [],
           testimonials: (createdEvent.testimonials as any[]) || [],
         });
+        
+        // Use setTimeout to ensure state updates complete before switching tabs
+        setTimeout(() => {
+          setEventDialogTab('page-builder');
+        }, 100);
+        
         // Keep modal open - do NOT call setEventDialogOpen(false)
       } else {
         // For non-virtual events, close modal as usual
@@ -1298,6 +1304,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           tags: '',
         });
         setUploadedEventImage(null);
+        setEditingEvent(null);
       }
     },
     onError: (error: any) => {
