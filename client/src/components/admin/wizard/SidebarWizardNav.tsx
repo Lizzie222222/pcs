@@ -128,7 +128,7 @@ function SidebarContent({
 
   return (
     <div className="flex flex-col h-full">
-      <div className="space-y-2 flex-1">
+      <div className="space-y-2 flex-1 overflow-y-auto pr-2">
         {steps.map((step) => {
           const isCurrent = currentStep === step.id;
           const isCompleted = completedSteps.includes(step.id);
@@ -148,8 +148,8 @@ function SidebarContent({
         })}
       </div>
 
-      {/* Preview Tip - Add at bottom of sidebar */}
-      <div className="mt-auto pt-4 border-t" data-testid="tip-preview">
+      {/* Preview Tip - Stuck at bottom of sidebar */}
+      <div className="flex-shrink-0 pt-4 border-t" data-testid="tip-preview">
         <div className="p-3 bg-muted rounded-md">
           <div className="flex items-center gap-2 mb-1">
             <Eye className="h-4 w-4 text-muted-foreground" aria-hidden="true" />
@@ -180,7 +180,7 @@ export function SidebarWizardNav({
         className="w-[280px] flex-shrink-0 bg-muted/30 border-r border-border fixed left-0 top-[90px] h-[calc(100vh-90px)] overflow-hidden z-10"
         data-testid="sidebar-wizard-nav"
       >
-        <div className="h-full overflow-y-auto p-4">
+        <div className="h-full flex flex-col p-4">
           <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-4">
             Steps
           </h2>

@@ -26,7 +26,8 @@ import {
 
 import { SidebarWizardNav } from "./wizard/SidebarWizardNav";
 import { WizardNavigation } from "./wizard/WizardNavigation";
-import { Step1TemplateBasics } from "./wizard/steps/Step1TemplateBasics";
+import { Step1Template } from "./wizard/steps/Step1Template";
+import { Step2BasicInfo } from "./wizard/steps/Step2BasicInfo";
 import { Step2Content } from "./wizard/steps/Step2Content";
 import { Step3Media } from "./wizard/steps/Step3Media";
 import { Step4Enhancements } from "./wizard/steps/Step4Enhancements";
@@ -119,11 +120,12 @@ const caseStudyFormSchema = z.object({
 type CaseStudyFormData = z.infer<typeof caseStudyFormSchema>;
 
 const WIZARD_STEPS = [
-  { id: 1, label: "Template & Basics", description: "Choose layout" },
-  { id: 2, label: "Content", description: "Write your story" },
-  { id: 3, label: "Media", description: "Add images" },
-  { id: 4, label: "Enhancements", description: "Quotes & metrics" },
-  { id: 5, label: "Review & Publish", description: "Final check" },
+  { id: 1, label: "Template", description: "Choose layout" },
+  { id: 2, label: "Basic Info", description: "School & title" },
+  { id: 3, label: "Content", description: "Write your story" },
+  { id: 4, label: "Media", description: "Add images" },
+  { id: 5, label: "Enhancements", description: "Quotes & metrics" },
+  { id: 6, label: "Review & Publish", description: "Final check" },
 ];
 
 export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditorProps) {
@@ -139,6 +141,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
     3: { valid: false, warnings: [], errors: [] },
     4: { valid: false, warnings: [], errors: [] },
     5: { valid: false, warnings: [], errors: [] },
+    6: { valid: false, warnings: [], errors: [] },
   });
 
   const form = useForm<CaseStudyFormData>({
@@ -222,14 +225,18 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
 
     switch (step) {
       case 1:
-        // Template & Basics
-        if (!values.schoolId) errors.push("School is required");
-        if (!values.title) errors.push("Title is required");
-        if (!values.stage) errors.push("Program stage is required");
+        // Template
         if (!values.templateType) errors.push("Template is required");
         break;
       
       case 2:
+        // Basic Info
+        if (!values.schoolId) errors.push("School is required");
+        if (!values.title) errors.push("Title is required");
+        if (!values.stage) errors.push("Program stage is required");
+        break;
+      
+      case 3:
         // Content
         if (config.requiredFields.description && !values.description) {
           errors.push("Description is required");
@@ -242,7 +249,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         }
         break;
       
-      case 3:
+      case 4:
         // Media - warnings only for drafts, errors only for publishing
         const imagesCount = values.images?.length || 0;
         if (imagesCount < config.requiredFields.minImages) {
@@ -257,7 +264,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         }
         break;
       
-      case 4:
+      case 5:
         // Enhancements
         const quotesCount = values.studentQuotes?.length || 0;
         const metricsCount = values.impactMetrics?.length || 0;
@@ -281,9 +288,9 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         }
         break;
       
-      case 5:
+      case 6:
         // Review - aggregate all previous validations
-        for (let i = 1; i < 5; i++) {
+        for (let i = 1; i < 6; i++) {
           const stepVal = getStepValidationDetails(i);
           errors.push(...stepVal.errors);
           warnings.push(...stepVal.warnings);
@@ -552,18 +559,21 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
                     {/* Step Content */}
                     <section aria-labelledby={`step-${currentStep}-heading`} className="space-y-10">
                       {currentStep === 1 && (
-                        <Step1TemplateBasics form={form} isEditing={!!caseStudy} />
+                        <Step1Template form={form} />
                       )}
                       {currentStep === 2 && (
-                        <Step2Content form={form} />
+                        <Step2BasicInfo form={form} isEditing={!!caseStudy} />
                       )}
                       {currentStep === 3 && (
-                        <Step3Media form={form} templateType={templateType} />
+                        <Step2Content form={form} />
                       )}
                       {currentStep === 4 && (
-                        <Step4Enhancements form={form} />
+                        <Step3Media form={form} templateType={templateType} />
                       )}
                       {currentStep === 5 && (
+                        <Step4Enhancements form={form} />
+                      )}
+                      {currentStep === 6 && (
                         <Step5Review form={form} onStepChange={handleStepChange} />
                       )}
                     </section>
