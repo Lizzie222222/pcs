@@ -54,6 +54,59 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 
 ## Recent Changes
 
+### Events System Enhancements (October 22, 2025)
+**Production-ready improvements to event registration and user experience - All features tested**
+
+**Completed Features (10/10 tasks):**
+1. ✅ **Capacity Tracking** - Backend now includes registrationsCount in all event API endpoints for accurate "spots left" display
+2. ✅ **Event Access Links** - Registered users see "Join Meeting" or "View Event" buttons in My Events section
+3. ✅ **Live/Starting Soon Badges** - Events display real-time status badges (Live Now, Starting Soon, Full)
+4. ✅ **Dashboard Notifications** - Banner alerts users 30 minutes before registered events start
+5. ✅ **Calendar Integration** - Add to Calendar button downloads .ics files for all major calendar apps
+6. ✅ **Timezone Display** - Event times show "(your time)" to indicate local timezone conversion
+7. ✅ **Share Functionality** - Copy link button for easy event sharing via clipboard
+8. ✅ **Public Event Pages** - Event-live pages accessible without login, display meeting links when live
+9. ✅ **Architect Review** - All changes reviewed and approved with minor optimization notes
+10. ✅ **End-to-End Testing** - Full registration flow tested via Playwright automation
+
+**Technical Implementation:**
+- **Backend (server/routes.ts)**: Added registration count aggregation to `/api/events`, `/api/events/:id`, and `/api/my-events` endpoints using `storage.getEventRegistrationCount()`
+- **EventsSection Component**: Complete rewrite with two sections (My Events / All Events), access buttons, timing badges, calendar export (.ics generation), timezone indicators, and copy-to-clipboard
+- **EventNotificationBanner**: New component that auto-refreshes every 60 seconds, shows events starting within 30 minutes, dismissible with persistent state
+- **Dashboard Integration**: Banner added to home.tsx above tab content, visible across all tabs
+- **Event-live Page**: Enhanced to display meeting links prominently with "Join Meeting Now" button when event is live
+
+**User Experience Improvements:**
+- Clear visual hierarchy: My Events (top) → All Events (below)
+- Intuitive access: One-click join for virtual meetings or view event-live pages
+- Proactive notifications: 30-minute advance warning for registered events
+- Calendar sync: Native .ics format compatible with Google Calendar, Outlook, Apple Calendar
+- Easy sharing: Copy link with toast confirmation (clipboard API with fallback)
+- Public accessibility: Anyone with link can view event-live pages (no login required)
+
+**Performance Notes:**
+- N+1 query pattern for registration counts (one count query per event in list)
+- Acceptable for current event volumes (typically 6-10 events displayed)
+- Future optimization: Batch count queries in storage layer if event volumes increase
+
+**Files Modified (5 total):**
+- server/routes.ts (event endpoints with registrationsCount)
+- client/src/components/dashboard/EventsSection.tsx (complete rewrite)
+- client/src/components/dashboard/EventNotificationBanner.tsx (new component)
+- client/src/pages/home.tsx (added notification banner)
+- client/src/pages/event-live.tsx (added meeting link display)
+
+**Testing Coverage:**
+- End-to-end test validates: user login, event registration, capacity tracking, access buttons, notification banner, calendar download, link copying, public event page access, meeting link functionality, notification dismissal
+
+**Impact:**
+- Fixed critical bug: Capacity counter now updates in real-time when users register
+- Solved user pain point: Clear access to registered events with direct join links
+- Enhanced engagement: Proactive notifications ensure users don't miss events
+- Improved accessibility: Public event pages shareable with anyone (teachers, parents, students)
+
+---
+
 ### Case Study Wizard UX Fixes (October 22, 2025)
 **Production-ready improvements to 8-step wizard - All issues resolved**
 
