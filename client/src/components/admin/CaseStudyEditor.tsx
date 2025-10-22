@@ -243,14 +243,14 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         break;
       
       case 3:
-        // Media
+        // Media - warnings only for drafts, errors only for publishing
         const imagesCount = values.images?.length || 0;
         if (imagesCount < config.requiredFields.minImages) {
-          errors.push(`Need at least ${config.requiredFields.minImages} images (currently ${imagesCount})`);
+          warnings.push(`Recommended: ${config.requiredFields.minImages} images (currently ${imagesCount})`);
         }
         if (config.requiredFields.requiresBeforeAfter) {
-          if (!values.beforeImage) errors.push("Before image is required");
-          if (!values.afterImage) errors.push("After image is required");
+          if (!values.beforeImage) warnings.push("Before image recommended");
+          if (!values.afterImage) warnings.push("After image recommended");
         }
         if (imagesCount > 0 && imagesCount < 3) {
           warnings.push("Consider adding more images for better engagement");
@@ -401,19 +401,49 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
   };
 
   const handlePublish = async () => {
-    const isValid = await validateStep(5);
+    // Set status to published first so Zod validation can check publish requirements
+    form.setValue("status", "published");
+    
+    // Trigger form validation which runs Zod schema including the refine() rules
+    const isValid = await form.trigger();
     
     if (!isValid) {
+      // Get all form errors
+      const errors = form.formState.errors;
+      const errorMessages: string[] = [];
+      
+      // Check for publishing errors
+      if (errors.status?.message) {
+        errorMessages.push(errors.status.message);
+      }
+      
+      // Check template requirements
+      const data = form.getValues();
+      const config = getTemplateConfig(data.templateType);
+      const imagesCount = data.images?.length || 0;
+      
+      if (imagesCount < config.requiredFields.minImages) {
+        errorMessages.push(`Need ${config.requiredFields.minImages} images (have ${imagesCount})`);
+      }
+      
+      if (config.requiredFields.requiresBeforeAfter && (!data.beforeImage || !data.afterImage)) {
+        errorMessages.push("Before and After images required");
+      }
+      
       toast({
         title: "Cannot Publish",
-        description: "Please complete all required fields before publishing",
+        description: errorMessages.length > 0 
+          ? errorMessages.join(". ") 
+          : "Please complete all required fields before publishing",
         variant: "destructive",
       });
+      
+      // Reset status back to draft
+      form.setValue("status", "draft");
       return;
     }
 
     const data = form.getValues();
-    form.setValue("status", "published");
     handleSave(data, "published");
   };
 
