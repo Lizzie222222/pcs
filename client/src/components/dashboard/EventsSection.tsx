@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -28,14 +28,90 @@ import {
   Video,
   Filter,
   ExternalLink,
+  Download,
+  Link2,
+  PlayCircle,
 } from "lucide-react";
-import { format, isPast, isFuture } from "date-fns";
+import { format, isPast, isFuture, differenceInMinutes } from "date-fns";
 import type { Event, EventRegistration } from "@/../../shared/schema";
 
 interface EventsSectionProps {
   schoolId: string;
   isActive: boolean;
   isAuthenticated: boolean;
+}
+
+// Helper function to generate .ics calendar file
+function generateCalendarFile(event: Event) {
+  const startDate = new Date(event.startDateTime);
+  const endDate = new Date(event.endDateTime);
+  
+  const formatICSDate = (date: Date) => {
+    return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+  };
+  
+  const icsContent = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Plastic Clever Schools//Event//EN',
+    'BEGIN:VEVENT',
+    `UID:${event.id}@plasticscleverschools.org`,
+    `DTSTAMP:${formatICSDate(new Date())}`,
+    `DTSTART:${formatICSDate(startDate)}`,
+    `DTEND:${formatICSDate(endDate)}`,
+    `SUMMARY:${event.title}`,
+    `DESCRIPTION:${event.description.replace(/\n/g, '\\n')}`,
+    event.location ? `LOCATION:${event.location}` : '',
+    event.meetingLink ? `URL:${event.meetingLink}` : '',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ].filter(line => line).join('\r\n');
+  
+  const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = `${event.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}.ics`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// Helper function to copy event link
+function copyEventLink(event: Event, toast: any) {
+  const url = event.publicSlug 
+    ? `${window.location.origin}/event-live/${event.publicSlug}`
+    : `${window.location.origin}/events`;
+  
+  navigator.clipboard.writeText(url).then(() => {
+    toast({
+      title: "Link Copied!",
+      description: "Event link copied to clipboard",
+    });
+  }).catch(() => {
+    toast({
+      title: "Failed to copy",
+      description: "Please try again",
+      variant: "destructive",
+    });
+  });
+}
+
+// Helper function to check event timing status
+function getEventTimingStatus(event: Event) {
+  const now = new Date();
+  const startDate = new Date(event.startDateTime);
+  const endDate = new Date(event.endDateTime);
+  const minutesUntilStart = differenceInMinutes(startDate, now);
+  const minutesUntilEnd = differenceInMinutes(endDate, now);
+  
+  if (now >= startDate && now <= endDate) {
+    return { status: 'live', label: 'Live Now', color: 'bg-red-500 animate-pulse' };
+  } else if (minutesUntilStart > 0 && minutesUntilStart <= 30) {
+    return { status: 'starting-soon', label: 'Starting Soon', color: 'bg-orange-500' };
+  } else if (minutesUntilStart > 30 && minutesUntilStart <= 120) {
+    return { status: 'upcoming', label: `Starts in ${Math.round(minutesUntilStart / 60)}h`, color: 'bg-blue-500' };
+  }
+  return null;
 }
 
 export default function EventsSection({ schoolId, isActive, isAuthenticated }: EventsSectionProps) {
@@ -152,6 +228,18 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
     }
   };
 
+  const handleAccessEvent = (event: Event, e?: React.MouseEvent) => {
+    if (e) {
+      e.stopPropagation();
+    }
+    
+    if (event.meetingLink) {
+      window.open(event.meetingLink, '_blank');
+    } else if (event.publicSlug) {
+      window.open(`/event-live/${event.publicSlug}`, '_blank');
+    }
+  };
+
   return (
     <div className="space-y-8">
       {/* Filter and Header */}
@@ -218,6 +306,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
               const spotsLeft = event.capacity ? event.capacity - registrationsCount : null;
               const isFull = event.capacity && registrationsCount >= event.capacity;
               const userRegistration = myEvents.find(reg => reg.eventId === event.id);
+              const timingStatus = getEventTimingStatus(event);
               
               return (
                 <Card 
@@ -233,7 +322,12 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                         alt={event.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
-                      <div className="absolute top-3 right-3">
+                      <div className="absolute top-3 right-3 flex gap-2">
+                        {timingStatus && (
+                          <Badge className={`${timingStatus.color} text-white shadow-lg`} data-testid={`badge-timing-${event.id}`}>
+                            {timingStatus.label}
+                          </Badge>
+                        )}
                         <Badge className={`
                           ${event.eventType === 'workshop' ? 'bg-blue-500' : ''}
                           ${event.eventType === 'webinar' ? 'bg-purple-500' : ''}
@@ -259,7 +353,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                       </div>
                       <div className="flex items-center gap-2">
                         <Clock className="h-4 w-4 text-pcs_blue flex-shrink-0" />
-                        <span>{format(eventDate, 'p')}</span>
+                        <span>{format(eventDate, 'p')} (your time)</span>
                       </div>
                       {event.location && (
                         <div className="flex items-center gap-2">
@@ -364,19 +458,25 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                 const eventDate = new Date(registration.event.startDateTime);
                 const isEventPast = isPast(eventDate);
                 const isEventFuture = isFuture(eventDate);
+                const timingStatus = getEventTimingStatus(registration.event);
+                const hasAccess = registration.event.meetingLink || registration.event.publicSlug;
                 
                 return (
                   <Card 
                     key={registration.id} 
-                    className="shadow-lg border-0 hover:shadow-xl transition-shadow cursor-pointer"
-                    onClick={() => handleEventClick(registration.event)}
+                    className="shadow-lg border-0 hover:shadow-xl transition-shadow"
                     data-testid={`my-event-${registration.id}`}
                   >
                     <CardContent className="p-6">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-start justify-between gap-4 flex-wrap">
+                        <div className="flex-1 min-w-0 cursor-pointer" onClick={() => handleEventClick(registration.event)}>
+                          <div className="flex items-center gap-3 mb-2 flex-wrap">
                             <h3 className="text-lg font-bold text-navy">{registration.event.title}</h3>
+                            {timingStatus && (
+                              <Badge className={`${timingStatus.color} text-white`} data-testid={`badge-my-event-timing-${registration.id}`}>
+                                {timingStatus.label}
+                              </Badge>
+                            )}
                             <Badge className={`
                               ${registration.status === 'registered' ? 'bg-green-500' : ''}
                               ${registration.status === 'waitlisted' ? 'bg-orange-500' : ''}
@@ -393,7 +493,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                           <div className="space-y-1 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-pcs_blue" />
-                              <span>{format(eventDate, 'PPP')} at {format(eventDate, 'p')}</span>
+                              <span>{format(eventDate, 'PPP')} at {format(eventDate, 'p')} (your time)</span>
                             </div>
                             {registration.event.location && (
                               <div className="flex items-center gap-2">
@@ -407,20 +507,37 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                             )}
                           </div>
                         </div>
-                        {isEventFuture && registration.status !== 'cancelled' && (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              cancelEventMutation.mutate(registration.id);
-                            }}
-                            className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-300"
-                            data-testid={`button-cancel-${registration.id}`}
-                          >
-                            Cancel
-                          </Button>
-                        )}
+                        
+                        <div className="flex gap-2 flex-wrap">
+                          {/* Access Button - Always show for registered users */}
+                          {hasAccess && registration.status === 'registered' && (
+                            <Button
+                              size="sm"
+                              onClick={(e) => handleAccessEvent(registration.event, e)}
+                              className="bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white"
+                              data-testid={`button-access-event-${registration.id}`}
+                            >
+                              <PlayCircle className="h-4 w-4 mr-1" />
+                              {registration.event.meetingLink ? 'Join Meeting' : 'View Event'}
+                            </Button>
+                          )}
+                          
+                          {/* Cancel Button - Only for future events */}
+                          {isEventFuture && registration.status !== 'cancelled' && (
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                cancelEventMutation.mutate(registration.id);
+                              }}
+                              className="text-red-600 hover:text-red-800 hover:bg-red-50 border-red-300"
+                              data-testid={`button-cancel-${registration.id}`}
+                            >
+                              Cancel
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -465,7 +582,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Clock className="h-5 w-5 text-pcs_blue" />
                   <div>
-                    <p className="text-xs text-gray-500">Time</p>
+                    <p className="text-xs text-gray-500">Time (your timezone)</p>
                     <p className="font-semibold">{format(new Date(selectedEvent.startDateTime), 'p')}</p>
                   </div>
                 </div>
@@ -495,6 +612,28 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* Quick Actions */}
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => generateCalendarFile(selectedEvent)}
+                  data-testid="button-add-to-calendar"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Add to Calendar
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => copyEventLink(selectedEvent, toast)}
+                  data-testid="button-copy-link"
+                >
+                  <Link2 className="h-4 w-4 mr-2" />
+                  Copy Link
+                </Button>
               </div>
             </div>
 

@@ -86,6 +86,7 @@ import type { ReductionPromise, InsertReductionPromise, AuditResponse } from "@/
 
 // Lazy load heavy components
 const EventsSection = lazy(() => import("@/components/dashboard/EventsSection"));
+const EventNotificationBanner = lazy(() => import("@/components/dashboard/EventNotificationBanner"));
 const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
 
 interface Certificate {
@@ -728,6 +729,11 @@ export default function Home() {
             </Button>
           </div>
         </div>
+
+        {/* Event Notifications */}
+        <Suspense fallback={null}>
+          <EventNotificationBanner isAuthenticated={isAuthenticated} />
+        </Suspense>
 
         {/* Progress Tab Content */}
         {activeTab === 'progress' && (

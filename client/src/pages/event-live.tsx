@@ -34,6 +34,7 @@ interface Event {
   endDateTime: string;
   location?: string;
   isVirtual: boolean;
+  meetingLink?: string;
   imageUrl?: string;
   publicSlug?: string;
   youtubeVideos?: YoutubeVideo[];
@@ -173,11 +174,36 @@ export default function EventLivePage() {
             {event.description}
           </p>
 
+          {/* Meeting Link */}
+          {event.meetingLink && hasStarted && !hasEnded && (
+            <div className="mt-10 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl text-center shadow-lg">
+              <p className="text-green-900 font-semibold text-xl mb-4" data-testid="text-event-live">
+                🎉 Event is Live Now!
+              </p>
+              <Button
+                asChild
+                size="lg"
+                className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold text-lg px-10 py-6 shadow-lg hover:shadow-xl transition-all"
+                data-testid="button-join-meeting"
+              >
+                <a href={event.meetingLink} target="_blank" rel="noopener noreferrer">
+                  <ExternalLink className="w-5 h-5 mr-2" />
+                  Join Meeting Now
+                </a>
+              </Button>
+            </div>
+          )}
+
           {!hasStarted && (
             <div className="mt-10 p-5 bg-blue-50 border-2 border-blue-200 rounded-xl text-center shadow-sm">
               <p className="text-blue-800 font-medium text-lg" data-testid="text-event-upcoming">
                 This event hasn't started yet. Please check back on {format(startDate, 'MMMM d, yyyy at h:mm a')}
               </p>
+              {event.meetingLink && (
+                <p className="text-blue-700 mt-3 text-sm">
+                  The meeting link will be available when the event starts.
+                </p>
+              )}
             </div>
           )}
 
