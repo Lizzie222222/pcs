@@ -522,9 +522,9 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         />
       }
     >
-      <div className="min-h-screen bg-background">
-        {/* Sticky Header */}
-        <div className="sticky top-0 z-50 bg-background border-b shadow-sm">
+      <div className="h-[95vh] bg-background flex flex-col">
+        {/* Fixed Header */}
+        <div className="flex-shrink-0 z-50 bg-background border-b shadow-sm">
           <div className="container mx-auto px-4 py-4">
             <div className="flex items-center justify-between">
               <div>
@@ -563,70 +563,72 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
           </div>
         </div>
 
-        {/* Main Content - Two Column Layout */}
-        <Form {...form}>
-          <form onSubmit={(e) => e.preventDefault()}>
-            <div className={isMobile ? "flex flex-col" : ""}>
-              {/* Left: Sidebar Navigation (Desktop) or Mobile Button */}
-              <SidebarWizardNav
-                steps={WIZARD_STEPS}
-                currentStep={currentStep}
-                completedSteps={completedSteps}
-                stepValidation={stepValidation}
-                onStepChange={handleStepChange}
-              />
+        {/* Main Content - Two Column Layout with proper overflow */}
+        <div className="flex-1 overflow-hidden relative">
+          <Form {...form}>
+            <form onSubmit={(e) => e.preventDefault()} className="h-full">
+              <div className={isMobile ? "flex flex-col h-full" : "h-full"}>
+                {/* Left: Sidebar Navigation (Desktop) or Mobile Button */}
+                <SidebarWizardNav
+                  steps={WIZARD_STEPS}
+                  currentStep={currentStep}
+                  completedSteps={completedSteps}
+                  stepValidation={stepValidation}
+                  onStepChange={handleStepChange}
+                />
 
-              {/* Right: Step Content */}
-              <div className={isMobile ? "flex-1" : "ml-[280px]"}>
-                <div className="container mx-auto px-4 py-8">
-                  <div className="max-w-4xl mx-auto">
-                    {/* Step Content */}
-                    <section aria-labelledby={`step-${currentStep}-heading`} className="space-y-10">
-                      {currentStep === 1 && (
-                        <Step1Template form={form} />
-                      )}
-                      {currentStep === 2 && (
-                        <Step2BasicInfo form={form} isEditing={!!caseStudy} />
-                      )}
-                      {currentStep === 3 && (
-                        <Step2Content form={form} />
-                      )}
-                      {currentStep === 4 && (
-                        <Step3Media form={form} templateType={templateType} />
-                      )}
-                      {currentStep === 5 && (
-                        <Step4Enhancements form={form} />
-                      )}
-                      {currentStep === 6 && (
-                        <Step6CategoriesTags form={form} />
-                      )}
-                      {currentStep === 7 && (
-                        <Step7PublicationSettings form={form} />
-                      )}
-                      {currentStep === 8 && (
-                        <Step8Review form={form} onStepChange={handleStepChange} />
-                      )}
-                    </section>
+                {/* Right: Step Content - Scrollable */}
+                <div className={isMobile ? "flex-1 overflow-y-auto" : "ml-[280px] h-full overflow-y-auto"}>
+                  <div className="container mx-auto px-4 py-8">
+                    <div className="max-w-4xl mx-auto">
+                      {/* Step Content */}
+                      <section aria-labelledby={`step-${currentStep}-heading`} className="space-y-10">
+                        {currentStep === 1 && (
+                          <Step1Template form={form} />
+                        )}
+                        {currentStep === 2 && (
+                          <Step2BasicInfo form={form} isEditing={!!caseStudy} />
+                        )}
+                        {currentStep === 3 && (
+                          <Step2Content form={form} />
+                        )}
+                        {currentStep === 4 && (
+                          <Step3Media form={form} templateType={templateType} />
+                        )}
+                        {currentStep === 5 && (
+                          <Step4Enhancements form={form} />
+                        )}
+                        {currentStep === 6 && (
+                          <Step6CategoriesTags form={form} />
+                        )}
+                        {currentStep === 7 && (
+                          <Step7PublicationSettings form={form} />
+                        )}
+                        {currentStep === 8 && (
+                          <Step8Review form={form} onStepChange={handleStepChange} />
+                        )}
+                      </section>
 
-                    {/* Navigation */}
-                    <WizardNavigation
-                      currentStep={currentStep}
-                      totalSteps={WIZARD_STEPS.length}
-                      onNext={handleNext}
-                      onPrevious={handlePrevious}
-                      onSaveDraft={handleSaveDraft}
-                      onPublish={handlePublish}
-                      isFirstStep={currentStep === 1}
-                      isLastStep={currentStep === WIZARD_STEPS.length}
-                      isSaving={isSaving}
-                      canProceed={canProceedState}
-                    />
+                      {/* Navigation */}
+                      <WizardNavigation
+                        currentStep={currentStep}
+                        totalSteps={WIZARD_STEPS.length}
+                        onNext={handleNext}
+                        onPrevious={handlePrevious}
+                        onSaveDraft={handleSaveDraft}
+                        onPublish={handlePublish}
+                        isFirstStep={currentStep === 1}
+                        isLastStep={currentStep === WIZARD_STEPS.length}
+                        isSaving={isSaving}
+                        canProceed={canProceedState}
+                      />
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          </form>
-        </Form>
+            </form>
+          </Form>
+        </div>
       </div>
       
       {caseStudy?.id && (

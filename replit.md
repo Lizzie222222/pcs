@@ -51,3 +51,52 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 -   **Hosting/Deployment**: Replit
 -   **AI Integration**: OpenAI GPT-5 (specifically GPT-4o-mini for translations)
 -   **PDF Generation**: Puppeteer
+
+## Recent Changes
+
+### Case Study Wizard UX Fixes (October 22, 2025)
+**Production-ready improvements to 8-step wizard - All issues resolved**
+
+**Completed Fixes (10/10 tasks):**
+1. ✅ **Sidebar Scrolling** - Fixed body scroll prevention using `.wizard-sidebar-visible` CSS class applied via useEffect
+2. ✅ **Step Numbering** - Corrected step header numbering (Content=3, Media=4, Enhancements=5) to match wizard structure
+3. ✅ **Image Loading** - Added comprehensive error logging and safe DOM-based fallback UI for failed image loads
+4. ✅ **School Dropdown Counts** - New `/api/schools-with-image-counts` endpoint shows approved evidence image counts per school
+5. ✅ **Hero Image Preview** - Verified already working in Step 7 Publication Settings
+6. ✅ **Live Preview** - Verified already working with full enhancement display (quotes, metrics, timeline)
+7. ✅ **Priority Dropdown** - Reverted from slider to select dropdown (Normal/High/Highest)
+8. ✅ **Validation Messages** - Enhanced error messages with specific counts and quick step navigation links
+9. ✅ **TypeScript Errors** - Fixed all 17 LSP errors in server/routes.ts
+10. ✅ **XSS Security** - Eliminated innerHTML vulnerability in SortableImageCard and ImagePreviewCard error handlers
+
+**Technical Implementation:**
+- **Sidebar**: useEffect hook adds/removes `wizard-sidebar-visible` class to document.body on component mount/unmount
+- **Step Headers**: Updated Step2Content.tsx, Step3Media.tsx, Step4Enhancements.tsx to display correct step numbers
+- **Image Debugging**: Safe DOM element creation using createElement/createElementNS with textContent (prevents XSS)
+- **School API**: New endpoint aggregates approved evidence per school with efficient queries
+- **Priority Control**: Select component with options: Normal (0), High (50), Highest (100)
+- **Validation UI**: Step8Review shows specific deficit counts (e.g., "Need 2 more images - have 1, need 3 minimum")
+
+**Security Enhancements:**
+- Replaced all `innerHTML` assignments with safe DOM construction methods
+- User-controlled image URLs now set via `textContent` to prevent script injection
+- Comprehensive input validation and type safety improvements
+
+**Files Modified (11 total):**
+- client/src/components/admin/CaseStudyEditor.tsx
+- client/src/components/admin/wizard/steps/Step2Content.tsx
+- client/src/components/admin/wizard/steps/Step3Media.tsx
+- client/src/components/admin/wizard/steps/Step4Enhancements.tsx
+- client/src/components/admin/wizard/steps/Step2BasicInfo.tsx
+- client/src/components/admin/wizard/steps/Step7PublicationSettings.tsx
+- client/src/components/admin/wizard/steps/Step8Review.tsx
+- client/src/components/admin/wizard/media-sections/SortableImageCard.tsx
+- client/src/components/admin/wizard/media-sections/ImagePreviewCard.tsx
+- client/src/components/admin/wizard/media-sections/SelectedMediaSummary.tsx
+- server/routes.ts
+
+**Impact:**
+- **Better UX**: Static sidebar, consistent step numbering, clear validation feedback
+- **Easier Selection**: School dropdown shows image availability for informed decisions
+- **Improved Security**: XSS vulnerabilities eliminated, type safety enhanced
+- **Production Ready**: All issues architect-reviewed and verified working
