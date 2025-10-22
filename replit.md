@@ -148,3 +148,40 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 - Always visible: Sidebar stays in view during long form scrolling
 - Better navigation: Users can jump between steps anytime without scrolling
 - Live Preview access: Preview tip always visible at bottom of sidebar
+
+### Wizard Structure Update (October 22, 2025)
+**6-step wizard with improved organization - PRODUCTION READY**
+
+**Completed Changes (4/4 tasks):**
+1. **Wizard Expansion** - Expanded wizard from 5 to 6 steps by splitting template and basic info
+2. **Step Organization** - Created separate Step1Template.tsx and Step2BasicInfo.tsx components
+3. **Sidebar Scroll Fix** - Only step list scrolls now, sidebar container stays static, Live Preview tip permanently stuck at bottom
+4. **Upload UI Fix** - Uncommented Uppy CSS imports to fix broken drag-and-drop modal appearance
+
+**New Wizard Structure:**
+- Step 1: Template (Choose layout)
+- Step 2: Basic Info (School & title)
+- Step 3: Content (Write your story)
+- Step 4: Media (Add images)
+- Step 5: Enhancements (Quotes & metrics)
+- Step 6: Review & Publish (Final check)
+
+**Technical Implementation:**
+- Split Step1TemplateBasics.tsx into two separate components (Step1Template, Step2BasicInfo)
+- Updated all step validation logic to handle 6 steps instead of 5
+- Updated conditional rendering in CaseStudyEditor to use correct step components
+- Fixed sidebar layout: parent uses `flex flex-col`, steps list has `overflow-y-auto pr-2`, preview tip has `flex-shrink-0`
+- Uncommented `@uppy/core/dist/style.css` and `@uppy/dashboard/dist/style.css` imports in ObjectUploader.tsx
+
+**Key Files:**
+- Step1Template.tsx (new - template selection only)
+- Step2BasicInfo.tsx (new - school, title, stage fields)
+- CaseStudyEditor.tsx (6-step structure, updated validation)
+- SidebarWizardNav.tsx (scroll fix, preview tip positioning)
+- ObjectUploader.tsx (Uppy CSS imports uncommented)
+
+**Impact:**
+- Better UX: Template and basic info are now separate, clearer workflow
+- Static Sidebar: No more unwanted scrolling, always visible navigation
+- Preview Access: Live Preview tip always visible at bottom
+- Working Uploads: Drag-and-drop modal now displays correctly with proper styling
