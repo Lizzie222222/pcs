@@ -19,7 +19,7 @@ const PROGRAM_STAGES = [
 
 export function Step2BasicInfo({ form, isEditing }: Step2BasicInfoProps) {
   const { data: schools, isLoading: isLoadingSchools } = useQuery<any[]>({
-    queryKey: ['/api/schools'],
+    queryKey: ['/api/schools-with-image-counts'],
   });
 
   return (
@@ -64,6 +64,11 @@ export function Step2BasicInfo({ form, isEditing }: Step2BasicInfoProps) {
                           {school.country && (
                             <span className="text-muted-foreground text-xs">
                               ({school.country})
+                            </span>
+                          )}
+                          {school.approvedImageCount !== undefined && school.approvedImageCount > 0 && (
+                            <span className="text-green-600 dark:text-green-400 text-xs font-medium">
+                              • {school.approvedImageCount} approved {school.approvedImageCount === 1 ? 'image' : 'images'}
                             </span>
                           )}
                         </div>

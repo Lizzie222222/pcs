@@ -4,7 +4,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessa
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Slider } from "@/components/ui/slider";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Info, Star, Eye, Search } from "lucide-react";
 
@@ -196,31 +196,30 @@ export function Step7PublicationSettings({ form }: Step7PublicationSettingsProps
             )}
           />
 
-          {/* Priority Slider */}
+          {/* Priority Dropdown */}
           <FormField
             control={form.control}
             name="priority"
             render={({ field }) => (
               <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel>Display Priority</FormLabel>
-                  <span className="text-sm text-muted-foreground">
-                    {field.value || 0}
-                  </span>
-                </div>
-                <FormControl>
-                  <Slider
-                    min={0}
-                    max={100}
-                    step={1}
-                    value={[field.value || 0]}
-                    onValueChange={(vals) => field.onChange(vals[0])}
-                    className="w-full"
-                    data-testid="slider-priority"
-                  />
-                </FormControl>
+                <FormLabel>Display Priority</FormLabel>
+                <Select 
+                  onValueChange={(value) => field.onChange(parseInt(value))} 
+                  value={field.value?.toString() || "0"}
+                >
+                  <FormControl>
+                    <SelectTrigger data-testid="select-priority">
+                      <SelectValue placeholder="Select priority level" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="0">Normal (Default)</SelectItem>
+                    <SelectItem value="50">High</SelectItem>
+                    <SelectItem value="100">Highest</SelectItem>
+                  </SelectContent>
+                </Select>
                 <FormDescription>
-                  Higher priority case studies appear first in listings (0 = default, 100 = highest)
+                  Higher priority case studies appear first in listings
                 </FormDescription>
                 <FormMessage />
               </FormItem>

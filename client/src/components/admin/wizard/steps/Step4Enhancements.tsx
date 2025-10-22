@@ -29,7 +29,7 @@ export function Step4Enhancements({ form }: Step4EnhancementsProps) {
   if (availableCount === 0) {
     return (
       <div className="space-y-8">
-        <h2 id="step-4-heading" className="text-2xl font-semibold">Step 4 · Enhancements</h2>
+        <h2 id="step-5-heading" className="text-2xl font-semibold">Step 5 · Enhancements</h2>
         
         <Card>
           <CardHeader>
@@ -66,7 +66,7 @@ export function Step4Enhancements({ form }: Step4EnhancementsProps) {
 
   return (
     <div className="space-y-8">
-      <h2 id="step-4-heading" className="text-2xl font-semibold">Step 4 · Enhancements</h2>
+      <h2 id="step-5-heading" className="text-2xl font-semibold">Step 5 · Enhancements</h2>
       
       <Card>
         <CardHeader>

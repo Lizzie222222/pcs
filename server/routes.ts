@@ -741,6 +741,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  /**
+   * @description GET /api/schools-with-image-counts - Get schools with count of approved evidence images for case study wizard
+   * @returns {Array} Schools with imageCount property showing number of approved evidence images
+   */
+  app.get('/api/schools-with-image-counts', async (req, res) => {
+    try {
+      const schools = await storage.getSchools({ limit: 1000, offset: 0 });
+      
+      // For each school, count approved evidence with images
+      const schoolsWithCounts = await Promise.all(
+        schools.map(async (school) => {
+          const evidenceList = await storage.getAllEvidence({ schoolId: school.id, status: 'approved' });
+          
+          // Count evidence items that have images (non-empty images array)
+          const imageCount = evidenceList.filter((ev: any) => {
+            const images = ev.images;
+            return images && Array.isArray(images) && images.length > 0;
+          }).reduce((total: number, ev: any) => {
+            const images = ev.images;
+            return total + (Array.isArray(images) ? images.length : 0);
+          }, 0);
+          
+          return {
+            ...school,
+            approvedImageCount: imageCount
+          };
+        })
+      );
+      
+      res.json(schoolsWithCounts);
+    } catch (error) {
+      console.error("Error fetching schools with image counts:", error);
+      res.status(500).json({ message: "Failed to fetch schools with image counts" });
+    }
+  });
+
   // Check email domain for existing schools (public)
   app.get('/api/schools/check-domain', async (req, res) => {
     try {
@@ -5999,7 +6035,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
-      const updates: Partial<Event> = {};
+      const updates: any = {};
       if (publicSlug !== undefined) updates.publicSlug = publicSlug;
       if (youtubeVideos !== undefined) updates.youtubeVideos = youtubeVideos;
       if (eventPackFiles !== undefined) updates.eventPackFiles = eventPackFiles;
@@ -6088,7 +6124,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Send via SendGrid
-      const result = await sendEventAnnouncementEmail(recipients, event);
+      const result = await sendEventAnnouncementEmail(recipients, {
+        ...event,
+        timezone: event.timezone ?? undefined,
+        location: event.location ?? undefined,
+        isVirtual: event.isVirtual ?? undefined,
+        meetingLink: event.meetingLink ?? undefined,
+        imageUrl: event.imageUrl ?? undefined,
+        capacity: event.capacity ?? undefined
+      });
       
       if (!result.success) {
         return res.status(500).json({ 
@@ -6160,7 +6204,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Send via SendGrid
-      const result = await sendEventDigestEmail(recipients, eventsToInclude);
+      const result = await sendEventDigestEmail(recipients, eventsToInclude.map(event => ({
+        ...event,
+        timezone: event.timezone ?? undefined,
+        location: event.location ?? undefined,
+        isVirtual: event.isVirtual ?? undefined,
+        imageUrl: event.imageUrl ?? undefined
+      })));
       
       if (!result.success) {
         return res.status(500).json({ 
@@ -6301,6 +6351,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Check if user is member of school
+      if (!req.user) {
+        return res.status(401).json({ message: 'Authentication required' });
+      }
+      
       const schoolUser = await storage.getSchoolUser(schoolId, req.user.id);
       if (!schoolUser && !req.user.isAdmin) {
         return res.status(403).json({ message: 'You are not a member of this school' });
@@ -6519,7 +6573,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         visibility: z.enum(['private', 'public']).optional()
       });
       
-      const updates = updateSchema.parse({ altText, description, visibility });
+      const validatedUpdates = updateSchema.parse({ altText, description, visibility });
+      
+      // Map 'private' to 'registered' for database visibility enum
+      const updates: any = {
+        ...validatedUpdates,
+        visibility: validatedUpdates.visibility === 'private' ? 'registered' : validatedUpdates.visibility
+      };
       
       const updatedAsset = await storage.updateMediaAssetMetadata(id, updates);
       res.json(updatedAsset);

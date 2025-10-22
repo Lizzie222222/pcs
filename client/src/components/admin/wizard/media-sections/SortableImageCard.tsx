@@ -72,19 +72,56 @@ export function SortableImageCard({ id, image, index, onRemove }: SortableImageC
           className="w-full h-full object-cover"
           loading="lazy"
           crossOrigin="anonymous"
+          onLoad={() => {
+            console.log('[SortableImageCard] ✅ Image loaded successfully:', {
+              url: image.url,
+              source: image.source,
+              index,
+              hasCaption: !!image.caption
+            });
+          }}
           onError={(e) => {
+            console.error('[SortableImageCard] ❌ Image failed to load:', {
+              url: image.url,
+              source: image.source,
+              index,
+              fullImage: image
+            });
             const img = e.currentTarget;
             img.style.display = 'none';
             const parent = img.parentElement;
             if (parent && !parent.querySelector('.image-error-placeholder')) {
               const placeholder = document.createElement('div');
-              placeholder.className = 'image-error-placeholder flex flex-col items-center justify-center text-muted-foreground p-4';
-              placeholder.innerHTML = `
-                <svg class="w-12 h-12 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-                <p class="text-xs text-center">Image loading...</p>
-              `;
+              placeholder.className = 'image-error-placeholder flex flex-col items-center justify-center text-destructive p-4';
+              
+              // Create SVG icon safely
+              const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+              svg.setAttribute('class', 'w-12 h-12 mb-2');
+              svg.setAttribute('fill', 'none');
+              svg.setAttribute('viewBox', '0 0 24 24');
+              svg.setAttribute('stroke', 'currentColor');
+              const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+              path.setAttribute('stroke-linecap', 'round');
+              path.setAttribute('stroke-linejoin', 'round');
+              path.setAttribute('stroke-width', '2');
+              path.setAttribute('d', 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z');
+              svg.appendChild(path);
+              
+              // Create title text safely
+              const title = document.createElement('p');
+              title.className = 'text-xs font-semibold text-center';
+              title.textContent = 'Image Failed to Load';
+              
+              // Create URL text safely (prevents XSS by using textContent)
+              const urlText = document.createElement('p');
+              urlText.className = 'text-xs text-center break-all mt-1 max-w-full';
+              const truncatedUrl = image.url?.substring(0, 50) || '';
+              urlText.textContent = truncatedUrl + ((image.url?.length || 0) > 50 ? '...' : '');
+              
+              // Append all elements safely
+              placeholder.appendChild(svg);
+              placeholder.appendChild(title);
+              placeholder.appendChild(urlText);
               parent.appendChild(placeholder);
             }
           }}

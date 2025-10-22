@@ -35,6 +35,7 @@ export function SelectedMediaSummary({ form, templateConfig }: SelectedMediaSumm
   
   const rawImages = form.watch("images") || [];
   const currentImages = useMemo(() => {
+    console.log('[SelectedMediaSummary] Raw images from form:', rawImages);
     const needsIds = rawImages.some((img: any) => !img.id);
     
     if (needsIds) {
@@ -42,10 +43,12 @@ export function SelectedMediaSummary({ form, templateConfig }: SelectedMediaSumm
         ...img,
         id: img.id || nanoid()
       }));
+      console.log('[SelectedMediaSummary] Normalized images (added IDs):', normalized);
       form.setValue('images', normalized);
       return normalized;
     }
     
+    console.log('[SelectedMediaSummary] Using raw images (already have IDs):', rawImages);
     return rawImages;
   }, [rawImages, form]);
 

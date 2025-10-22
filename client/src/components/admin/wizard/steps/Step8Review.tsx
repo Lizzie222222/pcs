@@ -194,46 +194,56 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
   }
   
   if (!validationChecks.hasMinImages) {
+    const needed = config.requiredFields.minImages - imageCount;
     validationErrors.push({
-      field: "Images",
-      message: `Please add at least ${config.requiredFields.minImages} image(s). Currently have ${imageCount}.`,
-      stepLink: 3,
+      field: "Gallery Images",
+      message: `Need ${needed} more image(s) - currently have ${imageCount}, need ${config.requiredFields.minImages} minimum`,
+      stepLink: 4,
       stepName: "Media"
     });
   }
   
   if (!validationChecks.hasBeforeAfter) {
+    const missingImages = [];
+    if (!formValues.beforeImage) missingImages.push('Before');
+    if (!formValues.afterImage) missingImages.push('After');
     validationErrors.push({
-      field: "Before & After",
-      message: "Please upload both before and after images for the Visual Story template",
-      stepLink: 3,
+      field: "Before & After Images",
+      message: `Missing required ${missingImages.join(' and ')} image(s) for Visual Story template`,
+      stepLink: 4,
       stepName: "Media"
     });
   }
   
   if (!validationChecks.hasMinQuotes) {
+    const currentQuotes = formValues.studentQuotes?.length || 0;
+    const needed = (config.requiredFields.minQuotes || 0) - currentQuotes;
     validationErrors.push({
       field: "Student Quotes",
-      message: `Please add at least ${config.requiredFields.minQuotes} student quote(s)`,
-      stepLink: 4,
+      message: `Need ${needed} more student quote(s) - currently have ${currentQuotes}, need ${config.requiredFields.minQuotes} minimum`,
+      stepLink: 5,
       stepName: "Enhancements"
     });
   }
   
   if (!validationChecks.hasMinMetrics) {
+    const currentMetrics = formValues.impactMetrics?.length || 0;
+    const needed = (config.requiredFields.minMetrics || 0) - currentMetrics;
     validationErrors.push({
       field: "Impact Metrics",
-      message: `Please add at least ${config.requiredFields.minMetrics} impact metric(s)`,
-      stepLink: 4,
+      message: `Need ${needed} more impact metric(s) - currently have ${currentMetrics}, need ${config.requiredFields.minMetrics} minimum`,
+      stepLink: 5,
       stepName: "Enhancements"
     });
   }
   
   if (!validationChecks.hasMinTimeline) {
+    const currentTimeline = formValues.timelineSections?.length || 0;
+    const needed = (config.requiredFields.minTimelineSections || 0) - currentTimeline;
     validationErrors.push({
-      field: "Timeline",
-      message: `Please add at least ${config.requiredFields.minTimelineSections} timeline section(s)`,
-      stepLink: 4,
+      field: "Timeline Sections",
+      message: `Need ${needed} more timeline section(s) - currently have ${currentTimeline}, need ${config.requiredFields.minTimelineSections} minimum`,
+      stepLink: 5,
       stepName: "Enhancements"
     });
   }

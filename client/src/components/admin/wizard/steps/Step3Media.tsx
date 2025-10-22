@@ -90,7 +90,7 @@ export function Step3Media({ form, templateType: propTemplateType }: Step3MediaP
   return (
     <div className="space-y-10">
       <div>
-        <h2 id="step-3-heading" className="text-2xl font-semibold">Step 3 · Media</h2>
+        <h2 id="step-4-heading" className="text-2xl font-semibold">Step 4 · Media</h2>
         <p className="text-muted-foreground mt-2">
           Add compelling visuals to showcase your school's plastic reduction journey
         </p>

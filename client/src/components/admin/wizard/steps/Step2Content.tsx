@@ -15,7 +15,7 @@ export function Step2Content({ form }: Step2ContentProps) {
 
   return (
     <div className="space-y-8">
-      <h2 id="step-2-heading" className="text-2xl font-semibold">Step 2 · Content</h2>
+      <h2 id="step-3-heading" className="text-2xl font-semibold">Step 3 · Content</h2>
       
       <Card>
         <CardHeader>

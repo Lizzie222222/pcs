@@ -217,4 +217,11 @@
   .uppy-Dashboard--modal .uppy-Dashboard-inner {
     z-index: 10000 !important;
   }
+  
+  /* Wizard sidebar - prevent body scrolling when wizard sidebar is visible */
+  body.wizard-sidebar-visible {
+    overflow: hidden;
+    position: fixed;
+    width: 100%;
+  }
 }

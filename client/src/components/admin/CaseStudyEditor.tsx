@@ -502,6 +502,15 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
     updateValidation();
   }, [currentStep, schoolId, title, stage, templateType, description, impact, images, beforeImage, afterImage, quotes, metrics, timeline]);
 
+  // Apply wizard-sidebar-visible class to body to prevent scrolling
+  useEffect(() => {
+    document.body.classList.add('wizard-sidebar-visible');
+    
+    return () => {
+      document.body.classList.remove('wizard-sidebar-visible');
+    };
+  }, []);
+
   return (
     <PreviewContainer
       preview={
