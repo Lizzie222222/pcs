@@ -535,7 +535,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         {/* Main Content - Two Column Layout */}
         <Form {...form}>
           <form onSubmit={(e) => e.preventDefault()}>
-            <div className={isMobile ? "flex flex-col" : "grid grid-cols-[280px_1fr]"}>
+            <div className={isMobile ? "flex flex-col" : ""}>
               {/* Left: Sidebar Navigation (Desktop) or Mobile Button */}
               <SidebarWizardNav
                 steps={WIZARD_STEPS}
@@ -546,7 +546,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
               />
 
               {/* Right: Step Content */}
-              <div className="flex-1 overflow-y-auto">
+              <div className={isMobile ? "flex-1" : "ml-[280px]"}>
                 <div className="container mx-auto px-4 py-8">
                   <div className="max-w-4xl mx-auto">
                     {/* Step Content */}

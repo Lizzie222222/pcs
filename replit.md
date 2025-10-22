@@ -125,3 +125,26 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 - UX: Users can create drafts without being blocked by media requirements
 - Quality: Publishing still enforces all template requirements
 - Navigation: Sidebar remains accessible during editing
+
+### Sidebar UX Improvements (October 22, 2025)
+**Simplified navigation and fixed positioning - PRODUCTION READY**
+
+**Completed Improvements (2/2 tasks):**
+1. **Removed Confusing Badges** - Removed all error/warning count badges from sidebar steps (e.g., "2 errors", "1 warning") that were confusing users
+2. **Fixed Positioning** - Changed sidebar from sticky to truly fixed positioning, ensuring it's always visible and doesn't scroll with page content
+
+**Technical Implementation:**
+- Sidebar uses `position: fixed` with `left-0 top-[90px]` for true fixed positioning
+- Content area has `ml-[280px]` margin to prevent overlap with fixed sidebar
+- Removed validation badge display logic (lines 114-134 of SidebarWizardNav.tsx)
+- Sidebar remains at fixed 280px width with full viewport height
+
+**Key Files:**
+- SidebarWizardNav.tsx (fixed positioning, badge removal)
+- CaseStudyEditor.tsx (content margin adjustment)
+
+**Impact:**
+- Cleaner UI: No confusing error/warning badges cluttering the navigation
+- Always visible: Sidebar stays in view during long form scrolling
+- Better navigation: Users can jump between steps anytime without scrolling
+- Live Preview access: Preview tip always visible at bottom of sidebar

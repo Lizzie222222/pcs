@@ -110,28 +110,6 @@ function StepItem({
               {step.description}
             </p>
           )}
-
-          {/* Validation Badges */}
-          <div className="flex flex-wrap gap-1 mt-2">
-            {hasErrors && (
-              <Badge variant="destructive" className="text-xs h-5">
-                <AlertCircle className="h-3 w-3 mr-1" />
-                {validation.errors.length} {validation.errors.length === 1 ? 'error' : 'errors'}
-              </Badge>
-            )}
-            {hasWarnings && (
-              <Badge variant="outline" className="text-xs h-5 border-yellow-500 text-yellow-600 dark:text-yellow-500">
-                <AlertTriangle className="h-3 w-3 mr-1" />
-                {validation.warnings.length} {validation.warnings.length === 1 ? 'warning' : 'warnings'}
-              </Badge>
-            )}
-            {isCompleted && validation.valid && !hasWarnings && !hasErrors && (
-              <Badge variant="outline" className="text-xs h-5 border-green-500 text-green-600 dark:text-green-500">
-                <Check className="h-3 w-3 mr-1" />
-                Complete
-              </Badge>
-            )}
-          </div>
         </div>
       </div>
     </button>
@@ -199,7 +177,7 @@ export function SidebarWizardNav({
   if (!isMobile) {
     return (
       <aside
-        className="w-[280px] flex-shrink-0 bg-muted/30 border-r border-border sticky top-[90px] h-[calc(100vh-90px)] overflow-hidden"
+        className="w-[280px] flex-shrink-0 bg-muted/30 border-r border-border fixed left-0 top-[90px] h-[calc(100vh-90px)] overflow-hidden z-10"
         data-testid="sidebar-wizard-nav"
       >
         <div className="h-full overflow-y-auto p-4">
