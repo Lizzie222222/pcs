@@ -203,4 +203,18 @@
   section {
     overflow-x: hidden;
   }
+  
+  /* Uppy Dashboard Modal - Ensure it appears above all other content */
+  .uppy-Dashboard--modal {
+    z-index: 9999 !important;
+  }
+  
+  .uppy-Dashboard--modal .uppy-Dashboard-overlay {
+    z-index: 9998 !important;
+  }
+  
+  /* Ensure Uppy inner modal content is above overlay */
+  .uppy-Dashboard--modal .uppy-Dashboard-inner {
+    z-index: 10000 !important;
+  }
 }

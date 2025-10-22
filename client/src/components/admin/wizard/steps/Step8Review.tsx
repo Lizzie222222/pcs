@@ -26,7 +26,7 @@ import { BeforeAfterSlider } from "@/components/BeforeAfterSlider";
 import { PreviewToggleButton, usePreviewContext } from "../../PreviewContainer";
 import { useQuery } from "@tanstack/react-query";
 
-interface Step5ReviewProps {
+interface Step8ReviewProps {
   form: UseFormReturn<any>;
   onStepChange?: (step: number) => void;
 }
@@ -93,7 +93,7 @@ const PROGRAM_STAGE_LABELS: Record<string, string> = {
   act: "Act",
 };
 
-export function Step5Review({ form, onStepChange }: Step5ReviewProps) {
+export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
   const previewContext = usePreviewContext();
   const isMobile = previewContext?.isMobile ?? false;
   const formValues = form.watch();
@@ -240,7 +240,7 @@ export function Step5Review({ form, onStepChange }: Step5ReviewProps) {
 
   return (
     <div className="space-y-8">
-      <h2 id="step-5-heading" className="text-2xl font-semibold">Step 5 · Review & Publish</h2>
+      <h2 id="step-8-heading" className="text-2xl font-semibold">Step 8 · Review & Publish</h2>
       
       {/* Preview Callout */}
       <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg" data-testid="callout-preview-available">

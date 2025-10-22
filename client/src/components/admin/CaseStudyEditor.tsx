@@ -31,7 +31,9 @@ import { Step2BasicInfo } from "./wizard/steps/Step2BasicInfo";
 import { Step2Content } from "./wizard/steps/Step2Content";
 import { Step3Media } from "./wizard/steps/Step3Media";
 import { Step4Enhancements } from "./wizard/steps/Step4Enhancements";
-import { Step5Review } from "./wizard/steps/Step5Review";
+import { Step6CategoriesTags } from "./wizard/steps/Step6CategoriesTags";
+import { Step7PublicationSettings } from "./wizard/steps/Step7PublicationSettings";
+import { Step8Review } from "./wizard/steps/Step8Review";
 import { getTemplateConfig } from "./wizard/templateConfigurations";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { PreviewContainer, PreviewToggleButton } from "./PreviewContainer";
@@ -125,7 +127,9 @@ const WIZARD_STEPS = [
   { id: 3, label: "Content", description: "Write your story" },
   { id: 4, label: "Media", description: "Add images" },
   { id: 5, label: "Enhancements", description: "Quotes & metrics" },
-  { id: 6, label: "Review & Publish", description: "Final check" },
+  { id: 6, label: "Categories & Tags", description: "Organize" },
+  { id: 7, label: "Publication Settings", description: "SEO & visibility" },
+  { id: 8, label: "Review & Publish", description: "Final check" },
 ];
 
 export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditorProps) {
@@ -142,6 +146,8 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
     4: { valid: false, warnings: [], errors: [] },
     5: { valid: false, warnings: [], errors: [] },
     6: { valid: false, warnings: [], errors: [] },
+    7: { valid: false, warnings: [], errors: [] },
+    8: { valid: false, warnings: [], errors: [] },
   });
 
   const form = useForm<CaseStudyFormData>({
@@ -289,14 +295,23 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         break;
       
       case 6:
+        // Categories & Tags - all optional
+        // No required fields, but we can warn if both are empty
+        break;
+      
+      case 7:
+        // Publication Settings - all optional but recommended
+        if (!values.metaDescription) {
+          warnings.push("Consider adding a meta description for better SEO");
+        }
+        break;
+      
+      case 8:
         // Review - aggregate all previous validations
-        for (let i = 1; i < 6; i++) {
+        for (let i = 1; i < 8; i++) {
           const stepVal = getStepValidationDetails(i);
           errors.push(...stepVal.errors);
           warnings.push(...stepVal.warnings);
-        }
-        if (!values.metaDescription) {
-          warnings.push("Consider adding a meta description for better SEO");
         }
         break;
       
@@ -574,7 +589,13 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
                         <Step4Enhancements form={form} />
                       )}
                       {currentStep === 6 && (
-                        <Step5Review form={form} onStepChange={handleStepChange} />
+                        <Step6CategoriesTags form={form} />
+                      )}
+                      {currentStep === 7 && (
+                        <Step7PublicationSettings form={form} />
+                      )}
+                      {currentStep === 8 && (
+                        <Step8Review form={form} onStepChange={handleStepChange} />
                       )}
                     </section>
 

@@ -11,14 +11,17 @@ export function transformFormToPreview(
   formData: any,
   school?: School
 ): CaseStudyData {
+  // Use hero image if set, otherwise use first gallery image
+  const heroImage = formData.imageUrl || formData.images?.[0]?.url || '';
+  
   return {
     id: formData.id || 'preview-draft',
     title: formData.title || 'Untitled Case Study',
     description: formData.description || '<p>Start writing your case study description...</p>',
     stage: formData.stage || 'inspire',
     impact: formData.impact || '',
-    imageUrl: formData.images?.[0]?.url || '',
-    featured: false,
+    imageUrl: heroImage,
+    featured: formData.featured || false,
     evidenceLink: formData.evidenceLink || null,
     evidenceFiles: null,
     schoolId: formData.schoolId || '',
@@ -28,26 +31,50 @@ export function transformFormToPreview(
     createdAt: new Date().toISOString(),
     createdByName: 'Preview',
     
+    // Map images with proper structure
     images: formData.images?.map((img: any) => ({
-      url: img.url,
-      caption: img.caption || ''
+      url: img.url || img,
+      caption: img.caption || '',
+      altText: img.altText || ''
     })) || [],
     
-    videos: formData.videos || [],
+    // Include videos
+    videos: formData.videos?.map((vid: any) => ({
+      url: vid.url || vid,
+      title: vid.title || '',
+      description: vid.description || ''
+    })) || [],
     
+    // Include before/after images for visual story template
     beforeImage: formData.beforeImage || '',
     afterImage: formData.afterImage || '',
     
-    studentQuotes: formData.studentQuotes || [],
+    // Include student quotes
+    studentQuotes: formData.studentQuotes?.map((quote: any) => ({
+      quote: quote.quote || quote.text || '',
+      studentName: quote.studentName || quote.name || '',
+      studentAge: quote.studentAge || quote.age,
+      studentRole: quote.studentRole || quote.role || ''
+    })) || [],
     
-    impactMetrics: formData.impactMetrics || [],
+    // Include impact metrics
+    impactMetrics: formData.impactMetrics?.map((metric: any) => ({
+      label: metric.label || '',
+      value: metric.value || '',
+      unit: metric.unit || '',
+      description: metric.description || ''
+    })) || [],
     
+    // Include timeline sections
     timelineSections: formData.timelineSections?.map((section: any, index: number) => ({
-      ...section,
+      title: section.title || '',
+      description: section.description || '',
+      date: section.date || '',
       order: section.order !== undefined ? section.order : index
     })) || [],
     
-    categories: [],
-    tags: []
+    // Include categories and tags
+    categories: formData.categories || [],
+    tags: formData.tags || []
   };
 }
