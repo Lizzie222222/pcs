@@ -517,7 +517,7 @@ export default function Landing() {
               <p className="text-gray-500 text-lg">No upcoming events at the moment. Check back soon!</p>
             </div>
           ) : (
-            <div className="relative px-12" data-testid="events-carousel">
+            <div className="relative px-12 pb-6" data-testid="events-carousel">
               <Carousel
                 opts={{
                   align: "start",
@@ -525,7 +525,7 @@ export default function Landing() {
                 }}
                 className="w-full"
               >
-                <CarouselContent className="-ml-4">
+                <CarouselContent className="-ml-4 py-2">
                   {upcomingEvents.map((event: any) => (
                     <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
                       <a
