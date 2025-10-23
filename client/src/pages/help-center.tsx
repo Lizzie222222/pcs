@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
+import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -204,6 +206,7 @@ const categories: Category[] = [
 ];
 
 export default function HelpCenter() {
+  const { t } = useTranslation();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
@@ -227,9 +230,9 @@ export default function HelpCenter() {
   const totalFAQs = categories.reduce((sum, cat) => sum + cat.faqs.length, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-20">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-pcs_blue via-ocean-blue to-navy py-16 px-4">
+      <section className="relative bg-gradient-to-r from-pcs_blue via-ocean-blue to-navy py-16 px-4 mt-20">
         <div className="max-w-4xl mx-auto text-center">
           <div className="flex items-center justify-center gap-3 mb-4">
             <HelpCircle className="h-12 w-12 text-white" />
@@ -421,6 +424,64 @@ export default function HelpCenter() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Footer */}
+      <footer className="bg-navy text-white py-12 mt-12">
+        <div className="container-width">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="mb-4">
+                <img 
+                  src={whiteLogoUrl} 
+                  alt="Plastic Clever Schools Logo" 
+                  className="w-48 h-auto max-w-full object-contain" 
+                />
+              </div>
+              <p className="text-gray-300 text-sm sm:text-base">
+                {t('footer.description')}
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">{t('footer.program_title')}</h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><a href="/#how-it-works" className="hover:text-teal transition-colors">{t('footer.program_how_it_works')}</a></li>
+                <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.program_resources')}</a></li>
+                <li><a href="/inspiration" className="hover:text-teal transition-colors">{t('footer.program_success_stories')}</a></li>
+                <li><a href="/#how-it-works" className="hover:text-teal transition-colors">{t('footer.program_award_criteria')}</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">{t('footer.support_title')}</h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><a href="/help-center" className="hover:text-teal transition-colors">{t('footer.support_help_center')}</a></li>
+                <li><a href="/contact" className="hover:text-teal transition-colors">{t('footer.support_contact_us')}</a></li>
+                <li><a href="/schools-map" className="hover:text-teal transition-colors">{t('footer.support_community')}</a></li>
+                <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.support_training')}</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">{t('footer.connect_title')}</h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><a href="https://www.instagram.com/plasticcleverschools" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.connect_instagram')}</a></li>
+                <li><a href="https://www.facebook.com/plasticcleverschools" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.connect_facebook')}</a></li>
+                <li><a href="https://www.linkedin.com/company/plastic-clever-schools" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.connect_linkedin')}</a></li>
+                <li><a href="mailto:info@plasticcleverschools.org" className="hover:text-teal transition-colors">{t('footer.connect_email')}</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+            <p>
+              {t('footer.copyright')} | 
+              <a href="https://commonseas.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors ml-1">{t('footer.privacy')}</a> | 
+              <a href="/terms" className="hover:text-teal transition-colors ml-1">{t('footer.terms')}</a>
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

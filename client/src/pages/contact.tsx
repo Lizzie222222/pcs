@@ -11,6 +11,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Mail, MapPin, Phone, Send, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
+import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 
 const contactSchema = z.object({
   fullName: z.string().min(1, "Full name is required"),
@@ -23,6 +25,7 @@ type ContactForm = z.infer<typeof contactSchema>;
 
 export default function Contact() {
   const { toast } = useToast();
+  const { t } = useTranslation();
   const [submitted, setSubmitted] = useState(false);
 
   const form = useForm<ContactForm>({
@@ -63,7 +66,7 @@ export default function Contact() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-white via-ocean-light/20 to-navy-light/30">
+    <div className="min-h-screen bg-gradient-to-br from-white via-ocean-light/20 to-navy-light/30 pt-20">
       {/* Hero Section */}
       <section className="relative bg-gradient-to-r from-pcs_blue via-ocean-blue to-navy py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
@@ -302,6 +305,64 @@ export default function Contact() {
           </div>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-navy text-white py-12">
+        <div className="container-width">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            <div>
+              <div className="mb-4">
+                <img 
+                  src={whiteLogoUrl} 
+                  alt="Plastic Clever Schools Logo" 
+                  className="w-48 h-auto max-w-full object-contain" 
+                />
+              </div>
+              <p className="text-gray-300 text-sm sm:text-base">
+                {t('footer.description')}
+              </p>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">{t('footer.program_title')}</h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><a href="/#how-it-works" className="hover:text-teal transition-colors">{t('footer.program_how_it_works')}</a></li>
+                <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.program_resources')}</a></li>
+                <li><a href="/inspiration" className="hover:text-teal transition-colors">{t('footer.program_success_stories')}</a></li>
+                <li><a href="/#how-it-works" className="hover:text-teal transition-colors">{t('footer.program_award_criteria')}</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">{t('footer.support_title')}</h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><a href="/help-center" className="hover:text-teal transition-colors">{t('footer.support_help_center')}</a></li>
+                <li><a href="/contact" className="hover:text-teal transition-colors">{t('footer.support_contact_us')}</a></li>
+                <li><a href="/schools-map" className="hover:text-teal transition-colors">{t('footer.support_community')}</a></li>
+                <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.support_training')}</a></li>
+              </ul>
+            </div>
+            
+            <div>
+              <h4 className="font-semibold mb-4">{t('footer.connect_title')}</h4>
+              <ul className="space-y-2 text-sm text-gray-300">
+                <li><a href="https://www.instagram.com/plasticcleverschools" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.connect_instagram')}</a></li>
+                <li><a href="https://www.facebook.com/plasticcleverschools" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.connect_facebook')}</a></li>
+                <li><a href="https://www.linkedin.com/company/plastic-clever-schools" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.connect_linkedin')}</a></li>
+                <li><a href="mailto:info@plasticcleverschools.org" className="hover:text-teal transition-colors">{t('footer.connect_email')}</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+            <p>
+              {t('footer.copyright')} | 
+              <a href="https://commonseas.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors ml-1">{t('footer.privacy')}</a> | 
+              <a href="/terms" className="hover:text-teal transition-colors ml-1">{t('footer.terms')}</a>
+            </p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
