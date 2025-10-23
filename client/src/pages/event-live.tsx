@@ -85,7 +85,14 @@ export default function EventLivePage() {
   const { data: event, isLoading, error } = useQuery<Event>({
     queryKey: ['/api/events/slug', params.slug],
     queryFn: async () => {
-      const res = await fetch(`/api/events/slug/${params.slug}`);
+      // Try slug first
+      let res = await fetch(`/api/events/slug/${params.slug}`);
+      
+      // If 404, try as direct ID (for events without publicSlug)
+      if (res.status === 404) {
+        res = await fetch(`/api/events/${params.slug}`);
+      }
+      
       if (!res.ok) {
         if (res.status === 404) throw new Error('Event not found');
         throw new Error('Failed to fetch event');
@@ -347,43 +354,42 @@ export default function EventLivePage() {
             <h2 className="text-3xl md:text-4xl font-bold mb-10 text-gray-900" data-testid="text-resources-title">
               Event Resources
             </h2>
-            <div className="grid md:grid-cols-2 gap-6">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {event.eventPackFiles.map((file, index) => (
-                <Card key={index} className="p-6 hover:shadow-xl transition-all duration-200 border-2 border-transparent hover:border-pcs_blue/20" data-testid={`card-resource-${index}`}>
-                  <div className="flex items-start gap-4">
-                    <div className="p-3 bg-gradient-to-br from-pcs_blue to-ocean-blue rounded-xl shadow-md">
-                      <Download className="w-6 h-6 text-white" />
+                <Card key={index} className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-pcs_blue/30 group" data-testid={`card-resource-${index}`}>
+                  <div className="relative h-40 bg-gradient-to-br from-pcs_blue to-ocean-blue flex items-center justify-center">
+                    <Download className="w-16 h-16 text-white/20 absolute" />
+                    <div className="relative z-10 bg-white/20 backdrop-blur-sm rounded-full p-4">
+                      <Download className="w-12 h-12 text-white" />
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-xl mb-2 text-gray-900" data-testid={`text-resource-title-${index}`}>
-                        {file.title}
-                      </h3>
-                      {file.description && (
-                        <p className="text-gray-600 text-sm mb-3 leading-relaxed" data-testid={`text-resource-description-${index}`}>
-                          {file.description}
-                        </p>
-                      )}
-                      {file.fileName && (
-                        <p className="text-gray-500 text-xs mb-1 font-medium">{file.fileName}</p>
-                      )}
-                      {file.fileSize && (
-                        <p className="text-gray-500 text-xs mb-4">
-                          {(file.fileSize / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      )}
-                      <Button
-                        asChild
-                        variant="outline"
-                        size="sm"
-                        className="border-pcs_blue text-pcs_blue hover:bg-pcs_blue hover:text-white transition-colors"
-                        data-testid={`button-download-${index}`}
-                      >
-                        <a href={file.fileUrl} target="_blank" rel="noopener noreferrer" download>
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </a>
-                      </Button>
-                    </div>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="font-bold text-lg mb-2 text-gray-900 group-hover:text-pcs_blue transition-colors" data-testid={`text-resource-title-${index}`}>
+                      {file.title}
+                    </h3>
+                    {file.description && (
+                      <p className="text-gray-600 text-sm mb-3 leading-relaxed line-clamp-2" data-testid={`text-resource-description-${index}`}>
+                        {file.description}
+                      </p>
+                    )}
+                    {file.fileName && (
+                      <p className="text-gray-500 text-xs mb-1 font-medium truncate">{file.fileName}</p>
+                    )}
+                    {file.fileSize > 0 && (
+                      <p className="text-gray-500 text-xs mb-4">
+                        {(file.fileSize / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    )}
+                    <Button
+                      asChild
+                      className="w-full bg-gradient-to-r from-pcs_blue to-ocean-blue hover:from-pcs_blue/90 hover:to-ocean-blue/90 text-white"
+                      data-testid={`button-download-${index}`}
+                    >
+                      <a href={file.fileUrl} target="_blank" rel="noopener noreferrer" download>
+                        <Download className="w-4 h-4 mr-2" />
+                        Download
+                      </a>
+                    </Button>
                   </div>
                 </Card>
               ))}
