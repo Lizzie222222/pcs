@@ -5953,6 +5953,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         }
       }
       
+      // Convert datetime fields to Date objects for Drizzle
+      const processedUpdates = { ...updates };
+      if (processedUpdates.startDateTime) {
+        processedUpdates.startDateTime = new Date(processedUpdates.startDateTime);
+      }
+      if (processedUpdates.endDateTime) {
+        processedUpdates.endDateTime = new Date(processedUpdates.endDateTime);
+      }
+      if (processedUpdates.registrationDeadline) {
+        processedUpdates.registrationDeadline = new Date(processedUpdates.registrationDeadline);
+      }
+      
       // Track changes for email notification
       const changes: string[] = [];
       if (updates.title && updates.title !== existingEvent.title) {
@@ -5977,7 +5989,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         changes.push(`Event description updated`);
       }
       
-      const event = await storage.updateEvent(eventId, updates);
+      const event = await storage.updateEvent(eventId, processedUpdates);
       
       // Send update emails to registered users (only if there are meaningful changes)
       if (event && changes.length > 0 && existingEvent.status === 'published') {

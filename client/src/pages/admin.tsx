@@ -1402,16 +1402,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       return await apiRequest('PATCH', `/api/admin/events/${id}/page-content`, data);
     },
     onSuccess: () => {
-      toast({
-        title: "Success",
-        description: "Event page content updated successfully.",
-      });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
-      
-      // Close the dialog after saving page content
-      setEventDialogOpen(false);
-      setEditingEvent(null);
-      setIsVirtualEventCreationInProgress(false);
     },
     onError: (error: any) => {
       toast({
@@ -1421,6 +1412,56 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       });
     },
   });
+
+  const updateEventStatusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      return await apiRequest('PUT', `/api/admin/events/${id}`, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update event status.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const savePageBuilderWithStatus = async (status: 'draft' | 'published') => {
+    if (!editingEvent) return;
+
+    try {
+      const pageData = pageBuilderForm.getValues();
+      
+      // Save page content
+      await updateEventPageContentMutation.mutateAsync({ 
+        id: editingEvent.id, 
+        data: pageData 
+      });
+
+      // Update status if it's changing
+      if (editingEvent.status !== status) {
+        await updateEventStatusMutation.mutateAsync({ 
+          id: editingEvent.id, 
+          status 
+        });
+      }
+
+      toast({
+        title: "Success",
+        description: `Event ${status === 'draft' ? 'saved as draft' : 'published'} successfully.`,
+      });
+
+      // Close dialog
+      setEventDialogOpen(false);
+      setEditingEvent(null);
+      setIsVirtualEventCreationInProgress(false);
+    } catch (error) {
+      // Errors are already handled by individual mutations
+    }
+  };
 
   // Event image upload handler
   const handleEventImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -3232,7 +3273,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             <CaseStudyManagement
               user={user}
               schools={schools || []}
-              countryOptions={countryOptions}
+              countryOptions={countryOptions.map(opt => opt.value)}
               isActive={activeTab === 'case-studies'}
             />
           </Suspense>
@@ -4715,7 +4756,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     </div>
 
                     {/* Form Actions */}
-                    <div className="flex justify-end gap-2 pt-4 border-t">
+                    <div className="flex justify-between items-center pt-4 border-t">
                       <Button
                         type="button"
                         variant="outline"
@@ -4724,14 +4765,26 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                       >
                         Cancel
                       </Button>
-                      <Button
-                        type="submit"
-                        disabled={updateEventPageContentMutation.isPending}
-                        className="bg-pcs_blue hover:bg-pcs_blue/90"
-                        data-testid="button-save-page-content"
-                      >
-                        {updateEventPageContentMutation.isPending ? 'Saving...' : 'Save Page Content'}
-                      </Button>
+                      <div className="flex gap-2">
+                        <Button
+                          type="button"
+                          variant="outline"
+                          onClick={() => savePageBuilderWithStatus('draft')}
+                          disabled={updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending}
+                          data-testid="button-save-as-draft"
+                        >
+                          {updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending ? 'Saving...' : 'Save as Draft'}
+                        </Button>
+                        <Button
+                          type="button"
+                          onClick={() => savePageBuilderWithStatus('published')}
+                          disabled={updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending}
+                          className="bg-pcs_blue hover:bg-pcs_blue/90"
+                          data-testid="button-save-and-publish"
+                        >
+                          {updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending ? 'Publishing...' : 'Save & Publish'}
+                        </Button>
+                      </div>
                     </div>
                   </form>
                 </Form>
