@@ -152,7 +152,7 @@ const categories: Category[] = [
     title: "Awards & Certificates",
     icon: Award,
     description: "Earning recognition and downloading certificates",
-    color: "bg-yellow-600",
+    color: "bg-amber-500",
     faqs: [
       {
         question: "How do we earn our Plastic Clever Schools certificate?",
