@@ -193,7 +193,7 @@ export default function Landing() {
       {/* Event Banner - Fixed at top above navigation */}
       {activeBanner && (
         <div 
-          className="w-full py-4 px-4 text-center fixed top-0 left-0 right-0 z-[60] shadow-lg"
+          className="w-full py-2.5 px-4 text-center fixed top-0 left-0 right-0 z-[60] shadow-lg"
           style={{
             backgroundColor: activeBanner.backgroundColor,
             color: activeBanner.textColor,
@@ -201,21 +201,21 @@ export default function Landing() {
           }}
           data-testid="event-banner"
         >
-          <div className="container-width flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <div className="flex items-center gap-3">
+          <div className="container-width flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3">
+            <div className="flex items-center gap-2">
               <Badge 
-                className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 text-xs font-bold animate-pulse shadow-lg border-0"
+                className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-0.5 text-xs font-bold animate-pulse shadow-lg border-0"
                 data-testid="badge-new-event-banner"
               >
                 ✨ NEW
               </Badge>
-              <p className="font-semibold text-sm sm:text-base">
+              <p className="font-semibold text-sm">
                 {activeBanner.text}
               </p>
             </div>
             <Button
               onClick={() => window.location.href = `/events/${activeBanner.event.publicSlug || activeBanner.event.id}`}
-              className="bg-white hover:bg-gray-50 text-gray-900 font-bold px-6 py-2.5 rounded-full transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 border-2 border-white/20"
+              className="bg-white hover:bg-gray-50 text-gray-900 font-bold px-5 py-1.5 text-sm rounded-full transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 border-2 border-white/20"
               data-testid="button-banner-event"
             >
               Learn More →
@@ -224,7 +224,7 @@ export default function Landing() {
         </div>
       )}
       
-      <div className={`min-h-screen bg-white ${activeBanner ? 'pt-[136px]' : 'pt-16'}`}>
+      <div className={`min-h-screen bg-white ${activeBanner ? 'pt-[112px]' : 'pt-16'}`}>
 
       {/* Clean Hero Section with Student Image */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">

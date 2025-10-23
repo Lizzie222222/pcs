@@ -98,7 +98,7 @@ export default function Navigation() {
           : 'bg-white border-gray-200'
       }`} 
       style={{
-        top: activeBanner ? '72px' : '0'
+        top: activeBanner ? '48px' : '0'
       }}
       role="navigation" 
       aria-label={t('navigation.main_navigation')}
