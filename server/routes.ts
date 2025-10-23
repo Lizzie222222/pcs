@@ -5636,6 +5636,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get past events (public) - must come before /api/events/:id to avoid route conflict
+  app.get('/api/events/past', async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const pastEvents = await storage.getPastEvents(limit);
+      res.json(pastEvents);
+    } catch (error) {
+      console.error("Error fetching past events:", error);
+      res.status(500).json({ message: "Failed to fetch past events" });
+    }
+  });
+
   // Public: Get single event
   app.get('/api/events/:id', async (req, res) => {
     try {
@@ -5899,18 +5911,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error tracking resource download:", error);
       res.status(500).json({ message: "Failed to track download" });
-    }
-  });
-
-  // Get past events (public)
-  app.get('/api/events/past', async (req, res) => {
-    try {
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
-      const pastEvents = await storage.getPastEvents(limit);
-      res.json(pastEvents);
-    } catch (error) {
-      console.error("Error fetching past events:", error);
-      res.status(500).json({ message: "Failed to fetch past events" });
     }
   });
 
