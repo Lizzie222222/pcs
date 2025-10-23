@@ -36,6 +36,15 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 
 // Analytics interfaces
 interface AnalyticsOverview {
@@ -171,6 +180,16 @@ export default function AnalyticsContent() {
   });
 
   const [includeAIInsights, setIncludeAIInsights] = useState(true);
+  const [showExportDialog, setShowExportDialog] = useState(false);
+  
+  // Section selections for PDF export
+  const [selectedSections, setSelectedSections] = useState({
+    overview: true,
+    scoresEvidence: true,
+    plasticWasteAudits: true,
+    userEngagement: true,
+    aiInsights: true,
+  });
 
   const exportAnalytics = async (format: 'csv' | 'excel') => {
     try {
@@ -206,7 +225,7 @@ export default function AnalyticsContent() {
           start: dateRange.from.toISOString(),
           end: dateRange.to.toISOString()
         },
-        includeInsights: includeAIInsights
+        sections: selectedSections
       });
 
       const blob = await response.blob();
@@ -219,6 +238,8 @@ export default function AnalyticsContent() {
       link.download = `analytics-report-${Date.now()}.pdf`;
       link.click();
       window.URL.revokeObjectURL(url);
+
+      setShowExportDialog(false);
 
       toast({
         title: "Report downloaded successfully",
@@ -275,39 +296,146 @@ export default function AnalyticsContent() {
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="include-ai-insights"
-                checked={includeAIInsights}
-                onCheckedChange={(checked) => setIncludeAIInsights(checked as boolean)}
-                data-testid="checkbox-include-ai-insights"
-              />
-              <label
-                htmlFor="include-ai-insights"
-                className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-              >
-                Include AI insights
-              </label>
-            </div>
-            
-            <Button
-              onClick={() => exportPDFMutation.mutate()}
-              disabled={exportPDFMutation.isPending || !dateRange?.from || !dateRange?.to}
-              data-testid="button-export-pdf"
-              className="bg-pcs_blue hover:bg-pcs_navy"
-            >
-              {exportPDFMutation.isPending ? (
-                <>
-                  <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                  Generating report...
-                </>
-              ) : (
-                <>
+            <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
+              <DialogTrigger asChild>
+                <Button
+                  disabled={!dateRange?.from || !dateRange?.to}
+                  data-testid="button-export-pdf"
+                  className="bg-pcs_blue hover:bg-pcs_navy"
+                >
                   <Download className="w-4 h-4 mr-2" />
                   Export PDF Report
-                </>
-              )}
-            </Button>
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]" data-testid="dialog-export-pdf">
+                <DialogHeader>
+                  <DialogTitle>Export PDF Report</DialogTitle>
+                  <DialogDescription>
+                    Select which sections to include in your analytics report. The report will include data from{' '}
+                    {dateRange?.from && dateRange?.to && (
+                      <span className="font-medium text-gray-900">
+                        {dateRange.from.toLocaleDateString()} - {dateRange.to.toLocaleDateString()}
+                      </span>
+                    )}
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="space-y-4 py-4">
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="section-overview"
+                      checked={selectedSections.overview}
+                      onCheckedChange={(checked) => 
+                        setSelectedSections({ ...selectedSections, overview: checked as boolean })
+                      }
+                      data-testid="checkbox-section-overview"
+                    />
+                    <label
+                      htmlFor="section-overview"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Overview
+                    </label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="section-scores-evidence"
+                      checked={selectedSections.scoresEvidence}
+                      onCheckedChange={(checked) => 
+                        setSelectedSections({ ...selectedSections, scoresEvidence: checked as boolean })
+                      }
+                      data-testid="checkbox-section-scores-evidence"
+                    />
+                    <label
+                      htmlFor="section-scores-evidence"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Schools & Evidence
+                    </label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="section-plastic-waste"
+                      checked={selectedSections.plasticWasteAudits}
+                      onCheckedChange={(checked) => 
+                        setSelectedSections({ ...selectedSections, plasticWasteAudits: checked as boolean })
+                      }
+                      data-testid="checkbox-section-plastic-waste"
+                    />
+                    <label
+                      htmlFor="section-plastic-waste"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Plastic Waste Audits
+                    </label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="section-user-engagement"
+                      checked={selectedSections.userEngagement}
+                      onCheckedChange={(checked) => 
+                        setSelectedSections({ ...selectedSections, userEngagement: checked as boolean })
+                      }
+                      data-testid="checkbox-section-user-engagement"
+                    />
+                    <label
+                      htmlFor="section-user-engagement"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      User Engagement
+                    </label>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Checkbox
+                      id="section-ai-insights"
+                      checked={selectedSections.aiInsights}
+                      onCheckedChange={(checked) => 
+                        setSelectedSections({ ...selectedSections, aiInsights: checked as boolean })
+                      }
+                      data-testid="checkbox-section-ai-insights"
+                    />
+                    <label
+                      htmlFor="section-ai-insights"
+                      className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                    >
+                      Include AI Insights
+                    </label>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <Button 
+                    variant="outline" 
+                    onClick={() => setShowExportDialog(false)}
+                    data-testid="button-cancel-export"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={() => exportPDFMutation.mutate()}
+                    disabled={exportPDFMutation.isPending}
+                    data-testid="button-confirm-export"
+                    className="bg-pcs_blue hover:bg-pcs_navy"
+                  >
+                    {exportPDFMutation.isPending ? (
+                      <>
+                        <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                        Generating...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="w-4 h-4 mr-2" />
+                        Export Report
+                      </>
+                    )}
+                  </Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
           </div>
         </div>
       </div>
