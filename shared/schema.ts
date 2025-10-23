@@ -639,6 +639,25 @@ export const eventAnnouncements = pgTable("event_announcements", {
   index("idx_event_announcements_event").on(table.eventId),
 ]);
 
+/**
+ * @description Event banners table for displaying promotional banners on the landing page linking to upcoming events
+ * @location shared/schema.ts
+ * @related events table, users table (createdBy), client/src/pages/landing.tsx, client/src/pages/admin.tsx
+ */
+export const eventBanners = pgTable("event_banners", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  text: text("text").notNull(),
+  eventId: varchar("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
+  isActive: boolean("is_active").default(true),
+  backgroundColor: varchar("background_color").default('#0B3D5D'),
+  textColor: varchar("text_color").default('#FFFFFF'),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_event_banners_active").on(table.isActive),
+]);
+
 export const mediaAssets = pgTable("media_assets", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   objectKey: varchar("object_key").notNull(),
@@ -1304,6 +1323,12 @@ export const insertEventAnnouncementSchema = createInsertSchema(eventAnnouncemen
   sentAt: true,
 });
 
+export const insertEventBannerSchema = createInsertSchema(eventBanners).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 export const insertMediaAssetSchema = createInsertSchema(mediaAssets).omit({
   id: true,
   createdAt: true,
@@ -1389,6 +1414,8 @@ export type EventRegistration = typeof eventRegistrations.$inferSelect;
 export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSchema>;
 export type EventAnnouncement = typeof eventAnnouncements.$inferSelect;
 export type InsertEventAnnouncement = z.infer<typeof insertEventAnnouncementSchema>;
+export type EventBanner = typeof eventBanners.$inferSelect;
+export type InsertEventBanner = z.infer<typeof insertEventBannerSchema>;
 export type MediaAsset = typeof mediaAssets.$inferSelect;
 export type InsertMediaAsset = z.infer<typeof insertMediaAssetSchema>;
 export type MediaTag = typeof mediaTags.$inferSelect;
