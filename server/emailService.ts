@@ -628,6 +628,7 @@ export async function sendEventRegistrationEmail(
     location?: string;
     isVirtual?: boolean;
     meetingLink?: string;
+    publicSlug?: string;
   }
 ): Promise<boolean> {
   const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : 'there';
@@ -661,7 +662,9 @@ export async function sendEventRegistrationEmail(
          ${event.location || 'To be announced'}
        </p>`;
 
-  const calendarUrl = `${getBaseUrl()}/events/${event.id}`;
+  const eventUrl = event.publicSlug 
+    ? `${getBaseUrl()}/events/${event.publicSlug}`
+    : `${getBaseUrl()}/events/${event.id}`;
 
   const html = `
     <!DOCTYPE html>
@@ -727,7 +730,7 @@ export async function sendEventRegistrationEmail(
                   <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0;">
                     <tr>
                       <td style="border-radius: 6px; background-color: #019ADE; padding-right: 10px;">
-                        <a href="${calendarUrl}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
+                        <a href="${eventUrl}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
                           View Event Details
                         </a>
                       </td>
