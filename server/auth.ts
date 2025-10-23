@@ -395,6 +395,9 @@ export async function setupAuth(app: Express) {
         });
       }
 
+      // Update the session user object so subsequent requests get the updated value
+      req.user.hasSeenOnboarding = true;
+
       res.json({
         success: true,
         message: "Onboarding marked as complete"

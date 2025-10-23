@@ -6,6 +6,10 @@ This web application supports the Plastic Clever Schools program, aiming to redu
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
+## Recent Changes
+-   **Dashboard Welcome Modal Fix**: Resolved issue where welcome modal appeared on every dashboard visit instead of only once. Updated `/api/auth/onboarding-complete` endpoint to refresh session user object (`req.user.hasSeenOnboarding = true`) after database update, and improved frontend useEffect dependency array.
+-   **Events Page Footer**: Added consistent footer component to both events listing page (events.tsx) and event detail pages (event-live.tsx), matching the landing page design across all page states.
+
 ## System Architecture
 The application uses a modern web architecture with distinct frontend and backend components, a robust data model, and comprehensive UI/UX design.
 
