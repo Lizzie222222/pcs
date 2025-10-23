@@ -7,7 +7,14 @@
 
 export interface ReportData {
   dateRange: { start: string; end: string };
-  overview: {
+  sections?: {
+    overview: boolean;
+    scoresEvidence: boolean;
+    plasticWasteAudits: boolean;
+    userEngagement: boolean;
+    aiInsights: boolean;
+  };
+  overview?: {
     totalSchools: number;
     totalUsers: number;
     totalEvidence: number;
@@ -36,6 +43,23 @@ export interface ReportData {
     activeUsers: Array<{ period: string; active: number }>;
     schoolEngagement: Array<{ schoolName: string; users: number; evidence: number; lastActivity: Date }>;
   };
+  auditOverview?: {
+    totalSchoolsAudited: number;
+    totalPlasticItems: number;
+    averageItemsPerSchool: number;
+    topProblemPlastics: Array<{ name: string; count: number }>;
+  };
+  auditBySchool?: Array<{
+    schoolId: string;
+    schoolName: string;
+    country: string;
+    totalPlasticItems: number;
+    topProblemPlastic: string | null;
+    auditDate: string;
+    hasRecycling: boolean;
+    hasComposting: boolean;
+    hasPolicy: boolean;
+  }>;
   aiInsights: {
     executiveSummary: string;
     keyInsights: string[];
@@ -57,6 +81,13 @@ export function generateHTMLReport(data: ReportData): string {
   });
   
   const dateRangeFormatted = `${new Date(data.dateRange.start).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - ${new Date(data.dateRange.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}`;
+  
+  // Determine which sections to show (default to true if not specified)
+  const showOverview = data.sections?.overview !== false;
+  const showScoresEvidence = data.sections?.scoresEvidence !== false;
+  const showAudits = data.sections?.plasticWasteAudits !== false;
+  const showUserEngagement = data.sections?.userEngagement !== false;
+  const showAIInsights = data.sections?.aiInsights !== false;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -502,6 +533,7 @@ export function generateHTMLReport(data: ReportData): string {
 
   <div class="container">
 
+    ${showAIInsights ? `
     <!-- Executive Summary -->
     <section class="section">
       <h2>Executive Summary</h2>
@@ -509,7 +541,9 @@ export function generateHTMLReport(data: ReportData): string {
         ${data.aiInsights.executiveSummary}
       </div>
     </section>
+    ` : ''}
 
+    ${showOverview && data.overview ? `
     <!-- Key Metrics at a Glance -->
     <section class="section">
       <h2>Key Metrics at a Glance</h2>
@@ -565,7 +599,9 @@ export function generateHTMLReport(data: ReportData): string {
     </section>
 
     <div class="page-break"></div>
+    ` : ''}
 
+    ${showAIInsights ? `
     <!-- Key Insights -->
     <section class="section">
       <h2>Key Insights</h2>
@@ -587,10 +623,12 @@ export function generateHTMLReport(data: ReportData): string {
     </section>
 
     <div class="page-break"></div>
+    ` : ''}
 
-    <!-- Data Visualizations -->
+    ${showScoresEvidence && (data.schoolEvidence || data.evidenceAnalytics) ? `
+    <!-- Schools & Evidence -->
     <section class="section">
-      <h2>Data Visualizations</h2>
+      <h2>Schools & Evidence</h2>
 
       ${data.schoolEvidence ? `
         <!-- School Stage Distribution -->
@@ -740,12 +778,111 @@ export function generateHTMLReport(data: ReportData): string {
           </tbody>
         </table>
       ` : ''}
+    </section>
+    <div class="page-break"></div>
+    ` : ''}
 
-      ${data.userEngagement ? `
-        <div class="page-break"></div>
+    ${showAudits && (data.auditOverview || data.auditBySchool) ? `
+    <!-- Plastic Waste Audits -->
+    <section class="section">
+      <h2>Plastic Waste Audits</h2>
 
-        <!-- User Role Distribution -->
-        <h3>User Role Distribution</h3>
+      ${data.auditOverview ? `
+        <!-- Audit Overview -->
+        <h3>Audit Overview</h3>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Schools Audited</div>
+            <div class="metric-value">${data.auditOverview.totalSchoolsAudited.toLocaleString()}</div>
+            <div class="metric-description">Total audits completed</div>
+          </div>
+          
+          <div class="metric-card">
+            <div class="metric-label">Plastic Items</div>
+            <div class="metric-value">${data.auditOverview.totalPlasticItems.toLocaleString()}</div>
+            <div class="metric-description">Items identified</div>
+          </div>
+          
+          <div class="metric-card">
+            <div class="metric-label">Average Items</div>
+            <div class="metric-value">${Math.round(data.auditOverview.averageItemsPerSchool).toLocaleString()}</div>
+            <div class="metric-description">Per school</div>
+          </div>
+        </div>
+
+        ${data.auditOverview.topProblemPlastics && data.auditOverview.topProblemPlastics.length > 0 ? `
+          <h3>Top Problem Plastics</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Plastic Item</th>
+                <th>Count</th>
+                <th>Distribution</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${data.auditOverview.topProblemPlastics.map(plastic => {
+                const maxCount = data.auditOverview!.topProblemPlastics[0]?.count || 1;
+                const percentage = (plastic.count / maxCount) * 100;
+                return `
+                  <tr>
+                    <td><strong>${plastic.name}</strong></td>
+                    <td>${plastic.count.toLocaleString()}</td>
+                    <td>
+                      <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${percentage}%; background: #ED1C24;">
+                          ${Math.round(percentage)}%
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        ` : ''}
+      ` : ''}
+
+      ${data.auditBySchool && data.auditBySchool.length > 0 ? `
+        <h3>Schools Audit Details</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>School</th>
+              <th>Country</th>
+              <th>Items</th>
+              <th>Top Problem</th>
+              <th>Facilities</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${data.auditBySchool.slice(0, 10).map((school, index) => `
+              <tr>
+                <td><strong>${index + 1}. ${school.schoolName}</strong></td>
+                <td>${school.country}</td>
+                <td>${school.totalPlasticItems.toLocaleString()}</td>
+                <td>${school.topProblemPlastic || 'N/A'}</td>
+                <td>
+                  ${school.hasRecycling ? '♻️' : ''} 
+                  ${school.hasComposting ? '🌱' : ''} 
+                  ${school.hasPolicy ? '📋' : ''}
+                </td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      ` : ''}
+    </section>
+    <div class="page-break"></div>
+    ` : ''}
+
+    ${showUserEngagement && data.userEngagement ? `
+    <!-- User Engagement -->
+    <section class="section">
+      <h2>User Engagement</h2>
+
+      <!-- User Role Distribution -->
+      <h3>User Role Distribution</h3>
         <div class="chart-container">
           <div class="bar-chart">
             ${data.userEngagement.roleDistribution.map(role => {
@@ -787,11 +924,11 @@ export function generateHTMLReport(data: ReportData): string {
             `).join('')}
           </tbody>
         </table>
-      ` : ''}
     </section>
-
     <div class="page-break"></div>
+    ` : ''}
 
+    ${showAIInsights ? `
     <!-- Recommendations -->
     <section class="section">
       <h2>Actionable Recommendations</h2>
@@ -801,6 +938,7 @@ export function generateHTMLReport(data: ReportData): string {
         `).join('')}
       </ul>
     </section>
+    ` : ''}
 
     <!-- Report Footer -->
     <footer class="report-footer">
