@@ -9,7 +9,6 @@ import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedIm
 import ConnectionSpeedControl from "@/components/ConnectionSpeedControl";
 
 // Lazy load heavy components below the fold
-const InstagramCarousel = lazy(() => import("@/components/InstagramCarousel"));
 const SchoolSignUpForm = lazy(() => import("@/components/SchoolSignUpForm"));
 
 // Generate blur placeholders for large images
@@ -44,7 +43,10 @@ import {
   Recycle,
   Heart,
   TrendingUp,
-  Instagram
+  Calendar,
+  MapPin,
+  Users,
+  ExternalLink
 } from "lucide-react";
 
 interface SiteStats {
@@ -66,6 +68,11 @@ export default function Landing() {
   // Fetch active event banner
   const { data: activeBanner } = useQuery<any>({
     queryKey: ['/api/banners/active'],
+  });
+
+  // Fetch upcoming events for carousel
+  const { data: upcomingEvents = [] } = useQuery<any[]>({
+    queryKey: ['/api/events/upcoming'],
   });
 
   // Connection speed detection
@@ -511,58 +518,91 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Instagram Feed Section */}
+      {/* Upcoming Events Section */}
       <section className="py-16 lg:py-24 bg-gradient-to-b from-teal/5 to-ocean-blue/5">
         <div className="container-width">
-          <div className="text-center mb-16">
-            <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4" data-testid="heading-instagram-title">
-              <Trans 
-                i18nKey="instagram.title"
-                ns="landing"
-                components={{
-                  highlight: <span className="text-ocean-blue" />
-                }}
-              />
+          <div className="text-center mb-12">
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4" data-testid="heading-events-title">
+              Upcoming Events
             </h2>
-            <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto" data-testid="text-instagram-description">
-              {t('instagram.description')}
+            <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto" data-testid="text-events-description">
+              Join our community events, workshops, and webinars to learn and connect with other Plastic Clever Schools
             </p>
-            <div className="flex justify-center mt-6">
-              <a 
-                href="https://instagram.com/plastic_clever_schools" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-br from-purple-600 via-pink-600 to-orange-500 text-white rounded-lg font-semibold hover:scale-105 transition-all duration-300 shadow-lg hover:shadow-xl min-h-[44px]"
-                data-testid="button-follow-instagram"
+          </div>
+          
+          {upcomingEvents.length === 0 ? (
+            <div className="text-center py-12">
+              <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
+              <p className="text-gray-500 text-lg">No upcoming events at the moment. Check back soon!</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="events-grid">
+              {upcomingEvents.slice(0, 6).map((event: any) => (
+                <div 
+                  key={event.id} 
+                  className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group"
+                  data-testid={`card-event-${event.id}`}
+                >
+                  {event.imageUrl && (
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={event.imageUrl} 
+                        alt={event.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-3 right-3 bg-pcs_blue text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        {event.eventType.replace('_', ' ').toUpperCase()}
+                      </div>
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <h3 className="font-bold text-lg text-navy mb-3 line-clamp-2" data-testid={`text-event-title-${event.id}`}>
+                      {event.title}
+                    </h3>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(event.startDateTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                      {event.location && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <MapPin className="w-4 h-4" />
+                          <span className="line-clamp-1">{event.isVirtual ? 'Virtual Event' : event.location}</span>
+                        </div>
+                      )}
+                      {event.capacity && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Users className="w-4 h-4" />
+                          <span>{event.registrationsCount || 0} / {event.capacity} registered</span>
+                        </div>
+                      )}
+                    </div>
+                    <a
+                      href={`/events/${event.id}/live`}
+                      className="inline-flex items-center gap-2 text-pcs_blue hover:text-pcs_blue/80 font-semibold text-sm group/link"
+                      data-testid={`link-event-details-${event.id}`}
+                    >
+                      View Details & Register
+                      <ExternalLink className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {upcomingEvents.length > 6 && (
+            <div className="text-center mt-12">
+              <a
+                href="/events"
+                className="inline-flex items-center gap-2 px-6 py-3 bg-pcs_blue text-white rounded-lg font-semibold hover:bg-pcs_blue/90 transition-all duration-300 shadow-lg hover:shadow-xl"
+                data-testid="button-view-all-events"
               >
-                <Instagram className="w-5 h-5" />
-                <span className="hidden sm:inline">{t('instagram.follow_handle')}</span>
-                <span className="sm:hidden">{t('instagram.follow_short')}</span>
+                View All Events
+                <ArrowRight className="w-5 h-5" />
               </a>
             </div>
-          </div>
-          
-          <div className="">
-            <Suspense fallback={
-              <div className="flex items-center justify-center py-16">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-ocean-blue"></div>
-              </div>
-            }>
-              <InstagramCarousel />
-            </Suspense>
-          </div>
-          
-          <div className="text-center mt-12 ">
-            <p className="text-base text-gray-600 leading-relaxed text-gray-600 mb-6">
-              {t('instagram.hashtag_intro')} <span className="font-semibold text-teal">{t('instagram.main_hashtag')}</span>
-            </p>
-            <div className="flex flex-wrap justify-center gap-4">
-              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">{t('instagram.hashtag_sustainable')}</span>
-              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">{t('instagram.hashtag_plastic_free')}</span>
-              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">{t('instagram.hashtag_eco_education')}</span>
-              <span className="inline-block bg-white px-4 py-2 rounded-full text-sm font-medium text-gray-700 shadow-sm">{t('instagram.hashtag_young_activists')}</span>
-            </div>
-          </div>
+          )}
         </div>
       </section>
 
