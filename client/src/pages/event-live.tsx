@@ -43,6 +43,10 @@ interface Event {
   youtubeVideos?: YoutubeVideo[];
   eventPackFiles?: EventPackFile[];
   testimonials?: Testimonial[];
+  isPreRecorded?: boolean;
+  recordingAvailableFrom?: string;
+  pagePublishedStatus?: 'draft' | 'coming_soon' | 'published';
+  accessType?: 'open' | 'closed';
 }
 
 function YouTubeEmbed({ url, title }: { url: string; title: string }) {
@@ -158,6 +162,43 @@ export default function EventLivePage() {
     registerMutation.mutate();
   };
 
+  // Click tracking mutation
+  const trackClickMutation = useMutation({
+    mutationFn: async () => {
+      if (!event?.id) return;
+      const res = await fetch(`/api/events/${event.id}/track-click`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!res.ok) return null;
+      return res.json();
+    },
+  });
+
+  // Download tracking mutation
+  const trackDownloadMutation = useMutation({
+    mutationFn: async (fileName: string) => {
+      if (!event?.id) return;
+      const res = await fetch(`/api/events/${event.id}/track-download`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ fileName }),
+      });
+      if (!res.ok) return null;
+      return res.json();
+    },
+  });
+
+  const handleMeetingLinkClick = () => {
+    trackClickMutation.mutate();
+  };
+
+  const handleDownloadClick = (fileName: string) => {
+    trackDownloadMutation.mutate(fileName);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -180,10 +221,115 @@ export default function EventLivePage() {
     );
   }
 
+  // Check if page is in coming soon status
+  if (event.pagePublishedStatus === 'coming_soon') {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 flex flex-col items-center justify-center px-4">
+        <div className="max-w-2xl text-center">
+          {event.imageUrl && (
+            <div className="mb-8">
+              <img
+                src={`/api/objects${event.imageUrl}`}
+                alt={event.title}
+                className="max-h-32 mx-auto object-contain drop-shadow-lg"
+                data-testid="img-coming-soon-logo"
+              />
+            </div>
+          )}
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900" data-testid="text-coming-soon-title">
+            {event.title}
+          </h1>
+          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-6 border-2 border-pcs_blue/20">
+            <p className="text-2xl font-semibold text-pcs_blue mb-4" data-testid="text-coming-soon-message">
+              Coming Soon!
+            </p>
+            <p className="text-lg text-gray-700 leading-relaxed" data-testid="text-coming-soon-description">
+              {event.description}
+            </p>
+            <div className="mt-6 flex flex-wrap justify-center gap-4">
+              <div className="flex items-center gap-2 bg-pcs_blue/10 px-4 py-2 rounded-full">
+                <Calendar className="w-5 h-5 text-pcs_blue" />
+                <span className="font-medium text-gray-800">{format(new Date(event.startDateTime), 'MMMM d, yyyy')}</span>
+              </div>
+            </div>
+          </div>
+          <p className="text-gray-600 mb-8" data-testid="text-coming-soon-check-back">
+            This event page is not yet available. Check back soon for more details!
+          </p>
+          <Button onClick={() => navigate('/')} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-coming-soon-home">
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Check access control for closed events
+  if (event.accessType === 'closed' && !userRegistration) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
+        <div className="max-w-2xl text-center">
+          {event.imageUrl && (
+            <div className="mb-8">
+              <img
+                src={`/api/objects${event.imageUrl}`}
+                alt={event.title}
+                className="max-h-32 mx-auto object-contain drop-shadow-lg"
+                data-testid="img-restricted-logo"
+              />
+            </div>
+          )}
+          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900" data-testid="text-restricted-title">
+            {event.title}
+          </h1>
+          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6 border-2 border-amber-200">
+            <p className="text-2xl font-semibold text-amber-700 mb-4" data-testid="text-restricted-message">
+              Registration Required
+            </p>
+            <p className="text-lg text-gray-700 leading-relaxed mb-6" data-testid="text-restricted-description">
+              This is a closed event. You must be registered to access the event content.
+            </p>
+            {!isAuthenticated ? (
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Please sign in and register for this event to gain access.
+                </p>
+                <Button onClick={() => navigate('/register')} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-restricted-signin">
+                  Sign In to Register
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-gray-600">
+                  Register for this event to access the content.
+                </p>
+                <Button onClick={handleRegister} disabled={registerMutation.isPending} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-restricted-register">
+                  {registerMutation.isPending ? "Registering..." : "Register for This Event"}
+                </Button>
+              </div>
+            )}
+          </div>
+          <Button onClick={() => navigate('/')} variant="outline" size="lg" data-testid="button-restricted-home">
+            Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
   const startDate = new Date(event.startDateTime);
   const endDate = new Date(event.endDateTime);
-  const hasStarted = startDate < new Date();
-  const hasEnded = endDate < new Date();
+  const now = new Date();
+  const hasStarted = startDate < now;
+  const hasEnded = endDate < now;
+  
+  // For pre-recorded events, check if recording is available
+  const isRecordingAvailable = event.isPreRecorded && event.recordingAvailableFrom 
+    ? new Date(event.recordingAvailableFrom) <= now 
+    : event.isPreRecorded; // If no recordingAvailableFrom date, assume available
+  
+  // Determine if content should be shown
+  const showContent = event.isPreRecorded ? isRecordingAvailable : true;
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
@@ -212,8 +358,23 @@ export default function EventLivePage() {
             {event.title}
           </h1>
 
+          {/* Pre-recorded content not yet available message */}
+          {event.isPreRecorded && !showContent && event.recordingAvailableFrom && (
+            <div className="mb-12 p-8 bg-amber-50 border-2 border-amber-200 rounded-xl text-center shadow-lg">
+              <p className="text-amber-900 font-semibold text-2xl mb-4" data-testid="text-recording-not-available">
+                Content Not Yet Available
+              </p>
+              <p className="text-lg text-amber-800 mb-2" data-testid="text-recording-available-date">
+                This pre-recorded event will be available on {format(new Date(event.recordingAvailableFrom), 'EEEE, MMMM d, yyyy at h:mm a')}
+              </p>
+              <p className="text-amber-700">
+                Please check back after this date to access the content.
+              </p>
+            </div>
+          )}
+
           {/* YouTube Videos Section */}
-          {event.youtubeVideos && event.youtubeVideos.length > 0 && (
+          {showContent && event.youtubeVideos && event.youtubeVideos.length > 0 && (
             <div className="mb-12">
               <div className="space-y-10">
                 {event.youtubeVideos.map((video, index) => (
@@ -261,7 +422,7 @@ export default function EventLivePage() {
           </div>
 
           {/* Meeting Link */}
-          {event.meetingLink && hasStarted && !hasEnded && (
+          {event.meetingLink && hasStarted && !hasEnded && showContent && (
             <div className="mt-10 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl text-center shadow-lg">
               <p className="text-green-900 font-semibold text-xl mb-4" data-testid="text-event-live">
                 🎉 Event is Live Now!
@@ -272,7 +433,7 @@ export default function EventLivePage() {
                 className="bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold text-lg px-10 py-6 shadow-lg hover:shadow-xl transition-all"
                 data-testid="button-join-meeting"
               >
-                <a href={event.meetingLink} target="_blank" rel="noopener noreferrer">
+                <a href={event.meetingLink} target="_blank" rel="noopener noreferrer" onClick={handleMeetingLinkClick}>
                   <ExternalLink className="w-5 h-5 mr-2" />
                   Join Meeting Now
                 </a>
@@ -349,7 +510,7 @@ export default function EventLivePage() {
       <div className="max-w-6xl mx-auto px-4 py-12">
 
         {/* Event Pack Files Section */}
-        {event.eventPackFiles && event.eventPackFiles.length > 0 && (
+        {showContent && event.eventPackFiles && event.eventPackFiles.length > 0 && (
           <div className="mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-10 text-gray-900" data-testid="text-resources-title">
               Event Resources
@@ -375,7 +536,7 @@ export default function EventLivePage() {
                     {file.fileName && (
                       <p className="text-gray-500 text-xs mb-1 font-medium truncate">{file.fileName}</p>
                     )}
-                    {file.fileSize > 0 && (
+                    {file.fileSize && file.fileSize > 0 && (
                       <p className="text-gray-500 text-xs mb-4">
                         {(file.fileSize / 1024 / 1024).toFixed(2)} MB
                       </p>
@@ -385,7 +546,13 @@ export default function EventLivePage() {
                       className="w-full bg-gradient-to-r from-pcs_blue to-ocean-blue hover:from-pcs_blue/90 hover:to-ocean-blue/90 text-white"
                       data-testid={`button-download-${index}`}
                     >
-                      <a href={file.fileUrl} target="_blank" rel="noopener noreferrer" download>
+                      <a 
+                        href={file.fileUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        download
+                        onClick={() => handleDownloadClick(file.fileName || file.title)}
+                      >
                         <Download className="w-4 h-4 mr-2" />
                         Download
                       </a>

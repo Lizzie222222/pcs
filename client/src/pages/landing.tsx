@@ -71,6 +71,11 @@ export default function Landing() {
     queryKey: ['/api/events/upcoming'],
   });
 
+  // Fetch past events
+  const { data: pastEvents = [] } = useQuery<any[]>({
+    queryKey: ['/api/events/past'],
+  });
+
   // Connection speed detection
   const connectionSpeed = useConnectionSpeed();
 
@@ -571,6 +576,70 @@ export default function Landing() {
           )}
         </div>
       </section>
+
+      {/* Previous Events Section */}
+      {pastEvents.length > 0 && (
+        <section className="py-16 lg:py-24 bg-white">
+          <div className="container-width">
+            <div className="text-center mb-12">
+              <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4" data-testid="heading-previous-events-title">
+                Previous Events
+              </h2>
+              <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto" data-testid="text-previous-events-description">
+                Check out recordings and resources from our past events
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="previous-events-grid">
+              {pastEvents.slice(0, 6).map((event: any) => (
+                <a
+                  key={event.id}
+                  href={`/events/${event.publicSlug || event.id}`}
+                  className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer border border-gray-200"
+                  data-testid={`card-past-event-${event.id}`}
+                >
+                  {event.imageUrl && (
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        src={event.imageUrl} 
+                        alt={event.title}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute top-3 right-3 bg-gray-700 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        {event.eventType.replace('_', ' ').toUpperCase()}
+                      </div>
+                      <div className="absolute top-3 left-3 bg-gray-900/80 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                        PAST EVENT
+                      </div>
+                    </div>
+                  )}
+                  <div className="p-6">
+                    <h3 className="font-bold text-lg text-navy mb-3 line-clamp-2" data-testid={`text-past-event-title-${event.id}`}>
+                      {event.title}
+                    </h3>
+                    <div className="space-y-2 mb-4">
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Calendar className="w-4 h-4" />
+                        <span>{new Date(event.startDateTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                      </div>
+                      {event.location && (
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <MapPin className="w-4 h-4" />
+                          <span className="line-clamp-1">{event.isVirtual ? 'Virtual Event' : event.location}</span>
+                        </div>
+                      )}
+                    </div>
+                    <div className="inline-flex items-center gap-2 text-gray-700 group-hover:text-pcs_blue font-semibold text-sm">
+                      View Recording & Resources
+                      <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Collaboration Logos Section */}
       <section className="py-16 lg:py-20 bg-white">

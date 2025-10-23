@@ -156,6 +156,17 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
     retry: false,
   });
 
+  const { data: pastEvents = [], isLoading: pastEventsLoading } = useQuery<Event[]>({
+    queryKey: ['/api/events/past'],
+    queryFn: async () => {
+      const response = await fetch('/api/events/past?limit=6');
+      if (!response.ok) throw new Error('Failed to fetch past events');
+      return response.json();
+    },
+    enabled: isActive,
+    retry: false,
+  });
+
   const { data: selectedEventDetails } = useQuery<Event & { registrations?: EventRegistration[], registrationsCount?: number }>({
     queryKey: ['/api/events', selectedEvent?.id],
     enabled: !!selectedEvent?.id && eventDetailOpen,
@@ -604,6 +615,98 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
           </div>
         )}
       </div>
+
+      {/* Previous Events Section */}
+      {pastEvents.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-3xl font-bold text-navy mb-6">Previous Events</h2>
+          <p className="text-gray-600 mb-6">Access recordings and resources from past events</p>
+          
+          {pastEventsLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <Card key={i} className="shadow-lg border-0">
+                  <CardContent className="p-6">
+                    <div className="animate-pulse space-y-3">
+                      <div className="h-40 bg-gray-200 rounded"></div>
+                      <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {pastEvents.map((event) => {
+                const eventDate = new Date(event.startDateTime);
+                const userRegistration = myEvents.find(reg => reg.eventId === event.id);
+                
+                return (
+                  <Card 
+                    key={event.id} 
+                    className="shadow-lg border-0 hover:shadow-xl transition-all duration-300 cursor-pointer group overflow-hidden"
+                    onClick={() => handleEventClick(event)}
+                    data-testid={`past-event-card-${event.id}`}
+                  >
+                    {event.imageUrl && (
+                      <div className="w-full h-48 overflow-hidden relative">
+                        <img 
+                          src={event.imageUrl} 
+                          alt={event.title}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 opacity-90"
+                        />
+                        <div className="absolute top-3 right-3 flex gap-2 flex-wrap justify-end">
+                          <Badge className="bg-gray-700 text-white shadow-lg">
+                            {event.eventType.replace(/_/g, ' ')}
+                          </Badge>
+                        </div>
+                        <div className="absolute top-3 left-3">
+                          <Badge className="bg-gray-900/90 text-white shadow-lg">
+                            PAST EVENT
+                          </Badge>
+                        </div>
+                      </div>
+                    )}
+                    <CardContent className="p-6 space-y-3">
+                      <h3 className="text-lg font-bold text-navy group-hover:text-pcs_blue transition-colors line-clamp-2">
+                        {event.title}
+                      </h3>
+                      <div className="space-y-2 text-sm text-gray-600">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                          <span>{format(eventDate, 'PPP')}</span>
+                        </div>
+                        {event.location && (
+                          <div className="flex items-center gap-2">
+                            {event.isVirtual ? (
+                              <Video className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                            ) : (
+                              <MapPin className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                            )}
+                            <span className="line-clamp-1">{event.location}</span>
+                          </div>
+                        )}
+                      </div>
+                      {userRegistration && userRegistration.status === 'attended' && (
+                        <Badge className="bg-blue-500 text-white" data-testid={`badge-attended-${event.id}`}>
+                          ✓ Attended
+                        </Badge>
+                      )}
+                      <div className="pt-2">
+                        <span className="text-sm text-gray-700 group-hover:text-pcs_blue font-semibold inline-flex items-center gap-2">
+                          <PlayCircle className="h-4 w-4" />
+                          View Recording & Resources
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Event Detail Modal */}
       {selectedEvent && selectedEventDetails && (
