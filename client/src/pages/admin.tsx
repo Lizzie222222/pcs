@@ -835,6 +835,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     dateTo: '',
   });
   const [eventDialogOpen, setEventDialogOpen] = useState(false);
+  const [isVirtualEventCreationInProgress, setIsVirtualEventCreationInProgress] = useState(false);
   const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [deletingEvent, setDeletingEvent] = useState<Event | null>(null);
   const [eventDeleteDialogOpen, setEventDeleteDialogOpen] = useState(false);
@@ -959,6 +960,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       setCurrentEventStep(1);
       setShowPageBuilderWarning(false);
       setEventDialogTab('details');
+      setIsVirtualEventCreationInProgress(false); // Clear flag when dialog closes
     }
   }, [eventDialogOpen]);
 
@@ -1239,6 +1241,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       return await res.json();
     },
     onSuccess: (createdEvent: Event) => {
+      console.log('[Event Creation] Event created:', createdEvent);
+      console.log('[Event Creation] isVirtual:', createdEvent.isVirtual, 'eventType:', createdEvent.eventType);
+      
       toast({
         title: "Success",
         description: "Event created successfully.",
@@ -1247,8 +1252,14 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       
       // Check if this is a virtual event or webinar - keep modal open and switch to Page Builder
       const isVirtualOrWebinar = createdEvent.isVirtual || createdEvent.eventType === 'webinar';
+      console.log('[Event Creation] isVirtualOrWebinar:', isVirtualOrWebinar);
       
       if (isVirtualOrWebinar) {
+        console.log('[Event Creation] Virtual event detected - keeping dialog open and switching to page builder');
+        
+        // Set flag to prevent dialog from closing during navigation
+        setIsVirtualEventCreationInProgress(true);
+        
         // Set the newly created event as the editing event
         setEditingEvent(createdEvent);
         
@@ -1278,13 +1289,20 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           testimonials: (createdEvent.testimonials as any[]) || [],
         });
         
-        // Use setTimeout to ensure state updates complete before switching tabs
+        // Use a longer delay and force the tab switch
         setTimeout(() => {
+          console.log('[Event Creation] Switching to page-builder tab');
           setEventDialogTab('page-builder');
-        }, 100);
+          // Clear flag after navigation completes
+          setTimeout(() => {
+            setIsVirtualEventCreationInProgress(false);
+          }, 100);
+        }, 250);
         
-        // Keep modal open - do NOT call setEventDialogOpen(false)
+        // Explicitly keep modal open - do NOT call setEventDialogOpen(false)
+        console.log('[Event Creation] Dialog should remain open');
       } else {
+        console.log('[Event Creation] Non-virtual event - closing dialog');
         // For non-virtual events, close modal as usual
         setEventDialogOpen(false);
         setEventFormData({
@@ -3895,7 +3913,17 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       </div>
 
       {/* Create/Edit Event Dialog - Multi-Step Wizard */}
-      <Dialog open={eventDialogOpen} onOpenChange={setEventDialogOpen}>
+      <Dialog 
+        open={eventDialogOpen} 
+        onOpenChange={(open) => {
+          // Prevent closing if we're in the middle of virtual event creation workflow
+          if (!open && isVirtualEventCreationInProgress) {
+            console.log('[Dialog] Preventing close during virtual event creation');
+            return;
+          }
+          setEventDialogOpen(open);
+        }}
+      >
         <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle data-testid="text-event-dialog-title">
@@ -4211,11 +4239,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   return;
                 }
                 
-                const eventData = {
+                const eventData: any = {
                   title: eventFormData.title,
                   description: eventFormData.description,
                   eventType: eventFormData.eventType,
-                  status: eventFormData.status,
                   startDateTime: eventFormData.startDateTime,
                   endDateTime: eventFormData.endDateTime,
                   location: eventFormData.location || null,
@@ -4227,6 +4254,13 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   registrationDeadline: eventFormData.registrationDeadline || null,
                   tags: eventFormData.tags ? eventFormData.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
                 };
+
+                // Only include status if creating new event OR if status is actually changing
+                if (!editingEvent) {
+                  eventData.status = eventFormData.status;
+                } else if (editingEvent.status !== eventFormData.status) {
+                  eventData.status = eventFormData.status;
+                }
 
                 if (editingEvent) {
                   updateEventMutation.mutate({ id: editingEvent.id, data: eventData });
