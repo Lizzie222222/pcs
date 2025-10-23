@@ -190,10 +190,10 @@ export default function Landing() {
 
   return (
     <>
-      {/* Event Banner - Fixed at top above navigation */}
+      {/* Event Banner - Slim fixed banner */}
       {activeBanner && (
         <div 
-          className="w-full py-1.5 px-3 text-center fixed top-0 left-0 right-0 z-[60] shadow-md"
+          className="w-full py-0.5 px-2 text-center fixed top-0 left-0 right-0 z-[60] shadow-sm"
           style={{
             backgroundColor: activeBanner.backgroundColor,
             color: activeBanner.textColor,
@@ -201,19 +201,19 @@ export default function Landing() {
           }}
           data-testid="event-banner"
         >
-          <div className="container-width flex flex-row items-center justify-center gap-2">
+          <div className="container-width flex flex-row items-center justify-center gap-1.5 text-xs">
             <Badge 
-              className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-1.5 py-0 text-[10px] font-bold animate-pulse shadow-sm border-0"
+              className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-1 py-0 text-[9px] leading-tight font-bold animate-pulse shadow-sm border-0"
               data-testid="badge-new-event-banner"
             >
               ✨ NEW
             </Badge>
-            <p className="font-medium text-xs sm:text-sm">
+            <p className="font-medium leading-tight">
               {activeBanner.text}
             </p>
             <Button
               onClick={() => window.location.href = `/events/${activeBanner.event.publicSlug || activeBanner.event.id}`}
-              className="bg-white hover:bg-gray-50 text-gray-900 font-semibold px-3 py-0.5 text-xs rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:scale-105"
+              className="bg-white hover:bg-gray-50 text-gray-900 font-semibold px-2 py-0 text-[10px] leading-tight rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
               data-testid="button-banner-event"
             >
               Learn More →
@@ -222,7 +222,7 @@ export default function Landing() {
         </div>
       )}
       
-      <div className={`min-h-screen bg-white ${activeBanner ? 'pt-24' : 'pt-16'}`}>
+      <div className={`min-h-screen bg-white ${activeBanner ? 'pt-[84px]' : 'pt-16'}`}>
 
       {/* Clean Hero Section with Student Image */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
