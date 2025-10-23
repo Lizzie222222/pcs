@@ -136,7 +136,7 @@ function EventFooter({ t }: { t: any }) {
           <p>
             {t('footer.copyright')} | 
             <a href="https://commonseas.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors ml-1">{t('footer.privacy')}</a> | 
-            <a href="https://commonseas.com/terms" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors ml-1">{t('footer.terms')}</a>
+            <a href="/terms" className="hover:text-teal transition-colors ml-1">{t('footer.terms')}</a>
           </p>
         </div>
       </div>
