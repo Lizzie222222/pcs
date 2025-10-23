@@ -389,6 +389,23 @@ export const emailLogs = pgTable("email_logs", {
   sentAt: timestamp("sent_at").defaultNow(),
 });
 
+export const userActivityLogs = pgTable("user_activity_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: 'set null' }),
+  userEmail: varchar("user_email"),
+  actionType: varchar("action_type").notNull(),
+  actionDetails: jsonb("action_details").default('{}'),
+  targetId: varchar("target_id"),
+  targetType: varchar("target_type"),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_user_activity_logs_user").on(table.userId),
+  index("idx_user_activity_logs_action").on(table.actionType),
+  index("idx_user_activity_logs_created").on(table.createdAt),
+]);
+
 export const mailchimpAudiences = pgTable("mailchimp_audiences", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   mailchimpId: varchar("mailchimp_id").notNull().unique(),
@@ -500,6 +517,41 @@ export const submissionStatusEnum = pgEnum('submission_status', [
   'approved',
   'rejected',
   'revision_requested'
+]);
+
+export const userActivityActionEnum = pgEnum('user_activity_action', [
+  'login',
+  'logout',
+  'register',
+  'evidence_submit',
+  'evidence_approve',
+  'evidence_reject',
+  'evidence_delete',
+  'school_create',
+  'school_update',
+  'audit_submit',
+  'audit_approve',
+  'audit_reject',
+  'promise_create',
+  'promise_update',
+  'promise_delete',
+  'user_invite',
+  'user_remove',
+  'resource_create',
+  'resource_update',
+  'resource_delete',
+  'case_study_create',
+  'case_study_update',
+  'case_study_publish',
+  'case_study_delete',
+  'event_create',
+  'event_update',
+  'event_delete',
+  'event_register',
+  'email_send',
+  'settings_update',
+  'role_change',
+  'other'
 ]);
 
 export const auditResponses = pgTable("audit_responses", {
@@ -782,6 +834,7 @@ export const usersRelations = relations(users, ({ many, one }) => ({
   reviewedEvidence: many(evidence, { relationName: "reviewedEvidence" }),
   caseStudies: many(caseStudies),
   emailLogs: many(emailLogs),
+  activityLogs: many(userActivityLogs),
   issuedCertificates: many(certificates),
   sentInvitations: many(teacherInvitations),
   sentAdminInvitations: many(adminInvitations),
@@ -931,6 +984,13 @@ export const evidenceRequirementsRelations = relations(evidenceRequirements, ({ 
 export const emailLogsRelations = relations(emailLogs, ({ one }) => ({
   recipient: one(users, {
     fields: [emailLogs.recipientId],
+    references: [users.id],
+  }),
+}));
+
+export const userActivityLogsRelations = relations(userActivityLogs, ({ one }) => ({
+  user: one(users, {
+    fields: [userActivityLogs.userId],
     references: [users.id],
   }),
 }));
@@ -1282,6 +1342,11 @@ export const insertEmailLogSchema = createInsertSchema(emailLogs).omit({
   sentAt: true,
 });
 
+export const insertUserActivityLogSchema = createInsertSchema(userActivityLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertMailchimpAudienceSchema = createInsertSchema(mailchimpAudiences).omit({
   id: true,
   createdAt: true,
@@ -1466,6 +1531,8 @@ export type InsertCaseStudyReviewComment = z.infer<typeof insertCaseStudyReviewC
 export type CaseStudyReviewComment = typeof caseStudyReviewComments.$inferSelect;
 export type EmailLog = typeof emailLogs.$inferSelect;
 export type InsertEmailLog = z.infer<typeof insertEmailLogSchema>;
+export type UserActivityLog = typeof userActivityLogs.$inferSelect;
+export type InsertUserActivityLog = z.infer<typeof insertUserActivityLogSchema>;
 export type MailchimpAudience = typeof mailchimpAudiences.$inferSelect;
 export type InsertMailchimpAudience = z.infer<typeof insertMailchimpAudienceSchema>;
 export type MailchimpSubscription = typeof mailchimpSubscriptions.$inferSelect;
