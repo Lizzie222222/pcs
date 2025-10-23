@@ -43,10 +43,10 @@ export default function Events() {
       <div className="container-width pt-24 pb-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-navy mb-4" data-testid="heading-events-title">
-            Events & Workshops
+            {t('events.page_title')}
           </h1>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto" data-testid="text-events-description">
-            Join our community events, workshops, and webinars to learn and connect with other Plastic Clever Schools
+            {t('events.page_description')}
           </p>
         </div>
 
@@ -59,13 +59,13 @@ export default function Events() {
             {/* Upcoming Events */}
             <section className="mb-16">
               <h2 className="text-2xl font-bold text-navy mb-6" data-testid="heading-upcoming-events">
-                Upcoming Events
+                {t('events.upcoming_events')}
               </h2>
               {upcomingEvents.length === 0 ? (
                 <Card>
                   <CardContent className="py-12 text-center">
                     <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-                    <p className="text-gray-500 text-lg">No upcoming events at the moment. Check back soon!</p>
+                    <p className="text-gray-500 text-lg">{t('events.no_upcoming_events')}</p>
                   </CardContent>
                 </Card>
               ) : (
@@ -81,7 +81,7 @@ export default function Events() {
             {pastEvents.length > 0 && (
               <section>
                 <h2 className="text-2xl font-bold text-navy mb-6" data-testid="heading-past-events">
-                  Past Events
+                  {t('events.past_events')}
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="grid-past-events">
                   {pastEvents.map((event) => (

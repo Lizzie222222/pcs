@@ -583,7 +583,7 @@ export default function EventLivePage() {
           {event.meetingLink && hasStarted && !hasEnded && showContent && (
             <div className="mt-10 p-6 bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-300 rounded-xl text-center shadow-lg">
               <p className="text-green-900 font-semibold text-xl mb-4" data-testid="text-event-live">
-                🎉 Event is Live Now!
+                {t('events.event_live_now')}
               </p>
               <Button
                 asChild
@@ -593,7 +593,7 @@ export default function EventLivePage() {
               >
                 <a href={event.meetingLink} target="_blank" rel="noopener noreferrer" onClick={handleMeetingLinkClick}>
                   <ExternalLink className="w-5 h-5 mr-2" />
-                  Join Meeting Now
+                  {t('events.join_meeting_now')}
                 </a>
               </Button>
             </div>
@@ -602,11 +602,11 @@ export default function EventLivePage() {
           {!hasStarted && (
             <div className="mt-10 p-5 bg-blue-50 border-2 border-blue-200 rounded-xl text-center shadow-sm">
               <p className="text-blue-800 font-medium text-lg" data-testid="text-event-upcoming">
-                This event hasn't started yet. Please check back on {format(startDate, 'MMMM d, yyyy \'at\' h:mm a')}
+                {t('events.event_not_started', { date: format(startDate, 'MMMM d, yyyy \'at\' h:mm a') })}
               </p>
               {event.meetingLink && (
                 <p className="text-blue-700 mt-3 text-sm">
-                  The meeting link will be available when the event starts.
+                  {t('events.meeting_link_available')}
                 </p>
               )}
             </div>
@@ -615,10 +615,10 @@ export default function EventLivePage() {
           {hasEnded && (
             <div className="mt-10 p-6 bg-gradient-to-r from-ocean-blue/10 to-teal/10 border-2 border-ocean-blue/30 rounded-xl text-center shadow-lg">
               <p className="text-navy font-bold text-2xl mb-2" data-testid="text-event-ended">
-                📺 Catch Up on the Recording
+                {t('events.catch_up_recording')}
               </p>
               <p className="text-gray-700 text-lg">
-                Missed this event? No worries! You can watch the full recording and access all event resources below.
+                {t('events.missed_event_message')}
               </p>
             </div>
           )}
@@ -636,14 +636,14 @@ export default function EventLivePage() {
               <div className="flex items-center gap-3 px-8 py-4 bg-green-50 border-2 border-green-300 rounded-xl shadow-sm">
                 <CheckCircle className="w-6 h-6 text-green-600" />
                 <span className="text-green-800 font-semibold text-lg" data-testid="text-already-registered">
-                  You're registered for this event!
+                  {t('events.registered')}
                 </span>
               </div>
             ) : userRegistration && userRegistration.status === 'waitlisted' ? (
               <div className="flex items-center gap-3 px-8 py-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl shadow-sm">
                 <CheckCircle className="w-6 h-6 text-yellow-600" />
                 <span className="text-yellow-800 font-semibold text-lg" data-testid="text-waitlisted">
-                  You're on the waitlist for this event
+                  {t('events.waitlisted')}
                 </span>
               </div>
             ) : !hasEnded && (
@@ -655,11 +655,11 @@ export default function EventLivePage() {
                 data-testid="button-register-event"
               >
                 {registerMutation.isPending ? (
-                  "Registering..."
+                  t('events.registering')
                 ) : isAuthenticated ? (
-                  "Register for This Event"
+                  t('events.register_event')
                 ) : (
-                  "Sign Up to Register"
+                  t('events.sign_up_to_register')
                 )}
               </Button>
             )}

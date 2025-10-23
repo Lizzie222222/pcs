@@ -503,17 +503,17 @@ export default function Landing() {
         <div className="container-width">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4" data-testid="heading-events-title">
-              Upcoming Events
+              {t('events.upcoming_events')}
             </h2>
             <p className="text-base sm:text-lg text-gray-600 leading-relaxed max-w-3xl mx-auto" data-testid="text-events-description">
-              Join our community events, workshops, and webinars to learn and connect with other Plastic Clever Schools
+              {t('events.page_description')}
             </p>
           </div>
           
           {upcomingEvents.length === 0 ? (
             <div className="text-center py-12">
               <Calendar className="w-16 h-16 mx-auto text-gray-300 mb-4" />
-              <p className="text-gray-500 text-lg">No upcoming events at the moment. Check back soon!</p>
+              <p className="text-gray-500 text-lg">{t('events.no_upcoming_events')}</p>
             </div>
           ) : (
             <div className="relative px-12 pb-6" data-testid="events-carousel">
