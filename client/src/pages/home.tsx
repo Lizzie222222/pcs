@@ -411,12 +411,18 @@ export default function Home() {
     },
   });
 
-  // Show welcome modal on first login
+  // Show welcome modal on first login only
   useEffect(() => {
-    if (user && !user.hasSeenOnboarding && !hasAttemptedOnboarding && dashboardData && !isLoading && !isDashboardLoading) {
+    // Only show modal if:
+    // 1. User exists and hasn't seen onboarding
+    // 2. Haven't attempted to show it in this session
+    // 3. Dashboard data is loaded
+    // 4. Modal is not already showing
+    if (user && !user.hasSeenOnboarding && !hasAttemptedOnboarding && dashboardData && !isLoading && !isDashboardLoading && !showWelcomeModal) {
       setShowWelcomeModal(true);
+      setHasAttemptedOnboarding(true); // Mark as attempted immediately to prevent re-triggering
     }
-  }, [user, dashboardData, isLoading, isDashboardLoading, hasAttemptedOnboarding]);
+  }, [user?.hasSeenOnboarding, user?.id, dashboardData, isLoading, isDashboardLoading]);
 
   const handleWelcomeModalClose = () => {
     setShowWelcomeModal(false);

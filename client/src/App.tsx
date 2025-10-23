@@ -107,7 +107,7 @@ function Router() {
       {/* Global Event Banner */}
       {activeBanner && (
         <div 
-          className="w-full py-1 px-2 text-center fixed top-0 left-0 right-0 z-[60] shadow-sm"
+          className="w-full py-1.5 px-2 text-center fixed top-0 left-0 right-0 z-[60] shadow-sm"
           style={{
             backgroundImage: getGradientById(activeBanner.gradient)?.gradient || `linear-gradient(135deg, ${activeBanner.backgroundColor} 0%, ${activeBanner.backgroundColor} 100%)`,
             color: activeBanner.textColor,
