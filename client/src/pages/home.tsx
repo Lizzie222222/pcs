@@ -845,10 +845,13 @@ export default function Home() {
                         <CheckCircle className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
                           <h3 className="font-semibold text-green-900 mb-1">
-                            🎉 Evidence Approved!
+                            {t('notifications.evidence_approved_title', { ns: 'dashboard' })}
                           </h3>
                           <p className="text-sm text-green-800">
-                            {recentApproved.length} {recentApproved.length === 1 ? 'submission has' : 'submissions have'} been approved in the last 7 days. Great work!
+                            {recentApproved.length === 1 
+                              ? t('notifications.evidence_approved_message_singular', { ns: 'dashboard', count: recentApproved.length })
+                              : t('notifications.evidence_approved_message_plural', { ns: 'dashboard', count: recentApproved.length })
+                            }
                           </p>
                           <div className="mt-2 space-y-2">
                             {recentApproved.map(evidence => (
@@ -883,10 +886,13 @@ export default function Home() {
                         <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
                         <div className="flex-1">
                           <h3 className="font-semibold text-red-900 mb-1">
-                            Action Required
+                            {t('notifications.action_required_title', { ns: 'dashboard' })}
                           </h3>
                           <p className="text-sm text-red-800">
-                            {recentRejected.length} {recentRejected.length === 1 ? 'submission needs' : 'submissions need'} your attention. Please review feedback and resubmit.
+                            {recentRejected.length === 1
+                              ? t('notifications.action_required_message_singular', { ns: 'dashboard', count: recentRejected.length })
+                              : t('notifications.action_required_message_plural', { ns: 'dashboard', count: recentRejected.length })
+                            }
                           </p>
                           <div className="mt-2 space-y-1">
                             {recentRejected.map(evidence => (
@@ -935,17 +941,17 @@ export default function Home() {
                       </div>
                     </div>
                     <h2 className="text-3xl font-bold text-navy mb-3">
-                      🎉 Congratulations!
+                      {t('round.congratulations_title', { ns: 'dashboard' })}
                     </h2>
                     <p className="text-xl text-gray-700 mb-6">
-                      You've completed Round {school.currentRound}!
+                      {t('round.congratulations_message', { ns: 'dashboard', round: school.currentRound })}
                     </p>
                     <div className="space-y-4">
                       <div className="bg-white/80 backdrop-blur rounded-lg p-4 inline-block">
-                        <p className="text-sm text-gray-600 mb-2">Your school has successfully:</p>
+                        <p className="text-sm text-gray-600 mb-2">{t('round.completion_subtitle', { ns: 'dashboard' })}</p>
                         <div className="flex items-center gap-2 text-green-600 font-semibold">
                           <CheckCircle className="h-5 w-5" />
-                          <span>Completed all 3 stages (Inspire → Investigate → Act)</span>
+                          <span>{t('round.completion_stages', { ns: 'dashboard' })}</span>
                         </div>
                       </div>
                       <div className="pt-4">
@@ -961,25 +967,25 @@ export default function Home() {
                                 window.location.reload();
                               } else {
                                 toast({
-                                  title: "Error",
-                                  description: "Failed to start new round",
+                                  title: t('errors.unexpected_error', { ns: 'dashboard' }),
+                                  description: t('errors.start_round_failed', { ns: 'dashboard' }),
                                   variant: "destructive",
                                 });
                               }
                             } catch (error) {
                               toast({
-                                title: "Error",
-                                description: "Failed to start new round",
+                                title: t('errors.unexpected_error', { ns: 'dashboard' }),
+                                description: t('errors.start_round_failed', { ns: 'dashboard' }),
                                 variant: "destructive",
                               });
                             }
                           }}
                           data-testid="button-start-new-round"
                         >
-                          Start Round {(school.currentRound || 1) + 1} →
+                          {t('round.start_next_round', { ns: 'dashboard', round: (school.currentRound || 1) + 1 })}
                         </Button>
                         <p className="text-xs text-gray-500 mt-3">
-                          Starting a new round will reset your progress and begin fresh
+                          {t('round.start_warning', { ns: 'dashboard' })}
                         </p>
                       </div>
                     </div>
@@ -995,9 +1001,9 @@ export default function Home() {
                   <CardHeader>
                     <CardTitle className="text-2xl font-bold text-navy flex items-center gap-2">
                       <Award className="h-6 w-6 text-yellow-500" />
-                      Your Certificates
+                      {t('certificates.title', { ns: 'dashboard' })}
                     </CardTitle>
-                    <p className="text-sm text-gray-600">Download and share your achievements</p>
+                    <p className="text-sm text-gray-600">{t('certificates.description', { ns: 'dashboard' })}</p>
                   </CardHeader>
                   <CardContent>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1014,10 +1020,10 @@ export default function Home() {
                             <div className="flex-1">
                               <h3 className="font-bold text-navy mb-1">{cert.title}</h3>
                               <p className="text-xs text-gray-500 mb-2">
-                                Certificate #{cert.certificateNumber}
+                                {t('certificates.certificate_number', { ns: 'dashboard', number: cert.certificateNumber })}
                               </p>
                               <p className="text-xs text-gray-600 mb-3">
-                                Completed: {new Date(cert.completedDate).toLocaleDateString()}
+                                {t('certificates.completed_on', { ns: 'dashboard', date: new Date(cert.completedDate).toLocaleDateString() })}
                               </p>
                               <Button
                                 size="sm"
@@ -1025,7 +1031,7 @@ export default function Home() {
                                 onClick={() => window.open(`/api/certificates/${cert.id}`, '_blank')}
                                 data-testid={`button-view-certificate-${cert.id}`}
                               >
-                                View Certificate
+                                {t('certificates.view_certificate', { ns: 'dashboard' })}
                               </Button>
                             </div>
                           </div>
@@ -1130,10 +1136,10 @@ export default function Home() {
                   <div className="w-16 h-16 bg-gradient-to-br from-pcs_blue to-teal rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                     <BookOpen className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-pcs_blue transition-colors">Browse All Resources</h3>
-                  <p className="text-sm text-gray-600 mb-6 flex-grow">Access our complete library of educational materials and guides</p>
+                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-pcs_blue transition-colors">{t('resources.browse_title')}</h3>
+                  <p className="text-sm text-gray-600 mb-6 flex-grow">{t('resources.browse_description')}</p>
                   <Button className="w-full bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white shadow-lg font-semibold">
-                    View Resources →
+                    {t('actions.view_resources')}
                   </Button>
                 </CardContent>
               </Card>
@@ -1143,20 +1149,20 @@ export default function Home() {
                   <div className="w-16 h-16 bg-gradient-to-br from-teal to-green-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                     <Lightbulb className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-teal transition-colors">Evidence Guides</h3>
-                  <p className="text-sm text-gray-600 mb-6">Learn how to submit quality evidence for each stage</p>
+                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-teal transition-colors">{t('resources.evidence_guides_title')}</h3>
+                  <p className="text-sm text-gray-600 mb-6">{t('resources.evidence_guides_description')}</p>
                   <ul className="space-y-3 text-sm flex-grow">
                     <li className="flex items-center gap-3 text-gray-700 font-medium">
                       <div className="w-2 h-2 bg-pcs_blue rounded-full"></div>
-                      Photo & video guidelines
+                      {t('resources.photo_video_guidelines')}
                     </li>
                     <li className="flex items-center gap-3 text-gray-700 font-medium">
                       <div className="w-2 h-2 bg-pcs_blue rounded-full"></div>
-                      Documentation tips
+                      {t('resources.documentation_tips')}
                     </li>
                     <li className="flex items-center gap-3 text-gray-700 font-medium">
                       <div className="w-2 h-2 bg-pcs_blue rounded-full"></div>
-                      Best practices
+                      {t('resources.best_practices')}
                     </li>
                   </ul>
                 </CardContent>
@@ -1167,20 +1173,20 @@ export default function Home() {
                   <div className="w-16 h-16 bg-gradient-to-br from-coral to-red-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
                     <Award className="h-8 w-8 text-white" />
                   </div>
-                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-coral transition-colors">Program Stages</h3>
-                  <p className="text-sm text-gray-600 mb-6">Understand each stage of the program</p>
+                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-coral transition-colors">{t('resources.program_stages_title')}</h3>
+                  <p className="text-sm text-gray-600 mb-6">{t('resources.program_stages_description')}</p>
                   <ul className="space-y-3 text-sm flex-grow">
                     <li className="flex items-center gap-3 text-gray-700 font-medium">
                       <div className="w-2 h-2 bg-teal rounded-full"></div>
-                      Inspire: Build awareness
+                      {t('stages.inspire_brief')}
                     </li>
                     <li className="flex items-center gap-3 text-gray-700 font-medium">
                       <div className="w-2 h-2 bg-yellow rounded-full"></div>
-                      Investigate: Research
+                      {t('stages.investigate_brief')}
                     </li>
                     <li className="flex items-center gap-3 text-gray-700 font-medium">
                       <div className="w-2 h-2 bg-coral rounded-full"></div>
-                      Act: Create change
+                      {t('stages.act_brief')}
                     </li>
                   </ul>
                 </CardContent>
@@ -1192,41 +1198,41 @@ export default function Home() {
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <AlertCircle className="h-5 w-5 text-pcs_blue" />
-                  Helpful Tips for Evidence Submission
+                  {t('tips.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-navy mb-2">📸 Photo Guidelines</h4>
+                    <h4 className="font-semibold text-navy mb-2">{t('tips.photo_guidelines_title')}</h4>
                     <ul className="space-y-1 text-sm text-gray-700">
-                      <li>• Ensure images are clear and well-lit</li>
-                      <li>• Include context (date, location if relevant)</li>
-                      <li>• Get parental consent for children's photos</li>
+                      <li>• {t('tips.photo_clear')}</li>
+                      <li>• {t('tips.photo_context')}</li>
+                      <li>• {t('tips.photo_consent')}</li>
                     </ul>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-navy mb-2">📝 Documentation Tips</h4>
+                    <h4 className="font-semibold text-navy mb-2">{t('tips.documentation_title')}</h4>
                     <ul className="space-y-1 text-sm text-gray-700">
-                      <li>• Write detailed descriptions</li>
-                      <li>• Explain the impact of your actions</li>
-                      <li>• Include student reflections when possible</li>
+                      <li>• {t('tips.doc_detailed')}</li>
+                      <li>• {t('tips.doc_impact')}</li>
+                      <li>• {t('tips.doc_reflections')}</li>
                     </ul>
                   </div>
                   <div className="bg-purple-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-navy mb-2">🎥 Video Best Practices</h4>
+                    <h4 className="font-semibold text-navy mb-2">{t('tips.video_best_practices_title')}</h4>
                     <ul className="space-y-1 text-sm text-gray-700">
-                      <li>• Keep videos under 5 minutes</li>
-                      <li>• Use stable camera positioning</li>
-                      <li>• Include narration or captions</li>
+                      <li>• {t('tips.video_length')}</li>
+                      <li>• {t('tips.video_stable')}</li>
+                      <li>• {t('tips.video_captions')}</li>
                     </ul>
                   </div>
                   <div className="bg-yellow-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-navy mb-2">⚡ Quick Wins</h4>
+                    <h4 className="font-semibold text-navy mb-2">{t('tips.quick_wins_title')}</h4>
                     <ul className="space-y-1 text-sm text-gray-700">
-                      <li>• Submit evidence promptly</li>
-                      <li>• Respond to feedback quickly</li>
-                      <li>• Collaborate with your team</li>
+                      <li>• {t('tips.quick_submit')}</li>
+                      <li>• {t('tips.quick_respond')}</li>
+                      <li>• {t('tips.quick_collaborate')}</li>
                     </ul>
                   </div>
                 </div>
@@ -1236,18 +1242,18 @@ export default function Home() {
             {/* Recent Resources (if available) */}
             <Card>
               <CardHeader>
-                <CardTitle>Featured Resources</CardTitle>
+                <CardTitle>{t('resources.featured_title')}</CardTitle>
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 text-sm mb-4">
-                  Access our curated collection of resources to help your school succeed in the Plastic Clever Schools program.
+                  {t('resources.featured_description')}
                 </p>
                 <Button 
                   className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
                   onClick={() => window.location.href = '/resources'}
                 >
                   <BookOpen className="h-4 w-4 mr-2" />
-                  Explore All Resources
+                  {t('actions.explore_all_resources')}
                 </Button>
               </CardContent>
             </Card>
@@ -1353,7 +1359,7 @@ export default function Home() {
                               </Card>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs">
-                              <p>The total number of plastic reduction commitments your school has made. Each action item represents a specific type of plastic your school plans to reduce.</p>
+                              <p>{t('action_plan.tooltip_total_items')}</p>
                             </TooltipContent>
                           </Tooltip>
 
@@ -1376,7 +1382,7 @@ export default function Home() {
                               </Card>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs">
-                              <p>Total plastic items your school aims to eliminate annually. This is calculated by taking the difference between baseline and target quantities, then multiplying by frequency (52 for weekly, 12 for monthly, or 1 for yearly).</p>
+                              <p>{t('action_plan.tooltip_items_reduced')}</p>
                             </TooltipContent>
                           </Tooltip>
 
@@ -1399,7 +1405,7 @@ export default function Home() {
                               </Card>
                             </TooltipTrigger>
                             <TooltipContent className="max-w-xs">
-                              <p>Total weight of plastic waste prevented annually. Each plastic item type has a standard weight (e.g., bottles: 15g, cups: 5g, straws: 0.42g) that's multiplied by the number of items reduced.</p>
+                              <p>{t('action_plan.tooltip_weight_reduced')}</p>
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -1425,7 +1431,7 @@ export default function Home() {
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs">
-                                  <p>Equivalent plastic bottles kept out of the ocean. Based on standard 15g bottles, this shows the scale of your impact in relatable terms.</p>
+                                  <p>{t('action_plan.tooltip_ocean_bottles')}</p>
                                 </TooltipContent>
                               </Tooltip>
                               <Tooltip>
@@ -1438,7 +1444,7 @@ export default function Home() {
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs">
-                                  <p>Fish protected from plastic ingestion. Studies show that 50g of plastic can be harmful to marine life, so this estimates the number of fish potentially saved.</p>
+                                  <p>{t('action_plan.tooltip_fish_saved')}</p>
                                 </TooltipContent>
                               </Tooltip>
                               <Tooltip>
@@ -1451,7 +1457,7 @@ export default function Home() {
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs">
-                                  <p>Your plastic reduction measured in sea turtle weights. An average sea turtle weighs about 140kg, providing a powerful visualization of your impact.</p>
+                                  <p>{t('action_plan.tooltip_sea_turtles')}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </CardContent>
@@ -1474,7 +1480,7 @@ export default function Home() {
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs">
-                                  <p>Carbon dioxide emissions prevented by reducing plastic production. Producing 1kg of plastic generates approximately 6kg of CO₂ emissions.</p>
+                                  <p>{t('action_plan.tooltip_co2_prevented')}</p>
                                 </TooltipContent>
                               </Tooltip>
                               <Tooltip>
@@ -1487,7 +1493,7 @@ export default function Home() {
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs">
-                                  <p>Fossil fuel oil conserved by avoiding plastic production. About 2kg (approximately 2 liters) of oil is needed to produce 1kg of plastic.</p>
+                                  <p>{t('action_plan.tooltip_oil_saved')}</p>
                                 </TooltipContent>
                               </Tooltip>
                               <Tooltip>
@@ -1500,7 +1506,7 @@ export default function Home() {
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs">
-                                  <p>Total plastic waste prevented measured in metric tons. This shows the cumulative weight of all plastic items your school commits to reducing.</p>
+                                  <p>{t('action_plan.tooltip_tons_prevented')}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </CardContent>
@@ -1513,7 +1519,7 @@ export default function Home() {
 
                 {/* Promise Cards */}
                 <div>
-                  <h3 className="text-2xl font-bold text-navy mb-6">Active Promises</h3>
+                  <h3 className="text-2xl font-bold text-navy mb-6">{t('action_plan.active_promises_title')}</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {schoolPromises.map((promise) => {
                       const reduction = promise.baselineQuantity - promise.targetQuantity;
