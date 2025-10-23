@@ -222,7 +222,7 @@ export default function Landing() {
         </div>
       )}
       
-      <div className={`min-h-screen bg-white ${activeBanner ? 'pt-[84px]' : 'pt-16'}`}>
+      <div className={`min-h-screen bg-white ${activeBanner ? 'pt-[92px]' : 'pt-16'}`}>
 
       {/* Clean Hero Section with Student Image */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
