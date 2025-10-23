@@ -99,7 +99,7 @@ export default function ProgressTracker({
       description: t('progress.act.description'),
       icon: actIcon,
       completed: actCompleted,
-      color: 'coral',
+      color: 'pcs_blue',
     },
   ];
 
