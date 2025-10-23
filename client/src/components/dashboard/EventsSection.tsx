@@ -552,52 +552,55 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
       {/* Event Detail Modal */}
       {selectedEvent && selectedEventDetails && (
         <Dialog open={eventDetailOpen} onOpenChange={setEventDetailOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-event-detail">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-navy">{selectedEvent.title}</DialogTitle>
-              
-              {/* Event Type Badge */}
-              <div className="flex items-center gap-2 pt-2">
-                <Badge 
-                  className={`${getEventTypeBadgeColor(selectedEvent.eventType)} text-white`}
-                  data-testid="badge-event-type"
-                >
-                  {selectedEvent.eventType.replace(/_/g, ' ')}
-                </Badge>
-              </div>
+          <DialogContent className="max-w-2xl max-h-[90vh] flex flex-col p-0" data-testid="dialog-event-detail">
+            <div className="px-6 pt-6 pb-4 border-b">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-navy">{selectedEvent.title}</DialogTitle>
+                
+                {/* Event Type Badge */}
+                <div className="flex items-center gap-2 pt-2">
+                  <Badge 
+                    className={`${getEventTypeBadgeColor(selectedEvent.eventType)} text-white`}
+                    data-testid="badge-event-type"
+                  >
+                    {selectedEvent.eventType.replace(/_/g, ' ')}
+                  </Badge>
+                </div>
 
-              {/* Tags Section */}
-              {selectedEvent.tags && Array.isArray(selectedEvent.tags) && selectedEvent.tags.length > 0 && (
-                <div className="flex flex-wrap gap-2 pt-2" data-testid="section-tags">
-                  {selectedEvent.tags.map((tag, index) => (
-                    <Badge 
-                      key={index} 
-                      variant="outline" 
-                      className="text-xs"
-                      data-testid={`badge-tag-${index}`}
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
+                {/* Tags Section */}
+                {selectedEvent.tags && Array.isArray(selectedEvent.tags) && selectedEvent.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-2 pt-2" data-testid="section-tags">
+                    {selectedEvent.tags.map((tag, index) => (
+                      <Badge 
+                        key={index} 
+                        variant="outline" 
+                        className="text-xs"
+                        data-testid={`badge-tag-${index}`}
+                      >
+                        {tag}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
+                
+                <DialogDescription>
+                  {selectedEvent.description || "Learn more about this event"}
+                </DialogDescription>
+              </DialogHeader>
+            </div>
+
+            <div className="flex-1 overflow-y-auto px-6 py-4">
+              {selectedEvent.imageUrl && (
+                <div className="w-full h-64 overflow-hidden rounded-lg mb-6">
+                  <img 
+                    src={selectedEvent.imageUrl} 
+                    alt={selectedEvent.title}
+                    className="w-full h-full object-cover"
+                  />
                 </div>
               )}
-              
-              <DialogDescription>
-                {selectedEvent.description || "Learn more about this event"}
-              </DialogDescription>
-            </DialogHeader>
 
-            {selectedEvent.imageUrl && (
-              <div className="w-full h-64 overflow-hidden rounded-lg">
-                <img 
-                  src={selectedEvent.imageUrl} 
-                  alt={selectedEvent.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-
-            <div className="space-y-6">
+              <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
                   <Calendar className="h-5 w-5 text-pcs_blue" />
@@ -754,8 +757,11 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                 </div>
               )}
 
-              {/* Quick Actions */}
-              <div className="flex gap-2 flex-wrap">
+              </div>
+            </div>
+
+            <div className="sticky bottom-0 bg-white border-t px-6 py-4">
+              <div className="flex gap-2 flex-wrap mb-3">
                 <Button
                   variant="outline"
                   size="sm"
@@ -777,9 +783,8 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                   Go to Event Page
                 </Button>
               </div>
-            </div>
-
-            <DialogFooter>
+              
+              <DialogFooter>
               <Button
                 variant="outline"
                 onClick={() => setEventDetailOpen(false)}
@@ -832,7 +837,8 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                   </Button>
                 );
               })()}
-            </DialogFooter>
+              </DialogFooter>
+            </div>
           </DialogContent>
         </Dialog>
       )}
