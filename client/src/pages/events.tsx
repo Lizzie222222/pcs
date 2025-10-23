@@ -37,7 +37,7 @@ export default function Events() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-teal/5 to-ocean-blue/5">
-      <div className="container-width py-12">
+      <div className="container-width pt-24 pb-12">
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-navy mb-4" data-testid="heading-events-title">
             Events & Workshops
