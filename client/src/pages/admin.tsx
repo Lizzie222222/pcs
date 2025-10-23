@@ -87,7 +87,8 @@ import {
   Music,
   Building,
   Check,
-  Bell
+  Bell,
+  ExternalLink
 } from "lucide-react";
 import {
   BarChart,
@@ -3954,6 +3955,19 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                     >
                                       <Users className="h-4 w-4" />
                                     </Button>
+                                    {event.publicSlug && event.pagePublishedStatus !== 'draft' && (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => {
+                                          window.open(`/events/${event.publicSlug}`, '_blank');
+                                        }}
+                                        className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                        data-testid={`button-view-page-${event.id}`}
+                                      >
+                                        <ExternalLink className="h-4 w-4" />
+                                      </Button>
+                                    )}
                                     <Button
                                       variant="outline"
                                       size="sm"
