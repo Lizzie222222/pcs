@@ -1472,6 +1472,176 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // USER PROFILE MANAGEMENT ROUTES
+  
+  // PUT /api/user/profile - Update user profile (basic information)
+  app.put('/api/user/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Validate request body
+      const profileSchema = z.object({
+        firstName: z.string().min(1).optional(),
+        lastName: z.string().min(1).optional(),
+        email: z.string().email().optional(),
+      });
+      
+      const updates = profileSchema.parse(req.body);
+      
+      // If email is being changed, check if it's already in use
+      if (updates.email && updates.email !== req.user.email) {
+        const existingUser = await storage.findUserByEmail(updates.email);
+        if (existingUser && existingUser.id !== userId) {
+          return res.status(409).json({ message: "Email already in use" });
+        }
+      }
+      
+      // Update user profile
+      const updatedUser = await storage.updateUser(userId, updates);
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      console.log(`[Profile Update] User ${userId} updated profile`);
+      
+      res.json({ 
+        message: "Profile updated successfully",
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error("[Profile Update] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
+  // PUT /api/user/language - Update user's preferred language
+  app.put('/api/user/language', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      // Validate request body
+      const languageSchema = z.object({
+        language: z.string().min(2).max(5), // e.g., 'en', 'es', 'fr', 'zh-CN'
+      });
+      
+      const { language } = languageSchema.parse(req.body);
+      
+      // Update user's preferred language
+      const updatedUser = await storage.updateUser(userId, { 
+        preferredLanguage: language 
+      });
+      
+      if (!updatedUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      console.log(`[Language Update] User ${userId} changed language to ${language}`);
+      
+      res.json({ 
+        message: "Language preference updated successfully",
+        user: updatedUser
+      });
+    } catch (error) {
+      console.error("[Language Update] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update language preference" });
+    }
+  });
+
+  // PUT /api/user/password - Change user password
+  app.put('/api/user/password', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Check if user has a password (not OAuth only)
+      if (!user.passwordHash) {
+        return res.status(400).json({ 
+          message: "Cannot change password for OAuth-only accounts" 
+        });
+      }
+      
+      // Validate request body
+      const passwordSchema = z.object({
+        currentPassword: z.string().min(1),
+        newPassword: z.string().min(8),
+      });
+      
+      const { currentPassword, newPassword } = passwordSchema.parse(req.body);
+      
+      // Verify current password
+      const isPasswordValid = await storage.verifyPassword(currentPassword, user.passwordHash);
+      
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+      
+      // Hash new password
+      const newPasswordHash = await storage.hashPassword(newPassword);
+      
+      // Update password
+      const updatedUser = await storage.updateUserPassword(userId, newPasswordHash);
+      
+      if (!updatedUser) {
+        return res.status(500).json({ message: "Failed to update password" });
+      }
+      
+      console.log(`[Password Change] User ${userId} changed password`);
+      
+      res.json({ 
+        message: "Password changed successfully"
+      });
+    } catch (error) {
+      console.error("[Password Change] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to change password" });
+    }
+  });
+
+  // DELETE /api/user/account - Delete user account (GDPR compliant)
+  app.delete('/api/user/account', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      console.log(`[Account Deletion] User ${userId} requested account deletion`);
+      
+      // Delete user account (cascade will handle related records)
+      const deleted = await storage.deleteUser(userId);
+      
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete account" });
+      }
+      
+      // Log out the user
+      req.logout((err: Error) => {
+        if (err) {
+          console.error("[Account Deletion] Error during logout:", err);
+        }
+      });
+      
+      console.log(`[Account Deletion] User ${userId} account deleted successfully (GDPR compliant)`);
+      
+      res.json({ 
+        message: "Account deleted successfully. All your personal data has been removed in compliance with GDPR."
+      });
+    } catch (error) {
+      console.error("[Account Deletion] Error:", error);
+      res.status(500).json({ message: "Failed to delete account" });
+    }
+  });
+  
   // VERIFICATION REQUEST ROUTES
   
   // POST /api/schools/:schoolId/request-access - Request access to a school

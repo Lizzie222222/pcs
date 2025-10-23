@@ -39,6 +39,7 @@ const Register = lazy(() => import("@/pages/register"));
 const Contact = lazy(() => import("@/pages/contact"));
 const HelpCenter = lazy(() => import("@/pages/help-center"));
 const Terms = lazy(() => import("@/pages/terms"));
+const Profile = lazy(() => import("@/pages/profile"));
 const InvitationAccept = lazy(() => import("@/pages/InvitationAccept"));
 const AdminInvitationAccept = lazy(() => import("@/pages/AdminInvitationAccept"));
 const TestLogin = lazy(() => import("@/pages/TestLogin"));
@@ -174,6 +175,7 @@ function Router() {
               <Route path="/events/:slug" component={EventLive} />
               {isAuthenticated && (
                 <>
+                  <Route path="/profile" component={Profile} />
                   <Route path="/dashboard">
                     {() => {
                       if (user?.isAdmin) {

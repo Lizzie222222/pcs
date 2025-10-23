@@ -6,7 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, LogOut } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { Menu, LogOut, User, Settings } from "lucide-react";
 import logoUrl from "@assets/Logo_1757848498470.png";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import Avatar from "./Avatar";
@@ -157,17 +158,6 @@ export default function Navigation() {
             <LanguageSwitcher />
             {isAuthenticated ? (
               <>
-                <div className="flex items-center gap-1.5" data-testid="container-user-profile">
-                  <Avatar 
-                    seed={user?.email || ''} 
-                    size={28}
-                    dataTestId="img-avatar-desktop"
-                    alt={`${user?.firstName || user?.email}'s avatar`}
-                  />
-                  <span className="text-gray-700 text-sm" data-testid="text-user-name">
-                    {user?.firstName || user?.email}
-                  </span>
-                </div>
                 {user?.isAdmin ? (
                   <Link 
                     href="/admin"
@@ -189,16 +179,56 @@ export default function Navigation() {
                     )}
                   </>
                 )}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="border-gray-300 text-gray-700 hover:bg-gray-50 h-8 px-2"
-                  onClick={handleAuth}
-                  data-testid="button-logout"
-                >
-                  <LogOut className="h-3.5 w-3.5 mr-1" />
-                  <span className="text-xs">{t('navigation.logout')}</span>
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button 
+                      className="flex items-center gap-1.5 hover:bg-gray-100 rounded-md px-2 py-1 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pcs_blue"
+                      data-testid="button-user-menu"
+                      aria-label={t('navigation.user_menu')}
+                    >
+                      <Avatar 
+                        seed={user?.email || ''} 
+                        size={28}
+                        dataTestId="img-avatar-desktop"
+                        alt={`${user?.firstName || user?.email}'s avatar`}
+                      />
+                      <span className="text-gray-700 text-sm" data-testid="text-user-name">
+                        {user?.firstName || user?.email}
+                      </span>
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-56" data-testid="menu-user-dropdown">
+                    <DropdownMenuLabel data-testid="label-user-menu">
+                      {t('navigation.my_account')}
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={() => setLocation('/profile')}
+                      data-testid="menu-item-profile"
+                      className="cursor-pointer"
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      <span>{t('navigation.profile')}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onClick={() => setLocation('/profile')}
+                      data-testid="menu-item-settings"
+                      className="cursor-pointer"
+                    >
+                      <Settings className="mr-2 h-4 w-4" />
+                      <span>{t('navigation.settings')}</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem
+                      onClick={handleAuth}
+                      data-testid="menu-item-logout"
+                      className="cursor-pointer text-red-600 focus:text-red-600 focus:bg-red-50"
+                    >
+                      <LogOut className="mr-2 h-4 w-4" />
+                      <span>{t('navigation.logout')}</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </>
             ) : (
               <>
@@ -325,6 +355,17 @@ export default function Navigation() {
                             </>
                           )}
                         </div>
+                        <button
+                          className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
+                          onClick={() => {
+                            setLocation('/profile');
+                            setIsMobileMenuOpen(false);
+                          }}
+                          data-testid="mobile-button-profile"
+                        >
+                          <User className="h-4 w-4 mr-2 inline" aria-hidden="true" />
+                          {t('navigation.profile')}
+                        </button>
                         <button
                           className="w-full text-left px-3 py-2 rounded-md text-sm font-medium text-gray-700 hover:text-ocean-blue hover:bg-ocean-blue/5 hover:underline transition-colors focus-visible:focus-visible btn-animate min-h-[44px]"
                           onClick={handleAuth}
