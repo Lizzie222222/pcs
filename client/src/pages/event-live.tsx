@@ -143,8 +143,34 @@ export default function EventLivePage() {
           <h1 className="text-5xl md:text-6xl font-bold text-center mb-6 text-gray-900 leading-tight tracking-tight" data-testid="text-event-title">
             {event.title}
           </h1>
+
+          <p className="text-lg md:text-xl text-center text-gray-700 max-w-3xl mx-auto leading-relaxed mb-12" data-testid="text-event-description">
+            {event.description}
+          </p>
+
+          {/* YouTube Videos Section - Moved to top */}
+          {event.youtubeVideos && event.youtubeVideos.length > 0 && (
+            <div className="mb-12">
+              <div className="space-y-10">
+                {event.youtubeVideos.map((video, index) => (
+                  <div key={index} className="bg-white rounded-xl shadow-lg p-6 md:p-8" data-testid={`div-video-${index}`}>
+                    <h3 className="text-2xl md:text-3xl font-semibold mb-3 text-gray-900" data-testid={`text-video-title-${index}`}>
+                      {video.title}
+                    </h3>
+                    {video.description && (
+                      <p className="text-gray-600 mb-6 text-lg" data-testid={`text-video-description-${index}`}>
+                        {video.description}
+                      </p>
+                    )}
+                    <YouTubeEmbed url={video.url} title={video.title} />
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           
-          <div className="flex flex-wrap justify-center gap-6 text-gray-700 mb-8">
+          {/* Event Details - Now below the video */}
+          <div className="flex flex-wrap justify-center gap-4 text-gray-700 mb-8">
             <div className="flex items-center gap-2 bg-white/70 px-4 py-2 rounded-full shadow-sm" data-testid="div-event-date">
               <Calendar className="w-5 h-5 text-pcs_blue" />
               <span className="font-medium">{format(startDate, 'EEEE, MMMM d, yyyy')}</span>
@@ -169,10 +195,6 @@ export default function EventLivePage() {
               </div>
             )}
           </div>
-
-          <p className="text-lg md:text-xl text-center text-gray-700 max-w-3xl mx-auto leading-relaxed" data-testid="text-event-description">
-            {event.description}
-          </p>
 
           {/* Meeting Link */}
           {event.meetingLink && hasStarted && !hasEnded && (
@@ -219,29 +241,6 @@ export default function EventLivePage() {
 
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-12">
-        {/* YouTube Videos Section */}
-        {event.youtubeVideos && event.youtubeVideos.length > 0 && (
-          <div className="mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-10 text-gray-900" data-testid="text-videos-title">
-              Watch the Event
-            </h2>
-            <div className="space-y-12">
-              {event.youtubeVideos.map((video, index) => (
-                <div key={index} className="bg-white rounded-xl shadow-lg p-8 transition-shadow hover:shadow-xl" data-testid={`div-video-${index}`}>
-                  <h3 className="text-2xl md:text-3xl font-semibold mb-3 text-gray-900" data-testid={`text-video-title-${index}`}>
-                    {video.title}
-                  </h3>
-                  {video.description && (
-                    <p className="text-gray-600 mb-6 text-lg" data-testid={`text-video-description-${index}`}>
-                      {video.description}
-                    </p>
-                  )}
-                  <YouTubeEmbed url={video.url} title={video.title} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
 
         {/* Event Pack Files Section */}
         {event.eventPackFiles && event.eventPackFiles.length > 0 && (
