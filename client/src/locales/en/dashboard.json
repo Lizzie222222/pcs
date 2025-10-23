@@ -18,6 +18,55 @@
     "progress_percentage": "Progress",
     "students_impacted": "Students Impacted"
   },
+  "tabs": {
+    "progress": "Progress",
+    "resources": "Resources",
+    "team": "Team",
+    "action_plan": "Our Action Plan",
+    "events": "Events"
+  },
+  "actions": {
+    "take_tour_again": "Take Tour Again",
+    "create_action_plan_now": "Create Action Plan Now",
+    "start_round": "Start Round {{round}} →",
+    "browse_all_resources": "Browse All Resources",
+    "view_resources": "View Resources →",
+    "add_action_item": "Add Action Item",
+    "create_online_action_plan": "Create Online Action Plan",
+    "download_printable_form": "Download Printable Form",
+    "explore_all_resources": "Explore All Resources",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "deleting": "Deleting...",
+    "saving": "Saving...",
+    "edit_action_item": "Edit Action Item",
+    "add_action_item_button": "Add Action Item",
+    "update_action_item": "Update Action Item",
+    "create_action_item": "Create Action Item",
+    "delete_action_item": "Delete Action Item"
+  },
+  "round": {
+    "display": "Round {{round}}",
+    "completed_singular": "{{count}} round completed",
+    "completed_plural": "{{count}} rounds completed",
+    "congratulations_title": "Congratulations!",
+    "congratulations_message": "You've completed Round {{round}}!",
+    "start_warning": "Starting a new round will reset your progress and begin fresh"
+  },
+  "notifications": {
+    "audit_complete_title": "🎉 You've completed your plastic waste audit!",
+    "audit_complete_message": "Create your action plan to start tracking your impact and see the difference your school can make.",
+    "evidence_approved_title": "🎉 Evidence Approved!",
+    "evidence_approved_message_singular": "{{count}} submission has been approved in the last 7 days. Great work!",
+    "evidence_approved_message_plural": "{{count}} submissions have been approved in the last 7 days. Great work!",
+    "action_required_title": "Action Required",
+    "action_required_message_singular": "{{count}} submission needs your attention. Please review feedback and resubmit.",
+    "action_required_message_plural": "{{count}} submissions need your attention. Please review feedback and resubmit."
+  },
+  "certificates": {
+    "title": "Your Certificates",
+    "description": "Download and share your achievements"
+  },
   "progress": {
     "title": "Program Progress",
     "journey_description": "Progress through the three stages of environmental action",
@@ -66,6 +115,32 @@
     "audit_quiz_required_bullet": "Audit quiz required",
     "evidence_needed": "{{count}} more evidence needed"
   },
+  "stages": {
+    "inspire_brief": "Inspire: Build awareness",
+    "investigate_brief": "Investigate: Research",
+    "act_brief": "Act: Create change"
+  },
+  "resources": {
+    "browse_title": "Browse All Resources",
+    "browse_description": "Access our complete library of educational materials and guides",
+    "evidence_guides_title": "Evidence Guides",
+    "evidence_guides_description": "Learn how to submit quality evidence for each stage",
+    "photo_video_guidelines": "Photo & video guidelines",
+    "documentation_tips": "Documentation tips",
+    "best_practices": "Best practices",
+    "featured_description": "Access our curated collection of resources to help your school succeed in the Plastic Clever Schools program."
+  },
+  "tips": {
+    "title": "Helpful Tips for Evidence Submission",
+    "photo_guidelines_title": "Photo Guidelines",
+    "photo_guidelines_items": ["Include students in action", "Good lighting & clear images", "Show before/after comparisons"],
+    "documentation_title": "Documentation Tips",
+    "documentation_items": ["Include dates on all evidence", "Write clear descriptions", "Keep records organized"],
+    "video_best_practices_title": "Video Best Practices",
+    "video_best_practices_items": ["Keep videos under 2 minutes", "Show authentic moments", "Add captions if possible"],
+    "quick_wins_title": "Quick Wins",
+    "quick_wins_items": ["Assembly photos", "Classroom activities", "Student-led initiatives"]
+  },
   "evidence": {
     "title": "Evidence Submissions",
     "recent_evidence": "Recent Evidence",
@@ -82,6 +157,54 @@
     "delete_confirmation_description": "This will permanently delete this evidence submission. This action cannot be undone.",
     "delete_success": "Evidence deleted successfully",
     "delete_error": "Failed to delete evidence"
+  },
+  "action_plan": {
+    "empty_title": "Ready to Create Your Action Plan?",
+    "empty_message": "Your students can lead the way! Create an action plan to reduce plastic waste at your school. You can create it online or download a printable form to complete offline.",
+    "impact_title": "Our Action Plan Impact",
+    "total_items": "Total Action Items",
+    "items_reduced_per_year": "Items Reduced/Year",
+    "weight_reduced_per_year": "Weight Reduced/Year",
+    "ocean_impact": "Ocean Impact",
+    "environmental_impact": "Environmental Impact",
+    "plastic_bottles_prevented": "Plastic Bottles Prevented",
+    "fish_potentially_saved": "Fish Potentially Saved",
+    "sea_turtles_worth": "Sea Turtles Worth of Plastic",
+    "co2_emissions_prevented": "CO₂ Emissions Prevented",
+    "oil_saved": "Oil Saved",
+    "tons_plastic_prevented": "Tons of Plastic Prevented",
+    "baseline": "Baseline",
+    "target": "Target",
+    "per_timeframe": "per {{timeframe}}",
+    "notes": "Notes",
+    "reduction_goal": "Reduction Goal",
+    "reduction_amount": "{{amount}} items"
+  },
+  "promise_dialog": {
+    "title_add": "Add Reduction Promise",
+    "title_edit": "Edit Reduction Promise",
+    "description": "Set a goal to reduce plastic waste at your school. Choose a plastic item type and set your reduction targets.",
+    "plastic_item_type": "Plastic Item Type *",
+    "select_plastic_item": "Select plastic item type",
+    "item_label": "Item Label *",
+    "item_label_placeholder": "e.g., Single-use water bottles",
+    "baseline_quantity": "Baseline Quantity *",
+    "baseline_placeholder": "Current usage",
+    "target_quantity": "Target Quantity *",
+    "target_placeholder": "Reduction goal",
+    "timeframe": "Timeframe *",
+    "select_timeframe": "Select timeframe",
+    "per_week": "Per Week",
+    "per_month": "Per Month",
+    "per_year": "Per Year",
+    "reduction_preview": "Reduction Preview",
+    "items": "items",
+    "reduction_percent": "{{percent}}% reduction",
+    "great_goal": "Great Goal!",
+    "notes_optional": "Notes (Optional)",
+    "notes_placeholder": "Add any additional notes about this action item...",
+    "delete_confirmation_title": "Are you sure you want to delete this action item?",
+    "delete_confirmation_message": "This action cannot be undone. This will permanently delete your action item and remove it from your impact calculations."
   },
   "quick_actions": {
     "title": "Quick Actions",
@@ -111,7 +234,14 @@
     "stage_completed": "{{stage}} stage completed",
     "welcome_message": "Welcome to Plastic Clever Schools!"
   },
+  "team": {
+    "loading": "Loading team management..."
+  },
+  "events": {
+    "loading": "Loading events..."
+  },
   "errors": {
-    "unexpected_error": "An unexpected error occurred"
+    "unexpected_error": "An unexpected error occurred",
+    "start_round_failed": "Failed to start new round"
   }
 }
