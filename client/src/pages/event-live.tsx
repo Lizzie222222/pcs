@@ -101,8 +101,12 @@ export default function EventLivePage() {
     queryFn: async () => {
       if (!event?.id || !isAuthenticated) return null;
       const res = await fetch(`/api/events/${event.id}/registration`);
+      // 404 means not registered, which is expected
+      if (res.status === 404) return null;
       if (!res.ok) return null;
-      return res.json();
+      const data = await res.json();
+      // Only return data if it has a valid status that's not cancelled
+      return data && data.status && data.status !== 'cancelled' ? data : null;
     },
     enabled: !!event?.id && isAuthenticated,
   });
@@ -299,11 +303,18 @@ export default function EventLivePage() {
 
           {/* Registration Button */}
           <div className="mt-10 flex justify-center">
-            {userRegistration ? (
+            {userRegistration && userRegistration.status === 'registered' ? (
               <div className="flex items-center gap-3 px-8 py-4 bg-green-50 border-2 border-green-300 rounded-xl shadow-sm">
                 <CheckCircle className="w-6 h-6 text-green-600" />
                 <span className="text-green-800 font-semibold text-lg" data-testid="text-already-registered">
                   You're registered for this event!
+                </span>
+              </div>
+            ) : userRegistration && userRegistration.status === 'waitlisted' ? (
+              <div className="flex items-center gap-3 px-8 py-4 bg-yellow-50 border-2 border-yellow-300 rounded-xl shadow-sm">
+                <CheckCircle className="w-6 h-6 text-yellow-600" />
+                <span className="text-yellow-800 font-semibold text-lg" data-testid="text-waitlisted">
+                  You're on the waitlist for this event
                 </span>
               </div>
             ) : !hasEnded && (
