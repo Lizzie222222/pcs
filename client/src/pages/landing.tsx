@@ -5,6 +5,13 @@ import { useConnectionSpeed } from "@/hooks/useConnectionSpeed";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { 
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedImage";
 import ConnectionSpeedControl from "@/components/ConnectionSpeedControl";
 
@@ -510,59 +517,72 @@ export default function Landing() {
               <p className="text-gray-500 text-lg">No upcoming events at the moment. Check back soon!</p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="events-grid">
-              {upcomingEvents.slice(0, 6).map((event: any) => (
-                <a
-                  key={event.id}
-                  href={`/events/${event.publicSlug || event.id}`}
-                  className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer"
-                  data-testid={`card-event-${event.id}`}
-                >
-                  {event.imageUrl && (
-                    <div className="relative h-48 overflow-hidden">
-                      <img 
-                        src={event.imageUrl} 
-                        alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute top-3 right-3 bg-pcs_blue text-white px-3 py-1 rounded-full text-xs font-semibold">
-                        {event.eventType.replace('_', ' ').toUpperCase()}
-                      </div>
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <h3 className="font-bold text-lg text-navy mb-3 line-clamp-2" data-testid={`text-event-title-${event.id}`}>
-                      {event.title}
-                    </h3>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(event.startDateTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                      </div>
-                      {event.location && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <MapPin className="w-4 h-4" />
-                          <span className="line-clamp-1">{event.isVirtual ? 'Virtual Event' : event.location}</span>
+            <div className="relative px-12" data-testid="events-carousel">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: false,
+                }}
+                className="w-full"
+              >
+                <CarouselContent className="-ml-4">
+                  {upcomingEvents.map((event: any) => (
+                    <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                      <a
+                        href={`/events/${event.publicSlug || event.id}`}
+                        className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer h-full"
+                        data-testid={`card-event-${event.id}`}
+                      >
+                        {event.imageUrl && (
+                          <div className="relative h-48 overflow-hidden">
+                            <img 
+                              src={event.imageUrl} 
+                              alt={event.title}
+                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            />
+                            <div className="absolute top-3 right-3 bg-pcs_blue text-white px-3 py-1 rounded-full text-xs font-semibold">
+                              {event.eventType.replace('_', ' ').toUpperCase()}
+                            </div>
+                          </div>
+                        )}
+                        <div className="p-6">
+                          <h3 className="font-bold text-lg text-navy mb-3 line-clamp-2" data-testid={`text-event-title-${event.id}`}>
+                            {event.title}
+                          </h3>
+                          <div className="space-y-2 mb-4">
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <Calendar className="w-4 h-4" />
+                              <span>{new Date(event.startDateTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                            </div>
+                            {event.location && (
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <MapPin className="w-4 h-4" />
+                                <span className="line-clamp-1">{event.isVirtual ? 'Virtual Event' : event.location}</span>
+                              </div>
+                            )}
+                            {event.capacity && (
+                              <div className="flex items-center gap-2 text-sm text-gray-600">
+                                <Users className="w-4 h-4" />
+                                <span>{event.registrationsCount || 0} / {event.capacity} registered</span>
+                              </div>
+                            )}
+                          </div>
+                          <div className="inline-flex items-center gap-2 text-pcs_blue group-hover:text-pcs_blue/80 font-semibold text-sm">
+                            View Details & Register
+                            <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                          </div>
                         </div>
-                      )}
-                      {event.capacity && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <Users className="w-4 h-4" />
-                          <span>{event.registrationsCount || 0} / {event.capacity} registered</span>
-                        </div>
-                      )}
-                    </div>
-                    <div className="inline-flex items-center gap-2 text-pcs_blue group-hover:text-pcs_blue/80 font-semibold text-sm">
-                      View Details & Register
-                      <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                </a>
-              ))}
+                      </a>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="left-0" />
+                <CarouselNext className="right-0" />
+              </Carousel>
             </div>
           )}
 
-          {upcomingEvents.length > 6 && (
+          {upcomingEvents.length > 3 && (
             <div className="text-center mt-12">
               <a
                 href="/events"
