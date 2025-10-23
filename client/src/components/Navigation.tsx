@@ -49,6 +49,8 @@ export default function Navigation() {
       '/dashboard': 'dashboard',
       '/resources': 'resources',
       '/inspiration': 'inspiration',
+      '/help-center': 'help-center',
+      '/contact': 'contact',
       '/schools-map': 'schools-map',
       '/search': 'search',
       '/dashboard/team-management': 'team-management',
@@ -61,6 +63,8 @@ export default function Navigation() {
     { href: "/", label: t('navigation.home'), public: true },
     { href: "/resources", label: t('navigation.resources'), public: true },
     { href: "/inspiration", label: t('navigation.inspiration'), public: true },
+    { href: "/help-center", label: t('navigation.help_center'), public: true },
+    { href: "/contact", label: t('navigation.contact'), public: true },
     { href: "/schools-map", label: t('navigation.schools_map'), public: true },
     { href: "/search", label: t('navigation.search'), public: true },
   ];
