@@ -18,6 +18,7 @@ const createBlurPlaceholder = (color: string) => generateBlurDataURL(`
   </svg>
 `);
 import logoUrl from "@assets/Logo_1757848498470.png";
+import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 import inspireIcon from "@assets/PSC - Inspire_1760461719847.png";
 import investigateIcon from "@assets/PSC - Investigate_1760461719848.png";
 import actIcon from "@assets/PSC - Act_1760461719847.png";
@@ -652,14 +653,14 @@ export default function Landing() {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 ">
             <div>
               <OptimizedImage 
-                src={logoUrl} 
+                src={whiteLogoUrl} 
                 alt={t('accessibility.plastic_clever_schools_logo_alt')} 
-                width={120}
-                height={40}
-                className="h-10 w-auto mb-4 brightness-0 invert" 
+                width={200}
+                height={80}
+                className="h-16 w-auto mb-4" 
                 responsive={false}
                 quality={90}
-                sizes="120px"
+                sizes="200px"
                 priority={false}
               />
               <p className="text-gray-300 text-sm sm:text-base">
@@ -670,30 +671,30 @@ export default function Landing() {
             <div>
               <h4 className="font-semibold mb-4">{t('footer.program_title')}</h4>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.program_how_it_works')}</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.program_resources')}</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.program_success_stories')}</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.program_award_criteria')}</a></li>
+                <li><a href="/#how-it-works" className="hover:text-teal transition-colors">{t('footer.program_how_it_works')}</a></li>
+                <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.program_resources')}</a></li>
+                <li><a href="/inspiration" className="hover:text-teal transition-colors">{t('footer.program_success_stories')}</a></li>
+                <li><a href="/#how-it-works" className="hover:text-teal transition-colors">{t('footer.program_award_criteria')}</a></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">{t('footer.support_title')}</h4>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.support_help_center')}</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.support_contact_us')}</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.support_community')}</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.support_training')}</a></li>
+                <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.support_help_center')}</a></li>
+                <li><a href="https://commonseas.com/contact" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.support_contact_us')}</a></li>
+                <li><a href="/schools-map" className="hover:text-teal transition-colors">{t('footer.support_community')}</a></li>
+                <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.support_training')}</a></li>
               </ul>
             </div>
             
             <div>
               <h4 className="font-semibold mb-4">{t('footer.connect_title')}</h4>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.connect_newsletter')}</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.connect_social_media')}</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.connect_events')}</a></li>
-                <li><a href="#" className="hover:text-teal transition-colors">{t('footer.connect_partners')}</a></li>
+                <li><a href="/register" className="hover:text-teal transition-colors">{t('footer.connect_newsletter')}</a></li>
+                <li><a href="https://www.instagram.com/plasticcleverschools/" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.connect_social_media')}</a></li>
+                <li><a href="/#upcoming-events" className="hover:text-teal transition-colors">{t('footer.connect_events')}</a></li>
+                <li><a href="/#partners" className="hover:text-teal transition-colors">{t('footer.connect_partners')}</a></li>
               </ul>
             </div>
           </div>
@@ -701,8 +702,8 @@ export default function Landing() {
           <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400 ">
             <p>
               {t('footer.copyright')} | 
-              <a href="#" className="hover:text-teal transition-colors ml-1">{t('footer.privacy')}</a> | 
-              <a href="#" className="hover:text-teal transition-colors ml-1">{t('footer.terms')}</a>
+              <a href="https://commonseas.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors ml-1">{t('footer.privacy')}</a> | 
+              <a href="https://commonseas.com/terms" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors ml-1">{t('footer.terms')}</a>
             </p>
           </div>
         </div>
