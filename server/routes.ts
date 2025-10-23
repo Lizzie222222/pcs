@@ -2935,30 +2935,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
           start: z.string(),
           end: z.string()
         }),
-        includeInsights: z.boolean().default(true)
+        sections: z.object({
+          overview: z.boolean().default(true),
+          scoresEvidence: z.boolean().default(true),
+          plasticWasteAudits: z.boolean().default(true),
+          userEngagement: z.boolean().default(true),
+          aiInsights: z.boolean().default(true),
+        }).default({
+          overview: true,
+          scoresEvidence: true,
+          plasticWasteAudits: true,
+          userEngagement: true,
+          aiInsights: true,
+        })
       });
 
-      const { dateRange, includeInsights } = exportRequestSchema.parse(req.body);
+      const { dateRange, sections } = exportRequestSchema.parse(req.body);
       
       console.log('[Export PDF] Fetching analytics data for date range:', dateRange);
+      console.log('[Export PDF] Selected sections:', sections);
       
-      // Fetch all analytics data sets
-      const [overview, schoolEvidence, evidenceAnalytics, userEngagement] = await Promise.all([
-        storage.getAnalyticsOverview(dateRange.start, dateRange.end),
-        storage.getSchoolProgressAnalytics(dateRange.start, dateRange.end),
-        storage.getEvidenceAnalytics(dateRange.start, dateRange.end),
-        storage.getUserEngagementAnalytics(dateRange.start, dateRange.end)
-      ]);
+      // Fetch only the data for selected sections
+      const fetchPromises: any[] = [];
+      
+      if (sections.overview) {
+        fetchPromises.push(storage.getAnalyticsOverview(dateRange.start, dateRange.end));
+      } else {
+        fetchPromises.push(null);
+      }
+      
+      if (sections.scoresEvidence) {
+        fetchPromises.push(storage.getSchoolProgressAnalytics(dateRange.start, dateRange.end));
+        fetchPromises.push(storage.getEvidenceAnalytics(dateRange.start, dateRange.end));
+      } else {
+        fetchPromises.push(null);
+        fetchPromises.push(null);
+      }
+      
+      if (sections.userEngagement) {
+        fetchPromises.push(storage.getUserEngagementAnalytics(dateRange.start, dateRange.end));
+      } else {
+        fetchPromises.push(null);
+      }
+      
+      if (sections.plasticWasteAudits) {
+        fetchPromises.push(storage.getAuditOverview());
+        fetchPromises.push(storage.getAuditBySchool());
+      } else {
+        fetchPromises.push(null);
+        fetchPromises.push(null);
+      }
+      
+      const [overview, schoolEvidence, evidenceAnalytics, userEngagement, auditOverview, auditBySchool] = await Promise.all(fetchPromises);
       
       // Generate AI insights if requested
       let aiInsights;
-      if (includeInsights) {
+      if (sections.aiInsights) {
         console.log('[Export PDF] Generating AI insights...');
         aiInsights = await generateAnalyticsInsights({
-          overview,
-          schoolEvidence,
-          evidenceAnalytics,
-          userEngagement,
+          overview: overview || {},
+          schoolEvidence: schoolEvidence || {},
+          evidenceAnalytics: evidenceAnalytics || {},
+          userEngagement: userEngagement || {},
           dateRange
         });
       } else {
@@ -2974,10 +3012,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Prepare report data
       const reportData = {
         dateRange,
+        sections,
         overview,
         schoolEvidence,
         evidenceAnalytics,
         userEngagement,
+        auditOverview,
+        auditBySchool,
         aiInsights
       };
       
