@@ -5988,6 +5988,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: req.user.id,
       });
       
+      // Auto-generate publicSlug from title if not provided
+      if (!eventData.publicSlug && eventData.title) {
+        const baseSlug = eventData.title
+          .toLowerCase()
+          .replace(/[^a-z0-9\s-]/g, '')
+          .replace(/\s+/g, '-')
+          .replace(/-+/g, '-')
+          .replace(/^-|-$/g, '');
+        
+        // Check if slug exists, if so append timestamp to make it unique
+        const existingEvents = await storage.getEvents({ publicSlug: baseSlug });
+        if (existingEvents && existingEvents.length > 0) {
+          eventData.publicSlug = `${baseSlug}-${Date.now()}`;
+        } else {
+          eventData.publicSlug = baseSlug;
+        }
+      }
+      
       // Automatically set main status to 'published' if pagePublishedStatus is coming_soon or published
       // and status is not explicitly set or is still 'draft'
       if ((eventData.pagePublishedStatus === 'coming_soon' || eventData.pagePublishedStatus === 'published') 

@@ -1272,9 +1272,23 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       console.log('[Event Creation] Event created:', createdEvent);
       console.log('[Event Creation] isVirtual:', createdEvent.isVirtual, 'eventType:', createdEvent.eventType);
       
+      // Show success toast with generated URL
+      const eventUrl = createdEvent.publicSlug 
+        ? `${window.location.origin}/events/${createdEvent.publicSlug}`
+        : null;
+      
       toast({
-        title: "Success",
-        description: "Event created successfully.",
+        title: "Event Created Successfully! 🎉",
+        description: eventUrl 
+          ? (
+              <div className="space-y-2">
+                <p>Your event has been created.</p>
+                <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded text-sm">
+                  <span className="font-mono text-xs break-all">{eventUrl}</span>
+                </div>
+              </div>
+            )
+          : "Event created successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
       
@@ -4959,12 +4973,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                         name="publicSlug"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>URL Slug</FormLabel>
+                            <FormLabel>URL Slug (Optional - Auto-generated from title)</FormLabel>
                             <div className="flex gap-2">
                               <FormControl>
                                 <Input
                                   {...field}
-                                  placeholder="international-day-of-action"
+                                  placeholder="Leave blank to auto-generate from event title"
                                   data-testid="input-public-slug"
                                 />
                               </FormControl>
@@ -4979,7 +4993,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                 }}
                                 data-testid="button-generate-slug"
                               >
-                                Auto-generate
+                                Regenerate
                               </Button>
                             </div>
                             {field.value && (
