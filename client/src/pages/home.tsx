@@ -665,7 +665,7 @@ export default function Home() {
                       data-testid="button-restart-tour"
                     >
                       <Lightbulb className="h-4 w-4 mr-2" />
-                      Take Tour Again
+                      {t('actions.take_tour_again', { ns: 'dashboard' })}
                     </Button>
                   )}
                 </div>
@@ -689,7 +689,7 @@ export default function Home() {
               data-tour="progress-tab"
             >
               <BarChart3 className="h-5 w-5 mr-2" />
-              Progress
+              {t('tabs.progress', { ns: 'dashboard' })}
             </Button>
             <Button
               variant={activeTab === 'resources' ? 'default' : 'ghost'}
@@ -703,7 +703,7 @@ export default function Home() {
               data-tour="resources-tab"
             >
               <BookOpen className="h-5 w-5 mr-2" />
-              Resources
+              {t('tabs.resources', { ns: 'dashboard' })}
             </Button>
             <Button
               variant={activeTab === 'team' ? 'default' : 'ghost'}
@@ -717,7 +717,7 @@ export default function Home() {
               data-tour="team-tab"
             >
               <Users className="h-5 w-5 mr-2" />
-              Team
+              {t('tabs.team', { ns: 'dashboard' })}
             </Button>
             <Button
               variant={activeTab === 'promises' ? 'default' : 'ghost'}
@@ -731,7 +731,7 @@ export default function Home() {
               data-tour="action-plan-tab"
             >
               <Target className="h-5 w-5 mr-2" />
-              Our Action Plan
+              {t('tabs.action_plan', { ns: 'dashboard' })}
             </Button>
             <Button
               variant={activeTab === 'events' ? 'default' : 'ghost'}
@@ -745,7 +745,7 @@ export default function Home() {
               data-tour="events-tab"
             >
               <Calendar className="h-5 w-5 mr-2" />
-              Events
+              {t('tabs.events', { ns: 'dashboard' })}
               {newEventsCount > 0 && (
                 <Badge 
                   className="ml-2 bg-red-500 text-white px-2 py-0.5 text-xs font-bold animate-pulse" 
@@ -787,10 +787,10 @@ export default function Home() {
                     <div className="flex flex-col gap-3">
                       <div>
                         <h3 className="font-semibold text-navy text-lg mb-1">
-                          🎉 You've completed your plastic waste audit!
+                          {t('notifications.audit_complete_title', { ns: 'dashboard' })}
                         </h3>
                         <p className="text-gray-700">
-                          Create your action plan to start tracking your impact and see the difference your school can make.
+                          {t('notifications.audit_complete_message', { ns: 'dashboard' })}
                         </p>
                       </div>
                       <Button
@@ -799,7 +799,7 @@ export default function Home() {
                         data-testid="button-make-promises-now"
                       >
                         <Target className="h-4 w-4 mr-2" />
-                        Create Action Plan Now
+                        {t('actions.create_action_plan_now', { ns: 'dashboard' })}
                       </Button>
                     </div>
                   </AlertDescription>
@@ -1287,9 +1287,9 @@ export default function Home() {
                       <Target className="h-12 w-12 text-teal" />
                     </div>
                   </div>
-                  <h2 className="text-2xl font-bold text-navy mb-3">Ready to Create Your Action Plan?</h2>
+                  <h2 className="text-2xl font-bold text-navy mb-3">{t('action_plan.empty_title', { ns: 'dashboard' })}</h2>
                   <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    Your students can lead the way! Create an action plan to reduce plastic waste at your school. You can create it online or download a printable form to complete offline.
+                    {t('action_plan.empty_message', { ns: 'dashboard' })}
                   </p>
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Button
@@ -1298,7 +1298,7 @@ export default function Home() {
                       data-testid="button-add-first-promise"
                     >
                       <Plus className="h-5 w-5 mr-2" />
-                      Create Online Action Plan
+                      {t('actions.create_online_action_plan', { ns: 'dashboard' })}
                     </Button>
                     <Button
                       onClick={() => window.location.href = '/api/printable-forms/action-plan'}
@@ -1307,7 +1307,7 @@ export default function Home() {
                       data-testid="button-download-action-plan-form"
                     >
                       <Download className="h-5 w-5 mr-2" />
-                      Download Printable Form
+                      {t('actions.download_printable_form', { ns: 'dashboard' })}
                     </Button>
                   </div>
                 </CardContent>
@@ -1320,14 +1320,14 @@ export default function Home() {
                   return (
                     <>
                       <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-3xl font-bold text-navy">Our Action Plan Impact</h2>
+                        <h2 className="text-3xl font-bold text-navy">{t('action_plan.impact_title', { ns: 'dashboard' })}</h2>
                         <Button
                           onClick={handleAddPromiseClick}
                           className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white shadow-lg"
                           data-testid="button-add-promise"
                         >
                           <Plus className="h-5 w-5 mr-2" />
-                          Add Action Item
+                          {t('actions.add_action_item', { ns: 'dashboard' })}
                         </Button>
                       </div>
 
@@ -1343,7 +1343,7 @@ export default function Home() {
                                       <Target className="h-8 w-8 text-white" />
                                     </div>
                                     <div>
-                                      <div className="text-sm font-semibold opacity-90">Total Action Items</div>
+                                      <div className="text-sm font-semibold opacity-90">{t('action_plan.total_items', { ns: 'dashboard' })}</div>
                                       <div className="text-3xl font-bold" data-testid="text-total-promises">
                                         {schoolPromises.length}
                                       </div>
@@ -1366,7 +1366,7 @@ export default function Home() {
                                       <TrendingDown className="h-8 w-8 text-white" />
                                     </div>
                                     <div>
-                                      <div className="text-sm font-semibold opacity-90">Items Reduced/Year</div>
+                                      <div className="text-sm font-semibold opacity-90">{t('action_plan.items_reduced_per_year', { ns: 'dashboard' })}</div>
                                       <div className="text-3xl font-bold" data-testid="text-items-reduced">
                                         {metrics.byItemType.reduce((sum, item) => sum + item.totalReduction, 0).toLocaleString()}
                                       </div>
@@ -1389,7 +1389,7 @@ export default function Home() {
                                       <Leaf className="h-8 w-8 text-white" />
                                     </div>
                                     <div>
-                                      <div className="text-sm font-semibold opacity-90">Weight Reduced/Year</div>
+                                      <div className="text-sm font-semibold opacity-90">{t('action_plan.weight_reduced_per_year', { ns: 'dashboard' })}</div>
                                       <div className="text-3xl font-bold" data-testid="text-weight-reduced">
                                         {metrics.seriousMetrics.kilograms.toFixed(1)} kg
                                       </div>
@@ -1411,14 +1411,14 @@ export default function Home() {
                           <Card className="shadow-lg border-0">
                             <CardHeader>
                               <CardTitle className="text-xl font-bold text-navy flex items-center gap-2">
-                                🌊 Ocean Impact
+                                🌊 {t('action_plan.ocean_impact', { ns: 'dashboard' })}
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="p-4 bg-blue-50 rounded-lg cursor-help">
-                                    <p className="text-sm font-semibold text-navy mb-1">Plastic Bottles Prevented</p>
+                                    <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.plastic_bottles_prevented', { ns: 'dashboard' })}</p>
                                     <p className="text-2xl font-bold text-pcs_blue" data-testid="text-ocean-bottles">
                                       {Math.floor(metrics.funMetrics.oceanPlasticBottles).toLocaleString()}
                                     </p>
@@ -1431,7 +1431,7 @@ export default function Home() {
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="p-4 bg-green-50 rounded-lg cursor-help">
-                                    <p className="text-sm font-semibold text-navy mb-1">Fish Potentially Saved</p>
+                                    <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.fish_potentially_saved', { ns: 'dashboard' })}</p>
                                     <p className="text-2xl font-bold text-green-600" data-testid="text-fish-saved">
                                       {Math.floor(metrics.funMetrics.fishSaved).toLocaleString()}
                                     </p>
@@ -1444,7 +1444,7 @@ export default function Home() {
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="p-4 bg-teal-50 rounded-lg cursor-help">
-                                    <p className="text-sm font-semibold text-navy mb-1">Sea Turtles Worth of Plastic</p>
+                                    <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.sea_turtles_worth', { ns: 'dashboard' })}</p>
                                     <p className="text-2xl font-bold text-teal" data-testid="text-sea-turtles">
                                       {metrics.funMetrics.seaTurtles.toFixed(3)}
                                     </p>
@@ -1460,14 +1460,14 @@ export default function Home() {
                           <Card className="shadow-lg border-0">
                             <CardHeader>
                               <CardTitle className="text-xl font-bold text-navy flex items-center gap-2">
-                                📊 Environmental Impact
+                                📊 {t('action_plan.environmental_impact', { ns: 'dashboard' })}
                               </CardTitle>
                             </CardHeader>
                             <CardContent className="space-y-4">
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="p-4 bg-orange-50 rounded-lg cursor-help">
-                                    <p className="text-sm font-semibold text-navy mb-1">CO₂ Emissions Prevented</p>
+                                    <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.co2_emissions_prevented', { ns: 'dashboard' })}</p>
                                     <p className="text-2xl font-bold text-orange-600" data-testid="text-co2-prevented">
                                       {metrics.seriousMetrics.co2Prevented.toFixed(1)} kg
                                     </p>
@@ -1480,7 +1480,7 @@ export default function Home() {
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="p-4 bg-purple-50 rounded-lg cursor-help">
-                                    <p className="text-sm font-semibold text-navy mb-1">Oil Saved</p>
+                                    <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.oil_saved', { ns: 'dashboard' })}</p>
                                     <p className="text-2xl font-bold text-purple-600" data-testid="text-oil-saved">
                                       {metrics.seriousMetrics.oilSaved.toFixed(1)} liters
                                     </p>
@@ -1493,7 +1493,7 @@ export default function Home() {
                               <Tooltip>
                                 <TooltipTrigger asChild>
                                   <div className="p-4 bg-indigo-50 rounded-lg cursor-help">
-                                    <p className="text-sm font-semibold text-navy mb-1">Tons of Plastic Prevented</p>
+                                    <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.tons_plastic_prevented', { ns: 'dashboard' })}</p>
                                     <p className="text-2xl font-bold text-indigo-600" data-testid="text-tons-prevented">
                                       {metrics.seriousMetrics.tons.toFixed(4)}
                                     </p>
@@ -1556,36 +1556,36 @@ export default function Home() {
                           <CardContent className="space-y-4">
                             <div className="grid grid-cols-2 gap-4">
                               <div className="p-3 bg-gray-50 rounded-lg">
-                                <p className="text-xs text-gray-600 mb-1">Baseline</p>
+                                <p className="text-xs text-gray-600 mb-1">{t('action_plan.baseline', { ns: 'dashboard' })}</p>
                                 <p className="text-lg font-bold text-navy" data-testid={`text-baseline-${promise.id}`}>
                                   {promise.baselineQuantity}
                                 </p>
-                                <p className="text-xs text-gray-500">per {promise.timeframeUnit}</p>
+                                <p className="text-xs text-gray-500">{t('action_plan.per_timeframe', { ns: 'dashboard', timeframe: promise.timeframeUnit })}</p>
                               </div>
                               <div className="p-3 bg-gray-50 rounded-lg">
-                                <p className="text-xs text-gray-600 mb-1">Target</p>
+                                <p className="text-xs text-gray-600 mb-1">{t('action_plan.target', { ns: 'dashboard' })}</p>
                                 <p className="text-lg font-bold text-navy" data-testid={`text-target-${promise.id}`}>
                                   {promise.targetQuantity}
                                 </p>
-                                <p className="text-xs text-gray-500">per {promise.timeframeUnit}</p>
+                                <p className="text-xs text-gray-500">{t('action_plan.per_timeframe', { ns: 'dashboard', timeframe: promise.timeframeUnit })}</p>
                               </div>
                             </div>
                             
                             <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg border border-green-200">
                               <div className="flex items-center justify-between mb-2">
-                                <p className="text-sm font-semibold text-navy">Reduction Goal</p>
+                                <p className="text-sm font-semibold text-navy">{t('action_plan.reduction_goal', { ns: 'dashboard' })}</p>
                                 <Badge className="bg-green-500 text-white">
                                   -{reductionPercent}%
                                 </Badge>
                               </div>
                               <p className="text-2xl font-bold text-green-600" data-testid={`text-reduction-${promise.id}`}>
-                                {reduction} items
+                                {t('action_plan.reduction_amount', { ns: 'dashboard', amount: reduction })}
                               </p>
                             </div>
 
                             {promise.notes && (
                               <div className="pt-2 border-t border-gray-200">
-                                <p className="text-xs text-gray-600 mb-1">Notes</p>
+                                <p className="text-xs text-gray-600 mb-1">{t('action_plan.notes', { ns: 'dashboard' })}</p>
                                 <p className="text-sm text-gray-700" data-testid={`text-notes-${promise.id}`}>
                                   {promise.notes}
                                 </p>
@@ -1633,14 +1633,14 @@ export default function Home() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel onClick={() => setEvidenceToDelete(null)}>
-              Cancel
+              {t('actions.cancel', { ns: 'dashboard' })}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeleteConfirm}
               className="bg-red-600 hover:bg-red-700 text-white"
               disabled={deleteMutation.isPending}
             >
-              {deleteMutation.isPending ? 'Deleting...' : 'Delete'}
+              {deleteMutation.isPending ? t('actions.deleting', { ns: 'dashboard' }) : t('actions.delete', { ns: 'dashboard' })}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -1651,10 +1651,10 @@ export default function Home() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-promise-form">
           <DialogHeader>
             <DialogTitle className="text-2xl font-bold text-navy">
-              {editingPromise ? 'Edit Reduction Promise' : 'Add Reduction Promise'}
+              {editingPromise ? t('promise_dialog.title_edit', { ns: 'dashboard' }) : t('promise_dialog.title_add', { ns: 'dashboard' })}
             </DialogTitle>
             <DialogDescription>
-              Set a goal to reduce plastic waste at your school. Choose a plastic item type and set your reduction targets.
+              {t('promise_dialog.description', { ns: 'dashboard' })}
             </DialogDescription>
           </DialogHeader>
           
@@ -1665,7 +1665,7 @@ export default function Home() {
                 name="plasticItemType"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Plastic Item Type *</FormLabel>
+                    <FormLabel>{t('promise_dialog.plastic_item_type', { ns: 'dashboard' })}</FormLabel>
                     <Select 
                       onValueChange={(value) => {
                         field.onChange(value);
@@ -1678,7 +1678,7 @@ export default function Home() {
                     >
                       <FormControl>
                         <SelectTrigger data-testid="select-plastic-item-type">
-                          <SelectValue placeholder="Select plastic item type" />
+                          <SelectValue placeholder={t('promise_dialog.select_plastic_item', { ns: 'dashboard' })} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
@@ -1699,11 +1699,11 @@ export default function Home() {
                 name="plasticItemLabel"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Item Label *</FormLabel>
+                    <FormLabel>{t('promise_dialog.item_label', { ns: 'dashboard' })}</FormLabel>
                     <FormControl>
                       <Input 
                         {...field} 
-                        placeholder="e.g., Single-use water bottles"
+                        placeholder={t('promise_dialog.item_label_placeholder', { ns: 'dashboard' })}
                         data-testid="input-plastic-item-label"
                       />
                     </FormControl>
@@ -1718,13 +1718,13 @@ export default function Home() {
                   name="baselineQuantity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Baseline Quantity *</FormLabel>
+                      <FormLabel>{t('promise_dialog.baseline_quantity', { ns: 'dashboard' })}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
                           {...field} 
                           onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          placeholder="Current usage"
+                          placeholder={t('promise_dialog.baseline_placeholder', { ns: 'dashboard' })}
                           data-testid="input-baseline-quantity"
                         />
                       </FormControl>
@@ -1738,13 +1738,13 @@ export default function Home() {
                   name="targetQuantity"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Target Quantity *</FormLabel>
+                      <FormLabel>{t('promise_dialog.target_quantity', { ns: 'dashboard' })}</FormLabel>
                       <FormControl>
                         <Input 
                           type="number" 
                           {...field} 
                           onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          placeholder="Reduction goal"
+                          placeholder={t('promise_dialog.target_placeholder', { ns: 'dashboard' })}
                           data-testid="input-target-quantity"
                         />
                       </FormControl>
@@ -1759,17 +1759,17 @@ export default function Home() {
                 name="timeframeUnit"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Timeframe *</FormLabel>
+                    <FormLabel>{t('promise_dialog.timeframe', { ns: 'dashboard' })}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-timeframe-unit">
-                          <SelectValue placeholder="Select timeframe" />
+                          <SelectValue placeholder={t('promise_dialog.select_timeframe', { ns: 'dashboard' })} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="week">Per Week</SelectItem>
-                        <SelectItem value="month">Per Month</SelectItem>
-                        <SelectItem value="year">Per Year</SelectItem>
+                        <SelectItem value="week">{t('promise_dialog.per_week', { ns: 'dashboard' })}</SelectItem>
+                        <SelectItem value="month">{t('promise_dialog.per_month', { ns: 'dashboard' })}</SelectItem>
+                        <SelectItem value="year">{t('promise_dialog.per_year', { ns: 'dashboard' })}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -1786,19 +1786,19 @@ export default function Home() {
                 if (baseline > 0 && target >= 0) {
                   return (
                     <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg border border-green-200">
-                      <p className="text-sm font-semibold text-navy mb-2">Reduction Preview</p>
+                      <p className="text-sm font-semibold text-navy mb-2">{t('promise_dialog.reduction_preview', { ns: 'dashboard' })}</p>
                       <div className="flex items-center gap-3">
                         <div className="flex-1">
                           <p className="text-2xl font-bold text-green-600">
-                            {reduction} items
+                            {t('promise_dialog.items', { ns: 'dashboard', count: reduction })}
                           </p>
                           <p className="text-xs text-gray-600">
-                            {reductionPercent}% reduction
+                            {t('promise_dialog.reduction_percent', { ns: 'dashboard', percent: reductionPercent })}
                           </p>
                         </div>
                         {reduction > 0 && (
                           <Badge className="bg-green-500 text-white">
-                            Great Goal!
+                            {t('promise_dialog.great_goal', { ns: 'dashboard' })}
                           </Badge>
                         )}
                       </div>
@@ -1813,11 +1813,11 @@ export default function Home() {
                 name="notes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Notes (Optional)</FormLabel>
+                    <FormLabel>{t('promise_dialog.notes_optional', { ns: 'dashboard' })}</FormLabel>
                     <FormControl>
                       <Textarea 
                         {...field} 
-                        placeholder="Add any additional notes about this action item..."
+                        placeholder={t('promise_dialog.notes_placeholder', { ns: 'dashboard' })}
                         rows={3}
                         data-testid="input-notes"
                       />
@@ -1838,7 +1838,7 @@ export default function Home() {
                   }}
                   data-testid="button-cancel-promise"
                 >
-                  Cancel
+                  {t('actions.cancel', { ns: 'dashboard' })}
                 </Button>
                 <Button
                   type="submit"
@@ -1847,10 +1847,10 @@ export default function Home() {
                   data-testid="button-save-promise"
                 >
                   {createPromiseMutation.isPending || updatePromiseMutation.isPending
-                    ? 'Saving...'
+                    ? t('actions.saving', { ns: 'dashboard' })
                     : editingPromise
-                    ? 'Update Action Item'
-                    : 'Create Action Item'}
+                    ? t('actions.update_action_item', { ns: 'dashboard' })
+                    : t('actions.create_action_item', { ns: 'dashboard' })}
                 </Button>
               </DialogFooter>
             </form>
@@ -1862,9 +1862,9 @@ export default function Home() {
       <AlertDialog open={deletePromiseDialogOpen} onOpenChange={setDeletePromiseDialogOpen}>
         <AlertDialogContent data-testid="dialog-delete-promise-confirmation">
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure you want to delete this action item?</AlertDialogTitle>
+            <AlertDialogTitle>{t('promise_dialog.delete_confirmation_title', { ns: 'dashboard' })}</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete your action item and remove it from your impact calculations.
+              {t('promise_dialog.delete_confirmation_message', { ns: 'dashboard' })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -1872,7 +1872,7 @@ export default function Home() {
               onClick={() => setPromiseToDelete(null)}
               data-testid="button-cancel-delete-promise"
             >
-              Cancel
+              {t('actions.cancel', { ns: 'dashboard' })}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleDeletePromiseConfirm}
@@ -1880,7 +1880,7 @@ export default function Home() {
               disabled={deletePromiseMutation.isPending}
               data-testid="button-confirm-delete-promise"
             >
-              {deletePromiseMutation.isPending ? 'Deleting...' : 'Delete Action Item'}
+              {deletePromiseMutation.isPending ? t('actions.deleting', { ns: 'dashboard' }) : t('actions.delete_action_item', { ns: 'dashboard' })}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
