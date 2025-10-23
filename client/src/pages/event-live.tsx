@@ -323,34 +323,6 @@ export default function EventLivePage() {
           </div>
         )}
 
-        {/* CTA Section */}
-        <div className="bg-gradient-to-br from-pcs_blue to-ocean-blue rounded-2xl shadow-2xl p-10 md:p-12 text-center text-white">
-          <h3 className="text-3xl md:text-4xl font-bold mb-4" data-testid="text-cta-title">
-            Ready to Submit Your Evidence?
-          </h3>
-          <p className="text-lg md:text-xl mb-8 text-blue-50" data-testid="text-cta-description">
-            Login to your Plastic Clever Schools profile to upload your amazing work.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button
-              onClick={() => navigate('/login')}
-              size="lg"
-              className="bg-white text-pcs_blue hover:bg-gray-100 font-semibold text-lg px-8 py-6"
-              data-testid="button-login"
-            >
-              Submit Your Evidence
-            </Button>
-            <Button
-              onClick={() => navigate('/register')}
-              variant="outline"
-              size="lg"
-              className="border-2 border-white text-white hover:bg-white/10 font-semibold text-lg px-8 py-6"
-              data-testid="button-register"
-            >
-              Create Profile
-            </Button>
-          </div>
-        </div>
       </div>
     </div>
   );
