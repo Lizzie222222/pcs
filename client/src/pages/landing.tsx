@@ -382,11 +382,6 @@ export default function Landing() {
                   />
                 </div>
               </div>
-              
-              {/* Caption */}
-              <p className="text-sm text-gray-500 italic pl-4 border-l-4 border-ocean-blue/30">
-                {t('video_section.caption')}
-              </p>
             </div>
           </div>
         </div>
