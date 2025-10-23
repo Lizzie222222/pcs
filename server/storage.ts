@@ -1806,12 +1806,48 @@ export class DatabaseStorage implements IStorage {
 
   async getCaseStudyById(id: string): Promise<CaseStudy | undefined> {
     const [caseStudy] = await db
-      .select()
+      .select({
+        id: caseStudies.id,
+        evidenceId: caseStudies.evidenceId,
+        schoolId: caseStudies.schoolId,
+        title: caseStudies.title,
+        description: caseStudies.description,
+        stage: caseStudies.stage,
+        impact: caseStudies.impact,
+        imageUrl: caseStudies.imageUrl,
+        featured: caseStudies.featured,
+        priority: caseStudies.priority,
+        images: caseStudies.images,
+        videos: caseStudies.videos,
+        studentQuotes: caseStudies.studentQuotes,
+        impactMetrics: caseStudies.impactMetrics,
+        timelineSections: caseStudies.timelineSections,
+        categories: caseStudies.categories,
+        tags: caseStudies.tags,
+        status: caseStudies.status,
+        templateType: caseStudies.templateType,
+        beforeImage: caseStudies.beforeImage,
+        afterImage: caseStudies.afterImage,
+        metaDescription: caseStudies.metaDescription,
+        metaKeywords: caseStudies.metaKeywords,
+        reviewStatus: caseStudies.reviewStatus,
+        submittedAt: caseStudies.submittedAt,
+        reviewedBy: caseStudies.reviewedBy,
+        reviewedAt: caseStudies.reviewedAt,
+        reviewNotes: caseStudies.reviewNotes,
+        createdBy: caseStudies.createdBy,
+        createdAt: caseStudies.createdAt,
+        updatedAt: caseStudies.updatedAt,
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        schoolLanguage: schools.primaryLanguage,
+      })
       .from(caseStudies)
+      .leftJoin(schools, eq(caseStudies.schoolId, schools.id))
       .where(eq(caseStudies.id, id))
       .limit(1);
     
-    return caseStudy;
+    return caseStudy as any;
   }
 
   async getCaseStudies(filters: {
@@ -1865,7 +1901,42 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(caseStudies.status, filters.status));
     }
     
-    let query = db.select().from(caseStudies);
+    let query = db.select({
+      id: caseStudies.id,
+      evidenceId: caseStudies.evidenceId,
+      schoolId: caseStudies.schoolId,
+      title: caseStudies.title,
+      description: caseStudies.description,
+      stage: caseStudies.stage,
+      impact: caseStudies.impact,
+      imageUrl: caseStudies.imageUrl,
+      featured: caseStudies.featured,
+      priority: caseStudies.priority,
+      images: caseStudies.images,
+      videos: caseStudies.videos,
+      studentQuotes: caseStudies.studentQuotes,
+      impactMetrics: caseStudies.impactMetrics,
+      timelineSections: caseStudies.timelineSections,
+      categories: caseStudies.categories,
+      tags: caseStudies.tags,
+      status: caseStudies.status,
+      templateType: caseStudies.templateType,
+      beforeImage: caseStudies.beforeImage,
+      afterImage: caseStudies.afterImage,
+      metaDescription: caseStudies.metaDescription,
+      metaKeywords: caseStudies.metaKeywords,
+      reviewStatus: caseStudies.reviewStatus,
+      submittedAt: caseStudies.submittedAt,
+      reviewedBy: caseStudies.reviewedBy,
+      reviewedAt: caseStudies.reviewedAt,
+      reviewNotes: caseStudies.reviewNotes,
+      createdBy: caseStudies.createdBy,
+      createdAt: caseStudies.createdAt,
+      updatedAt: caseStudies.updatedAt,
+      schoolName: schools.name,
+      schoolCountry: schools.country,
+      schoolLanguage: schools.primaryLanguage,
+    }).from(caseStudies).leftJoin(schools, eq(caseStudies.schoolId, schools.id));
     
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as any;
@@ -1880,7 +1951,7 @@ export class DatabaseStorage implements IStorage {
       query = query.offset(filters.offset) as any;
     }
     
-    return await query;
+    return await query as any;
   }
 
   async updateCaseStudyFeatured(id: string, featured: boolean): Promise<CaseStudy | undefined> {

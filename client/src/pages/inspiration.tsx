@@ -40,6 +40,7 @@ interface CaseStudy {
   featured: boolean;
   schoolName: string;
   schoolCountry: string;
+  schoolLanguage?: string;
   createdAt: string;
   images: { url: string; caption?: string }[];
   videos: { url: string; title?: string; platform?: string }[];
@@ -206,13 +207,15 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
         </h3>
         
         {/* School Info */}
-        {(caseStudy.schoolName || caseStudy.schoolCountry) && (
+        {(caseStudy.schoolName || caseStudy.schoolCountry || caseStudy.schoolLanguage) && (
           <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-            <MapPin className="h-3.5 w-3.5" />
-            <span>
-              {caseStudy.schoolName && caseStudy.schoolCountry 
-                ? `${caseStudy.schoolName} • ${caseStudy.schoolCountry}`
-                : caseStudy.schoolName || caseStudy.schoolCountry}
+            <MapPin className="h-3.5 w-3.5 flex-shrink-0" />
+            <span className="line-clamp-1">
+              {[
+                caseStudy.schoolName,
+                caseStudy.schoolCountry,
+                caseStudy.schoolLanguage
+              ].filter(Boolean).join(' • ')}
             </span>
           </div>
         )}
