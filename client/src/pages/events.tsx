@@ -124,8 +124,8 @@ export default function Events() {
             <div>
               <h4 className="font-semibold mb-4">{t('footer.support_title')}</h4>
               <ul className="space-y-2 text-sm text-gray-300">
-                <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.support_help_center')}</a></li>
-                <li><a href="https://commonseas.com/contact" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.support_contact_us')}</a></li>
+                <li><a href="/help-center" className="hover:text-teal transition-colors">{t('footer.support_help_center')}</a></li>
+                <li><a href="/contact" className="hover:text-teal transition-colors">{t('footer.support_contact_us')}</a></li>
                 <li><a href="/schools-map" className="hover:text-teal transition-colors">{t('footer.support_community')}</a></li>
                 <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.support_training')}</a></li>
               </ul>
