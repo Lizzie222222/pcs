@@ -403,6 +403,8 @@ export async function setupAuth(app: Express) {
         profileImageUrl: req.user.profileImageUrl,
         preferredLanguage: req.user.preferredLanguage,
         hasSeenOnboarding: req.user.hasSeenOnboarding,
+        googleId: req.user.googleId, // Needed to determine if user is OAuth-only
+        hasPassword: !!req.user.passwordHash, // True if user has password authentication enabled
       }
     });
   });

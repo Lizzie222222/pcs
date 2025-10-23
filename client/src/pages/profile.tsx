@@ -68,8 +68,8 @@ export default function Profile() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
-  // Check if user has password (not OAuth only)
-  const hasPassword = !user?.googleId || user?.passwordHash;
+  // Check if user has password authentication enabled
+  const hasPassword = user?.hasPassword;
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
