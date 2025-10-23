@@ -7,6 +7,7 @@ This web application supports the Plastic Clever Schools program, aiming to redu
 Preferred communication style: Simple, everyday language.
 
 ## Recent Changes
+-   **Contact Us & Help Center Pages**: Added two new customer-facing pages to improve user support. Contact Us page features a validated form (name, email, subject, message) that sends emails via SendGrid to the admin team. Help Center page organizes 27 FAQs across 6 categories (Getting Started, School Registration, Evidence, Resources, About Program, Technical Support) with real-time search/filter functionality using accordion UI. Both pages added to main navigation with i18n support.
 -   **Dashboard Welcome Modal Fix**: Resolved issue where welcome modal appeared on every dashboard visit instead of only once. Updated `/api/auth/onboarding-complete` endpoint to refresh session user object (`req.user.hasSeenOnboarding = true`) after database update, and improved frontend useEffect dependency array.
 -   **Events Page Footer**: Added consistent footer component to both events listing page (events.tsx) and event detail pages (event-live.tsx), matching the landing page design across all page states.
 
