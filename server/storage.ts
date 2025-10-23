@@ -22,6 +22,8 @@ import {
   eventRegistrations,
   eventAnnouncements,
   eventBanners,
+  eventLinkClicks,
+  eventResourceDownloads,
   mediaAssets,
   mediaTags,
   mediaAssetTags,
@@ -73,6 +75,10 @@ import {
   type InsertEventAnnouncement,
   type EventBanner,
   type InsertEventBanner,
+  type EventLinkClick,
+  type InsertEventLinkClick,
+  type EventResourceDownload,
+  type InsertEventResourceDownload,
   type MediaAsset,
   type InsertMediaAsset,
   type MediaTag,
@@ -514,6 +520,26 @@ export interface IStorage {
     }>;
     upcomingEventsCount: number;
     pastEventsCount: number;
+  }>;
+
+  // Event tracking operations
+  trackEventLinkClick(eventId: string, userId?: string): Promise<void>;
+  getEventLinkClicks(eventId: string): Promise<Array<EventLinkClick & { user: User | null }>>;
+  getEventLinkClickCount(eventId: string): Promise<number>;
+  trackEventResourceDownload(eventId: string, fileIndex: number, fileName: string, userId?: string): Promise<void>;
+  getEventResourceDownloads(eventId: string): Promise<Array<EventResourceDownload & { user: User | null }>>;
+  getEventResourceDownloadStats(eventId: string): Promise<Array<{ fileIndex: number; fileName: string; downloadCount: number }>>;
+  getEventDetailedAnalytics(eventId: string): Promise<{
+    registrations: number;
+    attended: number;
+    linkClicks: number;
+    uniqueLinkClickers: number;
+    resourceDownloads: Array<{
+      fileIndex: number;
+      fileName: string;
+      downloadCount: number;
+      uniqueDownloaders: number;
+    }>;
   }>;
 
   // Media Assets operations
@@ -4711,6 +4737,162 @@ export class DatabaseStorage implements IStorage {
       registrationsTrend,
       upcomingEventsCount: Number(upcomingEventsCount),
       pastEventsCount: Number(pastEventsCount),
+    };
+  }
+
+  // Event tracking operations
+  async trackEventLinkClick(eventId: string, userId?: string): Promise<void> {
+    await db.insert(eventLinkClicks).values({
+      eventId,
+      userId: userId || null,
+    });
+  }
+
+  async getEventLinkClicks(eventId: string): Promise<Array<EventLinkClick & { user: User | null }>> {
+    const results = await db
+      .select({
+        click: eventLinkClicks,
+        user: users,
+      })
+      .from(eventLinkClicks)
+      .leftJoin(users, eq(eventLinkClicks.userId, users.id))
+      .where(eq(eventLinkClicks.eventId, eventId))
+      .orderBy(desc(eventLinkClicks.clickedAt));
+
+    return results.map(row => ({
+      ...row.click,
+      user: row.user,
+    }));
+  }
+
+  async getEventLinkClickCount(eventId: string): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(eventLinkClicks)
+      .where(eq(eventLinkClicks.eventId, eventId));
+    return result[0]?.count || 0;
+  }
+
+  async trackEventResourceDownload(eventId: string, fileIndex: number, fileName: string, userId?: string): Promise<void> {
+    await db.insert(eventResourceDownloads).values({
+      eventId,
+      fileIndex,
+      fileName,
+      userId: userId || null,
+    });
+  }
+
+  async getEventResourceDownloads(eventId: string): Promise<Array<EventResourceDownload & { user: User | null }>> {
+    const results = await db
+      .select({
+        download: eventResourceDownloads,
+        user: users,
+      })
+      .from(eventResourceDownloads)
+      .leftJoin(users, eq(eventResourceDownloads.userId, users.id))
+      .where(eq(eventResourceDownloads.eventId, eventId))
+      .orderBy(desc(eventResourceDownloads.downloadedAt));
+
+    return results.map(row => ({
+      ...row.download,
+      user: row.user,
+    }));
+  }
+
+  async getEventResourceDownloadStats(eventId: string): Promise<Array<{ fileIndex: number; fileName: string; downloadCount: number }>> {
+    const results = await db
+      .select({
+        fileIndex: eventResourceDownloads.fileIndex,
+        fileName: eventResourceDownloads.fileName,
+        downloadCount: count(),
+      })
+      .from(eventResourceDownloads)
+      .where(eq(eventResourceDownloads.eventId, eventId))
+      .groupBy(eventResourceDownloads.fileIndex, eventResourceDownloads.fileName)
+      .orderBy(eventResourceDownloads.fileIndex);
+
+    return results.map(row => ({
+      fileIndex: row.fileIndex,
+      fileName: row.fileName,
+      downloadCount: Number(row.downloadCount),
+    }));
+  }
+
+  async getEventDetailedAnalytics(eventId: string): Promise<{
+    registrations: number;
+    attended: number;
+    linkClicks: number;
+    uniqueLinkClickers: number;
+    resourceDownloads: Array<{
+      fileIndex: number;
+      fileName: string;
+      downloadCount: number;
+      uniqueDownloaders: number;
+    }>;
+  }> {
+    // Get registration count
+    const registrationsResult = await db
+      .select({ count: count() })
+      .from(eventRegistrations)
+      .where(and(
+        eq(eventRegistrations.eventId, eventId),
+        eq(eventRegistrations.status, 'registered')
+      ));
+    const registrations = registrationsResult[0]?.count || 0;
+
+    // Get attended count
+    const attendedResult = await db
+      .select({ count: count() })
+      .from(eventRegistrations)
+      .where(and(
+        eq(eventRegistrations.eventId, eventId),
+        eq(eventRegistrations.status, 'attended')
+      ));
+    const attended = attendedResult[0]?.count || 0;
+
+    // Get link click count
+    const linkClicksResult = await db
+      .select({ count: count() })
+      .from(eventLinkClicks)
+      .where(eq(eventLinkClicks.eventId, eventId));
+    const linkClicks = linkClicksResult[0]?.count || 0;
+
+    // Get unique link clickers count
+    const uniqueLinkClickersResult = await db
+      .select({ count: sql<number>`COUNT(DISTINCT ${eventLinkClicks.userId})` })
+      .from(eventLinkClicks)
+      .where(and(
+        eq(eventLinkClicks.eventId, eventId),
+        sql`${eventLinkClicks.userId} IS NOT NULL`
+      ));
+    const uniqueLinkClickers = Number(uniqueLinkClickersResult[0]?.count || 0);
+
+    // Get resource download stats with unique downloaders
+    const downloadStatsResults = await db
+      .select({
+        fileIndex: eventResourceDownloads.fileIndex,
+        fileName: eventResourceDownloads.fileName,
+        downloadCount: count(),
+        uniqueDownloaders: sql<number>`COUNT(DISTINCT ${eventResourceDownloads.userId})`,
+      })
+      .from(eventResourceDownloads)
+      .where(eq(eventResourceDownloads.eventId, eventId))
+      .groupBy(eventResourceDownloads.fileIndex, eventResourceDownloads.fileName)
+      .orderBy(eventResourceDownloads.fileIndex);
+
+    const resourceDownloads = downloadStatsResults.map(row => ({
+      fileIndex: row.fileIndex,
+      fileName: row.fileName,
+      downloadCount: Number(row.downloadCount),
+      uniqueDownloaders: Number(row.uniqueDownloaders),
+    }));
+
+    return {
+      registrations: Number(registrations),
+      attended: Number(attended),
+      linkClicks: Number(linkClicks),
+      uniqueLinkClickers,
+      resourceDownloads,
     };
   }
 
