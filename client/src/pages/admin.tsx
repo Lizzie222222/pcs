@@ -892,6 +892,19 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [showPageBuilderWarning, setShowPageBuilderWarning] = useState(false);
   const [eventDialogTab, setEventDialogTab] = useState<'details' | 'page-builder'>('details');
 
+  // Event Banners state
+  const [bannerDialogOpen, setBannerDialogOpen] = useState(false);
+  const [editingBanner, setEditingBanner] = useState<any | null>(null);
+  const [deletingBanner, setDeletingBanner] = useState<any | null>(null);
+  const [bannerDeleteDialogOpen, setBannerDeleteDialogOpen] = useState(false);
+  const [bannerFormData, setBannerFormData] = useState({
+    text: '',
+    eventId: '',
+    backgroundColor: '#0066CC',
+    textColor: '#FFFFFF',
+    isActive: true,
+  });
+
   // Page Builder form schema
   const pageBuilderSchema = z.object({
     publicSlug: z.string().optional(),
@@ -1748,6 +1761,94 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       toast({
         title: "Error",
         description: error.message || "Failed to update registration.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Event Banners queries
+  const { data: banners = [], isLoading: bannersLoading } = useQuery<any[]>({
+    queryKey: ['/api/admin/banners'],
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'events'),
+    retry: false,
+  });
+
+  // Event Banners mutations
+  const createBannerMutation = useMutation({
+    mutationFn: async (data: any) => {
+      return await apiRequest('POST', '/api/admin/banners', data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Banner created successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
+      setBannerDialogOpen(false);
+      setEditingBanner(null);
+      setBannerFormData({
+        text: '',
+        eventId: '',
+        backgroundColor: '#0066CC',
+        textColor: '#FFFFFF',
+        isActive: true,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to create banner.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const updateBannerMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: any }) => {
+      return await apiRequest('PUT', `/api/admin/banners/${id}`, data);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Banner updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
+      setBannerDialogOpen(false);
+      setEditingBanner(null);
+      setBannerFormData({
+        text: '',
+        eventId: '',
+        backgroundColor: '#0066CC',
+        textColor: '#FFFFFF',
+        isActive: true,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to update banner.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteBannerMutation = useMutation({
+    mutationFn: async (id: string) => {
+      return await apiRequest('DELETE', `/api/admin/banners/${id}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Success",
+        description: "Banner deleted successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
+      setBannerDeleteDialogOpen(false);
+      setDeletingBanner(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete banner.",
         variant: "destructive",
       });
     },
@@ -3501,6 +3602,118 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
               {/* Manage Events Tab */}
               <TabsContent value="manage">
+                {/* Event Banners Section */}
+                <Card className="mb-6">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <CardTitle>Event Banners</CardTitle>
+                      <Button
+                        onClick={() => {
+                          setEditingBanner(null);
+                          setBannerFormData({
+                            text: '',
+                            eventId: '',
+                            backgroundColor: '#0066CC',
+                            textColor: '#FFFFFF',
+                            isActive: true,
+                          });
+                          setBannerDialogOpen(true);
+                        }}
+                        className="bg-pcs_blue hover:bg-pcs_blue/90"
+                        data-testid="button-create-banner"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Create Banner
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    {bannersLoading ? (
+                      <div className="py-4">
+                        <LoadingSpinner message="Loading banners..." />
+                      </div>
+                    ) : banners.length === 0 ? (
+                      <EmptyState
+                        title="No banners yet"
+                        description="Create a banner to promote events on the landing page"
+                        icon={Bell}
+                      />
+                    ) : (
+                      <div className="space-y-4">
+                        {banners.map((banner) => (
+                          <div
+                            key={banner.id}
+                            className="border rounded-lg p-4"
+                            style={{
+                              backgroundColor: banner.backgroundColor + '20',
+                              borderColor: banner.backgroundColor,
+                            }}
+                            data-testid={`card-banner-${banner.id}`}
+                          >
+                            <div className="flex items-start justify-between">
+                              <div className="flex-1">
+                                <div className="flex items-center gap-3 mb-2">
+                                  <h3 
+                                    className="font-semibold text-lg"
+                                    style={{ color: banner.backgroundColor }}
+                                    data-testid={`text-banner-event-${banner.id}`}
+                                  >
+                                    {banner.event.title}
+                                  </h3>
+                                  {banner.isActive && (
+                                    <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
+                                      Active
+                                    </span>
+                                  )}
+                                </div>
+                                <p className="text-sm text-gray-700 mb-2" data-testid={`text-banner-text-${banner.id}`}>
+                                  {banner.text}
+                                </p>
+                                <div className="flex items-center gap-4 text-xs text-gray-500">
+                                  <span>Background: {banner.backgroundColor}</span>
+                                  <span>Text: {banner.textColor}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 ml-4">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setEditingBanner(banner);
+                                    setBannerFormData({
+                                      text: banner.text,
+                                      eventId: banner.eventId,
+                                      backgroundColor: banner.backgroundColor,
+                                      textColor: banner.textColor,
+                                      isActive: banner.isActive,
+                                    });
+                                    setBannerDialogOpen(true);
+                                  }}
+                                  data-testid={`button-edit-banner-${banner.id}`}
+                                >
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setDeletingBanner(banner);
+                                    setBannerDeleteDialogOpen(true);
+                                  }}
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  data-testid={`button-delete-banner-${banner.id}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
                 <Card>
                   <CardHeader>
                     <div className="flex items-center justify-between mb-4">
@@ -3968,6 +4181,199 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             </Tabs>
           </div>
         )}
+
+        {/* Event Banner Dialogs */}
+        <Dialog open={bannerDialogOpen} onOpenChange={setBannerDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle data-testid="text-banner-dialog-title">
+                {editingBanner ? 'Edit Event Banner' : 'Create Event Banner'}
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Event <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={bannerFormData.eventId}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, eventId: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  data-testid="select-event"
+                  required
+                >
+                  <option value="">Select an event</option>
+                  {events
+                    .filter(e => e.status === 'published')
+                    .map((event) => (
+                      <option key={event.id} value={event.id}>
+                        {event.title}
+                      </option>
+                    ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Banner Text <span className="text-red-500">*</span>
+                </label>
+                <textarea
+                  value={bannerFormData.text}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, text: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  rows={3}
+                  placeholder="Join us for our upcoming event..."
+                  data-testid="input-banner-text"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Background Color
+                  </label>
+                  <input
+                    type="color"
+                    value={bannerFormData.backgroundColor}
+                    onChange={(e) => setBannerFormData({ ...bannerFormData, backgroundColor: e.target.value })}
+                    className="w-full h-10 px-1 py-1 border border-gray-300 rounded-md cursor-pointer"
+                    data-testid="input-bg-color"
+                  />
+                  <span className="text-xs text-gray-500 mt-1 block">{bannerFormData.backgroundColor}</span>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Text Color
+                  </label>
+                  <input
+                    type="color"
+                    value={bannerFormData.textColor}
+                    onChange={(e) => setBannerFormData({ ...bannerFormData, textColor: e.target.value })}
+                    className="w-full h-10 px-1 py-1 border border-gray-300 rounded-md cursor-pointer"
+                    data-testid="input-text-color"
+                  />
+                  <span className="text-xs text-gray-500 mt-1 block">{bannerFormData.textColor}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  id="isActive"
+                  checked={bannerFormData.isActive}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, isActive: e.target.checked })}
+                  className="h-4 w-4 text-pcs_blue rounded border-gray-300 focus:ring-pcs_blue"
+                  data-testid="checkbox-is-active"
+                />
+                <label htmlFor="isActive" className="ml-2 text-sm text-gray-700">
+                  Active (display on landing page)
+                </label>
+              </div>
+
+              {/* Preview */}
+              {bannerFormData.text && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Preview
+                  </label>
+                  <div 
+                    className="p-4 rounded-md text-center"
+                    style={{
+                      backgroundColor: bannerFormData.backgroundColor,
+                      color: bannerFormData.textColor,
+                    }}
+                  >
+                    {bannerFormData.text}
+                  </div>
+                </div>
+              )}
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setBannerDialogOpen(false);
+                  setEditingBanner(null);
+                  setBannerFormData({
+                    text: '',
+                    eventId: '',
+                    backgroundColor: '#0066CC',
+                    textColor: '#FFFFFF',
+                    isActive: true,
+                  });
+                }}
+                data-testid="button-cancel"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (!bannerFormData.eventId || !bannerFormData.text) {
+                    toast({
+                      title: "Error",
+                      description: "Please fill in all required fields.",
+                      variant: "destructive",
+                    });
+                    return;
+                  }
+
+                  if (editingBanner) {
+                    updateBannerMutation.mutate({
+                      id: editingBanner.id,
+                      data: bannerFormData,
+                    });
+                  } else {
+                    createBannerMutation.mutate(bannerFormData);
+                  }
+                }}
+                disabled={createBannerMutation.isPending || updateBannerMutation.isPending}
+                className="bg-pcs_blue hover:bg-pcs_blue/90"
+                data-testid="button-save-banner"
+              >
+                {createBannerMutation.isPending || updateBannerMutation.isPending 
+                  ? 'Saving...' 
+                  : editingBanner ? 'Update Banner' : 'Create Banner'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={bannerDeleteDialogOpen} onOpenChange={setBannerDeleteDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle data-testid="text-delete-banner-title">Delete Banner</DialogTitle>
+            </DialogHeader>
+            <p className="text-gray-600">
+              Are you sure you want to delete this banner? This action cannot be undone.
+            </p>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setBannerDeleteDialogOpen(false);
+                  setDeletingBanner(null);
+                }}
+                data-testid="button-cancel-delete"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() => {
+                  if (deletingBanner) {
+                    deleteBannerMutation.mutate(deletingBanner.id);
+                  }
+                }}
+                disabled={deleteBannerMutation.isPending}
+                className="bg-red-600 hover:bg-red-700"
+                data-testid="button-confirm-delete"
+              >
+                {deleteBannerMutation.isPending ? 'Deleting...' : 'Delete'}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Printable Forms Tab */}
         {activeTab === 'printable-forms' && <PrintableFormsTab />}
