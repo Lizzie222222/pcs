@@ -189,10 +189,10 @@ export default function Landing() {
 
   return (
     <>
-      {/* Event Banner */}
+      {/* Event Banner - Fixed at top above navigation */}
       {activeBanner && (
         <div 
-          className="w-full py-4 px-4 text-center relative shadow-md"
+          className="w-full py-4 px-4 text-center fixed top-0 left-0 right-0 z-[60] shadow-md"
           style={{
             backgroundColor: activeBanner.backgroundColor,
             color: activeBanner.textColor,
@@ -214,7 +214,7 @@ export default function Landing() {
         </div>
       )}
       
-      <div className="min-h-screen bg-white">
+      <div className={`min-h-screen bg-white ${activeBanner ? 'pt-[136px]' : 'pt-16'}`}>
 
       {/* Clean Hero Section with Student Image */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
