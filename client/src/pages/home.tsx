@@ -198,6 +198,20 @@ export default function Home() {
     retry: false,
   });
 
+  // Fetch upcoming events for new events badge
+  const { data: upcomingEvents = [] } = useQuery<any[]>({
+    queryKey: ['/api/events/upcoming'],
+    enabled: isAuthenticated,
+  });
+
+  // Calculate count of new events
+  const newEventsCount = upcomingEvents.filter(event => {
+    if (!user?.lastViewedEventsAt) return true; // All events are new if never viewed
+    const lastViewed = new Date(user.lastViewedEventsAt);
+    const eventCreated = new Date(event.createdAt || event.startDateTime);
+    return eventCreated > lastViewed;
+  }).length;
+
   // Fetch school audit for promise notification check
   const { data: schoolAudit } = useQuery<AuditResponse>({
     queryKey: ['/api/audits/school', dashboardData?.school?.id],
@@ -726,6 +740,14 @@ export default function Home() {
             >
               <Calendar className="h-5 w-5 mr-2" />
               Events
+              {newEventsCount > 0 && (
+                <Badge 
+                  className="ml-2 bg-red-500 text-white px-2 py-0.5 text-xs font-bold animate-pulse" 
+                  data-testid="badge-new-events-tab"
+                >
+                  {newEventsCount}
+                </Badge>
+              )}
             </Button>
           </div>
         </div>
