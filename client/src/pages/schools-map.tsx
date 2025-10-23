@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,9 +6,10 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, School, Award, Globe, Download } from "lucide-react";
 import { useCountries } from "@/hooks/useCountries";
-import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
+import "leaflet.heat";
 
 // Fix for default markers in React Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -27,6 +28,55 @@ const createCustomIcon = (color: string) => {
     iconAnchor: [8, 8],
   });
 };
+
+// Heat Map Component
+function HeatMapLayer({ schools }: { schools: SchoolMapData[] }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!schools || schools.length === 0) return;
+
+    // Convert schools to heat map points with valid coordinates
+    const heatPoints: [number, number, number][] = schools
+      .filter(school => {
+        const lat = parseFloat(school.latitude);
+        const lng = parseFloat(school.longitude);
+        return !isNaN(lat) && !isNaN(lng);
+      })
+      .map(school => {
+        const lat = parseFloat(school.latitude);
+        const lng = parseFloat(school.longitude);
+        // Intensity based on school features (higher for featured/completed schools)
+        const intensity = school.featuredSchool ? 1.5 : school.awardCompleted ? 1.2 : 1.0;
+        return [lat, lng, intensity];
+      });
+
+    if (heatPoints.length === 0) return;
+
+    // Create heat layer with Leaflet Heat
+    const heatLayer = (L as any).heatLayer(heatPoints, {
+      radius: 25,
+      blur: 35,
+      maxZoom: 10,
+      max: 1.5,
+      gradient: {
+        0.0: '#3B82F6',  // blue
+        0.5: '#10B981',  // green
+        0.7: '#F59E0B',  // amber/yellow
+        1.0: '#EF4444',  // red
+      }
+    });
+
+    heatLayer.addTo(map);
+
+    // Cleanup
+    return () => {
+      map.removeLayer(heatLayer);
+    };
+  }, [map, schools]);
+
+  return null;
+}
 
 interface SchoolMapData {
   id: string;
@@ -197,6 +247,10 @@ export default function SchoolsMap() {
                     className="map-tiles"
                   />
                   
+                  {/* Heat Map Layer */}
+                  {schools && schools.length > 0 && <HeatMapLayer schools={schools} />}
+                  
+                  {/* Individual Markers for detailed information */}
                   {schools && schools.map((school) => {
                     const lat = parseFloat(school.latitude);
                     const lng = parseFloat(school.longitude);
