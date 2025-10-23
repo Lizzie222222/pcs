@@ -162,46 +162,17 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
     }
   };
 
-  const firstQuote = caseStudy.studentQuotes?.[0];
   const displayMetrics = Array.isArray(caseStudy.impactMetrics) 
     ? caseStudy.impactMetrics.slice(0, 2) 
     : [];
-  const hasBeforeAfter = caseStudy.beforeImage && caseStudy.afterImage;
 
   return (
     <Card 
       className="group break-inside-avoid mb-6 overflow-hidden hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 hover:border-pcs_blue/30 animate-fade-in"
       data-testid={`case-study-${caseStudy.id}`}
     >
-      {/* Image Section */}
-      {hasBeforeAfter ? (
-        <div className="grid grid-cols-2 gap-0.5 bg-gray-200">
-          <div className="relative overflow-hidden group/img">
-            <OptimizedImage 
-              src={caseStudy.beforeImage!} 
-              alt="Before"
-              className="w-full h-48 object-cover transition-transform duration-500 group-hover/img:scale-110"
-              priority={false}
-              respectConnectionSpeed={true}
-            />
-            <div className="absolute top-2 left-2 bg-black/60 text-white px-2 py-1 rounded text-xs font-medium">
-              Before
-            </div>
-          </div>
-          <div className="relative overflow-hidden group/img">
-            <OptimizedImage 
-              src={caseStudy.afterImage!} 
-              alt="After"
-              className="w-full h-48 object-cover transition-transform duration-500 group-hover/img:scale-110"
-              priority={false}
-              respectConnectionSpeed={true}
-            />
-            <div className="absolute top-2 right-2 bg-green-600 text-white px-2 py-1 rounded text-xs font-medium">
-              After
-            </div>
-          </div>
-        </div>
-      ) : caseStudy.images?.length > 0 ? (
+      {/* Image Section - Never use before/after images, only regular images or imageUrl */}
+      {caseStudy.images?.length > 0 ? (
         <ImageCarousel images={caseStudy.images} title={caseStudy.title} />
       ) : caseStudy.imageUrl ? (
         <div className="relative overflow-hidden group">
@@ -235,10 +206,16 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
         </h3>
         
         {/* School Info */}
-        <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
-          <MapPin className="h-3.5 w-3.5" />
-          <span>{caseStudy.schoolName} • {caseStudy.schoolCountry}</span>
-        </div>
+        {(caseStudy.schoolName || caseStudy.schoolCountry) && (
+          <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
+            <MapPin className="h-3.5 w-3.5" />
+            <span>
+              {caseStudy.schoolName && caseStudy.schoolCountry 
+                ? `${caseStudy.schoolName} • ${caseStudy.schoolCountry}`
+                : caseStudy.schoolName || caseStudy.schoolCountry}
+            </span>
+          </div>
+        )}
         
         {/* Description */}
         <p className="text-gray-600 text-sm mb-4 line-clamp-3">
@@ -260,30 +237,6 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
                 <p className="text-lg font-bold">{metric.value}</p>
               </div>
             ))}
-          </div>
-        )}
-
-        {/* Student Quote */}
-        {firstQuote && (
-          <div className="bg-gradient-to-br from-gray-50 to-gray-100 p-4 rounded-lg mb-4 border-l-3 border-pcs_blue">
-            <div className="flex gap-3">
-              {firstQuote.photoUrl && (
-                <img 
-                  src={firstQuote.photoUrl} 
-                  alt={firstQuote.name}
-                  className="w-10 h-10 rounded-full object-cover"
-                />
-              )}
-              <div className="flex-1">
-                <Quote className="h-4 w-4 text-pcs_blue/40 mb-1" />
-                <p className="text-sm text-gray-700 italic line-clamp-2 mb-2">
-                  "{firstQuote.quote}"
-                </p>
-                <p className="text-xs font-medium text-gray-600">
-                  — {firstQuote.name}{firstQuote.age ? `, ${firstQuote.age}` : ''}
-                </p>
-              </div>
-            </div>
           </div>
         )}
 
