@@ -63,6 +63,11 @@ export default function Landing() {
     queryKey: ['/api/stats'],
   });
 
+  // Fetch active event banner
+  const { data: activeBanner } = useQuery<any>({
+    queryKey: ['/api/banners/active'],
+  });
+
   // Connection speed detection
   const connectionSpeed = useConnectionSpeed();
 
@@ -176,7 +181,30 @@ export default function Landing() {
   }
 
   return (
-    <div className="min-h-screen bg-white pt-16">
+    <>
+      {/* Event Banner */}
+      {activeBanner && (
+        <div 
+          className="w-full py-3 px-4 text-center fixed top-0 left-0 right-0 z-50 shadow-md"
+          style={{
+            backgroundColor: activeBanner.backgroundColor,
+            color: activeBanner.textColor,
+          }}
+          data-testid="event-banner"
+        >
+          <div className="container-width flex items-center justify-center">
+            <a 
+              href={`/events/${activeBanner.event.id}/live`}
+              className="hover:underline font-medium text-sm sm:text-base"
+              data-testid="link-banner-event"
+            >
+              {activeBanner.text}
+            </a>
+          </div>
+        </div>
+      )}
+      
+      <div className={`min-h-screen bg-white ${activeBanner ? 'pt-28' : 'pt-16'}`}>
 
       {/* Clean Hero Section with Student Image */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
@@ -676,6 +704,7 @@ export default function Landing() {
 
       {/* Connection Speed Control */}
       <ConnectionSpeedControl />
-    </div>
+      </div>
+    </>
   );
 }
