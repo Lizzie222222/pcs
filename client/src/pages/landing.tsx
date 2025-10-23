@@ -578,7 +578,7 @@ export default function Landing() {
                       )}
                     </div>
                     <a
-                      href={`/events/${event.id}/live`}
+                      href={`/events/${event.publicSlug || event.id}`}
                       className="inline-flex items-center gap-2 text-pcs_blue hover:text-pcs_blue/80 font-semibold text-sm group/link"
                       data-testid={`link-event-details-${event.id}`}
                     >
