@@ -613,9 +613,12 @@ export default function EventLivePage() {
           )}
 
           {hasEnded && (
-            <div className="mt-10 p-5 bg-gray-100 border-2 border-gray-300 rounded-xl text-center shadow-sm">
-              <p className="text-gray-700 font-medium text-lg" data-testid="text-event-ended">
-                This event has ended. You can still watch the recordings below.
+            <div className="mt-10 p-6 bg-gradient-to-r from-ocean-blue/10 to-teal/10 border-2 border-ocean-blue/30 rounded-xl text-center shadow-lg">
+              <p className="text-navy font-bold text-2xl mb-2" data-testid="text-event-ended">
+                📺 Catch Up on the Recording
+              </p>
+              <p className="text-gray-700 text-lg">
+                Missed this event? No worries! You can watch the full recording and access all event resources below.
               </p>
             </div>
           )}
