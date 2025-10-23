@@ -29,6 +29,7 @@ const Inspiration = lazy(() => import("@/pages/inspiration"));
 const CaseStudyDetail = lazy(() => import("@/pages/case-study-detail"));
 const SchoolsMap = lazy(() => import("@/pages/schools-map"));
 const Search = lazy(() => import("@/pages/search"));
+const Events = lazy(() => import("@/pages/events"));
 const EventLive = lazy(() => import("@/pages/event-live"));
 const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
 const Admin = lazy(() => import("@/pages/admin"));
@@ -161,6 +162,7 @@ function Router() {
               <Route path="/case-study/:id" component={CaseStudyDetail} />
               <Route path="/schools-map" component={SchoolsMap} />
               <Route path="/search" component={Search} />
+              <Route path="/events" component={Events} />
               <Route path="/events/:slug" component={EventLive} />
               {isAuthenticated && (
                 <>

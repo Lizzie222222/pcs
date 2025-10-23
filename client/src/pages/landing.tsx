@@ -650,12 +650,12 @@ export default function Landing() {
               <OptimizedImage 
                 src={whiteLogoUrl} 
                 alt={t('accessibility.plastic_clever_schools_logo_alt')} 
-                width={200}
-                height={80}
-                className="h-16 w-auto mb-4" 
+                width={240}
+                height={100}
+                className="h-20 w-auto mb-4" 
                 responsive={false}
                 quality={90}
-                sizes="200px"
+                sizes="240px"
                 priority={false}
               />
               <p className="text-gray-300 text-sm sm:text-base">
@@ -688,7 +688,7 @@ export default function Landing() {
               <ul className="space-y-2 text-sm text-gray-300">
                 <li><a href="/register" className="hover:text-teal transition-colors">{t('footer.connect_newsletter')}</a></li>
                 <li><a href="https://www.instagram.com/plasticcleverschools/" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.connect_social_media')}</a></li>
-                <li><a href="/#upcoming-events" className="hover:text-teal transition-colors">{t('footer.connect_events')}</a></li>
+                <li><a href="/events" className="hover:text-teal transition-colors">{t('footer.connect_events')}</a></li>
                 <li><a href="/#partners" className="hover:text-teal transition-colors">{t('footer.connect_partners')}</a></li>
               </ul>
             </div>
