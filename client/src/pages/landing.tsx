@@ -49,6 +49,7 @@ import {
   Users,
   ExternalLink
 } from "lucide-react";
+import { getGradientById } from "@shared/gradients";
 
 interface SiteStats {
   totalSchools: number;
@@ -195,9 +196,8 @@ export default function Landing() {
         <div 
           className="w-full py-0.5 px-2 text-center fixed top-0 left-0 right-0 z-[60] shadow-sm"
           style={{
-            backgroundColor: activeBanner.backgroundColor,
+            background: getGradientById(activeBanner.gradient)?.gradient || activeBanner.backgroundColor,
             color: activeBanner.textColor,
-            backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.05) 100%)',
           }}
           data-testid="event-banner"
         >
