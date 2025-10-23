@@ -507,9 +507,10 @@ export default function Landing() {
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="events-grid">
               {upcomingEvents.slice(0, 6).map((event: any) => (
-                <div 
-                  key={event.id} 
-                  className="bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group"
+                <a
+                  key={event.id}
+                  href={`/events/${event.publicSlug || event.id}`}
+                  className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer"
                   data-testid={`card-event-${event.id}`}
                 >
                   {event.imageUrl && (
@@ -546,16 +547,12 @@ export default function Landing() {
                         </div>
                       )}
                     </div>
-                    <a
-                      href={`/events/${event.publicSlug || event.id}`}
-                      className="inline-flex items-center gap-2 text-pcs_blue hover:text-pcs_blue/80 font-semibold text-sm group/link"
-                      data-testid={`link-event-details-${event.id}`}
-                    >
+                    <div className="inline-flex items-center gap-2 text-pcs_blue group-hover:text-pcs_blue/80 font-semibold text-sm">
                       View Details & Register
-                      <ExternalLink className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
-                    </a>
+                      <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
-                </div>
+                </a>
               ))}
             </div>
           )}

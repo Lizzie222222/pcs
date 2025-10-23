@@ -98,84 +98,86 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
   const isFull = event.capacity && event.registrationsCount >= event.capacity;
 
   return (
-    <Card 
-      className={`overflow-hidden group hover:shadow-xl transition-shadow duration-300 ${isPast ? 'opacity-75' : ''}`}
-      data-testid={`card-event-${event.id}`}
+    <a 
+      href={`/events/${event.publicSlug || event.id}`}
+      className="block"
+      data-testid={`link-event-card-${event.id}`}
     >
-      {event.imageUrl && (
-        <div className="relative h-48 overflow-hidden">
-          <img 
-            src={event.imageUrl} 
-            alt={event.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-          />
-          <div className="absolute top-3 right-3 bg-pcs_blue text-white px-3 py-1 rounded-full text-xs font-semibold">
-            {event.eventType.replace('_', ' ').toUpperCase()}
-          </div>
-          {isPast && (
-            <div className="absolute top-3 left-3 bg-gray-700 text-white px-3 py-1 rounded-full text-xs font-semibold">
-              PAST EVENT
+      <Card 
+        className={`overflow-hidden group hover:shadow-xl transition-shadow duration-300 cursor-pointer ${isPast ? 'opacity-75' : ''}`}
+        data-testid={`card-event-${event.id}`}
+      >
+        {event.imageUrl && (
+          <div className="relative h-48 overflow-hidden">
+            <img 
+              src={event.imageUrl} 
+              alt={event.title}
+              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div className="absolute top-3 right-3 bg-pcs_blue text-white px-3 py-1 rounded-full text-xs font-semibold">
+              {event.eventType.replace('_', ' ').toUpperCase()}
             </div>
-          )}
-          {!isPast && isFull && (
-            <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
-              FULL
-            </div>
-          )}
-        </div>
-      )}
-      <CardContent className="p-6">
-        <h3 className="font-bold text-xl text-navy mb-3 line-clamp-2" data-testid={`text-event-title-${event.id}`}>
-          {event.title}
-        </h3>
-        <p className="text-gray-600 text-sm mb-4 line-clamp-2" data-testid={`text-event-description-${event.id}`}>
-          {event.description}
-        </p>
-        <div className="space-y-2 mb-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Calendar className="w-4 h-4" />
-            <span>{new Date(event.startDateTime).toLocaleDateString('en-GB', { 
-              day: 'numeric',
-              month: 'long', 
-              year: 'numeric'
-            })}</span>
+            {isPast && (
+              <div className="absolute top-3 left-3 bg-gray-700 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                PAST EVENT
+              </div>
+            )}
+            {!isPast && isFull && (
+              <div className="absolute top-3 left-3 bg-red-500 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                FULL
+              </div>
+            )}
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Clock className="w-4 h-4" />
-            <span>
-              {new Date(event.startDateTime).toLocaleTimeString('en-GB', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-              {' - '}
-              {new Date(event.endDateTime).toLocaleTimeString('en-GB', { 
-                hour: '2-digit', 
-                minute: '2-digit' 
-              })}
-            </span>
-          </div>
-          {event.location && (
+        )}
+        <CardContent className="p-6">
+          <h3 className="font-bold text-xl text-navy mb-3 line-clamp-2" data-testid={`text-event-title-${event.id}`}>
+            {event.title}
+          </h3>
+          <p className="text-gray-600 text-sm mb-4 line-clamp-2" data-testid={`text-event-description-${event.id}`}>
+            {event.description}
+          </p>
+          <div className="space-y-2 mb-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <MapPin className="w-4 h-4" />
-              <span className="line-clamp-1">{event.isVirtual ? 'Virtual Event' : event.location}</span>
+              <Calendar className="w-4 h-4" />
+              <span>{new Date(event.startDateTime).toLocaleDateString('en-GB', { 
+                day: 'numeric',
+                month: 'long', 
+                year: 'numeric'
+              })}</span>
             </div>
-          )}
-          {event.capacity && (
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Users className="w-4 h-4" />
-              <span>{event.registrationsCount || 0} / {event.capacity} registered</span>
+              <Clock className="w-4 h-4" />
+              <span>
+                {new Date(event.startDateTime).toLocaleTimeString('en-GB', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+                {' - '}
+                {new Date(event.endDateTime).toLocaleTimeString('en-GB', { 
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </span>
             </div>
-          )}
-        </div>
-        <a
-          href={`/events/${event.publicSlug || event.id}`}
-          className="inline-flex items-center gap-2 text-pcs_blue hover:text-pcs_blue/80 font-semibold text-sm group/link"
-          data-testid={`link-event-details-${event.id}`}
-        >
-          {isPast ? 'View Event Details' : 'View Details & Register'}
-          <ExternalLink className="w-4 h-4 group-hover/link:translate-x-1 transition-transform" />
-        </a>
-      </CardContent>
-    </Card>
+            {event.location && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <MapPin className="w-4 h-4" />
+                <span className="line-clamp-1">{event.isVirtual ? 'Virtual Event' : event.location}</span>
+              </div>
+            )}
+            {event.capacity && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Users className="w-4 h-4" />
+                <span>{event.registrationsCount || 0} / {event.capacity} registered</span>
+              </div>
+            )}
+          </div>
+          <div className="inline-flex items-center gap-2 text-pcs_blue group-hover:text-pcs_blue/80 font-semibold text-sm">
+            {isPast ? 'View Event Details' : 'View Details & Register'}
+            <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+          </div>
+        </CardContent>
+      </Card>
+    </a>
   );
 }
