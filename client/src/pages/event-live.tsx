@@ -301,7 +301,7 @@ export default function EventLivePage() {
             {event.imageUrl && (
               <div className="mb-8">
                 <img
-                  src={`/api/objects${event.imageUrl}`}
+                  src={event.imageUrl}
                   alt={event.title}
                   className="max-h-32 mx-auto object-contain drop-shadow-lg"
                   data-testid="img-coming-soon-logo"
@@ -348,7 +348,7 @@ export default function EventLivePage() {
             {event.imageUrl && (
               <div className="mb-8 text-center">
                 <img
-                  src={`/api/objects${event.imageUrl}`}
+                  src={event.imageUrl}
                   alt={event.title}
                   className="max-h-40 mx-auto object-contain drop-shadow-2xl rounded-lg"
                   data-testid="img-restricted-logo"
@@ -498,7 +498,7 @@ export default function EventLivePage() {
           {event.imageUrl && (
             <div className="mb-10">
               <img
-                src={`/api/objects${event.imageUrl}`}
+                src={event.imageUrl}
                 alt={event.title}
                 className="max-h-40 mx-auto object-contain drop-shadow-lg transition-opacity duration-300"
                 data-testid="img-event-logo"
