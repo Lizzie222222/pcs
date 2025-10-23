@@ -859,6 +859,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     waitlistEnabled: boolean;
     registrationDeadline: string;
     tags: string;
+    isPreRecorded: boolean;
+    recordingAvailableFrom: string;
+    pagePublishedStatus: 'draft' | 'coming_soon' | 'published';
+    accessType: 'open' | 'closed';
   }>({
     title: '',
     description: '',
@@ -874,6 +878,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     waitlistEnabled: false,
     registrationDeadline: '',
     tags: '',
+    isPreRecorded: false,
+    recordingAvailableFrom: '',
+    pagePublishedStatus: 'draft',
+    accessType: 'open',
   });
 
   // Event image upload state
@@ -1298,6 +1306,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           waitlistEnabled: createdEvent.waitlistEnabled ?? false,
           registrationDeadline: createdEvent.registrationDeadline ? new Date(createdEvent.registrationDeadline).toISOString().slice(0, 16) : '',
           tags: createdEvent.tags?.join(', ') || '',
+          isPreRecorded: createdEvent.isPreRecorded ?? false,
+          recordingAvailableFrom: createdEvent.recordingAvailableFrom ? new Date(createdEvent.recordingAvailableFrom).toISOString().slice(0, 16) : '',
+          pagePublishedStatus: createdEvent.pagePublishedStatus || 'draft',
+          accessType: createdEvent.accessType || 'open',
         });
         
         // Initialize page builder form with event data
@@ -1339,6 +1351,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           waitlistEnabled: false,
           registrationDeadline: '',
           tags: '',
+          isPreRecorded: false,
+          recordingAvailableFrom: '',
+          pagePublishedStatus: 'draft',
+          accessType: 'open',
         });
         setUploadedEventImage(null);
         setEditingEvent(null);
@@ -1380,6 +1396,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         waitlistEnabled: false,
         registrationDeadline: '',
         tags: '',
+        isPreRecorded: false,
+        recordingAvailableFrom: '',
+        pagePublishedStatus: 'draft',
+        accessType: 'open',
       });
       setUploadedEventImage(null);
     },
@@ -3757,6 +3777,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                             waitlistEnabled: false,
                             registrationDeadline: '',
                             tags: '',
+                            isPreRecorded: false,
+                            recordingAvailableFrom: '',
+                            pagePublishedStatus: 'draft',
+                            accessType: 'open',
                           });
                           setUploadedEventImage(null);
                           setEventDialogOpen(true);
@@ -3902,6 +3926,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                           waitlistEnabled: event.waitlistEnabled ?? false,
                                           registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
                                           tags: event.tags?.join(', ') || '',
+                                          isPreRecorded: event.isPreRecorded ?? false,
+                                          recordingAvailableFrom: event.recordingAvailableFrom ? new Date(event.recordingAvailableFrom).toISOString().slice(0, 16) : '',
+                                          pagePublishedStatus: event.pagePublishedStatus || 'draft',
+                                          accessType: event.accessType || 'open',
                                         });
                                         // Set uploaded image if event has an image
                                         if (event.imageUrl) {
@@ -4739,6 +4767,66 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 data-testid="input-tags"
               />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Page Published Status
+                </label>
+                <select
+                  value={eventFormData.pagePublishedStatus}
+                  onChange={(e) => setEventFormData({ ...eventFormData, pagePublishedStatus: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  data-testid="select-page-published-status"
+                >
+                  <option value="draft">Draft (not visible)</option>
+                  <option value="coming_soon">Coming Soon (teaser page)</option>
+                  <option value="published">Published (full page)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Access Type
+                </label>
+                <select
+                  value={eventFormData.accessType}
+                  onChange={(e) => setEventFormData({ ...eventFormData, accessType: e.target.value as any })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  data-testid="select-access-type"
+                >
+                  <option value="open">Open (anyone can view)</option>
+                  <option value="closed">Closed (requires login)</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={eventFormData.isPreRecorded}
+                onChange={(e) => setEventFormData({ ...eventFormData, isPreRecorded: e.target.checked })}
+                className="h-4 w-4"
+                data-testid="checkbox-is-pre-recorded"
+              />
+              <label className="text-sm font-medium text-gray-700">
+                Is Pre-Recorded Event
+              </label>
+            </div>
+
+            {eventFormData.isPreRecorded && (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Recording Available From
+                </label>
+                <input
+                  type="datetime-local"
+                  value={eventFormData.recordingAvailableFrom}
+                  onChange={(e) => setEventFormData({ ...eventFormData, recordingAvailableFrom: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  data-testid="input-recording-available-from"
+                />
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2 mt-4">
@@ -4782,6 +4870,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   waitlistEnabled: eventFormData.waitlistEnabled,
                   registrationDeadline: eventFormData.registrationDeadline ? convertToISO(eventFormData.registrationDeadline) : null,
                   tags: eventFormData.tags ? eventFormData.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
+                  isPreRecorded: eventFormData.isPreRecorded,
+                  recordingAvailableFrom: eventFormData.recordingAvailableFrom ? convertToISO(eventFormData.recordingAvailableFrom) : null,
+                  pagePublishedStatus: eventFormData.pagePublishedStatus,
+                  accessType: eventFormData.accessType,
                 };
 
                 // Only include status if creating new event OR if status is actually changing
