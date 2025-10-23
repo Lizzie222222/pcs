@@ -5,6 +5,7 @@ import { useConnectionSpeed } from "@/hooks/useConnectionSpeed";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedImage";
 import ConnectionSpeedControl from "@/components/ConnectionSpeedControl";
 
@@ -192,23 +193,32 @@ export default function Landing() {
       {/* Event Banner - Fixed at top above navigation */}
       {activeBanner && (
         <div 
-          className="w-full py-4 px-4 text-center fixed top-0 left-0 right-0 z-[60] shadow-md"
+          className="w-full py-4 px-4 text-center fixed top-0 left-0 right-0 z-[60] shadow-lg"
           style={{
             backgroundColor: activeBanner.backgroundColor,
             color: activeBanner.textColor,
+            backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.05) 100%)',
           }}
           data-testid="event-banner"
         >
           <div className="container-width flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-            <p className="font-medium text-sm sm:text-base">
-              {activeBanner.text}
-            </p>
+            <div className="flex items-center gap-3">
+              <Badge 
+                className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-3 py-1 text-xs font-bold animate-pulse shadow-lg border-0"
+                data-testid="badge-new-event-banner"
+              >
+                ✨ NEW
+              </Badge>
+              <p className="font-semibold text-sm sm:text-base">
+                {activeBanner.text}
+              </p>
+            </div>
             <Button
               onClick={() => window.location.href = `/events/${activeBanner.event.publicSlug || activeBanner.event.id}`}
-              className="bg-white hover:bg-gray-100 text-gray-900 font-semibold px-6 py-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+              className="bg-white hover:bg-gray-50 text-gray-900 font-bold px-6 py-2.5 rounded-full transition-all duration-200 shadow-md hover:shadow-lg hover:scale-105 border-2 border-white/20"
               data-testid="button-banner-event"
             >
-              Learn More
+              Learn More →
             </Button>
           </div>
         </div>

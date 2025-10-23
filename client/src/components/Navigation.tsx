@@ -34,6 +34,11 @@ export default function Navigation() {
     retry: false,
   });
 
+  // Check for active banner to adjust navigation position
+  const { data: activeBanner } = useQuery<any>({
+    queryKey: ['/api/banners/active'],
+  });
+
   // Check if user is a head teacher
   const isHeadTeacher = dashboardData?.schoolUser?.role === 'head_teacher';
 
@@ -86,11 +91,18 @@ export default function Navigation() {
   const isAdminPage = location === '/admin';
   
   return (
-    <nav className={`shadow-sm border-b fixed top-0 left-0 right-0 z-50 transition-colors ${
-      isAdminPage 
-        ? 'bg-pcs_blue/5 border-pcs_blue/20' 
-        : 'bg-white border-gray-200'
-    }`} role="navigation" aria-label={t('navigation.main_navigation')}>
+    <nav 
+      className={`shadow-sm border-b fixed left-0 right-0 z-50 transition-all duration-300 ${
+        isAdminPage 
+          ? 'bg-pcs_blue/5 border-pcs_blue/20' 
+          : 'bg-white border-gray-200'
+      }`} 
+      style={{
+        top: activeBanner ? '72px' : '0'
+      }}
+      role="navigation" 
+      aria-label={t('navigation.main_navigation')}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
