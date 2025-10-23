@@ -5,7 +5,6 @@ import { useConnectionSpeed } from "@/hooks/useConnectionSpeed";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedImage";
 import ConnectionSpeedControl from "@/components/ConnectionSpeedControl";
 
@@ -49,7 +48,6 @@ import {
   Users,
   ExternalLink
 } from "lucide-react";
-import { getGradientById } from "@shared/gradients";
 
 interface SiteStats {
   totalSchools: number;
@@ -65,11 +63,6 @@ export default function Landing() {
 
   const { data: stats } = useQuery<SiteStats>({
     queryKey: ['/api/stats'],
-  });
-
-  // Fetch active event banner
-  const { data: activeBanner } = useQuery<any>({
-    queryKey: ['/api/banners/active'],
   });
 
   // Fetch upcoming events for carousel
@@ -191,38 +184,7 @@ export default function Landing() {
 
   return (
     <>
-      {/* Event Banner - Slim fixed banner */}
-      {activeBanner && (
-        <div 
-          className="w-full py-0.5 px-2 text-center fixed top-0 left-0 right-0 z-[60] shadow-sm"
-          style={{
-            backgroundImage: getGradientById(activeBanner.gradient)?.gradient || `linear-gradient(135deg, ${activeBanner.backgroundColor} 0%, ${activeBanner.backgroundColor} 100%)`,
-            color: activeBanner.textColor,
-          }}
-          data-testid="event-banner"
-        >
-          <div className="container-width flex flex-row items-center justify-center gap-1.5 text-xs">
-            <Badge 
-              className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-1 py-0 text-[9px] leading-tight font-bold animate-pulse shadow-sm border-0"
-              data-testid="badge-new-event-banner"
-            >
-              ✨ NEW
-            </Badge>
-            <p className="font-medium leading-tight">
-              {activeBanner.text}
-            </p>
-            <Button
-              onClick={() => window.location.href = `/events/${activeBanner.event.publicSlug || activeBanner.event.id}`}
-              className="bg-white hover:bg-gray-100 text-pcs_blue hover:text-ocean-blue font-semibold px-3 py-0.5 text-[10px] leading-tight rounded-md transition-all duration-200 shadow-sm hover:shadow-md"
-              data-testid="button-banner-event"
-            >
-              Learn More →
-            </Button>
-          </div>
-        </div>
-      )}
-      
-      <div className={`min-h-screen bg-white ${activeBanner ? 'pt-[92px]' : 'pt-16'}`}>
+      <div className="min-h-screen bg-white pt-16">
 
       {/* Clean Hero Section with Student Image */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">

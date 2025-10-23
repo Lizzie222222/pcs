@@ -1,7 +1,7 @@
 import { Switch, Route, useLocation } from "wouter";
 import { useEffect, useRef, Suspense, lazy } from "react";
 import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
+import { QueryClientProvider, useQuery } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { LoadingSpinner } from "@/components/ui/states";
@@ -10,6 +10,9 @@ import Navigation from "@/components/Navigation";
 import { updatePageSEO, addStructuredData, defaultStructuredData } from "@/lib/seoUtils";
 import { useTranslation } from "react-i18next";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { getGradientById } from "@shared/gradients";
 
 // Page Loading Component
 const PageLoadingFallback = () => (
@@ -42,6 +45,11 @@ function Router() {
   const [location] = useLocation();
   const mainRef = useRef<HTMLElement>(null);
   const skipLinkRef = useRef<HTMLAnchorElement>(null);
+
+  // Fetch active event banner - MUST be before any conditional returns
+  const { data: activeBanner } = useQuery<any>({
+    queryKey: ['/api/banners/active'],
+  });
 
   // Focus management and SEO for route changes
   useEffect(() => {
@@ -94,6 +102,37 @@ function Router() {
       >
         {t('accessibility.skip_to_main_content')}
       </a>
+      
+      {/* Global Event Banner */}
+      {activeBanner && (
+        <div 
+          className="w-full py-1 px-2 text-center fixed top-0 left-0 right-0 z-[60] shadow-sm"
+          style={{
+            backgroundImage: getGradientById(activeBanner.gradient)?.gradient || `linear-gradient(135deg, ${activeBanner.backgroundColor} 0%, ${activeBanner.backgroundColor} 100%)`,
+            color: activeBanner.textColor,
+          }}
+          data-testid="event-banner"
+        >
+          <div className="max-w-7xl mx-auto flex flex-row items-center justify-center gap-1.5 text-xs">
+            <Badge 
+              className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-1 py-0 text-[9px] leading-tight font-bold animate-pulse shadow-sm border-0"
+              data-testid="badge-new-event-banner"
+            >
+              ✨ NEW
+            </Badge>
+            <p className="font-medium leading-tight">
+              {activeBanner.text}
+            </p>
+            <Button
+              onClick={() => window.location.href = `/events/${activeBanner.event.publicSlug || activeBanner.event.id}`}
+              className="bg-white hover:bg-gray-100 text-pcs_blue hover:text-ocean-blue font-semibold px-3 py-0.5 text-[10px] leading-tight rounded-md transition-all duration-200 shadow-sm hover:shadow-md h-auto"
+              data-testid="button-banner-event"
+            >
+              Learn More →
+            </Button>
+          </div>
+        </div>
+      )}
       
       {/* Header with Navigation */}
       <header role="banner">
