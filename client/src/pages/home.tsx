@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import ProgressTracker from "@/components/ProgressTracker";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
-import ConnectionSpeedControl from "@/components/ConnectionSpeedControl";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { InteractiveTour } from "@/components/InteractiveTour";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -1886,9 +1885,6 @@ export default function Home() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
-      {/* Connection Speed Control */}
-      <ConnectionSpeedControl />
 
       {/* Onboarding Components */}
       <WelcomeModal 

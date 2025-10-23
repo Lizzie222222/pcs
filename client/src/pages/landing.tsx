@@ -13,7 +13,6 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedImage";
-import ConnectionSpeedControl from "@/components/ConnectionSpeedControl";
 
 // Lazy load heavy components below the fold
 const SchoolSignUpForm = lazy(() => import("@/components/SchoolSignUpForm"));
@@ -792,9 +791,6 @@ export default function Landing() {
           <SchoolSignUpForm onClose={() => setShowSignUp(false)} />
         </Suspense>
       )}
-
-      {/* Connection Speed Control */}
-      <ConnectionSpeedControl />
       </div>
     </>
   );
