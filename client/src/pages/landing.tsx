@@ -201,7 +201,7 @@ export default function Landing() {
         >
           <div className="container-width flex items-center justify-center">
             <a 
-              href={`/events/${activeBanner.event.id}/live`}
+              href={`/events/${activeBanner.event.publicSlug || activeBanner.event.id}`}
               className="hover:underline font-medium text-sm sm:text-base"
               data-testid="link-banner-event"
             >
