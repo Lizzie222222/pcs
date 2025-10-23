@@ -461,6 +461,7 @@ export const eventTypeEnum = pgEnum('event_type', [
   'community_event',
   'training',
   'celebration',
+  'assembly',
   'other'
 ]);
 

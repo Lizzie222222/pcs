@@ -103,6 +103,7 @@ function getEventTypeBadgeColor(eventType: string) {
     community_event: 'bg-green-500',
     training: 'bg-orange-500',
     celebration: 'bg-pink-500',
+    assembly: 'bg-indigo-500',
     other: 'bg-gray-500',
   };
   return colorMap[eventType] || 'bg-gray-500';

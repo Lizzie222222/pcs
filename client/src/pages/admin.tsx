@@ -848,7 +848,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [eventFormData, setEventFormData] = useState<{
     title: string;
     description: string;
-    eventType: 'workshop' | 'webinar' | 'community_event' | 'training' | 'celebration' | 'other';
+    eventType: 'workshop' | 'webinar' | 'community_event' | 'training' | 'celebration' | 'assembly' | 'other';
     status: 'draft' | 'published' | 'cancelled' | 'completed';
     startDateTime: string;
     endDateTime: string;
@@ -3828,6 +3828,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           <option value="community_event">Community Event</option>
                           <option value="training">Training</option>
                           <option value="celebration">Celebration</option>
+                          <option value="assembly">Assembly</option>
                           <option value="other">Other</option>
                         </select>
                       </div>
@@ -4538,6 +4539,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   <option value="community_event">Community Event</option>
                   <option value="training">Training</option>
                   <option value="celebration">Celebration</option>
+                  <option value="assembly">Assembly</option>
                   <option value="other">Other</option>
                 </select>
               </div>
