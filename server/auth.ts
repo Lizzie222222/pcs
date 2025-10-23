@@ -7,6 +7,7 @@ import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
 import type { User, CreatePasswordUser, CreateOAuthUser } from "@shared/schema";
 import { z } from "zod";
+import { logUserActivity } from "./auditLog";
 
 // Extend express-session to include returnTo property
 declare module "express-session" {
@@ -276,7 +277,7 @@ export async function setupAuth(app: Express) {
         });
       }
 
-      req.login(user, (err) => {
+      req.login(user, async (err) => {
         if (err) {
           console.error('Login session error:', err);
           return res.status(500).json({ 
@@ -284,6 +285,20 @@ export async function setupAuth(app: Express) {
             message: "Login failed" 
           });
         }
+        
+        // Log successful login
+        await logUserActivity(
+          user.id,
+          user.email || undefined,
+          'login',
+          {
+            role: user.role,
+            isAdmin: user.isAdmin,
+          },
+          undefined,
+          undefined,
+          req
+        );
         
         res.json({ 
           success: true, 
@@ -304,7 +319,9 @@ export async function setupAuth(app: Express) {
   });
 
   // POST /api/auth/logout - Logout and destroy session (for API calls)
-  app.post("/api/auth/logout", (req, res) => {
+  app.post("/api/auth/logout", async (req, res) => {
+    const user = req.user; // Capture user before logout
+    
     req.logout((err) => {
       if (err) {
         console.error('Logout error:', err);
@@ -314,13 +331,26 @@ export async function setupAuth(app: Express) {
         });
       }
       
-      req.session.destroy((err) => {
+      req.session.destroy(async (err) => {
         if (err) {
           console.error('Session destroy error:', err);
           return res.status(500).json({ 
             success: false, 
             message: "Logout completed but session cleanup failed" 
           });
+        }
+        
+        // Log successful logout
+        if (user) {
+          await logUserActivity(
+            user.id,
+            user.email || undefined,
+            'logout',
+            undefined,
+            undefined,
+            undefined,
+            req
+          );
         }
         
         res.clearCookie('connect.sid');

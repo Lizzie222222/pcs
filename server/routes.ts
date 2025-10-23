@@ -6,13 +6,13 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, caseStudies, importBatches } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, caseStudies, importBatches, userActivityLogs } from "@shared/schema";
 import { nanoid } from 'nanoid';
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, desc, gte, lte, count, leftJoin } from "drizzle-orm";
 import { generateAnalyticsInsights } from "./lib/aiInsights";
 import { translateEmailContent, type EmailContent } from "./translationService";
 import { promises as fs } from 'fs';
@@ -22,6 +22,7 @@ import { apiCache, CACHE_TTL } from "./cache";
 import multer from 'multer';
 import { parseImportFile, sanitizeForPreview, generateSchoolTemplate, generateUserTemplate, generateRelationshipTemplate } from './lib/importUtils.js';
 import { importSchools, importUsers, importRelationships, updateImportBatch } from './lib/importProcessor.js';
+import { logUserActivity } from "./auditLog";
 
 /**
  * @description Generates CSV formatted string from array of objects with proper escaping for special characters (quotes, commas, newlines). Used for analytics and data exports.
@@ -1089,11 +1090,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
 
           // Ensure session is saved before sending response
-          req.session.save((saveErr) => {
+          req.session.save(async (saveErr) => {
             if (saveErr) {
               console.error("Error saving session:", saveErr);
               return res.status(500).json({ message: "Registration successful but session save failed" });
             }
+
+            // Log school creation
+            await logUserActivity(
+              user.id,
+              user.email || undefined,
+              'school_create',
+              {
+                schoolId: school.id,
+                schoolName: school.name,
+                schoolCountry: school.country,
+              },
+              school.id,
+              'school',
+              req
+            );
 
             res.status(201).json({ 
               message: "School registered successfully",
@@ -1910,6 +1926,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.warn('Email notification failed for evidence submission:', emailError);
       }
 
+      // Log evidence submission
+      await logUserActivity(
+        userId,
+        user?.email || undefined,
+        'evidence_submit',
+        {
+          evidenceId: evidence.id,
+          title: evidence.title,
+          stage: evidence.stage,
+          schoolId: evidence.schoolId,
+        },
+        evidence.id,
+        'evidence',
+        req
+      );
+
       res.status(201).json(evidence);
     } catch (error) {
       console.error("Error submitting evidence:", error);
@@ -1969,6 +2001,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!deleted) {
         return res.status(500).json({ message: "Failed to delete evidence" });
       }
+
+      // Log evidence deletion
+      const user = await storage.getUser(userId);
+      await logUserActivity(
+        userId,
+        user?.email || undefined,
+        'evidence_delete',
+        {
+          evidenceId: id,
+          title: evidence.title,
+          stage: evidence.stage,
+          schoolId: evidence.schoolId,
+        },
+        id,
+        'evidence',
+        req
+      );
 
       res.json({ message: "Evidence deleted successfully" });
     } catch (error) {
@@ -2843,6 +2892,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   /**
+   * @description GET /api/admin/activity-logs - Admin-only endpoint for retrieving user activity logs with filtering and pagination.
+   * @returns {{ logs: UserActivityLog[], total: number }} Object containing paginated activity logs and total count
+   * @location server/routes.ts
+   * @related shared/schema.ts (userActivityLogs table), client/src/pages/admin.tsx (activity logs tab)
+   */
+  app.get('/api/admin/activity-logs', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { userId, actionType, startDate, endDate, limit, offset } = req.query;
+
+      // Parse pagination parameters
+      const parsedLimit = limit ? parseInt(limit as string) : 100;
+      const parsedOffset = offset ? parseInt(offset as string) : 0;
+
+      // Build where conditions
+      const whereConditions: any[] = [];
+
+      if (userId) {
+        whereConditions.push(eq(userActivityLogs.userId, userId as string));
+      }
+
+      if (actionType) {
+        whereConditions.push(eq(userActivityLogs.actionType, actionType as string));
+      }
+
+      if (startDate) {
+        whereConditions.push(gte(userActivityLogs.createdAt, new Date(startDate as string)));
+      }
+
+      if (endDate) {
+        whereConditions.push(lte(userActivityLogs.createdAt, new Date(endDate as string)));
+      }
+
+      // Get total count
+      const totalResult = await db
+        .select({ count: count() })
+        .from(userActivityLogs)
+        .where(whereConditions.length > 0 ? and(...whereConditions) : undefined);
+
+      const total = totalResult[0]?.count || 0;
+
+      // Get paginated logs with user information
+      const logs = await db
+        .select({
+          id: userActivityLogs.id,
+          userId: userActivityLogs.userId,
+          userEmail: users.email,
+          userName: sql<string>`CONCAT(${users.firstName}, ' ', ${users.lastName})`,
+          actionType: userActivityLogs.actionType,
+          actionDetails: userActivityLogs.actionDetails,
+          targetId: userActivityLogs.targetId,
+          targetType: userActivityLogs.targetType,
+          ipAddress: userActivityLogs.ipAddress,
+          userAgent: userActivityLogs.userAgent,
+          createdAt: userActivityLogs.createdAt,
+        })
+        .from(userActivityLogs)
+        .leftJoin(users, eq(userActivityLogs.userId, users.id))
+        .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+        .orderBy(desc(userActivityLogs.createdAt))
+        .limit(parsedLimit)
+        .offset(parsedOffset);
+
+      res.json({ logs, total });
+    } catch (error) {
+      console.error("Error fetching activity logs:", error);
+      res.status(500).json({ message: "Failed to fetch activity logs" });
+    }
+  });
+
+  /**
    * @description GET /api/admin/evidence - Admin-only endpoint for retrieving all evidence submissions with flexible filtering by status, stage, school, country, and visibility.
    * @returns {Evidence[]} Array of evidence objects matching filters
    * @location server/routes.ts#L2570
@@ -2975,6 +3094,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
           await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit');
         }
       }
+
+      // Log evidence approval or rejection
+      const reviewer = await storage.getUser(reviewerId);
+      await logUserActivity(
+        reviewerId,
+        reviewer?.email || undefined,
+        status === 'approved' ? 'evidence_approve' : 'evidence_reject',
+        {
+          evidenceId: evidence.id,
+          title: evidence.title,
+          stage: evidence.stage,
+          schoolId: evidence.schoolId,
+          reviewNotes: reviewNotes,
+        },
+        evidence.id,
+        'evidence',
+        req
+      );
 
       res.json(evidence);
     } catch (error) {
