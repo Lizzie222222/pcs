@@ -712,6 +712,30 @@ export const mediaAssetUsage = pgTable("media_asset_usage", {
   index("idx_media_asset_usage_asset_id").on(table.assetId),
 ]);
 
+export const importStatusEnum = pgEnum('import_status', [
+  'processing',
+  'completed',
+  'failed',
+  'partial'
+]);
+
+export const importBatches = pgTable("import_batches", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  importedBy: varchar("imported_by").notNull().references(() => users.id),
+  status: importStatusEnum("status").default('processing'),
+  totalRecords: integer("total_records").default(0),
+  successCount: integer("success_count").default(0),
+  errorCount: integer("error_count").default(0),
+  schoolsImported: integer("schools_imported").default(0),
+  usersImported: integer("users_imported").default(0),
+  relationshipsImported: integer("relationships_imported").default(0),
+  errors: jsonb("errors").default('[]'),
+  metadata: jsonb("metadata").default('{}'),
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
 // Relations
 export const usersRelations = relations(users, ({ many, one }) => ({
   schoolUsers: many(schoolUsers),
@@ -1352,6 +1376,13 @@ export const insertMediaAssetUsageSchema = createInsertSchema(mediaAssetUsage).o
   createdAt: true,
 });
 
+export const insertImportBatchSchema = createInsertSchema(importBatches).omit({
+  id: true,
+  createdAt: true,
+  startedAt: true,
+  completedAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -1425,6 +1456,8 @@ export type MediaAssetTag = typeof mediaAssetTags.$inferSelect;
 export type InsertMediaAssetTag = z.infer<typeof insertMediaAssetTagSchema>;
 export type MediaAssetUsage = typeof mediaAssetUsage.$inferSelect;
 export type InsertMediaAssetUsage = z.infer<typeof insertMediaAssetUsageSchema>;
+export type ImportBatch = typeof importBatches.$inferSelect;
+export type InsertImportBatch = z.infer<typeof insertImportBatchSchema>;
 
 // Event Analytics Types
 export interface EventAnalytics {

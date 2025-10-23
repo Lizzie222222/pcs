@@ -6,19 +6,22 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, caseStudies } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, caseStudies, importBatches } from "@shared/schema";
 import { nanoid } from 'nanoid';
 import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import { generateAnalyticsInsights } from "./lib/aiInsights";
 import { translateEmailContent, type EmailContent } from "./translationService";
 import { promises as fs } from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
 import { apiCache, CACHE_TTL } from "./cache";
+import multer from 'multer';
+import { parseImportFile, sanitizeForPreview, generateSchoolTemplate, generateUserTemplate, generateRelationshipTemplate } from './lib/importUtils.js';
+import { importSchools, importUsers, importRelationships, updateImportBatch } from './lib/importProcessor.js';
 
 /**
  * @description Generates CSV formatted string from array of objects with proper escaping for special characters (quotes, commas, newlines). Used for analytics and data exports.
@@ -6952,6 +6955,218 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error('[Event Reminders Cron] Error:', error);
       res.status(500).json({ message: 'Failed to process event reminders' });
     }
+  });
+
+  // Import Data Routes (Admin only)
+  const upload = multer({ storage: multer.memoryStorage() });
+
+  // Parse and validate import file
+  app.post('/api/admin/import/validate', isAuthenticated, requireAdmin, upload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const { type } = req.body; // 'schools', 'users', or 'relationships'
+      
+      if (!['schools', 'users', 'relationships'].includes(type)) {
+        return res.status(400).json({ message: 'Invalid import type' });
+      }
+
+      // Parse the file
+      const parsed = parseImportFile(req.file.buffer, req.file.originalname);
+      
+      // Create dry-run context
+      const dryRunContext = {
+        importBatchId: nanoid(),
+        importedBy: req.user.id,
+        dryRun: true,
+      };
+
+      // Run validation by executing import in dry-run mode
+      let validationResult;
+      if (type === 'schools') {
+        validationResult = await importSchools(parsed.data, dryRunContext);
+      } else if (type === 'users') {
+        validationResult = await importUsers(parsed.data, dryRunContext);
+      } else if (type === 'relationships') {
+        // For relationships, we can't validate foreign keys without context
+        // So we only validate the structure
+        validationResult = await importRelationships(parsed.data, dryRunContext);
+      }
+
+      // Sanitize for preview
+      const preview = sanitizeForPreview(parsed.data.slice(0, 10)); // First 10 rows for preview
+      
+      res.json({
+        success: validationResult.success,
+        headers: parsed.headers,
+        rowCount: parsed.rowCount,
+        preview,
+        validation: {
+          recordsProcessed: validationResult.recordsProcessed,
+          errors: validationResult.errors,
+          errorCount: validationResult.recordsFailed,
+        },
+      });
+    } catch (error) {
+      console.error('[Import Validate] Error:', error);
+      res.status(400).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : 'Failed to parse file' 
+      });
+    }
+  });
+
+  // Execute import
+  app.post('/api/admin/import/execute', isAuthenticated, requireAdmin, upload.fields([
+    { name: 'schoolsFile', maxCount: 1 },
+    { name: 'usersFile', maxCount: 1 },
+    { name: 'relationshipsFile', maxCount: 1 }
+  ]), async (req: any, res) => {
+    try {
+      const files = req.files as { [fieldname: string]: Express.Multer.File[] };
+      
+      // Create import batch record
+      const batchId = nanoid();
+      await db.insert(importBatches).values({
+        id: batchId,
+        importedBy: req.user.id,
+        status: 'processing',
+        totalRecords: 0,
+      });
+
+      const context = {
+        importBatchId: batchId,
+        importedBy: req.user.id,
+      };
+
+      let schoolsResult;
+      let usersResult;
+      let relationshipsResult;
+      const allErrors: any[] = [];
+
+      // Import schools first
+      if (files.schoolsFile && files.schoolsFile[0]) {
+        const parsed = parseImportFile(files.schoolsFile[0].buffer, files.schoolsFile[0].originalname);
+        schoolsResult = await importSchools(parsed.data, context);
+        allErrors.push(...schoolsResult.errors);
+      }
+
+      // Import users second
+      if (files.usersFile && files.usersFile[0]) {
+        const parsed = parseImportFile(files.usersFile[0].buffer, files.usersFile[0].originalname);
+        usersResult = await importUsers(parsed.data, context);
+        allErrors.push(...usersResult.errors);
+      }
+
+      // Import relationships last (requires schools and users to exist)
+      if (files.relationshipsFile && files.relationshipsFile[0]) {
+        const parsed = parseImportFile(files.relationshipsFile[0].buffer, files.relationshipsFile[0].originalname);
+        relationshipsResult = await importRelationships(
+          parsed.data,
+          context,
+          schoolsResult?.schoolMap,
+          usersResult?.userMap
+        );
+        allErrors.push(...relationshipsResult.errors);
+      }
+
+      // Update import batch with results
+      await updateImportBatch(batchId, {
+        schoolsImported: schoolsResult?.recordsSucceeded || 0,
+        usersImported: usersResult?.recordsSucceeded || 0,
+        relationshipsImported: relationshipsResult?.recordsSucceeded || 0,
+        errors: allErrors,
+      });
+
+      // Send welcome emails to new users
+      if (usersResult?.temporaryPasswords && usersResult.temporaryPasswords.size > 0) {
+        for (const [email, password] of Array.from(usersResult.temporaryPasswords.entries())) {
+          try {
+            // TODO: Send email with temporary password
+            console.log(`[Import] New user created: ${email} with temp password (email notification pending)`);
+          } catch (emailError) {
+            console.error(`[Import] Failed to send welcome email to ${email}:`, emailError);
+          }
+        }
+      }
+
+      res.json({
+        success: allErrors.length === 0,
+        batchId,
+        results: {
+          schools: {
+            processed: schoolsResult?.recordsProcessed || 0,
+            succeeded: schoolsResult?.recordsSucceeded || 0,
+            failed: schoolsResult?.recordsFailed || 0,
+          },
+          users: {
+            processed: usersResult?.recordsProcessed || 0,
+            succeeded: usersResult?.recordsSucceeded || 0,
+            failed: usersResult?.recordsFailed || 0,
+            newUsers: usersResult?.temporaryPasswords?.size || 0,
+          },
+          relationships: {
+            processed: relationshipsResult?.recordsProcessed || 0,
+            succeeded: relationshipsResult?.recordsSucceeded || 0,
+            failed: relationshipsResult?.recordsFailed || 0,
+          },
+        },
+        errors: allErrors,
+      });
+    } catch (error) {
+      console.error('[Import Execute] Error:', error);
+      res.status(500).json({ 
+        success: false,
+        message: error instanceof Error ? error.message : 'Import failed' 
+      });
+    }
+  });
+
+  // Get import history
+  app.get('/api/admin/import/history', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const history = await db
+        .select()
+        .from(importBatches)
+        .orderBy(sql`${importBatches.createdAt} DESC`)
+        .limit(50);
+      
+      res.json(history);
+    } catch (error) {
+      console.error('[Import History] Error:', error);
+      res.status(500).json({ message: 'Failed to fetch import history' });
+    }
+  });
+
+  // Download CSV templates
+  app.get('/api/admin/import/template/:type', isAuthenticated, requireAdmin, (req, res) => {
+    const { type } = req.params;
+    
+    let csvContent: string;
+    let filename: string;
+    
+    switch (type) {
+      case 'schools':
+        csvContent = generateSchoolTemplate();
+        filename = 'schools_template.csv';
+        break;
+      case 'users':
+        csvContent = generateUserTemplate();
+        filename = 'users_template.csv';
+        break;
+      case 'relationships':
+        csvContent = generateRelationshipTemplate();
+        filename = 'relationships_template.csv';
+        break;
+      default:
+        return res.status(400).json({ message: 'Invalid template type' });
+    }
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+    res.send(csvContent);
   });
 
   // Server-side meta tag injection for case study pages

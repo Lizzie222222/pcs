@@ -116,6 +116,7 @@ const CaseStudyManagement = lazy(() => import("@/components/admin/CaseStudyManag
 import EmailManagementSection from "@/components/admin/EmailManagementSection";
 import EvidenceGalleryTab from "@/components/admin/EvidenceGalleryTab";
 import PrintableFormsTab from "@/components/admin/PrintableFormsTab";
+import DataImport from "@/components/admin/DataImport";
 import type { ReductionPromise, Event, EventRegistration, EvidenceWithSchool, CaseStudy } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
 import { format, parseISO } from "date-fns";
@@ -743,7 +744,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library' | 'data-import'>(initialTab);
   const [reviewType, setReviewType] = useState<'evidence' | 'audits'>('evidence');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [schoolFilters, setSchoolFilters] = useState({
@@ -2425,7 +2426,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             <DropdownMenuTrigger asChild>
               <button
                 className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 ${
-                  ['schools', 'teams', 'users'].includes(activeTab)
+                  ['schools', 'teams', 'users', 'data-import'].includes(activeTab)
                     ? 'bg-white text-navy shadow-sm' 
                     : 'text-gray-600 hover:text-navy'
                 }`}
@@ -2456,6 +2457,14 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 data-testid="tab-schools-users"
               >
                 User Management
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('data-import')}
+                className={activeTab === 'data-import' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-data-import"
+              >
+                Import Data
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -3349,6 +3358,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         {/* User Management Tab */}
         {activeTab === 'users' && (
           <UserManagementTab />
+        )}
+
+        {/* Data Import Tab */}
+        {activeTab === 'data-import' && (
+          <DataImport />
         )}
 
         {/* Email Management Tab */}
