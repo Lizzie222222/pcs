@@ -5797,6 +5797,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Authenticated: Check if user is registered for a specific event
+  app.get('/api/events/:id/registration', isAuthenticated, async (req: any, res) => {
+    try {
+      const eventId = req.params.id;
+      const userId = req.user.id;
+      
+      const registration = await storage.getEventRegistration(eventId, userId);
+      
+      if (!registration) {
+        return res.status(404).json({ message: "Not registered" });
+      }
+      
+      res.json(registration);
+    } catch (error) {
+      console.error("Error checking event registration:", error);
+      res.status(500).json({ message: "Failed to check registration" });
+    }
+  });
+
   // Authenticated: Cancel event registration
   app.delete('/api/events/registrations/:id', isAuthenticated, async (req: any, res) => {
     try {

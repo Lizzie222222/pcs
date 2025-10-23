@@ -1,10 +1,13 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { LoadingSpinner } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, Calendar, MapPin, Users, ExternalLink } from "lucide-react";
+import { Download, Calendar, MapPin, Users, ExternalLink, CheckCircle } from "lucide-react";
 import { format } from "date-fns";
+import { useAuth } from "@/hooks/useAuth";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface YoutubeVideo {
   title: string;
@@ -76,6 +79,8 @@ function YouTubeEmbed({ url, title }: { url: string; title: string }) {
 export default function EventLivePage() {
   const params = useParams() as { slug: string };
   const [, navigate] = useLocation();
+  const { isAuthenticated, user } = useAuth();
+  const { toast } = useToast();
   
   const { data: event, isLoading, error } = useQuery<Event>({
     queryKey: ['/api/events/slug', params.slug],
@@ -89,6 +94,58 @@ export default function EventLivePage() {
     },
     retry: false,
   });
+
+  // Check if user is registered for this event
+  const { data: userRegistration } = useQuery({
+    queryKey: ['/api/events', event?.id, 'registration'],
+    queryFn: async () => {
+      if (!event?.id || !isAuthenticated) return null;
+      const res = await fetch(`/api/events/${event.id}/registration`);
+      if (!res.ok) return null;
+      return res.json();
+    },
+    enabled: !!event?.id && isAuthenticated,
+  });
+
+  // Registration mutation
+  const registerMutation = useMutation({
+    mutationFn: async () => {
+      if (!event?.id) throw new Error('No event ID');
+      const res = await fetch(`/api/events/${event.id}/register`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || 'Failed to register');
+      }
+      return res.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: "Success!",
+        description: data.message || "Successfully registered for event",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/events', event?.id, 'registration'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/my-events'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Registration Failed",
+        description: error.message || "Failed to register for event",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleRegister = () => {
+    if (!isAuthenticated) {
+      navigate('/register');
+      return;
+    }
+    registerMutation.mutate();
+  };
 
   if (isLoading) {
     return (
@@ -140,15 +197,11 @@ export default function EventLivePage() {
             </div>
           )}
           
-          <h1 className="text-5xl md:text-6xl font-bold text-center mb-6 text-gray-900 leading-tight tracking-tight" data-testid="text-event-title">
+          <h1 className="text-5xl md:text-6xl font-bold text-center mb-12 text-gray-900 leading-tight tracking-tight" data-testid="text-event-title">
             {event.title}
           </h1>
 
-          <p className="text-lg md:text-xl text-center text-gray-700 max-w-3xl mx-auto leading-relaxed mb-12" data-testid="text-event-description">
-            {event.description}
-          </p>
-
-          {/* YouTube Videos Section - Moved to top */}
+          {/* YouTube Videos Section */}
           {event.youtubeVideos && event.youtubeVideos.length > 0 && (
             <div className="mb-12">
               <div className="space-y-10">
@@ -236,6 +289,41 @@ export default function EventLivePage() {
               </p>
             </div>
           )}
+
+          {/* Event Description - Moved below videos and status banners */}
+          <div className="mt-12 mb-8">
+            <p className="text-lg md:text-xl text-center text-gray-700 max-w-3xl mx-auto leading-relaxed" data-testid="text-event-description">
+              {event.description}
+            </p>
+          </div>
+
+          {/* Registration Button */}
+          <div className="mt-10 flex justify-center">
+            {userRegistration ? (
+              <div className="flex items-center gap-3 px-8 py-4 bg-green-50 border-2 border-green-300 rounded-xl shadow-sm">
+                <CheckCircle className="w-6 h-6 text-green-600" />
+                <span className="text-green-800 font-semibold text-lg" data-testid="text-already-registered">
+                  You're registered for this event!
+                </span>
+              </div>
+            ) : !hasEnded && (
+              <Button
+                onClick={handleRegister}
+                disabled={registerMutation.isPending}
+                size="lg"
+                className="bg-gradient-to-r from-pcs_blue to-ocean-blue hover:from-pcs_blue/90 hover:to-ocean-blue/90 text-white font-bold text-lg px-10 py-6 shadow-lg hover:shadow-xl transition-all"
+                data-testid="button-register-event"
+              >
+                {registerMutation.isPending ? (
+                  "Registering..."
+                ) : isAuthenticated ? (
+                  "Register for This Event"
+                ) : (
+                  "Sign Up to Register"
+                )}
+              </Button>
+            )}
+          </div>
         </div>
       </div>
 
