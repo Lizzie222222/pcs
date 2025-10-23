@@ -5767,6 +5767,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             location: event.location || undefined,
             isVirtual: event.isVirtual || false,
             meetingLink: event.meetingLink || undefined,
+            publicSlug: event.publicSlug || undefined,
           }
         );
       } catch (emailError) {
