@@ -3,7 +3,7 @@ import { useParams, useLocation } from "wouter";
 import { LoadingSpinner } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, Calendar, MapPin, Users, ExternalLink, CheckCircle } from "lucide-react";
+import { Download, Calendar, MapPin, Users, ExternalLink, CheckCircle, Lock, ArrowLeft } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -341,52 +341,133 @@ export default function EventLivePage() {
   // Check access control for closed events
   if (event.accessType === 'closed' && !userRegistration) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center px-4">
-          <div className="max-w-2xl text-center">
+      <div className="min-h-screen bg-gradient-to-br from-ocean-blue/5 via-white to-teal/5 flex flex-col">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
+          <div className="max-w-3xl w-full">
+            {/* Event Image */}
             {event.imageUrl && (
-              <div className="mb-8">
+              <div className="mb-8 text-center">
                 <img
                   src={`/api/objects${event.imageUrl}`}
                   alt={event.title}
-                  className="max-h-32 mx-auto object-contain drop-shadow-lg"
+                  className="max-h-40 mx-auto object-contain drop-shadow-2xl rounded-lg"
                   data-testid="img-restricted-logo"
                 />
               </div>
             )}
-            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900" data-testid="text-restricted-title">
+
+            {/* Event Title */}
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-navy text-center leading-tight" data-testid="text-restricted-title">
               {event.title}
             </h1>
-            <div className="bg-white rounded-2xl shadow-xl p-8 mb-6 border-2 border-amber-200">
-              <p className="text-2xl font-semibold text-amber-700 mb-4" data-testid="text-restricted-message">
-                Registration Required
-              </p>
-              <p className="text-lg text-gray-700 leading-relaxed mb-6" data-testid="text-restricted-description">
-                This is a closed event. You must be registered to access the event content.
-              </p>
-              {!isAuthenticated ? (
-                <div className="space-y-4">
-                  <p className="text-gray-600">
-                    Please sign in and register for this event to gain access.
-                  </p>
-                  <Button onClick={() => navigate('/register')} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-restricted-signin">
-                    Sign In to Register
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <p className="text-gray-600">
-                    Register for this event to access the content.
-                  </p>
-                  <Button onClick={handleRegister} disabled={registerMutation.isPending} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-restricted-register">
-                    {registerMutation.isPending ? "Registering..." : "Register for This Event"}
-                  </Button>
+
+            {/* Event Details Preview */}
+            <div className="flex flex-wrap justify-center gap-4 mb-8">
+              <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200">
+                <Calendar className="w-4 h-4 text-pcs_blue" />
+                <span className="text-sm font-medium text-gray-700">
+                  {format(new Date(event.startDateTime), 'MMMM d, yyyy • h:mm a')}
+                </span>
+              </div>
+              {event.location && (
+                <div className="flex items-center gap-2 bg-white px-4 py-2 rounded-full shadow-sm border border-gray-200">
+                  <MapPin className="w-4 h-4 text-teal" />
+                  <span className="text-sm font-medium text-gray-700">
+                    {event.isVirtual ? 'Virtual Event' : event.location}
+                  </span>
                 </div>
               )}
             </div>
-            <Button onClick={() => navigate('/')} variant="outline" size="lg" data-testid="button-restricted-home">
-              Back to Home
-            </Button>
+
+            {/* Registration Required Card */}
+            <div className="bg-white rounded-3xl shadow-2xl p-8 md:p-12 mb-6 border-2 border-ocean-blue/20 relative overflow-hidden">
+              {/* Decorative Background Elements */}
+              <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-ocean-blue/5 to-teal/5 rounded-full -mr-32 -mt-32 blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-teal/5 to-ocean-blue/5 rounded-full -ml-32 -mb-32 blur-3xl"></div>
+              
+              <div className="relative text-center">
+                {/* Lock Icon */}
+                <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-ocean-blue to-pcs_blue rounded-full mb-6 shadow-xl">
+                  <Lock className="w-10 h-10 text-white" />
+                </div>
+
+                {/* Heading */}
+                <h2 className="text-3xl md:text-4xl font-bold text-navy mb-4" data-testid="text-restricted-message">
+                  Registration Required
+                </h2>
+
+                {/* Description */}
+                <p className="text-lg text-gray-600 leading-relaxed mb-8 max-w-xl mx-auto" data-testid="text-restricted-description">
+                  This is an exclusive event. You must be registered and approved to access the event content and materials.
+                </p>
+
+                {/* Call to Action */}
+                {!isAuthenticated ? (
+                  <div className="space-y-6">
+                    <div className="bg-ocean-blue/10 border-l-4 border-ocean-blue rounded-lg p-4 mb-6">
+                      <p className="text-gray-700 text-left">
+                        <strong className="text-navy">Ready to join?</strong><br />
+                        Sign in to your account and register for this event to unlock exclusive access.
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={() => navigate('/register')} 
+                      size="lg" 
+                      className="bg-gradient-to-r from-ocean-blue to-pcs_blue hover:from-ocean-blue/90 hover:to-pcs_blue/90 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105"
+                      data-testid="button-restricted-signin"
+                    >
+                      <Users className="w-5 h-5 mr-2" />
+                      Sign In to Register
+                    </Button>
+                    <p className="text-sm text-gray-500 mt-4">
+                      Don't have an account? <a href="/register" className="text-pcs_blue hover:underline font-semibold">Create one now</a>
+                    </p>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="bg-teal/10 border-l-4 border-teal rounded-lg p-4 mb-6">
+                      <p className="text-gray-700 text-left">
+                        <strong className="text-navy">You're almost there!</strong><br />
+                        Complete your registration for this event to access all content and participate.
+                      </p>
+                    </div>
+                    <Button 
+                      onClick={handleRegister} 
+                      disabled={registerMutation.isPending} 
+                      size="lg" 
+                      className="bg-gradient-to-r from-teal to-ocean-blue hover:from-teal/90 hover:to-ocean-blue/90 text-white px-8 py-6 text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                      data-testid="button-restricted-register"
+                    >
+                      {registerMutation.isPending ? (
+                        <>
+                          <div className="animate-spin w-5 h-5 mr-2 border-2 border-white border-t-transparent rounded-full"></div>
+                          Registering...
+                        </>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5 mr-2" />
+                          Register for This Event
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Back Button */}
+            <div className="text-center">
+              <Button 
+                onClick={() => navigate('/')} 
+                variant="ghost" 
+                size="lg"
+                className="text-gray-600 hover:text-navy hover:bg-white/50"
+                data-testid="button-restricted-home"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back to Home
+              </Button>
+            </div>
           </div>
         </div>
         <EventFooter t={t} />
