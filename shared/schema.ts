@@ -725,6 +725,8 @@ export const eventBanners = pgTable("event_banners", {
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
   index("idx_event_banners_active").on(table.isActive),
+  // Partial unique index to ensure only one banner can be active at a time
+  uniqueIndex("idx_event_banners_single_active").on(table.isActive).where(sql`${table.isActive} = true`),
 ]);
 
 export const eventLinkClicks = pgTable("event_link_clicks", {

@@ -91,7 +91,7 @@ import {
   type CreateOAuthUser,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns } from "drizzle-orm";
+import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne } from "drizzle-orm";
 import * as bcrypt from "bcrypt";
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
 
@@ -4747,11 +4747,22 @@ export class DatabaseStorage implements IStorage {
 
   // Event Banner operations
   async createEventBanner(banner: InsertEventBanner): Promise<EventBanner> {
-    const [newBanner] = await db
-      .insert(eventBanners)
-      .values(banner)
-      .returning();
-    return newBanner;
+    // Use transaction to ensure atomicity
+    return await db.transaction(async (tx) => {
+      // If creating an active banner, deactivate all other banners first
+      if (banner.isActive) {
+        await tx
+          .update(eventBanners)
+          .set({ isActive: false, updatedAt: new Date() })
+          .where(eq(eventBanners.isActive, true));
+      }
+
+      const [newBanner] = await tx
+        .insert(eventBanners)
+        .values(banner)
+        .returning();
+      return newBanner;
+    });
   }
 
   async getEventBanners(): Promise<Array<EventBanner & { event: Event }>> {
@@ -4791,12 +4802,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateEventBanner(id: string, updates: Partial<EventBanner>): Promise<EventBanner | undefined> {
-    const [updatedBanner] = await db
-      .update(eventBanners)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(eventBanners.id, id))
-      .returning();
-    return updatedBanner;
+    // Use transaction to ensure atomicity
+    return await db.transaction(async (tx) => {
+      // If activating this banner, deactivate all other banners first
+      if (updates.isActive === true) {
+        await tx
+          .update(eventBanners)
+          .set({ isActive: false, updatedAt: new Date() })
+          .where(and(
+            eq(eventBanners.isActive, true),
+            ne(eventBanners.id, id)
+          ));
+      }
+
+      const [updatedBanner] = await tx
+        .update(eventBanners)
+        .set({ ...updates, updatedAt: new Date() })
+        .where(eq(eventBanners.id, id))
+        .returning();
+      return updatedBanner;
+    });
   }
 
   async deleteEventBanner(id: string): Promise<void> {
