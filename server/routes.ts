@@ -6296,6 +6296,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Event Banner Routes
+  // Get all event banners (admin)
+  app.get('/api/admin/banners', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const banners = await storage.getEventBanners();
+      res.json(banners);
+    } catch (error: any) {
+      console.error("Error fetching event banners:", error);
+      res.status(500).json({ message: "Failed to fetch event banners" });
+    }
+  });
+
+  // Get active banner (public)
+  app.get('/api/banners/active', async (req, res) => {
+    try {
+      const banner = await storage.getActiveEventBanner();
+      res.json(banner);
+    } catch (error: any) {
+      console.error("Error fetching active banner:", error);
+      res.status(500).json({ message: "Failed to fetch active banner" });
+    }
+  });
+
+  // Create event banner (admin)
+  app.post('/api/admin/banners', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const newBanner = await storage.createEventBanner({
+        ...req.body,
+        createdBy: req.user.id,
+      });
+      res.json(newBanner);
+    } catch (error: any) {
+      console.error("Error creating event banner:", error);
+      res.status(500).json({ message: "Failed to create event banner" });
+    }
+  });
+
+  // Update event banner (admin)
+  app.put('/api/admin/banners/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const updatedBanner = await storage.updateEventBanner(req.params.id, req.body);
+      if (!updatedBanner) {
+        return res.status(404).json({ message: "Banner not found" });
+      }
+      res.json(updatedBanner);
+    } catch (error: any) {
+      console.error("Error updating event banner:", error);
+      res.status(500).json({ message: "Failed to update event banner" });
+    }
+  });
+
+  // Delete event banner (admin)
+  app.delete('/api/admin/banners/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      await storage.deleteEventBanner(req.params.id);
+      res.json({ message: "Banner deleted successfully" });
+    } catch (error: any) {
+      console.error("Error deleting event banner:", error);
+      res.status(500).json({ message: "Failed to delete event banner" });
+    }
+  });
+
   // Printable Form Download Routes
   const { generatePrintableForm, getPrintableFormFilename } = await import('./lib/printableForms');
   

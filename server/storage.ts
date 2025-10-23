@@ -21,6 +21,7 @@ import {
   events,
   eventRegistrations,
   eventAnnouncements,
+  eventBanners,
   mediaAssets,
   mediaTags,
   mediaAssetTags,
@@ -70,6 +71,8 @@ import {
   type InsertEventRegistration,
   type EventAnnouncement,
   type InsertEventAnnouncement,
+  type EventBanner,
+  type InsertEventBanner,
   type MediaAsset,
   type InsertMediaAsset,
   type MediaTag,
@@ -475,6 +478,13 @@ export interface IStorage {
   getEventAnnouncements(eventId: string): Promise<EventAnnouncement[]>;
   getEventAnnouncementsByAudience(audienceId: string): Promise<Array<EventAnnouncement & { event: Event }>>;
   hasEventBeenAnnounced(eventId: string, audienceId: string): Promise<boolean>;
+
+  // Event Banner operations
+  createEventBanner(banner: InsertEventBanner): Promise<EventBanner>;
+  getEventBanners(): Promise<Array<EventBanner & { event: Event }>>;
+  getActiveEventBanner(): Promise<(EventBanner & { event: Event }) | null>;
+  updateEventBanner(id: string, updates: Partial<EventBanner>): Promise<EventBanner | undefined>;
+  deleteEventBanner(id: string): Promise<void>;
 
   // Event Analytics operations
   getEventAnalytics(): Promise<{
@@ -4491,6 +4501,66 @@ export class DatabaseStorage implements IStorage {
       .limit(1);
     
     return !!result;
+  }
+
+  // Event Banner operations
+  async createEventBanner(banner: InsertEventBanner): Promise<EventBanner> {
+    const [newBanner] = await db
+      .insert(eventBanners)
+      .values(banner)
+      .returning();
+    return newBanner;
+  }
+
+  async getEventBanners(): Promise<Array<EventBanner & { event: Event }>> {
+    const results = await db
+      .select({
+        banner: eventBanners,
+        event: events,
+      })
+      .from(eventBanners)
+      .innerJoin(events, eq(eventBanners.eventId, events.id))
+      .orderBy(desc(eventBanners.createdAt));
+
+    return results.map(r => ({
+      ...r.banner,
+      event: r.event,
+    }));
+  }
+
+  async getActiveEventBanner(): Promise<(EventBanner & { event: Event }) | null> {
+    const [result] = await db
+      .select({
+        banner: eventBanners,
+        event: events,
+      })
+      .from(eventBanners)
+      .innerJoin(events, eq(eventBanners.eventId, events.id))
+      .where(eq(eventBanners.isActive, true))
+      .orderBy(desc(eventBanners.createdAt))
+      .limit(1);
+
+    if (!result) return null;
+
+    return {
+      ...result.banner,
+      event: result.event,
+    };
+  }
+
+  async updateEventBanner(id: string, updates: Partial<EventBanner>): Promise<EventBanner | undefined> {
+    const [updatedBanner] = await db
+      .update(eventBanners)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(eventBanners.id, id))
+      .returning();
+    return updatedBanner;
+  }
+
+  async deleteEventBanner(id: string): Promise<void> {
+    await db
+      .delete(eventBanners)
+      .where(eq(eventBanners.id, id));
   }
 
   // Event Analytics operations
