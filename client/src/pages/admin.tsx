@@ -3620,6 +3620,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                             eventId: '',
                             backgroundColor: '#0066CC',
                             textColor: '#FFFFFF',
+                            gradient: 'ocean',
                             isActive: true,
                           });
                           setBannerDialogOpen(true);
@@ -4324,6 +4325,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     eventId: '',
                     backgroundColor: '#0066CC',
                     textColor: '#FFFFFF',
+                    gradient: 'ocean',
                     isActive: true,
                   });
                 }}
