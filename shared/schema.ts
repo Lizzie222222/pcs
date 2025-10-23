@@ -478,6 +478,17 @@ export const registrationStatusEnum = pgEnum('registration_status', [
   'waitlisted'
 ]);
 
+export const pagePublishedStatusEnum = pgEnum('page_published_status', [
+  'draft',
+  'coming_soon',
+  'published'
+]);
+
+export const accessTypeEnum = pgEnum('access_type', [
+  'open',
+  'closed'
+]);
+
 export const formTypeEnum = pgEnum('form_type', [
   'audit',
   'action_plan'
@@ -596,6 +607,10 @@ export const events = pgTable("events", {
   testimonials: jsonb("testimonials"),
   accessToken: varchar("access_token"),
   reminderSentAt: timestamp("reminder_sent_at"),
+  isPreRecorded: boolean("is_pre_recorded").default(false),
+  recordingAvailableFrom: timestamp("recording_available_from"),
+  pagePublishedStatus: pagePublishedStatusEnum("page_published_status").default('draft'),
+  accessType: accessTypeEnum("access_type").default('open'),
   createdBy: varchar("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
@@ -657,6 +672,28 @@ export const eventBanners = pgTable("event_banners", {
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
   index("idx_event_banners_active").on(table.isActive),
+]);
+
+export const eventLinkClicks = pgTable("event_link_clicks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventId: varchar("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  clickedAt: timestamp("clicked_at").defaultNow(),
+}, (table) => [
+  index("idx_event_link_clicks_event").on(table.eventId),
+  index("idx_event_link_clicks_user").on(table.userId),
+]);
+
+export const eventResourceDownloads = pgTable("event_resource_downloads", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventId: varchar("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").references(() => users.id, { onDelete: 'cascade' }),
+  fileIndex: integer("file_index").notNull(),
+  fileName: varchar("file_name").notNull(),
+  downloadedAt: timestamp("downloaded_at").defaultNow(),
+}, (table) => [
+  index("idx_event_resource_downloads_event").on(table.eventId),
+  index("idx_event_resource_downloads_user").on(table.userId),
 ]);
 
 export const mediaAssets = pgTable("media_assets", {
@@ -1354,6 +1391,16 @@ export const insertEventBannerSchema = createInsertSchema(eventBanners).omit({
   updatedAt: true,
 });
 
+export const insertEventLinkClickSchema = createInsertSchema(eventLinkClicks).omit({
+  id: true,
+  clickedAt: true,
+});
+
+export const insertEventResourceDownloadSchema = createInsertSchema(eventResourceDownloads).omit({
+  id: true,
+  downloadedAt: true,
+});
+
 export const insertMediaAssetSchema = createInsertSchema(mediaAssets).omit({
   id: true,
   createdAt: true,
@@ -1448,6 +1495,10 @@ export type EventAnnouncement = typeof eventAnnouncements.$inferSelect;
 export type InsertEventAnnouncement = z.infer<typeof insertEventAnnouncementSchema>;
 export type EventBanner = typeof eventBanners.$inferSelect;
 export type InsertEventBanner = z.infer<typeof insertEventBannerSchema>;
+export type EventLinkClick = typeof eventLinkClicks.$inferSelect;
+export type InsertEventLinkClick = z.infer<typeof insertEventLinkClickSchema>;
+export type EventResourceDownload = typeof eventResourceDownloads.$inferSelect;
+export type InsertEventResourceDownload = z.infer<typeof insertEventResourceDownloadSchema>;
 export type MediaAsset = typeof mediaAssets.$inferSelect;
 export type InsertMediaAsset = z.infer<typeof insertMediaAssetSchema>;
 export type MediaTag = typeof mediaTags.$inferSelect;
