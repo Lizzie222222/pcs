@@ -163,7 +163,9 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
   };
 
   const firstQuote = caseStudy.studentQuotes?.[0];
-  const displayMetrics = caseStudy.impactMetrics?.slice(0, 2) || [];
+  const displayMetrics = Array.isArray(caseStudy.impactMetrics) 
+    ? caseStudy.impactMetrics.slice(0, 2) 
+    : [];
   const hasBeforeAfter = caseStudy.beforeImage && caseStudy.afterImage;
 
   return (
