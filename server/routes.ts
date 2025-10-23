@@ -5868,6 +5868,71 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Track event link click (meeting link, video, etc.)
+  app.post('/api/events/:id/track-click', async (req: any, res) => {
+    try {
+      const eventId = req.params.id;
+      const userId = req.user?.id;
+      
+      await storage.trackEventLinkClick(eventId, userId);
+      res.json({ message: "Click tracked successfully" });
+    } catch (error) {
+      console.error("Error tracking event link click:", error);
+      res.status(500).json({ message: "Failed to track click" });
+    }
+  });
+
+  // Track event resource download
+  app.post('/api/events/:id/resources/:fileIndex/download', async (req: any, res) => {
+    try {
+      const eventId = req.params.id;
+      const fileIndex = parseInt(req.params.fileIndex);
+      const { fileName } = req.body;
+      const userId = req.user?.id;
+      
+      if (!fileName) {
+        return res.status(400).json({ message: "File name is required" });
+      }
+      
+      await storage.trackEventResourceDownload(eventId, fileIndex, fileName, userId);
+      res.json({ message: "Download tracked successfully" });
+    } catch (error) {
+      console.error("Error tracking resource download:", error);
+      res.status(500).json({ message: "Failed to track download" });
+    }
+  });
+
+  // Get past events (public)
+  app.get('/api/events/past', async (req, res) => {
+    try {
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
+      const pastEvents = await storage.getPastEvents(limit);
+      res.json(pastEvents);
+    } catch (error) {
+      console.error("Error fetching past events:", error);
+      res.status(500).json({ message: "Failed to fetch past events" });
+    }
+  });
+
+  // Get user's past event registrations (authenticated)
+  app.get('/api/my-events/past', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const allRegistrations = await storage.getUserEventRegistrations(userId);
+      
+      // Filter for past events
+      const pastEventRegistrations = allRegistrations.filter(reg => {
+        const eventEndDate = new Date(reg.event.endDateTime);
+        return eventEndDate < new Date();
+      });
+      
+      res.json(pastEventRegistrations);
+    } catch (error) {
+      console.error("Error fetching user's past events:", error);
+      res.status(500).json({ message: "Failed to fetch past events" });
+    }
+  });
+
   // ===== ADMIN EVENT ROUTES =====
   
   // Admin: Get event analytics
@@ -5878,6 +5943,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching event analytics:", error);
       res.status(500).json({ message: "Failed to fetch event analytics" });
+    }
+  });
+
+  // Admin: Get detailed analytics for a specific event
+  app.get('/api/admin/events/:id/analytics', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const eventId = req.params.id;
+      const analytics = await storage.getEventDetailedAnalytics(eventId);
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching detailed event analytics:", error);
+      res.status(500).json({ message: "Failed to fetch detailed analytics" });
     }
   });
 
