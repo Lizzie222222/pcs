@@ -58,6 +58,11 @@ export function OptimizedImage({
   objectFit = 'cover',
   breakpoints = { mobile: 640, tablet: 1024, desktop: 1920 }
 }: OptimizedImageProps) {
+  // Handle null/undefined src
+  if (!src) {
+    return null;
+  }
+
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
   const [isInView, setIsInView] = useState(priority);
