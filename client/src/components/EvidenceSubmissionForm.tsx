@@ -187,35 +187,27 @@ export default function EvidenceSubmissionForm({
           continue;
         }
 
-        const uploadResponse = await fetch('/api/objects/upload', {
+        // Use the new compression endpoint
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('visibility', form.getValues('visibility'));
+        
+        const uploadResponse = await fetch('/api/evidence-files/upload-compressed', {
           method: 'POST',
           credentials: 'include',
+          body: formData,
         });
         
         if (!uploadResponse.ok) {
-          throw new Error('Failed to get upload URL');
-        }
-        
-        const { uploadURL } = await uploadResponse.json();
-        
-        const uploadFileResponse = await fetch(uploadURL, {
-          method: 'PUT',
-          body: file,
-          headers: {
-            'Content-Type': file.type || 'application/octet-stream',
-          },
-        });
-        
-        if (!uploadFileResponse.ok) {
           throw new Error('Failed to upload file');
         }
         
-        const aclResponse = await apiRequest('PUT', '/api/evidence-files', {
-          fileURL: uploadURL.split('?')[0],
-          visibility: form.getValues('visibility'),
-          filename: file.name,
-        });
-        const { objectPath } = await aclResponse.json();
+        const { objectPath, compressionRatio } = await uploadResponse.json();
+        
+        // Log compression stats for user awareness
+        if (compressionRatio && parseFloat(compressionRatio) > 0) {
+          console.log(`Image compressed: saved ${compressionRatio}% storage space`);
+        }
         
         setUploadedFiles(prev => [...prev, {
           name: file.name,
@@ -265,35 +257,27 @@ export default function EvidenceSubmissionForm({
           continue;
         }
 
-        const uploadResponse = await fetch('/api/objects/upload', {
+        // Use the new compression endpoint
+        const formData = new FormData();
+        formData.append('file', file);
+        formData.append('visibility', 'private');
+        
+        const uploadResponse = await fetch('/api/evidence-files/upload-compressed', {
           method: 'POST',
           credentials: 'include',
+          body: formData,
         });
         
         if (!uploadResponse.ok) {
-          throw new Error('Failed to get upload URL');
-        }
-        
-        const { uploadURL } = await uploadResponse.json();
-        
-        const uploadFileResponse = await fetch(uploadURL, {
-          method: 'PUT',
-          body: file,
-          headers: {
-            'Content-Type': file.type || 'application/octet-stream',
-          },
-        });
-        
-        if (!uploadFileResponse.ok) {
           throw new Error('Failed to upload file');
         }
         
-        const aclResponse = await apiRequest('PUT', '/api/evidence-files', {
-          fileURL: uploadURL.split('?')[0],
-          visibility: 'private',
-          filename: file.name,
-        });
-        const { objectPath } = await aclResponse.json();
+        const { objectPath, compressionRatio } = await uploadResponse.json();
+        
+        // Log compression stats for user awareness
+        if (compressionRatio && parseFloat(compressionRatio) > 0) {
+          console.log(`Consent file compressed: saved ${compressionRatio}% storage space`);
+        }
         
         setConsentFiles(prev => [...prev, {
           name: file.name,

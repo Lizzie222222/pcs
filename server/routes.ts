@@ -23,6 +23,7 @@ import multer from 'multer';
 import { parseImportFile, sanitizeForPreview, generateSchoolTemplate, generateUserTemplate, generateRelationshipTemplate } from './lib/importUtils.js';
 import { importSchools, importUsers, importRelationships, updateImportBatch } from './lib/importProcessor.js';
 import { logUserActivity } from "./auditLog";
+import { compressImage, shouldCompressFile } from "./imageCompression";
 
 /**
  * @description Generates CSV formatted string from array of objects with proper escaping for special characters (quotes, commas, newlines). Used for analytics and data exports.
@@ -2478,7 +2479,100 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get upload URL for evidence files
+  // Configure multer for memory storage (for compression)
+  const uploadCompression = multer({ 
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 157286400 } // 150MB max
+  });
+
+  // Upload and compress evidence files
+  app.post("/api/evidence-files/upload-compressed", isAuthenticated, uploadCompression.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file provided" });
+      }
+
+      const userId = req.user?.id;
+      const visibility = req.body.visibility || 'private';
+      const filename = req.file.originalname;
+      const mimeType = req.file.mimetype;
+      
+      let fileBuffer = req.file.buffer;
+      const originalSize = req.file.buffer.length;
+      let compressedSize = originalSize;
+      let wasCompressed = false;
+      
+      // Only compress if it's an image format we support
+      if (shouldCompressFile(mimeType)) {
+        try {
+          fileBuffer = await compressImage(fileBuffer, {
+            maxWidth: 1920,
+            maxHeight: 1920,
+            quality: 85,
+          });
+          compressedSize = fileBuffer.length;
+          wasCompressed = true;
+          
+          const savingsPercent = ((originalSize - compressedSize) / originalSize * 100).toFixed(1);
+          console.log(`Compressed ${filename}: ${(originalSize / 1024 / 1024).toFixed(2)}MB → ${(compressedSize / 1024 / 1024).toFixed(2)}MB (saved ${savingsPercent}%)`);
+        } catch (compressionError) {
+          console.warn(`Compression failed for ${filename}, uploading original:`, compressionError);
+          // Reset to original buffer if compression fails
+          fileBuffer = req.file.buffer;
+          compressedSize = originalSize;
+          wasCompressed = false;
+        }
+      } else {
+        console.log(`Skipping compression for non-image file: ${filename} (${mimeType})`);
+      }
+
+      // Get upload URL from object storage
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      
+      // Upload file to object storage
+      const uploadResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: fileBuffer,
+        headers: {
+          'Content-Type': mimeType,
+          'Content-Length': fileBuffer.length.toString(),
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+      }
+
+      // Set ACL policy
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        uploadURL.split('?')[0],
+        {
+          owner: userId,
+          visibility: visibility,
+        },
+        filename,
+      );
+
+      // Calculate compression ratio (0 if not compressed)
+      const compressionRatio = wasCompressed 
+        ? ((originalSize - compressedSize) / originalSize * 100).toFixed(1)
+        : '0';
+
+      res.status(200).json({ 
+        objectPath,
+        originalSize,
+        compressedSize,
+        compressionRatio,
+        wasCompressed,
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ error: "Failed to upload file" });
+    }
+  });
+
+  // Get upload URL for evidence files (legacy, kept for backward compatibility)
   app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
     const objectStorageService = new ObjectStorageService();
     try {
