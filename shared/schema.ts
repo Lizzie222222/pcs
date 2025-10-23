@@ -109,6 +109,7 @@ export const users = pgTable("users", {
   isAdmin: boolean("is_admin").default(false),
   preferredLanguage: varchar("preferred_language").default("en"),
   hasSeenOnboarding: boolean("has_seen_onboarding").default(false),
+  lastViewedEventsAt: timestamp("last_viewed_events_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
