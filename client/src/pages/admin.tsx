@@ -3418,199 +3418,191 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         )}
 
         {/* User Activity Logs Tab */}
-        {activeTab === 'activity' && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="h-5 w-5" />
-                    User Activity Logs
-                  </CardTitle>
-                  <p className="text-gray-600 mt-2">
-                    Track and monitor user activities across the platform
-                  </p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {/* Filters Section */}
-              <div className="bg-gray-50 p-4 rounded-lg mb-6 space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {/* Action Type Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Action Type
-                    </label>
-                    <Select
-                      value={activityFilters.actionType}
-                      onValueChange={(value) => setActivityFilters(prev => ({ ...prev, actionType: value }))}
-                    >
-                      <SelectTrigger data-testid="select-action-type">
-                        <SelectValue placeholder="All Actions" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">All Actions</SelectItem>
-                        <SelectItem value="login">Login</SelectItem>
-                        <SelectItem value="logout">Logout</SelectItem>
-                        <SelectItem value="evidence_submit">Evidence Submit</SelectItem>
-                        <SelectItem value="evidence_approve">Evidence Approve</SelectItem>
-                        <SelectItem value="evidence_reject">Evidence Reject</SelectItem>
-                        <SelectItem value="school_create">School Create</SelectItem>
-                        <SelectItem value="school_update">School Update</SelectItem>
-                        <SelectItem value="user_create">User Create</SelectItem>
-                        <SelectItem value="user_update">User Update</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+        {activeTab === 'activity' && (() => {
+          const queryParams = new URLSearchParams({
+            page: activityPage.toString(),
+            limit: activityLimit.toString(),
+            ...(activityFilters.actionType !== 'all' && { actionType: activityFilters.actionType }),
+            ...(activityFilters.userEmail && { userEmail: activityFilters.userEmail }),
+            ...(activityFilters.startDate && { startDate: activityFilters.startDate }),
+            ...(activityFilters.endDate && { endDate: activityFilters.endDate }),
+          });
 
-                  {/* User Email Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      User Email
-                    </label>
-                    <Input
-                      placeholder="Search by email..."
-                      value={activityFilters.userEmail}
-                      onChange={(e) => setActivityFilters(prev => ({ ...prev, userEmail: e.target.value }))}
-                      data-testid="input-user-email"
-                    />
-                  </div>
+          const { data: activityLogsData, isLoading: isLoadingLogs } = useQuery<{
+            logs: Array<{
+              id: string;
+              userId: string;
+              actionType: string;
+              actionDetails: Record<string, any> | null;
+              ipAddress: string | null;
+              createdAt: string;
+              user: {
+                email: string;
+                firstName: string | null;
+                lastName: string | null;
+              };
+            }>;
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+          }>({
+            queryKey: ['/api/admin/activity-logs', queryParams.toString()],
+            queryFn: async () => {
+              const response = await fetch(`/api/admin/activity-logs?${queryParams}`);
+              if (!response.ok) throw new Error('Failed to fetch activity logs');
+              return response.json();
+            },
+          });
 
-                  {/* Start Date Filter */}
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Start Date
-                    </label>
-                    <Input
-                      type="date"
-                      value={activityFilters.startDate}
-                      onChange={(e) => setActivityFilters(prev => ({ ...prev, startDate: e.target.value }))}
-                      data-testid="input-start-date"
-                    />
-                  </div>
+          const formatActionType = (actionType: string) => {
+            return actionType
+              .split('_')
+              .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(' ');
+          };
 
-                  {/* End Date Filter */}
+          const formatActionDetails = (details: Record<string, any> | null) => {
+            if (!details) return '-';
+            const entries = Object.entries(details);
+            if (entries.length === 0) return '-';
+            return entries
+              .map(([key, value]) => `${key}: ${value}`)
+              .join(', ');
+          };
+
+          return (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      End Date
-                    </label>
-                    <Input
-                      type="date"
-                      value={activityFilters.endDate}
-                      onChange={(e) => setActivityFilters(prev => ({ ...prev, endDate: e.target.value }))}
-                      data-testid="input-end-date"
-                    />
+                    <CardTitle className="flex items-center gap-2">
+                      <FileText className="h-5 w-5" />
+                      User Activity Logs
+                    </CardTitle>
+                    <p className="text-gray-600 mt-2">
+                      Track and monitor user activities across the platform
+                    </p>
                   </div>
                 </div>
-
-                {/* Filter Action Buttons */}
-                <div className="flex gap-3">
-                  <Button
-                    onClick={() => {
-                      setActivityPage(1);
-                      queryClient.invalidateQueries({ queryKey: ['/api/admin/activity-logs'] });
-                    }}
-                    className="bg-pcs_blue hover:bg-blue-600"
-                    data-testid="button-apply-filters"
-                  >
-                    <Filter className="h-4 w-4 mr-2" />
-                    Apply Filters
-                  </Button>
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setActivityFilters({
-                        actionType: 'all',
-                        userEmail: '',
-                        startDate: '',
-                        endDate: '',
-                      });
-                      setActivityPage(1);
-                    }}
-                    data-testid="button-clear-filters"
-                  >
-                    <X className="h-4 w-4 mr-2" />
-                    Clear Filters
-                  </Button>
-                </div>
-              </div>
-
-              {/* Activity Logs Table */}
-              {(() => {
-                const queryParams = new URLSearchParams({
-                  page: activityPage.toString(),
-                  limit: activityLimit.toString(),
-                  ...(activityFilters.actionType !== 'all' && { actionType: activityFilters.actionType }),
-                  ...(activityFilters.userEmail && { userEmail: activityFilters.userEmail }),
-                  ...(activityFilters.startDate && { startDate: activityFilters.startDate }),
-                  ...(activityFilters.endDate && { endDate: activityFilters.endDate }),
-                });
-
-                const { data: activityLogsData, isLoading: isLoadingLogs } = useQuery<{
-                  logs: Array<{
-                    id: string;
-                    userId: string;
-                    actionType: string;
-                    actionDetails: Record<string, any> | null;
-                    ipAddress: string | null;
-                    createdAt: string;
-                    user: {
-                      email: string;
-                      firstName: string | null;
-                      lastName: string | null;
-                    };
-                  }>;
-                  total: number;
-                  page: number;
-                  limit: number;
-                  totalPages: number;
-                }>({
-                  queryKey: ['/api/admin/activity-logs', queryParams.toString()],
-                  queryFn: async () => {
-                    const response = await fetch(`/api/admin/activity-logs?${queryParams}`);
-                    if (!response.ok) throw new Error('Failed to fetch activity logs');
-                    return response.json();
-                  },
-                });
-
-                const formatActionType = (actionType: string) => {
-                  return actionType
-                    .split('_')
-                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-                    .join(' ');
-                };
-
-                const formatActionDetails = (details: Record<string, any> | null) => {
-                  if (!details) return '-';
-                  const entries = Object.entries(details);
-                  if (entries.length === 0) return '-';
-                  return entries
-                    .map(([key, value]) => `${key}: ${value}`)
-                    .join(', ');
-                };
-
-                if (isLoadingLogs) {
-                  return (
-                    <div className="flex items-center justify-center py-12" data-testid="loading-activity-logs">
-                      <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full mr-3" />
-                      <span className="text-gray-600">Loading activity logs...</span>
+              </CardHeader>
+              <CardContent>
+                {/* Filters Section */}
+                <div className="bg-gray-50 p-4 rounded-lg mb-6 space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    {/* Action Type Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Action Type
+                      </label>
+                      <Select
+                        value={activityFilters.actionType}
+                        onValueChange={(value) => setActivityFilters(prev => ({ ...prev, actionType: value }))}
+                      >
+                        <SelectTrigger data-testid="select-action-type">
+                          <SelectValue placeholder="All Actions" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Actions</SelectItem>
+                          <SelectItem value="login">Login</SelectItem>
+                          <SelectItem value="logout">Logout</SelectItem>
+                          <SelectItem value="evidence_submit">Evidence Submit</SelectItem>
+                          <SelectItem value="evidence_approve">Evidence Approve</SelectItem>
+                          <SelectItem value="evidence_reject">Evidence Reject</SelectItem>
+                          <SelectItem value="school_create">School Create</SelectItem>
+                          <SelectItem value="school_update">School Update</SelectItem>
+                          <SelectItem value="user_create">User Create</SelectItem>
+                          <SelectItem value="user_update">User Update</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                  );
-                }
 
-                if (!activityLogsData || activityLogsData.logs.length === 0) {
-                  return (
-                    <EmptyState
-                      icon={FileText}
-                      title="No Activity Logs"
-                      description="No user activity logs found matching your filters."
-                      data-testid="empty-activity-logs"
-                    />
-                  );
-                }
+                    {/* User Email Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        User Email
+                      </label>
+                      <Input
+                        placeholder="Search by email..."
+                        value={activityFilters.userEmail}
+                        onChange={(e) => setActivityFilters(prev => ({ ...prev, userEmail: e.target.value }))}
+                        data-testid="input-user-email"
+                      />
+                    </div>
 
-                return (
+                    {/* Start Date Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Start Date
+                      </label>
+                      <Input
+                        type="date"
+                        value={activityFilters.startDate}
+                        onChange={(e) => setActivityFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                        data-testid="input-start-date"
+                      />
+                    </div>
+
+                    {/* End Date Filter */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        End Date
+                      </label>
+                      <Input
+                        type="date"
+                        value={activityFilters.endDate}
+                        onChange={(e) => setActivityFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                        data-testid="input-end-date"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Filter Action Buttons */}
+                  <div className="flex gap-3">
+                    <Button
+                      onClick={() => {
+                        setActivityPage(1);
+                        queryClient.invalidateQueries({ queryKey: ['/api/admin/activity-logs'] });
+                      }}
+                      className="bg-pcs_blue hover:bg-blue-600"
+                      data-testid="button-apply-filters"
+                    >
+                      <Filter className="h-4 w-4 mr-2" />
+                      Apply Filters
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setActivityFilters({
+                          actionType: 'all',
+                          userEmail: '',
+                          startDate: '',
+                          endDate: '',
+                        });
+                        setActivityPage(1);
+                      }}
+                      data-testid="button-clear-filters"
+                    >
+                      <X className="h-4 w-4 mr-2" />
+                      Clear Filters
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Activity Logs Table */}
+                {isLoadingLogs ? (
+                  <div className="flex items-center justify-center py-12" data-testid="loading-activity-logs">
+                    <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full mr-3" />
+                    <span className="text-gray-600">Loading activity logs...</span>
+                  </div>
+                ) : !activityLogsData || activityLogsData.logs.length === 0 ? (
+                  <EmptyState
+                    icon={FileText}
+                    title="No Activity Logs"
+                    description="No user activity logs found matching your filters."
+                    data-testid="empty-activity-logs"
+                  />
+                ) : (
                   <div className="space-y-4">
                     {/* Table */}
                     <div className="overflow-x-auto border rounded-lg">
@@ -3703,11 +3695,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                       </div>
                     </div>
                   </div>
-                );
-              })()}
-            </CardContent>
-          </Card>
-        )}
+                )}
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Email Management Tab */}
         {activeTab === 'email-test' && (
