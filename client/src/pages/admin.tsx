@@ -3850,7 +3850,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                   {event.eventType.replace('_', ' ').charAt(0).toUpperCase() + event.eventType.replace('_', ' ').slice(1)}
                                 </td>
                                 <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-date-${event.id}`}>
-                                  {format(new Date(event.startDateTime), 'MMM d, yyyy')}
+                                  {format(new Date(event.startDateTime), 'd MMM yyyy')}
                                 </td>
                                 <td className="px-4 py-3 text-sm" data-testid={`text-status-${event.id}`}>
                                   <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
@@ -4154,13 +4154,13 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                   tick={{ fontSize: 12 }}
                                   tickFormatter={(value: string) => {
                                     const date = new Date(value);
-                                    return `${date.getMonth() + 1}/${date.getDate()}`;
+                                    return `${date.getDate()}/${date.getMonth() + 1}`;
                                   }}
                                 />
                                 <YAxis />
                                 <Tooltip 
                                   formatter={(value: number) => [value, 'Registrations']}
-                                  labelFormatter={(label: string) => new Date(label).toLocaleDateString()}
+                                  labelFormatter={(label: string) => new Date(label).toLocaleDateString('en-GB')}
                                 />
                                 <Legend />
                                 <Line 
@@ -5324,7 +5324,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     reg.school?.name || 'N/A',
                     reg.school?.country || 'N/A',
                     reg.status,
-                    reg.registeredAt ? format(new Date(reg.registeredAt), 'MMM d, yyyy h:mm a') : 'N/A'
+                    reg.registeredAt ? format(new Date(reg.registeredAt), 'd MMM yyyy HH:mm') : 'N/A'
                   ]);
                   
                   const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -5389,7 +5389,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           </span>
                         </td>
                         <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-date-${registration.id}`}>
-                          {registration.registeredAt ? format(new Date(registration.registeredAt), 'MMM d, yyyy') : 'N/A'}
+                          {registration.registeredAt ? format(new Date(registration.registeredAt), 'd MMM yyyy') : 'N/A'}
                         </td>
                         <td className="px-4 py-3 text-sm">
                           {registration.status === 'registered' && (
