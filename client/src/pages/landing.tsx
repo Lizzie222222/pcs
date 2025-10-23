@@ -192,26 +192,29 @@ export default function Landing() {
       {/* Event Banner */}
       {activeBanner && (
         <div 
-          className="w-full py-3 px-4 text-center fixed top-0 left-0 right-0 z-50 shadow-md"
+          className="w-full py-4 px-4 text-center relative shadow-md"
           style={{
             backgroundColor: activeBanner.backgroundColor,
             color: activeBanner.textColor,
           }}
           data-testid="event-banner"
         >
-          <div className="container-width flex items-center justify-center">
-            <a 
-              href={`/events/${activeBanner.event.publicSlug || activeBanner.event.id}`}
-              className="hover:underline font-medium text-sm sm:text-base"
-              data-testid="link-banner-event"
-            >
+          <div className="container-width flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
+            <p className="font-medium text-sm sm:text-base">
               {activeBanner.text}
-            </a>
+            </p>
+            <Button
+              onClick={() => window.location.href = `/events/${activeBanner.event.publicSlug || activeBanner.event.id}`}
+              className="bg-white hover:bg-gray-100 text-gray-900 font-semibold px-6 py-2 rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+              data-testid="button-banner-event"
+            >
+              Learn More
+            </Button>
           </div>
         </div>
       )}
       
-      <div className={`min-h-screen bg-white ${activeBanner ? 'pt-28' : 'pt-16'}`}>
+      <div className="min-h-screen bg-white">
 
       {/* Clean Hero Section with Student Image */}
       <section className="min-h-screen bg-white relative overflow-hidden flex items-center">
