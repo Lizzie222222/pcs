@@ -5988,6 +5988,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         createdBy: req.user.id,
       });
       
+      // Automatically set main status to 'published' if pagePublishedStatus is coming_soon or published
+      // and status is not explicitly set or is still 'draft'
+      if ((eventData.pagePublishedStatus === 'coming_soon' || eventData.pagePublishedStatus === 'published') 
+          && (!eventData.status || eventData.status === 'draft')) {
+        eventData.status = 'published';
+      }
+      
       const event = await storage.createEvent(eventData);
       res.json({ message: "Event created successfully", event });
     } catch (error) {
@@ -6009,6 +6016,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const existingEvent = await storage.getEvent(eventId);
       if (!existingEvent) {
         return res.status(404).json({ message: "Event not found" });
+      }
+      
+      // Automatically set main status to 'published' if pagePublishedStatus is coming_soon or published
+      // and status is not explicitly being updated or is currently 'draft'
+      if ((updates.pagePublishedStatus === 'coming_soon' || updates.pagePublishedStatus === 'published') 
+          && (!updates.status && existingEvent.status === 'draft')) {
+        updates.status = 'published';
       }
       
       // Validate status transitions
