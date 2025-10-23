@@ -517,6 +517,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   /**
+   * @description GET /api/inspiration-content - Combined endpoint for case studies and approved evidence
+   * @returns {Array} Array of case studies and evidence with contentType field
+   * @location server/routes.ts
+   * @related client/src/pages/inspiration.tsx
+   */
+  app.get('/api/inspiration-content', async (req: any, res) => {
+    try {
+      const { stage, country, search, contentType, limit, offset } = req.query;
+      
+      // Check if user is authenticated
+      const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
+      const isAdmin = isAuthenticated && req.user?.isAdmin;
+      
+      const requestedLimit = limit ? parseInt(limit as string) : 20;
+      const requestedOffset = offset ? parseInt(offset as string) : 0;
+      
+      let combinedResults: any[] = [];
+      
+      // Determine which content types to fetch
+      const shouldFetchCaseStudies = !contentType || contentType === 'all' || contentType === 'case-study';
+      const shouldFetchEvidence = !contentType || contentType === 'all' || contentType === 'evidence';
+      
+      // When fetching both types (contentType='all'), fetch extra to ensure we have enough after sorting
+      // Fetch enough items to cover the requested page plus buffer for proper sorting
+      const isMixedContent = contentType === 'all' || !contentType;
+      const fetchLimit = isMixedContent 
+        ? (requestedOffset + requestedLimit) * 2  // Fetch enough to reach the requested page with buffer
+        : requestedLimit;
+      const fetchOffset = isMixedContent 
+        ? 0  // Always start from beginning when mixing to ensure correct sorting
+        : requestedOffset;
+      
+      // Fetch case studies (published only for non-admin)
+      if (shouldFetchCaseStudies) {
+        const statusFilter = isAdmin ? undefined : 'published';
+        const caseStudies = await storage.getCaseStudies({
+          stage: stage as string,
+          country: country as string,
+          search: search as string,
+          status: statusFilter,
+          limit: contentType === 'case-study' ? requestedLimit : fetchLimit,
+          offset: contentType === 'case-study' ? requestedOffset : fetchOffset,
+        });
+        
+        // Add contentType field to case studies
+        const caseStudiesWithType = caseStudies.map(cs => ({
+          ...cs,
+          contentType: 'case-study',
+        }));
+        
+        combinedResults = [...combinedResults, ...caseStudiesWithType];
+      }
+      
+      // Fetch approved evidence
+      if (shouldFetchEvidence) {
+        // Determine visibility based on authentication
+        const visibilityFilter = isAuthenticated ? 'registered' : 'public';
+        
+        const evidenceList = await storage.getApprovedEvidenceForInspiration({
+          stage: stage as string,
+          country: country as string,
+          search: search as string,
+          visibility: visibilityFilter,
+          limit: contentType === 'evidence' ? requestedLimit : fetchLimit,
+          offset: contentType === 'evidence' ? requestedOffset : fetchOffset,
+        });
+        
+        // Transform evidence to match case study format
+        const evidenceWithType = evidenceList.map(ev => {
+          // Map files array to images format
+          const files = Array.isArray(ev.files) ? ev.files : [];
+          const images = files.map((file: any) => ({
+            url: file.url,
+            caption: file.caption || file.name,
+          }));
+          
+          return {
+            id: ev.id,
+            title: ev.title,
+            description: ev.description || '',
+            stage: ev.stage,
+            status: ev.status,
+            imageUrl: images[0]?.url || null,
+            featured: ev.isFeatured || false,
+            schoolName: ev.schoolName,
+            schoolCountry: ev.schoolCountry,
+            schoolLanguage: ev.schoolLanguage,
+            createdAt: ev.submittedAt,
+            images: images,
+            videos: ev.videoLinks ? [{ url: ev.videoLinks }] : [],
+            studentQuotes: [],
+            impactMetrics: [],
+            categories: [],
+            tags: [],
+            contentType: 'evidence',
+          };
+        });
+        
+        combinedResults = [...combinedResults, ...evidenceWithType];
+      }
+      
+      // Sort combined results:
+      // 1. Featured case studies (contentType === 'case-study' && featured === true)
+      // 2. Regular case studies (contentType === 'case-study' && featured === false)
+      // 3. Featured evidence (contentType === 'evidence' && featured === true)
+      // 4. Regular evidence (contentType === 'evidence' && featured === false)
+      combinedResults.sort((a, b) => {
+        // Priority scoring: case-study=2, evidence=1; featured adds 10
+        const scoreA = (a.contentType === 'case-study' ? 20 : 10) + (a.featured ? 10 : 0);
+        const scoreB = (b.contentType === 'case-study' ? 20 : 10) + (b.featured ? 10 : 0);
+        
+        if (scoreA !== scoreB) {
+          return scoreB - scoreA; // Higher score first
+        }
+        
+        // If same priority, sort by date (newest first)
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+      
+      // Apply pagination to combined results if fetching all types
+      if (contentType === 'all' || !contentType) {
+        combinedResults = combinedResults.slice(requestedOffset, requestedOffset + requestedLimit);
+      }
+      
+      res.json(combinedResults);
+    } catch (error) {
+      console.error("Error fetching inspiration content:", error);
+      res.status(500).json({ message: "Failed to fetch inspiration content" });
+    }
+  });
+
+  /**
    * @description GET /api/case-studies - Public endpoint for retrieving case studies with filtering by stage, country, categories, tags. Only published case studies shown to non-admin users.
    * @returns {CaseStudy[]} Array of case study objects with pagination
    * @location server/routes.ts#L461
@@ -577,6 +711,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching case study:", error);
       res.status(500).json({ message: "Failed to fetch case study" });
+    }
+  });
+
+  // Get single evidence by ID (public endpoint for approved evidence)
+  app.get('/api/evidence/:id', async (req: any, res) => {
+    try {
+      const evidence = await storage.getEvidenceById(req.params.id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+      
+      // Only allow viewing approved evidence publicly (non-admins)
+      const isAdmin = req.isAuthenticated && req.isAuthenticated() && req.user?.isAdmin;
+      if (evidence.status !== 'approved' && !isAdmin) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+      
+      res.json(evidence);
+    } catch (error) {
+      console.error("Error fetching evidence:", error);
+      res.status(500).json({ message: "Failed to fetch evidence" });
     }
   });
 

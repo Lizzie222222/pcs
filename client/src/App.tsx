@@ -27,6 +27,7 @@ const Home = lazy(() => import("@/pages/home"));
 const Resources = lazy(() => import("@/pages/resources"));
 const Inspiration = lazy(() => import("@/pages/inspiration"));
 const CaseStudyDetail = lazy(() => import("@/pages/case-study-detail"));
+const EvidenceDetail = lazy(() => import("@/pages/evidence-detail"));
 const SchoolsMap = lazy(() => import("@/pages/schools-map"));
 const Search = lazy(() => import("@/pages/search"));
 const Events = lazy(() => import("@/pages/events"));
@@ -160,6 +161,7 @@ function Router() {
               <Route path="/resources" component={Resources} />
               <Route path="/inspiration" component={Inspiration} />
               <Route path="/case-study/:id" component={CaseStudyDetail} />
+              <Route path="/evidence/:id" component={EvidenceDetail} />
               <Route path="/schools-map" component={SchoolsMap} />
               <Route path="/search" component={Search} />
               <Route path="/events" component={Events} />

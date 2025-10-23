@@ -50,6 +50,7 @@ interface CaseStudy {
   tags: string[];
   beforeImage?: string;
   afterImage?: string;
+  contentType?: 'case-study' | 'evidence';
 }
 
 function ImageCarousel({ images, title }: { images: { url: string; caption?: string }[]; title: string }) {
@@ -188,11 +189,24 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
       ) : null}
 
       <CardContent className="p-5">
-        {/* Stage Badge & Featured */}
-        <div className="flex items-center justify-between mb-3">
-          <Badge className={getStageColor(caseStudy.stage)}>
-            {caseStudy.stage}
-          </Badge>
+        {/* Stage Badge, Content Type & Featured */}
+        <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
+          <div className="flex items-center gap-2">
+            <Badge className={getStageColor(caseStudy.stage)}>
+              {caseStudy.stage}
+            </Badge>
+            {caseStudy.contentType && (
+              <Badge 
+                variant="outline" 
+                className={caseStudy.contentType === 'case-study' 
+                  ? 'bg-purple-50 text-purple-700 border-purple-200' 
+                  : 'bg-green-50 text-green-700 border-green-200'}
+                data-testid={`badge-content-type-${caseStudy.id}`}
+              >
+                {caseStudy.contentType === 'case-study' ? 'Case Study' : 'School Evidence'}
+              </Badge>
+            )}
+          </div>
           {caseStudy.featured && (
             <div className="flex items-center text-yellow-500">
               <Star className="h-4 w-4 mr-1 fill-current" />
@@ -272,7 +286,7 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
           <span className="text-xs text-gray-500">
             {new Date(caseStudy.createdAt).toLocaleDateString()}
           </span>
-          <Link href={`/case-study/${caseStudy.id}`}>
+          <Link href={caseStudy.contentType === 'evidence' ? `/evidence/${caseStudy.id}` : `/case-study/${caseStudy.id}`}>
             <Button 
               size="sm" 
               variant="ghost" 
@@ -310,6 +324,7 @@ export default function Inspiration() {
     search: '',
     country: '',
     stage: '',
+    contentType: 'all',
     categories: [] as string[],
     tags: [] as string[],
     featuredOnly: false,
@@ -325,12 +340,13 @@ export default function Inspiration() {
     hasNextPage,
     isFetchingNextPage 
   } = useInfiniteQuery({
-    queryKey: ['/api/case-studies', filters],
+    queryKey: ['/api/inspiration-content', filters],
     queryFn: async ({ pageParam }: { pageParam: number }) => {
       const params = new URLSearchParams({
         search: filters.search,
         country: filters.country,
         stage: filters.stage,
+        contentType: filters.contentType,
         limit: limit.toString(),
         offset: (pageParam * limit).toString(),
       });
@@ -354,8 +370,8 @@ export default function Inspiration() {
         }
       });
       
-      const response = await fetch(`/api/case-studies?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch case studies');
+      const response = await fetch(`/api/inspiration-content?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch inspiration content');
       const result: CaseStudy[] = await response.json();
       return result;
     },
@@ -405,6 +421,7 @@ export default function Inspiration() {
       search: '',
       country: '',
       stage: '',
+      contentType: 'all',
       categories: [],
       tags: [],
       featuredOnly: false,
@@ -415,6 +432,7 @@ export default function Inspiration() {
     filters.search || 
     filters.country || 
     filters.stage || 
+    filters.contentType !== 'all' ||
     filters.categories.length > 0 || 
     filters.tags.length > 0 || 
     filters.featuredOnly;
@@ -461,8 +479,8 @@ export default function Inspiration() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Row 1: Search, Country, Stage */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Row 1: Search, Country, Stage, Content Type */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <Input
                   placeholder="Search by school name..."
@@ -495,6 +513,17 @@ export default function Inspiration() {
                   <SelectItem value="inspire">Inspire</SelectItem>
                   <SelectItem value="investigate">Investigate</SelectItem>
                   <SelectItem value="act">Act</SelectItem>
+                </SelectContent>
+              </Select>
+              
+              <Select value={filters.contentType} onValueChange={(value) => handleFilterChange('contentType', value)}>
+                <SelectTrigger data-testid="select-content-type">
+                  <SelectValue placeholder="All Content" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Content</SelectItem>
+                  <SelectItem value="case-study">Case Studies</SelectItem>
+                  <SelectItem value="evidence">School Evidence</SelectItem>
                 </SelectContent>
               </Select>
             </div>

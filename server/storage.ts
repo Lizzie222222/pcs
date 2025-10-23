@@ -199,6 +199,7 @@ export interface IStorage {
   // Evidence operations
   createEvidence(evidence: InsertEvidence): Promise<Evidence>;
   getEvidence(id: string): Promise<Evidence | undefined>;
+  getEvidenceById(id: string): Promise<EvidenceWithSchool & { schoolName: string; schoolCountry: string; schoolLanguage: string | null } | undefined>;
   getSchoolEvidence(schoolId: string): Promise<Evidence[]>;
   getPendingEvidence(): Promise<Evidence[]>;
   getAllEvidence(filters?: {
@@ -218,6 +219,18 @@ export interface IStorage {
   updateEvidenceFiles(id: string, files: any[]): Promise<Evidence | undefined>;
   deleteEvidence(id: string): Promise<boolean>;
   deleteSchool(id: string): Promise<boolean>;
+  getApprovedEvidenceForInspiration(filters?: {
+    stage?: string;
+    country?: string;
+    search?: string;
+    visibility?: 'public' | 'registered';
+    limit?: number;
+    offset?: number;
+  }): Promise<Array<EvidenceWithSchool & { 
+    schoolName: string;
+    schoolCountry: string;
+    schoolLanguage: string | null;
+  }>>;
   
   // Evidence Requirements operations
   getEvidenceRequirements(stage?: string): Promise<EvidenceRequirement[]>;
@@ -1347,6 +1360,42 @@ export class DatabaseStorage implements IStorage {
     return evidenceRecord;
   }
 
+  async getEvidenceById(id: string): Promise<EvidenceWithSchool & { schoolName: string; schoolCountry: string; schoolLanguage: string | null } | undefined> {
+    const [evidenceRecord] = await db
+      .select({
+        id: evidence.id,
+        schoolId: evidence.schoolId,
+        submittedBy: evidence.submittedBy,
+        evidenceRequirementId: evidence.evidenceRequirementId,
+        title: evidence.title,
+        description: evidence.description,
+        stage: evidence.stage,
+        status: evidence.status,
+        visibility: evidence.visibility,
+        files: evidence.files,
+        videoLinks: evidence.videoLinks,
+        reviewedBy: evidence.reviewedBy,
+        reviewedAt: evidence.reviewedAt,
+        reviewNotes: evidence.reviewNotes,
+        isFeatured: evidence.isFeatured,
+        isAuditQuiz: evidence.isAuditQuiz,
+        roundNumber: evidence.roundNumber,
+        hasChildren: evidence.hasChildren,
+        parentalConsentFiles: evidence.parentalConsentFiles,
+        submittedAt: evidence.submittedAt,
+        updatedAt: evidence.updatedAt,
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        schoolLanguage: schools.primaryLanguage,
+      })
+      .from(evidence)
+      .leftJoin(schools, eq(evidence.schoolId, schools.id))
+      .where(eq(evidence.id, id))
+      .limit(1);
+    
+    return evidenceRecord as any;
+  }
+
   async getSchoolEvidence(schoolId: string): Promise<Evidence[]> {
     return await db
       .select()
@@ -1440,6 +1489,102 @@ export class DatabaseStorage implements IStorage {
         )
       )
       .orderBy(desc(evidence.submittedAt));
+  }
+
+  async getApprovedEvidenceForInspiration(filters?: {
+    stage?: string;
+    country?: string;
+    search?: string;
+    visibility?: 'public' | 'registered';
+    limit?: number;
+    offset?: number;
+  }): Promise<Array<EvidenceWithSchool & { 
+    schoolName: string;
+    schoolCountry: string;
+    schoolLanguage: string | null;
+  }>> {
+    const conditions = [eq(evidence.status, 'approved')];
+    
+    // Visibility filter logic:
+    // - If 'public': show only public evidence
+    // - If 'registered': show both public AND registered evidence (authenticated users see more)
+    if (filters?.visibility === 'public') {
+      conditions.push(eq(evidence.visibility, 'public'));
+    } else if (filters?.visibility === 'registered') {
+      conditions.push(
+        or(
+          eq(evidence.visibility, 'public'),
+          eq(evidence.visibility, 'registered')
+        )
+      );
+    }
+    
+    if (filters?.stage) {
+      conditions.push(eq(evidence.stage, filters.stage as any));
+    }
+    
+    if (filters?.country) {
+      conditions.push(eq(schools.country, filters.country));
+    }
+    
+    if (filters?.search) {
+      const searchCondition = or(
+        ilike(evidence.title, `%${filters.search}%`),
+        ilike(evidence.description, `%${filters.search}%`)
+      );
+      conditions.push(searchCondition);
+    }
+    
+    let query = db
+      .select({
+        id: evidence.id,
+        schoolId: evidence.schoolId,
+        submittedBy: evidence.submittedBy,
+        evidenceRequirementId: evidence.evidenceRequirementId,
+        title: evidence.title,
+        description: evidence.description,
+        stage: evidence.stage,
+        status: evidence.status,
+        visibility: evidence.visibility,
+        files: evidence.files,
+        videoLinks: evidence.videoLinks,
+        reviewedBy: evidence.reviewedBy,
+        reviewedAt: evidence.reviewedAt,
+        reviewNotes: evidence.reviewNotes,
+        isFeatured: evidence.isFeatured,
+        isAuditQuiz: evidence.isAuditQuiz,
+        roundNumber: evidence.roundNumber,
+        hasChildren: evidence.hasChildren,
+        parentalConsentFiles: evidence.parentalConsentFiles,
+        submittedAt: evidence.submittedAt,
+        updatedAt: evidence.updatedAt,
+        school: {
+          id: schools.id,
+          name: schools.name,
+          country: schools.country,
+        },
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        schoolLanguage: schools.primaryLanguage,
+      })
+      .from(evidence)
+      .leftJoin(schools, eq(evidence.schoolId, schools.id));
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    
+    // Order by featured first, then by submission date
+    query = query.orderBy(desc(evidence.isFeatured), desc(evidence.submittedAt)) as any;
+    
+    if (filters?.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+    if (filters?.offset) {
+      query = query.offset(filters.offset) as any;
+    }
+    
+    return await query as any;
   }
 
   async updateEvidenceStatus(
