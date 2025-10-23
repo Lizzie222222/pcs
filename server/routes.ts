@@ -5675,6 +5675,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Authenticated: Mark events as viewed (updates lastViewedEventsAt timestamp)
+  app.post('/api/events/mark-viewed', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      await db.update(users)
+        .set({ lastViewedEventsAt: new Date() })
+        .where(eq(users.id, userId));
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking events as viewed:", error);
+      res.status(500).json({ message: "Failed to update view timestamp" });
+    }
+  });
+
   /**
    * @description POST /api/events/:id/register - Authenticated endpoint for registering to events with capacity checking and waitlist support. Sends confirmation email and handles Mailchimp tagging.
    * @param {string} id - Event ID from URL params
