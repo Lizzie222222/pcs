@@ -713,17 +713,19 @@ export default function Landing() {
         <div className="container-width">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 ">
             <div>
-              <OptimizedImage 
-                src={whiteLogoUrl} 
-                alt={t('accessibility.plastic_clever_schools_logo_alt')} 
-                width={240}
-                height={120}
-                className="h-28 w-auto mb-4 object-contain" 
-                responsive={false}
-                quality={90}
-                sizes="240px"
-                priority={false}
-              />
+              <div className="mb-4 w-48">
+                <OptimizedImage 
+                  src={whiteLogoUrl} 
+                  alt={t('accessibility.plastic_clever_schools_logo_alt')} 
+                  width={240}
+                  height={120}
+                  className="w-full h-auto" 
+                  responsive={false}
+                  quality={90}
+                  sizes="240px"
+                  priority={false}
+                />
+              </div>
               <p className="text-gray-300 text-sm sm:text-base">
                 {t('footer.description')}
               </p>
