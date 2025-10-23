@@ -717,8 +717,8 @@ export default function Landing() {
                 src={whiteLogoUrl} 
                 alt={t('accessibility.plastic_clever_schools_logo_alt')} 
                 width={240}
-                height={100}
-                className="h-20 w-auto mb-4" 
+                height={120}
+                className="h-28 w-auto mb-4 object-contain" 
                 responsive={false}
                 quality={90}
                 sizes="240px"
