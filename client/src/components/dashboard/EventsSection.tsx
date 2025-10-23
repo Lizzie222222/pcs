@@ -915,11 +915,10 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                   </div>
                 </div>
               )}
-
-              </div>
             </div>
 
-            <div className="sticky bottom-0 bg-white border-t px-6 py-4">
+            {/* Footer with buttons - outside scrollable area */}
+            <div className="border-t px-6 py-4 bg-white">
               <div className="flex gap-2 flex-wrap mb-3">
                 <Button
                   variant="outline"
