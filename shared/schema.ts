@@ -651,6 +651,7 @@ export const eventBanners = pgTable("event_banners", {
   isActive: boolean("is_active").default(true),
   backgroundColor: varchar("background_color").default('#0B3D5D'),
   textColor: varchar("text_color").default('#FFFFFF'),
+  gradient: varchar("gradient").default('ocean'),
   createdBy: varchar("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
