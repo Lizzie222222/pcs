@@ -111,6 +111,53 @@
     "stage_completed": "Tahap {{stage}} selesai",
     "welcome_message": "Selamat datang di Plastic Clever Schools!"
   },
+  "round": {
+    "completion_subtitle": "Your school has successfully:",
+    "completion_stages": "Completed all 3 stages (Inspire → Investigate → Act)",
+    "start_next_round": "Start Round {{round}} →"
+  },
+  "certificates": {
+    "certificate_number": "Certificate #{{number}}",
+    "completed_on": "Completed: {{date}}",
+    "view_certificate": "View Certificate"
+  },
+  "resources": {
+    "program_stages_title": "Program Stages",
+    "program_stages_description": "Understand each stage of the program",
+    "featured_title": "Featured Resources"
+  },
+  "tips": {
+    "photo_guidelines_title": "📸 Photo Guidelines",
+    "photo_clear": "Ensure images are clear and well-lit",
+    "photo_context": "Include context (date, location if relevant)",
+    "photo_consent": "Get parental consent for children's photos",
+    "documentation_title": "📝 Documentation Tips",
+    "doc_detailed": "Write detailed descriptions",
+    "doc_impact": "Explain the impact of your actions",
+    "doc_reflections": "Include student reflections when possible",
+    "video_best_practices_title": "🎥 Video Best Practices",
+    "video_length": "Keep videos under 5 minutes",
+    "video_stable": "Use stable camera positioning",
+    "video_captions": "Include narration or captions",
+    "quick_wins_title": "⚡ Quick Wins",
+    "quick_submit": "Submit evidence promptly",
+    "quick_respond": "Respond to feedback quickly",
+    "quick_collaborate": "Collaborate with your team"
+  },
+  "action_plan": {
+    "active_promises_title": "Active Promises",
+    "ocean_impact": "🌊 Ocean Impact",
+    "environmental_impact": "📊 Environmental Impact",
+    "tooltip_total_items": "The total number of plastic reduction commitments your school has made. Each action item represents a specific type of plastic your school plans to reduce.",
+    "tooltip_items_reduced": "Total plastic items your school aims to eliminate annually. This is calculated by taking the difference between baseline and target quantities, then multiplying by frequency (52 for weekly, 12 for monthly, or 1 for yearly).",
+    "tooltip_weight_reduced": "Total weight of plastic waste prevented annually. Each plastic item type has a standard weight (e.g., bottles: 15g, cups: 5g, straws: 0.42g) that's multiplied by the number of items reduced.",
+    "tooltip_ocean_bottles": "Equivalent plastic bottles kept out of the ocean. Based on standard 15g bottles, this shows the scale of your impact in relatable terms.",
+    "tooltip_fish_saved": "Fish protected from plastic ingestion. Studies show that 50g of plastic can be harmful to marine life, so this estimates the number of fish potentially saved.",
+    "tooltip_sea_turtles": "Your plastic reduction measured in sea turtle weights. An average sea turtle weighs about 140kg, providing a powerful visualization of your impact.",
+    "tooltip_co2_prevented": "Carbon dioxide emissions prevented by reducing plastic production. Producing 1kg of plastic generates approximately 6kg of CO₂ emissions.",
+    "tooltip_oil_saved": "Fossil fuel oil conserved by avoiding plastic production. About 2kg (approximately 2 liters) of oil is needed to produce 1kg of plastic.",
+    "tooltip_tons_prevented": "Total plastic waste prevented measured in metric tons. This shows the cumulative weight of all plastic items your school commits to reducing."
+  },
   "errors": {
     "unexpected_error": "Terjadi kesalahan yang tidak terduga"
   }
