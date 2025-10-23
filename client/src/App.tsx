@@ -39,6 +39,7 @@ const Register = lazy(() => import("@/pages/register"));
 const Contact = lazy(() => import("@/pages/contact"));
 const HelpCenter = lazy(() => import("@/pages/help-center"));
 const Terms = lazy(() => import("@/pages/terms"));
+const Privacy = lazy(() => import("@/pages/privacy"));
 const Profile = lazy(() => import("@/pages/profile"));
 const InvitationAccept = lazy(() => import("@/pages/InvitationAccept"));
 const AdminInvitationAccept = lazy(() => import("@/pages/AdminInvitationAccept"));
@@ -162,6 +163,7 @@ function Router() {
               <Route path="/contact" component={Contact} />
               <Route path="/help-center" component={HelpCenter} />
               <Route path="/terms" component={Terms} />
+              <Route path="/privacy" component={Privacy} />
               <Route path="/invitations/:token" component={InvitationAccept} />
               <Route path="/admin-invitations/:token" component={AdminInvitationAccept} />
               {import.meta.env.DEV && <Route path="/test-login" component={TestLogin} />}
