@@ -196,7 +196,7 @@ export default function Landing() {
         <div 
           className="w-full py-0.5 px-2 text-center fixed top-0 left-0 right-0 z-[60] shadow-sm"
           style={{
-            background: getGradientById(activeBanner.gradient)?.gradient || activeBanner.backgroundColor,
+            backgroundImage: getGradientById(activeBanner.gradient)?.gradient || `linear-gradient(135deg, ${activeBanner.backgroundColor} 0%, ${activeBanner.backgroundColor} 100%)`,
             color: activeBanner.textColor,
           }}
           data-testid="event-banner"
@@ -213,7 +213,7 @@ export default function Landing() {
             </p>
             <Button
               onClick={() => window.location.href = `/events/${activeBanner.event.publicSlug || activeBanner.event.id}`}
-              className="bg-white hover:bg-gray-50 text-gray-900 font-semibold px-2 py-0 text-[10px] leading-tight rounded-full transition-all duration-200 shadow-sm hover:shadow-md"
+              className="bg-white hover:bg-gray-100 text-pcs_blue hover:text-ocean-blue font-semibold px-3 py-0.5 text-[10px] leading-tight rounded-md transition-all duration-200 shadow-sm hover:shadow-md"
               data-testid="button-banner-event"
             >
               Learn More →
