@@ -4181,6 +4181,18 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     alt="Event preview"
                     className="w-full h-48 object-cover"
                     data-testid="image-event-preview"
+                    onError={(e) => {
+                      console.error('Failed to load event image:', {
+                        src: e.currentTarget.src,
+                        imageUrl: eventFormData.imageUrl
+                      });
+                    }}
+                    onLoad={() => {
+                      console.log('Event image loaded successfully:', {
+                        src: `/api${eventFormData.imageUrl}`,
+                        imageUrl: eventFormData.imageUrl
+                      });
+                    }}
                   />
                   <div className="absolute top-2 right-2 flex gap-2">
                     <Button
