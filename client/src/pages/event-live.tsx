@@ -365,7 +365,7 @@ export default function EventLivePage() {
                 Content Not Yet Available
               </p>
               <p className="text-lg text-amber-800 mb-2" data-testid="text-recording-available-date">
-                This pre-recorded event will be available on {format(new Date(event.recordingAvailableFrom), 'EEEE, MMMM d, yyyy at h:mm a')}
+                This pre-recorded event will be available on {format(new Date(event.recordingAvailableFrom), 'EEEE, MMMM d, yyyy \'at\' h:mm a')}
               </p>
               <p className="text-amber-700">
                 Please check back after this date to access the content.
@@ -444,7 +444,7 @@ export default function EventLivePage() {
           {!hasStarted && (
             <div className="mt-10 p-5 bg-blue-50 border-2 border-blue-200 rounded-xl text-center shadow-sm">
               <p className="text-blue-800 font-medium text-lg" data-testid="text-event-upcoming">
-                This event hasn't started yet. Please check back on {format(startDate, 'MMMM d, yyyy at h:mm a')}
+                This event hasn't started yet. Please check back on {format(startDate, 'MMMM d, yyyy \'at\' h:mm a')}
               </p>
               {event.meetingLink && (
                 <p className="text-blue-700 mt-3 text-sm">
