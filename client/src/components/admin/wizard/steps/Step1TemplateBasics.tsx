@@ -19,9 +19,9 @@ const PROGRAM_STAGES = [
 ];
 
 export function Step1TemplateBasics({ form, isEditing }: Step1TemplateBasicsProps) {
-  // Fetch schools for dropdown
+  // Fetch schools with image counts for dropdown
   const { data: schools, isLoading: isLoadingSchools } = useQuery<any[]>({
-    queryKey: ['/api/schools'],
+    queryKey: ['/api/schools-with-image-counts'],
   });
 
   return (
@@ -76,6 +76,11 @@ export function Step1TemplateBasics({ form, isEditing }: Step1TemplateBasicsProp
                           {school.country && (
                             <span className="text-muted-foreground text-xs">
                               ({school.country})
+                            </span>
+                          )}
+                          {typeof school.approvedImageCount === 'number' && (
+                            <span className="text-xs font-medium text-pcs_blue bg-pcs_blue/10 px-2 py-0.5 rounded-full ml-auto">
+                              {school.approvedImageCount} {school.approvedImageCount === 1 ? 'image' : 'images'}
                             </span>
                           )}
                         </div>
