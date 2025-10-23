@@ -4131,7 +4131,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 /* Image preview */
                 <div className="relative border border-gray-300 rounded-md overflow-hidden">
                   <img
-                    src={`/api/objects${eventFormData.imageUrl}`}
+                    src={`/api${eventFormData.imageUrl}`}
                     alt="Event preview"
                     className="w-full h-48 object-cover"
                     data-testid="image-event-preview"
