@@ -1407,6 +1407,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         description: "Event page content updated successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
+      
+      // Close the dialog after saving page content
+      setEventDialogOpen(false);
+      setEditingEvent(null);
+      setIsVirtualEventCreationInProgress(false);
     },
     onError: (error: any) => {
       toast({
