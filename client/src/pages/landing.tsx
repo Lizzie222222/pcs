@@ -584,7 +584,7 @@ export default function Landing() {
         <div className="container-width">
           <div className="max-w-4xl mx-auto">
             {/* Title */}
-            <h2 className="text-2xl sm:text-3xl font-bold text-navy text-center mb-12 uppercase tracking-wide">
+            <h2 className="text-2xl sm:text-3xl font-bold text-navy text-center mb-12">
               {t('partnership.collaboration_title')}
             </h2>
             
