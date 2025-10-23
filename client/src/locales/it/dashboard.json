@@ -160,5 +160,23 @@
   },
   "errors": {
     "unexpected_error": "Si è verificato un errore imprevisto"
+  },
+  "toasts": {
+    "success": "Success",
+    "error": "Error",
+    "notice": "Notice",
+    "promise_created": "Action item created successfully!",
+    "promise_updated": "Action item updated successfully!",
+    "promise_deleted": "Action item deleted successfully!",
+    "promise_create_failed": "Failed to create action item",
+    "promise_update_failed": "Failed to update action item",
+    "promise_delete_failed": "Failed to delete action item",
+    "onboarding_save_failed": "We couldn't save your onboarding preference, but you can continue using the app."
+  },
+  "validation": {
+    "select_plastic_type": "Please select a plastic item type",
+    "provide_item_label": "Please provide a label for the plastic item",
+    "baseline_min": "Baseline quantity must be at least 1",
+    "target_min": "Target quantity must be at least 0"
   }
 }

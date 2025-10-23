@@ -283,10 +283,10 @@ export default function Home() {
 
   // Form schema for promise dialog
   const promiseFormSchema = z.object({
-    plasticItemType: z.string().min(1, "Please select a plastic item type"),
-    plasticItemLabel: z.string().min(1, "Please provide a label for the plastic item"),
-    baselineQuantity: z.number().min(1, "Baseline quantity must be at least 1"),
-    targetQuantity: z.number().min(0, "Target quantity must be at least 0"),
+    plasticItemType: z.string().min(1, t('validation.select_plastic_type', { ns: 'dashboard' })),
+    plasticItemLabel: z.string().min(1, t('validation.provide_item_label', { ns: 'dashboard' })),
+    baselineQuantity: z.number().min(1, t('validation.baseline_min', { ns: 'dashboard' })),
+    targetQuantity: z.number().min(0, t('validation.target_min', { ns: 'dashboard' })),
     timeframeUnit: z.enum(["week", "month", "year"]),
     notes: z.string().optional(),
   });
@@ -314,8 +314,8 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'analytics'] });
       queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'audit-analytics'] });
       toast({
-        title: "Success",
-        description: "Action item created successfully!",
+        title: t('toasts.success', { ns: 'dashboard' }),
+        description: t('toasts.promise_created', { ns: 'dashboard' }),
       });
       setPromiseDialogOpen(false);
       setEditingPromise(null);
@@ -323,8 +323,8 @@ export default function Home() {
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error?.message || "Failed to create action item",
+        title: t('toasts.error', { ns: 'dashboard' }),
+        description: error?.message || t('toasts.promise_create_failed', { ns: 'dashboard' }),
         variant: "destructive",
       });
     },
@@ -341,8 +341,8 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'analytics'] });
       queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'audit-analytics'] });
       toast({
-        title: "Success",
-        description: "Action item updated successfully!",
+        title: t('toasts.success', { ns: 'dashboard' }),
+        description: t('toasts.promise_updated', { ns: 'dashboard' }),
       });
       setPromiseDialogOpen(false);
       setEditingPromise(null);
@@ -350,8 +350,8 @@ export default function Home() {
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error?.message || "Failed to update action item",
+        title: t('toasts.error', { ns: 'dashboard' }),
+        description: error?.message || t('toasts.promise_update_failed', { ns: 'dashboard' }),
         variant: "destructive",
       });
     },
@@ -368,16 +368,16 @@ export default function Home() {
       queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'analytics'] });
       queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'audit-analytics'] });
       toast({
-        title: "Success",
-        description: "Action item deleted successfully!",
+        title: t('toasts.success', { ns: 'dashboard' }),
+        description: t('toasts.promise_deleted', { ns: 'dashboard' }),
       });
       setDeletePromiseDialogOpen(false);
       setPromiseToDelete(null);
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error?.message || "Failed to delete action item",
+        title: t('toasts.error', { ns: 'dashboard' }),
+        description: error?.message || t('toasts.promise_delete_failed', { ns: 'dashboard' }),
         variant: "destructive",
       });
       setDeletePromiseDialogOpen(false);
@@ -403,8 +403,8 @@ export default function Home() {
     onError: () => {
       // Keep the modal closed even if API fails - user can still use the app
       toast({
-        title: "Notice",
-        description: "We couldn't save your onboarding preference, but you can continue using the app.",
+        title: t('toasts.notice', { ns: 'dashboard' }),
+        description: t('toasts.onboarding_save_failed', { ns: 'dashboard' }),
         variant: "default",
       });
     },
