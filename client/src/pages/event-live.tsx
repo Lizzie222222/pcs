@@ -8,6 +8,8 @@ import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
+import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 
 interface YoutubeVideo {
   title: string;
@@ -80,11 +82,74 @@ function YouTubeEmbed({ url, title }: { url: string; title: string }) {
   );
 }
 
+// Footer component for event pages
+function EventFooter({ t }: { t: any }) {
+  return (
+    <footer className="bg-navy text-white py-12 mt-auto">
+      <div className="container-width">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+          <div>
+            <div className="mb-4">
+              <img 
+                src={whiteLogoUrl} 
+                alt="Plastic Clever Schools Logo" 
+                className="w-48 h-auto max-w-full object-contain" 
+              />
+            </div>
+            <p className="text-gray-300 text-sm sm:text-base">
+              {t('footer.description')}
+            </p>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold mb-4">{t('footer.program_title')}</h4>
+            <ul className="space-y-2 text-sm text-gray-300">
+              <li><a href="/#how-it-works" className="hover:text-teal transition-colors">{t('footer.program_how_it_works')}</a></li>
+              <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.program_resources')}</a></li>
+              <li><a href="/inspiration" className="hover:text-teal transition-colors">{t('footer.program_success_stories')}</a></li>
+              <li><a href="/#how-it-works" className="hover:text-teal transition-colors">{t('footer.program_award_criteria')}</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold mb-4">{t('footer.support_title')}</h4>
+            <ul className="space-y-2 text-sm text-gray-300">
+              <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.support_help_center')}</a></li>
+              <li><a href="https://commonseas.com/contact" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.support_contact_us')}</a></li>
+              <li><a href="/schools-map" className="hover:text-teal transition-colors">{t('footer.support_community')}</a></li>
+              <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.support_training')}</a></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h4 className="font-semibold mb-4">{t('footer.connect_title')}</h4>
+            <ul className="space-y-2 text-sm text-gray-300">
+              <li><a href="/register" className="hover:text-teal transition-colors">{t('footer.connect_newsletter')}</a></li>
+              <li><a href="https://www.instagram.com/plasticcleverschools/" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.connect_social_media')}</a></li>
+              <li><a href="/events" className="hover:text-teal transition-colors">{t('footer.connect_events')}</a></li>
+              <li><a href="/#partners" className="hover:text-teal transition-colors">{t('footer.connect_partners')}</a></li>
+            </ul>
+          </div>
+        </div>
+        
+        <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
+          <p>
+            {t('footer.copyright')} | 
+            <a href="https://commonseas.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors ml-1">{t('footer.privacy')}</a> | 
+            <a href="https://commonseas.com/terms" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors ml-1">{t('footer.terms')}</a>
+          </p>
+        </div>
+      </div>
+    </footer>
+  );
+}
+
 export default function EventLivePage() {
   const params = useParams() as { slug: string };
   const [, navigate] = useLocation();
   const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
+  const { t } = useTranslation('landing');
   
   const { data: event, isLoading, error } = useQuery<Event>({
     queryKey: ['/api/events/slug', params.slug],
@@ -201,22 +266,28 @@ export default function EventLivePage() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <LoadingSpinner size="lg" message="Loading event..." />
+      <div className="min-h-screen flex flex-col">
+        <div className="flex-1 flex items-center justify-center">
+          <LoadingSpinner size="lg" message="Loading event..." />
+        </div>
+        <EventFooter t={t} />
       </div>
     );
   }
 
   if (error || !event) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center px-4">
-        <h1 className="text-3xl font-bold mb-4" data-testid="text-error-title">Event Not Found</h1>
-        <p className="text-gray-600 mb-6" data-testid="text-error-message">
-          The event you're looking for doesn't exist or is no longer available.
-        </p>
-        <Button onClick={() => navigate('/')} data-testid="button-home">
-          Go Home
-        </Button>
+      <div className="min-h-screen flex flex-col">
+        <div className="flex-1 flex flex-col items-center justify-center px-4">
+          <h1 className="text-3xl font-bold mb-4" data-testid="text-error-title">Event Not Found</h1>
+          <p className="text-gray-600 mb-6" data-testid="text-error-message">
+            The event you're looking for doesn't exist or is no longer available.
+          </p>
+          <Button onClick={() => navigate('/')} data-testid="button-home">
+            Go Home
+          </Button>
+        </div>
+        <EventFooter t={t} />
       </div>
     );
   }
@@ -224,42 +295,45 @@ export default function EventLivePage() {
   // Check if page is in coming soon status
   if (event.pagePublishedStatus === 'coming_soon') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 flex flex-col items-center justify-center px-4">
-        <div className="max-w-2xl text-center">
-          {event.imageUrl && (
-            <div className="mb-8">
-              <img
-                src={`/api/objects${event.imageUrl}`}
-                alt={event.title}
-                className="max-h-32 mx-auto object-contain drop-shadow-lg"
-                data-testid="img-coming-soon-logo"
-              />
-            </div>
-          )}
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900" data-testid="text-coming-soon-title">
-            {event.title}
-          </h1>
-          <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-6 border-2 border-pcs_blue/20">
-            <p className="text-2xl font-semibold text-pcs_blue mb-4" data-testid="text-coming-soon-message">
-              Coming Soon!
-            </p>
-            <p className="text-lg text-gray-700 leading-relaxed" data-testid="text-coming-soon-description">
-              {event.description}
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-4">
-              <div className="flex items-center gap-2 bg-pcs_blue/10 px-4 py-2 rounded-full">
-                <Calendar className="w-5 h-5 text-pcs_blue" />
-                <span className="font-medium text-gray-800">{format(new Date(event.startDateTime), 'MMMM d, yyyy')}</span>
+      <div className="min-h-screen bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 flex flex-col">
+        <div className="flex-1 flex flex-col items-center justify-center px-4">
+          <div className="max-w-2xl text-center">
+            {event.imageUrl && (
+              <div className="mb-8">
+                <img
+                  src={`/api/objects${event.imageUrl}`}
+                  alt={event.title}
+                  className="max-h-32 mx-auto object-contain drop-shadow-lg"
+                  data-testid="img-coming-soon-logo"
+                />
+              </div>
+            )}
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900" data-testid="text-coming-soon-title">
+              {event.title}
+            </h1>
+            <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-6 border-2 border-pcs_blue/20">
+              <p className="text-2xl font-semibold text-pcs_blue mb-4" data-testid="text-coming-soon-message">
+                Coming Soon!
+              </p>
+              <p className="text-lg text-gray-700 leading-relaxed" data-testid="text-coming-soon-description">
+                {event.description}
+              </p>
+              <div className="mt-6 flex flex-wrap justify-center gap-4">
+                <div className="flex items-center gap-2 bg-pcs_blue/10 px-4 py-2 rounded-full">
+                  <Calendar className="w-5 h-5 text-pcs_blue" />
+                  <span className="font-medium text-gray-800">{format(new Date(event.startDateTime), 'MMMM d, yyyy')}</span>
+                </div>
               </div>
             </div>
+            <p className="text-gray-600 mb-8" data-testid="text-coming-soon-check-back">
+              This event page is not yet available. Check back soon for more details!
+            </p>
+            <Button onClick={() => navigate('/')} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-coming-soon-home">
+              Back to Home
+            </Button>
           </div>
-          <p className="text-gray-600 mb-8" data-testid="text-coming-soon-check-back">
-            This event page is not yet available. Check back soon for more details!
-          </p>
-          <Button onClick={() => navigate('/')} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-coming-soon-home">
-            Back to Home
-          </Button>
         </div>
+        <EventFooter t={t} />
       </div>
     );
   }
@@ -267,52 +341,55 @@ export default function EventLivePage() {
   // Check access control for closed events
   if (event.accessType === 'closed' && !userRegistration) {
     return (
-      <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4">
-        <div className="max-w-2xl text-center">
-          {event.imageUrl && (
-            <div className="mb-8">
-              <img
-                src={`/api/objects${event.imageUrl}`}
-                alt={event.title}
-                className="max-h-32 mx-auto object-contain drop-shadow-lg"
-                data-testid="img-restricted-logo"
-              />
-            </div>
-          )}
-          <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900" data-testid="text-restricted-title">
-            {event.title}
-          </h1>
-          <div className="bg-white rounded-2xl shadow-xl p-8 mb-6 border-2 border-amber-200">
-            <p className="text-2xl font-semibold text-amber-700 mb-4" data-testid="text-restricted-message">
-              Registration Required
-            </p>
-            <p className="text-lg text-gray-700 leading-relaxed mb-6" data-testid="text-restricted-description">
-              This is a closed event. You must be registered to access the event content.
-            </p>
-            {!isAuthenticated ? (
-              <div className="space-y-4">
-                <p className="text-gray-600">
-                  Please sign in and register for this event to gain access.
-                </p>
-                <Button onClick={() => navigate('/register')} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-restricted-signin">
-                  Sign In to Register
-                </Button>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-gray-600">
-                  Register for this event to access the content.
-                </p>
-                <Button onClick={handleRegister} disabled={registerMutation.isPending} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-restricted-register">
-                  {registerMutation.isPending ? "Registering..." : "Register for This Event"}
-                </Button>
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="flex-1 flex flex-col items-center justify-center px-4">
+          <div className="max-w-2xl text-center">
+            {event.imageUrl && (
+              <div className="mb-8">
+                <img
+                  src={`/api/objects${event.imageUrl}`}
+                  alt={event.title}
+                  className="max-h-32 mx-auto object-contain drop-shadow-lg"
+                  data-testid="img-restricted-logo"
+                />
               </div>
             )}
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900" data-testid="text-restricted-title">
+              {event.title}
+            </h1>
+            <div className="bg-white rounded-2xl shadow-xl p-8 mb-6 border-2 border-amber-200">
+              <p className="text-2xl font-semibold text-amber-700 mb-4" data-testid="text-restricted-message">
+                Registration Required
+              </p>
+              <p className="text-lg text-gray-700 leading-relaxed mb-6" data-testid="text-restricted-description">
+                This is a closed event. You must be registered to access the event content.
+              </p>
+              {!isAuthenticated ? (
+                <div className="space-y-4">
+                  <p className="text-gray-600">
+                    Please sign in and register for this event to gain access.
+                  </p>
+                  <Button onClick={() => navigate('/register')} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-restricted-signin">
+                    Sign In to Register
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  <p className="text-gray-600">
+                    Register for this event to access the content.
+                  </p>
+                  <Button onClick={handleRegister} disabled={registerMutation.isPending} size="lg" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-restricted-register">
+                    {registerMutation.isPending ? "Registering..." : "Register for This Event"}
+                  </Button>
+                </div>
+              )}
+            </div>
+            <Button onClick={() => navigate('/')} variant="outline" size="lg" data-testid="button-restricted-home">
+              Back to Home
+            </Button>
           </div>
-          <Button onClick={() => navigate('/')} variant="outline" size="lg" data-testid="button-restricted-home">
-            Back to Home
-          </Button>
         </div>
+        <EventFooter t={t} />
       </div>
     );
   }
@@ -595,6 +672,8 @@ export default function EventLivePage() {
         )}
 
       </div>
+
+      <EventFooter t={t} />
     </div>
   );
 }
