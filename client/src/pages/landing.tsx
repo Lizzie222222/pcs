@@ -733,17 +733,11 @@ export default function Landing() {
         <div className="container-width">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8 ">
             <div>
-              <div className="mb-4 w-48">
-                <OptimizedImage 
+              <div className="mb-4">
+                <img 
                   src={whiteLogoUrl} 
                   alt={t('accessibility.plastic_clever_schools_logo_alt')} 
-                  width={240}
-                  height={120}
-                  className="w-full h-auto" 
-                  responsive={false}
-                  quality={90}
-                  sizes="240px"
-                  priority={false}
+                  className="w-48 h-auto max-w-full object-contain" 
                 />
               </div>
               <p className="text-gray-300 text-sm sm:text-base">
