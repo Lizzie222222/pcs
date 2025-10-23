@@ -6033,6 +6033,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                     location: event.location || undefined,
                     isVirtual: event.isVirtual || false,
                     meetingLink: event.meetingLink || undefined,
+                    publicSlug: event.publicSlug || undefined,
                   },
                   changes
                 );
@@ -6186,7 +6187,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         isVirtual: event.isVirtual ?? undefined,
         meetingLink: event.meetingLink ?? undefined,
         imageUrl: event.imageUrl ?? undefined,
-        capacity: event.capacity ?? undefined
+        capacity: event.capacity ?? undefined,
+        publicSlug: event.publicSlug ?? undefined
       });
       
       if (!result.success) {
@@ -6264,7 +6266,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         timezone: event.timezone ?? undefined,
         location: event.location ?? undefined,
         isVirtual: event.isVirtual ?? undefined,
-        imageUrl: event.imageUrl ?? undefined
+        imageUrl: event.imageUrl ?? undefined,
+        publicSlug: event.publicSlug ?? undefined
       })));
       
       if (!result.success) {
@@ -6893,6 +6896,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   location: event.location || undefined,
                   isVirtual: event.isVirtual || false,
                   meetingLink: event.meetingLink || undefined,
+                  publicSlug: event.publicSlug || undefined,
                 },
                 1
               );

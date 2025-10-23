@@ -908,6 +908,7 @@ export async function sendEventReminderEmail(
     location?: string;
     isVirtual?: boolean;
     meetingLink?: string;
+    publicSlug?: string;
   },
   hoursUntil: number
 ): Promise<boolean> {
@@ -961,7 +962,7 @@ export async function sendEventReminderEmail(
     : `<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0;">
          <tr>
            <td style="border-radius: 6px; background-color: #019ADE;">
-             <a href="${getBaseUrl()}/events/${event.id}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
+             <a href="${event.publicSlug ? getBaseUrl() + '/events/' + event.publicSlug : getBaseUrl() + '/events/' + event.id}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
                View Event Details
              </a>
            </td>
@@ -1072,6 +1073,7 @@ export async function sendEventUpdatedEmail(
     location?: string;
     isVirtual?: boolean;
     meetingLink?: string;
+    publicSlug?: string;
   },
   changes: string[]
 ): Promise<boolean> {
@@ -1184,7 +1186,7 @@ export async function sendEventUpdatedEmail(
                   <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0;">
                     <tr>
                       <td style="border-radius: 6px; background-color: #019ADE;">
-                        <a href="${getBaseUrl()}/events/${event.id}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
+                        <a href="${event.publicSlug ? getBaseUrl() + '/events/' + event.publicSlug : getBaseUrl() + '/events/' + event.id}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
                           View Event Details
                         </a>
                       </td>
@@ -1241,6 +1243,7 @@ export async function sendEventAnnouncementEmail(
     meetingLink?: string;
     imageUrl?: string;
     capacity?: number;
+    publicSlug?: string;
   }
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   if (!process.env.SENDGRID_API_KEY) {
@@ -1363,7 +1366,7 @@ export async function sendEventAnnouncementEmail(
                   <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
                     <tr>
                       <td style="border-radius: 6px; background-color: #FF595A;">
-                        <a href="${getBaseUrl()}/events/${event.id}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 600; border-radius: 6px;">
+                        <a href="${event.publicSlug ? getBaseUrl() + '/events/' + event.publicSlug : getBaseUrl() + '/events/' + event.id}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 600; border-radius: 6px;">
                           Register Now
                         </a>
                       </td>
@@ -1445,6 +1448,7 @@ export async function sendEventDigestEmail(
     location?: string;
     isVirtual?: boolean;
     imageUrl?: string;
+    publicSlug?: string;
   }>
 ): Promise<{ success: boolean; messageId?: string; error?: string }> {
   if (!process.env.SENDGRID_API_KEY) {
@@ -1508,7 +1512,7 @@ export async function sendEventDigestEmail(
             <p style="margin: 0 0 15px 0; color: #333333; font-size: 14px; line-height: 1.5;">
               ${event.description.substring(0, 120)}${event.description.length > 120 ? '...' : ''}
             </p>
-            <a href="${getBaseUrl()}/events/${event.id}" style="display: inline-block; padding: 10px 20px; background-color: #019ADE; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;">
+            <a href="${event.publicSlug ? getBaseUrl() + '/events/' + event.publicSlug : getBaseUrl() + '/events/' + event.id}" style="display: inline-block; padding: 10px 20px; background-color: #019ADE; color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; border-radius: 6px;">
               Learn More & Register
             </a>
           </div>
