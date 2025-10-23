@@ -119,6 +119,7 @@ import PrintableFormsTab from "@/components/admin/PrintableFormsTab";
 import type { ReductionPromise, Event, EventRegistration, EvidenceWithSchool, CaseStudy } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
 import { format, parseISO } from "date-fns";
+import { BANNER_GRADIENTS, getGradientById } from "@shared/gradients";
 
 interface AdminStats {
   totalSchools: number;
@@ -903,6 +904,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     eventId: '',
     backgroundColor: '#0066CC',
     textColor: '#FFFFFF',
+    gradient: 'ocean',
     isActive: true,
   });
 
@@ -1792,6 +1794,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         eventId: '',
         backgroundColor: '#0066CC',
         textColor: '#FFFFFF',
+        gradient: 'ocean',
         isActive: true,
       });
     },
@@ -1821,6 +1824,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         eventId: '',
         backgroundColor: '#0066CC',
         textColor: '#FFFFFF',
+        gradient: 'ocean',
         isActive: true,
       });
     },
@@ -3686,6 +3690,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                       eventId: banner.eventId,
                                       backgroundColor: banner.backgroundColor,
                                       textColor: banner.textColor,
+                                      gradient: banner.gradient || 'ocean',
                                       isActive: banner.isActive,
                                     });
                                     setBannerDialogOpen(true);
@@ -4229,34 +4234,51 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Background Color
-                  </label>
-                  <input
-                    type="color"
-                    value={bannerFormData.backgroundColor}
-                    onChange={(e) => setBannerFormData({ ...bannerFormData, backgroundColor: e.target.value })}
-                    className="w-full h-10 px-1 py-1 border border-gray-300 rounded-md cursor-pointer"
-                    data-testid="input-bg-color"
-                  />
-                  <span className="text-xs text-gray-500 mt-1 block">{bannerFormData.backgroundColor}</span>
-                </div>
+              {/* Gradient Selector */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Gradient Style
+                </label>
+                <select
+                  value={bannerFormData.gradient}
+                  onChange={(e) => {
+                    const selectedGradient = getGradientById(e.target.value);
+                    setBannerFormData({ 
+                      ...bannerFormData, 
+                      gradient: e.target.value,
+                      textColor: selectedGradient?.textColorRecommended || '#FFFFFF'
+                    });
+                  }}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                  data-testid="select-gradient"
+                >
+                  {BANNER_GRADIENTS.map((gradient) => (
+                    <option key={gradient.id} value={gradient.id}>
+                      {gradient.name}
+                    </option>
+                  ))}
+                </select>
+                {/* Gradient Preview */}
+                <div 
+                  className="mt-2 h-8 rounded-md"
+                  style={{
+                    background: getGradientById(bannerFormData.gradient)?.gradient || '',
+                  }}
+                />
+              </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Text Color
-                  </label>
-                  <input
-                    type="color"
-                    value={bannerFormData.textColor}
-                    onChange={(e) => setBannerFormData({ ...bannerFormData, textColor: e.target.value })}
-                    className="w-full h-10 px-1 py-1 border border-gray-300 rounded-md cursor-pointer"
-                    data-testid="input-text-color"
-                  />
-                  <span className="text-xs text-gray-500 mt-1 block">{bannerFormData.textColor}</span>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Text Color
+                </label>
+                <input
+                  type="color"
+                  value={bannerFormData.textColor}
+                  onChange={(e) => setBannerFormData({ ...bannerFormData, textColor: e.target.value })}
+                  className="w-full h-10 px-1 py-1 border border-gray-300 rounded-md cursor-pointer"
+                  data-testid="input-text-color"
+                />
+                <span className="text-xs text-gray-500 mt-1 block">{bannerFormData.textColor}</span>
               </div>
 
               <div className="flex items-center">
@@ -4280,9 +4302,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     Preview
                   </label>
                   <div 
-                    className="p-4 rounded-md text-center"
+                    className="p-4 rounded-md text-center font-semibold"
                     style={{
-                      backgroundColor: bannerFormData.backgroundColor,
+                      background: getGradientById(bannerFormData.gradient)?.gradient || bannerFormData.backgroundColor,
                       color: bannerFormData.textColor,
                     }}
                   >
