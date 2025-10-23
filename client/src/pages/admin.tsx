@@ -1240,7 +1240,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       const res = await apiRequest('POST', '/api/admin/events', data);
       return await res.json();
     },
-    onSuccess: (createdEvent: Event) => {
+    onSuccess: (response: {message: string, event: Event}) => {
+      const createdEvent = response.event;
+      console.log('[Event Creation] Full response:', response);
       console.log('[Event Creation] Event created:', createdEvent);
       console.log('[Event Creation] isVirtual:', createdEvent.isVirtual, 'eventType:', createdEvent.eventType);
       
@@ -4239,19 +4241,27 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   return;
                 }
                 
+                // Convert datetime strings to ISO format, handling both datetime-local and ISO formats
+                const convertToISO = (dateStr: string): string => {
+                  if (!dateStr) throw new Error('Date is required');
+                  const date = new Date(dateStr);
+                  if (isNaN(date.getTime())) throw new Error('Invalid date');
+                  return date.toISOString();
+                };
+
                 const eventData: any = {
                   title: eventFormData.title,
                   description: eventFormData.description,
                   eventType: eventFormData.eventType,
-                  startDateTime: eventFormData.startDateTime,
-                  endDateTime: eventFormData.endDateTime,
+                  startDateTime: convertToISO(eventFormData.startDateTime),
+                  endDateTime: convertToISO(eventFormData.endDateTime),
                   location: eventFormData.location || null,
                   isVirtual: eventFormData.isVirtual,
                   meetingLink: eventFormData.meetingLink || null,
                   imageUrl: eventFormData.imageUrl || null,
                   capacity: eventFormData.capacity ? parseInt(eventFormData.capacity) : null,
                   waitlistEnabled: eventFormData.waitlistEnabled,
-                  registrationDeadline: eventFormData.registrationDeadline || null,
+                  registrationDeadline: eventFormData.registrationDeadline ? convertToISO(eventFormData.registrationDeadline) : null,
                   tags: eventFormData.tags ? eventFormData.tags.split(',').map(t => t.trim()).filter(Boolean) : [],
                 };
 
