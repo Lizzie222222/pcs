@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -116,6 +116,13 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
   const [eventDetailOpen, setEventDetailOpen] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
 
+  // Fetch user data to get lastViewedEventsAt
+  const { data: userData } = useQuery<{ lastViewedEventsAt?: string }>({
+    queryKey: ['/api/auth/user'],
+    enabled: isAuthenticated,
+    retry: false,
+  });
+
   // Events queries
   const { data: upcomingEvents = [], isLoading: upcomingEventsLoading } = useQuery<Event[]>({
     queryKey: ['/api/events/upcoming'],
@@ -200,6 +207,43 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
     },
   });
 
+  const markEventsViewedMutation = useMutation({
+    mutationFn: async () => {
+      return apiRequest('POST', '/api/events/mark-viewed', {});
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    },
+  });
+
+  // Calculate count of new events
+  const newEventsCount = upcomingEvents.filter(event => {
+    if (!userData?.lastViewedEventsAt) return true; // All events are new if never viewed
+    const lastViewed = new Date(userData.lastViewedEventsAt);
+    const eventCreated = new Date(event.createdAt || event.startDateTime);
+    return eventCreated > lastViewed;
+  }).length;
+
+  // Helper to check if an event is new
+  const isEventNew = (event: Event) => {
+    if (!userData?.lastViewedEventsAt) return true;
+    const lastViewed = new Date(userData.lastViewedEventsAt);
+    const eventCreated = new Date(event.createdAt || event.startDateTime);
+    return eventCreated > lastViewed;
+  };
+
+  // Mark events as viewed when section becomes active
+  useEffect(() => {
+    if (isActive && isAuthenticated) {
+      // Delay slightly to ensure user actually sees the notification
+      const timer = setTimeout(() => {
+        markEventsViewedMutation.mutate();
+      }, 3000); // 3 seconds delay
+      
+      return () => clearTimeout(timer);
+    }
+  }, [isActive, isAuthenticated]);
+
   // Event handlers
   const handleEventClick = (event: Event) => {
     setSelectedEvent(event);
@@ -246,7 +290,14 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
       {/* Filter and Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-3xl font-bold text-navy mb-2">Upcoming Events</h2>
+          <div className="flex items-center gap-3">
+            <h2 className="text-3xl font-bold text-navy mb-2">Upcoming Events</h2>
+            {newEventsCount > 0 && (
+              <Badge className="bg-red-500 text-white px-2.5 py-1 text-sm animate-pulse" data-testid="badge-new-events">
+                {newEventsCount} New
+              </Badge>
+            )}
+          </div>
           <p className="text-gray-600">Join workshops, webinars, and community events</p>
         </div>
         <div className="flex items-center gap-3">
@@ -323,7 +374,12 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                         alt={event.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
-                      <div className="absolute top-3 right-3 flex gap-2">
+                      <div className="absolute top-3 right-3 flex gap-2 flex-wrap justify-end">
+                        {isEventNew(event) && (
+                          <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg animate-pulse" data-testid={`badge-new-${event.id}`}>
+                            ✨ New
+                          </Badge>
+                        )}
                         {timingStatus && (
                           <Badge className={`${timingStatus.color} text-white shadow-lg`} data-testid={`badge-timing-${event.id}`}>
                             {timingStatus.label}
