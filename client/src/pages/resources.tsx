@@ -22,6 +22,8 @@ interface Resource {
   language: string;
   languages?: string[];
   country: string;
+  resourceType?: string;
+  theme?: string;
   fileUrl: string;
   fileType: string;
   fileSize: number;
@@ -46,6 +48,8 @@ export default function Resources() {
     country: '',
     language: '',
     ageRange: '',
+    resourceType: '',
+    theme: '',
     stage: '',
   });
   const [selectedLanguageTab, setSelectedLanguageTab] = useState<string>('all');
@@ -343,8 +347,8 @@ export default function Resources() {
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
-              <div className="md:col-span-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+              <div className="md:col-span-2 lg:col-span-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                   <Input
@@ -393,6 +397,37 @@ export default function Resources() {
                   <SelectItem value="8-11 years">{t('age_ranges.8_11')}</SelectItem>
                   <SelectItem value="12-16 years">{t('age_ranges.12_16')}</SelectItem>
                   <SelectItem value="17+ years">{t('age_ranges.17_plus')}</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.resourceType} onValueChange={(value) => handleFilterChange('resourceType', value)}>
+                <SelectTrigger data-testid="select-resource-type">
+                  <SelectValue placeholder="All Resource Types" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Resource Types</SelectItem>
+                  <SelectItem value="lesson_plan">Lesson Plan</SelectItem>
+                  <SelectItem value="assembly">Assembly</SelectItem>
+                  <SelectItem value="teacher_toolkit">Teacher Toolkit</SelectItem>
+                  <SelectItem value="student_workbook">Student Workbook</SelectItem>
+                  <SelectItem value="printable_activities">Printable Activities</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Select value={filters.theme} onValueChange={(value) => handleFilterChange('theme', value)}>
+                <SelectTrigger data-testid="select-theme">
+                  <SelectValue placeholder="All Themes" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Themes</SelectItem>
+                  <SelectItem value="ocean_literacy">Ocean Literacy</SelectItem>
+                  <SelectItem value="climate_change">Climate Change</SelectItem>
+                  <SelectItem value="plastic_pollution">Plastic Pollution</SelectItem>
+                  <SelectItem value="science">Science</SelectItem>
+                  <SelectItem value="design_technology">Design & Technology</SelectItem>
+                  <SelectItem value="geography">Geography</SelectItem>
+                  <SelectItem value="cross_curricular">Cross-curricular</SelectItem>
+                  <SelectItem value="enrichment">Enrichment</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -520,6 +555,8 @@ export default function Resources() {
                       country: '',
                       language: '',
                       ageRange: '',
+                      resourceType: '',
+                      theme: '',
                       stage: '',
                     });
                     setSelectedLanguageTab('all');
