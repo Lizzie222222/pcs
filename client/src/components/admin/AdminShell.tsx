@@ -215,7 +215,7 @@ export function AdminShell({ initialTab = 'overview', children }: AdminShellProp
             <DropdownMenuTrigger asChild>
               <button
                 className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 ${
-                  ['resources', 'case-studies', 'events', 'media-library'].includes(activeTab)
+                  ['resources', 'resource-packs', 'case-studies', 'events', 'media-library'].includes(activeTab)
                     ? 'bg-white text-navy shadow-sm' 
                     : 'text-gray-600 hover:text-navy'
                 }`}
@@ -232,6 +232,13 @@ export function AdminShell({ initialTab = 'overview', children }: AdminShellProp
                 data-testid="tab-content-resources"
               >
                 Resources
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('resource-packs')}
+                className={activeTab === 'resource-packs' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-content-resource-packs"
+              >
+                Resource Packs
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('case-studies')}

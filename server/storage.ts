@@ -3,6 +3,8 @@ import {
   schools,
   schoolUsers,
   resources,
+  resourcePacks,
+  resourcePackItems,
   evidence,
   evidenceRequirements,
   caseStudies,
@@ -38,6 +40,10 @@ import {
   type InsertSchoolUser,
   type Resource,
   type InsertResource,
+  type ResourcePack,
+  type InsertResourcePack,
+  type ResourcePackItem,
+  type InsertResourcePackItem,
   type Evidence,
   type InsertEvidence,
   type EvidenceWithSchool,
@@ -223,6 +229,23 @@ export interface IStorage {
   updateResource(id: string, updates: Partial<InsertResource>): Promise<Resource | undefined>;
   deleteResource(id: string): Promise<boolean>;
   updateResourceDownloads(id: string): Promise<void>;
+  getResourceById(id: string): Promise<Resource | undefined>;
+
+  // Resource Pack operations
+  createResourcePack(pack: InsertResourcePack): Promise<ResourcePack>;
+  getResourcePacks(filters?: {
+    stage?: string;
+    theme?: string;
+    visibility?: 'public' | 'registered';
+    limit?: number;
+    offset?: number;
+  }): Promise<Array<ResourcePack & { resourceCount: number }>>;
+  getResourcePackById(id: string): Promise<(ResourcePack & { resources: Resource[] }) | undefined>;
+  updateResourcePack(id: string, updates: Partial<InsertResourcePack>): Promise<ResourcePack | undefined>;
+  deleteResourcePack(id: string): Promise<boolean>;
+  addResourceToPack(packId: string, resourceId: string, orderIndex: number): Promise<ResourcePackItem>;
+  removeResourceFromPack(packId: string, resourceId: string): Promise<boolean>;
+  updateResourcePackDownloads(id: string): Promise<void>;
 
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
@@ -1372,6 +1395,137 @@ export class DatabaseStorage implements IStorage {
       .where(eq(resources.id, id))
       .returning();
     return result.length > 0;
+  }
+
+  async getResourceById(id: string): Promise<Resource | undefined> {
+    const [resource] = await db
+      .select()
+      .from(resources)
+      .where(eq(resources.id, id));
+    return resource;
+  }
+
+  // Resource Pack operations
+  async createResourcePack(packData: InsertResourcePack): Promise<ResourcePack> {
+    const [pack] = await db
+      .insert(resourcePacks)
+      .values(packData)
+      .returning();
+    return pack;
+  }
+
+  async getResourcePacks(filters: {
+    stage?: string;
+    theme?: string;
+    visibility?: 'public' | 'registered';
+    limit?: number;
+    offset?: number;
+  } = {}): Promise<Array<ResourcePack & { resourceCount: number }>> {
+    const conditions = [eq(resourcePacks.isActive, true)];
+    
+    if (filters.stage) {
+      conditions.push(eq(resourcePacks.stage, filters.stage as any));
+    }
+    if (filters.theme) {
+      conditions.push(eq(resourcePacks.theme, filters.theme as any));
+    }
+    if (filters.visibility) {
+      conditions.push(eq(resourcePacks.visibility, filters.visibility as any));
+    }
+    
+    const packsQuery = db
+      .select({
+        ...getTableColumns(resourcePacks),
+        resourceCount: sql<number>`CAST(COUNT(DISTINCT ${resourcePackItems.resourceId}) AS INTEGER)`,
+      })
+      .from(resourcePacks)
+      .leftJoin(resourcePackItems, eq(resourcePacks.id, resourcePackItems.packId))
+      .where(and(...conditions))
+      .groupBy(resourcePacks.id)
+      .orderBy(desc(resourcePacks.createdAt));
+    
+    let query = packsQuery;
+    if (filters.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+    if (filters.offset) {
+      query = query.offset(filters.offset) as any;
+    }
+    
+    return await query;
+  }
+
+  async getResourcePackById(id: string): Promise<(ResourcePack & { resources: Resource[] }) | undefined> {
+    const [pack] = await db
+      .select()
+      .from(resourcePacks)
+      .where(eq(resourcePacks.id, id));
+    
+    if (!pack) {
+      return undefined;
+    }
+    
+    const packResources = await db
+      .select({
+        ...getTableColumns(resources),
+        orderIndex: resourcePackItems.orderIndex,
+      })
+      .from(resourcePackItems)
+      .innerJoin(resources, eq(resourcePackItems.resourceId, resources.id))
+      .where(eq(resourcePackItems.packId, id))
+      .orderBy(asc(resourcePackItems.orderIndex));
+    
+    return {
+      ...pack,
+      resources: packResources,
+    };
+  }
+
+  async updateResourcePack(id: string, updates: Partial<InsertResourcePack>): Promise<ResourcePack | undefined> {
+    const [pack] = await db
+      .update(resourcePacks)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(resourcePacks.id, id))
+      .returning();
+    return pack;
+  }
+
+  async deleteResourcePack(id: string): Promise<boolean> {
+    const result = await db
+      .delete(resourcePacks)
+      .where(eq(resourcePacks.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async addResourceToPack(packId: string, resourceId: string, orderIndex: number): Promise<ResourcePackItem> {
+    const [item] = await db
+      .insert(resourcePackItems)
+      .values({
+        packId,
+        resourceId,
+        orderIndex,
+      })
+      .returning();
+    return item;
+  }
+
+  async removeResourceFromPack(packId: string, resourceId: string): Promise<boolean> {
+    const result = await db
+      .delete(resourcePackItems)
+      .where(and(
+        eq(resourcePackItems.packId, packId),
+        eq(resourcePackItems.resourceId, resourceId)
+      ))
+      .returning();
+    return result.length > 0;
+  }
+
+  async updateResourcePackDownloads(id: string): Promise<void> {
+    await db
+      .update(resourcePacks)
+      .set({ downloadCount: sql`download_count + 1` })
+      .where(eq(resourcePacks.id, id));
   }
 
   // Notification operations

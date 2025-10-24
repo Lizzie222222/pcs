@@ -118,6 +118,7 @@ import { PDFThumbnail } from "@/components/PDFThumbnail";
 import AssignTeacherForm from "@/components/admin/AssignTeacherForm";
 import UserManagementTab from "@/components/admin/UserManagementTab";
 import ResourcesManagement from "@/components/admin/ResourcesManagement";
+import ResourcePackManagement from "@/components/admin/ResourcePackManagement";
 const AnalyticsContent = lazy(() => import("@/components/admin/AnalyticsContent"));
 const CaseStudyManagement = lazy(() => import("@/components/admin/CaseStudyManagement"));
 import EmailManagementSection from "@/components/admin/EmailManagementSection";
@@ -1049,12 +1050,12 @@ function ActivityLogsTab({
  * @location client/src/pages/admin.tsx#L731
  * @related server/routes.ts (registerRoutes), shared/schema.ts (users, schools, evidence, caseStudies, events), server/auth.ts (isAuthenticated)
  */
-export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' } = {}) {
+export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' } = {}) {
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
-  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library' | 'data-import' | 'activity'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library' | 'data-import' | 'activity'>(initialTab);
   const [reviewType, setReviewType] = useState<'evidence' | 'audits'>('evidence');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [schoolFilters, setSchoolFilters] = useState({
@@ -3989,6 +3990,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         {/* Resources Tab */}
         {activeTab === 'resources' && (
           <ResourcesManagement />
+        )}
+
+        {/* Resource Packs Tab */}
+        {activeTab === 'resource-packs' && (
+          <ResourcePackManagement />
         )}
 
         {/* User Management Tab */}

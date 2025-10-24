@@ -266,6 +266,31 @@ export const resources = pgTable("resources", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+export const resourcePacks = pgTable("resource_packs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar("title").notNull(),
+  description: text("description"),
+  stage: programStageEnum("stage").notNull(),
+  theme: resourceThemeEnum("theme"),
+  visibility: visibilityEnum("visibility").default('public'),
+  isActive: boolean("is_active").default(true),
+  downloadCount: integer("download_count").default(0),
+  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const resourcePackItems = pgTable("resource_pack_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  packId: varchar("pack_id").notNull().references(() => resourcePacks.id, { onDelete: 'cascade' }),
+  resourceId: varchar("resource_id").notNull().references(() => resources.id, { onDelete: 'cascade' }),
+  orderIndex: integer("order_index").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("resource_pack_items_pack_id_idx").on(table.packId),
+  index("resource_pack_items_resource_id_idx").on(table.resourceId),
+]);
+
 export const evidenceRequirements = pgTable("evidence_requirements", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   stage: programStageEnum("stage").notNull(),
@@ -1334,6 +1359,18 @@ export const insertResourceSchema = createInsertSchema(resources).omit({
   downloadCount: true,
 });
 
+export const insertResourcePackSchema = createInsertSchema(resourcePacks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+  downloadCount: true,
+});
+
+export const insertResourcePackItemSchema = createInsertSchema(resourcePackItems).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertNotificationSchema = createInsertSchema(notifications).omit({
   id: true,
   createdAt: true,
@@ -1605,6 +1642,10 @@ export type SchoolUser = typeof schoolUsers.$inferSelect;
 export type InsertSchoolUser = z.infer<typeof insertSchoolUserSchema>;
 export type Resource = typeof resources.$inferSelect;
 export type InsertResource = z.infer<typeof insertResourceSchema>;
+export type ResourcePack = typeof resourcePacks.$inferSelect;
+export type InsertResourcePack = z.infer<typeof insertResourcePackSchema>;
+export type ResourcePackItem = typeof resourcePackItems.$inferSelect;
+export type InsertResourcePackItem = z.infer<typeof insertResourcePackItemSchema>;
 export type Evidence = typeof evidence.$inferSelect;
 export type InsertEvidence = z.infer<typeof insertEvidenceSchema>;
 export type EvidenceWithSchool = Evidence & {

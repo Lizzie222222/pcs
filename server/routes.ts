@@ -103,6 +103,22 @@ function generateExcel(data: any[], type: string): Buffer {
 }
 
 /**
+ * @description Generates user-friendly title from filename by removing extension, replacing special characters with spaces, and capitalizing words.
+ * @param {string} filename - Original filename to convert
+ * @returns {string} Formatted title suitable for display
+ * @location server/routes.ts#L105
+ * @related /api/resources/bulk-upload endpoint
+ */
+function generateTitleFromFilename(filename: string): string {
+  const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
+  return nameWithoutExt
+    .replace(/[-_]/g, ' ')
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(' ');
+}
+
+/**
  * @description Removes all HTML tags from text and normalizes whitespace. Used for meta descriptions and plain text exports.
  * @param {string | null | undefined} html - HTML string to strip
  * @returns {string} Plain text with HTML removed
@@ -496,6 +512,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get single resource by ID
+  app.get('/api/resources/:id', async (req: any, res) => {
+    try {
+      const resource = await storage.getResourceById(req.params.id);
+      if (!resource) {
+        return res.status(404).json({ message: "Resource not found" });
+      }
+      
+      // Check if user is authenticated for registered-only resources
+      const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
+      if (resource.visibility === 'registered' && !isAuthenticated) {
+        return res.status(403).json({ message: "Authentication required to access this resource" });
+      }
+      
+      res.json(resource);
+    } catch (error) {
+      console.error("Error fetching resource:", error);
+      res.status(500).json({ message: "Failed to fetch resource" });
+    }
+  });
+
   // Download resource (increment counter)
   app.get('/api/resources/:id/download', async (req, res) => {
     try {
@@ -565,6 +602,247 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting resource:", error);
       res.status(500).json({ message: "Failed to delete resource" });
+    }
+  });
+
+  // Get resource packs with filters
+  app.get('/api/resource-packs', async (req: any, res) => {
+    try {
+      const { stage, theme, limit, offset } = req.query;
+      
+      // Check if user is authenticated
+      const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
+      
+      const packs = await storage.getResourcePacks({
+        stage: stage as string,
+        theme: theme as string,
+        visibility: isAuthenticated ? undefined : 'public', // Only public packs for non-authenticated users
+        limit: limit ? parseInt(limit as string) : 20,
+        offset: offset ? parseInt(offset as string) : 0,
+      });
+      res.json(packs);
+    } catch (error) {
+      console.error("Error fetching resource packs:", error);
+      res.status(500).json({ message: "Failed to fetch resource packs" });
+    }
+  });
+
+  // Download resource pack (increment counter)
+  app.get('/api/resource-packs/:id/download', async (req, res) => {
+    try {
+      await storage.updateResourcePackDownloads(req.params.id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating download count:", error);
+      res.status(500).json({ message: "Failed to update download count" });
+    }
+  });
+
+  // Get single resource pack with all its resources
+  app.get('/api/resource-packs/:id', async (req, res) => {
+    try {
+      const pack = await storage.getResourcePackById(req.params.id);
+      if (!pack) {
+        return res.status(404).json({ message: "Resource pack not found" });
+      }
+      res.json(pack);
+    } catch (error) {
+      console.error("Error fetching resource pack:", error);
+      res.status(500).json({ message: "Failed to fetch resource pack" });
+    }
+  });
+
+  // Create new resource pack (admin only)
+  app.post('/api/resource-packs', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const pack = await storage.createResourcePack(req.body);
+      res.json(pack);
+    } catch (error) {
+      console.error("Error creating resource pack:", error);
+      res.status(500).json({ message: "Failed to create resource pack" });
+    }
+  });
+
+  // Update resource pack (admin only)
+  app.put('/api/resource-packs/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const pack = await storage.updateResourcePack(req.params.id, req.body);
+      if (!pack) {
+        return res.status(404).json({ message: "Resource pack not found" });
+      }
+      res.json(pack);
+    } catch (error) {
+      console.error("Error updating resource pack:", error);
+      res.status(500).json({ message: "Failed to update resource pack" });
+    }
+  });
+
+  // Delete resource pack (admin only)
+  app.delete('/api/resource-packs/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const success = await storage.deleteResourcePack(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Resource pack not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting resource pack:", error);
+      res.status(500).json({ message: "Failed to delete resource pack" });
+    }
+  });
+
+  // Add resource to pack (admin only)
+  app.post('/api/resource-packs/:id/resources', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { resourceId, orderIndex } = req.body;
+      if (!resourceId) {
+        return res.status(400).json({ message: "resourceId is required" });
+      }
+
+      const item = await storage.addResourceToPack(
+        req.params.id,
+        resourceId,
+        orderIndex ?? 0
+      );
+      res.json(item);
+    } catch (error) {
+      console.error("Error adding resource to pack:", error);
+      res.status(500).json({ message: "Failed to add resource to pack" });
+    }
+  });
+
+  // Remove resource from pack (admin only)
+  app.delete('/api/resource-packs/:id/resources/:resourceId', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const success = await storage.removeResourceFromPack(
+        req.params.id,
+        req.params.resourceId
+      );
+      if (!success) {
+        return res.status(404).json({ message: "Resource not found in pack" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error removing resource from pack:", error);
+      res.status(500).json({ message: "Failed to remove resource from pack" });
+    }
+  });
+
+  // Configure multer for bulk resource uploads
+  const bulkResourceUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 157286400 } // 150MB max per file
+  });
+
+  // Bulk upload resources (admin only)
+  app.post('/api/resources/bulk-upload', isAuthenticated, bulkResourceUpload.array('files', 50), async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      if (!req.files || req.files.length === 0) {
+        return res.status(400).json({ message: "No files provided" });
+      }
+
+      const userId = req.user.id;
+      const objectStorageService = new ObjectStorageService();
+      const results = [];
+      const errors = [];
+
+      // Process each file
+      for (const file of req.files) {
+        try {
+          const filename = file.originalname;
+          const mimeType = file.mimetype;
+          const fileSize = file.buffer.length;
+          
+          // Generate title from filename
+          const title = generateTitleFromFilename(filename);
+          
+          // Get upload URL from object storage
+          const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+          
+          // Upload file to object storage
+          const uploadResponse = await fetch(uploadURL, {
+            method: 'PUT',
+            body: file.buffer,
+            headers: {
+              'Content-Type': mimeType,
+              'Content-Length': fileSize.toString(),
+            },
+          });
+
+          if (!uploadResponse.ok) {
+            throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+          }
+
+          // Set ACL policy with public visibility
+          const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+            uploadURL.split('?')[0],
+            {
+              owner: userId,
+              visibility: 'public',
+            },
+            filename,
+          );
+
+          // Create resource record with default values
+          const resource = await storage.createResource({
+            title,
+            stage: 'inspire',
+            visibility: 'public',
+            isActive: true,
+            fileUrl: objectPath,
+            fileType: mimeType,
+            fileSize,
+          });
+
+          results.push({
+            success: true,
+            filename,
+            resource,
+          });
+
+          console.log(`Successfully uploaded resource: ${filename} -> ${title}`);
+        } catch (error) {
+          console.error(`Error processing file ${file.originalname}:`, error);
+          errors.push({
+            filename: file.originalname,
+            error: error instanceof Error ? error.message : 'Unknown error',
+          });
+        }
+      }
+
+      res.status(200).json({
+        success: true,
+        message: `Processed ${req.files.length} files: ${results.length} succeeded, ${errors.length} failed`,
+        results,
+        errors,
+      });
+    } catch (error) {
+      console.error("Error in bulk upload:", error);
+      res.status(500).json({ message: "Failed to process bulk upload" });
     }
   });
 
@@ -2695,6 +2973,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Object storage routes for evidence files
   
+  // Handle CORS preflight for object requests
+  app.options("/objects/:objectPath(*)", (req, res) => {
+    const origin = req.headers.origin || req.headers.referer || '*';
+    res.set({
+      'Access-Control-Allow-Origin': origin,
+      'Access-Control-Allow-Credentials': 'true',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Max-Age': '86400', // 24 hours
+    });
+    res.sendStatus(204);
+  });
+  
   // Serve objects with ACL check (both public and private)
   app.get("/objects/:objectPath(*)", async (req: any, res) => {
     const objectStorageService = new ObjectStorageService();
@@ -2703,16 +2994,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const objectFile = await objectStorageService.getObjectEntityFile(req.path);
       
+      // Get file metadata early to determine content type
+      const [metadata] = await objectFile.getMetadata();
+      const filename = metadata.metadata?.filename || req.path.split('/').pop() || 'download';
+      const contentType = metadata.contentType || 'application/octet-stream';
+      
       // Check if object is public first (fast path for public objects)
       const aclPolicy = await getObjectAclPolicy(objectFile);
       
+      // Set CORS headers for cross-origin access (required for PDF.js and browser viewing)
+      const origin = req.headers.origin || req.headers.referer || '*';
+      res.set({
+        'Access-Control-Allow-Origin': origin,
+        'Access-Control-Allow-Credentials': 'true',
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      });
+      
       if (aclPolicy?.visibility === 'public') {
         // Public objects are accessible to everyone
-        if (shouldDownload) {
-          const [metadata] = await objectFile.getMetadata();
-          const filename = metadata.metadata?.filename || req.path.split('/').pop() || 'download';
-          res.set('Content-Disposition', `attachment; filename="${filename}"`);
-        }
+        // Set Content-Disposition based on download parameter
+        // Use 'inline' for browser viewing (especially PDFs), 'attachment' for downloads
+        res.set('Content-Disposition', shouldDownload 
+          ? `attachment; filename="${filename}"` 
+          : 'inline'
+        );
         return objectStorageService.downloadObject(objectFile, res);
       }
       
@@ -2736,11 +3042,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.sendStatus(403);
       }
       
-      if (shouldDownload) {
-        const [metadata] = await objectFile.getMetadata();
-        const filename = metadata.metadata?.filename || req.path.split('/').pop() || 'download';
-        res.set('Content-Disposition', `attachment; filename="${filename}"`);
-      }
+      // Set Content-Disposition based on download parameter
+      // Use 'inline' for browser viewing (especially PDFs), 'attachment' for downloads
+      res.set('Content-Disposition', shouldDownload 
+        ? `attachment; filename="${filename}"` 
+        : 'inline'
+      );
       
       objectStorageService.downloadObject(objectFile, res);
     } catch (error) {

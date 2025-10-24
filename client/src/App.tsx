@@ -26,6 +26,7 @@ const PageLoadingFallback = () => (
 const Landing = lazy(() => import("@/pages/landing"));
 const Home = lazy(() => import("@/pages/home"));
 const Resources = lazy(() => import("@/pages/resources"));
+const ResourceView = lazy(() => import("@/pages/ResourceView"));
 const Inspiration = lazy(() => import("@/pages/inspiration"));
 const CaseStudyDetail = lazy(() => import("@/pages/case-study-detail"));
 const EvidenceDetail = lazy(() => import("@/pages/evidence-detail"));
@@ -169,6 +170,7 @@ function Router() {
               <Route path="/admin-invitations/:token" component={AdminInvitationAccept} />
               {import.meta.env.DEV && <Route path="/test-login" component={TestLogin} />}
               <Route path="/resources" component={Resources} />
+              <Route path="/resources/view/:id" component={ResourceView} />
               <Route path="/inspiration" component={Inspiration} />
               <Route path="/case-study/:id" component={CaseStudyDetail} />
               <Route path="/evidence/:id" component={EvidenceDetail} />

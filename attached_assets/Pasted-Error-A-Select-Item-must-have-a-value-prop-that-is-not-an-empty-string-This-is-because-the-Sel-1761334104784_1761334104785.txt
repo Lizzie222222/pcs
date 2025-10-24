@@ -1,0 +1,61 @@
+Error: A <Select.Item /> must have a value prop that is not an empty string. This is because the Select value can be set to an empty string to clear the selection and show the placeholder.
+
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=cb6e9161:848:7
+    at _c11 (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ui/select.tsx:208:13)
+    at div
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-Q6YJROYD.js?v=cb6e9161:42:13
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=cb6e9161:79:13
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=cb6e9161:56:13
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-TPYHSINA.js?v=cb6e9161:39:15
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=cb6e9161:759:13
+    at div
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=cb6e9161:79:13
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=cb6e9161:56:13
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-TPYHSINA.js?v=cb6e9161:39:15
+    at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=cb6e9161:38:15)
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=cb6e9161:302:58
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=cb6e9161:79:13
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-2K77HOHX.js?v=cb6e9161:56:13
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-Q6YJROYD.js?v=cb6e9161:42:13
+    at https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-IP2OBHEY.js?v=cb6e9161:260:22
+    at SelectPortal
+    at _c7 (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ui/select.tsx:123:12)
+    at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=cb6e9161:38:15)
+    at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=cb6e9161:38:15)
+    at CollectionProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-TPYHSINA.js?v=cb6e9161:29:13)
+    at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=cb6e9161:38:15)
+    at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=cb6e9161:38:15)
+    at Popper (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-XY6WB3LQ.js?v=cb6e9161:1923:11)
+    at Select (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-select.js?v=cb6e9161:90:5)
+    at td
+    at tr
+    at tbody
+    at table
+    at div
+    at div
+    at _c9 (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ui/card.tsx:114:12)
+    at div
+    at _c (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at div
+    at div
+    at div
+    at BulkResourceUpload (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/admin/BulkResourceUpload.tsx:34:46)
+    at div
+    at ResourcesManagement (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/admin/ResourcesManagement.tsx:843:21)
+    at div
+    at div
+    at Admin (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/pages/admin.tsx:1709:48)
+    at Route (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=cb6e9161:191:16)
+    at Switch (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=cb6e9161:247:17)
+    at Suspense
+    at ErrorBoundary (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ErrorBoundary.tsx:9:5)
+    at main
+    at div
+    at Router (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/App.tsx?v=MnbwegIuwSh_iledshHrv:94:17)
+    at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=cb6e9161:38:15)
+    at TooltipProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=cb6e9161:62:5)
+    at QueryClientProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=cb6e9161:2805:3)
+    at App
+    at Suspense
+Try again

@@ -15,6 +15,7 @@ import { BookOpen, Plus, Search, Edit, Trash2, X, FileText, Upload } from "lucid
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { LANGUAGE_FLAG_MAP, LANGUAGE_NAME_MAP, languageCodeFromName } from "@/lib/languageUtils";
 import type { UploadResult } from "@uppy/core";
+import BulkResourceUpload from "./BulkResourceUpload";
 
 interface Resource {
   id: string;
@@ -494,6 +495,7 @@ export default function ResourcesManagement() {
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
   const [showAddForm, setShowAddForm] = useState(false);
+  const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
   const [resourceFilters, setResourceFilters] = useState({
     search: '',
@@ -621,14 +623,25 @@ export default function ResourcesManagement() {
               <BookOpen className="h-5 w-5" />
               Resource Management
             </CardTitle>
-            <Button
-              onClick={() => setShowAddForm(true)}
-              className="bg-pcs_blue hover:bg-blue-600"
-              data-testid="button-add-resource"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Add Resource
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setShowAddForm(true)}
+                className="bg-pcs_blue hover:bg-blue-600"
+                data-testid="button-add-resource"
+              >
+                <Plus className="h-4 w-4 mr-2" />
+                Add Resource
+              </Button>
+              <Button
+                onClick={() => setShowBulkUpload(true)}
+                variant="outline"
+                className="border-pcs_blue text-pcs_blue hover:bg-blue-50"
+                data-testid="button-bulk-upload"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Bulk Upload
+              </Button>
+            </div>
           </div>
         </CardHeader>
         <CardContent>
@@ -820,6 +833,16 @@ export default function ResourcesManagement() {
           onClose={() => setEditingResource(null)}
           onSuccess={() => {
             setEditingResource(null);
+            refetch();
+          }}
+        />
+      )}
+
+      {showBulkUpload && (
+        <BulkResourceUpload
+          onClose={() => setShowBulkUpload(false)}
+          onSuccess={() => {
+            setShowBulkUpload(false);
             refetch();
           }}
         />
