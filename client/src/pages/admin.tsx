@@ -1428,45 +1428,46 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       console.log('[Language Switch] Switching from', previousLang, 'to', selectedLanguage);
       console.log('[Language Switch] Current form values:', currentFormValues);
       
-      // Save videos from previous language
-      setYoutubeVideoTranslations(prev => {
-        const updated = {
-          ...prev,
-          [previousLang]: currentFormValues.youtubeVideos || []
-        };
-        console.log('[Language Switch] Saving videos to', previousLang, ':', currentFormValues.youtubeVideos);
-        return updated;
+      // Create updated translation objects locally first
+      const updatedVideoTranslations = {
+        ...youtubeVideoTranslations,
+        [previousLang]: currentFormValues.youtubeVideos || []
+      };
+      
+      const updatedFileTranslations = {
+        ...eventPackFileTranslations,
+        [previousLang]: currentFormValues.eventPackFiles || []
+      };
+      
+      const updatedTestimonialTranslations = {
+        ...testimonialTranslations,
+        [previousLang]: currentFormValues.testimonials || []
+      };
+      
+      console.log('[Language Switch] Saving to', previousLang, ':', {
+        videos: currentFormValues.youtubeVideos,
+        files: currentFormValues.eventPackFiles,
+        testimonials: currentFormValues.testimonials
       });
       
-      // Save files from previous language
-      setEventPackFileTranslations(prev => {
-        const updated = {
-          ...prev,
-          [previousLang]: currentFormValues.eventPackFiles || []
-        };
-        console.log('[Language Switch] Saving files to', previousLang, ':', currentFormValues.eventPackFiles);
-        return updated;
-      });
-      
-      // Save testimonials from previous language
-      setTestimonialTranslations(prev => {
-        const updated = {
-          ...prev,
-          [previousLang]: currentFormValues.testimonials || []
-        };
-        console.log('[Language Switch] Saving testimonials to', previousLang, ':', currentFormValues.testimonials);
-        return updated;
-      });
+      // Update states with new translations
+      setYoutubeVideoTranslations(updatedVideoTranslations);
+      setEventPackFileTranslations(updatedFileTranslations);
+      setTestimonialTranslations(updatedTestimonialTranslations);
       
       // Update the previous language ref
       previousLanguageRef.current = selectedLanguage;
       
-      // Load the new language's content into the form
-      const currentVideos = youtubeVideoTranslations[selectedLanguage] || [];
-      const currentFiles = eventPackFileTranslations[selectedLanguage] || [];
-      const currentTestimonials = testimonialTranslations[selectedLanguage] || [];
+      // Load the new language's content from the UPDATED translations
+      const currentVideos = updatedVideoTranslations[selectedLanguage] || [];
+      const currentFiles = updatedFileTranslations[selectedLanguage] || [];
+      const currentTestimonials = updatedTestimonialTranslations[selectedLanguage] || [];
       
-      console.log('[Language Switch] Loading for', selectedLanguage, '- videos:', currentVideos, 'files:', currentFiles, 'testimonials:', currentTestimonials);
+      console.log('[Language Switch] Loading for', selectedLanguage, ':', {
+        videos: currentVideos,
+        files: currentFiles,
+        testimonials: currentTestimonials
+      });
       
       pageBuilderForm.reset({
         publicSlug: pageBuilderForm.getValues('publicSlug'),
@@ -1475,7 +1476,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         testimonials: currentTestimonials,
       });
     }
-  }, [selectedLanguage]);
+  }, [selectedLanguage, youtubeVideoTranslations, eventPackFileTranslations, testimonialTranslations]);
 
   // Redirect if not authenticated or not admin (but only after loading completes)
   useEffect(() => {
