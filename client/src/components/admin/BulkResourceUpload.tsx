@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { LoadingSpinner } from "@/components/ui/states";
-import { Upload, X, FileText, CheckCircle2, XCircle, Edit2, Save } from "lucide-react";
+import { Upload, X, FileText, CheckCircle2, XCircle, Edit2, Save, Sparkles, Loader2 } from "lucide-react";
 import { LANGUAGE_FLAG_MAP, LANGUAGE_NAME_MAP } from "@/lib/languageUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -65,6 +65,7 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
   const [batchEditMode, setBatchEditMode] = useState(false);
   const [batchEditValues, setBatchEditValues] = useState<BatchEditState>({});
   const [dragActive, setDragActive] = useState(false);
+  const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -300,6 +301,72 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
     setBatchEditMode(false);
     setBatchEditValues({});
     setSelectedResourceIds(new Set());
+  };
+
+  const handleAIAutoFill = async () => {
+    if (uploadedResources.length === 0) {
+      toast({
+        title: "No Resources",
+        description: "No resources available to analyze.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingMetadata(true);
+
+    try {
+      const resourcesPayload = uploadedResources.map(r => ({
+        id: r.id,
+        title: r.title,
+        filename: r.title,
+        fileType: r.fileType,
+      }));
+
+      const response = await apiRequest<{ suggestions: any[] }>('POST', '/api/resources/ai-analyze-metadata', {
+        resources: resourcesPayload,
+      });
+
+      if (response.suggestions && Array.isArray(response.suggestions)) {
+        setUploadedResources(prev => 
+          prev.map(resource => {
+            const suggestion = response.suggestions.find((s: any) => s.id === resource.id);
+            
+            if (!suggestion) return resource;
+
+            // Merge suggestions with existing data, keeping user edits
+            return {
+              ...resource,
+              description: resource.description || suggestion.description || '',
+              stage: resource.stage || suggestion.stage,
+              theme: suggestion.theme === 'none' 
+                ? resource.theme 
+                : (resource.theme === 'none' ? suggestion.theme : resource.theme),
+              ageRange: resource.ageRange || suggestion.ageRange || '',
+              resourceType: suggestion.resourceType === 'none' 
+                ? resource.resourceType 
+                : (resource.resourceType === 'none' ? suggestion.resourceType : resource.resourceType),
+            };
+          })
+        );
+
+        toast({
+          title: "AI Suggestions Applied",
+          description: `AI suggestions applied to ${response.suggestions.length} resources.`,
+        });
+      } else {
+        throw new Error('Invalid response format from AI service');
+      }
+    } catch (error: any) {
+      console.error('AI auto-fill error:', error);
+      toast({
+        title: "AI Analysis Failed",
+        description: error.message || "Failed to generate AI suggestions. You can still edit metadata manually.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingMetadata(false);
+    }
   };
 
   const handleSaveChanges = async () => {
@@ -682,6 +749,20 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                       Uploaded Resources ({uploadedResources.length})
                     </CardTitle>
                     <div className="flex gap-2">
+                      <Button
+                        onClick={handleAIAutoFill}
+                        disabled={isGeneratingMetadata}
+                        variant="outline"
+                        className="gap-2"
+                        data-testid="button-ai-autofill"
+                      >
+                        {isGeneratingMetadata ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          <Sparkles className="h-4 w-4" />
+                        )}
+                        {isGeneratingMetadata ? 'Generating...' : 'Auto-fill with AI'}
+                      </Button>
                       {!batchEditMode && (
                         <Button
                           variant="outline"
