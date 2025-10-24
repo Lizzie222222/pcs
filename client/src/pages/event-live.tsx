@@ -237,9 +237,10 @@ interface LanguageSelectorTabsProps {
   event: Event;
   selectedLanguage: string;
   onLanguageChange: (language: string) => void;
+  overlay?: boolean;
 }
 
-function LanguageSelectorTabs({ event, selectedLanguage, onLanguageChange }: LanguageSelectorTabsProps) {
+function LanguageSelectorTabs({ event, selectedLanguage, onLanguageChange, overlay = false }: LanguageSelectorTabsProps) {
   const availableLanguages = getEventAvailableLanguages(event);
   
   // Don't show selector if only one language or no languages
@@ -261,9 +262,13 @@ function LanguageSelectorTabs({ event, selectedLanguage, onLanguageChange }: Lan
               className={`
                 px-4 py-2 md:px-6 md:py-3 rounded-lg font-semibold text-sm md:text-base
                 transition-all duration-200 transform hover:scale-105
-                ${isSelected 
-                  ? 'bg-gradient-to-r from-pcs_blue to-ocean-blue text-white shadow-lg' 
-                  : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-pcs_blue hover:text-pcs_blue'
+                ${overlay 
+                  ? isSelected
+                    ? 'bg-white text-pcs_blue shadow-lg backdrop-blur-sm' 
+                    : 'bg-white/20 text-white border-2 border-white/40 hover:bg-white/30 hover:border-white backdrop-blur-sm'
+                  : isSelected 
+                    ? 'bg-gradient-to-r from-pcs_blue to-ocean-blue text-white shadow-lg' 
+                    : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-pcs_blue hover:text-pcs_blue'
                 }
               `}
               data-testid={`tab-language-${langCode}`}
@@ -275,6 +280,18 @@ function LanguageSelectorTabs({ event, selectedLanguage, onLanguageChange }: Lan
         })}
       </div>
     </div>
+  );
+}
+
+// Overlay variant with white text styling
+function LanguageSelectorTabsOverlay({ event, selectedLanguage, onLanguageChange }: Omit<LanguageSelectorTabsProps, 'overlay'>) {
+  return (
+    <LanguageSelectorTabs 
+      event={event}
+      selectedLanguage={selectedLanguage}
+      onLanguageChange={onLanguageChange}
+      overlay={true}
+    />
   );
 }
 
@@ -562,24 +579,35 @@ export default function EventLivePage() {
   // Check if page is in coming soon status
   if (event.pagePublishedStatus === 'coming_soon') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 flex flex-col">
-        {/* Hero Banner */}
-        {event.imageUrl && (
-          <div className="w-full max-h-[500px] overflow-hidden bg-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 flex flex-col pt-16">
+        {/* Hero Banner with Overlay */}
+        {event.imageUrl ? (
+          <div className="relative w-full h-[400px] overflow-hidden bg-gray-900">
             <img
               src={event.imageUrl}
               alt={translatedTitle}
-              className="w-full h-full max-h-[500px] object-cover object-center shadow-lg"
+              className="w-full h-full object-cover object-center"
               data-testid="img-coming-soon-hero-banner"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 flex flex-col justify-end">
+              <div className="max-w-6xl mx-auto px-4 pb-12 w-full">
+                <h1 className="text-4xl md:text-5xl font-bold text-center text-white leading-tight tracking-tight drop-shadow-2xl" data-testid="text-coming-soon-title">
+                  {translatedTitle}
+                </h1>
+              </div>
+            </div>
           </div>
-        )}
-        
-        <div className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-16">
-          <div className="max-w-2xl text-center">
+        ) : (
+          <div className="text-center py-12">
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900" data-testid="text-coming-soon-title">
               {translatedTitle}
             </h1>
+          </div>
+        )}
+        
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-16">
+          <div className="max-w-2xl text-center">
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-6 border-2 border-pcs_blue/20">
               <p className="text-2xl font-semibold text-pcs_blue mb-4" data-testid="text-coming-soon-message">
                 Coming Soon!
@@ -610,25 +638,35 @@ export default function EventLivePage() {
   // Check access control for closed events
   if (event.accessType === 'closed' && !userRegistration) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-ocean-blue/5 via-white to-teal/5 flex flex-col">
-        {/* Hero Banner */}
-        {event.imageUrl && (
-          <div className="w-full max-h-[500px] overflow-hidden bg-gray-900">
+      <div className="min-h-screen bg-gradient-to-br from-ocean-blue/5 via-white to-teal/5 flex flex-col pt-16">
+        {/* Hero Banner with Overlay */}
+        {event.imageUrl ? (
+          <div className="relative w-full h-[400px] overflow-hidden bg-gray-900">
             <img
               src={event.imageUrl}
               alt={translatedTitle}
-              className="w-full h-full max-h-[500px] object-cover object-center shadow-lg"
+              className="w-full h-full object-cover object-center"
               data-testid="img-restricted-hero-banner"
             />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 flex flex-col justify-end">
+              <div className="max-w-6xl mx-auto px-4 pb-12 w-full">
+                <h1 className="text-4xl md:text-5xl font-bold text-center text-white leading-tight tracking-tight drop-shadow-2xl" data-testid="text-restricted-title">
+                  {translatedTitle}
+                </h1>
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-navy" data-testid="text-restricted-title">
+              {translatedTitle}
+            </h1>
           </div>
         )}
         
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
           <div className="max-w-3xl w-full">
-            {/* Event Title */}
-            <h1 className="text-4xl md:text-5xl font-bold mb-4 text-navy text-center leading-tight" data-testid="text-restricted-title">
-              {translatedTitle}
-            </h1>
 
             {/* Event Details Preview */}
             <div className="flex flex-wrap justify-center gap-4 mb-8">
@@ -768,13 +806,14 @@ export default function EventLivePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
-      {/* Hero Banner */}
-      {event.imageUrl && (
-        <div className="w-full max-h-[500px] overflow-hidden bg-gray-900">
+      {/* Hero Banner with Overlay */}
+      {event.imageUrl ? (
+        <div className="relative w-full h-[500px] overflow-hidden bg-gray-900">
+          {/* Background Image */}
           <img
             src={event.imageUrl}
             alt={translatedTitle}
-            className="w-full h-full max-h-[500px] object-cover object-center shadow-lg"
+            className="w-full h-full object-cover object-center"
             data-testid="img-event-hero-banner"
             onError={(e) => {
               const parent = e.currentTarget.parentElement;
@@ -783,23 +822,52 @@ export default function EventLivePage() {
               }
             }}
           />
+          
+          {/* Gradient Fade Overlay - Bottom to Top */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent pointer-events-none"></div>
+          
+          {/* Content Overlay */}
+          <div className="absolute inset-0 flex flex-col justify-end">
+            <div className="max-w-6xl mx-auto px-4 pb-12 md:pb-16 w-full">
+              {/* Language Selector Tabs */}
+              <div className="mb-6">
+                <LanguageSelectorTabsOverlay 
+                  event={event}
+                  selectedLanguage={selectedLanguage}
+                  onLanguageChange={handleLanguageChange}
+                />
+              </div>
+
+              {/* Event Title */}
+              <h1 className="text-4xl md:text-6xl font-bold text-center text-white leading-tight tracking-tight drop-shadow-2xl" data-testid="text-event-title">
+                {translatedTitle}
+              </h1>
+            </div>
+          </div>
+        </div>
+      ) : (
+        // Fallback when no image - show title and language selector in regular section
+        <div className="relative bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 border-b border-gray-200 shadow-sm overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-t from-white/50 to-transparent pointer-events-none"></div>
+          <div className="relative max-w-6xl mx-auto px-4 py-16 md:py-20">
+            {/* Language Selector Tabs */}
+            <LanguageSelectorTabs 
+              event={event}
+              selectedLanguage={selectedLanguage}
+              onLanguageChange={handleLanguageChange}
+            />
+
+            <h1 className="text-5xl md:text-6xl font-bold text-center mb-12 text-gray-900 leading-tight tracking-tight" data-testid="text-event-title">
+              {translatedTitle}
+            </h1>
+          </div>
         </div>
       )}
       
-      {/* Hero Section */}
+      {/* Hero Section - Now just contains content below the banner */}
       <div className="relative bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 border-b border-gray-200 shadow-sm overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-white/50 to-transparent pointer-events-none"></div>
         <div className="relative max-w-6xl mx-auto px-4 py-16 md:py-20">
-          {/* Language Selector Tabs */}
-          <LanguageSelectorTabs 
-            event={event}
-            selectedLanguage={selectedLanguage}
-            onLanguageChange={handleLanguageChange}
-          />
-
-          <h1 className="text-5xl md:text-6xl font-bold text-center mb-12 text-gray-900 leading-tight tracking-tight" data-testid="text-event-title">
-            {translatedTitle}
-          </h1>
 
           {/* Pre-recorded content not yet available message */}
           {event.isPreRecorded && !showContent && event.recordingAvailableFrom && (
