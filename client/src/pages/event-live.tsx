@@ -956,6 +956,11 @@ export default function EventLivePage() {
               <h1 className="text-4xl md:text-6xl font-bold text-center text-white leading-tight tracking-tight drop-shadow-2xl" data-testid="text-event-title">
                 {translatedTitle}
               </h1>
+              
+              {/* Event Description */}
+              <p className="mt-6 text-base md:text-lg text-center text-white max-w-3xl mx-auto leading-relaxed bg-black/30 backdrop-blur-sm px-6 py-4 rounded-lg" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }} data-testid="text-event-description">
+                {translatedDescription}
+              </p>
             </div>
           </div>
         </div>
@@ -971,9 +976,14 @@ export default function EventLivePage() {
               onLanguageChange={handleLanguageChange}
             />
 
-            <h1 className="text-5xl md:text-6xl font-bold text-center mb-12 text-gray-900 leading-tight tracking-tight" data-testid="text-event-title">
+            <h1 className="text-5xl md:text-6xl font-bold text-center mb-6 text-gray-900 leading-tight tracking-tight" data-testid="text-event-title">
               {translatedTitle}
             </h1>
+            
+            {/* Event Description */}
+            <p className="text-base md:text-lg text-center text-gray-700 max-w-3xl mx-auto leading-relaxed bg-white/60 backdrop-blur-sm px-6 py-4 rounded-lg shadow-sm mb-12" data-testid="text-event-description">
+              {translatedDescription}
+            </p>
           </div>
         </div>
       )}
@@ -1196,13 +1206,6 @@ export default function EventLivePage() {
               </p>
             </div>
           )}
-
-          {/* Event Description - Moved below videos and status banners */}
-          <div className="mt-12 mb-8">
-            <p className="text-lg md:text-xl text-center text-gray-700 max-w-3xl mx-auto leading-relaxed" data-testid="text-event-description">
-              {translatedDescription}
-            </p>
-          </div>
 
           {/* Registration Button */}
           <div className="mt-10 flex justify-center">
