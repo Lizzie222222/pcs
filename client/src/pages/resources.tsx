@@ -52,7 +52,7 @@ export default function Resources() {
     theme: '',
     stage: '',
   });
-  const [selectedLanguageTab, setSelectedLanguageTab] = useState<string>('all');
+  const [selectedLanguageTab, setSelectedLanguageTab] = useState<string>('');
   const [page, setPage] = useState(0);
   const limit = 12;
 
@@ -176,7 +176,7 @@ export default function Resources() {
   // Filter resources by selected language tab
   const getFilteredResourcesByLanguage = (languageFilter: string) => {
     if (!resources) return [];
-    if (languageFilter === 'all') return resources;
+    if (!languageFilter || languageFilter === 'all' || languageFilter === '') return resources;
     
     return resources.filter(resource => {
       const resourceLanguages = resource.languages || (resource.language ? [resource.language] : []);
@@ -314,29 +314,28 @@ export default function Resources() {
         </div>
 
         {/* Language Tabs */}
-        <Tabs value={selectedLanguageTab} onValueChange={setSelectedLanguageTab} className="mb-8">
-          <TabsList className="w-full justify-start overflow-x-auto bg-white shadow-sm border">
-            <TabsTrigger value="all" className="font-semibold" data-testid="tab-all-languages">
-              🌍 All Languages
-            </TabsTrigger>
-            {availableLanguages.sort().map((lang) => {
-              const langCode = lang.toLowerCase();
-              const flag = LANGUAGE_FLAG_MAP[langCode] || '🌐';
-              const langName = LANGUAGE_NAME_MAP[langCode] || lang;
-              
-              return (
-                <TabsTrigger 
-                  key={lang} 
-                  value={lang} 
-                  className="font-semibold"
-                  data-testid={`tab-language-${langCode}`}
-                >
-                  {flag} {langName}
-                </TabsTrigger>
-              );
-            })}
-          </TabsList>
-        </Tabs>
+        {availableLanguages.length > 0 && (
+          <Tabs value={selectedLanguageTab || availableLanguages[0]} onValueChange={setSelectedLanguageTab} className="mb-8">
+            <TabsList className="w-full justify-start overflow-x-auto bg-white shadow-sm border">
+              {availableLanguages.sort().map((lang) => {
+                const langCode = lang.toLowerCase();
+                const flag = LANGUAGE_FLAG_MAP[langCode] || '🌐';
+                const langName = LANGUAGE_NAME_MAP[langCode] || lang;
+                
+                return (
+                  <TabsTrigger 
+                    key={lang} 
+                    value={lang} 
+                    className="font-semibold"
+                    data-testid={`tab-language-${langCode}`}
+                  >
+                    {flag} {langName}
+                  </TabsTrigger>
+                );
+              })}
+            </TabsList>
+          </Tabs>
+        )}
 
         {/* Filters */}
         <Card className="mb-8 shadow-lg border-2">
@@ -559,7 +558,7 @@ export default function Resources() {
                       theme: '',
                       stage: '',
                     });
-                    setSelectedLanguageTab('all');
+                    setSelectedLanguageTab('');
                     setPage(0);
                   },
                   variant: "outline"
