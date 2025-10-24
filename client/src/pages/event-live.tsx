@@ -478,11 +478,7 @@ export default function EventLivePage() {
   // Language update mutation
   const updateLanguageMutation = useMutation({
     mutationFn: async (language: string) => {
-      return apiRequest('/api/user/language', {
-        method: 'PUT',
-        body: JSON.stringify({ language }),
-        headers: { 'Content-Type': 'application/json' },
-      });
+      return apiRequest('PUT', '/api/user/language', { language });
     },
     onSuccess: (data: any, language: string) => {
       // Update local state
