@@ -224,9 +224,9 @@ export default function ProgressTracker({
               <Card 
                 key={stage.id} 
                 className={`group transition-all duration-300 hover:shadow-2xl border-0 overflow-hidden shadow-lg hover:-translate-y-2 ${
-                  status === 'completed' ? 'ring-2 ring-green-400/50 bg-gradient-to-br from-green-50/50 via-white to-green-50/30' :
-                  status === 'current' ? 'ring-2 ring-blue-400/50 bg-gradient-to-br from-blue-50/50 via-white to-blue-50/30' :
-                  'bg-gradient-to-br from-gray-50/50 via-white to-gray-50/30'
+                  status === 'completed' ? 'ring-2 ring-green-400/50 bg-gradient-to-br from-green-50 to-green-100/50' :
+                  status === 'current' ? 'ring-2 ring-blue-400/50 bg-gradient-to-br from-blue-50 to-blue-100/50' :
+                  'bg-gradient-to-br from-gray-50 to-gray-100/50'
                 }`}
                 data-testid={`progress-stage-${stage.id}`}
               >
