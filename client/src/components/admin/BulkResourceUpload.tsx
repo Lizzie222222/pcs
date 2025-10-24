@@ -140,10 +140,19 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
 
       const result = await response.json();
       
+      // Calculate summary from actual response structure
+      const successfulCount = result.results?.length || 0;
+      const failedCount = result.errors?.length || 0;
+      const totalCount = successfulCount + failedCount;
+      
       // Update file statuses based on results
       const updatedFiles = selectedFiles.map(selectedFile => {
-        const uploadResult = result.results.find((r: any) => 
+        const uploadResult = result.results?.find((r: any) => 
           r.filename === selectedFile.file.name
+        );
+        
+        const errorResult = result.errors?.find((e: any) => 
+          e.filename === selectedFile.file.name
         );
         
         if (uploadResult?.success) {
@@ -152,12 +161,19 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
             status: 'success' as const,
             progress: 100,
           };
+        } else if (errorResult) {
+          return {
+            ...selectedFile,
+            status: 'error' as const,
+            progress: 0,
+            error: errorResult.error || 'Upload failed',
+          };
         } else {
           return {
             ...selectedFile,
             status: 'error' as const,
             progress: 0,
-            error: uploadResult?.error || 'Upload failed',
+            error: 'Upload failed',
           };
         }
       });
@@ -165,8 +181,8 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
       setSelectedFiles(updatedFiles);
 
       // Extract successfully uploaded resources
-      const resources = result.results
-        .filter((r: any) => r.success)
+      const resources = (result.results || [])
+        .filter((r: any) => r.success && r.resource)
         .map((r: any) => ({
           ...r.resource,
           description: r.resource.description || '',
@@ -182,13 +198,13 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
 
       toast({
         title: "Upload Complete",
-        description: `Successfully uploaded ${result.summary.successful} of ${result.summary.total} files.`,
+        description: `Successfully uploaded ${successfulCount} of ${totalCount} files.`,
       });
 
-      if (result.summary.failed > 0) {
+      if (failedCount > 0) {
         toast({
           title: "Some Uploads Failed",
-          description: `${result.summary.failed} files failed to upload. Check the status below.`,
+          description: `${failedCount} files failed to upload. Check the status below.`,
           variant: "destructive",
         });
       }
@@ -560,14 +576,14 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                           Resource Type
                         </label>
                         <Select
-                          value={batchEditValues.resourceType || ''}
-                          onValueChange={(value) => setBatchEditValues(prev => ({ ...prev, resourceType: value }))}
+                          value={batchEditValues.resourceType || 'none'}
+                          onValueChange={(value) => setBatchEditValues(prev => ({ ...prev, resourceType: value === 'none' ? '' : value }))}
                         >
                           <SelectTrigger data-testid="select-batch-resource-type">
                             <SelectValue placeholder="Select type..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {RESOURCE_TYPES.map(type => (
                               <SelectItem key={type} value={type}>
                                 {formatEnumLabel(type)}
@@ -582,14 +598,14 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                           Theme
                         </label>
                         <Select
-                          value={batchEditValues.theme || ''}
-                          onValueChange={(value) => setBatchEditValues(prev => ({ ...prev, theme: value }))}
+                          value={batchEditValues.theme || 'none'}
+                          onValueChange={(value) => setBatchEditValues(prev => ({ ...prev, theme: value === 'none' ? '' : value }))}
                         >
                           <SelectTrigger data-testid="select-batch-theme">
                             <SelectValue placeholder="Select theme..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">None</SelectItem>
+                            <SelectItem value="none">None</SelectItem>
                             {RESOURCE_THEMES.map(theme => (
                               <SelectItem key={theme} value={theme}>
                                 {formatEnumLabel(theme)}
@@ -616,14 +632,14 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                           Country
                         </label>
                         <Select
-                          value={batchEditValues.country || ''}
-                          onValueChange={(value) => setBatchEditValues(prev => ({ ...prev, country: value }))}
+                          value={batchEditValues.country || 'global'}
+                          onValueChange={(value) => setBatchEditValues(prev => ({ ...prev, country: value === 'global' ? '' : value }))}
                         >
                           <SelectTrigger data-testid="select-batch-country">
                             <SelectValue placeholder="Select country..." />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="">Global</SelectItem>
+                            <SelectItem value="global">Global</SelectItem>
                             {countryOptions.map(country => (
                               <SelectItem key={country.value} value={country.value}>
                                 {country.label}
@@ -771,14 +787,14 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                             </td>
                             <td className="p-3">
                               <Select
-                                value={resource.resourceType || ''}
-                                onValueChange={(value) => handleResourceChange(resource.id, 'resourceType', value || null)}
+                                value={resource.resourceType || 'none'}
+                                onValueChange={(value) => handleResourceChange(resource.id, 'resourceType', value === 'none' ? null : value)}
                               >
                                 <SelectTrigger className="w-40" data-testid={`select-type-${resource.id}`}>
                                   <SelectValue placeholder="None" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="">None</SelectItem>
+                                  <SelectItem value="none">None</SelectItem>
                                   {RESOURCE_TYPES.map(type => (
                                     <SelectItem key={type} value={type}>
                                       {formatEnumLabel(type)}
@@ -789,14 +805,14 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                             </td>
                             <td className="p-3">
                               <Select
-                                value={resource.theme || ''}
-                                onValueChange={(value) => handleResourceChange(resource.id, 'theme', value || null)}
+                                value={resource.theme || 'none'}
+                                onValueChange={(value) => handleResourceChange(resource.id, 'theme', value === 'none' ? null : value)}
                               >
                                 <SelectTrigger className="w-40" data-testid={`select-theme-${resource.id}`}>
                                   <SelectValue placeholder="None" />
                                 </SelectTrigger>
                                 <SelectContent>
-                                  <SelectItem value="">None</SelectItem>
+                                  <SelectItem value="none">None</SelectItem>
                                   {RESOURCE_THEMES.map(theme => (
                                     <SelectItem key={theme} value={theme}>
                                       {formatEnumLabel(theme)}
