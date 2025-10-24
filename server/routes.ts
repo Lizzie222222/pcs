@@ -3596,6 +3596,51 @@ Return JSON with:
     }
   };
 
+  // Bulk delete resources (admin only)
+  app.post('/api/admin/resources/bulk-delete', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { resourceIds } = req.body;
+      
+      if (!Array.isArray(resourceIds) || resourceIds.length === 0) {
+        return res.status(400).json({ message: "Please provide an array of resource IDs to delete" });
+      }
+
+      console.log(`[Bulk Delete Resources] Admin ${req.user.id} deleting ${resourceIds.length} resources`);
+      
+      const results = {
+        successful: [] as string[],
+        failed: [] as { id: string; reason: string }[],
+      };
+
+      for (const resourceId of resourceIds) {
+        try {
+          const deleted = await storage.deleteResource(resourceId);
+          
+          if (deleted) {
+            results.successful.push(resourceId);
+          } else {
+            results.failed.push({ id: resourceId, reason: "Resource not found" });
+          }
+        } catch (error: any) {
+          results.failed.push({ id: resourceId, reason: "Unknown error" });
+          console.error(`[Bulk Delete Resources] Error deleting resource ${resourceId}:`, error);
+        }
+      }
+
+      console.log(`[Bulk Delete Resources] Completed: ${results.successful.length} successful, ${results.failed.length} failed`);
+      
+      res.json({ 
+        successCount: results.successful.length,
+        failedCount: results.failed.length,
+        failures: results.failed,
+        message: `Deleted ${results.successful.length} of ${resourceIds.length} resources`
+      });
+    } catch (error) {
+      console.error("[Bulk Delete Resources] Error:", error);
+      res.status(500).json({ message: "Failed to bulk delete resources" });
+    }
+  });
+
   // PUT /api/admin/schools/:schoolId/progression - Manually update school stage and round (admin/partner only)
   app.put('/api/admin/schools/:schoolId/progression', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {

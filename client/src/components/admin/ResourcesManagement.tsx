@@ -10,6 +10,16 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { LoadingSpinner } from "@/components/ui/states";
 import { BookOpen, Plus, Search, Edit, Trash2, X, FileText, Upload, Eye, Image, FileType, Sheet, File as FileIcon } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
@@ -17,6 +27,7 @@ import { LANGUAGE_FLAG_MAP, LANGUAGE_NAME_MAP, languageCodeFromName } from "@/li
 import type { UploadResult } from "@uppy/core";
 import BulkResourceUpload from "./BulkResourceUpload";
 import { ResourcePreviewDialog } from "./ResourcePreviewDialog";
+import { apiRequest } from "@/lib/queryClient";
 
 interface Resource {
   id: string;
@@ -499,6 +510,8 @@ export default function ResourcesManagement() {
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
   const [previewResource, setPreviewResource] = useState<Resource | null>(null);
+  const [selectedResourceIds, setSelectedResourceIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   const [resourceFilters, setResourceFilters] = useState({
     search: '',
     stage: 'all',
@@ -553,8 +566,90 @@ export default function ResourcesManagement() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (resourceIds: string[]) => {
+      const response = await apiRequest('POST', '/api/admin/resources/bulk-delete', { resourceIds });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      const { successCount, failedCount, failures } = data;
+      
+      // Build description message
+      let description = '';
+      
+      if (failedCount === 0) {
+        // All successful
+        description = `Successfully deleted ${successCount} resource${successCount > 1 ? 's' : ''}.`;
+        
+        toast({
+          title: "Bulk Delete Successful",
+          description,
+        });
+      } else if (successCount === 0) {
+        // All failed
+        const failureDetails = failures.map((f: any) => `${f.id}: ${f.reason}`).join('\n');
+        toast({
+          title: "Bulk Delete Failed",
+          description: `Failed to delete all selected resources:\n${failureDetails}`,
+          variant: "destructive",
+        });
+      } else {
+        // Partial success
+        description = `Successfully deleted ${successCount} resource${successCount > 1 ? 's' : ''}. Failed to delete ${failedCount}.`;
+        
+        const failureDetails = failures.map((f: any) => `${f.id}: ${f.reason}`).join('\n');
+        description += `\n${failureDetails}`;
+        
+        toast({
+          title: "Bulk Delete Partially Successful",
+          description,
+          variant: "destructive",
+        });
+      }
+      
+      setBulkDeleteDialogOpen(false);
+      setSelectedResourceIds(new Set());
+      queryClient.invalidateQueries({ queryKey: ['/api/resources'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Bulk Delete Failed",
+        description: error.message || "Failed to delete resources. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleFilterChange = (key: string, value: string) => {
     setResourceFilters(prev => ({ ...prev, [key]: value }));
+  };
+
+  const handleSelectResource = (resourceId: string, checked: boolean) => {
+    const newSelectedIds = new Set(selectedResourceIds);
+    if (checked) {
+      newSelectedIds.add(resourceId);
+    } else {
+      newSelectedIds.delete(resourceId);
+    }
+    setSelectedResourceIds(newSelectedIds);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const allResourceIds = resources.map(resource => resource.id);
+      setSelectedResourceIds(new Set(allResourceIds));
+    } else {
+      setSelectedResourceIds(new Set());
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedResourceIds.size === 0) return;
+    setBulkDeleteDialogOpen(true);
+  };
+
+  const confirmBulkDelete = () => {
+    bulkDeleteMutation.mutate(Array.from(selectedResourceIds));
   };
 
   const getStageColor = (stage: string) => {
@@ -675,6 +770,16 @@ export default function ResourcesManagement() {
               Resource Management
             </CardTitle>
             <div className="flex gap-2">
+              {selectedResourceIds.size > 0 && (
+                <Button
+                  onClick={handleBulkDelete}
+                  variant="destructive"
+                  data-testid="button-bulk-delete-resources"
+                >
+                  <Trash2 className="h-4 w-4 mr-2" />
+                  Delete Selected ({selectedResourceIds.size})
+                </Button>
+              )}
               <Button
                 onClick={() => setShowAddForm(true)}
                 className="bg-pcs_blue hover:bg-blue-600"
@@ -783,6 +888,16 @@ export default function ResourcesManagement() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b bg-gray-50">
+                  <th className="w-12 p-3">
+                    <Checkbox
+                      checked={
+                        resources.length > 0 &&
+                        resources.every(resource => selectedResourceIds.has(resource.id))
+                      }
+                      onCheckedChange={handleSelectAll}
+                      data-testid="checkbox-select-all-resources"
+                    />
+                  </th>
                   <th className="text-left p-3 font-medium text-gray-700">Preview</th>
                   <th className="text-left p-3 font-medium text-gray-700">Title</th>
                   <th className="text-left p-3 font-medium text-gray-700">Stage</th>
@@ -798,6 +913,13 @@ export default function ResourcesManagement() {
               <tbody>
                 {resources.map((resource) => (
                   <tr key={resource.id} className="border-b hover:bg-gray-50">
+                    <td className="p-3">
+                      <Checkbox
+                        checked={selectedResourceIds.has(resource.id)}
+                        onCheckedChange={(checked) => handleSelectResource(resource.id, checked as boolean)}
+                        data-testid={`checkbox-resource-${resource.id}`}
+                      />
+                    </td>
                     <td className="p-3">
                       <button
                         onClick={() => resource.fileUrl && setPreviewResource(resource)}
@@ -928,6 +1050,43 @@ export default function ResourcesManagement() {
           onClose={() => setPreviewResource(null)}
         />
       )}
+
+      <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+        <AlertDialogContent data-testid="dialog-bulk-delete-resources">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Resources</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>{selectedResourceIds.size} resource{selectedResourceIds.size > 1 ? 's' : ''}</strong>? 
+              This action cannot be undone.
+              {selectedResourceIds.size > 0 && selectedResourceIds.size <= 3 && (
+                <div className="mt-2">
+                  <p className="font-medium">Resources to be deleted:</p>
+                  <ul className="list-disc list-inside mt-1">
+                    {Array.from(selectedResourceIds).map(id => {
+                      const resource = resources.find(r => r.id === id);
+                      return resource ? (
+                        <li key={id} className="text-sm">{resource.title}</li>
+                      ) : null;
+                    })}
+                  </ul>
+                </div>
+              )}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-bulk-delete-resources">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmBulkDelete}
+              className="bg-red-600 hover:bg-red-700"
+              data-testid="button-confirm-bulk-delete-resources"
+            >
+              {bulkDeleteMutation.isPending ? 'Deleting...' : 'Delete Resources'}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
