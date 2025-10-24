@@ -5444,25 +5444,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 </div>
               ) : (
                 <>
-                  {(eventFormData.isVirtual || eventFormData.eventType === 'webinar') && (
-                    <div className="mb-6 p-4 bg-amber-50 border-l-4 border-amber-500 rounded-md" data-testid="page-builder-banner">
-                      <div className="flex items-start gap-3">
-                        <div className="text-2xl">⚠️</div>
-                        <div className="flex-1">
-                          <p className="text-sm font-semibold text-amber-800 mb-2">
-                            IMPORTANT: Virtual events require Page Builder setup for attendees to access live streams!
-                          </p>
-                          <p className="text-sm text-gray-700 mb-3">
-                            Without configuring this page, attendees won't be able to access your event content or live stream links. Use the sections below to add YouTube videos, download files, and testimonials.
-                          </p>
-                          <div className="bg-white border border-amber-200 rounded p-3">
-                            <p className="text-xs font-medium text-gray-600 mb-1">Example - What attendees will see without setup:</p>
-                            <p className="text-xs text-gray-500 italic">"Event page content not configured yet. Please check back later."</p>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                   <Form {...pageBuilderForm}>
                   <form onSubmit={pageBuilderForm.handleSubmit((data) => {
                     updateEventPageContentMutation.mutate({ id: editingEvent.id, data });
@@ -5476,28 +5457,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           Add content in multiple languages. Content will display in each user's preferred language.
                         </p>
                       </div>
-                      
-                      {/* Key Feature Explanation */}
-                      <Alert className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
-                        <Info className="h-4 w-4 text-green-600" />
-                        <AlertTitle className="text-green-900 font-semibold">Each Language Can Have Completely Different Content</AlertTitle>
-                        <AlertDescription className="text-sm text-green-800 mt-2">
-                          <div className="space-y-2">
-                            <p>
-                              <strong>Videos:</strong> Link to language-specific YouTube videos (e.g., Spanish video for ES, French video for FR)
-                            </p>
-                            <p>
-                              <strong>Files:</strong> Upload translated documents (e.g., guide-en.pdf, guia-es.pdf, guide-fr.pdf)
-                            </p>
-                            <p>
-                              <strong>Testimonials:</strong> Add testimonials in each language from speakers of that language
-                            </p>
-                            <p className="text-xs mt-2 pt-2 border-t border-green-200">
-                              💡 Tip: Use "Copy from Language" below as a starting point, then replace videos/files with language-specific versions.
-                            </p>
-                          </div>
-                        </AlertDescription>
-                      </Alert>
                       
                       <div className="flex flex-wrap gap-2">
                         {supportedLanguages.map((lang) => {
@@ -5533,64 +5492,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                             </button>
                           );
                         })}
-                      </div>
-                      
-                      {/* Current Language Indicator */}
-                      <div className="flex items-center gap-2 p-3 bg-pcs_blue/10 border-l-4 border-pcs_blue rounded">
-                        <Globe className="h-5 w-5 text-pcs_blue" />
-                        <p className="text-sm font-semibold text-pcs_blue">
-                          Now Editing: {languageNames[selectedLanguage]} Content
-                        </p>
-                      </div>
-                      
-                      {/* Copy from Language Dropdown */}
-                      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
-                        <div className="flex items-start gap-3">
-                          <Copy className="h-5 w-5 text-blue-600 mt-0.5" />
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-blue-900 mb-1">
-                              Quick Copy from Another Language (Optional)
-                            </p>
-                            <p className="text-xs text-blue-700 mb-2">
-                              <strong>Option 1:</strong> Copy content from another language as a starting point, then replace with {languageNames[selectedLanguage]}-specific videos/files.<br/>
-                              <strong>Option 2:</strong> Start fresh by clicking "Add Video" or "Add File" below to create completely unique content.
-                            </p>
-                            <Select onValueChange={copyContentFromLanguage}>
-                              <SelectTrigger className="bg-white" data-testid="select-copy-language">
-                                <SelectValue placeholder="Select language to copy from..." />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {supportedLanguages
-                                  .filter(lang => lang !== selectedLanguage)
-                                  .filter(lang => {
-                                    // Check if language has content
-                                    const hasVideos = (youtubeVideoTranslations[lang]?.length || 0) > 0;
-                                    const hasFiles = (eventPackFileTranslations[lang]?.length || 0) > 0;
-                                    const hasTestimonials = (testimonialTranslations[lang]?.length || 0) > 0;
-                                    const hasTranslatedTitle = !!titleTranslations[lang];
-                                    const hasTranslatedDescription = !!descriptionTranslations[lang];
-                                    
-                                    // For English, also check the main event fields
-                                    const isEnglishWithMainContent = lang === 'en' && editingEvent && (editingEvent.title || editingEvent.description);
-                                    
-                                    return hasVideos || hasFiles || hasTestimonials || hasTranslatedTitle || hasTranslatedDescription || isEnglishWithMainContent;
-                                  })
-                                  .map((lang) => {
-                                    const videoCount = youtubeVideoTranslations[lang]?.length || 0;
-                                    const fileCount = eventPackFileTranslations[lang]?.length || 0;
-                                    const testimonialCount = testimonialTranslations[lang]?.length || 0;
-                                    const totalItems = videoCount + fileCount + testimonialCount;
-                                    
-                                    return (
-                                      <SelectItem key={lang} value={lang}>
-                                        {languageNames[lang]} {totalItems > 0 && `(${videoCount} videos, ${fileCount} files, ${testimonialCount} testimonials)`}
-                                      </SelectItem>
-                                    );
-                                  })}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                        </div>
                       </div>
                       
                       {/* Content Overview Panel */}
