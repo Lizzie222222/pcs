@@ -3157,7 +3157,7 @@ Return JSON with:
       const isAdmin = req.user.isAdmin;
       if (!isAdmin) {
         const schoolUser = await storage.getSchoolUser(schoolId, userId);
-        if (!schoolUser || !schoolUser.isVerified) {
+        if (!schoolUser) {
           return res.status(403).json({ message: "You don't have access to this school's photo consent" });
         }
       }
