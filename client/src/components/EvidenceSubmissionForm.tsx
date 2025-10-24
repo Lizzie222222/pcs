@@ -24,7 +24,7 @@ const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.ob
     required_error: t('forms:validation.invalid_selection'),
   }),
   videoLinks: z.string().optional(),
-  visibility: z.enum(['private', 'public'], {
+  visibility: z.enum(['public', 'registered'], {
     required_error: t('forms:validation.invalid_selection'),
   }),
 });
@@ -111,7 +111,7 @@ export default function EvidenceSubmissionForm({
       description: '',
       stage: preSelectedStage,
       videoLinks: '',
-      visibility: 'private',
+      visibility: 'registered',
     },
   });
 
@@ -527,16 +527,16 @@ export default function EvidenceSubmissionForm({
                         className="flex flex-col space-y-2"
                       >
                         <div className="flex items-center space-x-2 p-3 border rounded-lg">
-                          <RadioGroupItem value="private" id="private" data-testid="radio-visibility-private" />
+                          <RadioGroupItem value="registered" id="registered" data-testid="radio-visibility-registered" />
                           <div className="grid gap-1.5 leading-none flex-1">
                             <label 
-                              htmlFor="private"
+                              htmlFor="registered"
                               className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                             >
-                              {t('forms:evidence_submission.visibility_private_title')}
+                              {t('forms:evidence_submission.visibility_registered_title')}
                             </label>
                             <p className="text-xs text-muted-foreground">
-                              {t('forms:evidence_submission.visibility_private_description')}
+                              {t('forms:evidence_submission.visibility_registered_description')}
                             </p>
                           </div>
                         </div>
