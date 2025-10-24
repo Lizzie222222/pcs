@@ -1225,6 +1225,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   
   // Multi-language state
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
+  const previousLanguageRef = useRef<string>('en'); // Track previous language for auto-save
   const supportedLanguages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'sv', 'no', 'da', 'fi', 'el', 'ar', 'zh'];
   const languageNames: Record<string, string> = {
     en: 'English', es: 'Spanish', fr: 'French', de: 'German', it: 'Italian',
@@ -1412,9 +1413,43 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     }
   }, [editingEvent, eventDialogOpen]);
   
-  // Update form fields when language changes
+  // Auto-save current language content before switching, then load new language content
   useEffect(() => {
     if (editingEvent && eventDialogOpen) {
+      // Auto-save: Save the PREVIOUS language's form values to translation states
+      const previousLang = previousLanguageRef.current;
+      if (previousLang !== selectedLanguage) {
+        const currentFormValues = pageBuilderForm.getValues();
+        
+        // Save videos from previous language
+        if (currentFormValues.youtubeVideos) {
+          setYoutubeVideoTranslations(prev => ({
+            ...prev,
+            [previousLang]: currentFormValues.youtubeVideos || []
+          }));
+        }
+        
+        // Save files from previous language
+        if (currentFormValues.eventPackFiles) {
+          setEventPackFileTranslations(prev => ({
+            ...prev,
+            [previousLang]: currentFormValues.eventPackFiles || []
+          }));
+        }
+        
+        // Save testimonials from previous language
+        if (currentFormValues.testimonials) {
+          setTestimonialTranslations(prev => ({
+            ...prev,
+            [previousLang]: currentFormValues.testimonials || []
+          }));
+        }
+        
+        // Update the previous language ref
+        previousLanguageRef.current = selectedLanguage;
+      }
+      
+      // Load the new language's content into the form
       const currentVideos = youtubeVideoTranslations[selectedLanguage] || [];
       const currentFiles = eventPackFileTranslations[selectedLanguage] || [];
       const currentTestimonials = testimonialTranslations[selectedLanguage] || [];
@@ -5445,8 +5480,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               ) : (
                 <>
                   <Form {...pageBuilderForm}>
-                  <form onSubmit={pageBuilderForm.handleSubmit((data) => {
-                    updateEventPageContentMutation.mutate({ id: editingEvent.id, data });
+                  <form onSubmit={pageBuilderForm.handleSubmit(async (data) => {
+                    // Use the same save logic as the save buttons to ensure all translations are included
+                    if (editingEvent) {
+                      await savePageBuilderWithStatus(editingEvent.status as 'draft' | 'published');
+                    }
                   })} className="space-y-6">
                     
                     {/* Language Tabs */}
@@ -6227,35 +6265,41 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                       )}
                     </div>
 
-                    {/* Form Actions */}
-                    <div className="flex justify-between items-center pt-4 border-t">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        onClick={() => setEventDialogOpen(false)}
-                        data-testid="button-cancel-page-builder"
-                      >
-                        Cancel
-                      </Button>
-                      <div className="flex gap-2">
-                        <Button
-                          type="button"
-                          variant="outline"
-                          onClick={() => savePageBuilderWithStatus('draft')}
-                          disabled={updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending}
-                          data-testid="button-save-as-draft"
-                        >
-                          {updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending ? 'Saving...' : 'Save as Draft'}
-                        </Button>
-                        <Button
-                          type="button"
-                          onClick={() => savePageBuilderWithStatus('published')}
-                          disabled={updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending}
-                          className="bg-pcs_blue hover:bg-pcs_blue/90"
-                          data-testid="button-save-and-publish"
-                        >
-                          {updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending ? 'Publishing...' : 'Save & Publish'}
-                        </Button>
+                    {/* Form Actions - Prominent Save Section */}
+                    <div className="sticky bottom-0 bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-300 rounded-lg p-4 mt-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="bg-emerald-100 rounded-full p-2">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-emerald-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-emerald-900">✨ Content auto-saves when switching languages</p>
+                            <p className="text-xs text-emerald-700">Click "Save & Publish" to finalize and make your event live to the world</p>
+                          </div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => savePageBuilderWithStatus('draft')}
+                            disabled={updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending}
+                            data-testid="button-save-as-draft"
+                            className="bg-white hover:bg-gray-50"
+                          >
+                            {updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending ? 'Saving...' : 'Save as Draft'}
+                          </Button>
+                          <Button
+                            type="button"
+                            onClick={() => savePageBuilderWithStatus('published')}
+                            disabled={updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending}
+                            className="bg-pcs_blue hover:bg-pcs_blue/90 text-white shadow-lg"
+                            data-testid="button-save-and-publish"
+                          >
+                            {updateEventPageContentMutation.isPending || updateEventStatusMutation.isPending ? 'Publishing...' : '💾 Save & Publish'}
+                          </Button>
+                        </div>
                       </div>
                     </div>
                   </form>
