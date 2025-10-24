@@ -1,4 +1,4 @@
-import { useState, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, useRef, lazy, Suspense } from "react";
 import { useTranslation, Trans } from "react-i18next";
 import { useReducedMotion } from "@/hooks/useReducedMotion";
 import { useConnectionSpeed } from "@/hooks/useConnectionSpeed";
@@ -531,11 +531,40 @@ export default function Landing() {
                     const displayLanguages = availableLanguages.slice(0, 6);
                     const remainingCount = availableLanguages.length - 6;
                     
-                    return (
-                      <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                    // Calculate time remaining
+                    const calculateTimeRemaining = () => {
+                      const now = new Date().getTime();
+                      const eventStart = new Date(event.startDateTime).getTime();
+                      const diff = eventStart - now;
+                      
+                      if (diff <= 0) {
+                        return { days: 0, hours: 0, minutes: 0, seconds: 0, hasStarted: true };
+                      }
+                      
+                      return {
+                        days: Math.floor(diff / (1000 * 60 * 60 * 24)),
+                        hours: Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+                        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+                        seconds: Math.floor((diff % (1000 * 60)) / 1000),
+                        hasStarted: false
+                      };
+                    };
+                    
+                    const EventCard = () => {
+                      const [timeRemaining, setTimeRemaining] = useState(calculateTimeRemaining());
+                      
+                      useEffect(() => {
+                        const interval = setInterval(() => {
+                          setTimeRemaining(calculateTimeRemaining());
+                        }, 1000);
+                        
+                        return () => clearInterval(interval);
+                      }, []);
+                      
+                      return (
                         <a
                           href={`/events/${event.publicSlug || event.id}`}
-                          className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer h-full"
+                          className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer border border-gray-200"
                           data-testid={`card-event-${event.id}`}
                         >
                           {event.imageUrl && (
@@ -604,12 +633,26 @@ export default function Landing() {
                                 </div>
                               )}
                             </div>
+                            
+                            {!timeRemaining.hasStarted && (
+                              <div className="mb-4 bg-gradient-to-r from-cyan-500 to-teal-500 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 w-fit" data-testid={`countdown-timer-${event.id}`}>
+                                <span>⏱️</span>
+                                <span>Starts in: {timeRemaining.days}d {timeRemaining.hours}h {timeRemaining.minutes}m {timeRemaining.seconds}s</span>
+                              </div>
+                            )}
+                            
                             <div className="inline-flex items-center gap-2 text-pcs_blue group-hover:text-pcs_blue/80 font-semibold text-sm">
                               View Details & Register
                               <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                             </div>
                           </div>
                         </a>
+                      );
+                    };
+                    
+                    return (
+                      <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                        <EventCard />
                       </CarouselItem>
                     );
                   })}
