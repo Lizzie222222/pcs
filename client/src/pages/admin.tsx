@@ -1125,6 +1125,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     notes?: string;
     updates?: Record<string, any>;
   } | null>(null);
+  
+  // Photo consent state
+  const [photoConsentRejectDialogOpen, setPhotoConsentRejectDialogOpen] = useState(false);
+  const [photoConsentRejectNotes, setPhotoConsentRejectNotes] = useState('');
 
   // Expandable schools state
   const [expandedSchools, setExpandedSchools] = useState<Set<string>>(new Set());
@@ -2776,6 +2780,72 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       toast({
         title: "Update Failed",
         description: error.message || "Failed to update school progression. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Photo consent query - fetch when viewing a school
+  const { data: photoConsentStatus, refetch: refetchPhotoConsent } = useQuery<{
+    status: string | null;
+    documentUrl: string | null;
+    uploadedAt: Date | null;
+    approvedAt: Date | null;
+    approvedBy: string | null;
+    reviewedBy: string | null;
+    reviewNotes: string | null;
+  } | null>({
+    queryKey: ['/api/schools', viewingSchool?.id, 'photo-consent'],
+    enabled: !!viewingSchool?.id,
+  });
+
+  // Approve photo consent mutation
+  const approvePhotoConsentMutation = useMutation({
+    mutationFn: async (notes?: string) => {
+      if (!viewingSchool?.id) throw new Error('No school selected');
+      return apiRequest('PATCH', `/api/schools/${viewingSchool.id}/photo-consent/approve`, { notes });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Photo Consent Approved",
+        description: "The photo consent document has been approved.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', viewingSchool?.id, 'photo-consent'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      refetchPhotoConsent();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Approval Failed",
+        description: error.message || "Failed to approve photo consent. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reject photo consent mutation
+  const rejectPhotoConsentMutation = useMutation({
+    mutationFn: async (notes: string) => {
+      if (!viewingSchool?.id) throw new Error('No school selected');
+      return apiRequest('PATCH', `/api/schools/${viewingSchool.id}/photo-consent/reject`, { notes });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Photo Consent Rejected",
+        description: "The photo consent document has been rejected.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', viewingSchool?.id, 'photo-consent'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/schools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      setPhotoConsentRejectDialogOpen(false);
+      setPhotoConsentRejectNotes('');
+      refetchPhotoConsent();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Rejection Failed",
+        description: error.message || "Failed to reject photo consent. Please try again.",
         variant: "destructive",
       });
     },
@@ -7459,6 +7529,125 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 </CardContent>
               </Card>
 
+              {/* Photo Consent Status Card */}
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <ImageIcon className="h-5 w-5 text-pcs_blue" />
+                    Photo Consent Status
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {!photoConsentStatus || !photoConsentStatus.status ? (
+                    <div className="text-center py-8 text-gray-500" data-testid="photo-consent-not-uploaded">
+                      <ImageIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
+                      <p>No photo consent document uploaded yet.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {/* Status and Upload Info */}
+                      <div className="flex items-start justify-between">
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <label className="text-sm font-medium text-gray-600">Status:</label>
+                            <Badge
+                              className={
+                                photoConsentStatus.status === 'approved' ? 'bg-green-500 text-white' :
+                                photoConsentStatus.status === 'rejected' ? 'bg-red-500 text-white' :
+                                photoConsentStatus.status === 'pending' ? 'bg-yellow-500 text-white' :
+                                'bg-gray-500 text-white'
+                              }
+                              data-testid="badge-photo-consent-status"
+                            >
+                              {photoConsentStatus.status === 'approved' && <CheckCircle className="h-3 w-3 mr-1" />}
+                              {photoConsentStatus.status === 'rejected' && <XCircle className="h-3 w-3 mr-1" />}
+                              {photoConsentStatus.status === 'pending' && <Clock className="h-3 w-3 mr-1" />}
+                              {photoConsentStatus.status?.charAt(0).toUpperCase() + photoConsentStatus.status?.slice(1)}
+                            </Badge>
+                          </div>
+                          
+                          {photoConsentStatus.uploadedAt && (
+                            <p className="text-sm text-gray-600" data-testid="text-photo-consent-upload-date">
+                              <strong>Uploaded:</strong> {new Date(photoConsentStatus.uploadedAt).toLocaleDateString()}
+                            </p>
+                          )}
+
+                          {photoConsentStatus.documentUrl && (
+                            <a
+                              href={photoConsentStatus.documentUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-sm text-pcs_blue hover:underline"
+                              data-testid="link-view-photo-consent-document"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                              View Document
+                            </a>
+                          )}
+                        </div>
+
+                        {/* Action Buttons for Pending Status */}
+                        {photoConsentStatus.status === 'pending' && (
+                          <div className="flex gap-2">
+                            <Button
+                              size="sm"
+                              onClick={() => approvePhotoConsentMutation.mutate()}
+                              disabled={approvePhotoConsentMutation.isPending}
+                              className="bg-green-500 hover:bg-green-600 text-white"
+                              data-testid="button-approve-photo-consent"
+                            >
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              {approvePhotoConsentMutation.isPending ? 'Approving...' : 'Approve'}
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="destructive"
+                              onClick={() => setPhotoConsentRejectDialogOpen(true)}
+                              disabled={rejectPhotoConsentMutation.isPending}
+                              data-testid="button-reject-photo-consent"
+                            >
+                              <XCircle className="h-3 w-3 mr-1" />
+                              Reject
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Approval Information */}
+                      {photoConsentStatus.status === 'approved' && photoConsentStatus.approvedAt && (
+                        <div className="border-t pt-3 text-sm text-gray-600" data-testid="info-photo-consent-approval">
+                          <p>
+                            <strong>Approved:</strong> {new Date(photoConsentStatus.approvedAt).toLocaleDateString()}
+                          </p>
+                          {photoConsentStatus.approvedBy && (
+                            <p>
+                              <strong>Approved by:</strong> {photoConsentStatus.approvedBy}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Rejection Information */}
+                      {photoConsentStatus.status === 'rejected' && (
+                        <div className="border-t pt-3" data-testid="info-photo-consent-rejection">
+                          <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                            <p className="text-sm font-semibold text-red-900 mb-1">Rejection Notes:</p>
+                            <p className="text-sm text-red-800" data-testid="text-photo-consent-reject-notes">
+                              {photoConsentStatus.reviewNotes || 'No notes provided'}
+                            </p>
+                            {photoConsentStatus.reviewedBy && (
+                              <p className="text-xs text-red-700 mt-2">
+                                Reviewed by: {photoConsentStatus.reviewedBy}
+                              </p>
+                            )}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
               <div className="flex justify-between pt-4">
                 <Button
                   onClick={() => {
@@ -7521,6 +7710,58 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               data-testid="button-confirm-delete-school"
             >
               {deleteSchoolMutation.isPending ? "Deleting..." : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Photo Consent Rejection Dialog */}
+      <AlertDialog open={photoConsentRejectDialogOpen} onOpenChange={(open) => {
+        if (!open) {
+          setPhotoConsentRejectDialogOpen(false);
+          setPhotoConsentRejectNotes('');
+        }
+      }}>
+        <AlertDialogContent data-testid="dialog-reject-photo-consent">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Reject Photo Consent</AlertDialogTitle>
+            <AlertDialogDescription>
+              Please provide feedback explaining why the photo consent document is being rejected. This will help the school understand what needs to be corrected.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="my-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Rejection Notes <span className="text-red-500">*</span>
+            </label>
+            <Textarea
+              value={photoConsentRejectNotes}
+              onChange={(e) => setPhotoConsentRejectNotes(e.target.value)}
+              placeholder="Explain why the document is being rejected and what needs to be corrected..."
+              rows={4}
+              data-testid="textarea-photo-consent-reject-notes"
+            />
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-reject-photo-consent">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (!photoConsentRejectNotes.trim()) {
+                  toast({
+                    title: "Notes Required",
+                    description: "Please provide rejection notes explaining why the document was rejected.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                rejectPhotoConsentMutation.mutate(photoConsentRejectNotes);
+              }}
+              className="bg-red-600 hover:bg-red-700"
+              disabled={!photoConsentRejectNotes.trim() || rejectPhotoConsentMutation.isPending}
+              data-testid="button-confirm-reject-photo-consent"
+            >
+              {rejectPhotoConsentMutation.isPending ? "Rejecting..." : "Reject Document"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
