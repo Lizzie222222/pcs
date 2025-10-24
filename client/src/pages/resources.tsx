@@ -213,46 +213,51 @@ export default function Resources() {
         }`} 
         data-testid={`resource-${resource.id}`}
       >
-        {/* Badges at top */}
-        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
-          {isNew && (
-            <div 
-              className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0"
-              style={{ 
-                backgroundImage: 'linear-gradient(to right, #facc15, #f97316)',
-                color: '#ffffff'
-              }}
-            >
-              <Sparkles className="h-3 w-3 mr-1" />
-              NEW
+        <CardHeader className="pb-3 space-y-2">
+          {/* Top row: NEW/RECOMMENDED badges (left) and Age range badge (right) */}
+          <div className="flex justify-between items-start gap-3">
+            <div className="flex flex-wrap gap-2">
+              {isNew && (
+                <div 
+                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0"
+                  style={{ 
+                    backgroundImage: 'linear-gradient(to right, #facc15, #f97316)',
+                    color: '#ffffff'
+                  }}
+                >
+                  <Sparkles className="h-3 w-3 mr-1" />
+                  NEW
+                </div>
+              )}
+              {isRecommended && (
+                <div 
+                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg border-0"
+                  style={{ 
+                    backgroundImage: 'linear-gradient(to right, #a855f7, #ec4899)',
+                    color: '#ffffff'
+                  }}
+                >
+                  <Star className="h-3 w-3 mr-1" />
+                  RECOMMENDED
+                </div>
+              )}
             </div>
-          )}
-          {isRecommended && (
-            <div 
-              className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg border-0"
-              style={{ 
-                backgroundImage: 'linear-gradient(to right, #a855f7, #ec4899)',
-                color: '#ffffff'
-              }}
-            >
-              <Star className="h-3 w-3 mr-1" />
-              RECOMMENDED
-            </div>
-          )}
-        </div>
-
-        <CardHeader className="pb-3">
-          <div className="flex items-center justify-between mb-3">
-            <Badge className={`${getStageColor(resource.stage)} shadow-sm`}>
-              {t(`stages.${resource.stage}`)}
-            </Badge>
             {resource.ageRange && (
-              <Badge variant="outline" className="text-xs">
+              <Badge variant="outline" className="text-xs shrink-0">
                 {getAgeRangeLabel(resource.ageRange)}
               </Badge>
             )}
           </div>
-          <CardTitle className="text-xl text-navy line-clamp-2 font-bold">
+          
+          {/* Second row: Stage badge */}
+          <div className="flex items-center gap-2">
+            <Badge className={`${getStageColor(resource.stage)} shadow-sm`}>
+              {t(`stages.${resource.stage}`)}
+            </Badge>
+          </div>
+
+          {/* Title */}
+          <CardTitle className="text-xl text-navy line-clamp-2 font-bold pt-1">
             {resource.title}
           </CardTitle>
         </CardHeader>
