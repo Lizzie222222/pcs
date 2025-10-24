@@ -3150,8 +3150,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       if (sections.plasticWasteAudits) {
-        fetchPromises.push(storage.getAuditOverview());
-        fetchPromises.push(storage.getAuditBySchool());
+        fetchPromises.push(storage.getAuditOverviewAnalytics());
+        fetchPromises.push(storage.getAuditBySchoolAnalytics());
       } else {
         fetchPromises.push(null);
         fetchPromises.push(null);
