@@ -3058,6 +3058,211 @@ Return JSON with:
     }
   });
 
+  // Photo Consent routes
+  
+  // Configure multer for photo consent uploads
+  const photoConsentUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 10485760 }, // 10MB max
+    fileFilter: (req, file, cb) => {
+      const allowedMimes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+      if (allowedMimes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error('Invalid file type. Only PDF, JPG, JPEG, and PNG files are allowed.'));
+      }
+    },
+  });
+
+  // POST /api/schools/:schoolId/photo-consent/upload - Teacher uploads consent document
+  app.post('/api/schools/:schoolId/photo-consent/upload', isAuthenticated, isSchoolMember, photoConsentUpload.single('file'), async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+
+      // Check if file was uploaded
+      if (!req.file) {
+        return res.status(400).json({ message: "No file provided" });
+      }
+
+      // Verify school exists
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      const file = req.file;
+      const fileExtension = file.originalname.split('.').pop()?.toLowerCase() || 'pdf';
+      const timestamp = Date.now();
+      const objectStorageService = new ObjectStorageService();
+
+      // Get upload URL from object storage
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+
+      // Upload file to object storage
+      const uploadResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: file.buffer,
+        headers: {
+          'Content-Type': file.mimetype,
+          'Content-Length': file.size.toString(),
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+      }
+
+      // Set ACL policy with private visibility
+      const filename = `photo-consent-${schoolId}-${timestamp}.${fileExtension}`;
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        uploadURL.split('?')[0],
+        {
+          owner: userId,
+          visibility: 'private',
+        },
+        filename,
+      );
+
+      // Update school photo consent status
+      await storage.updateSchoolPhotoConsent(schoolId, objectPath);
+
+      res.json({ 
+        success: true, 
+        message: "Photo consent document uploaded successfully",
+        documentUrl: objectPath,
+      });
+    } catch (error) {
+      console.error("Error uploading photo consent:", error);
+      if (error instanceof Error && error.message.includes('Invalid file type')) {
+        return res.status(400).json({ message: error.message });
+      }
+      res.status(500).json({ message: "Failed to upload photo consent document" });
+    }
+  });
+
+  // GET /api/schools/:schoolId/photo-consent - Get consent status
+  app.get('/api/schools/:schoolId/photo-consent', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const userId = req.user.id;
+
+      // Verify school exists
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      // Check if user is admin or member of the school
+      const isAdmin = req.user.isAdmin;
+      if (!isAdmin) {
+        const schoolUser = await storage.getSchoolUser(schoolId, userId);
+        if (!schoolUser || !schoolUser.isVerified) {
+          return res.status(403).json({ message: "You don't have access to this school's photo consent" });
+        }
+      }
+
+      // Get photo consent status
+      const consentStatus = await storage.getSchoolPhotoConsentStatus(schoolId);
+      
+      if (!consentStatus) {
+        return res.status(404).json({ message: "Photo consent status not found" });
+      }
+
+      res.json(consentStatus);
+    } catch (error) {
+      console.error("Error fetching photo consent status:", error);
+      res.status(500).json({ message: "Failed to fetch photo consent status" });
+    }
+  });
+
+  // PATCH /api/schools/:schoolId/photo-consent/approve - Admin approves consent
+  app.patch('/api/schools/:schoolId/photo-consent/approve', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const { notes } = req.body;
+      const userId = req.user.id;
+
+      // Check if user is admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Verify school exists
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      // Approve photo consent
+      const updatedSchool = await storage.reviewSchoolPhotoConsent(
+        schoolId,
+        'approved',
+        userId,
+        notes
+      );
+
+      if (!updatedSchool) {
+        return res.status(500).json({ message: "Failed to approve photo consent" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Photo consent approved successfully",
+        school: updatedSchool,
+      });
+    } catch (error) {
+      console.error("Error approving photo consent:", error);
+      res.status(500).json({ message: "Failed to approve photo consent" });
+    }
+  });
+
+  // PATCH /api/schools/:schoolId/photo-consent/reject - Admin rejects consent
+  app.patch('/api/schools/:schoolId/photo-consent/reject', isAuthenticated, async (req: any, res) => {
+    try {
+      const { schoolId } = req.params;
+      const { notes } = req.body;
+      const userId = req.user.id;
+
+      // Check if user is admin
+      if (!req.user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      // Validate that notes are provided for rejection
+      if (!notes || notes.trim().length === 0) {
+        return res.status(400).json({ message: "Review notes are required for rejection" });
+      }
+
+      // Verify school exists
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      // Reject photo consent
+      const updatedSchool = await storage.reviewSchoolPhotoConsent(
+        schoolId,
+        'rejected',
+        userId,
+        notes
+      );
+
+      if (!updatedSchool) {
+        return res.status(500).json({ message: "Failed to reject photo consent" });
+      }
+
+      res.json({ 
+        success: true, 
+        message: "Photo consent rejected",
+        school: updatedSchool,
+      });
+    } catch (error) {
+      console.error("Error rejecting photo consent:", error);
+      res.status(500).json({ message: "Failed to reject photo consent" });
+    }
+  });
+
   // Object storage routes for evidence files
   
   // Handle CORS preflight for object requests
