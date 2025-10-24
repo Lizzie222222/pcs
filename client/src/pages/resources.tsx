@@ -214,7 +214,7 @@ export default function Resources() {
         data-testid={`resource-${resource.id}`}
       >
         {/* Badges at top */}
-        <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
+        <div className="absolute top-3 left-3 flex flex-col gap-2 z-10">
           {isNew && (
             <div 
               className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0"
