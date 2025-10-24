@@ -73,6 +73,9 @@ import {
   UserPlus,
   MoreVertical,
   Shield,
+  Info,
+  Copy,
+  Table as TableIcon,
   Target,
   TrendingDown,
   Droplets,
@@ -106,6 +109,8 @@ import {
 
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
@@ -1882,6 +1887,52 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       });
     },
   });
+
+  // Copy content from one language to another
+  const copyContentFromLanguage = (sourceLang: string) => {
+    if (sourceLang === selectedLanguage) {
+      toast({
+        title: "Same language selected",
+        description: "Please select a different source language",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Copy translations
+    if (titleTranslations[sourceLang]) {
+      setTitleTranslations(prev => ({ ...prev, [selectedLanguage]: titleTranslations[sourceLang] }));
+    }
+    if (descriptionTranslations[sourceLang]) {
+      setDescriptionTranslations(prev => ({ ...prev, [selectedLanguage]: descriptionTranslations[sourceLang] }));
+    }
+    
+    // Copy videos
+    const sourceVideos = youtubeVideoTranslations[sourceLang] || [];
+    if (sourceVideos.length > 0) {
+      setYoutubeVideoTranslations(prev => ({ ...prev, [selectedLanguage]: [...sourceVideos] }));
+      pageBuilderForm.setValue('youtubeVideos', sourceVideos);
+    }
+    
+    // Copy files
+    const sourceFiles = eventPackFileTranslations[sourceLang] || [];
+    if (sourceFiles.length > 0) {
+      setEventPackFileTranslations(prev => ({ ...prev, [selectedLanguage]: [...sourceFiles] }));
+      pageBuilderForm.setValue('eventPackFiles', sourceFiles);
+    }
+    
+    // Copy testimonials
+    const sourceTestimonials = testimonialTranslations[sourceLang] || [];
+    if (sourceTestimonials.length > 0) {
+      setTestimonialTranslations(prev => ({ ...prev, [selectedLanguage]: [...sourceTestimonials] }));
+      pageBuilderForm.setValue('testimonials', sourceTestimonials);
+    }
+    
+    toast({
+      title: "Content copied!",
+      description: `Successfully copied content from ${languageNames[sourceLang]} to ${languageNames[selectedLanguage]}. You can now edit as needed.`,
+    });
+  };
 
   const savePageBuilderWithStatus = async (status: 'draft' | 'published') => {
     if (!editingEvent) return;
@@ -5414,25 +5465,149 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2">
-                        {supportedLanguages.map((lang) => (
-                          <button
-                            key={lang}
-                            type="button"
-                            onClick={() => setSelectedLanguage(lang)}
-                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-                              selectedLanguage === lang
-                                ? 'bg-pcs_blue text-white'
-                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                            data-testid={`button-language-${lang}`}
-                          >
-                            {lang.toUpperCase()}
-                          </button>
-                        ))}
+                        {supportedLanguages.map((lang) => {
+                          const videoCount = youtubeVideoTranslations[lang]?.length || 0;
+                          const fileCount = eventPackFileTranslations[lang]?.length || 0;
+                          const hasContent = videoCount > 0 || fileCount > 0 || titleTranslations[lang] || descriptionTranslations[lang];
+                          
+                          return (
+                            <button
+                              key={lang}
+                              type="button"
+                              onClick={() => setSelectedLanguage(lang)}
+                              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors relative ${
+                                selectedLanguage === lang
+                                  ? 'bg-pcs_blue text-white'
+                                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                              }`}
+                              data-testid={`button-language-${lang}`}
+                            >
+                              <span>{lang.toUpperCase()}</span>
+                              {hasContent && (
+                                <Badge 
+                                  variant={selectedLanguage === lang ? "secondary" : "default"}
+                                  className={`ml-2 text-xs ${
+                                    selectedLanguage === lang 
+                                      ? 'bg-white/20 text-white border-white/30' 
+                                      : 'bg-green-100 text-green-700 border-green-200'
+                                  }`}
+                                >
+                                  {videoCount + fileCount}
+                                </Badge>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                       <p className="text-xs text-gray-500">
                         Currently editing: <span className="font-semibold">{languageNames[selectedLanguage]}</span>
                       </p>
+                      
+                      {/* Copy from Language Dropdown */}
+                      <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <div className="flex items-start gap-3">
+                          <Copy className="h-5 w-5 text-blue-600 mt-0.5" />
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-blue-900 mb-2">
+                              Quick Copy from Another Language
+                            </p>
+                            <Select onValueChange={copyContentFromLanguage}>
+                              <SelectTrigger className="bg-white" data-testid="select-copy-language">
+                                <SelectValue placeholder="Select language to copy from..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {supportedLanguages
+                                  .filter(lang => lang !== selectedLanguage)
+                                  .filter(lang => {
+                                    // Only show languages that have content
+                                    const hasContent = (youtubeVideoTranslations[lang]?.length || 0) > 0 || 
+                                                      (eventPackFileTranslations[lang]?.length || 0) > 0 ||
+                                                      titleTranslations[lang] ||
+                                                      descriptionTranslations[lang];
+                                    return hasContent;
+                                  })
+                                  .map((lang) => (
+                                    <SelectItem key={lang} value={lang}>
+                                      {languageNames[lang]} ({youtubeVideoTranslations[lang]?.length || 0} videos, {eventPackFileTranslations[lang]?.length || 0} files)
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                            <p className="text-xs text-blue-700 mt-1">
+                              Copies all content (videos, files, testimonials) from selected language to {languageNames[selectedLanguage]}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Content Overview Panel */}
+                      <Collapsible className="mt-4">
+                        <CollapsibleTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="w-full flex items-center justify-between"
+                            data-testid="button-content-overview"
+                          >
+                            <span className="flex items-center gap-2">
+                              <TableIcon className="h-4 w-4" />
+                              Content Overview ({Object.keys(youtubeVideoTranslations).filter(lang => (youtubeVideoTranslations[lang]?.length || 0) > 0 || (eventPackFileTranslations[lang]?.length || 0) > 0).length} languages)
+                            </span>
+                            <ChevronDown className="h-4 w-4" />
+                          </Button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent className="mt-2">
+                          <div className="border rounded-md overflow-hidden">
+                            <table className="w-full text-sm">
+                              <thead className="bg-gray-50 border-b">
+                                <tr>
+                                  <th className="px-4 py-2 text-left font-medium text-gray-700">Language</th>
+                                  <th className="px-4 py-2 text-center font-medium text-gray-700">Videos</th>
+                                  <th className="px-4 py-2 text-center font-medium text-gray-700">Files</th>
+                                  <th className="px-4 py-2 text-center font-medium text-gray-700">Testimonials</th>
+                                  <th className="px-4 py-2 text-center font-medium text-gray-700">Status</th>
+                                </tr>
+                              </thead>
+                              <tbody className="divide-y">
+                                {supportedLanguages.map((lang) => {
+                                  const videoCount = youtubeVideoTranslations[lang]?.length || 0;
+                                  const fileCount = eventPackFileTranslations[lang]?.length || 0;
+                                  const testimonialCount = testimonialTranslations[lang]?.length || 0;
+                                  const hasTitle = !!titleTranslations[lang];
+                                  const hasDescription = !!descriptionTranslations[lang];
+                                  const totalContent = videoCount + fileCount + testimonialCount;
+                                  
+                                  return (
+                                    <tr key={lang} className={selectedLanguage === lang ? 'bg-blue-50' : ''}>
+                                      <td className="px-4 py-2 font-medium">
+                                        {languageNames[lang]}
+                                        {selectedLanguage === lang && (
+                                          <Badge variant="outline" className="ml-2 text-xs">Editing</Badge>
+                                        )}
+                                      </td>
+                                      <td className="px-4 py-2 text-center">{videoCount}</td>
+                                      <td className="px-4 py-2 text-center">{fileCount}</td>
+                                      <td className="px-4 py-2 text-center">{testimonialCount}</td>
+                                      <td className="px-4 py-2 text-center">
+                                        {totalContent > 0 || hasTitle || hasDescription ? (
+                                          <Badge variant="default" className="bg-green-100 text-green-700">
+                                            {totalContent} items
+                                          </Badge>
+                                        ) : (
+                                          <Badge variant="outline" className="text-gray-500">
+                                            Empty
+                                          </Badge>
+                                        )}
+                                      </td>
+                                    </tr>
+                                  );
+                                })}
+                              </tbody>
+                            </table>
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
                     </div>
 
                     {/* Multi-Language Content Section */}
@@ -5578,7 +5753,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     {/* YouTube Videos Section */}
                     <div className="space-y-3 pt-4 border-t">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">YouTube Videos</h3>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">YouTube Videos</h3>
+                          <Badge variant="outline" className="mt-1 text-xs">
+                            For {languageNames[selectedLanguage]} users
+                          </Badge>
+                        </div>
                         <Button
                           type="button"
                           variant="outline"
@@ -5590,6 +5770,22 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           Add Video
                         </Button>
                       </div>
+                      
+                      {/* Translation Strategy Help */}
+                      <Alert className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
+                        <Info className="h-4 w-4 text-purple-600" />
+                        <AlertTitle className="text-purple-900">Translation Strategy</AlertTitle>
+                        <AlertDescription className="text-sm text-purple-800">
+                          <div className="space-y-2 mt-2">
+                            <div>
+                              <strong>Option 1 - Same video, translated metadata:</strong> Use the same YouTube URL across all languages, but translate the title and description into each language.
+                            </div>
+                            <div>
+                              <strong>Option 2 - Language-specific videos:</strong> Link to different videos for each language (e.g., a video in Spanish for Spanish users, French video for French users).
+                            </div>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
                       
                       {videoFields.length === 0 ? (
                         <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
@@ -5795,7 +5991,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     {/* Event Pack Files Section */}
                     <div className="space-y-3 pt-4 border-t">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">Event Pack Files</h3>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Event Pack Files</h3>
+                          <Badge variant="outline" className="mt-1 text-xs">
+                            For {languageNames[selectedLanguage]} users
+                          </Badge>
+                        </div>
                         <Button
                           type="button"
                           variant="outline"
@@ -5807,6 +6008,22 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           Add File
                         </Button>
                       </div>
+                      
+                      {/* Resource Translation Help */}
+                      <Alert className="bg-gradient-to-r from-teal-50 to-green-50 border-teal-200">
+                        <Info className="h-4 w-4 text-teal-600" />
+                        <AlertTitle className="text-teal-900">Resource Translation Options</AlertTitle>
+                        <AlertDescription className="text-sm text-teal-800">
+                          <div className="space-y-2 mt-2">
+                            <div>
+                              <strong>Same file with translated metadata:</strong> Upload the same file for all languages but translate the title and description.
+                            </div>
+                            <div>
+                              <strong>Language-specific files:</strong> Upload different files for each language containing translated content (e.g., Spanish PDF for Spanish users).
+                            </div>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
                       
                       {packFileFields.length === 0 ? (
                         <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
