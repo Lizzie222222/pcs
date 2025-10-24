@@ -4230,19 +4230,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           <tbody>
                             {events.map((event) => (
                               <tr key={event.id} className="border-b hover:bg-gray-50" data-testid={`row-event-${event.id}`}>
-                                <td className="px-4 py-3 text-sm text-gray-900" data-testid={`text-title-${event.id}`}>
-                                  {event.publicSlug && event.pagePublishedStatus !== 'draft' ? (
-                                    <Link 
-                                      href={`/events/${event.publicSlug}`}
-                                      className="text-pcs_blue hover:text-pcs_navy hover:underline font-medium cursor-pointer"
-                                      data-testid={`link-event-${event.id}`}
-                                    >
-                                      {event.title}
-                                    </Link>
-                                  ) : (
-                                    <span className="text-gray-900">{event.title}</span>
-                                  )}
-                                </td>
+                                <td className="px-4 py-3 text-sm text-gray-900" data-testid={`text-title-${event.id}`}>{event.title}</td>
                                 <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-type-${event.id}`}>
                                   {event.eventType.replace('_', ' ').charAt(0).toUpperCase() + event.eventType.replace('_', ' ').slice(1)}
                                 </td>
@@ -4313,7 +4301,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                     >
                                       <Users className="h-4 w-4" />
                                     </Button>
-                                    {event.publicSlug && event.pagePublishedStatus !== 'draft' && (
+                                    {event.publicSlug && (
                                       <Button
                                         variant="outline"
                                         size="sm"
@@ -4322,6 +4310,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                         }}
                                         className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                                         data-testid={`button-view-page-${event.id}`}
+                                        title={`View event: /events/${event.publicSlug}`}
                                       >
                                         <ExternalLink className="h-4 w-4" />
                                       </Button>
