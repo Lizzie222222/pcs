@@ -676,10 +676,10 @@ export default function Home() {
 
         {/* Tab Navigation */}
         <div className="mb-10">
-          <div className="bg-white rounded-xl shadow-lg p-3 flex gap-3 border border-gray-100">
+          <div className="bg-white rounded-xl shadow-lg p-2 sm:p-3 flex gap-1 sm:gap-3 border border-gray-100 overflow-x-auto">
             <Button
               variant={activeTab === 'progress' ? 'default' : 'ghost'}
-              className={`flex-1 transition-all duration-300 font-semibold ${
+              className={`flex-1 transition-all duration-300 font-semibold min-w-[44px] ${
                 activeTab === 'progress' 
                   ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
                   : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
@@ -688,12 +688,12 @@ export default function Home() {
               data-testid="tab-progress"
               data-tour="progress-tab"
             >
-              <BarChart3 className="h-5 w-5 mr-2" />
-              {t('tabs.progress', { ns: 'dashboard' })}
+              <BarChart3 className="h-5 w-5 sm:mr-2" />
+              <span className="hidden sm:inline">{t('tabs.progress', { ns: 'dashboard' })}</span>
             </Button>
             <Button
               variant={activeTab === 'resources' ? 'default' : 'ghost'}
-              className={`flex-1 transition-all duration-300 font-semibold ${
+              className={`flex-1 transition-all duration-300 font-semibold min-w-[44px] ${
                 activeTab === 'resources' 
                   ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
                   : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
@@ -702,12 +702,12 @@ export default function Home() {
               data-testid="tab-resources"
               data-tour="resources-tab"
             >
-              <BookOpen className="h-5 w-5 mr-2" />
-              {t('tabs.resources', { ns: 'dashboard' })}
+              <BookOpen className="h-5 w-5 sm:mr-2" />
+              <span className="hidden sm:inline">{t('tabs.resources', { ns: 'dashboard' })}</span>
             </Button>
             <Button
               variant={activeTab === 'team' ? 'default' : 'ghost'}
-              className={`flex-1 transition-all duration-300 font-semibold ${
+              className={`flex-1 transition-all duration-300 font-semibold min-w-[44px] ${
                 activeTab === 'team' 
                   ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
                   : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
@@ -716,12 +716,12 @@ export default function Home() {
               data-testid="tab-team"
               data-tour="team-tab"
             >
-              <Users className="h-5 w-5 mr-2" />
-              {t('tabs.team', { ns: 'dashboard' })}
+              <Users className="h-5 w-5 sm:mr-2" />
+              <span className="hidden sm:inline">{t('tabs.team', { ns: 'dashboard' })}</span>
             </Button>
             <Button
               variant={activeTab === 'promises' ? 'default' : 'ghost'}
-              className={`flex-1 transition-all duration-300 font-semibold ${
+              className={`flex-1 transition-all duration-300 font-semibold min-w-[44px] ${
                 activeTab === 'promises' 
                   ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
                   : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
@@ -730,12 +730,12 @@ export default function Home() {
               data-testid="tab-promises"
               data-tour="action-plan-tab"
             >
-              <Target className="h-5 w-5 mr-2" />
-              {t('tabs.action_plan', { ns: 'dashboard' })}
+              <Target className="h-5 w-5 sm:mr-2" />
+              <span className="hidden sm:inline">{t('tabs.action_plan', { ns: 'dashboard' })}</span>
             </Button>
             <Button
               variant={activeTab === 'events' ? 'default' : 'ghost'}
-              className={`flex-1 transition-all duration-300 font-semibold ${
+              className={`flex-1 transition-all duration-300 font-semibold min-w-[44px] ${
                 activeTab === 'events' 
                   ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
                   : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
@@ -744,11 +744,11 @@ export default function Home() {
               data-testid="tab-events"
               data-tour="events-tab"
             >
-              <Calendar className="h-5 w-5 mr-2" />
-              {t('tabs.events', { ns: 'dashboard' })}
+              <Calendar className="h-5 w-5 sm:mr-2" />
+              <span className="hidden sm:inline">{t('tabs.events', { ns: 'dashboard' })}</span>
               {newEventsCount > 0 && (
                 <Badge 
-                  className="ml-2 bg-red-500 text-white px-2 py-0.5 text-xs font-bold animate-pulse" 
+                  className="ml-1 sm:ml-2 bg-red-500 text-white px-1.5 sm:px-2 py-0.5 text-xs font-bold animate-pulse" 
                   data-testid="badge-new-events-tab"
                 >
                   {newEventsCount}
