@@ -9,6 +9,7 @@ import {
   evidenceRequirements,
   caseStudies,
   caseStudyVersions,
+  caseStudyReviewComments,
   emailLogs,
   mailchimpAudiences,
   mailchimpSubscriptions,
@@ -32,6 +33,7 @@ import {
   mediaAssetTags,
   mediaAssetUsage,
   notifications,
+  importBatches,
   type User,
   type UpsertUser,
   type School,
@@ -146,7 +148,11 @@ export interface IStorage {
   
   // User management (admin operations)
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
-  deleteUser(id: string): Promise<boolean>;
+  deleteUser(id: string): Promise<{
+    success: boolean;
+    evidenceDeleted: number;
+    caseStudiesAffected: Array<{ id: string; title: string }>;
+  }>;
   getTeacherEmails(): Promise<string[]>;
   markOnboardingComplete(userId: string): Promise<User | undefined>;
   
@@ -748,7 +754,11 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async deleteUser(id: string): Promise<boolean> {
+  async deleteUser(id: string): Promise<{
+    success: boolean;
+    evidenceDeleted: number;
+    caseStudiesAffected: Array<{ id: string; title: string }>;
+  }> {
     // First check if user exists
     const existingUser = await db
       .select()
@@ -758,43 +768,172 @@ export class DatabaseStorage implements IStorage {
     
     if (existingUser.length === 0) {
       console.log(`User deletion failed: User ${id} does not exist`);
-      return false;
+      return {
+        success: false,
+        evidenceDeleted: 0,
+        caseStudiesAffected: [],
+      };
     }
 
     try {
+      console.log(`[Delete User] Starting cascade deletion for user ${id}`);
+      
+      // Track affected case studies before updating them
+      const affectedCaseStudiesData = await db
+        .select({ id: caseStudies.id, title: caseStudies.title })
+        .from(caseStudies)
+        .where(eq(caseStudies.createdBy, id));
+      
+      const caseStudiesAffected = affectedCaseStudiesData.map(cs => ({
+        id: cs.id,
+        title: cs.title || 'Untitled Case Study',
+      }));
+      
+      console.log(`[Delete User] Found ${caseStudiesAffected.length} case studies created by user ${id}`);
+      
+      // Delete evidence submitted by this user
+      const deletedEvidence = await db
+        .delete(evidence)
+        .where(eq(evidence.submittedBy, id))
+        .returning({ id: evidence.id });
+      
+      const evidenceDeleted = deletedEvidence.length;
+      console.log(`[Delete User] Deleted ${evidenceDeleted} evidence items submitted by user ${id}`);
+      
+      // Set reviewedBy to NULL for evidence reviewed by this user
+      await db
+        .update(evidence)
+        .set({ reviewedBy: null })
+        .where(eq(evidence.reviewedBy, id));
+      
+      // Set createdBy to NULL for case studies created by this user
+      await db
+        .update(caseStudies)
+        .set({ createdBy: null })
+        .where(eq(caseStudies.createdBy, id));
+      
+      // Set reviewedBy to NULL for case studies reviewed by this user
+      await db
+        .update(caseStudies)
+        .set({ reviewedBy: null })
+        .where(eq(caseStudies.reviewedBy, id));
+      
+      // Set createdBy to NULL for resources created by this user
+      await db
+        .update(resources)
+        .set({ createdBy: null })
+        .where(eq(resources.createdBy, id));
+      
+      // Set createdBy to NULL for reduction promises
+      await db
+        .update(reductionPromises)
+        .set({ createdBy: null })
+        .where(eq(reductionPromises.createdBy, id));
+      
+      // Set submittedBy and reviewedBy to NULL for printable forms
+      await db
+        .update(printableFormSubmissions)
+        .set({ submittedBy: null })
+        .where(eq(printableFormSubmissions.submittedBy, id));
+      
+      await db
+        .update(printableFormSubmissions)
+        .set({ reviewedBy: null })
+        .where(eq(printableFormSubmissions.reviewedBy, id));
+      
+      // Set uploadedBy to NULL for media assets
+      await db
+        .update(mediaAssets)
+        .set({ uploadedBy: null })
+        .where(eq(mediaAssets.uploadedBy, id));
+      
+      // Set createdBy to NULL for event banners
+      await db
+        .update(eventBanners)
+        .set({ createdBy: null })
+        .where(eq(eventBanners.createdBy, id));
+      
+      // Set invitedBy to NULL for teacher invitations
+      await db
+        .update(teacherInvitations)
+        .set({ invitedBy: null })
+        .where(eq(teacherInvitations.invitedBy, id));
+      
+      // Set invitedBy to NULL for admin invitations
+      await db
+        .update(adminInvitations)
+        .set({ invitedBy: null })
+        .where(eq(adminInvitations.invitedBy, id));
+      
+      // Set issuedBy to NULL for certificates
+      await db
+        .update(certificates)
+        .set({ issuedBy: null })
+        .where(eq(certificates.issuedBy, id));
+      
+      // Set importedBy to NULL for import batches
+      await db
+        .update(importBatches)
+        .set({ importedBy: null })
+        .where(eq(importBatches.importedBy, id));
+      
+      // Set sentBy to NULL for event announcements
+      await db
+        .update(eventAnnouncements)
+        .set({ sentBy: null })
+        .where(eq(eventAnnouncements.sentBy, id));
+      
+      // Set reviewedBy to NULL for verification requests
+      await db
+        .update(verificationRequests)
+        .set({ reviewedBy: null })
+        .where(eq(verificationRequests.reviewedBy, id));
+      
+      // Set userId to NULL for case study review comments
+      await db
+        .update(caseStudyReviewComments)
+        .set({ userId: null })
+        .where(eq(caseStudyReviewComments.userId, id));
+      
+      // Set recipientId to NULL for email logs
+      await db
+        .update(emailLogs)
+        .set({ recipientId: null })
+        .where(eq(emailLogs.recipientId, id));
+      
+      // Set primaryContactId and photoConsentApprovedBy to NULL for schools
+      await db
+        .update(schools)
+        .set({ primaryContactId: null })
+        .where(eq(schools.primaryContactId, id));
+      
+      await db
+        .update(schools)
+        .set({ photoConsentApprovedBy: null })
+        .where(eq(schools.photoConsentApprovedBy, id));
+      
+      // Set invitedBy to NULL for school users
+      await db
+        .update(schoolUsers)
+        .set({ invitedBy: null })
+        .where(eq(schoolUsers.invitedBy, id));
+      
+      // Finally, delete the user
       const result = await db
         .delete(users)
         .where(eq(users.id, id))
         .returning();
       
-      console.log(`User ${id} successfully deleted`);
-      return result.length > 0;
-    } catch (error: any) {
-      // Check if this is a foreign key constraint violation
-      // PostgreSQL error code 23503 = foreign_key_violation
-      if (error.code === '23503' || error.constraint || (error.message && error.message.includes('foreign key'))) {
-        const constraintName = error.constraint || 'unknown constraint';
-        const tableName = error.table || 'unknown table';
-        const errorDetails = `Cannot delete user ${id} due to existing references in the database. ` +
-          `The user has submitted or reviewed evidence, or has other associated data that must be removed first. ` +
-          `Constraint: ${constraintName}, Table: ${tableName}`;
-        
-        console.error('Foreign key constraint violation when deleting user:', {
-          userId: id,
-          constraint: constraintName,
-          table: tableName,
-          code: error.code,
-          detail: error.detail
-        });
-        
-        throw new ConstraintError(
-          errorDetails,
-          'foreign_key',
-          error.detail || `Constraint: ${constraintName}`
-        );
-      }
+      const success = result.length > 0;
       
-      // For other database errors, log and throw
+      console.log(`[Delete User] User ${id} successfully deleted. Evidence deleted: ${evidenceDeleted}, Case studies affected: ${caseStudiesAffected.length}`);
+      
+      return {
+        success,
+        evidenceDeleted,
+        caseStudiesAffected,
+      };
+    } catch (error: any) {
       console.error('Unexpected error deleting user:', {
         userId: id,
         error: error.message,

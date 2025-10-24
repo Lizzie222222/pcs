@@ -156,14 +156,38 @@ export default function UserManagementTab() {
       return response;
     },
     onSuccess: (data: any) => {
-      const { successCount, failedCount, failures } = data;
+      const { successCount, failedCount, failures, totalEvidenceDeleted, affectedCaseStudies } = data;
+      
+      // Build description message
+      let description = '';
       
       if (failedCount === 0) {
+        // All successful
+        description = `Successfully deleted ${successCount} user${successCount > 1 ? 's' : ''}`;
+        
+        if (totalEvidenceDeleted > 0) {
+          description += ` (${totalEvidenceDeleted} evidence item${totalEvidenceDeleted > 1 ? 's' : ''} deleted)`;
+        }
+        
+        if (affectedCaseStudies && affectedCaseStudies.length > 0) {
+          description += `. Warning: ${affectedCaseStudies.length} case ${affectedCaseStudies.length > 1 ? 'studies were' : 'study was'} affected`;
+          
+          if (affectedCaseStudies.length <= 3) {
+            const titles = affectedCaseStudies.map((cs: any) => cs.title).join(', ');
+            description += ` (${titles})`;
+          }
+          
+          description += ' and their creators have been removed.';
+        } else {
+          description += '.';
+        }
+        
         toast({
           title: "Bulk Delete Successful",
-          description: `Successfully deleted ${successCount} user${successCount > 1 ? 's' : ''}.`,
+          description,
         });
       } else if (successCount === 0) {
+        // All failed
         const failureDetails = failures.map((f: any) => `${f.email}: ${f.reason}`).join('\n');
         toast({
           title: "Bulk Delete Failed",
@@ -171,10 +195,30 @@ export default function UserManagementTab() {
           variant: "destructive",
         });
       } else {
+        // Partial success
+        description = `Successfully deleted ${successCount} user${successCount > 1 ? 's' : ''}`;
+        
+        if (totalEvidenceDeleted > 0) {
+          description += ` (${totalEvidenceDeleted} evidence item${totalEvidenceDeleted > 1 ? 's' : ''} deleted)`;
+        }
+        
+        if (affectedCaseStudies && affectedCaseStudies.length > 0) {
+          description += `. Warning: ${affectedCaseStudies.length} case ${affectedCaseStudies.length > 1 ? 'studies were' : 'study was'} affected`;
+          
+          if (affectedCaseStudies.length <= 3) {
+            const titles = affectedCaseStudies.map((cs: any) => cs.title).join(', ');
+            description += ` (${titles})`;
+          }
+        }
+        
+        description += `. Failed to delete ${failedCount}`;
+        
         const failureDetails = failures.map((f: any) => `${f.email}: ${f.reason}`).join('\n');
+        description += `:\n${failureDetails}`;
+        
         toast({
           title: "Bulk Delete Partially Successful",
-          description: `Successfully deleted ${successCount} user${successCount > 1 ? 's' : ''}. Failed to delete ${failedCount}:\n${failureDetails}`,
+          description,
           variant: "destructive",
         });
       }

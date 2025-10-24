@@ -5248,28 +5248,20 @@ Return JSON with:
 
       console.log(`[Delete User] Admin ${adminUserId} deleting user ${id}`);
       
-      const deleted = await storage.deleteUser(id);
+      const result = await storage.deleteUser(id);
       
-      if (!deleted) {
+      if (!result.success) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      console.log(`[Delete User] Successfully deleted user ${id}`);
-      res.json({ message: "User deleted successfully" });
+      console.log(`[Delete User] Successfully deleted user ${id}. Evidence deleted: ${result.evidenceDeleted}, Case studies affected: ${result.caseStudiesAffected.length}`);
+      res.json({ 
+        message: "User deleted successfully",
+        evidenceDeleted: result.evidenceDeleted,
+        caseStudiesAffected: result.caseStudiesAffected
+      });
     } catch (error: any) {
       console.error("[Delete User] Error:", error);
-      
-      // Import ConstraintError from storage
-      const { ConstraintError } = await import('./storage');
-      
-      if (error instanceof ConstraintError) {
-        return res.status(409).json({ 
-          message: "Cannot delete user - they have associated data",
-          details: "This user has submitted or reviewed evidence, or has other data that must be removed first. Please reassign or remove their data before deleting the user.",
-          constraint: error.constraintType
-        });
-      }
-      
       res.status(500).json({ message: "Failed to delete user" });
     }
   });
@@ -5291,40 +5283,57 @@ Return JSON with:
 
       console.log(`[Bulk Delete Users] Admin ${adminUserId} deleting ${userIds.length} users`);
       
-      const results = {
-        successful: [] as string[],
-        failed: [] as { id: string; reason: string }[],
-      };
-
-      const { ConstraintError } = await import('./storage');
+      // Fetch user information before deletion to get emails
+      const usersToDelete = await storage.getAllUsers();
+      const userMap = new Map(usersToDelete.map(u => [u.id, u.email || 'Unknown']));
+      
+      let successCount = 0;
+      let totalEvidenceDeleted = 0;
+      const affectedCaseStudiesMap = new Map<string, { id: string; title: string }>();
+      const failures: Array<{ email: string; reason: string }> = [];
 
       for (const userId of userIds) {
         try {
-          const deleted = await storage.deleteUser(userId);
+          const result = await storage.deleteUser(userId);
           
-          if (deleted) {
-            results.successful.push(userId);
+          if (result.success) {
+            successCount++;
+            totalEvidenceDeleted += result.evidenceDeleted;
+            
+            // Aggregate affected case studies (avoid duplicates)
+            result.caseStudiesAffected.forEach(cs => {
+              if (!affectedCaseStudiesMap.has(cs.id)) {
+                affectedCaseStudiesMap.set(cs.id, cs);
+              }
+            });
+            
+            console.log(`[Bulk Delete Users] Deleted user ${userId}. Evidence deleted: ${result.evidenceDeleted}, Case studies affected: ${result.caseStudiesAffected.length}`);
           } else {
-            results.failed.push({ id: userId, reason: "User not found" });
+            failures.push({ 
+              email: userMap.get(userId) || userId, 
+              reason: "User not found" 
+            });
           }
         } catch (error: any) {
-          if (error instanceof ConstraintError) {
-            results.failed.push({ 
-              id: userId, 
-              reason: "User has associated data (evidence, reviews, etc.)" 
-            });
-          } else {
-            results.failed.push({ id: userId, reason: "Unknown error" });
-          }
+          failures.push({ 
+            email: userMap.get(userId) || userId, 
+            reason: error.message || "Unknown error" 
+          });
           console.error(`[Bulk Delete Users] Error deleting user ${userId}:`, error);
         }
       }
 
-      console.log(`[Bulk Delete Users] Completed: ${results.successful.length} successful, ${results.failed.length} failed`);
+      const affectedCaseStudies = Array.from(affectedCaseStudiesMap.values());
+      const failedCount = failures.length;
+
+      console.log(`[Bulk Delete Users] Completed: ${successCount} successful, ${failedCount} failed, ${totalEvidenceDeleted} evidence deleted, ${affectedCaseStudies.length} case studies affected`);
       
       res.json({ 
-        message: `Deleted ${results.successful.length} of ${userIds.length} users`,
-        results 
+        successCount,
+        failedCount,
+        failures,
+        totalEvidenceDeleted,
+        affectedCaseStudies
       });
     } catch (error) {
       console.error("[Bulk Delete Users] Error:", error);
