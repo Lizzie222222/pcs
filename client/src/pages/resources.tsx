@@ -230,9 +230,11 @@ export default function Resources() {
             <Badge className={`${getStageColor(resource.stage)} shadow-sm`}>
               {t(`stages.${resource.stage}`)}
             </Badge>
-            <Badge variant="outline" className="text-xs">
-              {getAgeRangeLabel(resource.ageRange)}
-            </Badge>
+            {resource.ageRange && (
+              <Badge variant="outline" className="text-xs">
+                {getAgeRangeLabel(resource.ageRange)}
+              </Badge>
+            )}
           </div>
           <CardTitle className="text-xl text-navy line-clamp-2 font-bold">
             {resource.title}
