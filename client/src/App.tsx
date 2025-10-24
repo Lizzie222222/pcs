@@ -13,6 +13,7 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getGradientById } from "@shared/gradients";
+import { ChatWidget } from "@/components/ChatWidget";
 
 // Page Loading Component
 const PageLoadingFallback = () => (
@@ -201,6 +202,9 @@ function Router() {
           </Suspense>
         </ErrorBoundary>
       </main>
+
+      {/* AI Chat Widget - appears on all pages */}
+      <ChatWidget />
     </div>
   );
 }
