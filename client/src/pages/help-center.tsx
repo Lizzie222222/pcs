@@ -206,7 +206,7 @@ const categories: Category[] = [
 ];
 
 export default function HelpCenter() {
-  const { t } = useTranslation();
+  const { t } = useTranslation('landing');
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 

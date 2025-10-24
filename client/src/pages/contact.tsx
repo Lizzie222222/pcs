@@ -25,7 +25,7 @@ type ContactForm = z.infer<typeof contactSchema>;
 
 export default function Contact() {
   const { toast } = useToast();
-  const { t } = useTranslation();
+  const { t } = useTranslation('landing');
   const [submitted, setSubmitted] = useState(false);
 
   const form = useForm<ContactForm>({
