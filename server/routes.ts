@@ -3075,10 +3075,19 @@ Return JSON with:
   });
 
   // POST /api/schools/:schoolId/photo-consent/upload - Teacher uploads consent document
-  app.post('/api/schools/:schoolId/photo-consent/upload', isAuthenticated, isSchoolMember, photoConsentUpload.single('file'), async (req: any, res) => {
+  app.post('/api/schools/:schoolId/photo-consent/upload', isAuthenticated, photoConsentUpload.single('file'), async (req: any, res) => {
     try {
       const { schoolId } = req.params;
       const userId = req.user.id;
+
+      // Check if user is admin or member of the school (verified or not)
+      const isAdmin = req.user.isAdmin;
+      if (!isAdmin) {
+        const schoolUser = await storage.getSchoolUser(schoolId, userId);
+        if (!schoolUser) {
+          return res.status(403).json({ message: "You don't have permission to upload photo consent for this school" });
+        }
+      }
 
       // Check if file was uploaded
       if (!req.file) {
