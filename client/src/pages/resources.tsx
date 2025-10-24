@@ -318,30 +318,6 @@ export default function Resources() {
           </p>
         </div>
 
-        {/* Language Tabs */}
-        {availableLanguages.length > 0 && (
-          <Tabs value={selectedLanguageTab || availableLanguages[0]} onValueChange={setSelectedLanguageTab} className="mb-8">
-            <TabsList className="w-full justify-start overflow-x-auto bg-white shadow-sm border">
-              {availableLanguages.sort().map((lang) => {
-                const langCode = lang.toLowerCase();
-                const flag = LANGUAGE_FLAG_MAP[langCode] || '🌐';
-                const langName = LANGUAGE_NAME_MAP[langCode] || lang;
-                
-                return (
-                  <TabsTrigger 
-                    key={lang} 
-                    value={lang} 
-                    className="font-semibold"
-                    data-testid={`tab-language-${langCode}`}
-                  >
-                    {flag} {langName}
-                  </TabsTrigger>
-                );
-              })}
-            </TabsList>
-          </Tabs>
-        )}
-
         {/* Filters */}
         <Card className="mb-8 shadow-lg border-2">
           <CardHeader className="bg-gradient-to-r from-pcs_blue/5 to-teal/5">
