@@ -1340,48 +1340,40 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     if (editingEvent && eventDialogOpen) {
       const event = editingEvent as any;
       
-      pageBuilderForm.reset({
-        publicSlug: editingEvent.publicSlug || '',
-        youtubeVideos: (editingEvent.youtubeVideos as any[]) || [],
-        eventPackFiles: (editingEvent.eventPackFiles as any[]) || [],
-        testimonials: (editingEvent.testimonials as any[]) || [],
-        titleTranslations: event.titleTranslations || {},
-        descriptionTranslations: event.descriptionTranslations || {},
-        youtubeVideoTranslations: event.youtubeVideoTranslations || { en: [] },
-        eventPackFileTranslations: event.eventPackFileTranslations || { en: [] },
-        testimonialTranslations: event.testimonialTranslations || { en: [] },
-        featuredVideoIndex: event.featuredVideoIndex || 0,
-        eventPackBannerImageUrl: event.eventPackBannerImageUrl || '',
-        showEvidenceSubmission: event.showEvidenceSubmission || false,
-        evidenceSubmissionText: event.evidenceSubmissionText || {},
-      });
+      // Load translation states
+      const videoTranslations = event.youtubeVideoTranslations || {};
+      const fileTranslations = event.eventPackFileTranslations || {};
+      const testTranslations = event.testimonialTranslations || {};
+      
+      // For backward compatibility, also check old fields
+      if (!videoTranslations.en && event.youtubeVideos) {
+        videoTranslations.en = event.youtubeVideos;
+      }
+      if (!fileTranslations.en && event.eventPackFiles) {
+        fileTranslations.en = event.eventPackFiles;
+      }
+      if (!testTranslations.en && event.testimonials) {
+        testTranslations.en = event.testimonials;
+      }
       
       setTitleTranslations(event.titleTranslations || {});
       setDescriptionTranslations(event.descriptionTranslations || {});
-      setYoutubeVideoTranslations(event.youtubeVideoTranslations || { en: [] });
-      setEventPackFileTranslations(event.eventPackFileTranslations || { en: [] });
-      setTestimonialTranslations(event.testimonialTranslations || { en: [] });
+      setYoutubeVideoTranslations(videoTranslations);
+      setEventPackFileTranslations(fileTranslations);
+      setTestimonialTranslations(testTranslations);
       setFeaturedVideoIndex(event.featuredVideoIndex || 0);
       setEventPackBannerImageUrl(event.eventPackBannerImageUrl || '');
       setShowEvidenceSubmission(event.showEvidenceSubmission || false);
       setEvidenceSubmissionText(event.evidenceSubmissionText || {});
-    } else if (!editingEvent && eventDialogOpen) {
-      pageBuilderForm.reset({
-        publicSlug: '',
-        youtubeVideos: [],
-        eventPackFiles: [],
-        testimonials: [],
-        titleTranslations: {},
-        descriptionTranslations: {},
-        youtubeVideoTranslations: { en: [] },
-        eventPackFileTranslations: { en: [] },
-        testimonialTranslations: { en: [] },
-        featuredVideoIndex: 0,
-        eventPackBannerImageUrl: '',
-        showEvidenceSubmission: false,
-        evidenceSubmissionText: {},
-      });
       
+      // Load form with current language content
+      pageBuilderForm.reset({
+        publicSlug: editingEvent.publicSlug || '',
+        youtubeVideos: videoTranslations[selectedLanguage] || [],
+        eventPackFiles: fileTranslations[selectedLanguage] || [],
+        testimonials: testTranslations[selectedLanguage] || [],
+      });
+    } else if (!editingEvent && eventDialogOpen) {
       setTitleTranslations({});
       setDescriptionTranslations({});
       setYoutubeVideoTranslations({ en: [] });
@@ -1392,8 +1384,31 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       setShowEvidenceSubmission(false);
       setEvidenceSubmissionText({});
       setSelectedLanguage('en');
+      
+      pageBuilderForm.reset({
+        publicSlug: '',
+        youtubeVideos: [],
+        eventPackFiles: [],
+        testimonials: [],
+      });
     }
   }, [editingEvent, eventDialogOpen]);
+  
+  // Update form fields when language changes
+  useEffect(() => {
+    if (editingEvent && eventDialogOpen) {
+      const currentVideos = youtubeVideoTranslations[selectedLanguage] || [];
+      const currentFiles = eventPackFileTranslations[selectedLanguage] || [];
+      const currentTestimonials = testimonialTranslations[selectedLanguage] || [];
+      
+      pageBuilderForm.reset({
+        publicSlug: pageBuilderForm.getValues('publicSlug'),
+        youtubeVideos: currentVideos,
+        eventPackFiles: currentFiles,
+        testimonials: currentTestimonials,
+      });
+    }
+  }, [selectedLanguage, editingEvent, eventDialogOpen]);
 
   // Redirect if not authenticated or not admin (but only after loading completes)
   useEffect(() => {
@@ -1871,13 +1886,33 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     if (!editingEvent) return;
 
     try {
+      const formValues = pageBuilderForm.getValues();
+      
+      // Construct youtubeVideoTranslations from form data and translation states
+      const constructedVideoTranslations = { ...youtubeVideoTranslations };
+      if (formValues.youtubeVideos && formValues.youtubeVideos.length > 0) {
+        constructedVideoTranslations[selectedLanguage] = formValues.youtubeVideos;
+      }
+      
+      // Construct eventPackFileTranslations from form data and translation states
+      const constructedFileTranslations = { ...eventPackFileTranslations };
+      if (formValues.eventPackFiles && formValues.eventPackFiles.length > 0) {
+        constructedFileTranslations[selectedLanguage] = formValues.eventPackFiles;
+      }
+      
+      // Construct testimonialTranslations from form data and translation states
+      const constructedTestimonialTranslations = { ...testimonialTranslations };
+      if (formValues.testimonials && formValues.testimonials.length > 0) {
+        constructedTestimonialTranslations[selectedLanguage] = formValues.testimonials;
+      }
+      
       const pageData = {
-        ...pageBuilderForm.getValues(),
+        ...formValues,
         titleTranslations,
         descriptionTranslations,
-        youtubeVideoTranslations,
-        eventPackFileTranslations,
-        testimonialTranslations,
+        youtubeVideoTranslations: constructedVideoTranslations,
+        eventPackFileTranslations: constructedFileTranslations,
+        testimonialTranslations: constructedTestimonialTranslations,
         featuredVideoIndex,
         eventPackBannerImageUrl,
         showEvidenceSubmission,
