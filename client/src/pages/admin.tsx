@@ -1362,8 +1362,20 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         testTranslations.en = event.testimonials;
       }
       
-      setTitleTranslations(event.titleTranslations || {});
-      setDescriptionTranslations(event.descriptionTranslations || {});
+      // Auto-populate English translations from main event fields
+      const loadedTitleTranslations = event.titleTranslations || {};
+      const loadedDescriptionTranslations = event.descriptionTranslations || {};
+      
+      // If English title/description not set but main event has them, auto-populate
+      if (!loadedTitleTranslations.en && event.title) {
+        loadedTitleTranslations.en = event.title;
+      }
+      if (!loadedDescriptionTranslations.en && event.description) {
+        loadedDescriptionTranslations.en = event.description;
+      }
+      
+      setTitleTranslations(loadedTitleTranslations);
+      setDescriptionTranslations(loadedDescriptionTranslations);
       setYoutubeVideoTranslations(videoTranslations);
       setEventPackFileTranslations(fileTranslations);
       setTestimonialTranslations(testTranslations);
@@ -5508,8 +5520,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                         <div className="flex items-start gap-3">
                           <Copy className="h-5 w-5 text-blue-600 mt-0.5" />
                           <div className="flex-1">
-                            <p className="text-sm font-medium text-blue-900 mb-2">
+                            <p className="text-sm font-medium text-blue-900 mb-1">
                               Quick Copy from Another Language
+                            </p>
+                            <p className="text-xs text-blue-700 mb-2">
+                              Duplicate content from one language to {languageNames[selectedLanguage]}, then customize as needed. Perfect for creating language-specific variations.
                             </p>
                             <Select onValueChange={copyContentFromLanguage}>
                               <SelectTrigger className="bg-white" data-testid="select-copy-language">
@@ -5533,9 +5548,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                   ))}
                               </SelectContent>
                             </Select>
-                            <p className="text-xs text-blue-700 mt-1">
-                              Copies all content (videos, files, testimonials) from selected language to {languageNames[selectedLanguage]}
-                            </p>
                           </div>
                         </div>
                       </div>
@@ -5552,7 +5564,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           >
                             <span className="flex items-center gap-2">
                               <TableIcon className="h-4 w-4" />
-                              Content Overview ({Object.keys(youtubeVideoTranslations).filter(lang => (youtubeVideoTranslations[lang]?.length || 0) > 0 || (eventPackFileTranslations[lang]?.length || 0) > 0).length} languages)
+                              View Translation Progress ({Object.keys(youtubeVideoTranslations).filter(lang => (youtubeVideoTranslations[lang]?.length || 0) > 0 || (eventPackFileTranslations[lang]?.length || 0) > 0).length} of {supportedLanguages.length} languages have content)
                             </span>
                             <ChevronDown className="h-4 w-4" />
                           </Button>
@@ -5770,22 +5782,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           Add Video
                         </Button>
                       </div>
-                      
-                      {/* Translation Strategy Help */}
-                      <Alert className="bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200">
-                        <Info className="h-4 w-4 text-purple-600" />
-                        <AlertTitle className="text-purple-900">Translation Strategy</AlertTitle>
-                        <AlertDescription className="text-sm text-purple-800">
-                          <div className="space-y-2 mt-2">
-                            <div>
-                              <strong>Option 1 - Same video, translated metadata:</strong> Use the same YouTube URL across all languages, but translate the title and description into each language.
-                            </div>
-                            <div>
-                              <strong>Option 2 - Language-specific videos:</strong> Link to different videos for each language (e.g., a video in Spanish for Spanish users, French video for French users).
-                            </div>
-                          </div>
-                        </AlertDescription>
-                      </Alert>
                       
                       {videoFields.length === 0 ? (
                         <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
@@ -6008,22 +6004,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           Add File
                         </Button>
                       </div>
-                      
-                      {/* Resource Translation Help */}
-                      <Alert className="bg-gradient-to-r from-teal-50 to-green-50 border-teal-200">
-                        <Info className="h-4 w-4 text-teal-600" />
-                        <AlertTitle className="text-teal-900">Resource Translation Options</AlertTitle>
-                        <AlertDescription className="text-sm text-teal-800">
-                          <div className="space-y-2 mt-2">
-                            <div>
-                              <strong>Same file with translated metadata:</strong> Upload the same file for all languages but translate the title and description.
-                            </div>
-                            <div>
-                              <strong>Language-specific files:</strong> Upload different files for each language containing translated content (e.g., Spanish PDF for Spanish users).
-                            </div>
-                          </div>
-                        </AlertDescription>
-                      </Alert>
                       
                       {packFileFields.length === 0 ? (
                         <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
