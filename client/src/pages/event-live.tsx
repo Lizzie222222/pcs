@@ -1,15 +1,18 @@
+import { useState } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { LoadingSpinner } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, Calendar, MapPin, Users, ExternalLink, CheckCircle, Lock, ArrowLeft } from "lucide-react";
+import { Download, Calendar, MapPin, Users, ExternalLink, CheckCircle, Lock, ArrowLeft, Play } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
+import { VideoLightbox } from "@/components/VideoLightbox";
 import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
+import eventPackBannerUrl from "@assets/event-pack-2_1761297797787.png";
 
 interface YoutubeVideo {
   title: string;
@@ -49,12 +52,58 @@ interface Event {
   recordingAvailableFrom?: string;
   pagePublishedStatus?: 'draft' | 'coming_soon' | 'published';
   accessType?: 'open' | 'closed';
+  // Multi-language fields
+  titleTranslations?: Record<string, string>;
+  descriptionTranslations?: Record<string, string>;
+  youtubeVideoTranslations?: Record<string, YoutubeVideo[]>;
+  eventPackFileTranslations?: Record<string, EventPackFile[]>;
+  testimonialTranslations?: Record<string, Testimonial[]>;
+  // Display configuration
+  featuredVideoIndex?: number;
+  eventPackBannerImageUrl?: string;
+  showEvidenceSubmission?: boolean;
+  evidenceSubmissionText?: Record<string, string>;
+}
+
+// Translation helper function
+function getTranslatedContent<T>(
+  translations: Record<string, T> | undefined | null,
+  fallbackValue: T,
+  userLanguage: string
+): T {
+  if (!translations || Object.keys(translations).length === 0) {
+    return fallbackValue;
+  }
+  
+  // Try user's preferred language
+  if (translations[userLanguage]) {
+    return translations[userLanguage];
+  }
+  
+  // Fall back to English
+  if (translations['en']) {
+    return translations['en'];
+  }
+  
+  // Fall back to original value
+  return fallbackValue;
+}
+
+// Extract YouTube video ID from URL
+function getYouTubeVideoId(url: string): string | null {
+  const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([\w-]{11})/);
+  return videoIdMatch ? videoIdMatch[1] : null;
+}
+
+// Get YouTube thumbnail URL
+function getYouTubeThumbnail(url: string): string {
+  const videoId = getYouTubeVideoId(url);
+  return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
 }
 
 function YouTubeEmbed({ url, title }: { url: string; title: string }) {
   const getYouTubeEmbedUrl = (url: string) => {
-    const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([\w-]{11})/);
-    const videoId = videoIdMatch ? videoIdMatch[1] : null;
+    const videoId = getYouTubeVideoId(url);
     return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   };
 
@@ -150,6 +199,11 @@ export default function EventLivePage() {
   const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
   const { t } = useTranslation('landing');
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [selectedVideo, setSelectedVideo] = useState<YoutubeVideo | null>(null);
+  
+  // Get user language
+  const userLanguage = user?.preferredLanguage || 'en';
   
   const { data: event, isLoading, error } = useQuery<Event>({
     queryKey: ['/api/events/slug', params.slug],
@@ -264,6 +318,11 @@ export default function EventLivePage() {
     trackDownloadMutation.mutate(fileName);
   };
 
+  const handleVideoThumbnailClick = (video: YoutubeVideo) => {
+    setSelectedVideo(video);
+    setLightboxOpen(true);
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col">
@@ -292,6 +351,14 @@ export default function EventLivePage() {
     );
   }
 
+  // Get translated content
+  const translatedTitle = getTranslatedContent(event.titleTranslations, event.title, userLanguage);
+  const translatedDescription = getTranslatedContent(event.descriptionTranslations, event.description, userLanguage);
+  const translatedVideos = getTranslatedContent(event.youtubeVideoTranslations, event.youtubeVideos || [], userLanguage);
+  const translatedEventPackFiles = getTranslatedContent(event.eventPackFileTranslations, event.eventPackFiles || [], userLanguage);
+  const translatedTestimonials = getTranslatedContent(event.testimonialTranslations, event.testimonials || [], userLanguage);
+  const translatedEvidenceText = getTranslatedContent(event.evidenceSubmissionText, 'Join thousands of students worldwide making a difference. Submit your evidence and showcase your plastic reduction journey!', userLanguage);
+
   // Check if page is in coming soon status
   if (event.pagePublishedStatus === 'coming_soon') {
     return (
@@ -302,21 +369,21 @@ export default function EventLivePage() {
               <div className="mb-8">
                 <img
                   src={event.imageUrl}
-                  alt={event.title}
+                  alt={translatedTitle}
                   className="max-h-32 mx-auto object-contain drop-shadow-lg"
                   data-testid="img-coming-soon-logo"
                 />
               </div>
             )}
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900" data-testid="text-coming-soon-title">
-              {event.title}
+              {translatedTitle}
             </h1>
             <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-8 mb-6 border-2 border-pcs_blue/20">
               <p className="text-2xl font-semibold text-pcs_blue mb-4" data-testid="text-coming-soon-message">
                 Coming Soon!
               </p>
               <p className="text-lg text-gray-700 leading-relaxed" data-testid="text-coming-soon-description">
-                {event.description}
+                {translatedDescription}
               </p>
               <div className="mt-6 flex flex-wrap justify-center gap-4">
                 <div className="flex items-center gap-2 bg-pcs_blue/10 px-4 py-2 rounded-full">
@@ -349,7 +416,7 @@ export default function EventLivePage() {
               <div className="mb-8 text-center">
                 <img
                   src={event.imageUrl}
-                  alt={event.title}
+                  alt={translatedTitle}
                   className="max-h-40 mx-auto object-contain drop-shadow-2xl rounded-lg"
                   data-testid="img-restricted-logo"
                 />
@@ -358,7 +425,7 @@ export default function EventLivePage() {
 
             {/* Event Title */}
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-navy text-center leading-tight" data-testid="text-restricted-title">
-              {event.title}
+              {translatedTitle}
             </h1>
 
             {/* Event Details Preview */}
@@ -489,6 +556,14 @@ export default function EventLivePage() {
   // Determine if content should be shown
   const showContent = event.isPreRecorded ? isRecordingAvailable : true;
 
+  // Prepare videos for display
+  const videos = translatedVideos;
+  const featuredIndex = event.featuredVideoIndex || 0;
+  const hasSingleVideo = videos.length === 1;
+  const hasMultipleVideos = videos.length > 1;
+  const featuredVideo = hasMultipleVideos && videos[featuredIndex] ? videos[featuredIndex] : null;
+  const thumbnailVideos = hasMultipleVideos ? videos.filter((_, index) => index !== featuredIndex) : [];
+
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       {/* Hero Section */}
@@ -499,7 +574,7 @@ export default function EventLivePage() {
             <div className="mb-10">
               <img
                 src={event.imageUrl}
-                alt={event.title}
+                alt={translatedTitle}
                 className="max-h-40 mx-auto object-contain drop-shadow-lg transition-opacity duration-300"
                 data-testid="img-event-logo"
                 onError={(e) => {
@@ -513,7 +588,7 @@ export default function EventLivePage() {
           )}
           
           <h1 className="text-5xl md:text-6xl font-bold text-center mb-12 text-gray-900 leading-tight tracking-tight" data-testid="text-event-title">
-            {event.title}
+            {translatedTitle}
           </h1>
 
           {/* Pre-recorded content not yet available message */}
@@ -531,24 +606,85 @@ export default function EventLivePage() {
             </div>
           )}
 
-          {/* YouTube Videos Section */}
-          {showContent && event.youtubeVideos && event.youtubeVideos.length > 0 && (
+          {/* Redesigned Video Section */}
+          {showContent && videos && videos.length > 0 && (
             <div className="mb-12">
-              <div className="space-y-10">
-                {event.youtubeVideos.map((video, index) => (
-                  <div key={index} className="bg-white rounded-xl shadow-lg p-6 md:p-8" data-testid={`div-video-${index}`}>
-                    <h3 className="text-2xl md:text-3xl font-semibold mb-3 text-gray-900" data-testid={`text-video-title-${index}`}>
-                      {video.title}
+              {/* Single Video - Show as before */}
+              {hasSingleVideo && (
+                <div className="bg-white rounded-xl shadow-lg p-6 md:p-8" data-testid="div-single-video">
+                  <h3 className="text-2xl md:text-3xl font-semibold mb-3 text-gray-900" data-testid="text-single-video-title">
+                    {videos[0].title}
+                  </h3>
+                  {videos[0].description && (
+                    <p className="text-gray-600 mb-6 text-lg" data-testid="text-single-video-description">
+                      {videos[0].description}
+                    </p>
+                  )}
+                  <YouTubeEmbed url={videos[0].url} title={videos[0].title} />
+                </div>
+              )}
+
+              {/* Multiple Videos - Featured video with thumbnails */}
+              {hasMultipleVideos && featuredVideo && (
+                <div className="space-y-8">
+                  {/* Featured Video */}
+                  <div className="bg-white rounded-xl shadow-lg p-6 md:p-8" data-testid="div-featured-video">
+                    <h3 className="text-2xl md:text-3xl font-semibold mb-3 text-gray-900" data-testid="text-featured-video-title">
+                      {featuredVideo.title}
                     </h3>
-                    {video.description && (
-                      <p className="text-gray-600 mb-6 text-lg" data-testid={`text-video-description-${index}`}>
-                        {video.description}
+                    {featuredVideo.description && (
+                      <p className="text-gray-600 mb-6 text-lg" data-testid="text-featured-video-description">
+                        {featuredVideo.description}
                       </p>
                     )}
-                    <YouTubeEmbed url={video.url} title={video.title} />
+                    <YouTubeEmbed url={featuredVideo.url} title={featuredVideo.title} />
                   </div>
-                ))}
-              </div>
+
+                  {/* Video Thumbnails Grid */}
+                  {thumbnailVideos.length > 0 && (
+                    <div>
+                      <h3 className="text-2xl font-semibold mb-4 text-gray-900" data-testid="text-more-videos">
+                        More Videos
+                      </h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {thumbnailVideos.map((video, index) => (
+                          <div
+                            key={index}
+                            onClick={() => handleVideoThumbnailClick(video)}
+                            className="group cursor-pointer bg-white rounded-lg shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
+                            data-testid={`card-video-thumbnail-${index}`}
+                          >
+                            <div className="relative aspect-video bg-gray-900">
+                              <img
+                                src={getYouTubeThumbnail(video.url)}
+                                alt={video.title}
+                                className="w-full h-full object-cover group-hover:opacity-80 transition-opacity"
+                                data-testid={`img-video-thumbnail-${index}`}
+                              />
+                              {/* Play Icon Overlay */}
+                              <div className="absolute inset-0 flex items-center justify-center bg-black/30 group-hover:bg-black/50 transition-colors">
+                                <div className="w-16 h-16 bg-white/90 rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
+                                  <Play className="w-8 h-8 text-pcs_blue ml-1" fill="currentColor" />
+                                </div>
+                              </div>
+                            </div>
+                            <div className="p-4">
+                              <h4 className="font-semibold text-lg text-gray-900 group-hover:text-pcs_blue transition-colors line-clamp-2" data-testid={`text-video-thumbnail-title-${index}`}>
+                                {video.title}
+                              </h4>
+                              {video.description && (
+                                <p className="text-gray-600 text-sm mt-2 line-clamp-2" data-testid={`text-video-thumbnail-description-${index}`}>
+                                  {video.description}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
           )}
           
@@ -626,7 +762,7 @@ export default function EventLivePage() {
           {/* Event Description - Moved below videos and status banners */}
           <div className="mt-12 mb-8">
             <p className="text-lg md:text-xl text-center text-gray-700 max-w-3xl mx-auto leading-relaxed" data-testid="text-event-description">
-              {event.description}
+              {translatedDescription}
             </p>
           </div>
 
@@ -670,69 +806,119 @@ export default function EventLivePage() {
       {/* Main Content */}
       <div className="max-w-6xl mx-auto px-4 py-12">
 
-        {/* Event Pack Files Section */}
-        {showContent && event.eventPackFiles && event.eventPackFiles.length > 0 && (
-          <div className="mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-10 text-gray-900" data-testid="text-resources-title">
-              Event Resources
-            </h2>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {event.eventPackFiles.map((file, index) => (
-                <Card key={index} className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-pcs_blue/30 group" data-testid={`card-resource-${index}`}>
-                  <div className="relative h-40 bg-gradient-to-br from-pcs_blue to-ocean-blue flex items-center justify-center">
-                    <Download className="w-16 h-16 text-white/20 absolute" />
-                    <div className="relative z-10 bg-white/20 backdrop-blur-sm rounded-full p-4">
-                      <Download className="w-12 h-12 text-white" />
+        {/* Event Pack Banner Section */}
+        {showContent && translatedEventPackFiles && translatedEventPackFiles.length > 0 && (
+          <div className="mb-16" data-testid="section-event-pack">
+            <div className="bg-gradient-to-br from-pcs_blue/5 to-ocean-blue/5 rounded-3xl p-8 md:p-12 shadow-lg border-2 border-pcs_blue/10">
+              {/* Banner Image */}
+              <div className="mb-8">
+                <img
+                  src={event.eventPackBannerImageUrl || eventPackBannerUrl}
+                  alt="Event Pack Banner"
+                  className="w-full h-auto rounded-2xl shadow-md"
+                  data-testid="img-event-pack-banner"
+                />
+              </div>
+
+              {/* Heading */}
+              <h2 className="text-3xl md:text-4xl font-bold mb-10 text-center text-gray-900" data-testid="text-event-pack-title">
+                Download the Event Pack
+              </h2>
+
+              {/* Event Pack Files Grid */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {translatedEventPackFiles.map((file, index) => (
+                  <Card key={index} className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-pcs_blue/30 group" data-testid={`card-event-pack-file-${index}`}>
+                    <div className="relative h-40 bg-gradient-to-br from-pcs_blue to-ocean-blue flex items-center justify-center">
+                      <Download className="w-16 h-16 text-white/20 absolute" />
+                      <div className="relative z-10 bg-white/20 backdrop-blur-sm rounded-full p-4">
+                        <Download className="w-12 h-12 text-white" />
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-6">
-                    <h3 className="font-bold text-lg mb-2 text-gray-900 group-hover:text-pcs_blue transition-colors" data-testid={`text-resource-title-${index}`}>
-                      {file.title}
-                    </h3>
-                    {file.description && (
-                      <p className="text-gray-600 text-sm mb-3 leading-relaxed line-clamp-2" data-testid={`text-resource-description-${index}`}>
-                        {file.description}
-                      </p>
-                    )}
-                    {file.fileName && (
-                      <p className="text-gray-500 text-xs mb-1 font-medium truncate">{file.fileName}</p>
-                    )}
-                    {file.fileSize && file.fileSize > 0 && (
-                      <p className="text-gray-500 text-xs mb-4">
-                        {(file.fileSize / 1024 / 1024).toFixed(2)} MB
-                      </p>
-                    )}
-                    <Button
-                      asChild
-                      className="w-full bg-gradient-to-r from-pcs_blue to-ocean-blue hover:from-pcs_blue/90 hover:to-ocean-blue/90 text-white"
-                      data-testid={`button-download-${index}`}
-                    >
-                      <a 
-                        href={file.fileUrl} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
-                        download
-                        onClick={() => handleDownloadClick(file.fileName || file.title)}
+                    <div className="p-6">
+                      <h3 className="font-bold text-lg mb-2 text-gray-900 group-hover:text-pcs_blue transition-colors" data-testid={`text-event-pack-file-title-${index}`}>
+                        {file.title}
+                      </h3>
+                      {file.description && (
+                        <p className="text-gray-600 text-sm mb-3 leading-relaxed line-clamp-2" data-testid={`text-event-pack-file-description-${index}`}>
+                          {file.description}
+                        </p>
+                      )}
+                      {file.fileName && (
+                        <p className="text-gray-500 text-xs mb-1 font-medium truncate">{file.fileName}</p>
+                      )}
+                      {file.fileSize && file.fileSize > 0 && (
+                        <p className="text-gray-500 text-xs mb-4">
+                          {(file.fileSize / 1024 / 1024).toFixed(2)} MB
+                        </p>
+                      )}
+                      <Button
+                        asChild
+                        className="w-full bg-gradient-to-r from-pcs_blue to-ocean-blue hover:from-pcs_blue/90 hover:to-ocean-blue/90 text-white"
+                        data-testid={`button-download-event-pack-${index}`}
                       >
-                        <Download className="w-4 h-4 mr-2" />
-                        Download
-                      </a>
-                    </Button>
-                  </div>
-                </Card>
-              ))}
+                        <a 
+                          href={file.fileUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer" 
+                          download
+                          onClick={() => handleDownloadClick(file.fileName || file.title)}
+                        >
+                          <Download className="w-4 h-4 mr-2" />
+                          Download
+                        </a>
+                      </Button>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Evidence Submission CTA Section */}
+        {event.showEvidenceSubmission && (
+          <div className="mb-16" data-testid="section-evidence-submission">
+            <div className="relative bg-gradient-to-br from-teal via-ocean-blue to-pcs_blue rounded-3xl p-12 md:p-16 shadow-2xl overflow-hidden">
+              {/* Decorative Background Elements */}
+              <div className="absolute top-0 right-0 w-96 h-96 bg-white/10 rounded-full -mr-48 -mt-48 blur-3xl"></div>
+              <div className="absolute bottom-0 left-0 w-96 h-96 bg-white/10 rounded-full -ml-48 -mb-48 blur-3xl"></div>
+
+              <div className="relative text-center text-white">
+                <h2 className="text-4xl md:text-5xl font-bold mb-6" data-testid="text-evidence-submission-title">
+                  SUBMIT YOUR EVIDENCE
+                </h2>
+                <p className="text-xl md:text-2xl mb-10 max-w-3xl mx-auto leading-relaxed opacity-95" data-testid="text-evidence-submission-description">
+                  {translatedEvidenceText}
+                </p>
+                <Button
+                  asChild
+                  size="lg"
+                  className="bg-white text-pcs_blue hover:bg-gray-100 font-bold text-xl px-12 py-7 shadow-2xl hover:shadow-3xl transition-all transform hover:scale-105"
+                  data-testid="button-submit-evidence"
+                >
+                  <a href={isAuthenticated ? '/home?tab=evidence' : '/register'}>
+                    {isAuthenticated ? 'Submit Your Evidence' : 'Sign Up to Submit Evidence'}
+                  </a>
+                </Button>
+                {!isAuthenticated && (
+                  <p className="text-white/90 mt-6 text-sm">
+                    Already have an account? <a href="/login" className="underline font-semibold hover:text-white">Sign in here</a>
+                  </p>
+                )}
+              </div>
             </div>
           </div>
         )}
 
         {/* Testimonials Section */}
-        {event.testimonials && event.testimonials.length > 0 && (
+        {translatedTestimonials && translatedTestimonials.length > 0 && (
           <div className="mb-16">
             <h2 className="text-3xl md:text-4xl font-bold mb-10 text-gray-900" data-testid="text-testimonials-title">
               What People Are Saying
             </h2>
             <div className="grid md:grid-cols-2 gap-6">
-              {event.testimonials.map((testimonial, index) => (
+              {translatedTestimonials.map((testimonial, index) => (
                 <Card key={index} className="p-8 bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-xl transition-shadow border-l-4 border-teal" data-testid={`card-testimonial-${index}`}>
                   <blockquote className="text-lg md:text-xl italic text-gray-700 mb-6 leading-relaxed" data-testid={`text-testimonial-quote-${index}`}>
                     "{testimonial.quote}"
@@ -756,6 +942,16 @@ export default function EventLivePage() {
         )}
 
       </div>
+
+      {/* Video Lightbox */}
+      {selectedVideo && (
+        <VideoLightbox
+          open={lightboxOpen}
+          onOpenChange={setLightboxOpen}
+          videoUrl={selectedVideo.url}
+          title={selectedVideo.title}
+        />
+      )}
 
       <EventFooter t={t} />
     </div>
