@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { CheckCircle, Circle, Lock, Clock, X, ExternalLink, BookOpen, Download } from "lucide-react";
+import { CheckCircle, Circle, Lock, Clock, X, ExternalLink } from "lucide-react";
 import inspireIcon from "@assets/PSC - Inspire_1760461719847.png";
 import investigateIcon from "@assets/PSC - Investigate_1760461719848.png";
 import actIcon from "@assets/PSC - Act_1760461719847.png";
@@ -211,45 +211,9 @@ export default function ProgressTracker({
     setShowAuditModal(true);
   };
 
-  // Determine resource URLs based on school type
-  const schoolType = schoolData?.type;
-  const isPrimary = !schoolType || schoolType === 'primary';
-  const teacherToolkitUrl = isPrimary 
-    ? '/PCS_PRIMARY_Teacher_Toolkit.pdf'
-    : '/PCS_SECONDARY_Teacher_Toolkit.pdf';
-  const studentWorkbookUrl = isPrimary
-    ? '/PCS_PRIMARY_Pupil_Workbook.pdf'
-    : '/PCS_SECONDARY_Student_Workbook.pdf';
-
   return (
     <>
       <div className="space-y-10">
-        {/* Resources Quick Links */}
-        <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-md mb-10">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-2 mb-4">
-              <BookOpen className="h-5 w-5 text-ocean-blue" />
-              <h3 className="text-lg font-bold text-navy">Resources</h3>
-            </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Teacher Toolkit Link */}
-              <a href={teacherToolkitUrl} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="w-full" data-testid="button-teacher-toolkit">
-                  <Download className="h-4 w-4 mr-2" />
-                  Teacher Toolkit
-                </Button>
-              </a>
-              {/* Student Workbook Link */}
-              <a href={studentWorkbookUrl} target="_blank" rel="noopener noreferrer">
-                <Button variant="outline" className="w-full" data-testid="button-student-workbook">
-                  <Download className="h-4 w-4 mr-2" />
-                  Student Workbook
-                </Button>
-              </a>
-            </div>
-          </CardContent>
-        </Card>
-
         <div className="text-center">
           <h2 className="text-3xl lg:text-4xl font-bold text-navy mb-4 tracking-tight">{t('progress.title')}</h2>
           <p className="text-gray-600 text-lg font-medium">{t('progress.journey_description')}</p>

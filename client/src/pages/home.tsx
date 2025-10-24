@@ -74,7 +74,8 @@ import {
   Edit,
   Plus,
   X,
-  Download
+  Download,
+  FileText
 } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -602,6 +603,15 @@ export default function Home() {
     }
   };
 
+  // Determine resource URLs based on school type
+  const isPrimary = !school.type || school.type === 'primary';
+  const teacherToolkitUrl = isPrimary 
+    ? '/PCS_PRIMARY_Teacher_Toolkit.pdf'
+    : '/PCS_SECONDARY_Teacher_Toolkit.pdf';
+  const studentWorkbookUrl = isPrimary
+    ? '/PCS_PRIMARY_Pupil_Workbook.pdf'
+    : '/PCS_SECONDARY_Student_Workbook.pdf';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -638,6 +648,31 @@ export default function Home() {
                   <div className="flex items-center gap-2 text-sm text-gray-600">
                     <MapPin className="h-5 w-5 text-pcs_blue" />
                     <span className="font-medium">{t('progress.current_stage')}: <span className="text-navy font-semibold">{t(`progress.${school.currentStage}.title`)}</span></span>
+                  </div>
+                  {/* Teacher Toolkit & Student Workbook Buttons */}
+                  <div className="flex items-center gap-2 mt-2">
+                    <a href={teacherToolkitUrl} target="_blank" rel="noopener noreferrer">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-xs h-7 px-3"
+                        data-testid="button-teacher-toolkit"
+                      >
+                        <BookOpen className="h-3 w-3 mr-1.5" />
+                        Teacher Toolkit
+                      </Button>
+                    </a>
+                    <a href={studentWorkbookUrl} target="_blank" rel="noopener noreferrer">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        className="text-xs h-7 px-3"
+                        data-testid="button-student-workbook"
+                      >
+                        <FileText className="h-3 w-3 mr-1.5" />
+                        Student Workbook
+                      </Button>
+                    </a>
                   </div>
                   {school.roundsCompleted && school.roundsCompleted > 0 && (
                     <div className="flex items-center gap-2 text-sm">
