@@ -1,5 +1,11 @@
 /**
  * Predefined gradient options for event banners
+ * Using ONLY official Plastic Clever Schools brand colors:
+ * - PCS Navy: #204969
+ * - PCS Blue: #009ADE
+ * - Inspire Green: #00BBB4
+ * - Investigate Yellow: #FFC557
+ * - Act Red: #FF595A
  */
 
 export interface GradientOption {
@@ -12,62 +18,62 @@ export interface GradientOption {
 export const BANNER_GRADIENTS: GradientOption[] = [
   {
     id: 'ocean',
-    name: '🌊 Ocean Blue',
-    gradient: 'linear-gradient(135deg, #0066CC 0%, #004B9B 100%)',
+    name: '🌊 PCS Classic',
+    gradient: 'linear-gradient(135deg, #204969 0%, #009ADE 100%)',
     textColorRecommended: '#FFFFFF',
   },
   {
     id: 'sunset',
-    name: '🌅 Sunset Orange',
-    gradient: 'linear-gradient(135deg, #FF6B35 0%, #F7931E 100%)',
+    name: '🔥 Investigate & Act',
+    gradient: 'linear-gradient(135deg, #FFC557 0%, #FF595A 100%)',
     textColorRecommended: '#FFFFFF',
   },
   {
     id: 'forest',
-    name: '🌲 Forest Green',
-    gradient: 'linear-gradient(135deg, #10B981 0%, #059669 100%)',
+    name: '🌿 Inspire Green',
+    gradient: 'linear-gradient(135deg, #00BBB4 0%, #009ADE 100%)',
     textColorRecommended: '#FFFFFF',
   },
   {
     id: 'purple',
-    name: '💜 Purple Dream',
-    gradient: 'linear-gradient(135deg, #8B5CF6 0%, #6D28D9 100%)',
+    name: '💙 Ocean Wave',
+    gradient: 'linear-gradient(135deg, #009ADE 0%, #00BBB4 100%)',
     textColorRecommended: '#FFFFFF',
   },
   {
     id: 'coral',
-    name: '🪸 Coral Reef',
-    gradient: 'linear-gradient(135deg, #F59E0B 0%, #EF4444 100%)',
+    name: '☀️ Action Energy',
+    gradient: 'linear-gradient(135deg, #FF595A 0%, #FFC557 100%)',
     textColorRecommended: '#FFFFFF',
   },
   {
     id: 'teal',
-    name: '🐚 Teal Wave',
-    gradient: 'linear-gradient(135deg, #14B8A6 0%, #0891B2 100%)',
+    name: '🌊 Deep Ocean',
+    gradient: 'linear-gradient(135deg, #204969 0%, #00BBB4 100%)',
     textColorRecommended: '#FFFFFF',
   },
   {
     id: 'midnight',
-    name: '🌙 Midnight Blue',
-    gradient: 'linear-gradient(135deg, #1E293B 0%, #0F172A 100%)',
+    name: '🎯 Bold Impact',
+    gradient: 'linear-gradient(135deg, #FF595A 0%, #204969 100%)',
     textColorRecommended: '#FFFFFF',
   },
   {
     id: 'rose',
-    name: '🌹 Rose Garden',
-    gradient: 'linear-gradient(135deg, #EC4899 0%, #BE185D 100%)',
+    name: '💚 Inspire',
+    gradient: 'linear-gradient(135deg, #00BBB4 0%, #00BBB4 100%)',
     textColorRecommended: '#FFFFFF',
   },
   {
     id: 'sky',
-    name: '☁️ Sky Blue',
-    gradient: 'linear-gradient(135deg, #38BDF8 0%, #0284C7 100%)',
+    name: '💙 PCS Blue',
+    gradient: 'linear-gradient(135deg, #009ADE 0%, #009ADE 100%)',
     textColorRecommended: '#FFFFFF',
   },
   {
     id: 'lime',
-    name: '🍋 Lime Fresh',
-    gradient: 'linear-gradient(135deg, #84CC16 0%, #65A30D 100%)',
+    name: '🌟 Bright Future',
+    gradient: 'linear-gradient(135deg, #FFC557 0%, #009ADE 100%)',
     textColorRecommended: '#FFFFFF',
   },
 ];
