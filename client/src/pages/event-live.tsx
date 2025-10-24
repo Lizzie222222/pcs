@@ -1190,36 +1190,6 @@ export default function EventLivePage() {
                   </Button>
                 </div>
                 
-                {/* Pre-Event Tips */}
-                <div className="bg-white/60 rounded-lg p-5 border border-blue-100">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                    <CheckCircle className="w-5 h-5 text-teal-600" />
-                    Prepare for the Event
-                  </h3>
-                  <ul className="space-y-2 text-gray-700">
-                    <li className="flex items-start gap-2">
-                      <span className="text-teal-600 mt-1">•</span>
-                      <span>Mark your calendar and set a reminder</span>
-                    </li>
-                    {event.isVirtual && (
-                      <li className="flex items-start gap-2">
-                        <span className="text-teal-600 mt-1">•</span>
-                        <span>Test your internet connection and audio/video setup</span>
-                      </li>
-                    )}
-                    {!event.isVirtual && event.location && (
-                      <li className="flex items-start gap-2">
-                        <span className="text-teal-600 mt-1">•</span>
-                        <span>Plan your route to {event.location}</span>
-                      </li>
-                    )}
-                    <li className="flex items-start gap-2">
-                      <span className="text-teal-600 mt-1">•</span>
-                      <span>Review event materials and resources below</span>
-                    </li>
-                  </ul>
-                </div>
-                
                 {event.meetingLink && (
                   <p className="text-blue-700 mt-4 text-sm text-center">
                     The meeting link will be available when the event starts
