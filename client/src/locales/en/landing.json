@@ -242,7 +242,7 @@
     "no_upcoming_events": "No upcoming events at the moment. Check back soon!",
     "event_live_now": "🎉 Event is Live Now!",
     "join_meeting_now": "Join Meeting Now",
-    "event_not_started": "This event hasn't started yet. Please check back on {date}",
+    "event_not_started": "This event hasn't started yet. Please check back on {{date}}",
     "meeting_link_available": "The meeting link will be available when the event starts.",
     "catch_up_recording": "📺 Catch Up on the Recording",
     "missed_event_message": "Missed this event? No worries! You can watch the full recording and access all event resources below.",
