@@ -846,6 +846,93 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI-powered metadata generation for resources (admin only)
+  app.post('/api/resources/ai-analyze-metadata', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const requestSchema = z.object({
+        resources: z.array(z.object({
+          id: z.string(),
+          title: z.string(),
+          filename: z.string(),
+          fileType: z.string(),
+        })),
+      });
+
+      const { resources } = requestSchema.parse(req.body);
+
+      if (resources.length === 0) {
+        return res.json({ suggestions: [] });
+      }
+
+      // Initialize OpenAI client
+      const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+
+      const suggestions = [];
+
+      // Process each resource
+      for (const resource of resources) {
+        try {
+          const prompt = `Analyze this educational resource and suggest metadata:
+Title: ${resource.title}
+Filename: ${resource.filename}
+
+Available stages: inspire (introduce topic), investigate (research/explore), act (take action)
+Available themes: ocean_literacy, climate_change, plastic_pollution, science, design_technology, geography, cross_curricular, enrichment
+Available resource types: lesson_plan, assembly, teacher_toolkit, student_workbook, printable_activities
+
+Return JSON with:
+- description (2-3 sentences)
+- stage (one of the above)
+- theme (one of the above)
+- ageRange (e.g., "8-12 years")
+- resourceType (one of the above)`;
+
+          const response = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [{ role: 'user', content: prompt }],
+            response_format: { type: 'json_object' },
+            temperature: 0.7,
+          });
+
+          const content = response.choices[0]?.message?.content;
+          if (!content) {
+            console.error(`No response from OpenAI for resource ${resource.id}`);
+            continue;
+          }
+
+          const aiSuggestion = JSON.parse(content);
+
+          suggestions.push({
+            id: resource.id,
+            description: aiSuggestion.description || '',
+            stage: aiSuggestion.stage || 'inspire',
+            theme: aiSuggestion.theme || 'ocean_literacy',
+            ageRange: aiSuggestion.ageRange || '',
+            resourceType: aiSuggestion.resourceType || 'lesson_plan',
+          });
+
+          console.log(`AI metadata generated for resource ${resource.id}: ${resource.title}`);
+        } catch (error) {
+          console.error(`Error analyzing resource ${resource.id}:`, error);
+          // Continue processing other resources, don't fail the entire request
+        }
+      }
+
+      res.json({ suggestions });
+    } catch (error) {
+      console.error("Error in AI metadata analysis:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      // Return empty suggestions on failure instead of failing
+      res.json({ suggestions: [] });
+    }
+  });
+
   // Get notifications for authenticated user's school
   app.get('/api/notifications', isAuthenticated, async (req: any, res) => {
     try {
