@@ -212,16 +212,16 @@ export default function Resources() {
         {/* Badges at top */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
           {isNew && (
-            <Badge className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg animate-pulse">
+            <div className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-gradient-to-r from-yellow-400 to-orange-500 text-white shadow-lg animate-pulse">
               <Sparkles className="h-3 w-3 mr-1" />
               NEW
-            </Badge>
+            </div>
           )}
           {isRecommended && (
-            <Badge className="bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
+            <div className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold bg-gradient-to-r from-purple-500 to-pink-500 text-white shadow-lg">
               <Star className="h-3 w-3 mr-1" />
               RECOMMENDED
-            </Badge>
+            </div>
           )}
         </div>
 
