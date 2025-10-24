@@ -1216,6 +1216,29 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [uploadingPackFiles, setUploadingPackFiles] = useState<Record<number, boolean>>({});
   const [showPageBuilderWarning, setShowPageBuilderWarning] = useState(false);
   const [eventDialogTab, setEventDialogTab] = useState<'details' | 'page-builder'>('details');
+  
+  // Multi-language state
+  const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
+  const supportedLanguages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'sv', 'no', 'da', 'fi', 'el', 'ar', 'zh'];
+  const languageNames: Record<string, string> = {
+    en: 'English', es: 'Spanish', fr: 'French', de: 'German', it: 'Italian',
+    pt: 'Portuguese', nl: 'Dutch', sv: 'Swedish', no: 'Norwegian', da: 'Danish',
+    fi: 'Finnish', el: 'Greek', ar: 'Arabic', zh: 'Chinese'
+  };
+  
+  // Translation states
+  const [titleTranslations, setTitleTranslations] = useState<Record<string, string>>({});
+  const [descriptionTranslations, setDescriptionTranslations] = useState<Record<string, string>>({});
+  const [youtubeVideoTranslations, setYoutubeVideoTranslations] = useState<Record<string, any[]>>({ en: [] });
+  const [eventPackFileTranslations, setEventPackFileTranslations] = useState<Record<string, any[]>>({ en: [] });
+  const [testimonialTranslations, setTestimonialTranslations] = useState<Record<string, any[]>>({ en: [] });
+  const [evidenceSubmissionText, setEvidenceSubmissionText] = useState<Record<string, string>>({});
+  
+  // New configuration states
+  const [featuredVideoIndex, setFeaturedVideoIndex] = useState<number>(0);
+  const [eventPackBannerImageUrl, setEventPackBannerImageUrl] = useState<string>('');
+  const [showEvidenceSubmission, setShowEvidenceSubmission] = useState<boolean>(false);
+  const [isUploadingPackBanner, setIsUploadingPackBanner] = useState(false);
 
   // Event Banners state
   const [bannerDialogOpen, setBannerDialogOpen] = useState(false);
@@ -1253,6 +1276,15 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       author: z.string().min(1, "Author name is required"),
       role: z.string().optional(),
     })).optional(),
+    titleTranslations: z.record(z.string()).optional(),
+    descriptionTranslations: z.record(z.string()).optional(),
+    youtubeVideoTranslations: z.record(z.array(z.any())).optional(),
+    eventPackFileTranslations: z.record(z.array(z.any())).optional(),
+    testimonialTranslations: z.record(z.array(z.any())).optional(),
+    featuredVideoIndex: z.number().optional(),
+    eventPackBannerImageUrl: z.string().optional(),
+    showEvidenceSubmission: z.boolean().optional(),
+    evidenceSubmissionText: z.record(z.string()).optional(),
   });
 
   type PageBuilderFormData = z.infer<typeof pageBuilderSchema>;
@@ -1306,19 +1338,60 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   // Initialize page builder form when editing event
   useEffect(() => {
     if (editingEvent && eventDialogOpen) {
+      const event = editingEvent as any;
+      
       pageBuilderForm.reset({
         publicSlug: editingEvent.publicSlug || '',
         youtubeVideos: (editingEvent.youtubeVideos as any[]) || [],
         eventPackFiles: (editingEvent.eventPackFiles as any[]) || [],
         testimonials: (editingEvent.testimonials as any[]) || [],
+        titleTranslations: event.titleTranslations || {},
+        descriptionTranslations: event.descriptionTranslations || {},
+        youtubeVideoTranslations: event.youtubeVideoTranslations || { en: [] },
+        eventPackFileTranslations: event.eventPackFileTranslations || { en: [] },
+        testimonialTranslations: event.testimonialTranslations || { en: [] },
+        featuredVideoIndex: event.featuredVideoIndex || 0,
+        eventPackBannerImageUrl: event.eventPackBannerImageUrl || '',
+        showEvidenceSubmission: event.showEvidenceSubmission || false,
+        evidenceSubmissionText: event.evidenceSubmissionText || {},
       });
+      
+      setTitleTranslations(event.titleTranslations || {});
+      setDescriptionTranslations(event.descriptionTranslations || {});
+      setYoutubeVideoTranslations(event.youtubeVideoTranslations || { en: [] });
+      setEventPackFileTranslations(event.eventPackFileTranslations || { en: [] });
+      setTestimonialTranslations(event.testimonialTranslations || { en: [] });
+      setFeaturedVideoIndex(event.featuredVideoIndex || 0);
+      setEventPackBannerImageUrl(event.eventPackBannerImageUrl || '');
+      setShowEvidenceSubmission(event.showEvidenceSubmission || false);
+      setEvidenceSubmissionText(event.evidenceSubmissionText || {});
     } else if (!editingEvent && eventDialogOpen) {
       pageBuilderForm.reset({
         publicSlug: '',
         youtubeVideos: [],
         eventPackFiles: [],
         testimonials: [],
+        titleTranslations: {},
+        descriptionTranslations: {},
+        youtubeVideoTranslations: { en: [] },
+        eventPackFileTranslations: { en: [] },
+        testimonialTranslations: { en: [] },
+        featuredVideoIndex: 0,
+        eventPackBannerImageUrl: '',
+        showEvidenceSubmission: false,
+        evidenceSubmissionText: {},
       });
+      
+      setTitleTranslations({});
+      setDescriptionTranslations({});
+      setYoutubeVideoTranslations({ en: [] });
+      setEventPackFileTranslations({ en: [] });
+      setTestimonialTranslations({ en: [] });
+      setFeaturedVideoIndex(0);
+      setEventPackBannerImageUrl('');
+      setShowEvidenceSubmission(false);
+      setEvidenceSubmissionText({});
+      setSelectedLanguage('en');
     }
   }, [editingEvent, eventDialogOpen]);
 
@@ -1798,7 +1871,18 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     if (!editingEvent) return;
 
     try {
-      const pageData = pageBuilderForm.getValues();
+      const pageData = {
+        ...pageBuilderForm.getValues(),
+        titleTranslations,
+        descriptionTranslations,
+        youtubeVideoTranslations,
+        eventPackFileTranslations,
+        testimonialTranslations,
+        featuredVideoIndex,
+        eventPackBannerImageUrl,
+        showEvidenceSubmission,
+        evidenceSubmissionText,
+      };
       
       // Save page content
       await updateEventPageContentMutation.mutateAsync({ 
@@ -5285,6 +5369,83 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     updateEventPageContentMutation.mutate({ id: editingEvent.id, data });
                   })} className="space-y-6">
                     
+                    {/* Language Tabs */}
+                    <div className="space-y-4 pb-4 border-b">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900 mb-2">Language Selection</h3>
+                        <p className="text-sm text-gray-600 mb-3">
+                          Add content in multiple languages. Content will display in each user's preferred language.
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {supportedLanguages.map((lang) => (
+                          <button
+                            key={lang}
+                            type="button"
+                            onClick={() => setSelectedLanguage(lang)}
+                            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                              selectedLanguage === lang
+                                ? 'bg-pcs_blue text-white'
+                                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                            }`}
+                            data-testid={`button-language-${lang}`}
+                          >
+                            {lang.toUpperCase()}
+                          </button>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500">
+                        Currently editing: <span className="font-semibold">{languageNames[selectedLanguage]}</span>
+                      </p>
+                    </div>
+
+                    {/* Multi-Language Content Section */}
+                    <div className="space-y-4 pb-4 border-b">
+                      <div>
+                        <h3 className="text-lg font-semibold text-gray-900">Multi-Language Content</h3>
+                        <p className="text-sm text-gray-600 mt-1">
+                          Leave blank to use the default title/description from the Details tab
+                        </p>
+                      </div>
+                      
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Event Title ({selectedLanguage.toUpperCase()})
+                          </label>
+                          <Input
+                            value={titleTranslations[selectedLanguage] || ''}
+                            onChange={(e) => {
+                              setTitleTranslations(prev => ({
+                                ...prev,
+                                [selectedLanguage]: e.target.value
+                              }));
+                            }}
+                            placeholder={`Enter event title in ${languageNames[selectedLanguage]}...`}
+                            data-testid={`input-title-translation-${selectedLanguage}`}
+                          />
+                        </div>
+                        
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Event Description ({selectedLanguage.toUpperCase()})
+                          </label>
+                          <Textarea
+                            value={descriptionTranslations[selectedLanguage] || ''}
+                            onChange={(e) => {
+                              setDescriptionTranslations(prev => ({
+                                ...prev,
+                                [selectedLanguage]: e.target.value
+                              }));
+                            }}
+                            placeholder={`Enter event description in ${languageNames[selectedLanguage]}...`}
+                            rows={4}
+                            data-testid={`textarea-description-translation-${selectedLanguage}`}
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    
                     {/* Public Slug Section */}
                     <div className="space-y-3">
                       <h3 className="text-lg font-semibold text-gray-900">Public Event Page</h3>
@@ -5433,6 +5594,115 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           ))}
                         </div>
                       )}
+                      <p className="text-xs text-gray-500 mt-2">
+                        Note: Provide translated video titles and descriptions. You can also link to different videos per language by adding/removing videos in each language.
+                      </p>
+                    </div>
+
+                    {/* Display Settings Section */}
+                    {videoFields.length >= 2 && (
+                      <div className="space-y-3 pt-4 border-t">
+                        <h3 className="text-lg font-semibold text-gray-900">Display Settings</h3>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Featured Video (Main Display)
+                          </label>
+                          <Select
+                            value={featuredVideoIndex.toString()}
+                            onValueChange={(value) => setFeaturedVideoIndex(parseInt(value))}
+                          >
+                            <SelectTrigger data-testid="select-featured-video">
+                              <SelectValue placeholder="Select featured video" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {videoFields.map((_, index) => (
+                                <SelectItem key={index} value={index.toString()}>
+                                  Video {index + 1}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <p className="text-xs text-gray-500 mt-1">
+                            The featured video will be displayed prominently at the top, with other videos shown as thumbnails below.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Event Pack Banner Image Section */}
+                    <div className="space-y-3 pt-4 border-t">
+                      <h3 className="text-lg font-semibold text-gray-900">Event Pack Banner Image</h3>
+                      <p className="text-sm text-gray-600">
+                        Upload a custom banner image for the event pack section (recommended size: 1200x300px). If not provided, a default banner will be used.
+                      </p>
+                      <div className="space-y-3">
+                        {!eventPackBannerImageUrl ? (
+                          <div>
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={async (e) => {
+                                const file = e.target.files?.[0];
+                                if (file) {
+                                  setIsUploadingPackBanner(true);
+                                  try {
+                                    const formData = new FormData();
+                                    formData.append('file', file);
+                                    const response = await fetch('/api/objects/upload', {
+                                      method: 'POST',
+                                      body: formData,
+                                      credentials: 'include',
+                                    });
+                                    if (!response.ok) throw new Error('Upload failed');
+                                    const data = await response.json();
+                                    setEventPackBannerImageUrl(data.url);
+                                    toast({
+                                      title: "Success",
+                                      description: "Banner image uploaded successfully.",
+                                    });
+                                  } catch (error: any) {
+                                    toast({
+                                      title: "Upload Failed",
+                                      description: error.message || "Failed to upload banner image.",
+                                      variant: "destructive",
+                                    });
+                                  } finally {
+                                    setIsUploadingPackBanner(false);
+                                  }
+                                }
+                                e.target.value = '';
+                              }}
+                              className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-pcs_blue file:text-white hover:file:bg-pcs_blue/90"
+                              data-testid="input-pack-banner-upload"
+                              disabled={isUploadingPackBanner}
+                            />
+                            {isUploadingPackBanner && (
+                              <p className="text-sm text-gray-600 mt-2">Uploading...</p>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="space-y-3">
+                            <div className="relative border rounded-md overflow-hidden">
+                              <img
+                                src={`/api/objects${eventPackBannerImageUrl}`}
+                                alt="Event pack banner"
+                                className="w-full h-auto max-h-48 object-cover"
+                                data-testid="img-pack-banner-preview"
+                              />
+                            </div>
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => setEventPackBannerImageUrl('')}
+                              data-testid="button-remove-pack-banner"
+                            >
+                              <Trash className="h-4 w-4 mr-2" />
+                              Remove Banner
+                            </Button>
+                          </div>
+                        )}
+                      </div>
                     </div>
 
                     {/* Event Pack Files Section */}
@@ -5666,6 +5936,48 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                               />
                             </div>
                           ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Evidence Submission Call-to-Action Section */}
+                    <div className="space-y-3 pt-4 border-t">
+                      <h3 className="text-lg font-semibold text-gray-900">Evidence Submission Call-to-Action</h3>
+                      <p className="text-sm text-gray-600">
+                        This section encourages registered users to submit evidence. Unauthenticated users will be prompted to sign up.
+                      </p>
+                      
+                      <div className="flex items-center space-x-2">
+                        <Switch
+                          checked={showEvidenceSubmission}
+                          onCheckedChange={setShowEvidenceSubmission}
+                          data-testid="switch-show-evidence-submission"
+                        />
+                        <label className="text-sm font-medium text-gray-700">
+                          Show Evidence Submission Section
+                        </label>
+                      </div>
+                      
+                      {showEvidenceSubmission && (
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            CTA Text ({selectedLanguage.toUpperCase()})
+                          </label>
+                          <Textarea
+                            value={evidenceSubmissionText[selectedLanguage] || ''}
+                            onChange={(e) => {
+                              setEvidenceSubmissionText(prev => ({
+                                ...prev,
+                                [selectedLanguage]: e.target.value
+                              }));
+                            }}
+                            placeholder="Join the movement! Submit your school's evidence of plastic reduction and inspire others."
+                            rows={3}
+                            data-testid={`textarea-evidence-cta-${selectedLanguage}`}
+                          />
+                          <p className="text-xs text-gray-500 mt-1">
+                            Customize the call-to-action text for each language
+                          </p>
                         </div>
                       )}
                     </div>
