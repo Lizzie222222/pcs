@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { LoadingSpinner } from "@/components/ui/states";
@@ -172,6 +172,124 @@ function getYouTubeVideoId(url: string): string | null {
 function getYouTubeThumbnail(url: string): string {
   const videoId = getYouTubeVideoId(url);
   return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
+}
+
+// Create Google Calendar link
+function createGoogleCalendarLink(event: Event, startDate: Date, endDate: Date): string {
+  const formatGoogleDate = (date: Date) => {
+    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  };
+  
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.title,
+    dates: `${formatGoogleDate(startDate)}/${formatGoogleDate(endDate)}`,
+    details: event.description || '',
+    location: event.isVirtual ? 'Virtual Event' : (event.location || ''),
+  });
+  
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}
+
+// Create iCal file content
+function createICalFile(event: Event, startDate: Date, endDate: Date): string {
+  const formatICalDate = (date: Date) => {
+    return date.toISOString().replace(/[-:]/g, '').replace(/\.\d{3}/, '');
+  };
+  
+  const now = new Date();
+  const uid = `event-${event.id}@plasticcleverschools.org`;
+  
+  const lines = [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Plastic Clever Schools//Event Calendar//EN',
+    'BEGIN:VEVENT',
+    `UID:${uid}`,
+    `DTSTAMP:${formatICalDate(now)}`,
+    `DTSTART:${formatICalDate(startDate)}`,
+    `DTEND:${formatICalDate(endDate)}`,
+    `SUMMARY:${event.title}`,
+    `DESCRIPTION:${(event.description || '').replace(/\n/g, '\\n')}`,
+    `LOCATION:${event.isVirtual ? 'Virtual Event' : (event.location || '')}`,
+    'STATUS:CONFIRMED',
+    'END:VEVENT',
+    'END:VCALENDAR'
+  ];
+  
+  return lines.join('\r\n');
+}
+
+// Countdown Timer Component
+function CountdownTimer({ startDate }: { startDate: Date }) {
+  const calculateTimeLeft = () => {
+    const now = new Date().getTime();
+    const distance = startDate.getTime() - now;
+
+    if (distance < 0) {
+      return { days: 0, hours: 0, minutes: 0, seconds: 0 };
+    }
+
+    const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+    return { days, hours, minutes, seconds };
+  };
+
+  const [timeLeft, setTimeLeft] = useState(calculateTimeLeft);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [startDate]);
+
+  // Don't show if more than 30 days away (check total milliseconds)
+  const now = new Date().getTime();
+  const distance = startDate.getTime() - now;
+  const thirtyDaysInMs = 30 * 24 * 60 * 60 * 1000;
+  
+  if (distance > thirtyDaysInMs || distance < 0) {
+    return null;
+  }
+
+  return (
+    <div className="mt-10 p-8 bg-gradient-to-br from-teal-50 to-ocean-blue-50 border-2 border-teal-300 rounded-xl shadow-xl" data-testid="div-countdown-timer">
+      <h3 className="text-2xl font-bold text-center text-gray-900 mb-6">
+        Event starts in
+      </h3>
+      <div className="grid grid-cols-4 gap-4 max-w-2xl mx-auto">
+        <div className="bg-white rounded-lg p-4 shadow-md text-center">
+          <div className="text-4xl font-bold text-pcs_blue" data-testid="text-countdown-days">
+            {timeLeft.days}
+          </div>
+          <div className="text-sm text-gray-600 mt-1">Days</div>
+        </div>
+        <div className="bg-white rounded-lg p-4 shadow-md text-center">
+          <div className="text-4xl font-bold text-pcs_blue" data-testid="text-countdown-hours">
+            {timeLeft.hours}
+          </div>
+          <div className="text-sm text-gray-600 mt-1">Hours</div>
+        </div>
+        <div className="bg-white rounded-lg p-4 shadow-md text-center">
+          <div className="text-4xl font-bold text-pcs_blue" data-testid="text-countdown-minutes">
+            {timeLeft.minutes}
+          </div>
+          <div className="text-sm text-gray-600 mt-1">Minutes</div>
+        </div>
+        <div className="bg-white rounded-lg p-4 shadow-md text-center">
+          <div className="text-4xl font-bold text-pcs_blue" data-testid="text-countdown-seconds">
+            {timeLeft.seconds}
+          </div>
+          <div className="text-sm text-gray-600 mt-1">Seconds</div>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function YouTubeEmbed({ url, title }: { url: string; title: string }) {
@@ -993,6 +1111,17 @@ export default function EventLivePage() {
                 <span className="font-medium">Virtual Event</span>
               </div>
             )}
+            
+            <div 
+              className={`flex items-center gap-2 px-4 py-2 rounded-full shadow-sm font-semibold ${
+                event.accessType === 'open' 
+                  ? 'bg-green-100 text-green-700 border border-green-200' 
+                  : 'bg-amber-100 text-amber-700 border border-amber-200'
+              }`}
+              data-testid="badge-access-type"
+            >
+              {event.accessType === 'open' ? '🌍 Open Event' : '🔒 Closed Event'}
+            </div>
           </div>
 
           {/* Meeting Link */}
@@ -1016,16 +1145,88 @@ export default function EventLivePage() {
           )}
 
           {!hasStarted && (
-            <div className="mt-10 p-5 bg-blue-50 border-2 border-blue-200 rounded-xl text-center shadow-sm">
-              <p className="text-blue-800 font-medium text-lg" data-testid="text-event-upcoming">
-                {t('events.event_not_started', { date: format(startDate, 'MMMM d, yyyy \'at\' h:mm a') })}
-              </p>
-              {event.meetingLink && (
-                <p className="text-blue-700 mt-3 text-sm">
-                  {t('events.meeting_link_available')}
+            <>
+              {/* Countdown Timer */}
+              <CountdownTimer startDate={startDate} />
+              
+              {/* Calendar Invite & Event Info */}
+              <div className="mt-10 p-6 bg-gradient-to-br from-blue-50 to-teal-50 border-2 border-blue-200 rounded-xl shadow-lg">
+                <p className="text-blue-900 font-semibold text-xl mb-6 text-center" data-testid="text-event-upcoming">
+                  Event starts {format(startDate, 'MMMM d, yyyy \'at\' h:mm a')}
                 </p>
-              )}
-            </div>
+                
+                {/* Calendar Invite Buttons */}
+                <div className="flex flex-wrap justify-center gap-4 mb-6">
+                  <Button
+                    onClick={() => {
+                      const googleCalendarUrl = createGoogleCalendarLink(event, startDate, endDate);
+                      window.open(googleCalendarUrl, '_blank');
+                    }}
+                    variant="outline"
+                    className="bg-white hover:bg-blue-50 border-blue-300 text-blue-700 font-semibold"
+                    data-testid="button-add-google-calendar"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Add to Google Calendar
+                  </Button>
+                  
+                  <Button
+                    onClick={() => {
+                      const icalData = createICalFile(event, startDate, endDate);
+                      const blob = new Blob([icalData], { type: 'text/calendar' });
+                      const url = URL.createObjectURL(blob);
+                      const link = document.createElement('a');
+                      link.href = url;
+                      link.download = `${event.title.replace(/[^a-z0-9]/gi, '_')}.ics`;
+                      link.click();
+                      URL.revokeObjectURL(url);
+                    }}
+                    variant="outline"
+                    className="bg-white hover:bg-teal-50 border-teal-300 text-teal-700 font-semibold"
+                    data-testid="button-download-ical"
+                  >
+                    <Download className="w-4 h-4 mr-2" />
+                    Download iCal
+                  </Button>
+                </div>
+                
+                {/* Pre-Event Tips */}
+                <div className="bg-white/60 rounded-lg p-5 border border-blue-100">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                    <CheckCircle className="w-5 h-5 text-teal-600" />
+                    Prepare for the Event
+                  </h3>
+                  <ul className="space-y-2 text-gray-700">
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 mt-1">•</span>
+                      <span>Mark your calendar and set a reminder</span>
+                    </li>
+                    {event.isVirtual && (
+                      <li className="flex items-start gap-2">
+                        <span className="text-teal-600 mt-1">•</span>
+                        <span>Test your internet connection and audio/video setup</span>
+                      </li>
+                    )}
+                    {!event.isVirtual && event.location && (
+                      <li className="flex items-start gap-2">
+                        <span className="text-teal-600 mt-1">•</span>
+                        <span>Plan your route to {event.location}</span>
+                      </li>
+                    )}
+                    <li className="flex items-start gap-2">
+                      <span className="text-teal-600 mt-1">•</span>
+                      <span>Review event materials and resources below</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                {event.meetingLink && (
+                  <p className="text-blue-700 mt-4 text-sm text-center">
+                    The meeting link will be available when the event starts
+                  </p>
+                )}
+              </div>
+            </>
           )}
 
           {hasEnded && (
