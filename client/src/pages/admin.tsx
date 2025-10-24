@@ -5563,18 +5563,30 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                 {supportedLanguages
                                   .filter(lang => lang !== selectedLanguage)
                                   .filter(lang => {
-                                    // Only show languages that have content
-                                    const hasContent = (youtubeVideoTranslations[lang]?.length || 0) > 0 || 
-                                                      (eventPackFileTranslations[lang]?.length || 0) > 0 ||
-                                                      titleTranslations[lang] ||
-                                                      descriptionTranslations[lang];
-                                    return hasContent;
+                                    // Check if language has content
+                                    const hasVideos = (youtubeVideoTranslations[lang]?.length || 0) > 0;
+                                    const hasFiles = (eventPackFileTranslations[lang]?.length || 0) > 0;
+                                    const hasTestimonials = (testimonialTranslations[lang]?.length || 0) > 0;
+                                    const hasTranslatedTitle = !!titleTranslations[lang];
+                                    const hasTranslatedDescription = !!descriptionTranslations[lang];
+                                    
+                                    // For English, also check the main event fields
+                                    const isEnglishWithMainContent = lang === 'en' && editingEvent && (editingEvent.title || editingEvent.description);
+                                    
+                                    return hasVideos || hasFiles || hasTestimonials || hasTranslatedTitle || hasTranslatedDescription || isEnglishWithMainContent;
                                   })
-                                  .map((lang) => (
-                                    <SelectItem key={lang} value={lang}>
-                                      {languageNames[lang]} ({youtubeVideoTranslations[lang]?.length || 0} videos, {eventPackFileTranslations[lang]?.length || 0} files)
-                                    </SelectItem>
-                                  ))}
+                                  .map((lang) => {
+                                    const videoCount = youtubeVideoTranslations[lang]?.length || 0;
+                                    const fileCount = eventPackFileTranslations[lang]?.length || 0;
+                                    const testimonialCount = testimonialTranslations[lang]?.length || 0;
+                                    const totalItems = videoCount + fileCount + testimonialCount;
+                                    
+                                    return (
+                                      <SelectItem key={lang} value={lang}>
+                                        {languageNames[lang]} {totalItems > 0 && `(${videoCount} videos, ${fileCount} files, ${testimonialCount} testimonials)`}
+                                      </SelectItem>
+                                    );
+                                  })}
                               </SelectContent>
                             </Select>
                           </div>
@@ -5667,17 +5679,25 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           onClick={async () => {
                             if (!editingEvent) return;
                             
-                            // Get all languages except English
-                            const languagesToTranslate = supportedLanguages.filter(lang => lang !== 'en');
+                            // Get languages that don't have translations yet
+                            const languagesToTranslate = supportedLanguages.filter(lang => {
+                              return lang !== 'en' && !titleTranslations[lang] && !descriptionTranslations[lang];
+                            });
                             
                             if (languagesToTranslate.length === 0) {
                               toast({
-                                title: "No languages to translate",
-                                description: "English is the source language",
+                                title: "All languages already translated",
+                                description: "Title and description have been translated to all languages. Click individual language tabs to edit translations.",
                                 variant: "default",
                               });
                               return;
                             }
+                            
+                            // Show loading toast
+                            toast({
+                              title: "Translating...",
+                              description: `Translating to ${languagesToTranslate.length} languages. This may take a moment.`,
+                            });
                             
                             try {
                               const response = await apiRequest('POST', `/api/admin/events/${editingEvent.id}/auto-translate`, { 
@@ -5686,19 +5706,19 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                               
                               const data = await response.json();
                               
-                              // Update state with translations
-                              setTitleTranslations(data.titleTranslations);
-                              setDescriptionTranslations(data.descriptionTranslations);
+                              // Update state with translations (merge with existing)
+                              setTitleTranslations(prev => ({...prev, ...data.titleTranslations}));
+                              setDescriptionTranslations(prev => ({...prev, ...data.descriptionTranslations}));
                               
                               toast({
                                 title: "Auto-translation complete!",
-                                description: `Successfully translated to ${languagesToTranslate.length} languages. You can now edit any translation as needed.`,
+                                description: `Successfully translated to ${languagesToTranslate.length} languages (${languagesToTranslate.map(l => l.toUpperCase()).join(', ')}). Remember to click "Save Changes" below to persist translations!`,
                               });
                             } catch (error) {
                               console.error('Auto-translate error:', error);
                               toast({
                                 title: "Translation failed",
-                                description: "Failed to auto-translate content. Please try again.",
+                                description: "Failed to auto-translate content. Please check that the event has a title and description.",
                                 variant: "destructive",
                               });
                             }
@@ -5707,7 +5727,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           data-testid="button-auto-translate"
                         >
                           <Languages className="h-4 w-4" />
-                          Auto-Translate All
+                          Auto-Translate Missing
                         </Button>
                       </div>
                       
