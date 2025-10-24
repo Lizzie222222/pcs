@@ -12,7 +12,7 @@ import { z } from "zod";
 import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
-import { eq, and, sql, desc, gte, lte, count, leftJoin } from "drizzle-orm";
+import { eq, and, sql, desc, gte, lte, count } from "drizzle-orm";
 import { generateAnalyticsInsights } from "./lib/aiInsights";
 import { translateEmailContent, type EmailContent } from "./translationService";
 import { promises as fs } from 'fs';
@@ -513,6 +513,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const resource = await storage.createResource(req.body);
+      
+      // Create notifications for schools at this stage
+      await storage.createResourceNotifications(resource.id, resource.title, resource.stage, false);
+      
       res.json(resource);
     } catch (error) {
       console.error("Error creating resource:", error);
@@ -531,6 +535,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (!resource) {
         return res.status(404).json({ message: "Resource not found" });
       }
+      
+      // Create notifications for schools at this stage (only if file was updated)
+      if (req.body.fileUrl && req.body.fileUrl !== resource.fileUrl) {
+        await storage.createResourceNotifications(resource.id, resource.title, resource.stage, true);
+      }
+      
       res.json(resource);
     } catch (error) {
       console.error("Error updating resource:", error);
@@ -553,6 +563,96 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting resource:", error);
       res.status(500).json({ message: "Failed to delete resource" });
+    }
+  });
+
+  // Get notifications for authenticated user's school
+  app.get('/api/notifications', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const { unreadOnly } = req.query;
+      
+      // Get the user's school(s)
+      const userSchools = await storage.getUserSchools(userId);
+      
+      if (userSchools.length === 0) {
+        return res.json([]);
+      }
+      
+      // Get notifications for the first school (primary school)
+      const notifications = await storage.getSchoolNotifications(
+        userSchools[0].id,
+        unreadOnly === 'true'
+      );
+      
+      res.json(notifications);
+    } catch (error) {
+      console.error("Error fetching notifications:", error);
+      res.status(500).json({ message: "Failed to fetch notifications" });
+    }
+  });
+
+  // Get unread notification count
+  app.get('/api/notifications/unread-count', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userSchools = await storage.getUserSchools(userId);
+      
+      if (userSchools.length === 0) {
+        return res.json({ count: 0 });
+      }
+      
+      const count = await storage.getUnreadNotificationCount(userSchools[0].id);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error fetching unread count:", error);
+      res.status(500).json({ message: "Failed to fetch unread count" });
+    }
+  });
+
+  // Mark notification as read
+  app.patch('/api/notifications/:id/read', isAuthenticated, async (req: any, res) => {
+    try {
+      const notification = await storage.markNotificationAsRead(req.params.id);
+      if (!notification) {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+      res.json(notification);
+    } catch (error) {
+      console.error("Error marking notification as read:", error);
+      res.status(500).json({ message: "Failed to mark notification as read" });
+    }
+  });
+
+  // Mark all notifications as read for user's school
+  app.patch('/api/notifications/read-all', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const userSchools = await storage.getUserSchools(userId);
+      
+      if (userSchools.length === 0) {
+        return res.json({ success: true });
+      }
+      
+      await storage.markAllNotificationsAsRead(userSchools[0].id);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error marking all notifications as read:", error);
+      res.status(500).json({ message: "Failed to mark all notifications as read" });
+    }
+  });
+
+  // Delete notification
+  app.delete('/api/notifications/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const success = await storage.deleteNotification(req.params.id);
+      if (!success) {
+        return res.status(404).json({ message: "Notification not found" });
+      }
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error deleting notification:", error);
+      res.status(500).json({ message: "Failed to delete notification" });
     }
   });
 

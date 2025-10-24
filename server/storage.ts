@@ -28,6 +28,7 @@ import {
   mediaTags,
   mediaAssetTags,
   mediaAssetUsage,
+  notifications,
   type User,
   type UpsertUser,
   type School,
@@ -87,6 +88,8 @@ import {
   type InsertMediaAssetTag,
   type MediaAssetUsage,
   type InsertMediaAssetUsage,
+  type Notification,
+  type InsertNotification,
   type CreatePasswordUser,
   type CreateOAuthUser,
 } from "@shared/schema";
@@ -195,6 +198,14 @@ export interface IStorage {
   updateResource(id: string, updates: Partial<InsertResource>): Promise<Resource | undefined>;
   deleteResource(id: string): Promise<boolean>;
   updateResourceDownloads(id: string): Promise<void>;
+
+  // Notification operations
+  createNotification(notification: InsertNotification): Promise<Notification>;
+  getSchoolNotifications(schoolId: string, unreadOnly?: boolean): Promise<Notification[]>;
+  markNotificationAsRead(id: string): Promise<Notification | undefined>;
+  markAllNotificationsAsRead(schoolId: string): Promise<void>;
+  deleteNotification(id: string): Promise<boolean>;
+  getUnreadNotificationCount(schoolId: string): Promise<number>;
   
   // Evidence operations
   createEvidence(evidence: InsertEvidence): Promise<Evidence>;
@@ -765,7 +776,7 @@ export class DatabaseStorage implements IStorage {
     language?: string;
     limit?: number;
     offset?: number;
-  } = {}): Promise<Array<Pick<School, 'id' | 'name' | 'type' | 'country' | 'address' | 'studentCount' | 'latitude' | 'longitude' | 'currentStage' | 'progressPercentage' | 'inspireCompleted' | 'investigateCompleted' | 'actCompleted' | 'awardCompleted' | 'featuredSchool' | 'showOnMap' | 'createdAt' | 'updatedAt'>>> {
+  } = {}): Promise<School[]> {
     const conditions = [];
     if (filters.country) {
       conditions.push(eq(schools.country, filters.country));
@@ -784,26 +795,7 @@ export class DatabaseStorage implements IStorage {
     }
     
     let query = db
-      .select({
-        id: schools.id,
-        name: schools.name,
-        type: schools.type,
-        country: schools.country,
-        address: schools.address,
-        studentCount: schools.studentCount,
-        latitude: schools.latitude,
-        longitude: schools.longitude,
-        currentStage: schools.currentStage,
-        progressPercentage: schools.progressPercentage,
-        inspireCompleted: schools.inspireCompleted,
-        investigateCompleted: schools.investigateCompleted,
-        actCompleted: schools.actCompleted,
-        awardCompleted: schools.awardCompleted,
-        featuredSchool: schools.featuredSchool,
-        showOnMap: schools.showOnMap,
-        createdAt: schools.createdAt,
-        updatedAt: schools.updatedAt,
-      })
+      .select(getTableColumns(schools))
       .from(schools);
     
     if (conditions.length > 0) {
@@ -885,25 +877,7 @@ export class DatabaseStorage implements IStorage {
     
     const results = await db
       .select({
-        id: schools.id,
-        name: schools.name,
-        type: schools.type,
-        country: schools.country,
-        address: schools.address,
-        studentCount: schools.studentCount,
-        latitude: schools.latitude,
-        longitude: schools.longitude,
-        currentStage: schools.currentStage,
-        progressPercentage: schools.progressPercentage,
-        inspireCompleted: schools.inspireCompleted,
-        investigateCompleted: schools.investigateCompleted,
-        actCompleted: schools.actCompleted,
-        awardCompleted: schools.awardCompleted,
-        featuredSchool: schools.featuredSchool,
-        showOnMap: schools.showOnMap,
-        primaryContactId: schools.primaryContactId,
-        createdAt: schools.createdAt,
-        updatedAt: schools.updatedAt,
+        ...getTableColumns(schools),
         userEmail: users.email,
       })
       .from(schools)
@@ -919,26 +893,9 @@ export class DatabaseStorage implements IStorage {
       const schoolId = row.id;
       
       if (!schoolMap.has(schoolId)) {
+        const { userEmail, ...schoolData } = row;
         schoolMap.set(schoolId, {
-          id: row.id,
-          name: row.name,
-          type: row.type,
-          country: row.country,
-          address: row.address,
-          studentCount: row.studentCount,
-          latitude: row.latitude,
-          longitude: row.longitude,
-          currentStage: row.currentStage,
-          progressPercentage: row.progressPercentage,
-          inspireCompleted: row.inspireCompleted,
-          investigateCompleted: row.investigateCompleted,
-          actCompleted: row.actCompleted,
-          awardCompleted: row.awardCompleted,
-          featuredSchool: row.featuredSchool,
-          showOnMap: row.showOnMap,
-          primaryContactId: row.primaryContactId,
-          createdAt: row.createdAt,
-          updatedAt: row.updatedAt,
+          ...schoolData,
           userEmails: [],
         });
       }
@@ -1039,17 +996,7 @@ export class DatabaseStorage implements IStorage {
   ): Promise<Array<SchoolUser & { user: User | null }>> {
     let query = db
       .select({
-        id: schoolUsers.id,
-        schoolId: schoolUsers.schoolId,
-        userId: schoolUsers.userId,
-        role: schoolUsers.role,
-        isVerified: schoolUsers.isVerified,
-        invitedBy: schoolUsers.invitedBy,
-        invitedAt: schoolUsers.invitedAt,
-        verifiedAt: schoolUsers.verifiedAt,
-        verificationMethod: schoolUsers.verificationMethod,
-        createdAt: schoolUsers.createdAt,
-        updatedAt: schoolUsers.updatedAt,
+        ...getTableColumns(schoolUsers),
         user: users,
       })
       .from(schoolUsers)
@@ -1343,6 +1290,92 @@ export class DatabaseStorage implements IStorage {
     return result.length > 0;
   }
 
+  // Notification operations
+  async createNotification(notificationData: InsertNotification): Promise<Notification> {
+    const [notification] = await db
+      .insert(notifications)
+      .values(notificationData)
+      .returning();
+    return notification;
+  }
+
+  async getSchoolNotifications(schoolId: string, unreadOnly: boolean = false): Promise<Notification[]> {
+    const conditions = [eq(notifications.schoolId, schoolId)];
+    
+    if (unreadOnly) {
+      conditions.push(eq(notifications.isRead, false));
+    }
+    
+    return await db
+      .select()
+      .from(notifications)
+      .where(and(...conditions))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50);
+  }
+
+  async markNotificationAsRead(id: string): Promise<Notification | undefined> {
+    const [notification] = await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(eq(notifications.id, id))
+      .returning();
+    return notification;
+  }
+
+  async markAllNotificationsAsRead(schoolId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(and(
+        eq(notifications.schoolId, schoolId),
+        eq(notifications.isRead, false)
+      ));
+  }
+
+  async deleteNotification(id: string): Promise<boolean> {
+    const result = await db
+      .delete(notifications)
+      .where(eq(notifications.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async getUnreadNotificationCount(schoolId: string): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(notifications)
+      .where(and(
+        eq(notifications.schoolId, schoolId),
+        eq(notifications.isRead, false)
+      ));
+    return result[0]?.count || 0;
+  }
+
+  async createResourceNotifications(resourceId: string, resourceTitle: string, resourceStage: string, isUpdate: boolean = false): Promise<void> {
+    // Get all schools at this stage
+    const matchingSchools = await db
+      .select({ id: schools.id })
+      .from(schools)
+      .where(eq(schools.currentStage, resourceStage as any));
+    
+    // Create notifications for each school
+    const notificationPromises = matchingSchools.map(school => 
+      this.createNotification({
+        schoolId: school.id,
+        type: isUpdate ? 'resource_updated' : 'new_resource',
+        title: isUpdate ? 'Resource Updated' : 'New Resource Available',
+        message: isUpdate 
+          ? `The resource "${resourceTitle}" has been updated with new content for the ${resourceStage} stage.`
+          : `A new resource "${resourceTitle}" is now available for the ${resourceStage} stage.`,
+        actionUrl: '/resources',
+        resourceId: resourceId,
+      })
+    );
+    
+    await Promise.all(notificationPromises);
+  }
+
   // Evidence operations
   async createEvidence(evidenceData: InsertEvidence): Promise<Evidence> {
     const [evidenceRecord] = await db
@@ -1472,7 +1505,8 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(schools, eq(evidence.schoolId, schools.id));
 
     if (conditions.length > 0) {
-      return await query.where(and(...conditions)).orderBy(desc(evidence.submittedAt));
+      const school = query.where(and(...conditions));
+      return school ? await school.orderBy(desc(evidence.submittedAt)) : [];
     }
     
     return await query.orderBy(desc(evidence.submittedAt));
@@ -1511,12 +1545,13 @@ export class DatabaseStorage implements IStorage {
     if (filters?.visibility === 'public') {
       conditions.push(eq(evidence.visibility, 'public'));
     } else if (filters?.visibility === 'registered') {
-      conditions.push(
-        or(
-          eq(evidence.visibility, 'public'),
-          eq(evidence.visibility, 'registered')
-        )
+      const visibilityCondition = or(
+        eq(evidence.visibility, 'public'),
+        eq(evidence.visibility, 'registered')
       );
+      if (visibilityCondition) {
+        conditions.push(visibilityCondition);
+      }
     }
     
     if (filters?.stage) {
@@ -1532,7 +1567,9 @@ export class DatabaseStorage implements IStorage {
         ilike(evidence.title, `%${filters.search}%`),
         ilike(evidence.description, `%${filters.search}%`)
       );
-      conditions.push(searchCondition);
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
     }
     
     let query = db
@@ -2366,7 +2403,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Advanced search operations
-  searchGlobal(query: string, options?: {
+  async searchGlobal(query: string, options?: {
     contentTypes?: ('resources' | 'schools' | 'evidence' | 'caseStudies')[];
     limit?: number;
     offset?: number;
@@ -2376,13 +2413,25 @@ export class DatabaseStorage implements IStorage {
     evidence: Evidence[];
     caseStudies: CaseStudy[];
     totalResults: number;
-  }>;
+  }> {
+    // Placeholder implementation
+    return {
+      resources: [],
+      schools: [],
+      evidence: [],
+      caseStudies: [],
+      totalResults: 0
+    };
+  }
 
-  searchWithRanking(
+  async searchWithRanking(
     query: string,
     contentType: 'resources' | 'schools' | 'evidence' | 'caseStudies',
     options?: { limit?: number; offset?: number; }
-  ): Promise<any[]>;
+  ): Promise<any[]> {
+    // Placeholder implementation
+    return [];
+  }
 
   // Admin operations
   async getAdminStats(): Promise<{
@@ -2599,11 +2648,11 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(count()));
 
     return {
-      stageDistribution,
-      progressRanges,
-      completionRates,
-      monthlyRegistrations,
-      schoolsByCountry
+      stageDistribution: stageDistribution ?? [],
+      progressRanges: progressRanges ?? [],
+      completionRates: completionRates ?? [],
+      monthlyRegistrations: monthlyRegistrations ?? [],
+      schoolsByCountry: schoolsByCountry ?? []
     };
   }
 
@@ -2888,10 +2937,10 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(sql`SUM(download_count)`));
 
     return {
-      downloadTrends,
-      popularResources,
-      resourcesByStage,
-      resourcesByCountry
+      downloadTrends: downloadTrends ?? [],
+      popularResources: popularResources ?? [],
+      resourcesByStage: resourcesByStage ?? [],
+      resourcesByCountry: resourcesByCountry ?? []
     };
   }
 
@@ -2936,9 +2985,9 @@ export class DatabaseStorage implements IStorage {
       .limit(50);
 
     return {
-      deliveryStats,
-      templatePerformance,
-      recentActivity
+      deliveryStats: deliveryStats ?? [],
+      templatePerformance: templatePerformance ?? [],
+      recentActivity: recentActivity ?? []
     };
   }
 
@@ -4715,7 +4764,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(eventAnnouncements.sentAt));
   }
 
-  async getEventAnnouncementsByAudience(audienceId: string): Promise<Array<EventAnnouncement & { event: Event }>> {
+  async getEventAnnouncementsByRecipientType(recipientType: 'all_teachers' | 'custom'): Promise<Array<EventAnnouncement & { event: Event }>> {
     const results = await db
       .select({
         announcement: eventAnnouncements,
@@ -4723,7 +4772,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(eventAnnouncements)
       .innerJoin(events, eq(eventAnnouncements.eventId, events.id))
-      .where(eq(eventAnnouncements.audienceId, audienceId))
+      .where(eq(eventAnnouncements.recipientType, recipientType))
       .orderBy(desc(eventAnnouncements.sentAt));
 
     return results.map(r => ({
@@ -4732,13 +4781,13 @@ export class DatabaseStorage implements IStorage {
     }));
   }
 
-  async hasEventBeenAnnounced(eventId: string, audienceId: string): Promise<boolean> {
+  async hasEventBeenAnnounced(eventId: string, announcementType: string): Promise<boolean> {
     const [result] = await db
       .select()
       .from(eventAnnouncements)
       .where(and(
         eq(eventAnnouncements.eventId, eventId),
-        eq(eventAnnouncements.audienceId, audienceId)
+        eq(eventAnnouncements.announcementType, announcementType)
       ))
       .limit(1);
     
@@ -4854,7 +4903,7 @@ export class DatabaseStorage implements IStorage {
       cancelled: 0,
     };
     statusResults.forEach(row => {
-      if (row.status in eventsByStatus) {
+      if (row.status && row.status in eventsByStatus) {
         eventsByStatus[row.status as keyof typeof eventsByStatus] = Number(row.count);
       }
     });

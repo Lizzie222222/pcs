@@ -385,7 +385,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
               </label>
               <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
                 {formData.fileUrl ? (
-                  <div className="space-y-2">
+                  <div className="space-y-3">
                     <FileText className="h-8 w-8 text-pcs_blue mx-auto" />
                     <p className="text-sm text-gray-600 font-medium">
                       {formData.fileUrl.split('/').pop()}
@@ -393,22 +393,37 @@ function ResourceForm({ resource, onClose, onSuccess }: {
                     <p className="text-xs text-gray-500">
                       {(formData.fileSize / 1024 / 1024).toFixed(2)} MB
                     </p>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setFormData(prev => ({
-                          ...prev,
-                          fileUrl: '',
-                          fileType: '',
-                          fileSize: 0
-                        }));
-                      }}
-                      data-testid="button-remove-file"
-                    >
-                      Remove File
-                    </Button>
+                    <div className="flex gap-2 justify-center">
+                      <ObjectUploader
+                        maxNumberOfFiles={1}
+                        maxFileSize={157286400}
+                        onGetUploadParameters={handleGetUploadParameters}
+                        onComplete={handleFileUploadComplete}
+                        buttonClassName="bg-teal hover:bg-teal/90 text-white"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        {isUploading ? 'Uploading...' : 'Replace File'}
+                      </ObjectUploader>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setFormData(prev => ({
+                            ...prev,
+                            fileUrl: '',
+                            fileType: '',
+                            fileSize: 0
+                          }));
+                        }}
+                        data-testid="button-remove-file"
+                      >
+                        Remove File
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 italic">
+                      You can replace the file while keeping the same resource, or remove it entirely.
+                    </p>
                   </div>
                 ) : (
                   <div className="space-y-2">

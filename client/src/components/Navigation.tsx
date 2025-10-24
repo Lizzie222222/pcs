@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Menu, LogOut, User, Settings } from "lucide-react";
+import { Menu, LogOut, User, Settings, Bell } from "lucide-react";
 import logoUrl from "@assets/Logo_1757848498470.png";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import Avatar from "./Avatar";
@@ -39,6 +39,16 @@ export default function Navigation() {
   const { data: activeBanner } = useQuery<any>({
     queryKey: ['/api/banners/active'],
   });
+
+  // Get unread notification count
+  const { data: unreadCountData } = useQuery<{ count: number }>({
+    queryKey: ['/api/notifications/unread-count'],
+    enabled: isAuthenticated,
+    retry: false,
+    refetchInterval: 120000, // Refetch every 2 minutes
+  });
+
+  const unreadCount = unreadCountData?.count || 0;
 
   // Check if user is a head teacher
   const isHeadTeacher = dashboardData?.schoolUser?.role === 'head_teacher';
@@ -158,6 +168,23 @@ export default function Navigation() {
             <LanguageSwitcher />
             {isAuthenticated ? (
               <>
+                {/* Notification Bell */}
+                <button
+                  onClick={() => handleNavClick('/dashboard')}
+                  className="relative p-2 hover:bg-gray-100 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pcs_blue"
+                  data-testid="button-notifications"
+                  aria-label={t('navigation.notifications')}
+                >
+                  <Bell className="h-5 w-5 text-gray-700" />
+                  {unreadCount > 0 && (
+                    <Badge 
+                      className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center animate-pulse" 
+                      data-testid="badge-notification-count"
+                    >
+                      {unreadCount > 9 ? '9+' : unreadCount}
+                    </Badge>
+                  )}
+                </button>
                 {user?.isAdmin ? (
                   <Link 
                     href="/admin"

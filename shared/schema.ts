@@ -430,6 +430,29 @@ export const mailchimpSubscriptions = pgTable("mailchimp_subscriptions", {
   mergeFields: jsonb("merge_fields").default('{}'),
 });
 
+export const notificationTypeEnum = pgEnum('notification_type', [
+  'new_resource',
+  'resource_updated',
+  'evidence_reviewed',
+  'stage_completed',
+  'general'
+]);
+
+export const notifications = pgTable("notifications", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
+  type: notificationTypeEnum("type").notNull(),
+  title: varchar("title").notNull(),
+  message: text("message").notNull(),
+  actionUrl: varchar("action_url"),
+  resourceId: varchar("resource_id").references(() => resources.id, { onDelete: 'cascade' }),
+  isRead: boolean("is_read").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_notifications_school_read").on(table.schoolId, table.isRead),
+  index("idx_notifications_created").on(table.createdAt),
+]);
+
 export const certificates = pgTable("certificates", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
@@ -1259,6 +1282,12 @@ export const insertResourceSchema = createInsertSchema(resources).omit({
   downloadCount: true,
 });
 
+export const insertNotificationSchema = createInsertSchema(notifications).omit({
+  id: true,
+  createdAt: true,
+  isRead: true,
+});
+
 /**
  * @description Validation schema for evidence submission with file attachments, video links, and stage/visibility fields. Validates evidence data before database insert.
  * @location shared/schema.ts#L978
@@ -1591,6 +1620,8 @@ export type MediaAssetUsage = typeof mediaAssetUsage.$inferSelect;
 export type InsertMediaAssetUsage = z.infer<typeof insertMediaAssetUsageSchema>;
 export type ImportBatch = typeof importBatches.$inferSelect;
 export type InsertImportBatch = z.infer<typeof insertImportBatchSchema>;
+export type Notification = typeof notifications.$inferSelect;
+export type InsertNotification = z.infer<typeof insertNotificationSchema>;
 
 // Event Analytics Types
 export interface EventAnalytics {
