@@ -1149,52 +1149,39 @@ export default function EventLivePage() {
               {/* Countdown Timer */}
               <CountdownTimer startDate={startDate} />
               
-              {/* Calendar Invite & Event Info */}
-              <div className="mt-10 p-6 bg-gradient-to-br from-blue-50 to-teal-50 border-2 border-blue-200 rounded-xl shadow-lg">
-                <p className="text-blue-900 font-semibold text-xl mb-6 text-center" data-testid="text-event-upcoming">
-                  Event starts {format(startDate, 'MMMM d, yyyy \'at\' h:mm a')}
-                </p>
+              {/* Calendar Invite Buttons */}
+              <div className="mt-6 flex flex-wrap justify-center gap-4">
+                <Button
+                  onClick={() => {
+                    const googleCalendarUrl = createGoogleCalendarLink(event, startDate, endDate);
+                    window.open(googleCalendarUrl, '_blank');
+                  }}
+                  variant="outline"
+                  className="bg-white hover:bg-blue-50 border-blue-300 text-blue-700 font-semibold"
+                  data-testid="button-add-google-calendar"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Add to Google Calendar
+                </Button>
                 
-                {/* Calendar Invite Buttons */}
-                <div className="flex flex-wrap justify-center gap-4 mb-6">
-                  <Button
-                    onClick={() => {
-                      const googleCalendarUrl = createGoogleCalendarLink(event, startDate, endDate);
-                      window.open(googleCalendarUrl, '_blank');
-                    }}
-                    variant="outline"
-                    className="bg-white hover:bg-blue-50 border-blue-300 text-blue-700 font-semibold"
-                    data-testid="button-add-google-calendar"
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    Add to Google Calendar
-                  </Button>
-                  
-                  <Button
-                    onClick={() => {
-                      const icalData = createICalFile(event, startDate, endDate);
-                      const blob = new Blob([icalData], { type: 'text/calendar' });
-                      const url = URL.createObjectURL(blob);
-                      const link = document.createElement('a');
-                      link.href = url;
-                      link.download = `${event.title.replace(/[^a-z0-9]/gi, '_')}.ics`;
-                      link.click();
-                      URL.revokeObjectURL(url);
-                    }}
-                    variant="outline"
-                    className="bg-white hover:bg-teal-50 border-teal-300 text-teal-700 font-semibold"
-                    data-testid="button-download-ical"
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    Download iCal
-                  </Button>
-                </div>
-                
-                {event.meetingLink && (
-                  <p className="text-blue-700 mt-4 text-sm text-center">
-                    The meeting link will be available when the event starts
-                  </p>
-                )}
+                <Button
+                  onClick={() => {
+                    const icalData = createICalFile(event, startDate, endDate);
+                    const blob = new Blob([icalData], { type: 'text/calendar' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = `${event.title.replace(/[^a-z0-9]/gi, '_')}.ics`;
+                    link.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  variant="outline"
+                  className="bg-white hover:bg-teal-50 border-teal-300 text-teal-700 font-semibold"
+                  data-testid="button-download-ical"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download iCal
+                </Button>
               </div>
             </>
           )}
