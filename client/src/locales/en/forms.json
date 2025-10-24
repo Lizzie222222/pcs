@@ -150,6 +150,8 @@
     "stage_locked_warning_message": "Complete the {{stageName}} stage first to unlock this stage",
     "visibility_private_title": "Private",
     "visibility_private_description": "Only visible to your school team and admin reviewers",
+    "visibility_registered_title": "Registered Users Only",
+    "visibility_registered_description": "Only visible to registered schools and admin reviewers",
     "visibility_public_title": "Public (after approval)",
     "visibility_public_description": "May be featured in inspiration gallery after admin review",
     "review_process_title": "Review Process",
