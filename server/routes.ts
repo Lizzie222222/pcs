@@ -7048,6 +7048,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: Attach resource to event
+  app.post('/api/admin/events/:id/resources', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const eventId = req.params.id;
+      const { resourceId, orderIndex } = req.body;
+
+      if (!resourceId) {
+        return res.status(400).json({ message: "Resource ID is required" });
+      }
+
+      // Verify event exists
+      const event = await storage.getEvent(eventId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+
+      // Attach resource
+      const eventResource = await storage.attachResourceToEvent(eventId, resourceId, orderIndex);
+      res.json({ message: "Resource attached successfully", eventResource });
+    } catch (error) {
+      console.error("Error attaching resource to event:", error);
+      if (error instanceof Error && error.message.includes('unique')) {
+        return res.status(400).json({ message: "Resource is already attached to this event" });
+      }
+      res.status(500).json({ message: "Failed to attach resource" });
+    }
+  });
+
+  // Admin: Detach resource from event
+  app.delete('/api/admin/events/:id/resources/:resourceId', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { id: eventId, resourceId } = req.params;
+      await storage.detachResourceFromEvent(eventId, resourceId);
+      res.json({ message: "Resource detached successfully" });
+    } catch (error) {
+      console.error("Error detaching resource from event:", error);
+      res.status(500).json({ message: "Failed to detach resource" });
+    }
+  });
+
+  // Admin: Get event resources
+  app.get('/api/admin/events/:id/resources', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const eventId = req.params.id;
+      const resources = await storage.getEventResources(eventId);
+      res.json(resources);
+    } catch (error) {
+      console.error("Error fetching event resources:", error);
+      res.status(500).json({ message: "Failed to fetch event resources" });
+    }
+  });
+
+  // Admin: Reorder event resources
+  app.put('/api/admin/events/:id/resources/reorder', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const eventId = req.params.id;
+      const { resourceOrders } = req.body;
+
+      if (!Array.isArray(resourceOrders)) {
+        return res.status(400).json({ message: "resourceOrders must be an array" });
+      }
+
+      await storage.reorderEventResources(eventId, resourceOrders);
+      res.json({ message: "Resources reordered successfully" });
+    } catch (error) {
+      console.error("Error reordering event resources:", error);
+      res.status(500).json({ message: "Failed to reorder resources" });
+    }
+  });
+
   // Admin: Auto-translate event content
   app.post('/api/admin/events/:id/auto-translate', isAuthenticated, requireAdmin, async (req, res) => {
     try {
