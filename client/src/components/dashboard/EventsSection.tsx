@@ -917,6 +917,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                 </div>
               )}
             </div>
+            </div>
 
             {/* Footer with buttons - outside scrollable area */}
             <div className="border-t px-6 py-4 bg-white">
