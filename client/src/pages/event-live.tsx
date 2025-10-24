@@ -148,13 +148,21 @@ function getTranslatedContentWithMeta<T>(
     return { content: fallbackValue, usedLanguage: 'original', isFallback: true };
   }
   
+  // Helper to check if content is populated (not empty array or falsy)
+  const isPopulated = (value: any): boolean => {
+    if (Array.isArray(value)) {
+      return value.length > 0;
+    }
+    return Boolean(value);
+  };
+  
   // Try requested language
-  if (translations[requestedLanguage]) {
+  if (translations[requestedLanguage] && isPopulated(translations[requestedLanguage])) {
     return { content: translations[requestedLanguage], usedLanguage: requestedLanguage, isFallback: false };
   }
   
   // Fall back to English
-  if (translations['en']) {
+  if (translations['en'] && isPopulated(translations['en'])) {
     return { content: translations['en'], usedLanguage: 'en', isFallback: true };
   }
   
