@@ -1921,6 +1921,58 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     },
   });
 
+  const duplicateEventMutation = useMutation({
+    mutationFn: async (eventId: string) => {
+      const res = await fetch(`/api/admin/events/${eventId}/duplicate`, {
+        method: 'POST',
+        credentials: 'include',
+      });
+      if (!res.ok) throw new Error(await res.text());
+      return res.json();
+    },
+    onSuccess: (duplicatedEvent) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
+      toast({
+        title: "Event Duplicated",
+        description: `"${duplicatedEvent.title}" has been created as a draft.`,
+      });
+      // Open the edit dialog for the new event
+      setEditingEvent(duplicatedEvent);
+      // Populate form data
+      setEventFormData({
+        title: duplicatedEvent.title,
+        description: duplicatedEvent.description || '',
+        eventType: duplicatedEvent.eventType,
+        status: duplicatedEvent.status || 'draft',
+        startDateTime: new Date(duplicatedEvent.startDateTime).toISOString().slice(0, 16),
+        endDateTime: new Date(duplicatedEvent.endDateTime).toISOString().slice(0, 16),
+        location: duplicatedEvent.location || '',
+        isVirtual: duplicatedEvent.isVirtual ?? false,
+        meetingLink: duplicatedEvent.meetingLink || '',
+        imageUrl: duplicatedEvent.imageUrl || '',
+        capacity: duplicatedEvent.capacity?.toString() || '',
+        waitlistEnabled: duplicatedEvent.waitlistEnabled ?? false,
+        registrationDeadline: duplicatedEvent.registrationDeadline ? new Date(duplicatedEvent.registrationDeadline).toISOString().slice(0, 16) : '',
+        tags: duplicatedEvent.tags?.join(', ') || '',
+        isPreRecorded: duplicatedEvent.isPreRecorded ?? false,
+        recordingAvailableFrom: duplicatedEvent.recordingAvailableFrom ? new Date(duplicatedEvent.recordingAvailableFrom).toISOString().slice(0, 16) : '',
+        pagePublishedStatus: duplicatedEvent.pagePublishedStatus || 'draft',
+        accessType: duplicatedEvent.accessType || 'open',
+      });
+      if (duplicatedEvent.imageUrl) {
+        setUploadedEventImage({ name: 'Event image', url: duplicatedEvent.imageUrl });
+      }
+      setEventDialogOpen(true);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Duplication Failed",
+        description: error.message || "Failed to duplicate event",
+        variant: "destructive",
+      });
+    },
+  });
+
   const updateEventPageContentMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: PageBuilderFormData }) => {
       return await apiRequest('PATCH', `/api/admin/events/${id}/page-content`, data);
@@ -4646,6 +4698,17 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                       data-testid={`button-edit-${event.id}`}
                                     >
                                       <Edit className="h-4 w-4" />
+                                    </Button>
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
+                                      onClick={() => duplicateEventMutation.mutate(event.id)}
+                                      disabled={duplicateEventMutation.isPending}
+                                      className="text-teal-600 hover:text-teal-700 hover:bg-teal-50"
+                                      data-testid={`button-duplicate-${event.id}`}
+                                      title="Duplicate event"
+                                    >
+                                      <Copy className="h-4 w-4" />
                                     </Button>
                                     <Button
                                       variant="outline"

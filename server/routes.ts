@@ -7727,6 +7727,87 @@ Return JSON with:
     }
   });
 
+  // Admin: Duplicate event
+  app.post('/api/admin/events/:id/duplicate', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const eventId = req.params.id;
+      
+      // Fetch the original event
+      const originalEvent = await storage.getEvent(eventId);
+      if (!originalEvent) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      // Prepare duplicated event data
+      const duplicatedTitle = `${originalEvent.title} (Copy)`;
+      
+      // Generate unique slug using same logic as POST /api/admin/events
+      const baseSlug = duplicatedTitle
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '');
+      
+      // Check if slug exists, if so append timestamp to make it unique
+      const existingEvents = await storage.getEvents({ publicSlug: baseSlug });
+      const publicSlug = (existingEvents && existingEvents.length > 0) 
+        ? `${baseSlug}-${Date.now()}`
+        : baseSlug;
+      
+      // Update English translation title to include " (Copy)"
+      const titleTranslations = (originalEvent.titleTranslations && typeof originalEvent.titleTranslations === 'object')
+        ? { ...originalEvent.titleTranslations, en: duplicatedTitle }
+        : { en: duplicatedTitle };
+      
+      // Prepare event data for duplication
+      const eventData = {
+        title: duplicatedTitle,
+        description: originalEvent.description,
+        eventType: originalEvent.eventType,
+        status: 'draft', // Always create as draft
+        startDateTime: originalEvent.startDateTime,
+        endDateTime: originalEvent.endDateTime,
+        location: originalEvent.location,
+        isVirtual: originalEvent.isVirtual,
+        meetingLink: originalEvent.meetingLink,
+        imageUrl: originalEvent.imageUrl,
+        capacity: originalEvent.capacity,
+        waitlistEnabled: originalEvent.waitlistEnabled,
+        registrationDeadline: originalEvent.registrationDeadline,
+        tags: originalEvent.tags,
+        timezone: originalEvent.timezone,
+        accessToken: originalEvent.accessToken,
+        isPreRecorded: originalEvent.isPreRecorded,
+        recordingAvailableFrom: originalEvent.recordingAvailableFrom,
+        pagePublishedStatus: originalEvent.pagePublishedStatus || 'draft',
+        accessType: originalEvent.accessType,
+        publicSlug: publicSlug,
+        createdBy: req.user.id, // Set to current user
+        
+        // Copy multi-language fields
+        titleTranslations: titleTranslations,
+        descriptionTranslations: originalEvent.descriptionTranslations,
+        youtubeVideoTranslations: originalEvent.youtubeVideoTranslations,
+        eventPackFileTranslations: originalEvent.eventPackFileTranslations,
+        testimonialTranslations: originalEvent.testimonialTranslations,
+        
+        // Copy page builder content
+        youtubeVideos: originalEvent.youtubeVideos,
+        eventPackFiles: originalEvent.eventPackFiles,
+        testimonials: originalEvent.testimonials,
+      };
+      
+      // Create the duplicated event
+      const duplicatedEvent = await storage.createEvent(eventData);
+      
+      res.json(duplicatedEvent);
+    } catch (error) {
+      console.error("Error duplicating event:", error);
+      res.status(500).json({ message: "Failed to duplicate event" });
+    }
+  });
+
   // Admin: Attach resource to event
   app.post('/api/admin/events/:id/resources', isAuthenticated, requireAdmin, async (req, res) => {
     try {
