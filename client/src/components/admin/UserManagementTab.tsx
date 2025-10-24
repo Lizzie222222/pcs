@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { 
@@ -73,6 +74,8 @@ export default function UserManagementTab() {
   const [selectedUserToDelete, setSelectedUserToDelete] = useState<{ id: string; name: string } | null>(null);
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [selectedUserForRole, setSelectedUserForRole] = useState<{ id: string; name: string; isAdmin: boolean; role: string } | null>(null);
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
 
   const isPartner = user?.role === 'partner';
 
@@ -138,9 +141,52 @@ export default function UserManagementTab() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     },
     onError: (error: any) => {
+      const errorMessage = error.message || "Failed to delete user. Please try again.";
       toast({
         title: "Delete Failed",
-        description: error.message || "Failed to delete user. Please try again.",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (userIds: string[]) => {
+      const response = await apiRequest('POST', '/api/admin/users/bulk-delete', { userIds });
+      return response;
+    },
+    onSuccess: (data: any) => {
+      const { successCount, failedCount, failures } = data;
+      
+      if (failedCount === 0) {
+        toast({
+          title: "Bulk Delete Successful",
+          description: `Successfully deleted ${successCount} user${successCount > 1 ? 's' : ''}.`,
+        });
+      } else if (successCount === 0) {
+        const failureDetails = failures.map((f: any) => `${f.email}: ${f.reason}`).join('\n');
+        toast({
+          title: "Bulk Delete Failed",
+          description: `Failed to delete all selected users:\n${failureDetails}`,
+          variant: "destructive",
+        });
+      } else {
+        const failureDetails = failures.map((f: any) => `${f.email}: ${f.reason}`).join('\n');
+        toast({
+          title: "Bulk Delete Partially Successful",
+          description: `Successfully deleted ${successCount} user${successCount > 1 ? 's' : ''}. Failed to delete ${failedCount}:\n${failureDetails}`,
+          variant: "destructive",
+        });
+      }
+      
+      setBulkDeleteDialogOpen(false);
+      setSelectedUserIds(new Set());
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Bulk Delete Failed",
+        description: error.message || "Failed to delete users. Please try again.",
         variant: "destructive",
       });
     },
@@ -185,6 +231,36 @@ export default function UserManagementTab() {
   const handleAssignToSchool = (userEmail: string) => {
     setSelectedUserEmail(userEmail);
     setAssignDialogOpen(true);
+  };
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      const selectableUserIds = filteredUsers
+        .filter(item => item.user.id !== user?.id)
+        .map(item => item.user.id);
+      setSelectedUserIds(new Set(selectableUserIds));
+    } else {
+      setSelectedUserIds(new Set());
+    }
+  };
+
+  const handleSelectUser = (userId: string, checked: boolean) => {
+    const newSelectedIds = new Set(selectedUserIds);
+    if (checked) {
+      newSelectedIds.add(userId);
+    } else {
+      newSelectedIds.delete(userId);
+    }
+    setSelectedUserIds(newSelectedIds);
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedUserIds.size === 0) return;
+    setBulkDeleteDialogOpen(true);
+  };
+
+  const confirmBulkDelete = () => {
+    bulkDeleteMutation.mutate(Array.from(selectedUserIds));
   };
 
   if (isLoading) {
@@ -374,8 +450,20 @@ export default function UserManagementTab() {
             </div>
           </div>
 
-          <div className="text-sm text-gray-600">
-            Showing <strong>{filteredUsers.length}</strong> of <strong>{usersWithSchools.length}</strong> users
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-gray-600">
+              Showing <strong>{filteredUsers.length}</strong> of <strong>{usersWithSchools.length}</strong> users
+            </div>
+            {selectedUserIds.size > 0 && (
+              <Button
+                variant="destructive"
+                onClick={handleBulkDelete}
+                data-testid="button-bulk-delete"
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete Selected Users ({selectedUserIds.size})
+              </Button>
+            )}
           </div>
 
           {filteredUsers.length === 0 ? (
@@ -395,6 +483,17 @@ export default function UserManagementTab() {
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="border-b-2 border-gray-200 bg-gray-50">
+                    <th className="w-12 p-3">
+                      <Checkbox
+                        checked={
+                          filteredUsers.length > 0 &&
+                          filteredUsers.filter(item => item.user.id !== user?.id).length > 0 &&
+                          filteredUsers.filter(item => item.user.id !== user?.id).every(item => selectedUserIds.has(item.user.id))
+                        }
+                        onCheckedChange={handleSelectAll}
+                        data-testid="checkbox-select-all"
+                      />
+                    </th>
                     <th className="text-left p-3 text-sm font-semibold text-gray-700">Name</th>
                     <th className="text-left p-3 text-sm font-semibold text-gray-700">Email</th>
                     <th className="text-left p-3 text-sm font-semibold text-gray-700">Role</th>
@@ -404,40 +503,50 @@ export default function UserManagementTab() {
                 </thead>
                 <tbody>
                   {filteredUsers.map((item) => {
-                    const user = item.user;
+                    const userItem = item.user;
                     const schoolCount = item.schools.length;
+                    const isCurrentUser = userItem.id === user?.id;
+                    const isChecked = selectedUserIds.has(userItem.id);
                     return (
                       <tr 
-                        key={user.id} 
+                        key={userItem.id} 
                         className="border-b border-gray-200 hover:bg-gray-50"
-                        data-testid={`user-row-${user.id}`}
+                        data-testid={`user-row-${userItem.id}`}
                       >
-                        <td className="p-3 text-sm" data-testid={`text-user-name-${user.id}`}>
+                        <td className="p-3">
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) => handleSelectUser(userItem.id, checked as boolean)}
+                            disabled={isCurrentUser}
+                            data-testid={`checkbox-user-${userItem.id}`}
+                          />
+                        </td>
+                        <td className="p-3 text-sm" data-testid={`text-user-name-${userItem.id}`}>
                           <div className="font-medium text-gray-900">
-                            {user.firstName} {user.lastName}
+                            {userItem.firstName} {userItem.lastName}
                           </div>
-                          {user.isAdmin && user.role === 'admin' && (
+                          {userItem.isAdmin && userItem.role === 'admin' && (
                             <Badge className="mt-1 bg-purple-500 text-white text-xs">Admin</Badge>
                           )}
-                          {user.role === 'partner' && (
+                          {userItem.role === 'partner' && (
                             <Badge className="mt-1 bg-blue-500 text-white text-xs">Partner</Badge>
                           )}
-                          {user.role === 'school' && (
+                          {userItem.role === 'school' && (
                             <Badge className="mt-1 bg-green-500 text-white text-xs">School</Badge>
                           )}
                         </td>
-                        <td className="p-3 text-sm text-gray-600" data-testid={`text-user-email-${user.id}`}>
-                          {user.email}
+                        <td className="p-3 text-sm text-gray-600" data-testid={`text-user-email-${userItem.id}`}>
+                          {userItem.email}
                         </td>
                         <td className="p-3 text-sm">
-                          <Badge variant="outline" data-testid={`text-user-role-${user.id}`}>
-                            {user.role === 'admin' && user.isAdmin ? 'Admin' : 
-                             user.role === 'partner' ? 'Partner' : 
-                             user.role === 'school' ? 'School' :
-                             user.role === 'teacher' ? 'Teacher' : user.role}
+                          <Badge variant="outline" data-testid={`text-user-role-${userItem.id}`}>
+                            {userItem.role === 'admin' && userItem.isAdmin ? 'Admin' : 
+                             userItem.role === 'partner' ? 'Partner' : 
+                             userItem.role === 'school' ? 'School' :
+                             userItem.role === 'teacher' ? 'Teacher' : userItem.role}
                           </Badge>
                         </td>
-                        <td className="p-3 text-sm" data-testid={`text-user-school-status-${user.id}`}>
+                        <td className="p-3 text-sm" data-testid={`text-user-school-status-${userItem.id}`}>
                           {schoolCount === 0 ? (
                             <Badge variant="outline" className="text-red-600 border-red-300">
                               No School
@@ -459,7 +568,7 @@ export default function UserManagementTab() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  data-testid={`button-user-actions-${user.id}`}
+                                  data-testid={`button-user-actions-${userItem.id}`}
                                 >
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
@@ -468,8 +577,8 @@ export default function UserManagementTab() {
                                 <DropdownMenuLabel>Actions</DropdownMenuLabel>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem
-                                  onClick={() => handleAssignToSchool(user.email || '')}
-                                  data-testid={`menu-assign-school-${user.id}`}
+                                  onClick={() => handleAssignToSchool(userItem.email || '')}
+                                  data-testid={`menu-assign-school-${userItem.id}`}
                                 >
                                   <Plus className="h-4 w-4 mr-2" />
                                   {schoolCount === 0 ? 'Assign to School' : 'Assign to Another School'}
@@ -479,16 +588,16 @@ export default function UserManagementTab() {
                                     <DialogTrigger asChild>
                                       <DropdownMenuItem
                                         onSelect={(e) => e.preventDefault()}
-                                        data-testid={`menu-view-schools-${user.id}`}
+                                        data-testid={`menu-view-schools-${userItem.id}`}
                                       >
                                         <Eye className="h-4 w-4 mr-2" />
                                         View Schools
                                       </DropdownMenuItem>
                                     </DialogTrigger>
-                                    <DialogContent data-testid={`dialog-user-schools-${user.id}`}>
+                                    <DialogContent data-testid={`dialog-user-schools-${userItem.id}`}>
                                       <DialogHeader>
                                         <DialogTitle>
-                                          Schools for {user.firstName} {user.lastName}
+                                          Schools for {userItem.firstName} {userItem.lastName}
                                         </DialogTitle>
                                       </DialogHeader>
                                       <div className="space-y-3">
@@ -515,14 +624,14 @@ export default function UserManagementTab() {
                                   <DropdownMenuItem
                                     onClick={() => {
                                       setSelectedUserForRole({
-                                        id: user.id,
-                                        name: `${user.firstName} ${user.lastName}`,
-                                        isAdmin: user.isAdmin,
-                                        role: user.role,
+                                        id: userItem.id,
+                                        name: `${userItem.firstName} ${userItem.lastName}`,
+                                        isAdmin: userItem.isAdmin,
+                                        role: userItem.role,
                                       });
                                       setRoleDialogOpen(true);
                                     }}
-                                    data-testid={`menu-change-role-${user.id}`}
+                                    data-testid={`menu-change-role-${userItem.id}`}
                                   >
                                     <Shield className="h-4 w-4 mr-2" />
                                     Change Role
@@ -532,13 +641,13 @@ export default function UserManagementTab() {
                                 <DropdownMenuItem
                                   onClick={() => {
                                     setSelectedUserToDelete({
-                                      id: user.id,
-                                      name: `${user.firstName} ${user.lastName}`,
+                                      id: userItem.id,
+                                      name: `${userItem.firstName} ${userItem.lastName}`,
                                     });
                                     setDeleteDialogOpen(true);
                                   }}
                                   className="text-red-600 focus:text-red-600"
-                                  data-testid={`menu-delete-user-${user.id}`}
+                                  data-testid={`menu-delete-user-${userItem.id}`}
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />
                                   Delete User
@@ -680,6 +789,28 @@ export default function UserManagementTab() {
             </div>
           </DialogContent>
         </Dialog>
+
+        <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+          <AlertDialogContent data-testid="dialog-bulk-delete">
+            <AlertDialogHeader>
+              <AlertDialogTitle>Bulk Delete Users</AlertDialogTitle>
+              <AlertDialogDescription>
+                Are you sure you want to delete <strong>{selectedUserIds.size} user{selectedUserIds.size > 1 ? 's' : ''}</strong>? 
+                This action cannot be undone and will remove all user data including school associations.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel data-testid="button-cancel-bulk-delete">Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={confirmBulkDelete}
+                className="bg-red-600 hover:bg-red-700"
+                data-testid="button-confirm-bulk-delete"
+              >
+                {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedUserIds.size} User${selectedUserIds.size > 1 ? 's' : ''}`}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardContent>
     </Card>
   );
