@@ -6468,10 +6468,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Event not found" });
       }
       
-      // Add registration count
+      // Add registration count and attached resources
       const registrationsCount = await storage.getEventRegistrationCount(event.id);
+      const attachedResources = await storage.getEventResources(event.id);
       
-      res.json({ ...event, registrationsCount });
+      res.json({ ...event, registrationsCount, attachedResources });
     } catch (error) {
       console.error("Error fetching event:", error);
       res.status(500).json({ message: "Failed to fetch event" });
@@ -6486,11 +6487,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Event not found" });
       }
       
-      // Add registration count
+      // Add registration count and attached resources
       const event = events[0];
       const registrationsCount = await storage.getEventRegistrationCount(event.id);
+      const attachedResources = await storage.getEventResources(event.id);
       
-      res.json({ ...event, registrationsCount });
+      res.json({ ...event, registrationsCount, attachedResources });
     } catch (error) {
       console.error("Error fetching event by slug:", error);
       res.status(500).json({ message: "Failed to fetch event" });
