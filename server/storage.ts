@@ -190,6 +190,8 @@ export interface IStorage {
     country?: string;
     language?: string;
     ageRange?: string;
+    resourceType?: string;
+    theme?: string;
     search?: string;
     visibility?: 'public' | 'registered';
     limit?: number;
@@ -1220,6 +1222,8 @@ export class DatabaseStorage implements IStorage {
     country?: string;
     language?: string;
     ageRange?: string;
+    resourceType?: string;
+    theme?: string;
     search?: string;
     visibility?: 'public' | 'registered';
     limit?: number;
@@ -1238,6 +1242,12 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.ageRange) {
       conditions.push(eq(resources.ageRange, filters.ageRange));
+    }
+    if (filters.resourceType) {
+      conditions.push(eq(resources.resourceType, filters.resourceType as any));
+    }
+    if (filters.theme) {
+      conditions.push(eq(resources.theme, filters.theme as any));
     }
     if (filters.visibility) {
       conditions.push(eq(resources.visibility, filters.visibility as any));
