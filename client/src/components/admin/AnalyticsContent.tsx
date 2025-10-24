@@ -179,6 +179,7 @@ export default function AnalyticsContent() {
     queryKey: ['/api/admin/reduction-promises/metrics']
   });
 
+  const [activeTab, setActiveTab] = useState("overview");
   const [includeAIInsights, setIncludeAIInsights] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
   
@@ -441,7 +442,7 @@ export default function AnalyticsContent() {
       </div>
 
       {/* Nested Tabs for Analytics Sections */}
-      <Tabs defaultValue="overview" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4" data-testid="analytics-tabs">
           <TabsTrigger value="overview" data-testid="tab-overview">
             <BarChart3 className="w-4 h-4 mr-2" />
@@ -466,7 +467,11 @@ export default function AnalyticsContent() {
           {/* Overview Cards */}
           {overviewQuery.data && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              <Card>
+              <Card 
+                className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
+                onClick={() => setActiveTab("schools-evidence")}
+                data-testid="card-total-schools"
+              >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Total Schools</CardTitle>
                   <School className="h-4 w-4 text-pcs_blue" />
@@ -475,11 +480,15 @@ export default function AnalyticsContent() {
                   <div className="text-2xl font-bold" data-testid="metric-total-schools">
                     {overviewQuery.data.totalSchools.toLocaleString()}
                   </div>
-                  <p className="text-xs text-gray-500">Registered institutions</p>
+                  <p className="text-xs text-gray-500">Click to view details →</p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card 
+                className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
+                onClick={() => setActiveTab("engagement")}
+                data-testid="card-active-users"
+              >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Active Users</CardTitle>
                   <Users className="h-4 w-4 text-pcs_teal" />
@@ -488,11 +497,15 @@ export default function AnalyticsContent() {
                   <div className="text-2xl font-bold" data-testid="metric-total-users">
                     {overviewQuery.data.totalUsers.toLocaleString()}
                   </div>
-                  <p className="text-xs text-gray-500">Teachers and administrators</p>
+                  <p className="text-xs text-gray-500">Click to view details →</p>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card 
+                className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
+                onClick={() => setActiveTab("schools-evidence")}
+                data-testid="card-evidence-submissions"
+              >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Evidence Submissions</CardTitle>
                   <FileText className="h-4 w-4 text-pcs_yellow" />
@@ -502,12 +515,16 @@ export default function AnalyticsContent() {
                     {overviewQuery.data.totalEvidence.toLocaleString()}
                   </div>
                   <div className="flex items-center text-xs text-gray-500">
-                    <span>{overviewQuery.data.pendingEvidence} pending review</span>
+                    <span>Click to view details →</span>
                   </div>
                 </CardContent>
               </Card>
 
-              <Card>
+              <Card 
+                className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
+                onClick={() => setActiveTab("schools-evidence")}
+                data-testid="card-global-reach"
+              >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                   <CardTitle className="text-sm font-medium">Global Reach</CardTitle>
                   <Globe className="h-4 w-4 text-pcs_coral" />
@@ -516,7 +533,7 @@ export default function AnalyticsContent() {
                   <div className="text-2xl font-bold" data-testid="metric-countries-reached">
                     {overviewQuery.data.countriesReached.toLocaleString()}
                   </div>
-                  <p className="text-xs text-gray-500">Countries with participating schools</p>
+                  <p className="text-xs text-gray-500">Click to view details →</p>
                 </CardContent>
               </Card>
             </div>
