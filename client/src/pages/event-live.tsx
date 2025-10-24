@@ -186,13 +186,15 @@ function getTranslatedContentWithMeta<T>(
 }
 
 // Extract YouTube video ID from URL
-function getYouTubeVideoId(url: string): string | null {
+function getYouTubeVideoId(url: string | null | undefined): string | null {
+  if (!url) return null;
   const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([\w-]{11})/);
   return videoIdMatch ? videoIdMatch[1] : null;
 }
 
 // Get YouTube thumbnail URL
-function getYouTubeThumbnail(url: string): string {
+function getYouTubeThumbnail(url: string | null | undefined): string {
+  if (!url) return '';
   const videoId = getYouTubeVideoId(url);
   return videoId ? `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg` : '';
 }
@@ -315,8 +317,9 @@ function CountdownTimer({ startDate }: { startDate: Date }) {
   );
 }
 
-function YouTubeEmbed({ url, title }: { url: string; title: string }) {
-  const getYouTubeEmbedUrl = (url: string) => {
+function YouTubeEmbed({ url, title }: { url: string | null | undefined; title: string }) {
+  const getYouTubeEmbedUrl = (url: string | null | undefined) => {
+    if (!url) return null;
     const videoId = getYouTubeVideoId(url);
     return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
   };
@@ -326,7 +329,7 @@ function YouTubeEmbed({ url, title }: { url: string; title: string }) {
   if (!embedUrl) {
     return (
       <div className="w-full aspect-video bg-gray-100 rounded-lg flex items-center justify-center">
-        <p className="text-gray-500">Invalid YouTube URL</p>
+        <p className="text-gray-500">No video available</p>
       </div>
     );
   }
