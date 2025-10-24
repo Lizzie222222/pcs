@@ -4,15 +4,63 @@ import { useParams, useLocation } from "wouter";
 import { LoadingSpinner } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Download, Calendar, MapPin, Users, ExternalLink, CheckCircle, Lock, ArrowLeft, Play } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Download, Calendar, MapPin, Users, ExternalLink, CheckCircle, Lock, ArrowLeft, Play, FileText, Image, FileSpreadsheet, FileArchive, Video, File } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { VideoLightbox } from "@/components/VideoLightbox";
+import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP, getLanguageLabel } from "@/lib/languageUtils";
 import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 import eventPackBannerUrl from "@assets/event-pack-2_1761297797787.png";
+
+// Helper function to get file type icon based on file extension
+function getFileTypeIcon(fileName: string) {
+  const extension = fileName?.split('.').pop()?.toLowerCase() || '';
+  
+  switch (extension) {
+    case 'pdf':
+      return FileText;
+    case 'jpg':
+    case 'jpeg':
+    case 'png':
+    case 'gif':
+    case 'webp':
+    case 'svg':
+      return Image;
+    case 'xls':
+    case 'xlsx':
+    case 'csv':
+      return FileSpreadsheet;
+    case 'zip':
+    case 'rar':
+    case '7z':
+    case 'tar':
+    case 'gz':
+      return FileArchive;
+    case 'mp4':
+    case 'mov':
+    case 'avi':
+    case 'webm':
+    case 'mkv':
+      return Video;
+    default:
+      return File;
+  }
+}
+
+// Helper function to format file size in human-readable format
+function formatFileSize(bytes: number): string {
+  if (bytes === 0) return '0 Bytes';
+  
+  const k = 1024;
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const i = Math.floor(Math.log(bytes) / Math.log(k));
+  
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+}
 
 interface YoutubeVideo {
   title: string;
@@ -26,6 +74,7 @@ interface EventPackFile {
   fileName?: string;
   fileSize?: number;
   description?: string;
+  language?: string; // Prepare for future language metadata (e.g., 'en', 'es', 'fr')
 }
 
 interface Testimonial {
@@ -89,6 +138,30 @@ function getTranslatedContent<T>(
   return fallbackValue;
 }
 
+// Enhanced translation helper with metadata for fallback detection
+function getTranslatedContentWithMeta<T>(
+  translations: Record<string, T> | undefined | null,
+  fallbackValue: T,
+  requestedLanguage: string
+): { content: T; usedLanguage: string; isFallback: boolean } {
+  if (!translations || Object.keys(translations).length === 0) {
+    return { content: fallbackValue, usedLanguage: 'original', isFallback: true };
+  }
+  
+  // Try requested language
+  if (translations[requestedLanguage]) {
+    return { content: translations[requestedLanguage], usedLanguage: requestedLanguage, isFallback: false };
+  }
+  
+  // Fall back to English
+  if (translations['en']) {
+    return { content: translations['en'], usedLanguage: 'en', isFallback: true };
+  }
+  
+  // Fall back to original value
+  return { content: fallbackValue, usedLanguage: 'original', isFallback: true };
+}
+
 // Extract YouTube video ID from URL
 function getYouTubeVideoId(url: string): string | null {
   const videoIdMatch = url.match(/(?:youtu\.be\/|youtube\.com(?:\/embed\/|\/v\/|\/watch\?v=|\/watch\?.+&v=))([\w-]{11})/);
@@ -127,6 +200,80 @@ function YouTubeEmbed({ url, title }: { url: string; title: string }) {
         className="w-full h-full"
         data-testid={`iframe-youtube-${title.toLowerCase().replace(/\s+/g, '-')}`}
       />
+    </div>
+  );
+}
+
+// Fallback Badge Component
+function FallbackBadge({ usedLanguage }: { usedLanguage: string }) {
+  if (usedLanguage === 'original') {
+    return (
+      <Badge 
+        variant="outline" 
+        className="bg-gray-100 text-gray-600 border-gray-300 text-xs"
+        data-testid="badge-fallback-language"
+      >
+        Original Language
+      </Badge>
+    );
+  }
+
+  const flag = LANGUAGE_FLAG_MAP[usedLanguage] || '🏳️';
+  const languageName = usedLanguage === 'en' ? 'English' : usedLanguage.toUpperCase();
+  
+  return (
+    <Badge 
+      variant="outline" 
+      className="bg-blue-50 text-blue-700 border-blue-200 text-xs"
+      data-testid="badge-fallback-language"
+    >
+      {flag} Available in {languageName}
+    </Badge>
+  );
+}
+
+// Language Selector Tabs Component
+interface LanguageSelectorTabsProps {
+  event: Event;
+  selectedLanguage: string;
+  onLanguageChange: (language: string) => void;
+}
+
+function LanguageSelectorTabs({ event, selectedLanguage, onLanguageChange }: LanguageSelectorTabsProps) {
+  const availableLanguages = getEventAvailableLanguages(event);
+  
+  // Don't show selector if only one language or no languages
+  if (availableLanguages.length <= 1) {
+    return null;
+  }
+
+  return (
+    <div className="mb-8" data-testid="tabs-language-selector">
+      <div className="flex flex-wrap justify-center gap-2 md:gap-3">
+        {availableLanguages.map((langCode) => {
+          const flag = LANGUAGE_FLAG_MAP[langCode] || '🏳️';
+          const isSelected = langCode === selectedLanguage;
+          
+          return (
+            <button
+              key={langCode}
+              onClick={() => onLanguageChange(langCode)}
+              className={`
+                px-4 py-2 md:px-6 md:py-3 rounded-lg font-semibold text-sm md:text-base
+                transition-all duration-200 transform hover:scale-105
+                ${isSelected 
+                  ? 'bg-gradient-to-r from-pcs_blue to-ocean-blue text-white shadow-lg' 
+                  : 'bg-white text-gray-700 border-2 border-gray-200 hover:border-pcs_blue hover:text-pcs_blue'
+                }
+              `}
+              data-testid={`tab-language-${langCode}`}
+            >
+              <span className="text-lg mr-2">{flag}</span>
+              {langCode.toUpperCase()}
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -198,12 +345,13 @@ export default function EventLivePage() {
   const [, navigate] = useLocation();
   const { isAuthenticated, user } = useAuth();
   const { toast } = useToast();
-  const { t } = useTranslation('landing');
+  const { t, i18n } = useTranslation('landing');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selectedVideo, setSelectedVideo] = useState<YoutubeVideo | null>(null);
   
-  // Get user language
+  // Get user language and selected language state
   const userLanguage = user?.preferredLanguage || 'en';
+  const [selectedLanguage, setSelectedLanguage] = useState(userLanguage);
   
   const { data: event, isLoading, error } = useQuery<Event>({
     queryKey: ['/api/events/slug', params.slug],
@@ -310,6 +458,50 @@ export default function EventLivePage() {
     },
   });
 
+  // Language update mutation
+  const updateLanguageMutation = useMutation({
+    mutationFn: async (language: string) => {
+      return apiRequest('/api/user/language', {
+        method: 'PUT',
+        body: JSON.stringify({ language }),
+        headers: { 'Content-Type': 'application/json' },
+      });
+    },
+    onSuccess: (data: any, language: string) => {
+      // Update local state
+      setSelectedLanguage(language);
+      
+      // Change i18n language for entire app
+      i18n.changeLanguage(language);
+      
+      // Invalidate auth cache to refresh user data
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // Show success toast
+      toast({
+        title: "Language Updated",
+        description: `Language preference changed to ${getLanguageLabel(language)}`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Update Language",
+        description: error.message || "Could not update language preference",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLanguageChange = (language: string) => {
+    if (isAuthenticated) {
+      updateLanguageMutation.mutate(language);
+    } else {
+      // For non-authenticated users, just change the local state and i18n
+      setSelectedLanguage(language);
+      i18n.changeLanguage(language);
+    }
+  };
+
   const handleMeetingLinkClick = () => {
     trackClickMutation.mutate();
   };
@@ -351,30 +543,40 @@ export default function EventLivePage() {
     );
   }
 
-  // Get translated content
-  const translatedTitle = getTranslatedContent(event.titleTranslations, event.title, userLanguage);
-  const translatedDescription = getTranslatedContent(event.descriptionTranslations, event.description, userLanguage);
-  const translatedVideos = getTranslatedContent(event.youtubeVideoTranslations, event.youtubeVideos || [], userLanguage);
-  const translatedEventPackFiles = getTranslatedContent(event.eventPackFileTranslations, event.eventPackFiles || [], userLanguage);
-  const translatedTestimonials = getTranslatedContent(event.testimonialTranslations, event.testimonials || [], userLanguage);
-  const translatedEvidenceText = getTranslatedContent(event.evidenceSubmissionText, 'Join thousands of students worldwide making a difference. Submit your evidence and showcase your plastic reduction journey!', userLanguage);
+  // Get translated content with fallback metadata
+  const titleMeta = getTranslatedContentWithMeta(event.titleTranslations, event.title, selectedLanguage);
+  const descriptionMeta = getTranslatedContentWithMeta(event.descriptionTranslations, event.description, selectedLanguage);
+  const videosMeta = getTranslatedContentWithMeta(event.youtubeVideoTranslations, event.youtubeVideos || [], selectedLanguage);
+  const eventPackFilesMeta = getTranslatedContentWithMeta(event.eventPackFileTranslations, event.eventPackFiles || [], selectedLanguage);
+  const testimonialsMeta = getTranslatedContentWithMeta(event.testimonialTranslations, event.testimonials || [], selectedLanguage);
+  const evidenceTextMeta = getTranslatedContentWithMeta(event.evidenceSubmissionText, 'Join thousands of students worldwide making a difference. Submit your evidence and showcase your plastic reduction journey!', selectedLanguage);
+
+  // Extract content for easier access
+  const translatedTitle = titleMeta.content;
+  const translatedDescription = descriptionMeta.content;
+  const translatedVideos = videosMeta.content;
+  const translatedEventPackFiles = eventPackFilesMeta.content;
+  const translatedTestimonials = testimonialsMeta.content;
+  const translatedEvidenceText = evidenceTextMeta.content;
 
   // Check if page is in coming soon status
   if (event.pagePublishedStatus === 'coming_soon') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 flex flex-col">
+        {/* Hero Banner */}
+        {event.imageUrl && (
+          <div className="w-full max-h-[500px] overflow-hidden bg-gray-900">
+            <img
+              src={event.imageUrl}
+              alt={translatedTitle}
+              className="w-full h-full max-h-[500px] object-cover object-center shadow-lg"
+              data-testid="img-coming-soon-hero-banner"
+            />
+          </div>
+        )}
+        
         <div className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-16">
           <div className="max-w-2xl text-center">
-            {event.imageUrl && (
-              <div className="mb-8">
-                <img
-                  src={event.imageUrl}
-                  alt={translatedTitle}
-                  className="max-h-32 mx-auto object-contain drop-shadow-lg"
-                  data-testid="img-coming-soon-logo"
-                />
-              </div>
-            )}
             <h1 className="text-4xl md:text-5xl font-bold mb-6 text-gray-900" data-testid="text-coming-soon-title">
               {translatedTitle}
             </h1>
@@ -409,20 +611,20 @@ export default function EventLivePage() {
   if (event.accessType === 'closed' && !userRegistration) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-ocean-blue/5 via-white to-teal/5 flex flex-col">
+        {/* Hero Banner */}
+        {event.imageUrl && (
+          <div className="w-full max-h-[500px] overflow-hidden bg-gray-900">
+            <img
+              src={event.imageUrl}
+              alt={translatedTitle}
+              className="w-full h-full max-h-[500px] object-cover object-center shadow-lg"
+              data-testid="img-restricted-hero-banner"
+            />
+          </div>
+        )}
+        
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-12">
           <div className="max-w-3xl w-full">
-            {/* Event Image */}
-            {event.imageUrl && (
-              <div className="mb-8 text-center">
-                <img
-                  src={event.imageUrl}
-                  alt={translatedTitle}
-                  className="max-h-40 mx-auto object-contain drop-shadow-2xl rounded-lg"
-                  data-testid="img-restricted-logo"
-                />
-              </div>
-            )}
-
             {/* Event Title */}
             <h1 className="text-4xl md:text-5xl font-bold mb-4 text-navy text-center leading-tight" data-testid="text-restricted-title">
               {translatedTitle}
@@ -566,27 +768,35 @@ export default function EventLivePage() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
+      {/* Hero Banner */}
+      {event.imageUrl && (
+        <div className="w-full max-h-[500px] overflow-hidden bg-gray-900">
+          <img
+            src={event.imageUrl}
+            alt={translatedTitle}
+            className="w-full h-full max-h-[500px] object-cover object-center shadow-lg"
+            data-testid="img-event-hero-banner"
+            onError={(e) => {
+              const parent = e.currentTarget.parentElement;
+              if (parent) {
+                parent.style.display = 'none';
+              }
+            }}
+          />
+        </div>
+      )}
+      
       {/* Hero Section */}
       <div className="relative bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 border-b border-gray-200 shadow-sm overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-t from-white/50 to-transparent pointer-events-none"></div>
         <div className="relative max-w-6xl mx-auto px-4 py-16 md:py-20">
-          {event.imageUrl && (
-            <div className="mb-10">
-              <img
-                src={event.imageUrl}
-                alt={translatedTitle}
-                className="max-h-40 mx-auto object-contain drop-shadow-lg transition-opacity duration-300"
-                data-testid="img-event-logo"
-                onError={(e) => {
-                  const parent = e.currentTarget.parentElement;
-                  if (parent) {
-                    parent.style.display = 'none';
-                  }
-                }}
-              />
-            </div>
-          )}
-          
+          {/* Language Selector Tabs */}
+          <LanguageSelectorTabs 
+            event={event}
+            selectedLanguage={selectedLanguage}
+            onLanguageChange={handleLanguageChange}
+          />
+
           <h1 className="text-5xl md:text-6xl font-bold text-center mb-12 text-gray-900 leading-tight tracking-tight" data-testid="text-event-title">
             {translatedTitle}
           </h1>
@@ -612,9 +822,12 @@ export default function EventLivePage() {
               {/* Single Video - Show as before */}
               {hasSingleVideo && (
                 <div className="bg-white rounded-xl shadow-lg p-6 md:p-8" data-testid="div-single-video">
-                  <h3 className="text-2xl md:text-3xl font-semibold mb-3 text-gray-900" data-testid="text-single-video-title">
-                    {videos[0].title}
-                  </h3>
+                  <div className="flex items-center gap-3 mb-3">
+                    <h3 className="text-2xl md:text-3xl font-semibold text-gray-900" data-testid="text-single-video-title">
+                      {videos[0].title}
+                    </h3>
+                    {videosMeta.isFallback && <FallbackBadge usedLanguage={videosMeta.usedLanguage} />}
+                  </div>
                   {videos[0].description && (
                     <p className="text-gray-600 mb-6 text-lg" data-testid="text-single-video-description">
                       {videos[0].description}
@@ -629,9 +842,12 @@ export default function EventLivePage() {
                 <div className="space-y-8">
                   {/* Featured Video */}
                   <div className="bg-white rounded-xl shadow-lg p-6 md:p-8" data-testid="div-featured-video">
-                    <h3 className="text-2xl md:text-3xl font-semibold mb-3 text-gray-900" data-testid="text-featured-video-title">
-                      {featuredVideo.title}
-                    </h3>
+                    <div className="flex items-center gap-3 mb-3">
+                      <h3 className="text-2xl md:text-3xl font-semibold text-gray-900" data-testid="text-featured-video-title">
+                        {featuredVideo.title}
+                      </h3>
+                      {videosMeta.isFallback && <FallbackBadge usedLanguage={videosMeta.usedLanguage} />}
+                    </div>
                     {featuredVideo.description && (
                       <p className="text-gray-600 mb-6 text-lg" data-testid="text-featured-video-description">
                         {featuredVideo.description}
@@ -821,56 +1037,105 @@ export default function EventLivePage() {
               </div>
 
               {/* Heading */}
-              <h2 className="text-3xl md:text-4xl font-bold mb-10 text-center text-gray-900" data-testid="text-event-pack-title">
-                Download the Event Pack
-              </h2>
+              <div className="flex items-center justify-center gap-3 mb-10">
+                <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900" data-testid="text-event-pack-title">
+                  Download the Event Pack
+                </h2>
+                {eventPackFilesMeta.isFallback && <FallbackBadge usedLanguage={eventPackFilesMeta.usedLanguage} />}
+              </div>
 
               {/* Event Pack Files Grid */}
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {translatedEventPackFiles.map((file, index) => (
-                  <Card key={index} className="overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-transparent hover:border-pcs_blue/30 group" data-testid={`card-event-pack-file-${index}`}>
-                    <div className="relative h-40 bg-gradient-to-br from-pcs_blue to-ocean-blue flex items-center justify-center">
-                      <Download className="w-16 h-16 text-white/20 absolute" />
-                      <div className="relative z-10 bg-white/20 backdrop-blur-sm rounded-full p-4">
-                        <Download className="w-12 h-12 text-white" />
+                {translatedEventPackFiles.map((file, index) => {
+                  // Get the appropriate file type icon
+                  const FileIcon = getFileTypeIcon(file.fileName || file.fileUrl);
+                  
+                  // Determine if file has language metadata for badge
+                  const fileLanguage = file.language;
+                  const languageFlag = fileLanguage ? LANGUAGE_FLAG_MAP[fileLanguage] || '🏳️' : null;
+                  const languageCode = fileLanguage ? fileLanguage.toUpperCase() : null;
+                  
+                  return (
+                    <Card 
+                      key={index} 
+                      className="relative overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 hover:border-pcs_blue/50 group bg-white" 
+                      data-testid={`card-event-pack-file-${index}`}
+                    >
+                      {/* Language Badge - Top Right Corner */}
+                      {languageFlag && languageCode && (
+                        <div className="absolute top-3 right-3 z-10">
+                          <Badge 
+                            className="bg-white/90 backdrop-blur-sm text-gray-800 border border-gray-300 shadow-md text-xs font-semibold px-2 py-1"
+                            data-testid={`badge-file-language-${index}`}
+                          >
+                            {languageFlag} {languageCode}
+                          </Badge>
+                        </div>
+                      )}
+                      
+                      {/* File Type Icon Header */}
+                      <div className="relative h-48 bg-gradient-to-br from-pcs_blue to-ocean-blue flex items-center justify-center overflow-hidden">
+                        {/* Background decorative icon */}
+                        <FileIcon className="w-32 h-32 text-white/10 absolute" />
+                        {/* Main prominent icon */}
+                        <div className="relative z-10 bg-white/20 backdrop-blur-sm rounded-2xl p-5 group-hover:scale-110 transition-transform duration-300">
+                          <FileIcon className="w-16 h-16 text-white drop-shadow-lg" />
+                        </div>
                       </div>
-                    </div>
-                    <div className="p-6">
-                      <h3 className="font-bold text-lg mb-2 text-gray-900 group-hover:text-pcs_blue transition-colors" data-testid={`text-event-pack-file-title-${index}`}>
-                        {file.title}
-                      </h3>
-                      {file.description && (
-                        <p className="text-gray-600 text-sm mb-3 leading-relaxed line-clamp-2" data-testid={`text-event-pack-file-description-${index}`}>
-                          {file.description}
-                        </p>
-                      )}
-                      {file.fileName && (
-                        <p className="text-gray-500 text-xs mb-1 font-medium truncate">{file.fileName}</p>
-                      )}
-                      {file.fileSize && file.fileSize > 0 && (
-                        <p className="text-gray-500 text-xs mb-4">
-                          {(file.fileSize / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      )}
-                      <Button
-                        asChild
-                        className="w-full bg-gradient-to-r from-pcs_blue to-ocean-blue hover:from-pcs_blue/90 hover:to-ocean-blue/90 text-white"
-                        data-testid={`button-download-event-pack-${index}`}
-                      >
-                        <a 
-                          href={file.fileUrl} 
-                          target="_blank" 
-                          rel="noopener noreferrer" 
-                          download
-                          onClick={() => handleDownloadClick(file.fileName || file.title)}
+                      
+                      {/* Card Content */}
+                      <div className="p-6 space-y-3">
+                        {/* File Title */}
+                        <h3 className="font-bold text-xl mb-2 text-gray-900 group-hover:text-pcs_blue transition-colors leading-tight" data-testid={`text-event-pack-file-title-${index}`}>
+                          {file.title}
+                        </h3>
+                        
+                        {/* File Description */}
+                        {file.description && (
+                          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2 min-h-[2.5rem]" data-testid={`text-event-pack-file-description-${index}`}>
+                            {file.description}
+                          </p>
+                        )}
+                        
+                        {/* File Name (if available) */}
+                        {file.fileName && (
+                          <p className="text-gray-500 text-xs font-mono truncate bg-gray-50 px-2 py-1 rounded" data-testid={`text-file-name-${index}`}>
+                            {file.fileName}
+                          </p>
+                        )}
+                        
+                        {/* File Size Display */}
+                        {file.fileSize && file.fileSize > 0 && (
+                          <div className="flex items-center gap-2 text-gray-700 font-semibold">
+                            <span className="text-lg">📦</span>
+                            <span className="text-sm" data-testid={`text-file-size-${index}`}>
+                              {formatFileSize(file.fileSize)}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Download Button */}
+                        <Button
+                          asChild
+                          className="w-full bg-gradient-to-r from-pcs_blue to-ocean-blue hover:from-pcs_blue/80 hover:to-ocean-blue/80 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] mt-4"
+                          data-testid={`button-download-event-pack-${index}`}
                         >
-                          <Download className="w-4 h-4 mr-2" />
-                          Download
-                        </a>
-                      </Button>
-                    </div>
-                  </Card>
-                ))}
+                          <a 
+                            href={file.fileUrl} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            download
+                            onClick={() => handleDownloadClick(file.fileName || file.title)}
+                            className="flex items-center justify-center gap-2"
+                          >
+                            <Download className="w-4 h-4" />
+                            <span>Download</span>
+                          </a>
+                        </Button>
+                      </div>
+                    </Card>
+                  );
+                })}
               </div>
             </div>
           </div>
@@ -914,9 +1179,12 @@ export default function EventLivePage() {
         {/* Testimonials Section */}
         {translatedTestimonials && translatedTestimonials.length > 0 && (
           <div className="mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-10 text-gray-900" data-testid="text-testimonials-title">
-              What People Are Saying
-            </h2>
+            <div className="flex items-center gap-3 mb-10">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900" data-testid="text-testimonials-title">
+                What People Are Saying
+              </h2>
+              {testimonialsMeta.isFallback && <FallbackBadge usedLanguage={testimonialsMeta.usedLanguage} />}
+            </div>
             <div className="grid md:grid-cols-2 gap-6">
               {translatedTestimonials.map((testimonial, index) => (
                 <Card key={index} className="p-8 bg-gradient-to-br from-white to-gray-50 shadow-lg hover:shadow-xl transition-shadow border-l-4 border-teal" data-testid={`card-testimonial-${index}`}>

@@ -34,7 +34,31 @@ import {
 } from "lucide-react";
 import { format, isPast, isFuture, differenceInMinutes } from "date-fns";
 import { useLocation } from "wouter";
+import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP } from "@/lib/languageUtils";
 import type { Event, EventRegistration } from "@/../../shared/schema";
+
+// Extended Event type with properly typed translation fields
+interface EventWithTranslations extends Omit<Event, 
+  'titleTranslations' | 
+  'descriptionTranslations' | 
+  'youtubeVideoTranslations' | 
+  'eventPackFileTranslations' | 
+  'testimonialTranslations' | 
+  'evidenceSubmissionText' | 
+  'youtubeVideos' | 
+  'eventPackFiles' | 
+  'testimonials'
+> {
+  titleTranslations?: Record<string, string> | null;
+  descriptionTranslations?: Record<string, string> | null;
+  youtubeVideoTranslations?: Record<string, any[]> | null;
+  eventPackFileTranslations?: Record<string, any[]> | null;
+  testimonialTranslations?: Record<string, any[]> | null;
+  evidenceSubmissionText?: Record<string, string> | null;
+  youtubeVideos?: any[] | null;
+  eventPackFiles?: any[] | null;
+  testimonials?: any[] | null;
+}
 
 interface EventsSectionProps {
   schoolId: string;
@@ -43,7 +67,7 @@ interface EventsSectionProps {
 }
 
 // Helper function to generate .ics calendar file
-function generateCalendarFile(event: Event) {
+function generateCalendarFile(event: EventWithTranslations) {
   const startDate = new Date(event.startDateTime);
   const endDate = new Date(event.endDateTime);
   
@@ -78,7 +102,7 @@ function generateCalendarFile(event: Event) {
 }
 
 // Helper function to check event timing status
-function getEventTimingStatus(event: Event) {
+function getEventTimingStatus(event: EventWithTranslations) {
   const now = new Date();
   const startDate = new Date(event.startDateTime);
   const endDate = new Date(event.endDateTime);
@@ -113,7 +137,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [eventFilter, setEventFilter] = useState<string>('all');
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [selectedEvent, setSelectedEvent] = useState<EventWithTranslations | null>(null);
   const [eventDetailOpen, setEventDetailOpen] = useState(false);
   const [showAllEvents, setShowAllEvents] = useState(false);
 
@@ -125,7 +149,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
   });
 
   // Events queries
-  const { data: upcomingEvents = [], isLoading: upcomingEventsLoading } = useQuery<Event[]>({
+  const { data: upcomingEvents = [], isLoading: upcomingEventsLoading } = useQuery<EventWithTranslations[]>({
     queryKey: ['/api/events/upcoming'],
     queryFn: async () => {
       const response = await fetch('/api/events/upcoming?limit=6');
@@ -136,7 +160,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
     retry: false,
   });
 
-  const { data: filteredEvents = [], isLoading: filteredEventsLoading } = useQuery<Event[]>({
+  const { data: filteredEvents = [], isLoading: filteredEventsLoading } = useQuery<EventWithTranslations[]>({
     queryKey: ['/api/events', eventFilter, showAllEvents],
     queryFn: async () => {
       const params = new URLSearchParams({ upcoming: 'true' });
@@ -151,13 +175,13 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
     retry: false,
   });
 
-  const { data: myEvents = [], isLoading: myEventsLoading } = useQuery<Array<EventRegistration & { event: Event }>>({
+  const { data: myEvents = [], isLoading: myEventsLoading } = useQuery<Array<EventRegistration & { event: EventWithTranslations }>>({
     queryKey: ['/api/my-events'],
     enabled: isActive && isAuthenticated,
     retry: false,
   });
 
-  const { data: pastEvents = [], isLoading: pastEventsLoading } = useQuery<Event[]>({
+  const { data: pastEvents = [], isLoading: pastEventsLoading } = useQuery<EventWithTranslations[]>({
     queryKey: ['/api/events/past'],
     queryFn: async () => {
       const response = await fetch('/api/events/past?limit=6');
@@ -168,7 +192,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
     retry: false,
   });
 
-  const { data: selectedEventDetails } = useQuery<Event & { registrations?: EventRegistration[], registrationsCount?: number }>({
+  const { data: selectedEventDetails } = useQuery<EventWithTranslations & { registrations?: EventRegistration[], registrationsCount?: number }>({
     queryKey: ['/api/events', selectedEvent?.id],
     enabled: !!selectedEvent?.id && eventDetailOpen,
     retry: false,
@@ -237,7 +261,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
   }).length;
 
   // Helper to check if an event is new
-  const isEventNew = (event: Event) => {
+  const isEventNew = (event: EventWithTranslations) => {
     if (!userData?.lastViewedEventsAt) return true;
     const lastViewed = new Date(userData.lastViewedEventsAt);
     const eventCreated = new Date(event.createdAt || event.startDateTime);
@@ -257,7 +281,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
   }, [isActive, isAuthenticated]);
 
   // Event handlers
-  const handleEventClick = (event: Event) => {
+  const handleEventClick = (event: EventWithTranslations) => {
     setSelectedEvent(event);
     setEventDetailOpen(true);
   };
@@ -279,7 +303,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
     }
   };
 
-  const handleAccessEvent = (event: Event, e?: React.MouseEvent) => {
+  const handleAccessEvent = (event: EventWithTranslations, e?: React.MouseEvent) => {
     if (e) {
       e.stopPropagation();
     }
@@ -371,6 +395,10 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
               const isFull = event.capacity && registrationsCount >= event.capacity;
               const userRegistration = myEvents.find(reg => reg.eventId === event.id);
               const timingStatus = getEventTimingStatus(event);
+              const availableLanguages = getEventAvailableLanguages(event);
+              const showLanguages = availableLanguages.length > 1;
+              const displayLanguages = availableLanguages.slice(0, 6);
+              const remainingCount = availableLanguages.length - 6;
               
               return (
                 <Card 
@@ -415,6 +443,26 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                     <h3 className="text-lg font-bold text-navy group-hover:text-pcs_blue transition-colors line-clamp-2">
                       {event.title}
                     </h3>
+                    {showLanguages && (
+                      <div 
+                        className="flex items-center gap-1 flex-wrap px-2 py-1.5 bg-gray-100 rounded-md border border-gray-200 w-fit"
+                        data-testid={`badge-event-languages-${event.id}`}
+                      >
+                        {displayLanguages.map((langCode) => (
+                          <span key={langCode} className="text-base" title={langCode}>
+                            {LANGUAGE_FLAG_MAP[langCode] || '🏳️'}
+                          </span>
+                        ))}
+                        {remainingCount > 0 && (
+                          <span 
+                            className="text-xs text-gray-600 ml-1"
+                            data-testid={`text-language-count-${event.id}`}
+                          >
+                            +{remainingCount} more
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <div className="space-y-2 text-sm text-gray-600">
                       <div className="flex items-center gap-2">
                         <Calendar className="h-4 w-4 text-pcs_blue flex-shrink-0" />
@@ -529,6 +577,10 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                 const isEventFuture = isFuture(eventDate);
                 const timingStatus = getEventTimingStatus(registration.event);
                 const hasAccess = registration.event.meetingLink || registration.event.publicSlug;
+                const availableLanguages = getEventAvailableLanguages(registration.event);
+                const showLanguages = availableLanguages.length > 1;
+                const displayLanguages = availableLanguages.slice(0, 6);
+                const remainingCount = availableLanguages.length - 6;
                 
                 return (
                   <Card 
@@ -559,6 +611,26 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                               {registration.status === 'cancelled' && 'Cancelled'}
                             </Badge>
                           </div>
+                          {showLanguages && (
+                            <div 
+                              className="flex items-center gap-1 mb-2 flex-wrap px-2 py-1.5 bg-gray-100 rounded-md border border-gray-200 w-fit"
+                              data-testid={`badge-event-languages-${registration.event.id}`}
+                            >
+                              {displayLanguages.map((langCode) => (
+                                <span key={langCode} className="text-base" title={langCode}>
+                                  {LANGUAGE_FLAG_MAP[langCode] || '🏳️'}
+                                </span>
+                              ))}
+                              {remainingCount > 0 && (
+                                <span 
+                                  className="text-xs text-gray-600 ml-1"
+                                  data-testid={`text-language-count-${registration.event.id}`}
+                                >
+                                  +{remainingCount} more
+                                </span>
+                              )}
+                            </div>
+                          )}
                           <div className="space-y-1 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                               <Calendar className="h-4 w-4 text-pcs_blue" />

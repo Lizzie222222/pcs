@@ -8,10 +8,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/ui/states";
 import { BookOpen, Plus, Search, Edit, Trash2, X, FileText, Upload } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
+import { LANGUAGE_FLAG_MAP, LANGUAGE_NAME_MAP, languageCodeFromName } from "@/lib/languageUtils";
 import type { UploadResult } from "@uppy/core";
 
 interface Resource {
@@ -21,6 +23,7 @@ interface Resource {
   stage: 'inspire' | 'investigate' | 'act';
   ageRange: string | null;
   language: string | null;
+  languages?: string[] | null;
   country: string | null;
   fileUrl: string | null;
   fileType: string | null;
@@ -31,6 +34,9 @@ interface Resource {
   createdAt: string;
   updatedAt: string;
 }
+
+// All 14 supported language codes
+const SUPPORTED_LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ar', 'zh', 'el', 'ru', 'ko', 'id', 'cy'];
 
 function ResourceForm({ resource, onClose, onSuccess }: {
   resource?: Resource;
@@ -47,7 +53,13 @@ function ResourceForm({ resource, onClose, onSuccess }: {
     description: resource?.description || '',
     stage: resource?.stage || 'inspire',
     ageRange: resource?.ageRange || '',
-    language: resource?.language || 'English',
+    languages: resource?.languages || (() => {
+      if (resource?.language) {
+        const code = languageCodeFromName(resource.language);
+        return code ? [code] : [];
+      }
+      return [];
+    })(),
     country: resource?.country || 'global',
     fileUrl: resource?.fileUrl || '',
     fileType: resource?.fileType || '',
@@ -58,6 +70,27 @@ function ResourceForm({ resource, onClose, onSuccess }: {
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleLanguageToggle = (languageCode: string) => {
+    setFormData(prev => {
+      const currentLanguages = prev.languages as string[];
+      const isSelected = currentLanguages.includes(languageCode);
+      
+      if (isSelected) {
+        // Remove language
+        return {
+          ...prev,
+          languages: currentLanguages.filter(code => code !== languageCode)
+        };
+      } else {
+        // Add language
+        return {
+          ...prev,
+          languages: [...currentLanguages, languageCode]
+        };
+      }
+    });
   };
 
   const handleGetUploadParameters = async () => {
@@ -141,6 +174,17 @@ function ResourceForm({ resource, onClose, onSuccess }: {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate at least one language is selected
+    if (formData.languages.length === 0) {
+      toast({
+        title: "Validation Error",
+        description: "Please select at least one language.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsSubmitting(true);
 
     try {
@@ -150,6 +194,10 @@ function ResourceForm({ resource, onClose, onSuccess }: {
       const submitData = {
         ...formData,
         country: formData.country === 'global' ? null : formData.country,
+        // For backward compatibility, set language to first selected language or 'English'
+        language: formData.languages.length > 0 
+          ? (LANGUAGE_NAME_MAP[formData.languages[0]] || 'English')
+          : 'English',
       };
 
       const response = await fetch(endpoint, {
@@ -259,47 +307,53 @@ function ResourceForm({ resource, onClose, onSuccess }: {
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Language
-                </label>
-                <Select 
-                  value={formData.language} 
-                  onValueChange={(value) => handleInputChange('language', value)}
-                >
-                  <SelectTrigger data-testid="select-resource-language">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="English">English</SelectItem>
-                    <SelectItem value="Spanish">Spanish</SelectItem>
-                    <SelectItem value="French">French</SelectItem>
-                    <SelectItem value="German">German</SelectItem>
-                    <SelectItem value="Other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Available Languages *
+              </label>
+              <div className="border rounded-lg p-4 bg-gray-50">
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                  {SUPPORTED_LANGUAGES.map((languageCode) => (
+                    <div key={languageCode} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`language-${languageCode}`}
+                        checked={formData.languages.includes(languageCode)}
+                        onCheckedChange={() => handleLanguageToggle(languageCode)}
+                        data-testid={`checkbox-language-${languageCode}`}
+                      />
+                      <label
+                        htmlFor={`language-${languageCode}`}
+                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                      >
+                        {LANGUAGE_FLAG_MAP[languageCode]} {LANGUAGE_NAME_MAP[languageCode]}
+                      </label>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-xs text-gray-500 mt-3">
+                  Select all languages in which this resource is available
+                </p>
               </div>
+            </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Target Country
-                </label>
-                <Select 
-                  value={formData.country} 
-                  onValueChange={(value) => handleInputChange('country', value)}
-                >
-                  <SelectTrigger data-testid="select-resource-country">
-                    <SelectValue placeholder="Global (all countries)" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="global">Global (all countries)</SelectItem>
-                    {countryOptions.map((country) => (
-                      <SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Target Country
+              </label>
+              <Select 
+                value={formData.country} 
+                onValueChange={(value) => handleInputChange('country', value)}
+              >
+                <SelectTrigger data-testid="select-resource-country">
+                  <SelectValue placeholder="Global (all countries)" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="global">Global (all countries)</SelectItem>
+                  {countryOptions.map((country) => (
+                    <SelectItem key={country.value} value={country.value}>{country.label}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div>
@@ -406,7 +460,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
               </Button>
               <Button
                 type="submit"
-                disabled={isSubmitting || !formData.title.trim()}
+                disabled={isSubmitting || !formData.title.trim() || formData.languages.length === 0}
                 className="flex-1 bg-pcs_blue hover:bg-blue-600"
                 data-testid="button-save-resource"
               >
@@ -499,6 +553,44 @@ export default function ResourcesManagement() {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const renderLanguageBadges = (resource: Resource) => {
+    const languages = resource.languages || [];
+    
+    if (languages.length === 0) {
+      // Fallback to old language field if no languages array
+      return (
+        <span className="text-gray-600 text-sm">
+          {resource.language || 'English'}
+        </span>
+      );
+    }
+
+    const displayLanguages = languages.slice(0, 5);
+    const remainingCount = languages.length - 5;
+
+    return (
+      <div 
+        className="flex flex-wrap gap-1 items-center" 
+        data-testid={`badge-resource-languages-${resource.id}`}
+      >
+        {displayLanguages.map((langCode) => (
+          <span 
+            key={langCode}
+            className="text-lg" 
+            title={LANGUAGE_NAME_MAP[langCode] || langCode}
+          >
+            {LANGUAGE_FLAG_MAP[langCode] || '🏳️'}
+          </span>
+        ))}
+        {remainingCount > 0 && (
+          <span className="text-xs text-gray-500 font-medium">
+            +{remainingCount} more
+          </span>
+        )}
+      </div>
+    );
   };
 
   if (isLoading) {
@@ -616,7 +708,7 @@ export default function ResourcesManagement() {
                   <th className="text-left p-3 font-medium text-gray-700">Stage</th>
                   <th className="text-left p-3 font-medium text-gray-700">Visibility</th>
                   <th className="text-left p-3 font-medium text-gray-700">Country</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Language</th>
+                  <th className="text-left p-3 font-medium text-gray-700">Languages</th>
                   <th className="text-left p-3 font-medium text-gray-700">File Size</th>
                   <th className="text-left p-3 font-medium text-gray-700">Downloads</th>
                   <th className="text-left p-3 font-medium text-gray-700">Status</th>
@@ -649,7 +741,9 @@ export default function ResourcesManagement() {
                       </Badge>
                     </td>
                     <td className="p-3 text-gray-600">{resource.country || 'Global'}</td>
-                    <td className="p-3 text-gray-600">{resource.language || 'English'}</td>
+                    <td className="p-3">
+                      {renderLanguageBadges(resource)}
+                    </td>
                     <td className="p-3 text-gray-600">{formatFileSize(resource.fileSize) || 'N/A'}</td>
                     <td className="p-3 text-gray-600">{resource.downloadCount || 0}</td>
                     <td className="p-3">

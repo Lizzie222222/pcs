@@ -13,6 +13,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedImage";
+import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP } from "@/lib/languageUtils";
 
 // Lazy load heavy components below the fold
 const SchoolSignUpForm = lazy(() => import("@/components/SchoolSignUpForm"));
@@ -524,55 +525,82 @@ export default function Landing() {
                 className="w-full"
               >
                 <CarouselContent className="-ml-4 py-2">
-                  {upcomingEvents.map((event: any) => (
-                    <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
-                      <a
-                        href={`/events/${event.publicSlug || event.id}`}
-                        className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer h-full"
-                        data-testid={`card-event-${event.id}`}
-                      >
-                        {event.imageUrl && (
-                          <div className="relative h-48 overflow-hidden">
-                            <img 
-                              src={event.imageUrl} 
-                              alt={event.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                            <div className="absolute top-3 right-3 bg-pcs_blue text-white px-3 py-1 rounded-full text-xs font-semibold">
-                              {event.eventType.replace('_', ' ').toUpperCase()}
+                  {upcomingEvents.map((event: any) => {
+                    const availableLanguages = getEventAvailableLanguages(event);
+                    const showLanguages = availableLanguages.length > 1;
+                    const displayLanguages = availableLanguages.slice(0, 6);
+                    const remainingCount = availableLanguages.length - 6;
+                    
+                    return (
+                      <CarouselItem key={event.id} className="pl-4 md:basis-1/2 lg:basis-1/3">
+                        <a
+                          href={`/events/${event.publicSlug || event.id}`}
+                          className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer h-full"
+                          data-testid={`card-event-${event.id}`}
+                        >
+                          {event.imageUrl && (
+                            <div className="relative h-48 overflow-hidden">
+                              <img 
+                                src={event.imageUrl} 
+                                alt={event.title}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                              />
+                              <div className="absolute top-3 right-3 bg-pcs_blue text-white px-3 py-1 rounded-full text-xs font-semibold">
+                                {event.eventType.replace('_', ' ').toUpperCase()}
+                              </div>
                             </div>
-                          </div>
-                        )}
-                        <div className="p-6">
-                          <h3 className="font-bold text-lg text-navy mb-3 line-clamp-2" data-testid={`text-event-title-${event.id}`}>
-                            {event.title}
-                          </h3>
-                          <div className="space-y-2 mb-4">
-                            <div className="flex items-center gap-2 text-sm text-gray-600">
-                              <Calendar className="w-4 h-4" />
-                              <span>{new Date(event.startDateTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                            </div>
-                            {event.location && (
-                              <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <MapPin className="w-4 h-4" />
-                                <span className="line-clamp-1">{event.isVirtual ? 'Virtual Event' : event.location}</span>
+                          )}
+                          <div className="p-6">
+                            <h3 className="font-bold text-lg text-navy mb-3 line-clamp-2" data-testid={`text-event-title-${event.id}`}>
+                              {event.title}
+                            </h3>
+                            {showLanguages && (
+                              <div 
+                                className="flex items-center gap-1 mb-3 flex-wrap px-2 py-1.5 bg-gray-100 rounded-md border border-gray-200 w-fit"
+                                data-testid={`badge-event-languages-${event.id}`}
+                              >
+                                {displayLanguages.map((langCode) => (
+                                  <span key={langCode} className="text-base" title={langCode}>
+                                    {LANGUAGE_FLAG_MAP[langCode] || '🏳️'}
+                                  </span>
+                                ))}
+                                {remainingCount > 0 && (
+                                  <span 
+                                    className="text-xs text-gray-600 ml-1"
+                                    data-testid={`text-language-count-${event.id}`}
+                                  >
+                                    +{remainingCount} more
+                                  </span>
+                                )}
                               </div>
                             )}
-                            {event.capacity && (
+                            <div className="space-y-2 mb-4">
                               <div className="flex items-center gap-2 text-sm text-gray-600">
-                                <Users className="w-4 h-4" />
-                                <span>{event.registrationsCount || 0} / {event.capacity} registered</span>
+                                <Calendar className="w-4 h-4" />
+                                <span>{new Date(event.startDateTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
                               </div>
-                            )}
+                              {event.location && (
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  <MapPin className="w-4 h-4" />
+                                  <span className="line-clamp-1">{event.isVirtual ? 'Virtual Event' : event.location}</span>
+                                </div>
+                              )}
+                              {event.capacity && (
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  <Users className="w-4 h-4" />
+                                  <span>{event.registrationsCount || 0} / {event.capacity} registered</span>
+                                </div>
+                              )}
+                            </div>
+                            <div className="inline-flex items-center gap-2 text-pcs_blue group-hover:text-pcs_blue/80 font-semibold text-sm">
+                              View Details & Register
+                              <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                            </div>
                           </div>
-                          <div className="inline-flex items-center gap-2 text-pcs_blue group-hover:text-pcs_blue/80 font-semibold text-sm">
-                            View Details & Register
-                            <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                          </div>
-                        </div>
-                      </a>
-                    </CarouselItem>
-                  ))}
+                        </a>
+                      </CarouselItem>
+                    );
+                  })}
                 </CarouselContent>
                 <CarouselPrevious className="left-0" />
                 <CarouselNext className="right-0" />
@@ -609,51 +637,78 @@ export default function Landing() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="previous-events-grid">
-              {pastEvents.slice(0, 6).map((event: any) => (
-                <a
-                  key={event.id}
-                  href={`/events/${event.publicSlug || event.id}`}
-                  className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer border border-gray-200"
-                  data-testid={`card-past-event-${event.id}`}
-                >
-                  {event.imageUrl && (
-                    <div className="relative h-48 overflow-hidden">
-                      <img 
-                        src={event.imageUrl} 
-                        alt={event.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                      />
-                      <div className="absolute top-3 right-3 bg-gray-700 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                        {event.eventType.replace('_', ' ').toUpperCase()}
+              {pastEvents.slice(0, 6).map((event: any) => {
+                const availableLanguages = getEventAvailableLanguages(event);
+                const showLanguages = availableLanguages.length > 1;
+                const displayLanguages = availableLanguages.slice(0, 6);
+                const remainingCount = availableLanguages.length - 6;
+                
+                return (
+                  <a
+                    key={event.id}
+                    href={`/events/${event.publicSlug || event.id}`}
+                    className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer border border-gray-200"
+                    data-testid={`card-past-event-${event.id}`}
+                  >
+                    {event.imageUrl && (
+                      <div className="relative h-48 overflow-hidden">
+                        <img 
+                          src={event.imageUrl} 
+                          alt={event.title}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute top-3 right-3 bg-gray-700 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                          {event.eventType.replace('_', ' ').toUpperCase()}
+                        </div>
+                        <div className="absolute top-3 left-3 bg-gray-900/80 text-white px-3 py-1 rounded-full text-xs font-semibold">
+                          PAST EVENT
+                        </div>
                       </div>
-                      <div className="absolute top-3 left-3 bg-gray-900/80 text-white px-3 py-1 rounded-full text-xs font-semibold">
-                        PAST EVENT
-                      </div>
-                    </div>
-                  )}
-                  <div className="p-6">
-                    <h3 className="font-bold text-lg text-navy mb-3 line-clamp-2" data-testid={`text-past-event-title-${event.id}`}>
-                      {event.title}
-                    </h3>
-                    <div className="space-y-2 mb-4">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Calendar className="w-4 h-4" />
-                        <span>{new Date(event.startDateTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
-                      </div>
-                      {event.location && (
-                        <div className="flex items-center gap-2 text-sm text-gray-600">
-                          <MapPin className="w-4 h-4" />
-                          <span className="line-clamp-1">{event.isVirtual ? 'Virtual Event' : event.location}</span>
+                    )}
+                    <div className="p-6">
+                      <h3 className="font-bold text-lg text-navy mb-3 line-clamp-2" data-testid={`text-past-event-title-${event.id}`}>
+                        {event.title}
+                      </h3>
+                      {showLanguages && (
+                        <div 
+                          className="flex items-center gap-1 mb-3 flex-wrap px-2 py-1.5 bg-gray-100 rounded-md border border-gray-200 w-fit"
+                          data-testid={`badge-event-languages-${event.id}`}
+                        >
+                          {displayLanguages.map((langCode) => (
+                            <span key={langCode} className="text-base" title={langCode}>
+                              {LANGUAGE_FLAG_MAP[langCode] || '🏳️'}
+                            </span>
+                          ))}
+                          {remainingCount > 0 && (
+                            <span 
+                              className="text-xs text-gray-600 ml-1"
+                              data-testid={`text-language-count-${event.id}`}
+                            >
+                              +{remainingCount} more
+                            </span>
+                          )}
                         </div>
                       )}
+                      <div className="space-y-2 mb-4">
+                        <div className="flex items-center gap-2 text-sm text-gray-600">
+                          <Calendar className="w-4 h-4" />
+                          <span>{new Date(event.startDateTime).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                        {event.location && (
+                          <div className="flex items-center gap-2 text-sm text-gray-600">
+                            <MapPin className="w-4 h-4" />
+                            <span className="line-clamp-1">{event.isVirtual ? 'Virtual Event' : event.location}</span>
+                          </div>
+                        )}
+                      </div>
+                      <div className="inline-flex items-center gap-2 text-gray-700 group-hover:text-pcs_blue font-semibold text-sm">
+                        View Recording & Resources
+                        <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </div>
                     </div>
-                    <div className="inline-flex items-center gap-2 text-gray-700 group-hover:text-pcs_blue font-semibold text-sm">
-                      View Recording & Resources
-                      <ExternalLink className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                </a>
-              ))}
+                  </a>
+                );
+              })}
             </div>
           </div>
         </section>

@@ -3,6 +3,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Calendar, MapPin, Users, ExternalLink, Clock } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
+import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP } from "@/lib/languageUtils";
 import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 
 interface Event {
@@ -20,6 +21,12 @@ interface Event {
   status: string;
   publicSlug: string | null;
   registrationsCount: number;
+  titleTranslations?: Record<string, any> | null;
+  descriptionTranslations?: Record<string, any> | null;
+  youtubeVideoTranslations?: Record<string, any> | null;
+  eventPackFileTranslations?: Record<string, any> | null;
+  testimonialTranslations?: Record<string, any> | null;
+  evidenceSubmissionText?: Record<string, any> | null;
 }
 
 export default function Events() {
@@ -157,6 +164,10 @@ export default function Events() {
 
 function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }) {
   const isFull = event.capacity && event.registrationsCount >= event.capacity;
+  const availableLanguages = getEventAvailableLanguages(event);
+  const showLanguages = availableLanguages.length > 1;
+  const displayLanguages = availableLanguages.slice(0, 6);
+  const remainingCount = availableLanguages.length - 6;
 
   return (
     <a 
@@ -197,6 +208,26 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
           <p className="text-gray-600 text-sm mb-4 line-clamp-2" data-testid={`text-event-description-${event.id}`}>
             {event.description}
           </p>
+          {showLanguages && (
+            <div 
+              className="flex items-center gap-1 mb-3 flex-wrap px-2 py-1.5 bg-gray-100 rounded-md border border-gray-200 w-fit"
+              data-testid={`badge-event-languages-${event.id}`}
+            >
+              {displayLanguages.map((langCode) => (
+                <span key={langCode} className="text-base" title={langCode}>
+                  {LANGUAGE_FLAG_MAP[langCode] || '🏳️'}
+                </span>
+              ))}
+              {remainingCount > 0 && (
+                <span 
+                  className="text-xs text-gray-600 ml-1"
+                  data-testid={`text-language-count-${event.id}`}
+                >
+                  +{remainingCount} more
+                </span>
+              )}
+            </div>
+          )}
           <div className="space-y-2 mb-4">
             <div className="flex items-center gap-2 text-sm text-gray-600">
               <Calendar className="w-4 h-4" />

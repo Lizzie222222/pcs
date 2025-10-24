@@ -233,6 +233,7 @@ export const resources = pgTable("resources", {
   stage: programStageEnum("stage").notNull(),
   ageRange: varchar("age_range"),
   language: varchar("language").default("English"),
+  languages: text("languages").array(),
   country: varchar("country"),
   fileUrl: varchar("file_url"),
   fileType: varchar("file_type"),
