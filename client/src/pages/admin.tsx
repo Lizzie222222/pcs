@@ -1415,7 +1415,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   
   // Auto-save current language content before switching, then load new language content
   useEffect(() => {
-    if (editingEvent && eventDialogOpen) {
+    if (eventDialogOpen) {
       // Auto-save: Save the PREVIOUS language's form values to translation states
       const previousLang = previousLanguageRef.current;
       if (previousLang !== selectedLanguage) {
