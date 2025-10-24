@@ -74,6 +74,25 @@ export const visibilityEnum = pgEnum('visibility', [
   'registered'
 ]);
 
+export const resourceTypeEnum = pgEnum('resource_type', [
+  'lesson_plan',
+  'assembly',
+  'teacher_toolkit',
+  'student_workbook',
+  'printable_activities'
+]);
+
+export const resourceThemeEnum = pgEnum('resource_theme', [
+  'ocean_literacy',
+  'climate_change',
+  'plastic_pollution',
+  'science',
+  'design_technology',
+  'geography',
+  'cross_curricular',
+  'enrichment'
+]);
+
 export const schoolRoleEnum = pgEnum('school_role', [
   'head_teacher',
   'teacher',
@@ -235,6 +254,8 @@ export const resources = pgTable("resources", {
   language: varchar("language").default("English"),
   languages: text("languages").array(),
   country: varchar("country"),
+  resourceType: resourceTypeEnum("resource_type"),
+  theme: resourceThemeEnum("theme"),
   fileUrl: varchar("file_url"),
   fileType: varchar("file_type"),
   fileSize: integer("file_size"),

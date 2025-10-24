@@ -212,13 +212,25 @@ export default function Resources() {
         {/* Badges at top */}
         <div className="absolute top-3 right-3 flex flex-col gap-2 z-10">
           {isNew && (
-            <div className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold !bg-gradient-to-r !from-yellow-400 !to-orange-500 !text-white shadow-lg animate-pulse border-0">
+            <div 
+              className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0"
+              style={{ 
+                backgroundImage: 'linear-gradient(to right, #facc15, #f97316)',
+                color: '#ffffff'
+              }}
+            >
               <Sparkles className="h-3 w-3 mr-1" />
               NEW
             </div>
           )}
           {isRecommended && (
-            <div className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold !bg-gradient-to-r !from-purple-500 !to-pink-500 !text-white shadow-lg border-0">
+            <div 
+              className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg border-0"
+              style={{ 
+                backgroundImage: 'linear-gradient(to right, #a855f7, #ec4899)',
+                color: '#ffffff'
+              }}
+            >
               <Star className="h-3 w-3 mr-1" />
               RECOMMENDED
             </div>
