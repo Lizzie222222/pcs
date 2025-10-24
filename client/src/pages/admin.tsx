@@ -88,7 +88,8 @@ import {
   Building,
   Check,
   Bell,
-  ExternalLink
+  ExternalLink,
+  Languages
 } from "lucide-react";
 import {
   BarChart,
@@ -5436,11 +5437,62 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
                     {/* Multi-Language Content Section */}
                     <div className="space-y-4 pb-4 border-b">
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">Multi-Language Content</h3>
-                        <p className="text-sm text-gray-600 mt-1">
-                          Leave blank to use the default title/description from the Details tab
-                        </p>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h3 className="text-lg font-semibold text-gray-900">Multi-Language Content</h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Leave blank to use the default title/description from the Details tab
+                          </p>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={async () => {
+                            if (!editingEvent) return;
+                            
+                            // Get all languages except English
+                            const languagesToTranslate = supportedLanguages.filter(lang => lang !== 'en');
+                            
+                            if (languagesToTranslate.length === 0) {
+                              toast({
+                                title: "No languages to translate",
+                                description: "English is the source language",
+                                variant: "default",
+                              });
+                              return;
+                            }
+                            
+                            try {
+                              const response = await apiRequest('POST', `/api/admin/events/${editingEvent.id}/auto-translate`, { 
+                                languages: languagesToTranslate 
+                              });
+                              
+                              const data = await response.json();
+                              
+                              // Update state with translations
+                              setTitleTranslations(data.titleTranslations);
+                              setDescriptionTranslations(data.descriptionTranslations);
+                              
+                              toast({
+                                title: "Auto-translation complete!",
+                                description: `Successfully translated to ${languagesToTranslate.length} languages. You can now edit any translation as needed.`,
+                              });
+                            } catch (error) {
+                              console.error('Auto-translate error:', error);
+                              toast({
+                                title: "Translation failed",
+                                description: "Failed to auto-translate content. Please try again.",
+                                variant: "destructive",
+                              });
+                            }
+                          }}
+                          className="flex items-center gap-2"
+                          data-testid="button-auto-translate"
+                        >
+                          <Languages className="h-4 w-4" />
+                          Auto-Translate All
+                        </Button>
                       </div>
                       
                       <div className="space-y-3">

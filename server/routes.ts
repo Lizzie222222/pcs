@@ -6876,6 +6876,66 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin: Auto-translate event content
+  app.post('/api/admin/events/:id/auto-translate', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const eventId = req.params.id;
+      const { languages } = req.body;
+      
+      if (!languages || !Array.isArray(languages) || languages.length === 0) {
+        return res.status(400).json({ message: "At least one language must be selected" });
+      }
+      
+      const event = await storage.getEvent(eventId);
+      if (!event) {
+        return res.status(404).json({ message: "Event not found" });
+      }
+      
+      if (!event.title || !event.description) {
+        return res.status(400).json({ message: "Event must have title and description to translate" });
+      }
+      
+      const eventContent = {
+        title: event.title,
+        description: event.description,
+      };
+      
+      const titleTranslations: Record<string, string> = {};
+      const descriptionTranslations: Record<string, string> = {};
+      
+      // Always include English (original)
+      titleTranslations.en = event.title;
+      descriptionTranslations.en = event.description;
+      
+      // Generate translations for each selected language
+      for (const lang of languages) {
+        if (lang === 'en') {
+          continue; // Skip English, already added
+        }
+        
+        try {
+          const { translateEventContent } = await import('./translationService');
+          const translated = await translateEventContent(eventContent, lang);
+          titleTranslations[lang] = translated.title;
+          descriptionTranslations[lang] = translated.description;
+        } catch (error) {
+          console.error(`Translation failed for language ${lang}:`, error);
+          // If translation fails, use original content
+          titleTranslations[lang] = event.title;
+          descriptionTranslations[lang] = event.description;
+        }
+      }
+      
+      res.json({ 
+        titleTranslations, 
+        descriptionTranslations 
+      });
+    } catch (error) {
+      console.error("Error auto-translating event:", error);
+      res.status(500).json({ message: "Failed to auto-translate event" });
+    }
+  });
+
   // Admin: Update event landing page content
   app.patch('/api/admin/events/:id/page-content', isAuthenticated, requireAdmin, async (req, res) => {
     try {
