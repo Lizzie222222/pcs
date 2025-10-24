@@ -258,7 +258,6 @@ export default function Landing() {
           <div className="bg-yellow-300 border-l-4 border-yellow-500 p-5 sm:p-5 shadow-xl transform rotate-1 hover:rotate-0 transition-transform duration-200" 
                style={{ 
                  boxShadow: '0 10px 20px rgba(0,0,0,0.15), 0 3px 6px rgba(0,0,0,0.10)',
-                 fontFamily: '"Segoe Print", "Comic Sans MS", cursive',
                  backgroundColor: '#ffd966'
                }}
                data-testid="popup-news-event">
