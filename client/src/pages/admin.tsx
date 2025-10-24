@@ -5462,7 +5462,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                         {supportedLanguages.map((lang) => {
                           const videoCount = youtubeVideoTranslations[lang]?.length || 0;
                           const fileCount = eventPackFileTranslations[lang]?.length || 0;
-                          const hasContent = videoCount > 0 || fileCount > 0 || titleTranslations[lang] || descriptionTranslations[lang];
+                          const contentCount = videoCount + fileCount;
                           
                           return (
                             <button
@@ -5477,7 +5477,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                               data-testid={`button-language-${lang}`}
                             >
                               <span>{lang.toUpperCase()}</span>
-                              {hasContent && (
+                              {contentCount > 0 && (
                                 <Badge 
                                   variant={selectedLanguage === lang ? "secondary" : "default"}
                                   className={`ml-2 text-xs ${
@@ -5486,7 +5486,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                       : 'bg-green-100 text-green-700 border-green-200'
                                   }`}
                                 >
-                                  {videoCount + fileCount}
+                                  {contentCount}
                                 </Badge>
                               )}
                             </button>
