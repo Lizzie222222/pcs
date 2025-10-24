@@ -1415,44 +1415,58 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   
   // Auto-save current language content before switching, then load new language content
   useEffect(() => {
-    if (eventDialogOpen) {
-      // Auto-save: Save the PREVIOUS language's form values to translation states
-      const previousLang = previousLanguageRef.current;
-      if (previousLang !== selectedLanguage) {
-        const currentFormValues = pageBuilderForm.getValues();
-        
-        // Save videos from previous language
-        if (currentFormValues.youtubeVideos) {
-          setYoutubeVideoTranslations(prev => ({
-            ...prev,
-            [previousLang]: currentFormValues.youtubeVideos || []
-          }));
-        }
-        
-        // Save files from previous language
-        if (currentFormValues.eventPackFiles) {
-          setEventPackFileTranslations(prev => ({
-            ...prev,
-            [previousLang]: currentFormValues.eventPackFiles || []
-          }));
-        }
-        
-        // Save testimonials from previous language
-        if (currentFormValues.testimonials) {
-          setTestimonialTranslations(prev => ({
-            ...prev,
-            [previousLang]: currentFormValues.testimonials || []
-          }));
-        }
-        
-        // Update the previous language ref
-        previousLanguageRef.current = selectedLanguage;
-      }
+    // Only run when dialog is open
+    if (!eventDialogOpen) return;
+    
+    // Auto-save: Save the PREVIOUS language's form values to translation states
+    const previousLang = previousLanguageRef.current;
+    
+    // Only save and load when language actually changes
+    if (previousLang !== selectedLanguage) {
+      const currentFormValues = pageBuilderForm.getValues();
+      
+      console.log('[Language Switch] Switching from', previousLang, 'to', selectedLanguage);
+      console.log('[Language Switch] Current form values:', currentFormValues);
+      
+      // Save videos from previous language
+      setYoutubeVideoTranslations(prev => {
+        const updated = {
+          ...prev,
+          [previousLang]: currentFormValues.youtubeVideos || []
+        };
+        console.log('[Language Switch] Saving videos to', previousLang, ':', currentFormValues.youtubeVideos);
+        return updated;
+      });
+      
+      // Save files from previous language
+      setEventPackFileTranslations(prev => {
+        const updated = {
+          ...prev,
+          [previousLang]: currentFormValues.eventPackFiles || []
+        };
+        console.log('[Language Switch] Saving files to', previousLang, ':', currentFormValues.eventPackFiles);
+        return updated;
+      });
+      
+      // Save testimonials from previous language
+      setTestimonialTranslations(prev => {
+        const updated = {
+          ...prev,
+          [previousLang]: currentFormValues.testimonials || []
+        };
+        console.log('[Language Switch] Saving testimonials to', previousLang, ':', currentFormValues.testimonials);
+        return updated;
+      });
+      
+      // Update the previous language ref
+      previousLanguageRef.current = selectedLanguage;
       
       // Load the new language's content into the form
       const currentVideos = youtubeVideoTranslations[selectedLanguage] || [];
       const currentFiles = eventPackFileTranslations[selectedLanguage] || [];
       const currentTestimonials = testimonialTranslations[selectedLanguage] || [];
+      
+      console.log('[Language Switch] Loading for', selectedLanguage, '- videos:', currentVideos, 'files:', currentFiles, 'testimonials:', currentTestimonials);
       
       pageBuilderForm.reset({
         publicSlug: pageBuilderForm.getValues('publicSlug'),
@@ -1461,7 +1475,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         testimonials: currentTestimonials,
       });
     }
-  }, [selectedLanguage, editingEvent, eventDialogOpen]);
+  }, [selectedLanguage]);
 
   // Redirect if not authenticated or not admin (but only after loading completes)
   useEffect(() => {
