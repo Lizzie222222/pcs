@@ -11,11 +11,12 @@ import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/ui/states";
-import { BookOpen, Plus, Search, Edit, Trash2, X, FileText, Upload } from "lucide-react";
+import { BookOpen, Plus, Search, Edit, Trash2, X, FileText, Upload, Eye, Image, FileType, Sheet, File as FileIcon } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { LANGUAGE_FLAG_MAP, LANGUAGE_NAME_MAP, languageCodeFromName } from "@/lib/languageUtils";
 import type { UploadResult } from "@uppy/core";
 import BulkResourceUpload from "./BulkResourceUpload";
+import { ResourcePreviewDialog } from "./ResourcePreviewDialog";
 
 interface Resource {
   id: string;
@@ -497,6 +498,7 @@ export default function ResourcesManagement() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [showBulkUpload, setShowBulkUpload] = useState(false);
   const [editingResource, setEditingResource] = useState<Resource | null>(null);
+  const [previewResource, setPreviewResource] = useState<Resource | null>(null);
   const [resourceFilters, setResourceFilters] = useState({
     search: '',
     stage: 'all',
@@ -570,6 +572,55 @@ export default function ResourcesManagement() {
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  };
+
+  const getFileTypeIcon = (fileType: string | null, fileUrl: string | null) => {
+    if (!fileType) return <FileIcon className="h-8 w-8 text-gray-400" />;
+    
+    const type = fileType.toLowerCase();
+    
+    // Images - show thumbnail if possible
+    if (type.includes('image')) {
+      if (fileUrl) {
+        return (
+          <div className="w-10 h-10 rounded overflow-hidden border border-gray-200">
+            <img 
+              src={fileUrl} 
+              alt="Thumbnail" 
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to icon if image fails to load
+                e.currentTarget.style.display = 'none';
+              }}
+            />
+          </div>
+        );
+      }
+      return <Image className="h-8 w-8 text-blue-500" />;
+    }
+    
+    // PDFs
+    if (type.includes('pdf')) {
+      return <FileText className="h-8 w-8 text-red-500" />;
+    }
+    
+    // Word documents
+    if (type.includes('word') || type.includes('doc')) {
+      return <FileType className="h-8 w-8 text-blue-600" />;
+    }
+    
+    // Excel/Spreadsheets
+    if (type.includes('sheet') || type.includes('excel') || type.includes('xls')) {
+      return <Sheet className="h-8 w-8 text-green-600" />;
+    }
+    
+    // PowerPoint
+    if (type.includes('presentation') || type.includes('powerpoint') || type.includes('ppt')) {
+      return <FileType className="h-8 w-8 text-orange-500" />;
+    }
+    
+    // Default
+    return <FileIcon className="h-8 w-8 text-gray-500" />;
   };
 
   const renderLanguageBadges = (resource: Resource) => {
@@ -732,6 +783,7 @@ export default function ResourcesManagement() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b bg-gray-50">
+                  <th className="text-left p-3 font-medium text-gray-700">Preview</th>
                   <th className="text-left p-3 font-medium text-gray-700">Title</th>
                   <th className="text-left p-3 font-medium text-gray-700">Stage</th>
                   <th className="text-left p-3 font-medium text-gray-700">Visibility</th>
@@ -746,6 +798,16 @@ export default function ResourcesManagement() {
               <tbody>
                 {resources.map((resource) => (
                   <tr key={resource.id} className="border-b hover:bg-gray-50">
+                    <td className="p-3">
+                      <button
+                        onClick={() => resource.fileUrl && setPreviewResource(resource)}
+                        className="flex items-center justify-center hover:bg-gray-100 p-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!resource.fileUrl}
+                        data-testid={`thumbnail-${resource.id}`}
+                      >
+                        {getFileTypeIcon(resource.fileType, resource.fileUrl)}
+                      </button>
+                    </td>
                     <td className="p-3">
                       <div className="font-medium text-navy">{resource.title}</div>
                       {resource.description && (
@@ -781,6 +843,16 @@ export default function ResourcesManagement() {
                     </td>
                     <td className="p-3">
                       <div className="flex gap-2">
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          onClick={() => resource.fileUrl && setPreviewResource(resource)}
+                          disabled={!resource.fileUrl}
+                          data-testid={`button-preview-${resource.id}`}
+                          title="Preview file"
+                        >
+                          <Eye className="h-3 w-3" />
+                        </Button>
                         <Button 
                           size="sm" 
                           variant="outline"
@@ -845,6 +917,15 @@ export default function ResourcesManagement() {
             setShowBulkUpload(false);
             refetch();
           }}
+        />
+      )}
+
+      {previewResource && previewResource.fileUrl && (
+        <ResourcePreviewDialog
+          fileUrl={previewResource.fileUrl}
+          fileName={previewResource.title}
+          fileType={previewResource.fileType || 'application/octet-stream'}
+          onClose={() => setPreviewResource(null)}
         />
       )}
     </div>
