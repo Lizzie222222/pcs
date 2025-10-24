@@ -345,12 +345,6 @@ export default function ProgressTracker({
                         >
                           {/* Requirement Header */}
                           <div className="flex items-start gap-3 mb-3">
-                            <Badge 
-                              variant="outline" 
-                              className="flex-shrink-0 bg-gradient-to-br from-blue-50 to-blue-100 text-blue-700 border-blue-200 font-semibold px-2.5 py-0.5"
-                            >
-                              #{idx + 1}
-                            </Badge>
                             <div className="flex-1 min-w-0">
                               <h4 className="font-bold text-sm text-navy leading-tight mb-1">
                                 {requirement.title}
