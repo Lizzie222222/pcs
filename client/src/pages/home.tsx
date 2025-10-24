@@ -87,6 +87,7 @@ import type { ReductionPromise, InsertReductionPromise, AuditResponse } from "@/
 const EventsSection = lazy(() => import("@/components/dashboard/EventsSection"));
 const EventNotificationBanner = lazy(() => import("@/components/dashboard/EventNotificationBanner"));
 const ResourceNotificationBanner = lazy(() => import("@/components/dashboard/ResourceNotificationBanner"));
+const PhotoConsentBanner = lazy(() => import("@/components/PhotoConsentBanner").then(module => ({ default: module.PhotoConsentBanner })));
 const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
 
 interface Certificate {
@@ -768,6 +769,13 @@ export default function Home() {
         <Suspense fallback={null}>
           <ResourceNotificationBanner isAuthenticated={isAuthenticated} />
         </Suspense>
+
+        {/* Photo Consent Banner */}
+        {activeTab === 'progress' && dashboardData?.school && (
+          <Suspense fallback={null}>
+            <PhotoConsentBanner schoolId={dashboardData.school.id} />
+          </Suspense>
+        )}
 
         {/* Progress Tab Content */}
         {activeTab === 'progress' && (
