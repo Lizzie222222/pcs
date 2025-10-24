@@ -6838,7 +6838,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.patch('/api/admin/events/:id/page-content', isAuthenticated, requireAdmin, async (req, res) => {
     try {
       const eventId = req.params.id;
-      const { publicSlug, youtubeVideos, eventPackFiles, testimonials, accessToken } = req.body;
+      const { 
+        publicSlug, 
+        youtubeVideos, 
+        eventPackFiles, 
+        testimonials, 
+        accessToken,
+        titleTranslations,
+        descriptionTranslations,
+        youtubeVideoTranslations,
+        eventPackFileTranslations,
+        testimonialTranslations,
+        featuredVideoIndex,
+        eventPackBannerImageUrl,
+        showEvidenceSubmission,
+        evidenceSubmissionText
+      } = req.body;
       
       const event = await storage.getEvent(eventId);
       if (!event) {
@@ -6863,6 +6878,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (eventPackFiles !== undefined) updates.eventPackFiles = eventPackFiles;
       if (testimonials !== undefined) updates.testimonials = testimonials;
       if (accessToken !== undefined) updates.accessToken = accessToken;
+      if (titleTranslations !== undefined) updates.titleTranslations = titleTranslations;
+      if (descriptionTranslations !== undefined) updates.descriptionTranslations = descriptionTranslations;
+      if (youtubeVideoTranslations !== undefined) updates.youtubeVideoTranslations = youtubeVideoTranslations;
+      if (eventPackFileTranslations !== undefined) updates.eventPackFileTranslations = eventPackFileTranslations;
+      if (testimonialTranslations !== undefined) updates.testimonialTranslations = testimonialTranslations;
+      if (featuredVideoIndex !== undefined) updates.featuredVideoIndex = featuredVideoIndex;
+      if (eventPackBannerImageUrl !== undefined) updates.eventPackBannerImageUrl = eventPackBannerImageUrl;
+      if (showEvidenceSubmission !== undefined) updates.showEvidenceSubmission = showEvidenceSubmission;
+      if (evidenceSubmissionText !== undefined) updates.evidenceSubmissionText = evidenceSubmissionText;
       
       const updatedEvent = await storage.updateEvent(eventId, updates);
       res.json({ message: "Event page content updated successfully", event: updatedEvent });
