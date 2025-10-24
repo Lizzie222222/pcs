@@ -6221,10 +6221,20 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                             {allResources.map((resource) => {
                               const isAttached = eventResources.some((er: any) => er.resourceId === resource.id);
                               
+                              // Strip query strings for URL extension checking (handles GCS signed URLs)
+                              const urlWithoutQuery = resource.fileUrl?.split('?')[0] || '';
+                              const urlExtension = urlWithoutQuery.split('.').pop()?.toLowerCase() || '';
+                              
+                              const isImage = resource.fileType?.includes('image') || 
+                                             ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(urlExtension);
+                              const isPdf = resource.fileType?.includes('pdf') || urlExtension === 'pdf';
+                              const isVideo = resource.fileType?.includes('video') || 
+                                             ['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv'].includes(urlExtension);
+                              
                               return (
                                 <Card
                                   key={resource.id}
-                                  className={`cursor-pointer transition-all hover:shadow-md ${
+                                  className={`cursor-pointer transition-all hover:shadow-md overflow-hidden ${
                                     isAttached ? 'border-2 border-pcs_blue bg-blue-50' : 'border hover:border-gray-400'
                                   }`}
                                   onClick={() => {
@@ -6244,10 +6254,34 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                 >
                                   <CardContent className="p-4">
                                     <div className="flex flex-col items-center text-center space-y-2">
-                                      <div className="relative">
-                                        <FileText className="h-12 w-12 text-gray-600" />
+                                      <div className="relative w-full">
+                                        {isImage && resource.fileUrl ? (
+                                          <div className="aspect-video w-full bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
+                                            <img 
+                                              src={resource.fileUrl} 
+                                              alt={resource.title}
+                                              className="w-full h-full object-cover"
+                                              crossOrigin="anonymous"
+                                              onError={(e) => {
+                                                e.currentTarget.style.display = 'none';
+                                                e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                              }}
+                                            />
+                                            <ImageIcon className="h-12 w-12 text-gray-400 hidden" />
+                                          </div>
+                                        ) : (
+                                          <div className="aspect-video w-full bg-gray-100 rounded-md flex items-center justify-center">
+                                            {isVideo ? (
+                                              <FileVideo className="h-12 w-12 text-gray-600" />
+                                            ) : isPdf ? (
+                                              <FileText className="h-12 w-12 text-gray-600" />
+                                            ) : (
+                                              <BookOpen className="h-12 w-12 text-gray-600" />
+                                            )}
+                                          </div>
+                                        )}
                                         {isAttached && (
-                                          <div className="absolute -top-1 -right-1 bg-pcs_blue rounded-full p-1">
+                                          <div className="absolute top-1 right-1 bg-pcs_blue rounded-full p-1 shadow-md">
                                             <Check className="h-4 w-4 text-white" />
                                           </div>
                                         )}
