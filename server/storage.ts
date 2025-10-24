@@ -179,6 +179,11 @@ export interface IStorage {
   getUniqueCountries(): Promise<string[]>;
   findSchoolsByEmailDomain(domain: string): Promise<Array<School & { userEmails: string[] }>>;
   
+  // Photo Consent operations
+  updateSchoolPhotoConsent(schoolId: string, documentUrl: string): Promise<School | undefined>;
+  reviewSchoolPhotoConsent(schoolId: string, status: 'approved' | 'rejected', reviewedBy: string, notes?: string): Promise<School | undefined>;
+  getSchoolPhotoConsentStatus(schoolId: string): Promise<{ status: string | null; documentUrl: string | null; uploadedAt: Date | null; approvedAt: Date | null; reviewNotes: string | null } | undefined>;
+  
   // School User operations
   addUserToSchool(schoolUser: InsertSchoolUser): Promise<SchoolUser>;
   getSchoolUsers(schoolId: string): Promise<SchoolUser[]>;
@@ -1005,6 +1010,77 @@ export class DatabaseStorage implements IStorage {
     }
     
     return Array.from(schoolMap.values()).filter(school => school.userEmails.length >= 2);
+  }
+
+  // Photo Consent operations
+  async updateSchoolPhotoConsent(schoolId: string, documentUrl: string): Promise<School | undefined> {
+    const [updated] = await db
+      .update(schools)
+      .set({
+        photoConsentDocumentUrl: documentUrl,
+        photoConsentStatus: 'pending',
+        photoConsentUploadedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(schools.id, schoolId))
+      .returning();
+    
+    return updated;
+  }
+
+  async reviewSchoolPhotoConsent(
+    schoolId: string,
+    status: 'approved' | 'rejected',
+    reviewedBy: string,
+    notes?: string
+  ): Promise<School | undefined> {
+    const updateData: any = {
+      photoConsentStatus: status,
+      photoConsentReviewNotes: notes || null,
+      updatedAt: new Date(),
+    };
+
+    if (status === 'approved') {
+      updateData.photoConsentApprovedAt = new Date();
+      updateData.photoConsentApprovedBy = reviewedBy;
+    }
+
+    const [updated] = await db
+      .update(schools)
+      .set(updateData)
+      .where(eq(schools.id, schoolId))
+      .returning();
+    
+    return updated;
+  }
+
+  async getSchoolPhotoConsentStatus(schoolId: string): Promise<{
+    status: string | null;
+    documentUrl: string | null;
+    uploadedAt: Date | null;
+    approvedAt: Date | null;
+    reviewNotes: string | null;
+  } | undefined> {
+    const school = await db.query.schools.findFirst({
+      where: eq(schools.id, schoolId),
+      columns: {
+        photoConsentStatus: true,
+        photoConsentDocumentUrl: true,
+        photoConsentUploadedAt: true,
+        photoConsentApprovedAt: true,
+        photoConsentReviewNotes: true,
+      },
+    });
+
+    if (!school) return undefined;
+
+    return {
+      status: school.photoConsentStatus,
+      documentUrl: school.photoConsentDocumentUrl,
+      uploadedAt: school.photoConsentUploadedAt,
+      approvedAt: school.photoConsentApprovedAt,
+      reviewNotes: school.photoConsentReviewNotes,
+    };
   }
 
   // School User operations
