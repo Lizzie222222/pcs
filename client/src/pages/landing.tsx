@@ -635,7 +635,7 @@ export default function Landing() {
                             </div>
                             
                             {!timeRemaining.hasStarted && (
-                              <div className="mb-4 bg-gradient-to-r from-cyan-500 to-teal-500 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 w-fit" data-testid={`countdown-timer-${event.id}`}>
+                              <div className="mb-4 bg-teal-600 text-white px-3 py-2 rounded-lg text-xs font-semibold flex items-center gap-2 w-fit" data-testid={`countdown-timer-${event.id}`}>
                                 <span>⏱️</span>
                                 <span>Starts in: {timeRemaining.days}d {timeRemaining.hours}h {timeRemaining.minutes}m {timeRemaining.seconds}s</span>
                               </div>
