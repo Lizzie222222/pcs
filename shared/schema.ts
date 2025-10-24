@@ -110,6 +110,12 @@ export const reviewStatusEnum = pgEnum('review_status', [
   'published'
 ]);
 
+export const photoConsentStatusEnum = pgEnum('photo_consent_status', [
+  'pending',
+  'approved',
+  'rejected'
+]);
+
 /**
  * @description Core users table supporting both email/password and Google OAuth authentication. Central entity linking to schools, evidence submissions, and all user-generated content.
  * @location shared/schema.ts#L73
@@ -181,6 +187,12 @@ export const schools = pgTable("schools", {
   featuredSchool: boolean("featured_school").default(false),
   showOnMap: boolean("show_on_map").default(false),
   primaryContactId: varchar("primary_contact_id").references(() => users.id),
+  photoConsentDocumentUrl: varchar("photo_consent_document_url"),
+  photoConsentStatus: photoConsentStatusEnum("photo_consent_status"),
+  photoConsentUploadedAt: timestamp("photo_consent_uploaded_at"),
+  photoConsentApprovedAt: timestamp("photo_consent_approved_at"),
+  photoConsentApprovedBy: varchar("photo_consent_approved_by").references(() => users.id),
+  photoConsentReviewNotes: text("photo_consent_review_notes"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
