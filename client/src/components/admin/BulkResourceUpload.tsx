@@ -188,9 +188,9 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
           description: r.resource.description || '',
           ageRange: r.resource.ageRange || '',
           languages: r.resource.languages || ['en'],
-          country: r.resource.country || null,
-          resourceType: r.resource.resourceType || null,
-          theme: r.resource.theme || null,
+          country: r.resource.country || 'global',
+          resourceType: r.resource.resourceType || 'none',
+          theme: r.resource.theme || 'none',
         }));
 
       setUploadedResources(resources);
@@ -317,8 +317,8 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
             ageRange: resource.ageRange,
             languages: resource.languages,
             country: resource.country === 'global' ? null : resource.country,
-            resourceType: resource.resourceType,
-            theme: resource.theme,
+            resourceType: resource.resourceType === 'none' ? null : resource.resourceType,
+            theme: resource.theme === 'none' ? null : resource.theme,
             visibility: resource.visibility,
             isActive: resource.isActive,
             fileUrl: resource.fileUrl,
