@@ -6648,6 +6648,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
         eventData.status = 'published';
       }
       
+      // Auto-populate English translations from main title/description
+      if (eventData.title) {
+        const existingTitleTranslations = (eventData.titleTranslations && typeof eventData.titleTranslations === 'object') 
+          ? eventData.titleTranslations 
+          : {};
+        eventData.titleTranslations = {
+          ...existingTitleTranslations,
+          en: eventData.title,
+        };
+      }
+      
+      if (eventData.description) {
+        const existingDescriptionTranslations = (eventData.descriptionTranslations && typeof eventData.descriptionTranslations === 'object')
+          ? eventData.descriptionTranslations
+          : {};
+        eventData.descriptionTranslations = {
+          ...existingDescriptionTranslations,
+          en: eventData.description,
+        };
+      }
+      
       const event = await storage.createEvent(eventData);
       res.json({ message: "Event created successfully", event });
     } catch (error) {
@@ -6770,6 +6791,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       if (updates.description && updates.description !== existingEvent.description) {
         changes.push(`Event description updated`);
+      }
+      
+      // Auto-sync English translations when main title/description changes
+      if (processedUpdates.title) {
+        const currentTitleTranslations = (existingEvent.titleTranslations && typeof existingEvent.titleTranslations === 'object')
+          ? existingEvent.titleTranslations
+          : {};
+        processedUpdates.titleTranslations = {
+          ...currentTitleTranslations,
+          en: processedUpdates.title,
+        };
+      }
+      
+      if (processedUpdates.description) {
+        const currentDescriptionTranslations = (existingEvent.descriptionTranslations && typeof existingEvent.descriptionTranslations === 'object')
+          ? existingEvent.descriptionTranslations
+          : {};
+        processedUpdates.descriptionTranslations = {
+          ...currentDescriptionTranslations,
+          en: processedUpdates.description,
+        };
       }
       
       const event = await storage.updateEvent(eventId, processedUpdates);
