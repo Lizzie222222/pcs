@@ -98,6 +98,26 @@ import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne
 import * as bcrypt from "bcrypt";
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
 
+/**
+ * Custom error class for database constraint violations
+ */
+export class ConstraintError extends Error {
+  public readonly constraintType: string;
+  public readonly details: string;
+  
+  constructor(message: string, constraintType: string = 'foreign_key', details: string = '') {
+    super(message);
+    this.name = 'ConstraintError';
+    this.constraintType = constraintType;
+    this.details = details;
+    
+    // Maintains proper stack trace for where our error was thrown (only available on V8)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, ConstraintError);
+    }
+  }
+}
+
 export interface IStorage {
   // User operations (required for authentication system)
   getUser(id: string): Promise<User | undefined>;
@@ -692,15 +712,60 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteUser(id: string): Promise<boolean> {
+    // First check if user exists
+    const existingUser = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, id))
+      .limit(1);
+    
+    if (existingUser.length === 0) {
+      console.log(`User deletion failed: User ${id} does not exist`);
+      return false;
+    }
+
     try {
       const result = await db
         .delete(users)
         .where(eq(users.id, id))
         .returning();
+      
+      console.log(`User ${id} successfully deleted`);
       return result.length > 0;
-    } catch (error) {
-      console.error('Error deleting user:', error);
-      return false;
+    } catch (error: any) {
+      // Check if this is a foreign key constraint violation
+      // PostgreSQL error code 23503 = foreign_key_violation
+      if (error.code === '23503' || error.constraint || (error.message && error.message.includes('foreign key'))) {
+        const constraintName = error.constraint || 'unknown constraint';
+        const tableName = error.table || 'unknown table';
+        const errorDetails = `Cannot delete user ${id} due to existing references in the database. ` +
+          `The user has submitted or reviewed evidence, or has other associated data that must be removed first. ` +
+          `Constraint: ${constraintName}, Table: ${tableName}`;
+        
+        console.error('Foreign key constraint violation when deleting user:', {
+          userId: id,
+          constraint: constraintName,
+          table: tableName,
+          code: error.code,
+          detail: error.detail
+        });
+        
+        throw new ConstraintError(
+          errorDetails,
+          'foreign_key',
+          error.detail || `Constraint: ${constraintName}`
+        );
+      }
+      
+      // For other database errors, log and throw
+      console.error('Unexpected error deleting user:', {
+        userId: id,
+        error: error.message,
+        code: error.code,
+        detail: error.detail
+      });
+      
+      throw new Error(`Failed to delete user: ${error.message || 'Unknown database error'}`);
     }
   }
 

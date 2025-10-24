@@ -4643,14 +4643,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const deleted = await storage.deleteUser(id);
       
       if (!deleted) {
-        return res.status(404).json({ message: "User not found or already deleted" });
+        return res.status(404).json({ message: "User not found" });
       }
 
       console.log(`[Delete User] Successfully deleted user ${id}`);
       res.json({ message: "User deleted successfully" });
-    } catch (error) {
+    } catch (error: any) {
       console.error("[Delete User] Error:", error);
+      
+      // Import ConstraintError from storage
+      const { ConstraintError } = await import('./storage');
+      
+      if (error instanceof ConstraintError) {
+        return res.status(409).json({ 
+          message: "Cannot delete user - they have associated data",
+          details: "This user has submitted or reviewed evidence, or has other data that must be removed first. Please reassign or remove their data before deleting the user.",
+          constraint: error.constraintType
+        });
+      }
+      
       res.status(500).json({ message: "Failed to delete user" });
+    }
+  });
+
+  // Bulk delete users
+  app.post('/api/admin/users/bulk-delete', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { userIds } = req.body;
+      const adminUserId = req.user.id;
+      
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({ message: "Please provide an array of user IDs to delete" });
+      }
+
+      // Check if admin is trying to delete themselves
+      if (userIds.includes(adminUserId)) {
+        return res.status(400).json({ message: "You cannot delete your own account" });
+      }
+
+      console.log(`[Bulk Delete Users] Admin ${adminUserId} deleting ${userIds.length} users`);
+      
+      const results = {
+        successful: [] as string[],
+        failed: [] as { id: string; reason: string }[],
+      };
+
+      const { ConstraintError } = await import('./storage');
+
+      for (const userId of userIds) {
+        try {
+          const deleted = await storage.deleteUser(userId);
+          
+          if (deleted) {
+            results.successful.push(userId);
+          } else {
+            results.failed.push({ id: userId, reason: "User not found" });
+          }
+        } catch (error: any) {
+          if (error instanceof ConstraintError) {
+            results.failed.push({ 
+              id: userId, 
+              reason: "User has associated data (evidence, reviews, etc.)" 
+            });
+          } else {
+            results.failed.push({ id: userId, reason: "Unknown error" });
+          }
+          console.error(`[Bulk Delete Users] Error deleting user ${userId}:`, error);
+        }
+      }
+
+      console.log(`[Bulk Delete Users] Completed: ${results.successful.length} successful, ${results.failed.length} failed`);
+      
+      res.json({ 
+        message: `Deleted ${results.successful.length} of ${userIds.length} users`,
+        results 
+      });
+    } catch (error) {
+      console.error("[Bulk Delete Users] Error:", error);
+      res.status(500).json({ message: "Failed to bulk delete users" });
     }
   });
 
