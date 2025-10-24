@@ -112,6 +112,21 @@ interface Event {
   eventPackBannerImageUrl?: string;
   showEvidenceSubmission?: boolean;
   evidenceSubmissionText?: Record<string, string>;
+  attachedResources?: Array<{
+    id: string;
+    eventId: string;
+    resourceId: string;
+    orderIndex: number | null;
+    resource: {
+      id: string;
+      title: string;
+      description: string | null;
+      fileUrl: string | null;
+      fileType: string | null;
+      fileSize: number | null;
+      stage: string;
+    };
+  }>;
 }
 
 // Translation helper function
@@ -1396,6 +1411,94 @@ export default function EventLivePage() {
                             <span>Download</span>
                           </a>
                         </Button>
+                      </div>
+                    </Card>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Attached Resources Section */}
+        {showContent && event.attachedResources && event.attachedResources.length > 0 && (
+          <div className="mb-16" data-testid="section-attached-resources">
+            <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-3xl p-8 md:p-12 shadow-lg border-2 border-gray-200">
+              <h2 className="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-10" data-testid="text-resources-title">
+                Event Resources
+              </h2>
+              
+              {/* Resources Grid */}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {event.attachedResources.map((item, index) => {
+                  const resource = item.resource;
+                  const FileIcon = getFileTypeIcon(resource.fileUrl || '');
+                  
+                  return (
+                    <Card 
+                      key={resource.id} 
+                      className="relative overflow-hidden hover:shadow-2xl transition-all duration-300 border-2 border-gray-200 hover:border-pcs_blue/50 group bg-white" 
+                      data-testid={`card-resource-${index}`}
+                    >
+                      {/* Stage Badge - Top Right */}
+                      <div className="absolute top-3 right-3 z-10">
+                        <Badge 
+                          className="bg-pcs_blue/90 text-white border-0 shadow-md text-xs font-semibold px-2 py-1"
+                          data-testid={`badge-resource-stage-${index}`}
+                        >
+                          {resource.stage}
+                        </Badge>
+                      </div>
+                      
+                      {/* File Type Icon Header */}
+                      <div className="relative h-48 bg-gradient-to-br from-teal to-ocean-blue flex items-center justify-center overflow-hidden">
+                        <FileIcon className="w-32 h-32 text-white/10 absolute" />
+                        <div className="relative z-10 bg-white/20 backdrop-blur-sm rounded-2xl p-5 group-hover:scale-110 transition-transform duration-300">
+                          <FileIcon className="w-16 h-16 text-white drop-shadow-lg" />
+                        </div>
+                      </div>
+                      
+                      {/* Card Content */}
+                      <div className="p-6 space-y-3">
+                        <h3 className="font-bold text-xl mb-2 text-gray-900 group-hover:text-pcs_blue transition-colors leading-tight" data-testid={`text-resource-title-${index}`}>
+                          {resource.title}
+                        </h3>
+                        
+                        {resource.description && (
+                          <p className="text-gray-600 text-sm leading-relaxed line-clamp-2 min-h-[2.5rem]" data-testid={`text-resource-description-${index}`}>
+                            {resource.description}
+                          </p>
+                        )}
+                        
+                        {resource.fileSize && resource.fileSize > 0 && (
+                          <div className="flex items-center gap-2 text-gray-700 font-semibold">
+                            <span className="text-lg">📦</span>
+                            <span className="text-sm" data-testid={`text-resource-size-${index}`}>
+                              {formatFileSize(resource.fileSize)}
+                            </span>
+                          </div>
+                        )}
+                        
+                        {/* Download Button */}
+                        {resource.fileUrl && (
+                          <Button
+                            asChild
+                            className="w-full bg-gradient-to-r from-teal to-ocean-blue hover:from-teal/80 hover:to-ocean-blue/80 text-white font-semibold shadow-md hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] mt-4"
+                            data-testid={`button-download-resource-${index}`}
+                          >
+                            <a 
+                              href={resource.fileUrl} 
+                              target="_blank" 
+                              rel="noopener noreferrer" 
+                              download
+                              onClick={() => handleDownloadClick(resource.title)}
+                              className="flex items-center justify-center gap-2"
+                            >
+                              <Download className="w-4 h-4" />
+                              <span>Download</span>
+                            </a>
+                          </Button>
+                        )}
                       </div>
                     </Card>
                   );

@@ -2690,6 +2690,56 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     },
   });
 
+  // Event resources queries and mutations
+  const { data: allResources = [], isLoading: resourcesLoading } = useQuery<any[]>({
+    queryKey: ['/api/admin/resources'],
+  });
+
+  const { data: eventResources = [], isLoading: eventResourcesLoading } = useQuery<any[]>({
+    queryKey: ['/api/admin/events', editingEvent?.id, 'resources'],
+    enabled: !!editingEvent,
+  });
+
+  const attachResourceMutation = useMutation({
+    mutationFn: async ({ eventId, resourceId }: { eventId: string; resourceId: string }) => {
+      await apiRequest('POST', `/api/admin/events/${eventId}/resources`, { resourceId });
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Resource Attached",
+        description: "Resource has been successfully attached to the event.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/events', variables.eventId, 'resources'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Attachment Failed",
+        description: "Failed to attach resource. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const detachResourceMutation = useMutation({
+    mutationFn: async ({ eventId, resourceId }: { eventId: string; resourceId: string }) => {
+      await apiRequest('DELETE', `/api/admin/events/${eventId}/resources/${resourceId}`);
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Resource Detached",
+        description: "Resource has been successfully detached from the event.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/events', variables.eventId, 'resources'] });
+    },
+    onError: (error) => {
+      toast({
+        title: "Detachment Failed",
+        description: "Failed to detach resource. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Update school progression mutation
   const updateSchoolProgressionMutation = useMutation({
     mutationFn: async ({ schoolId, updates }: { 
@@ -6146,6 +6196,79 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                         </div>
                       )}
                     </div>
+
+                    {/* Resources Section */}
+                    {editingEvent && (
+                      <div className="space-y-3 pt-4 border-t">
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Event Resources</h3>
+                          <p className="text-sm text-gray-600 mt-1">
+                            Select resources from your library to attach to this event
+                          </p>
+                        </div>
+                        
+                        {resourcesLoading ? (
+                          <div className="flex items-center justify-center py-8">
+                            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue mr-3"></div>
+                            <span className="text-gray-600">Loading resources...</span>
+                          </div>
+                        ) : allResources.length === 0 ? (
+                          <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
+                            No resources available. Add resources from the Resources tab first.
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+                            {allResources.map((resource) => {
+                              const isAttached = eventResources.some((er: any) => er.resourceId === resource.id);
+                              
+                              return (
+                                <Card
+                                  key={resource.id}
+                                  className={`cursor-pointer transition-all hover:shadow-md ${
+                                    isAttached ? 'border-2 border-pcs_blue bg-blue-50' : 'border hover:border-gray-400'
+                                  }`}
+                                  onClick={() => {
+                                    if (isAttached) {
+                                      detachResourceMutation.mutate({
+                                        eventId: editingEvent.id,
+                                        resourceId: resource.id,
+                                      });
+                                    } else {
+                                      attachResourceMutation.mutate({
+                                        eventId: editingEvent.id,
+                                        resourceId: resource.id,
+                                      });
+                                    }
+                                  }}
+                                  data-testid={`button-resource-${resource.id}`}
+                                >
+                                  <CardContent className="p-4">
+                                    <div className="flex flex-col items-center text-center space-y-2">
+                                      <div className="relative">
+                                        <FileText className="h-12 w-12 text-gray-600" />
+                                        {isAttached && (
+                                          <div className="absolute -top-1 -right-1 bg-pcs_blue rounded-full p-1">
+                                            <Check className="h-4 w-4 text-white" />
+                                          </div>
+                                        )}
+                                      </div>
+                                      <div className="w-full">
+                                        <p className="text-sm font-medium text-gray-900 line-clamp-2">
+                                          {resource.title}
+                                        </p>
+                                        <Badge variant="outline" className="mt-2 text-xs">
+                                          {resource.stage}
+                                        </Badge>
+                                      </div>
+                                    </div>
+                                  </CardContent>
+                                </Card>
+                              );
+                            })}
+                          </div>
+                        )}
+                      </div>
+                    )}
 
                     {/* Testimonials Section */}
                     <div className="space-y-3 pt-4 border-t">
