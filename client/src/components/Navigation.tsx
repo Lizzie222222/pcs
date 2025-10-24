@@ -11,6 +11,7 @@ import { Menu, LogOut, User, Settings, Bell } from "lucide-react";
 import logoUrl from "@assets/Logo_1757848498470.png";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import Avatar from "./Avatar";
+import { NotificationDropdown } from "./NotificationDropdown";
 
 interface DashboardData {
   school: {
@@ -169,22 +170,7 @@ export default function Navigation() {
             {isAuthenticated ? (
               <>
                 {/* Notification Bell */}
-                <button
-                  onClick={() => handleNavClick('/dashboard')}
-                  className="relative p-2 hover:bg-gray-100 rounded-full transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-pcs_blue"
-                  data-testid="button-notifications"
-                  aria-label={t('navigation.notifications')}
-                >
-                  <Bell className="h-5 w-5 text-gray-700" />
-                  {unreadCount > 0 && (
-                    <Badge 
-                      className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center animate-pulse" 
-                      data-testid="badge-notification-count"
-                    >
-                      {unreadCount > 9 ? '9+' : unreadCount}
-                    </Badge>
-                  )}
-                </button>
+                <NotificationDropdown unreadCount={unreadCount} />
                 {user?.isAdmin ? (
                   <Link 
                     href="/admin"
