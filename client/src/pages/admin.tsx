@@ -5476,6 +5476,29 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           Add content in multiple languages. Content will display in each user's preferred language.
                         </p>
                       </div>
+                      
+                      {/* Key Feature Explanation */}
+                      <Alert className="bg-gradient-to-r from-green-50 to-emerald-50 border-green-200">
+                        <Info className="h-4 w-4 text-green-600" />
+                        <AlertTitle className="text-green-900 font-semibold">Each Language Can Have Completely Different Content</AlertTitle>
+                        <AlertDescription className="text-sm text-green-800 mt-2">
+                          <div className="space-y-2">
+                            <p>
+                              <strong>Videos:</strong> Link to language-specific YouTube videos (e.g., Spanish video for ES, French video for FR)
+                            </p>
+                            <p>
+                              <strong>Files:</strong> Upload translated documents (e.g., guide-en.pdf, guia-es.pdf, guide-fr.pdf)
+                            </p>
+                            <p>
+                              <strong>Testimonials:</strong> Add testimonials in each language from speakers of that language
+                            </p>
+                            <p className="text-xs mt-2 pt-2 border-t border-green-200">
+                              💡 Tip: Use "Copy from Language" below as a starting point, then replace videos/files with language-specific versions.
+                            </p>
+                          </div>
+                        </AlertDescription>
+                      </Alert>
+                      
                       <div className="flex flex-wrap gap-2">
                         {supportedLanguages.map((lang) => {
                           const videoCount = youtubeVideoTranslations[lang]?.length || 0;
@@ -5511,9 +5534,14 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           );
                         })}
                       </div>
-                      <p className="text-xs text-gray-500">
-                        Currently editing: <span className="font-semibold">{languageNames[selectedLanguage]}</span>
-                      </p>
+                      
+                      {/* Current Language Indicator */}
+                      <div className="flex items-center gap-2 p-3 bg-pcs_blue/10 border-l-4 border-pcs_blue rounded">
+                        <Globe className="h-5 w-5 text-pcs_blue" />
+                        <p className="text-sm font-semibold text-pcs_blue">
+                          Now Editing: {languageNames[selectedLanguage]} Content
+                        </p>
+                      </div>
                       
                       {/* Copy from Language Dropdown */}
                       <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
@@ -5521,10 +5549,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           <Copy className="h-5 w-5 text-blue-600 mt-0.5" />
                           <div className="flex-1">
                             <p className="text-sm font-medium text-blue-900 mb-1">
-                              Quick Copy from Another Language
+                              Quick Copy from Another Language (Optional)
                             </p>
                             <p className="text-xs text-blue-700 mb-2">
-                              Duplicate content from one language to {languageNames[selectedLanguage]}, then customize as needed. Perfect for creating language-specific variations.
+                              <strong>Option 1:</strong> Copy content from another language as a starting point, then replace with {languageNames[selectedLanguage]}-specific videos/files.<br/>
+                              <strong>Option 2:</strong> Start fresh by clicking "Add Video" or "Add File" below to create completely unique content.
                             </p>
                             <Select onValueChange={copyContentFromLanguage}>
                               <SelectTrigger className="bg-white" data-testid="select-copy-language">
@@ -6143,7 +6172,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     {/* Testimonials Section */}
                     <div className="space-y-3 pt-4 border-t">
                       <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-semibold text-gray-900">Testimonials</h3>
+                        <div>
+                          <h3 className="text-lg font-semibold text-gray-900">Testimonials</h3>
+                          <Badge variant="outline" className="mt-1 text-xs">
+                            For {languageNames[selectedLanguage]} users
+                          </Badge>
+                        </div>
                         <Button
                           type="button"
                           variant="outline"
