@@ -703,7 +703,7 @@ export default function EventLivePage() {
               className="w-full h-full object-cover object-center"
               data-testid="img-coming-soon-hero-banner"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 bg-black/40 pointer-events-none"></div>
             <div className="absolute inset-0 flex flex-col justify-end">
               <div className="max-w-6xl mx-auto px-4 pb-12 w-full">
                 <h1 className="text-4xl md:text-5xl font-bold text-center text-white leading-tight tracking-tight drop-shadow-2xl" data-testid="text-coming-soon-title">
@@ -762,7 +762,7 @@ export default function EventLivePage() {
               className="w-full h-full object-cover object-center"
               data-testid="img-restricted-hero-banner"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent pointer-events-none"></div>
+            <div className="absolute inset-0 bg-black/40 pointer-events-none"></div>
             <div className="absolute inset-0 flex flex-col justify-end">
               <div className="max-w-6xl mx-auto px-4 pb-12 w-full">
                 <h1 className="text-4xl md:text-5xl font-bold text-center text-white leading-tight tracking-tight drop-shadow-2xl" data-testid="text-restricted-title">
@@ -972,8 +972,8 @@ export default function EventLivePage() {
             }}
           />
           
-          {/* Gradient Fade Overlay - Bottom to Top (subtle) */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-black/20 to-transparent pointer-events-none"></div>
+          {/* Semi-transparent Dark Overlay */}
+          <div className="absolute inset-0 bg-black/40 pointer-events-none"></div>
           
           {/* Content Overlay */}
           <div className="absolute inset-0 flex flex-col justify-end">
