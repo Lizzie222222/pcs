@@ -554,26 +554,38 @@ export default function Landing() {
                             <h3 className="font-bold text-lg text-navy mb-3 line-clamp-2" data-testid={`text-event-title-${event.id}`}>
                               {event.title}
                             </h3>
-                            {showLanguages && (
+                            <div className="flex items-center gap-2 mb-3 flex-wrap">
+                              {showLanguages && (
+                                <div 
+                                  className="flex items-center gap-1 px-2 py-1.5 bg-gray-100 rounded-md border border-gray-200 w-fit"
+                                  data-testid={`badge-event-languages-${event.id}`}
+                                >
+                                  {displayLanguages.map((langCode) => (
+                                    <span key={langCode} className="text-base" title={langCode}>
+                                      {LANGUAGE_FLAG_MAP[langCode] || '🏳️'}
+                                    </span>
+                                  ))}
+                                  {remainingCount > 0 && (
+                                    <span 
+                                      className="text-xs text-gray-600 ml-1"
+                                      data-testid={`text-language-count-${event.id}`}
+                                    >
+                                      +{remainingCount} more
+                                    </span>
+                                  )}
+                                </div>
+                              )}
                               <div 
-                                className="flex items-center gap-1 mb-3 flex-wrap px-2 py-1.5 bg-gray-100 rounded-md border border-gray-200 w-fit"
-                                data-testid={`badge-event-languages-${event.id}`}
+                                className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
+                                  event.accessType === 'open' 
+                                    ? 'bg-green-100 text-green-700 border border-green-200' 
+                                    : 'bg-amber-100 text-amber-700 border border-amber-200'
+                                }`}
+                                data-testid={`badge-access-type-${event.id}`}
                               >
-                                {displayLanguages.map((langCode) => (
-                                  <span key={langCode} className="text-base" title={langCode}>
-                                    {LANGUAGE_FLAG_MAP[langCode] || '🏳️'}
-                                  </span>
-                                ))}
-                                {remainingCount > 0 && (
-                                  <span 
-                                    className="text-xs text-gray-600 ml-1"
-                                    data-testid={`text-language-count-${event.id}`}
-                                  >
-                                    +{remainingCount} more
-                                  </span>
-                                )}
+                                {event.accessType === 'open' ? '🌍 Open Event' : '🔒 Closed Event'}
                               </div>
-                            )}
+                            </div>
                             <div className="space-y-2 mb-4">
                               <div className="flex items-center gap-2 text-sm text-gray-600">
                                 <Calendar className="w-4 h-4" />
@@ -669,26 +681,38 @@ export default function Landing() {
                       <h3 className="font-bold text-lg text-navy mb-3 line-clamp-2" data-testid={`text-past-event-title-${event.id}`}>
                         {event.title}
                       </h3>
-                      {showLanguages && (
+                      <div className="flex items-center gap-2 mb-3 flex-wrap">
+                        {showLanguages && (
+                          <div 
+                            className="flex items-center gap-1 px-2 py-1.5 bg-gray-100 rounded-md border border-gray-200 w-fit"
+                            data-testid={`badge-event-languages-${event.id}`}
+                          >
+                            {displayLanguages.map((langCode) => (
+                              <span key={langCode} className="text-base" title={langCode}>
+                                {LANGUAGE_FLAG_MAP[langCode] || '🏳️'}
+                              </span>
+                            ))}
+                            {remainingCount > 0 && (
+                              <span 
+                                className="text-xs text-gray-600 ml-1"
+                                data-testid={`text-language-count-${event.id}`}
+                              >
+                                +{remainingCount} more
+                              </span>
+                            )}
+                          </div>
+                        )}
                         <div 
-                          className="flex items-center gap-1 mb-3 flex-wrap px-2 py-1.5 bg-gray-100 rounded-md border border-gray-200 w-fit"
-                          data-testid={`badge-event-languages-${event.id}`}
+                          className={`px-2.5 py-1 rounded-md text-xs font-semibold ${
+                            event.accessType === 'open' 
+                              ? 'bg-green-100 text-green-700 border border-green-200' 
+                              : 'bg-amber-100 text-amber-700 border border-amber-200'
+                          }`}
+                          data-testid={`badge-access-type-${event.id}`}
                         >
-                          {displayLanguages.map((langCode) => (
-                            <span key={langCode} className="text-base" title={langCode}>
-                              {LANGUAGE_FLAG_MAP[langCode] || '🏳️'}
-                            </span>
-                          ))}
-                          {remainingCount > 0 && (
-                            <span 
-                              className="text-xs text-gray-600 ml-1"
-                              data-testid={`text-language-count-${event.id}`}
-                            >
-                              +{remainingCount} more
-                            </span>
-                          )}
+                          {event.accessType === 'open' ? '🌍 Open Event' : '🔒 Closed Event'}
                         </div>
-                      )}
+                      </div>
                       <div className="space-y-2 mb-4">
                         <div className="flex items-center gap-2 text-sm text-gray-600">
                           <Calendar className="w-4 h-4" />
