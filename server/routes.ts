@@ -3065,11 +3065,17 @@ Return JSON with:
     storage: multer.memoryStorage(),
     limits: { fileSize: 10485760 }, // 10MB max
     fileFilter: (req, file, cb) => {
-      const allowedMimes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+      const allowedMimes = [
+        'application/pdf', 
+        'image/jpeg', 
+        'image/jpg', 
+        'image/png',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
+      ];
       if (allowedMimes.includes(file.mimetype)) {
         cb(null, true);
       } else {
-        cb(new Error('Invalid file type. Only PDF, JPG, JPEG, and PNG files are allowed.'));
+        cb(new Error('Invalid file type. Only PDF, JPG, PNG, and DOCX files are allowed.'));
       }
     },
   });
@@ -3083,9 +3089,18 @@ Return JSON with:
       // Check if user is admin or member of the school (verified or not)
       const isAdmin = req.user.isAdmin;
       if (!isAdmin) {
+        console.log(`[Photo Consent Upload] Checking school membership - schoolId: ${schoolId}, userId: ${userId}`);
         const schoolUser = await storage.getSchoolUser(schoolId, userId);
+        console.log(`[Photo Consent Upload] School user found:`, schoolUser ? `yes (role: ${schoolUser.role}, verified: ${schoolUser.isVerified})` : 'no');
+        
         if (!schoolUser) {
-          return res.status(403).json({ message: "You don't have permission to upload photo consent for this school" });
+          // Log all schools the user belongs to for debugging
+          const userSchools = await storage.getUserSchools(userId);
+          console.log(`[Photo Consent Upload] User belongs to ${userSchools.length} school(s):`, userSchools.map(s => `${s.id} (${s.name})`));
+          
+          return res.status(403).json({ 
+            message: "You don't have permission to upload photo consent for this school. Please ensure you are a member of this school." 
+          });
         }
       }
 

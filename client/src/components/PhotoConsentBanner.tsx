@@ -31,11 +31,17 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
     if (!file) return;
 
     // Validate file type
-    const validTypes = ['application/pdf', 'image/jpeg', 'image/jpg', 'image/png'];
+    const validTypes = [
+      'application/pdf', 
+      'image/jpeg', 
+      'image/jpg', 
+      'image/png',
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
+    ];
     if (!validTypes.includes(file.type)) {
       toast({
         title: "Invalid File Type",
-        description: "Please upload a PDF, JPG, or PNG file.",
+        description: "Please upload a PDF, JPG, PNG, or DOCX file.",
         variant: "destructive",
       });
       return;
@@ -138,7 +144,7 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
             <input
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".pdf,.jpg,.jpeg,.png,.docx"
               className="hidden"
               onChange={handleFileSelect}
             />
