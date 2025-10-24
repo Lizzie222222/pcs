@@ -5,7 +5,7 @@ import { LoadingSpinner } from "@/components/ui/states";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Download, Calendar, MapPin, Users, ExternalLink, CheckCircle, Lock, ArrowLeft, Play, FileText, Image, FileSpreadsheet, FileArchive, Video, File } from "lucide-react";
+import { Download, Calendar, MapPin, Users, ExternalLink, CheckCircle, Lock, ArrowLeft, Play, FileText, Image, FileSpreadsheet, FileArchive, Video, File, ChevronDown, ChevronUp } from "lucide-react";
 import { format } from "date-fns";
 import { useAuth } from "@/hooks/useAuth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -918,6 +918,41 @@ export default function EventLivePage() {
   const featuredVideo = hasMultipleVideos && videos[featuredIndex] ? videos[featuredIndex] : null;
   const thumbnailVideos = hasMultipleVideos ? videos.filter((_, index) => index !== featuredIndex) : [];
 
+  // Expandable Description Component
+  const ExpandableDescription = ({ description, className = "", textColor = "text-white" }: { description: string; className?: string; textColor?: string }) => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const CHARACTER_LIMIT = 200;
+    const needsExpansion = description.length > CHARACTER_LIMIT;
+    const displayText = needsExpansion && !isExpanded 
+      ? description.slice(0, CHARACTER_LIMIT) + '...' 
+      : description;
+
+    return (
+      <div className={`mt-6 max-w-3xl mx-auto ${className}`}>
+        <p className={`text-base md:text-lg text-center ${textColor} leading-relaxed font-medium`} data-testid="text-event-description">
+          {displayText}
+        </p>
+        {needsExpansion && (
+          <button
+            onClick={() => setIsExpanded(!isExpanded)}
+            className={`mt-2 ${textColor} hover:opacity-80 transition-opacity text-sm font-semibold flex items-center gap-1 mx-auto`}
+            data-testid="button-expand-description"
+          >
+            {isExpanded ? (
+              <>
+                Show less <ChevronUp className="w-4 h-4" />
+              </>
+            ) : (
+              <>
+                Read more <ChevronDown className="w-4 h-4" />
+              </>
+            )}
+          </button>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       {/* Hero Banner with Overlay */}
@@ -958,9 +993,7 @@ export default function EventLivePage() {
               </h1>
               
               {/* Event Description */}
-              <p className="mt-6 text-base md:text-lg text-center text-white max-w-3xl mx-auto leading-relaxed bg-black/30 backdrop-blur-sm px-6 py-4 rounded-lg" style={{ textShadow: '0 2px 4px rgba(0,0,0,0.8)' }} data-testid="text-event-description">
-                {translatedDescription}
-              </p>
+              <ExpandableDescription description={translatedDescription} textColor="text-white drop-shadow-lg" />
             </div>
           </div>
         </div>
@@ -981,9 +1014,7 @@ export default function EventLivePage() {
             </h1>
             
             {/* Event Description */}
-            <p className="text-base md:text-lg text-center text-gray-700 max-w-3xl mx-auto leading-relaxed bg-white/60 backdrop-blur-sm px-6 py-4 rounded-lg shadow-sm mb-12" data-testid="text-event-description">
-              {translatedDescription}
-            </p>
+            <ExpandableDescription description={translatedDescription} textColor="text-gray-700" className="mb-12" />
           </div>
         </div>
       )}
