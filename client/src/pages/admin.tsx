@@ -1317,17 +1317,17 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     },
   });
 
-  const { fields: videoFields, append: appendVideo, remove: removeVideo, move: moveVideo } = useFieldArray({
+  const { fields: videoFields, append: appendVideo, remove: removeVideo, move: moveVideo, replace: replaceVideos } = useFieldArray({
     control: pageBuilderForm.control,
     name: "youtubeVideos",
   });
 
-  const { fields: packFileFields, append: appendPackFile, remove: removePackFile } = useFieldArray({
+  const { fields: packFileFields, append: appendPackFile, remove: removePackFile, replace: replacePackFiles } = useFieldArray({
     control: pageBuilderForm.control,
     name: "eventPackFiles",
   });
 
-  const { fields: testimonialFields, append: appendTestimonial, remove: removeTestimonial } = useFieldArray({
+  const { fields: testimonialFields, append: appendTestimonial, remove: removeTestimonial, replace: replaceTestimonials } = useFieldArray({
     control: pageBuilderForm.control,
     name: "testimonials",
   });
@@ -1428,37 +1428,37 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       console.log('[Language Switch] Switching from', previousLang, 'to', selectedLanguage);
       console.log('[Language Switch] Current form values:', currentFormValues);
       
-      // Create updated translation objects locally first
-      const updatedVideoTranslations = {
-        ...youtubeVideoTranslations,
-        [previousLang]: currentFormValues.youtubeVideos || []
-      };
-      
-      const updatedFileTranslations = {
-        ...eventPackFileTranslations,
-        [previousLang]: currentFormValues.eventPackFiles || []
-      };
-      
-      const updatedTestimonialTranslations = {
-        ...testimonialTranslations,
-        [previousLang]: currentFormValues.testimonials || []
-      };
-      
       console.log('[Language Switch] Saving to', previousLang, ':', {
         videos: currentFormValues.youtubeVideos,
         files: currentFormValues.eventPackFiles,
         testimonials: currentFormValues.testimonials
       });
       
+      // Build updated translations locally FIRST (including the previous language's data)
+      const updatedVideoTranslations = {
+        ...youtubeVideoTranslations,
+        [previousLang]: currentFormValues.youtubeVideos || []
+      };
+      const updatedFileTranslations = {
+        ...eventPackFileTranslations,
+        [previousLang]: currentFormValues.eventPackFiles || []
+      };
+      const updatedTestimonialTranslations = {
+        ...testimonialTranslations,
+        [previousLang]: currentFormValues.testimonials || []
+      };
+      
       // Update states with new translations
       setYoutubeVideoTranslations(updatedVideoTranslations);
       setEventPackFileTranslations(updatedFileTranslations);
       setTestimonialTranslations(updatedTestimonialTranslations);
       
-      // Update the previous language ref
+      // Update the previous language ref BEFORE state updates trigger re-run
+      // This prevents the effect from running again when states update
       previousLanguageRef.current = selectedLanguage;
       
-      // Load the new language's content from the UPDATED translations
+      // Load the new language's content from the LOCALLY BUILT updated values
+      // (not from state, which might be stale)
       const currentVideos = updatedVideoTranslations[selectedLanguage] || [];
       const currentFiles = updatedFileTranslations[selectedLanguage] || [];
       const currentTestimonials = updatedTestimonialTranslations[selectedLanguage] || [];
@@ -1469,14 +1469,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         testimonials: currentTestimonials
       });
       
-      pageBuilderForm.reset({
-        publicSlug: pageBuilderForm.getValues('publicSlug'),
-        youtubeVideos: currentVideos,
-        eventPackFiles: currentFiles,
-        testimonials: currentTestimonials,
-      });
+      // Use field array replace methods instead of reset to properly update the UI
+      replaceVideos(currentVideos);
+      replacePackFiles(currentFiles);
+      replaceTestimonials(currentTestimonials);
     }
-  }, [selectedLanguage, eventDialogOpen]);
+  }, [selectedLanguage, eventDialogOpen, youtubeVideoTranslations, eventPackFileTranslations, testimonialTranslations, replaceVideos, replacePackFiles, replaceTestimonials]);
 
   // Redirect if not authenticated or not admin (but only after loading completes)
   useEffect(() => {
