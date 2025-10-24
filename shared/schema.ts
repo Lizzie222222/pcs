@@ -664,6 +664,17 @@ export const events = pgTable("events", {
   recordingAvailableFrom: timestamp("recording_available_from"),
   pagePublishedStatus: pagePublishedStatusEnum("page_published_status").default('draft'),
   accessType: accessTypeEnum("access_type").default('open'),
+  // Multi-language support - translations stored as JSONB with language codes as keys
+  titleTranslations: jsonb("title_translations"),
+  descriptionTranslations: jsonb("description_translations"),
+  youtubeVideoTranslations: jsonb("youtube_video_translations"),
+  eventPackFileTranslations: jsonb("event_pack_file_translations"),
+  testimonialTranslations: jsonb("testimonial_translations"),
+  // Display configuration
+  featuredVideoIndex: integer("featured_video_index").default(0),
+  eventPackBannerImageUrl: varchar("event_pack_banner_image_url"),
+  showEvidenceSubmission: boolean("show_evidence_submission").default(false),
+  evidenceSubmissionText: jsonb("evidence_submission_text"),
   createdBy: varchar("created_by").notNull().references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
