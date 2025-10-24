@@ -472,7 +472,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get resources with filters
   app.get('/api/resources', async (req: any, res) => {
     try {
-      const { stage, country, language, ageRange, search, limit, offset } = req.query;
+      const { stage, country, language, ageRange, resourceType, theme, search, limit, offset } = req.query;
       
       // Check if user is authenticated
       const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
@@ -482,6 +482,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         country: country as string,
         language: language as string,
         ageRange: ageRange as string,
+        resourceType: resourceType as string,
+        theme: theme as string,
         search: search as string,
         visibility: isAuthenticated ? undefined : 'public', // Only public resources for non-authenticated users
         limit: limit ? parseInt(limit as string) : 20,
