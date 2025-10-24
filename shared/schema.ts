@@ -744,6 +744,23 @@ export const eventRegistrations = pgTable("event_registrations", {
   index("idx_event_registrations_user").on(table.userId),
 ]);
 
+/**
+ * @description Junction table linking events to resources with ordering support. Allows admins to attach existing resources to events for easy access by attendees.
+ * @location shared/schema.ts
+ * @related events table, resources table, server/routes.ts (event resources endpoints), client/src/pages/admin.tsx (event creator)
+ */
+export const eventResources = pgTable("event_resources", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  eventId: varchar("event_id").notNull().references(() => events.id, { onDelete: 'cascade' }),
+  resourceId: varchar("resource_id").notNull().references(() => resources.id, { onDelete: 'cascade' }),
+  orderIndex: integer("order_index").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_event_resources_event").on(table.eventId),
+  index("idx_event_resources_resource").on(table.resourceId),
+  uniqueIndex("idx_event_resources_unique").on(table.eventId, table.resourceId),
+]);
+
 export const recipientTypeEnum = pgEnum('recipient_type', [
   'all_teachers',
   'custom'
