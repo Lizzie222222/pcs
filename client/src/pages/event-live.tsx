@@ -296,7 +296,7 @@ export default function EventLivePage() {
   if (event.pagePublishedStatus === 'coming_soon') {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 flex flex-col">
-        <div className="flex-1 flex flex-col items-center justify-center px-4">
+        <div className="flex-1 flex flex-col items-center justify-center px-4 pt-20 pb-16">
           <div className="max-w-2xl text-center">
             {event.imageUrl && (
               <div className="mb-8">
