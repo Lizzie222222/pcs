@@ -1476,7 +1476,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         testimonials: currentTestimonials,
       });
     }
-  }, [selectedLanguage, youtubeVideoTranslations, eventPackFileTranslations, testimonialTranslations]);
+  }, [selectedLanguage, eventDialogOpen]);
 
   // Redirect if not authenticated or not admin (but only after loading completes)
   useEffect(() => {
