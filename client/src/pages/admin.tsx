@@ -5679,15 +5679,21 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           onClick={async () => {
                             if (!editingEvent) return;
                             
-                            // Get languages that don't have translations yet
-                            const languagesToTranslate = supportedLanguages.filter(lang => {
-                              return lang !== 'en' && !titleTranslations[lang] && !descriptionTranslations[lang];
-                            });
-                            
-                            if (languagesToTranslate.length === 0) {
+                            // Can't translate English to itself
+                            if (selectedLanguage === 'en') {
                               toast({
-                                title: "All languages already translated",
-                                description: "Title and description have been translated to all languages. Click individual language tabs to edit translations.",
+                                title: "Cannot translate English",
+                                description: "English is the source language. Switch to another language tab to auto-translate.",
+                                variant: "default",
+                              });
+                              return;
+                            }
+                            
+                            // Check if already translated
+                            if (titleTranslations[selectedLanguage] || descriptionTranslations[selectedLanguage]) {
+                              toast({
+                                title: "Already translated",
+                                description: `${languageNames[selectedLanguage]} content already exists. Edit the fields below or clear them first to re-translate.`,
                                 variant: "default",
                               });
                               return;
@@ -5696,12 +5702,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                             // Show loading toast
                             toast({
                               title: "Translating...",
-                              description: `Translating to ${languagesToTranslate.length} languages. This may take a moment.`,
+                              description: `Translating to ${languageNames[selectedLanguage]}. This may take a moment.`,
                             });
                             
                             try {
                               const response = await apiRequest('POST', `/api/admin/events/${editingEvent.id}/auto-translate`, { 
-                                languages: languagesToTranslate 
+                                languages: [selectedLanguage]
                               });
                               
                               const data = await response.json();
@@ -5711,8 +5717,8 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                               setDescriptionTranslations(prev => ({...prev, ...data.descriptionTranslations}));
                               
                               toast({
-                                title: "Auto-translation complete!",
-                                description: `Successfully translated to ${languagesToTranslate.length} languages (${languagesToTranslate.map(l => l.toUpperCase()).join(', ')}). Remember to click "Save Changes" below to persist translations!`,
+                                title: "Translation complete! 🎉",
+                                description: `Successfully translated to ${languageNames[selectedLanguage]}. Remember to click "Save Changes" below to persist!`,
                               });
                             } catch (error) {
                               console.error('Auto-translate error:', error);
@@ -5727,7 +5733,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           data-testid="button-auto-translate"
                         >
                           <Languages className="h-4 w-4" />
-                          Auto-Translate Missing
+                          Auto-Translate to {languageNames[selectedLanguage]}
                         </Button>
                       </div>
                       
