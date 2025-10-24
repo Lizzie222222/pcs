@@ -1050,7 +1050,9 @@ export const certificatesRelations = relations(certificates, ({ one }) => ({
   }),
 }));
 
-export const resourcesRelations = relations(resources, ({ one }) => ({}));
+export const resourcesRelations = relations(resources, ({ many }) => ({
+  eventResources: many(eventResources),
+}));
 
 export const evidenceRequirementsRelations = relations(evidenceRequirements, ({ many }) => ({
   evidence: many(evidence),
@@ -1145,6 +1147,7 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
   }),
   registrations: many(eventRegistrations),
   announcements: many(eventAnnouncements),
+  eventResources: many(eventResources),
 }));
 
 export const eventRegistrationsRelations = relations(eventRegistrations, ({ one }) => ({
@@ -1170,6 +1173,17 @@ export const eventAnnouncementsRelations = relations(eventAnnouncements, ({ one 
   sentBy: one(users, {
     fields: [eventAnnouncements.sentBy],
     references: [users.id],
+  }),
+}));
+
+export const eventResourcesRelations = relations(eventResources, ({ one }) => ({
+  event: one(events, {
+    fields: [eventResources.eventId],
+    references: [events.id],
+  }),
+  resource: one(resources, {
+    fields: [eventResources.resourceId],
+    references: [resources.id],
   }),
 }));
 
@@ -1527,6 +1541,11 @@ export const insertEventRegistrationSchema = createInsertSchema(eventRegistratio
   attendedAt: true,
 });
 
+export const insertEventResourceSchema = createInsertSchema(eventResources).omit({
+  id: true,
+  createdAt: true,
+});
+
 export const insertEventAnnouncementSchema = createInsertSchema(eventAnnouncements).omit({
   id: true,
   sentAt: true,
@@ -1640,6 +1659,8 @@ export type Event = typeof events.$inferSelect;
 export type InsertEvent = z.infer<typeof insertEventSchema>;
 export type EventRegistration = typeof eventRegistrations.$inferSelect;
 export type InsertEventRegistration = z.infer<typeof insertEventRegistrationSchema>;
+export type EventResource = typeof eventResources.$inferSelect;
+export type InsertEventResource = z.infer<typeof insertEventResourceSchema>;
 export type EventAnnouncement = typeof eventAnnouncements.$inferSelect;
 export type InsertEventAnnouncement = z.infer<typeof insertEventAnnouncementSchema>;
 export type EventBanner = typeof eventBanners.$inferSelect;
