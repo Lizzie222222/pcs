@@ -20,6 +20,7 @@ import {
   printableFormSubmissions,
   events,
   eventRegistrations,
+  eventResources,
   eventAnnouncements,
   eventBanners,
   eventLinkClicks,
@@ -72,6 +73,8 @@ import {
   type InsertEvent,
   type EventRegistration,
   type InsertEventRegistration,
+  type EventResource,
+  type InsertEventResource,
   type EventAnnouncement,
   type InsertEventAnnouncement,
   type EventBanner,
@@ -524,6 +527,12 @@ export interface IStorage {
   cancelEventRegistration(id: string): Promise<EventRegistration | undefined>;
   getEventRegistrationCount(eventId: string): Promise<number>;
   getEventAttendeesCount(eventId: string): Promise<number>;
+
+  // Event Resource operations
+  attachResourceToEvent(eventId: string, resourceId: string, orderIndex?: number): Promise<EventResource>;
+  detachResourceFromEvent(eventId: string, resourceId: string): Promise<void>;
+  getEventResources(eventId: string): Promise<Array<EventResource & { resource: Resource }>>;
+  reorderEventResources(eventId: string, resourceOrders: Array<{ resourceId: string; orderIndex: number }>): Promise<void>;
 
   // Event Announcement operations
   createEventAnnouncement(announcement: InsertEventAnnouncement): Promise<EventAnnouncement>;
@@ -4820,6 +4829,68 @@ export class DatabaseStorage implements IStorage {
         eq(eventRegistrations.status, 'attended')
       ));
     return result[0]?.count || 0;
+  }
+
+  // Event Resource operations
+  async attachResourceToEvent(eventId: string, resourceId: string, orderIndex?: number): Promise<EventResource> {
+    // If no orderIndex provided, get the max orderIndex and add 1
+    if (orderIndex === undefined) {
+      const existing = await db
+        .select({ orderIndex: eventResources.orderIndex })
+        .from(eventResources)
+        .where(eq(eventResources.eventId, eventId))
+        .orderBy(desc(eventResources.orderIndex))
+        .limit(1);
+      
+      orderIndex = existing.length > 0 ? (existing[0].orderIndex || 0) + 1 : 0;
+    }
+
+    const [newEventResource] = await db
+      .insert(eventResources)
+      .values({ eventId, resourceId, orderIndex })
+      .returning();
+    return newEventResource;
+  }
+
+  async detachResourceFromEvent(eventId: string, resourceId: string): Promise<void> {
+    await db
+      .delete(eventResources)
+      .where(and(
+        eq(eventResources.eventId, eventId),
+        eq(eventResources.resourceId, resourceId)
+      ));
+  }
+
+  async getEventResources(eventId: string): Promise<Array<EventResource & { resource: Resource }>> {
+    const results = await db
+      .select({
+        eventResource: eventResources,
+        resource: resources,
+      })
+      .from(eventResources)
+      .innerJoin(resources, eq(eventResources.resourceId, resources.id))
+      .where(eq(eventResources.eventId, eventId))
+      .orderBy(asc(eventResources.orderIndex));
+    
+    return results.map(r => ({
+      ...r.eventResource,
+      resource: r.resource,
+    }));
+  }
+
+  async reorderEventResources(eventId: string, resourceOrders: Array<{ resourceId: string; orderIndex: number }>): Promise<void> {
+    // Use transaction to update all order indices atomically
+    await db.transaction(async (tx) => {
+      for (const { resourceId, orderIndex } of resourceOrders) {
+        await tx
+          .update(eventResources)
+          .set({ orderIndex })
+          .where(and(
+            eq(eventResources.eventId, eventId),
+            eq(eventResources.resourceId, resourceId)
+          ));
+      }
+    });
   }
 
   // Event Announcement operations
