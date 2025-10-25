@@ -337,12 +337,13 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
             // Merge suggestions with existing data, keeping user edits
             return {
               ...resource,
-              description: resource.description || suggestion.description || '',
-              stage: resource.stage || suggestion.stage,
+              title: suggestion.title || resource.title,
+              description: suggestion.description || resource.description || '',
+              stage: suggestion.stage || resource.stage,
               theme: suggestion.theme === 'none' 
                 ? resource.theme 
                 : (resource.theme === 'none' ? suggestion.theme : resource.theme),
-              ageRange: resource.ageRange || suggestion.ageRange || '',
+              ageRange: suggestion.ageRange || resource.ageRange || '',
               resourceType: suggestion.resourceType === 'none' 
                 ? resource.resourceType 
                 : (resource.resourceType === 'none' ? suggestion.resourceType : resource.resourceType),
@@ -352,7 +353,7 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
 
         toast({
           title: "AI Suggestions Applied",
-          description: `AI suggestions applied to ${response.suggestions.length} resources.`,
+          description: `AI-generated titles and descriptions applied to ${response.suggestions.length} resources.`,
         });
       } else {
         throw new Error('Invalid response format from AI service');

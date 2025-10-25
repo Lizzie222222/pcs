@@ -876,20 +876,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process each resource
       for (const resource of resources) {
         try {
-          const prompt = `Analyze this educational resource and suggest metadata:
-Title: ${resource.title}
+          const prompt = `Analyze this educational resource for the Plastic Clever Schools program and suggest metadata:
+
+Current Title: ${resource.title}
 Filename: ${resource.filename}
+File Type: ${resource.fileType}
+
+Context: This is an educational resource about plastic pollution, ocean literacy, and environmental action for schools.
 
 Available stages: inspire (introduce topic), investigate (research/explore), act (take action)
 Available themes: ocean_literacy, climate_change, plastic_pollution, science, design_technology, geography, cross_curricular, enrichment
 Available resource types: lesson_plan, assembly, teacher_toolkit, student_workbook, printable_activities
 
 Return JSON with:
-- description (2-3 sentences)
-- stage (one of the above)
-- theme (one of the above)
-- ageRange (e.g., "8-12 years")
-- resourceType (one of the above)`;
+- title: A clear, descriptive, professional title (improve the current title if needed, max 80 characters)
+- description: An engaging 2-3 sentence description explaining what the resource is and how teachers can use it
+- stage: one of the available stages that best fits this resource
+- theme: one of the available themes that best fits this resource
+- ageRange: suggested age range (e.g., "5-7 years", "8-11 years", "11-14 years", "14-16 years")
+- resourceType: one of the available resource types`;
 
           const response = await openai.chat.completions.create({
             model: 'gpt-4o-mini',
@@ -908,6 +913,7 @@ Return JSON with:
 
           suggestions.push({
             id: resource.id,
+            title: aiSuggestion.title || resource.title,
             description: aiSuggestion.description || '',
             stage: aiSuggestion.stage || 'inspire',
             theme: aiSuggestion.theme || 'ocean_literacy',
@@ -915,7 +921,7 @@ Return JSON with:
             resourceType: aiSuggestion.resourceType || 'lesson_plan',
           });
 
-          console.log(`AI metadata generated for resource ${resource.id}: ${resource.title}`);
+          console.log(`AI metadata generated for resource ${resource.id}: ${aiSuggestion.title || resource.title}`);
         } catch (error) {
           console.error(`Error analyzing resource ${resource.id}:`, error);
           // Continue processing other resources, don't fail the entire request
