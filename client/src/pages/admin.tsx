@@ -235,6 +235,7 @@ interface EvidenceRequirement {
   description: string;
   orderIndex: number;
   resourceUrl: string | null;
+  resourceId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -838,7 +839,7 @@ function ActivityLogsTab({
               </label>
               <Select
                 value={activityFilters.actionType}
-                onValueChange={(value) => setActivityFilters(prev => ({ ...prev, actionType: value }))}
+                onValueChange={(value) => setActivityFilters((prev: { actionType: string; userEmail: string; startDate: string; endDate: string }) => ({ ...prev, actionType: value }))}
               >
                 <SelectTrigger data-testid="select-action-type">
                   <SelectValue placeholder="All Actions" />
@@ -866,7 +867,7 @@ function ActivityLogsTab({
               <Input
                 placeholder="Search by email..."
                 value={activityFilters.userEmail}
-                onChange={(e) => setActivityFilters(prev => ({ ...prev, userEmail: e.target.value }))}
+                onChange={(e) => setActivityFilters((prev: { actionType: string; userEmail: string; startDate: string; endDate: string }) => ({ ...prev, userEmail: e.target.value }))}
                 data-testid="input-user-email"
               />
             </div>
@@ -879,7 +880,7 @@ function ActivityLogsTab({
               <Input
                 type="date"
                 value={activityFilters.startDate}
-                onChange={(e) => setActivityFilters(prev => ({ ...prev, startDate: e.target.value }))}
+                onChange={(e) => setActivityFilters((prev: { actionType: string; userEmail: string; startDate: string; endDate: string }) => ({ ...prev, startDate: e.target.value }))}
                 data-testid="input-start-date"
               />
             </div>
@@ -892,7 +893,7 @@ function ActivityLogsTab({
               <Input
                 type="date"
                 value={activityFilters.endDate}
-                onChange={(e) => setActivityFilters(prev => ({ ...prev, endDate: e.target.value }))}
+                onChange={(e) => setActivityFilters((prev: { actionType: string; userEmail: string; startDate: string; endDate: string }) => ({ ...prev, endDate: e.target.value }))}
                 data-testid="input-end-date"
               />
             </div>
@@ -1153,6 +1154,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     title: '',
     description: '',
     resourceUrl: '',
+    resourceId: '',
   });
 
   // Events state
@@ -1629,7 +1631,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
   // Evidence Requirements mutations
   const createRequirementMutation = useMutation({
-    mutationFn: async (data: { title: string; description: string; resourceUrl?: string; stage: string; orderIndex: number }) => {
+    mutationFn: async (data: { title: string; description: string; resourceUrl?: string; resourceId?: string; stage: string; orderIndex: number }) => {
       return await apiRequest('POST', '/api/evidence-requirements', data);
     },
     onSuccess: () => {
@@ -1639,7 +1641,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       });
       queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
       setRequirementDialogOpen(false);
-      setRequirementFormData({ title: '', description: '', resourceUrl: '' });
+      setRequirementFormData({ title: '', description: '', resourceUrl: '', resourceId: '' });
     },
     onError: (error: any) => {
       toast({
@@ -1651,7 +1653,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   });
 
   const updateRequirementMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<{ title: string; description: string; resourceUrl: string }> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<{ title: string; description: string; resourceUrl: string; resourceId: string }> }) => {
       return await apiRequest('PATCH', `/api/evidence-requirements/${id}`, data);
     },
     onSuccess: () => {
@@ -1662,7 +1664,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
       setRequirementDialogOpen(false);
       setEditingRequirement(null);
-      setRequirementFormData({ title: '', description: '', resourceUrl: '' });
+      setRequirementFormData({ title: '', description: '', resourceUrl: '', resourceId: '' });
     },
     onError: (error: any) => {
       toast({
@@ -4254,7 +4256,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     <Button
                       onClick={() => {
                         setEditingRequirement(null);
-                        setRequirementFormData({ title: '', description: '', resourceUrl: '' });
+                        setRequirementFormData({ title: '', description: '', resourceUrl: '', resourceId: '' });
                         setRequirementDialogOpen(true);
                       }}
                       className="bg-pcs_blue hover:bg-pcs_blue/90"
@@ -4358,6 +4360,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                         title: requirement.title,
                                         description: requirement.description,
                                         resourceUrl: requirement.resourceUrl || '',
+                                        resourceId: requirement.resourceId || '',
                                       });
                                       setRequirementDialogOpen(true);
                                     }}
@@ -6390,6 +6393,37 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                               const isVideo = resource.fileType?.includes('video') || 
                                              ['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv'].includes(urlExtension);
                               
+                              // Convert GCS URL to server proxy URL for CORS support
+                              const getProxyUrl = (url: string | null) => {
+                                if (!url) return '';
+                                try {
+                                  const urlObj = new URL(url);
+                                  const pathname = urlObj.pathname;
+                                  
+                                  // Extract object path from GCS URL
+                                  const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
+                                  if (privateUploadsMatch) {
+                                    return `/objects/uploads/${privateUploadsMatch[1]}`;
+                                  }
+                                  
+                                  const publicMatch = pathname.match(/\/public\/(.+)$/);
+                                  if (publicMatch) {
+                                    return `/objects/public/${publicMatch[1]}`;
+                                  }
+                                  
+                                  // If already a proxy URL, return as is
+                                  if (url.startsWith('/objects/')) {
+                                    return url;
+                                  }
+                                  
+                                  return url; // Fallback to original URL
+                                } catch {
+                                  return url; // Invalid URL, return original
+                                }
+                              };
+                              
+                              const imageProxyUrl = isImage ? getProxyUrl(resource.fileUrl) : '';
+                              
                               return (
                                 <Card
                                   key={resource.id}
@@ -6414,13 +6448,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                   <CardContent className="p-4">
                                     <div className="flex flex-col items-center text-center space-y-2">
                                       <div className="relative w-full">
-                                        {isImage && resource.fileUrl ? (
+                                        {isImage && imageProxyUrl ? (
                                           <div className="aspect-video w-full bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
                                             <img 
-                                              src={resource.fileUrl} 
+                                              src={imageProxyUrl} 
                                               alt={resource.title}
                                               className="w-full h-full object-cover"
-                                              crossOrigin="anonymous"
                                               onError={(e) => {
                                                 e.currentTarget.style.display = 'none';
                                                 e.currentTarget.nextElementSibling?.classList.remove('hidden');
@@ -7674,7 +7707,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           <div className="flex gap-2">
                             <Button
                               size="sm"
-                              onClick={() => approvePhotoConsentMutation.mutate()}
+                              onClick={() => approvePhotoConsentMutation.mutate(undefined)}
                               disabled={approvePhotoConsentMutation.isPending}
                               className="bg-green-500 hover:bg-green-600 text-white"
                               data-testid="button-approve-photo-consent"
@@ -7882,17 +7915,132 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 data-testid="input-description"
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Helpful Resource Link
-              </label>
-              <Input
-                value={requirementFormData.resourceUrl}
-                onChange={(e) => setRequirementFormData(prev => ({ ...prev, resourceUrl: e.target.value }))}
-                type="url"
-                placeholder="https://example.com/resource"
-                data-testid="input-resource-url"
-              />
+            <div className="space-y-3">
+              <div>
+                <h3 className="text-sm font-medium text-gray-700">Helpful Resource (Optional)</h3>
+                <p className="text-xs text-gray-600 mt-1">
+                  Select a resource from your library to attach to this requirement
+                </p>
+              </div>
+              
+              {resourcesLoading ? (
+                <div className="flex items-center justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue mr-3"></div>
+                  <span className="text-gray-600">Loading resources...</span>
+                </div>
+              ) : allResources.length === 0 ? (
+                <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
+                  No resources available. Add resources from the Resources tab first.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto p-1">
+                  {allResources.map((resource) => {
+                    const isSelected = requirementFormData.resourceId === resource.id;
+                    
+                    // Strip query strings for URL extension checking (handles GCS signed URLs)
+                    const urlWithoutQuery = resource.fileUrl?.split('?')[0] || '';
+                    const urlExtension = urlWithoutQuery.split('.').pop()?.toLowerCase() || '';
+                    
+                    const isImage = resource.fileType?.includes('image') || 
+                                   ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(urlExtension);
+                    const isPdf = resource.fileType?.includes('pdf') || urlExtension === 'pdf';
+                    const isVideo = resource.fileType?.includes('video') || 
+                                   ['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv'].includes(urlExtension);
+                    
+                    // Convert GCS URL to server proxy URL for CORS support
+                    const getProxyUrl = (url: string | null) => {
+                      if (!url) return '';
+                      try {
+                        const urlObj = new URL(url);
+                        const pathname = urlObj.pathname;
+                        
+                        // Extract object path from GCS URL
+                        const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
+                        if (privateUploadsMatch) {
+                          return `/objects/uploads/${privateUploadsMatch[1]}`;
+                        }
+                        
+                        const publicMatch = pathname.match(/\/public\/(.+)$/);
+                        if (publicMatch) {
+                          return `/objects/public/${publicMatch[1]}`;
+                        }
+                        
+                        // If already a proxy URL, return as is
+                        if (url.startsWith('/objects/')) {
+                          return url;
+                        }
+                        
+                        return url; // Fallback to original URL
+                      } catch {
+                        return url; // Invalid URL, return original
+                      }
+                    };
+                    
+                    const imageProxyUrl = isImage ? getProxyUrl(resource.fileUrl) : '';
+                    
+                    return (
+                      <Card
+                        key={resource.id}
+                        className={`cursor-pointer transition-all hover:shadow-md overflow-hidden ${
+                          isSelected ? 'border-2 border-pcs_blue bg-blue-50' : 'border hover:border-gray-400'
+                        }`}
+                        onClick={() => {
+                          // Toggle selection - deselect if already selected
+                          setRequirementFormData(prev => ({
+                            ...prev,
+                            resourceId: isSelected ? '' : resource.id,
+                          }));
+                        }}
+                        data-testid={`button-resource-${resource.id}`}
+                      >
+                        <CardContent className="p-3">
+                          <div className="flex flex-col items-center text-center space-y-2">
+                            <div className="relative w-full">
+                              {isImage && imageProxyUrl ? (
+                                <div className="aspect-video w-full bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
+                                  <img 
+                                    src={imageProxyUrl} 
+                                    alt={resource.title}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.currentTarget.style.display = 'none';
+                                      e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                    }}
+                                  />
+                                  <ImageIcon className="h-10 w-10 text-gray-400 hidden" />
+                                </div>
+                              ) : (
+                                <div className="aspect-video w-full bg-gray-100 rounded-md flex items-center justify-center">
+                                  {isVideo ? (
+                                    <FileVideo className="h-10 w-10 text-gray-600" />
+                                  ) : isPdf ? (
+                                    <FileText className="h-10 w-10 text-gray-600" />
+                                  ) : (
+                                    <BookOpen className="h-10 w-10 text-gray-600" />
+                                  )}
+                                </div>
+                              )}
+                              {isSelected && (
+                                <div className="absolute top-1 right-1 bg-pcs_blue rounded-full p-1 shadow-md">
+                                  <Check className="h-3 w-3 text-white" />
+                                </div>
+                              )}
+                            </div>
+                            <div className="w-full">
+                              <p className="text-xs font-medium text-gray-900 line-clamp-2">
+                                {resource.title}
+                              </p>
+                              <Badge variant="outline" className="mt-1 text-xs">
+                                {resource.stage}
+                              </Badge>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              )}
             </div>
             <div className="flex gap-3 pt-4">
               <Button
@@ -7901,7 +8049,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 onClick={() => {
                   setRequirementDialogOpen(false);
                   setEditingRequirement(null);
-                  setRequirementFormData({ title: '', description: '', resourceUrl: '' });
+                  setRequirementFormData({ title: '', description: '', resourceUrl: '', resourceId: '' });
                 }}
                 className="flex-1"
                 data-testid="button-cancel"
@@ -7919,6 +8067,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                       data: {
                         title: requirementFormData.title,
                         description: requirementFormData.description,
+                        resourceId: requirementFormData.resourceId || undefined,
                         resourceUrl: requirementFormData.resourceUrl || undefined,
                       },
                     });
@@ -7931,6 +8080,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     createRequirementMutation.mutate({
                       title: requirementFormData.title,
                       description: requirementFormData.description,
+                      resourceId: requirementFormData.resourceId || undefined,
                       resourceUrl: requirementFormData.resourceUrl || undefined,
                       stage: activeEvidenceStage,
                       orderIndex: maxOrder + 1,

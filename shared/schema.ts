@@ -310,6 +310,7 @@ export const evidenceRequirements = pgTable("evidence_requirements", {
   description: text("description").notNull(),
   orderIndex: integer("order_index").notNull(),
   resourceUrl: varchar("resource_url"),
+  resourceId: varchar("resource_id").references(() => resources.id, { onDelete: 'set null' }),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
