@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import type { User } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -16,7 +17,7 @@ import {
   CheckCircle, 
   XCircle, 
   Mail, 
-  User, 
+  User as UserIcon, 
   AlertCircle,
   LogIn,
   Shield,
@@ -37,7 +38,7 @@ export default function AdminInvitationAccept() {
   const params = useParams();
   const token = params.token;
   const { t } = useTranslation(['auth', 'forms']);
-  const { user, isAuthenticated, isLoading: authLoading, login, isLoggingIn } = useAuth();
+  const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
@@ -65,6 +66,50 @@ export default function AdminInvitationAccept() {
       form.setValue('email', invitation.email);
     }
   }, [invitation, form]);
+
+  // Custom login mutation that doesn't redirect (stays on invitation page)
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: LoginForm) => {
+      const response = await apiRequest("POST", "/api/auth/login", credentials);
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || "Login failed");
+      }
+      
+      return result.user;
+    },
+    onSuccess: async (loggedInUser: User) => {
+      // Update auth cache without redirecting
+      queryClient.setQueryData(["/api/auth/user"], loggedInUser);
+      
+      toast({
+        title: "Signed in successfully!",
+        description: "You can now accept the admin invitation below",
+      });
+      
+      // Force refetch to update the page state
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    },
+    onError: (error: Error) => {
+      let errorMessage = "Login failed. Please try again.";
+      
+      if (error.message.includes("400:") || error.message.includes("401:")) {
+        try {
+          const errorData = JSON.parse(error.message.split(": ")[1]);
+          errorMessage = errorData.message || "Invalid email or password";
+        } catch {
+          errorMessage = "Invalid email or password";
+        }
+      }
+      
+      toast({
+        title: "Login failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
 
   // Accept invitation mutation
   const acceptMutation = useMutation({
@@ -102,11 +147,12 @@ export default function AdminInvitationAccept() {
   });
 
   const handleEmailLogin = (data: LoginForm) => {
-    login(data);
+    loginMutation.mutate(data);
   };
 
   const handleGoogleLogin = () => {
-    window.location.href = "/api/auth/google";
+    // Preserve the token in the URL after Google OAuth redirect
+    window.location.href = `/api/auth/google?returnTo=/admin-invitations/${token}`;
   };
 
   const handleAccept = () => {
@@ -207,7 +253,7 @@ export default function AdminInvitationAccept() {
           <CardContent className="space-y-6">
             <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
               <div className="flex items-start gap-3">
-                <User className="h-5 w-5 text-pcs_blue mt-0.5" />
+                <UserIcon className="h-5 w-5 text-pcs_blue mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-gray-700">Invited by</p>
                   <p className="text-base font-semibold text-navy" data-testid="text-admin-inviter-name">
@@ -252,6 +298,7 @@ export default function AdminInvitationAccept() {
                             {...field}
                             data-testid="input-admin-email"
                             disabled={true}
+                            readOnly
                             className="bg-gray-50"
                           />
                         </FormControl>
@@ -273,7 +320,7 @@ export default function AdminInvitationAccept() {
                               placeholder="Enter your password"
                               {...field}
                               data-testid="input-admin-password"
-                              disabled={isLoggingIn}
+                              disabled={loginMutation.isPending}
                             />
                             <Button
                               type="button"
@@ -282,7 +329,7 @@ export default function AdminInvitationAccept() {
                               className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                               onClick={() => setShowPassword(!showPassword)}
                               data-testid="button-admin-toggle-password"
-                              disabled={isLoggingIn}
+                              disabled={loginMutation.isPending}
                             >
                               {showPassword ? (
                                 <EyeOff className="h-4 w-4 text-gray-500" />
@@ -301,10 +348,10 @@ export default function AdminInvitationAccept() {
                     type="submit"
                     size="lg"
                     className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
-                    disabled={isLoggingIn}
+                    disabled={loginMutation.isPending}
                     data-testid="button-admin-login-submit"
                   >
-                    {isLoggingIn ? (
+                    {loginMutation.isPending ? (
                       <>
                         <LoadingSpinner size="sm" className="mr-2" />
                         Signing in...
@@ -337,7 +384,7 @@ export default function AdminInvitationAccept() {
                 className="w-full bg-white hover:bg-gray-50 text-gray-700 border-2 border-gray-200 hover:border-gray-300 transition-all duration-300 group shadow-sm hover:shadow-md"
                 onClick={handleGoogleLogin}
                 data-testid="button-admin-login-google"
-                disabled={isLoggingIn}
+                disabled={loginMutation.isPending}
               >
                 <div className="flex items-center justify-center gap-3">
                   <div className="w-5 h-5 flex items-center justify-center">
@@ -389,7 +436,7 @@ export default function AdminInvitationAccept() {
         <CardContent className="space-y-6">
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
             <div className="flex items-start gap-3">
-              <User className="h-5 w-5 text-pcs_blue mt-0.5" />
+              <UserIcon className="h-5 w-5 text-pcs_blue mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-gray-700">Invited by</p>
                 <p className="text-base font-semibold text-navy" data-testid="text-admin-inviter-name-auth">
