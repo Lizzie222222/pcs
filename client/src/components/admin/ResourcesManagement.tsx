@@ -892,7 +892,7 @@ export default function ResourcesManagement() {
             <table className="w-full border-collapse">
               <thead>
                 <tr className="border-b bg-gray-50">
-                  <th className="w-12 p-3">
+                  <th className="w-12 px-2 py-3">
                     <Checkbox
                       checked={
                         resources.length > 0 &&
@@ -902,29 +902,29 @@ export default function ResourcesManagement() {
                       data-testid="checkbox-select-all-resources"
                     />
                   </th>
-                  <th className="text-left p-3 font-medium text-gray-700">Preview</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Title</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Stage</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Visibility</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Country</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Languages</th>
-                  <th className="text-left p-3 font-medium text-gray-700">File Size</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Downloads</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Status</th>
-                  <th className="text-left p-3 font-medium text-gray-700">Actions</th>
+                  <th className="text-left px-2 py-3 font-medium text-gray-700">Preview</th>
+                  <th className="text-left px-2 py-3 font-medium text-gray-700">Title</th>
+                  <th className="text-left px-2 py-3 font-medium text-gray-700">Stage</th>
+                  <th className="text-left px-2 py-3 font-medium text-gray-700">Visibility</th>
+                  <th className="text-left px-2 py-3 font-medium text-gray-700">Country</th>
+                  <th className="text-left px-2 py-3 font-medium text-gray-700">Languages</th>
+                  <th className="text-left px-2 py-3 font-medium text-gray-700">File Size</th>
+                  <th className="text-left px-2 py-3 font-medium text-gray-700">Downloads</th>
+                  <th className="text-left px-2 py-3 font-medium text-gray-700">Status</th>
+                  <th className="text-left px-2 py-3 font-medium text-gray-700">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {resources.map((resource) => (
                   <tr key={resource.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3">
+                    <td className="px-2 py-3">
                       <Checkbox
                         checked={selectedResourceIds.has(resource.id)}
                         onCheckedChange={(checked) => handleSelectResource(resource.id, checked as boolean)}
                         data-testid={`checkbox-resource-${resource.id}`}
                       />
                     </td>
-                    <td className="p-3">
+                    <td className="px-2 py-3">
                       <button
                         onClick={() => resource.fileUrl && setPreviewResource(resource)}
                         className="flex items-center justify-center hover:bg-gray-100 p-2 rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
@@ -934,7 +934,7 @@ export default function ResourcesManagement() {
                         {getFileTypeIcon(resource.fileType, resource.fileUrl)}
                       </button>
                     </td>
-                    <td className="p-3">
+                    <td className="px-2 py-3">
                       <div className="font-medium text-navy">{resource.title}</div>
                       {resource.description && (
                         <div className="text-sm text-gray-600 truncate max-w-xs">
@@ -942,12 +942,12 @@ export default function ResourcesManagement() {
                         </div>
                       )}
                     </td>
-                    <td className="p-3">
+                    <td className="px-2 py-3">
                       <Badge className={getStageColor(resource.stage)}>
                         {resource.stage}
                       </Badge>
                     </td>
-                    <td className="p-3">
+                    <td className="px-2 py-3">
                       <Badge 
                         variant={resource.visibility === 'public' ? 'default' : 'secondary'}
                         className={resource.visibility === 'public' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'}
@@ -956,18 +956,18 @@ export default function ResourcesManagement() {
                         {resource.visibility === 'public' ? 'Public' : 'Registered Only'}
                       </Badge>
                     </td>
-                    <td className="p-3 text-gray-600">{resource.country || 'Global'}</td>
-                    <td className="p-3">
+                    <td className="px-2 py-3 text-gray-600">{resource.country || 'Global'}</td>
+                    <td className="px-2 py-3">
                       {renderLanguageBadges(resource)}
                     </td>
-                    <td className="p-3 text-gray-600">{formatFileSize(resource.fileSize) || 'N/A'}</td>
-                    <td className="p-3 text-gray-600">{resource.downloadCount || 0}</td>
-                    <td className="p-3">
+                    <td className="px-2 py-3 text-gray-600">{formatFileSize(resource.fileSize) || 'N/A'}</td>
+                    <td className="px-2 py-3 text-gray-600">{resource.downloadCount || 0}</td>
+                    <td className="px-2 py-3">
                       <Badge variant={resource.isActive ? 'default' : 'secondary'}>
                         {resource.isActive ? 'Active' : 'Inactive'}
                       </Badge>
                     </td>
-                    <td className="p-3">
+                    <td className="px-2 py-3">
                       <div className="flex gap-2">
                         <Button 
                           size="sm" 
