@@ -6520,6 +6520,80 @@ Return JSON with:
     }
   });
 
+  // POST /api/admin-invitations/:token/profile - Update user profile before accepting invitation
+  app.post('/api/admin-invitations/:token/profile', isAuthenticated, async (req: any, res) => {
+    try {
+      const { token } = req.params;
+      const userId = req.user.id;
+      
+      console.log(`[Admin Invitation Profile] User ${userId} updating profile for token ${token.substring(0, 8)}...`);
+      
+      // Validate request body
+      const profileSchema = z.object({
+        firstName: z.string().min(1, "First name is required"),
+        lastName: z.string().min(1, "Last name is required"),
+        preferredLanguage: z.string().min(1, "Preferred language is required"),
+      });
+      
+      const profileData = profileSchema.parse(req.body);
+      
+      // Get invitation by token
+      const invitation = await storage.getAdminInvitationByToken(token);
+      
+      if (!invitation) {
+        console.log(`[Admin Invitation Profile] Invitation not found`);
+        return res.status(404).json({ message: "Invitation not found or has expired" });
+      }
+      
+      // Check if invitation is expired
+      if (new Date() > new Date(invitation.expiresAt)) {
+        console.log(`[Admin Invitation Profile] Invitation expired`);
+        return res.status(410).json({ message: "This invitation has expired" });
+      }
+      
+      // Check if already accepted
+      if (invitation.status === 'accepted') {
+        console.log(`[Admin Invitation Profile] Invitation already accepted`);
+        return res.status(410).json({ message: "This invitation has already been accepted" });
+      }
+      
+      // Verify the email matches the authenticated user
+      const user = await storage.getUser(userId);
+      if (user?.email !== invitation.email) {
+        console.log(`[Admin Invitation Profile] Email mismatch - invitation for ${invitation.email}, user is ${user?.email}`);
+        return res.status(403).json({ message: "This invitation is for a different email address" });
+      }
+      
+      // Update user profile with onboarding data
+      const updatedUser = await storage.updateAdminOnboarding(userId, profileData);
+      
+      if (!updatedUser) {
+        console.error(`[Admin Invitation Profile] Failed to update user ${userId}`);
+        return res.status(500).json({ message: "Failed to update profile" });
+      }
+      
+      // Refresh the user's session with updated profile
+      req.login(updatedUser, (err: any) => {
+        if (err) {
+          console.error(`[Admin Invitation Profile] Failed to refresh session for user ${userId}:`, err);
+          return res.status(500).json({ message: "Profile updated but session refresh failed. Please log out and back in." });
+        }
+        
+        console.log(`[Admin Invitation Profile] Profile updated and session refreshed for user ${userId}`);
+        res.json({ 
+          message: "Profile updated successfully",
+          user: updatedUser
+        });
+      });
+    } catch (error) {
+      console.error("[Admin Invitation Profile] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update profile" });
+    }
+  });
+
   // ============= TESTIMONIALS ROUTES =============
 
   // GET /api/testimonials - Get active testimonials for public display

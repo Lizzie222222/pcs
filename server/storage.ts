@@ -173,6 +173,7 @@ export interface IStorage {
   } | null>;
   getTeacherEmails(): Promise<string[]>;
   markOnboardingComplete(userId: string): Promise<User | undefined>;
+  updateAdminOnboarding(userId: string, data: { firstName: string; lastName: string; preferredLanguage: string }): Promise<User | undefined>;
   
   // School operations
   createSchool(school: InsertSchool): Promise<School>;
@@ -768,6 +769,21 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ ...updates, updatedAt: new Date() })
       .where(eq(users.id, id))
+      .returning();
+    return user;
+  }
+
+  async updateAdminOnboarding(userId: string, data: { firstName: string; lastName: string; preferredLanguage: string }): Promise<User | undefined> {
+    const [user] = await db
+      .update(users)
+      .set({ 
+        firstName: data.firstName,
+        lastName: data.lastName,
+        preferredLanguage: data.preferredLanguage,
+        hasSeenOnboarding: true,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
       .returning();
     return user;
   }

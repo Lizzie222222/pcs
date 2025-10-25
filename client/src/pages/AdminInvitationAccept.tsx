@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/ui/states";
 import { 
   CheckCircle, 
@@ -23,9 +24,11 @@ import {
   Shield,
   Eye,
   EyeOff,
-  ArrowRight
+  ArrowRight,
+  Globe
 } from "lucide-react";
 import { createLoginSchema, type LoginForm } from "@shared/schema";
+import { z } from "zod";
 
 interface InvitationDetails {
   email: string;
@@ -33,6 +36,31 @@ interface InvitationDetails {
   expiresAt: string;
   status: string;
 }
+
+const languages = [
+  { code: 'ar', nativeName: 'العربية' },
+  { code: 'zh', nativeName: '中文' },
+  { code: 'nl', nativeName: 'Nederlands' },
+  { code: 'en', nativeName: 'English' },
+  { code: 'fr', nativeName: 'Français' },
+  { code: 'de', nativeName: 'Deutsch' },
+  { code: 'el', nativeName: 'Ελληνικά' },
+  { code: 'id', nativeName: 'Bahasa Indonesia' },
+  { code: 'it', nativeName: 'Italiano' },
+  { code: 'ko', nativeName: '한국어' },
+  { code: 'pt', nativeName: 'Português' },
+  { code: 'ru', nativeName: 'Русский' },
+  { code: 'es', nativeName: 'Español' },
+  { code: 'cy', nativeName: 'Cymraeg' },
+];
+
+const onboardingSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  preferredLanguage: z.string().min(1, "Please select a language"),
+});
+
+type OnboardingForm = z.infer<typeof onboardingSchema>;
 
 export default function AdminInvitationAccept() {
   const params = useParams();
@@ -52,6 +80,27 @@ export default function AdminInvitationAccept() {
       password: "",
     },
   });
+
+  // Onboarding form
+  const onboardingForm = useForm<OnboardingForm>({
+    resolver: zodResolver(onboardingSchema),
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      preferredLanguage: user?.preferredLanguage || "en",
+    },
+  });
+
+  // Update onboarding form when user data loads
+  useEffect(() => {
+    if (user) {
+      onboardingForm.reset({
+        firstName: user.firstName || "",
+        lastName: user.lastName || "",
+        preferredLanguage: user.preferredLanguage || "en",
+      });
+    }
+  }, [user, onboardingForm]);
 
   // Fetch invitation details (public endpoint, no auth required)
   const { data: invitation, isLoading: invitationLoading, error } = useQuery<InvitationDetails>({
@@ -122,6 +171,31 @@ export default function AdminInvitationAccept() {
     },
   });
 
+  // Profile update mutation
+  const profileMutation = useMutation({
+    mutationFn: async (data: OnboardingForm) => {
+      const response = await apiRequest("POST", `/api/admin-invitations/${token}/profile`, data);
+      return await response.json();
+    },
+    onSuccess: async () => {
+      toast({
+        title: "Profile updated!",
+        description: "Your profile has been updated successfully",
+      });
+      // Refetch user data to get updated profile
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
+    },
+    onError: (error: Error) => {
+      const errorMessage = error.message || "Failed to update profile";
+      toast({
+        title: "Failed to update profile",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
   // Accept invitation mutation
   const acceptMutation = useMutation({
     mutationFn: async () => {
@@ -166,9 +240,16 @@ export default function AdminInvitationAccept() {
     window.location.href = `/api/auth/google?returnTo=/admin-invitations/${token}`;
   };
 
+  const handleOnboardingSubmit = (data: OnboardingForm) => {
+    profileMutation.mutate(data);
+  };
+
   const handleAccept = () => {
     acceptMutation.mutate();
   };
+
+  // Check if user needs onboarding
+  const needsOnboarding = user && (!user.firstName || !user.lastName || !user.hasSeenOnboarding);
 
   // Loading state
   if (authLoading || invitationLoading) {
@@ -429,7 +510,7 @@ export default function AdminInvitationAccept() {
     );
   }
 
-  // Authenticated - show invitation details and accept button
+  // Authenticated - show onboarding form or accept button
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 flex items-center justify-center pt-20 px-4">
       <Card className="w-full max-w-lg shadow-xl border-0">
@@ -441,7 +522,7 @@ export default function AdminInvitationAccept() {
             You've Been Invited to be an Administrator!
           </CardTitle>
           <CardDescription className="text-base" data-testid="text-admin-invitation-subtitle-auth">
-            Accept this invitation to gain admin access
+            {needsOnboarding ? "Complete your profile to continue" : "Accept this invitation to gain admin access"}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -466,31 +547,143 @@ export default function AdminInvitationAccept() {
             </div>
           </div>
 
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-            <p className="text-sm text-yellow-800" data-testid="text-admin-email-warning">
-              Make sure you're logged in with <strong>{invitation.email}</strong> to accept this admin invitation
-            </p>
-          </div>
+          {needsOnboarding ? (
+            <>
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                <p className="text-sm text-blue-800">
+                  Before accepting the invitation, please complete your profile information to personalize your admin experience.
+                </p>
+              </div>
 
-          <Button 
-            onClick={handleAccept}
-            disabled={acceptMutation.isPending}
-            className="w-full bg-gradient-to-r from-[#019ADE] to-[#019ADE]/80 hover:from-[#019ADE] hover:to-[#019ADE]/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-            data-testid="button-accept-admin-invitation"
-          >
-            {acceptMutation.isPending ? (
-              <>
-                <LoadingSpinner size="sm" className="mr-2" />
-                Accepting...
-              </>
-            ) : (
-              <>
-                <CheckCircle className="h-5 w-5 mr-2" />
-                Accept Admin Invitation
-              </>
-            )}
-          </Button>
+              <Form {...onboardingForm}>
+                <form onSubmit={onboardingForm.handleSubmit(handleOnboardingSubmit)} className="space-y-4">
+                  <FormField
+                    control={onboardingForm.control}
+                    name="firstName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('auth:firstName', 'First Name')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your first name"
+                            {...field}
+                            data-testid="input-onboarding-firstname"
+                            disabled={profileMutation.isPending}
+                          />
+                        </FormControl>
+                        <FormMessage data-testid="error-onboarding-firstname" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={onboardingForm.control}
+                    name="lastName"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>{t('auth:lastName', 'Last Name')}</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Enter your last name"
+                            {...field}
+                            data-testid="input-onboarding-lastname"
+                            disabled={profileMutation.isPending}
+                          />
+                        </FormControl>
+                        <FormMessage data-testid="error-onboarding-lastname" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={onboardingForm.control}
+                    name="preferredLanguage"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>
+                          <div className="flex items-center gap-2">
+                            <Globe className="h-4 w-4" />
+                            {t('auth:preferredLanguage', 'Preferred Language')}
+                          </div>
+                        </FormLabel>
+                        <Select 
+                          onValueChange={field.onChange} 
+                          value={field.value}
+                          disabled={profileMutation.isPending}
+                        >
+                          <FormControl>
+                            <SelectTrigger data-testid="select-onboarding-language">
+                              <SelectValue placeholder="Select a language" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            {languages.map((lang) => (
+                              <SelectItem 
+                                key={lang.code} 
+                                value={lang.code}
+                                data-testid={`language-option-${lang.code}`}
+                              >
+                                {lang.nativeName}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormMessage data-testid="error-onboarding-language" />
+                      </FormItem>
+                    )}
+                  />
+
+                  <Button
+                    type="submit"
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
+                    disabled={profileMutation.isPending}
+                    data-testid="button-submit-onboarding"
+                  >
+                    {profileMutation.isPending ? (
+                      <>
+                        <LoadingSpinner size="sm" className="mr-2" />
+                        Updating Profile...
+                      </>
+                    ) : (
+                      <>
+                        <ArrowRight className="h-5 w-5 mr-2" />
+                        Continue to Accept Invitation
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </Form>
+            </>
+          ) : (
+            <>
+              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
+                <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-yellow-800" data-testid="text-admin-email-warning">
+                  Make sure you're logged in with <strong>{invitation.email}</strong> to accept this admin invitation
+                </p>
+              </div>
+
+              <Button 
+                onClick={handleAccept}
+                disabled={acceptMutation.isPending}
+                className="w-full bg-gradient-to-r from-[#019ADE] to-[#019ADE]/80 hover:from-[#019ADE] hover:to-[#019ADE]/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                data-testid="button-accept-admin-invitation"
+              >
+                {acceptMutation.isPending ? (
+                  <>
+                    <LoadingSpinner size="sm" className="mr-2" />
+                    Accepting...
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle className="h-5 w-5 mr-2" />
+                    Accept Admin Invitation
+                  </>
+                )}
+              </Button>
+            </>
+          )}
 
           <p className="text-xs text-center text-gray-500" data-testid="text-admin-expires-info">
             This invitation expires on {new Date(invitation.expiresAt).toLocaleDateString()}
