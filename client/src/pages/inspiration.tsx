@@ -29,6 +29,7 @@ import { useCountries } from "@/hooks/useCountries";
 import useEmblaCarousel from "embla-carousel-react";
 import { stripHtmlTags } from "@/lib/utils";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { Footer } from "@/components/Footer";
 
 interface CaseStudy {
   id: string;
@@ -447,7 +448,7 @@ export default function Inspiration() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-16">
         {/* Header */}
         <div className="text-center mb-12">
           <div className="flex items-center justify-center gap-2 mb-4">
@@ -765,6 +766,8 @@ export default function Inspiration() {
           border-left-width: 3px;
         }
       `}</style>
+
+      <Footer />
     </div>
   );
 }

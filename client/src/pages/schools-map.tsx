@@ -10,6 +10,7 @@ import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import "leaflet.heat";
+import { Footer } from "@/components/Footer";
 
 // Fix for default markers in React Leaflet
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -156,7 +157,7 @@ export default function SchoolsMap() {
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-16">
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-navy mb-4" data-testid="text-map-title">
@@ -391,6 +392,8 @@ export default function SchoolsMap() {
           </CardContent>
         </Card>
       </div>
+
+      <Footer />
     </div>
   );
 }
