@@ -185,7 +185,7 @@ export default function UserManagementTab() {
       return response;
     },
     onSuccess: (data: any) => {
-      const { successCount, failedCount, failures, totalEvidenceDeleted, affectedCaseStudies } = data;
+      const { successCount = 0, failedCount = 0, failures = [], totalEvidenceDeleted = 0, affectedCaseStudies = [] } = data || {};
       
       // Build description message
       let description = '';
