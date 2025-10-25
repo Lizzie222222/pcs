@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -92,7 +92,8 @@ import {
   Check,
   Bell,
   ExternalLink,
-  Languages
+  Languages,
+  Sparkles
 } from "lucide-react";
 import {
   BarChart,
@@ -129,6 +130,7 @@ import type { ReductionPromise, Event, EventRegistration, EvidenceWithSchool, Ca
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
 import { format, parseISO } from "date-fns";
 import { BANNER_GRADIENTS, getGradientById } from "@shared/gradients";
+import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
 
 interface AdminStats {
   totalSchools: number;
@@ -1056,6 +1058,8 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { data: countryOptions = [] } = useCountries();
+  const [location] = useLocation();
+  const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library' | 'data-import' | 'activity'>(initialTab);
   const [reviewType, setReviewType] = useState<'evidence' | 'audits'>('evidence');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
@@ -1339,6 +1343,14 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     control: pageBuilderForm.control,
     name: "testimonials",
   });
+
+  // Check for welcomed parameter in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('welcomed') === 'true') {
+      setShowWelcomeBanner(true);
+    }
+  }, [location]);
 
   // Reset step and tab when dialog opens/closes
   useEffect(() => {
@@ -3106,6 +3118,59 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Welcome Banner */}
+        {showWelcomeBanner && (
+          <Alert 
+            className="mb-6 bg-gradient-to-r from-pcs_blue via-teal to-pcs_blue text-white border-none shadow-xl relative overflow-hidden"
+            data-testid="alert-admin-welcome"
+          >
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -mr-32 -mt-32"></div>
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white/10 rounded-full -ml-24 -mb-24"></div>
+            <div className="relative z-10">
+              <AlertTitle className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <img 
+                    src={pcsLogoUrl} 
+                    alt="Plastic Clever Schools" 
+                    className="h-10 w-auto bg-white rounded-lg p-1"
+                  />
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="h-5 w-5 text-yellow-300 animate-pulse" />
+                      <span className="text-2xl font-bold" data-testid="text-admin-welcome-title">
+                        Lucky You!
+                      </span>
+                      <Sparkles className="h-5 w-5 text-yellow-300 animate-pulse" />
+                    </div>
+                  </div>
+                </div>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setShowWelcomeBanner(false)}
+                  className="hover:bg-white/20 text-white"
+                  data-testid="button-dismiss-admin-welcome"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </AlertTitle>
+              <AlertDescription className="text-white/95 text-lg">
+                <div className="flex items-start gap-3 mt-2">
+                  <CheckCircle className="h-6 w-6 mt-1 flex-shrink-0" />
+                  <div>
+                    <p className="font-semibold mb-1">
+                      Welcome to the Plastic Clever Schools admin team!
+                    </p>
+                    <p className="text-white/90">
+                      You now have full access to manage the program, review evidence submissions, publish case studies, and help schools on their journey to reduce plastic waste.
+                    </p>
+                  </div>
+                </div>
+              </AlertDescription>
+            </div>
+          </Alert>
+        )}
+
         {/* Header */}
         <Card className="mb-8">
           <CardContent className="p-6">

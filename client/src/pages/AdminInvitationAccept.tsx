@@ -219,7 +219,7 @@ export default function AdminInvitationAccept() {
       queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
       // Redirect to admin dashboard
       setTimeout(() => {
-        setLocation("/admin");
+        setLocation("/admin?welcomed=true");
       }, 1500);
     },
     onError: (error: Error) => {
