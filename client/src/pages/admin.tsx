@@ -2769,7 +2769,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
   // Event resources queries and mutations
   const { data: allResources = [], isLoading: resourcesLoading } = useQuery<any[]>({
-    queryKey: ['/api/admin/resources'],
+    queryKey: ['/api/resources'],
   });
 
   const { data: eventResources = [], isLoading: eventResourcesLoading } = useQuery<any[]>({
