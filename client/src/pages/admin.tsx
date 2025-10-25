@@ -4335,18 +4335,70 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                       <p className="text-sm text-gray-600 whitespace-pre-wrap" data-testid={`text-description-${requirement.id}`}>
                                         {requirement.description}
                                       </p>
-                                      {requirement.resourceUrl && (
-                                        <a
-                                          href={requirement.resourceUrl}
-                                          target="_blank"
-                                          rel="noopener noreferrer"
-                                          className="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:text-blue-700 hover:underline"
-                                          data-testid={`link-resource-${requirement.id}`}
-                                        >
-                                          <BookOpen className="h-3 w-3" />
-                                          Helpful Resource Link
-                                        </a>
-                                      )}
+                                      {requirement.resourceId && (() => {
+                                        const resource = allResources.find(r => r.id === requirement.resourceId);
+                                        if (!resource) {
+                                          return requirement.resourceUrl && (
+                                            <a
+                                              href={requirement.resourceUrl}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                                              data-testid={`link-resource-${requirement.id}`}
+                                            >
+                                              <BookOpen className="h-3 w-3" />
+                                              Helpful Resource Link
+                                            </a>
+                                          );
+                                        }
+                                        
+                                        const urlWithoutQuery = resource.fileUrl?.split('?')[0] || '';
+                                        const urlExtension = urlWithoutQuery.split('.').pop()?.toLowerCase() || '';
+                                        const isPdf = resource.fileType?.includes('pdf') || urlExtension === 'pdf';
+                                        
+                                        const getProxyUrl = (url: string | null) => {
+                                          if (!url) return '';
+                                          try {
+                                            const urlObj = new URL(url);
+                                            // Decode pathname to handle URL-encoded paths from GCS
+                                            const pathname = decodeURIComponent(urlObj.pathname);
+                                            const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
+                                            if (privateUploadsMatch) return `/objects/uploads/${privateUploadsMatch[1]}`;
+                                            const publicMatch = pathname.match(/\/public\/(.+)$/);
+                                            if (publicMatch) return `/objects/public/${publicMatch[1]}`;
+                                            if (url.startsWith('/objects/')) return url;
+                                            return url;
+                                          } catch {
+                                            return url;
+                                          }
+                                        };
+                                        
+                                        const pdfProxyUrl = isPdf ? getProxyUrl(resource.fileUrl) : '';
+                                        
+                                        return (
+                                          <div className="mt-3 space-y-2">
+                                            <p className="text-xs font-semibold text-gray-700">Helpful Resource:</p>
+                                            {isPdf && pdfProxyUrl && (
+                                              <div className="relative aspect-video max-w-xs bg-gray-100 rounded-md overflow-hidden border border-gray-200">
+                                                <PDFThumbnail
+                                                  url={pdfProxyUrl}
+                                                  className="w-full h-full"
+                                                />
+                                              </div>
+                                            )}
+                                            <a
+                                              href={resource.fileUrl || ''}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                                              data-testid={`link-resource-${requirement.id}`}
+                                            >
+                                              <BookOpen className="h-3 w-3" />
+                                              {resource.title}
+                                            </a>
+                                          </div>
+                                        );
+                                      })()}
                                     </div>
                                   </div>
                                 </div>
@@ -6293,43 +6345,53 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                             )}
                                           </div>
                                         ) : (
-                                          <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                                            <div className="flex items-center gap-2">
-                                              <FileText className="h-5 w-5 text-gray-600" />
-                                              <div>
-                                                <p className="text-sm font-medium text-gray-900" data-testid={`text-pack-file-name-${index}`}>
-                                                  {pageBuilderForm.watch(`eventPackFiles.${index}.fileName`) || 'File uploaded'}
-                                                </p>
-                                                {pageBuilderForm.watch(`eventPackFiles.${index}.fileSize`) && (
-                                                  <p className="text-xs text-gray-500" data-testid={`text-pack-file-size-${index}`}>
-                                                    {((pageBuilderForm.watch(`eventPackFiles.${index}.fileSize`) || 0) / 1024 / 1024).toFixed(2)} MB
-                                                  </p>
-                                                )}
-                                              </div>
+                                          <div className="space-y-2">
+                                            {/* PDF Thumbnail Preview */}
+                                            <div className="relative aspect-[4/3] w-full bg-gray-100 rounded-md overflow-hidden border border-gray-200">
+                                              <PDFThumbnail
+                                                url={`/api/objects${field.value}`}
+                                                className="w-full h-full"
+                                              />
                                             </div>
-                                            <div className="flex gap-2">
-                                              <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => window.open(`/api/objects${field.value}`, '_blank')}
-                                                data-testid={`button-download-pack-file-${index}`}
-                                              >
-                                                <Download className="h-4 w-4" />
-                                              </Button>
-                                              <Button
-                                                type="button"
-                                                variant="ghost"
-                                                size="sm"
-                                                onClick={() => {
-                                                  pageBuilderForm.setValue(`eventPackFiles.${index}.fileUrl`, '');
-                                                  pageBuilderForm.setValue(`eventPackFiles.${index}.fileName`, '');
-                                                  pageBuilderForm.setValue(`eventPackFiles.${index}.fileSize`, 0);
-                                                }}
-                                                data-testid={`button-remove-uploaded-file-${index}`}
-                                              >
-                                                <Trash className="h-4 w-4" />
-                                              </Button>
+                                            {/* File Info and Actions */}
+                                            <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
+                                              <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                <FileText className="h-5 w-5 text-gray-600 flex-shrink-0" />
+                                                <div className="min-w-0 flex-1">
+                                                  <p className="text-sm font-medium text-gray-900 truncate" data-testid={`text-pack-file-name-${index}`}>
+                                                    {pageBuilderForm.watch(`eventPackFiles.${index}.fileName`) || 'File uploaded'}
+                                                  </p>
+                                                  {pageBuilderForm.watch(`eventPackFiles.${index}.fileSize`) && (
+                                                    <p className="text-xs text-gray-500" data-testid={`text-pack-file-size-${index}`}>
+                                                      {((pageBuilderForm.watch(`eventPackFiles.${index}.fileSize`) || 0) / 1024 / 1024).toFixed(2)} MB
+                                                    </p>
+                                                  )}
+                                                </div>
+                                              </div>
+                                              <div className="flex gap-2 flex-shrink-0">
+                                                <Button
+                                                  type="button"
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  onClick={() => window.open(`/api/objects${field.value}`, '_blank')}
+                                                  data-testid={`button-download-pack-file-${index}`}
+                                                >
+                                                  <Download className="h-4 w-4" />
+                                                </Button>
+                                                <Button
+                                                  type="button"
+                                                  variant="ghost"
+                                                  size="sm"
+                                                  onClick={() => {
+                                                    pageBuilderForm.setValue(`eventPackFiles.${index}.fileUrl`, '');
+                                                    pageBuilderForm.setValue(`eventPackFiles.${index}.fileName`, '');
+                                                    pageBuilderForm.setValue(`eventPackFiles.${index}.fileSize`, 0);
+                                                  }}
+                                                  data-testid={`button-remove-uploaded-file-${index}`}
+                                                >
+                                                  <Trash className="h-4 w-4" />
+                                                </Button>
+                                              </div>
                                             </div>
                                           </div>
                                         )}
@@ -6398,7 +6460,8 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                 if (!url) return '';
                                 try {
                                   const urlObj = new URL(url);
-                                  const pathname = urlObj.pathname;
+                                  // Decode pathname to handle URL-encoded paths from GCS
+                                  const pathname = decodeURIComponent(urlObj.pathname);
                                   
                                   // Extract object path from GCS URL
                                   const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
@@ -6423,6 +6486,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                               };
                               
                               const imageProxyUrl = isImage ? getProxyUrl(resource.fileUrl) : '';
+                              const pdfProxyUrl = isPdf ? getProxyUrl(resource.fileUrl) : '';
                               
                               return (
                                 <Card
@@ -6461,12 +6525,17 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                             />
                                             <ImageIcon className="h-12 w-12 text-gray-400 hidden" />
                                           </div>
+                                        ) : isPdf && pdfProxyUrl ? (
+                                          <div className="aspect-video w-full bg-gray-100 rounded-md overflow-hidden">
+                                            <PDFThumbnail
+                                              url={pdfProxyUrl}
+                                              className="w-full h-full"
+                                            />
+                                          </div>
                                         ) : (
                                           <div className="aspect-video w-full bg-gray-100 rounded-md flex items-center justify-center">
                                             {isVideo ? (
                                               <FileVideo className="h-12 w-12 text-gray-600" />
-                                            ) : isPdf ? (
-                                              <FileText className="h-12 w-12 text-gray-600" />
                                             ) : (
                                               <BookOpen className="h-12 w-12 text-gray-600" />
                                             )}
@@ -7952,7 +8021,8 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                       if (!url) return '';
                       try {
                         const urlObj = new URL(url);
-                        const pathname = urlObj.pathname;
+                        // Decode pathname to handle URL-encoded paths from GCS
+                        const pathname = decodeURIComponent(urlObj.pathname);
                         
                         // Extract object path from GCS URL
                         const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
@@ -7977,6 +8047,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                     };
                     
                     const imageProxyUrl = isImage ? getProxyUrl(resource.fileUrl) : '';
+                    const pdfProxyUrl = isPdf ? getProxyUrl(resource.fileUrl) : '';
                     
                     return (
                       <Card
@@ -8009,12 +8080,17 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                   />
                                   <ImageIcon className="h-10 w-10 text-gray-400 hidden" />
                                 </div>
+                              ) : isPdf && pdfProxyUrl ? (
+                                <div className="aspect-video w-full bg-gray-100 rounded-md overflow-hidden">
+                                  <PDFThumbnail
+                                    url={pdfProxyUrl}
+                                    className="w-full h-full"
+                                  />
+                                </div>
                               ) : (
                                 <div className="aspect-video w-full bg-gray-100 rounded-md flex items-center justify-center">
                                   {isVideo ? (
                                     <FileVideo className="h-10 w-10 text-gray-600" />
-                                  ) : isPdf ? (
-                                    <FileText className="h-10 w-10 text-gray-600" />
                                   ) : (
                                     <BookOpen className="h-10 w-10 text-gray-600" />
                                   )}

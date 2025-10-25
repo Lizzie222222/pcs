@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useTranslation } from "react-i18next";
 import { VideoLightbox } from "@/components/VideoLightbox";
 import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP, getLanguageLabel } from "@/lib/languageUtils";
+import { PDFThumbnail } from "@/components/PDFThumbnail";
 import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 import eventPackBannerUrl from "@assets/event-pack-2_1761297797787.png";
 
@@ -60,6 +61,36 @@ function formatFileSize(bytes: number): string {
   const i = Math.floor(Math.log(bytes) / Math.log(k));
   
   return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + ' ' + sizes[i];
+}
+
+// Helper function to convert GCS URLs to proxy URLs for CORS support
+function getProxyUrl(url: string | null): string {
+  if (!url) return '';
+  try {
+    const urlObj = new URL(url);
+    // Decode pathname to handle URL-encoded paths from GCS (e.g., public%2Ffile.pdf)
+    const pathname = decodeURIComponent(urlObj.pathname);
+    
+    // Extract object path from GCS URL
+    const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
+    if (privateUploadsMatch) {
+      return `/objects/uploads/${privateUploadsMatch[1]}`;
+    }
+    
+    const publicMatch = pathname.match(/\/public\/(.+)$/);
+    if (publicMatch) {
+      return `/objects/public/${publicMatch[1]}`;
+    }
+    
+    // If already a proxy URL, return as is
+    if (url.startsWith('/objects/')) {
+      return url;
+    }
+    
+    return url; // Fallback to original URL
+  } catch {
+    return url; // Invalid URL, return original
+  }
 }
 
 interface YoutubeVideo {
@@ -1332,6 +1363,11 @@ export default function EventLivePage() {
                   // Get the appropriate file type icon
                   const FileIcon = getFileTypeIcon(file.fileName || file.fileUrl);
                   
+                  // Check if file is a PDF
+                  const fileName = file.fileName || file.fileUrl || '';
+                  const isPdf = fileName.toLowerCase().endsWith('.pdf');
+                  const pdfProxyUrl = isPdf ? getProxyUrl(file.fileUrl) : '';
+                  
                   // Determine if file has language metadata for badge
                   const fileLanguage = file.language;
                   const languageFlag = fileLanguage ? LANGUAGE_FLAG_MAP[fileLanguage] || '🏳️' : null;
@@ -1355,14 +1391,25 @@ export default function EventLivePage() {
                         </div>
                       )}
                       
-                      {/* File Type Icon Header */}
+                      {/* File Type Preview/Icon Header */}
                       <div className="relative h-48 bg-gradient-to-br from-pcs_blue to-ocean-blue flex items-center justify-center overflow-hidden">
-                        {/* Background decorative icon */}
-                        <FileIcon className="w-32 h-32 text-white/10 absolute" />
-                        {/* Main prominent icon */}
-                        <div className="relative z-10 bg-white/20 backdrop-blur-sm rounded-2xl p-5 group-hover:scale-110 transition-transform duration-300">
-                          <FileIcon className="w-16 h-16 text-white drop-shadow-lg" />
-                        </div>
+                        {isPdf && pdfProxyUrl ? (
+                          <div className="w-full h-full">
+                            <PDFThumbnail
+                              url={pdfProxyUrl}
+                              className="w-full h-full"
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            {/* Background decorative icon */}
+                            <FileIcon className="w-32 h-32 text-white/10 absolute" />
+                            {/* Main prominent icon */}
+                            <div className="relative z-10 bg-white/20 backdrop-blur-sm rounded-2xl p-5 group-hover:scale-110 transition-transform duration-300">
+                              <FileIcon className="w-16 h-16 text-white drop-shadow-lg" />
+                            </div>
+                          </>
+                        )}
                       </div>
                       
                       {/* Card Content */}
@@ -1437,6 +1484,11 @@ export default function EventLivePage() {
                   const resource = item.resource;
                   const FileIcon = getFileTypeIcon(resource.fileUrl || '');
                   
+                  // Check if resource is a PDF
+                  const fileUrl = resource.fileUrl || '';
+                  const isPdf = fileUrl.toLowerCase().includes('.pdf');
+                  const pdfProxyUrl = isPdf ? getProxyUrl(fileUrl) : '';
+                  
                   return (
                     <Card 
                       key={resource.id} 
@@ -1453,12 +1505,23 @@ export default function EventLivePage() {
                         </Badge>
                       </div>
                       
-                      {/* File Type Icon Header */}
+                      {/* File Type Preview/Icon Header */}
                       <div className="relative h-48 bg-gradient-to-br from-teal to-ocean-blue flex items-center justify-center overflow-hidden">
-                        <FileIcon className="w-32 h-32 text-white/10 absolute" />
-                        <div className="relative z-10 bg-white/20 backdrop-blur-sm rounded-2xl p-5 group-hover:scale-110 transition-transform duration-300">
-                          <FileIcon className="w-16 h-16 text-white drop-shadow-lg" />
-                        </div>
+                        {isPdf && pdfProxyUrl ? (
+                          <div className="w-full h-full">
+                            <PDFThumbnail
+                              url={pdfProxyUrl}
+                              className="w-full h-full"
+                            />
+                          </div>
+                        ) : (
+                          <>
+                            <FileIcon className="w-32 h-32 text-white/10 absolute" />
+                            <div className="relative z-10 bg-white/20 backdrop-blur-sm rounded-2xl p-5 group-hover:scale-110 transition-transform duration-300">
+                              <FileIcon className="w-16 h-16 text-white drop-shadow-lg" />
+                            </div>
+                          </>
+                        )}
                       </div>
                       
                       {/* Card Content */}
