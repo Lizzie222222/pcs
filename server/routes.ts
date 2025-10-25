@@ -6245,28 +6245,35 @@ Return JSON with:
         role: 'partner', // Set as partner instead of admin
       });
       
-      console.log(`[Partner Invitation] Created invitation ${invitation.id} for ${email}`);
+      console.log(`[Partner Invitation] Created invitation ${invitation.id} for ${email} (token: ${token.substring(0, 8)}...)`);
       
       // Get inviter details for email
       const inviter = await storage.getUser(userId);
       
       // Send partner invitation email
-      await sendPartnerInvitationEmail(
+      const emailSent = await sendPartnerInvitationEmail(
         email,
         inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : 'An administrator',
         token,
         7
       );
       
-      console.log(`[Partner Invitation] Sent invitation email to ${email}`);
+      if (emailSent) {
+        console.log(`[Partner Invitation] Successfully sent invitation email to ${email}`);
+      } else {
+        console.error(`[Partner Invitation] Failed to send invitation email to ${email} - check SendGrid configuration`);
+      }
       
       res.status(201).json({ 
-        message: "Partner invitation sent successfully",
+        message: emailSent 
+          ? "Partner invitation sent successfully" 
+          : "Invitation created but email failed to send. Check email configuration.",
         invitation: {
           id: invitation.id,
           email: invitation.email,
           expiresAt: invitation.expiresAt,
-        }
+        },
+        emailSent,
       });
     } catch (error) {
       console.error("[Partner Invitation] Error:", error);
@@ -6303,28 +6310,37 @@ Return JSON with:
         expiresAt,
       });
       
-      console.log(`[Admin Invitation] Created invitation ${invitation.id} for ${email}`);
+      console.log(`[Admin Invitation] Created invitation ${invitation.id} for ${email} (token: ${token.substring(0, 8)}...)`);
       
       // Get inviter details for email
       const inviter = await storage.getUser(userId);
       
       // Send invitation email
-      await sendAdminInvitationEmail(
+      const emailSent = await sendAdminInvitationEmail(
         email,
         inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : 'An administrator',
         token,
         7
       );
       
-      console.log(`[Admin Invitation] Sent invitation email to ${email}`);
+      if (emailSent) {
+        console.log(`[Admin Invitation] Successfully sent invitation email to ${email}`);
+      } else {
+        console.error(`[Admin Invitation] Failed to send invitation email to ${email} - check SendGrid configuration`);
+        // Still return success since the invitation was created in the database
+        // The admin can manually share the link if needed
+      }
       
       res.status(201).json({ 
-        message: "Invitation sent successfully",
+        message: emailSent 
+          ? "Invitation sent successfully" 
+          : "Invitation created but email failed to send. Check email configuration.",
         invitation: {
           id: invitation.id,
           email: invitation.email,
           expiresAt: invitation.expiresAt,
-        }
+        },
+        emailSent,
       });
     } catch (error) {
       console.error("[Admin Invitation] Error:", error);
@@ -6357,7 +6373,7 @@ Return JSON with:
     try {
       const { token } = req.params;
       
-      console.log(`[Get Admin Invitation] Fetching invitation details for token ${token}`);
+      console.log(`[Get Admin Invitation] Fetching invitation details for token ${token.substring(0, 8)}...`);
       
       // Get invitation by token
       const invitation = await storage.getAdminInvitationByToken(token);
@@ -6402,7 +6418,7 @@ Return JSON with:
       const { token } = req.params;
       const userId = req.user.id;
       
-      console.log(`[Accept Admin Invitation] User ${userId} accepting invitation with token ${token}`);
+      console.log(`[Accept Admin Invitation] User ${userId} accepting invitation with token ${token.substring(0, 8)}...`);
       
       // Accept the invitation
       const invitation = await storage.acceptAdminInvitation(token);
@@ -6424,16 +6440,38 @@ Return JSON with:
       if (invitationRole === 'partner') {
         await db.update(users).set({ role: 'partner', isAdmin: false }).where(eq(users.id, userId));
         console.log(`[Accept Admin Invitation] User ${userId} is now a partner`);
-        res.json({ 
-          message: "Partner invitation accepted successfully. You are now a partner.",
-        });
       } else {
         await db.update(users).set({ role: 'admin', isAdmin: true }).where(eq(users.id, userId));
         console.log(`[Accept Admin Invitation] User ${userId} is now an admin`);
-        res.json({ 
-          message: "Admin invitation accepted successfully. You are now an administrator.",
-        });
       }
+      
+      // CRITICAL: Refresh the user's session with updated privileges
+      // Without this, user won't see admin access until they log out and back in
+      const updatedUser = await storage.getUser(userId);
+      if (!updatedUser) {
+        console.error(`[Accept Admin Invitation] Failed to fetch updated user ${userId}`);
+        return res.status(500).json({ message: "Failed to refresh session" });
+      }
+      
+      // Force Passport to reload the user into the session
+      req.login(updatedUser, (err: any) => {
+        if (err) {
+          console.error(`[Accept Admin Invitation] Failed to refresh session for user ${userId}:`, err);
+          return res.status(500).json({ message: "Privileges granted but session refresh failed. Please log out and back in." });
+        }
+        
+        console.log(`[Accept Admin Invitation] Session refreshed for user ${userId} with new privileges`);
+        
+        if (invitationRole === 'partner') {
+          res.json({ 
+            message: "Partner invitation accepted successfully. You are now a partner.",
+          });
+        } else {
+          res.json({ 
+            message: "Admin invitation accepted successfully. You are now an administrator.",
+          });
+        }
+      });
     } catch (error) {
       console.error("[Accept Admin Invitation] Error:", error);
       res.status(500).json({ message: "Failed to accept invitation" });

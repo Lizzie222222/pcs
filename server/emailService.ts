@@ -11,19 +11,25 @@ if (process.env.SENDGRID_API_KEY) {
 }
 
 export function getBaseUrl(): string {
-  if (process.env.REPLIT_DEV_DOMAIN) {
-    return `https://${process.env.REPLIT_DEV_DOMAIN}`;
-  }
+  let baseUrl: string;
   
-  if (process.env.FRONTEND_URL) {
+  if (process.env.REPLIT_DEV_DOMAIN) {
+    baseUrl = `https://${process.env.REPLIT_DEV_DOMAIN}`;
+    console.log(`[Email Service] Using REPLIT_DEV_DOMAIN: ${baseUrl}`);
+  } else if (process.env.FRONTEND_URL) {
     const url = process.env.FRONTEND_URL;
     if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
+      baseUrl = url;
+    } else {
+      baseUrl = `https://${url}`;
     }
-    return `https://${url}`;
+    console.log(`[Email Service] Using FRONTEND_URL: ${baseUrl}`);
+  } else {
+    baseUrl = 'https://plasticclever.org';
+    console.warn(`[Email Service] WARNING: No REPLIT_DEV_DOMAIN or FRONTEND_URL set, using fallback: ${baseUrl}`);
   }
   
-  return 'https://plasticclever.org';
+  return baseUrl;
 }
 
 interface EmailParams {
@@ -165,7 +171,11 @@ export async function sendAdminInvitationEmail(
   token: string,
   expiresInDays: number
 ): Promise<boolean> {
-  const acceptUrl = `${getBaseUrl()}/admin-invitations/${token}`;
+  const baseUrl = getBaseUrl();
+  const acceptUrl = `${baseUrl}/admin-invitations/${token}`;
+  
+  // Log with redacted token for security (show only first 8 chars)
+  console.log(`[Admin Invitation Email] Sending to ${recipientEmail} with token ${token.substring(0, 8)}... to URL: ${baseUrl}/admin-invitations/[REDACTED]`);
   
   const html = `
     <!DOCTYPE html>
@@ -276,7 +286,11 @@ export async function sendPartnerInvitationEmail(
   token: string,
   expiresInDays: number
 ): Promise<boolean> {
-  const acceptUrl = `${getBaseUrl()}/admin-invitations/${token}`;
+  const baseUrl = getBaseUrl();
+  const acceptUrl = `${baseUrl}/admin-invitations/${token}`;
+  
+  // Log with redacted token for security (show only first 8 chars)
+  console.log(`[Partner Invitation Email] Sending to ${recipientEmail} with token ${token.substring(0, 8)}... to URL: ${baseUrl}/admin-invitations/[REDACTED]`);
   
   const html = `
     <!DOCTYPE html>
