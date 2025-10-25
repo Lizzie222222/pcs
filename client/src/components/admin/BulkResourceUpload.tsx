@@ -8,8 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { LoadingSpinner } from "@/components/ui/states";
-import { Upload, X, FileText, CheckCircle2, XCircle, Edit2, Save, Sparkles, Loader2 } from "lucide-react";
+import { Upload, X, FileText, CheckCircle2, XCircle, Edit2, Save, Sparkles, Loader2, Languages } from "lucide-react";
 import { LANGUAGE_FLAG_MAP, LANGUAGE_NAME_MAP } from "@/lib/languageUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 
@@ -323,9 +324,11 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
         fileType: r.fileType,
       }));
 
-      const response = await apiRequest<{ suggestions: any[] }>('POST', '/api/resources/ai-analyze-metadata', {
+      const res = await apiRequest('POST', '/api/resources/ai-analyze-metadata', {
         resources: resourcesPayload,
       });
+
+      const response = await res.json();
 
       if (response.suggestions && Array.isArray(response.suggestions)) {
         setUploadedResources(prev => 
@@ -913,22 +916,44 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                               />
                             </td>
                             <td className="p-3">
-                              <div className="flex flex-wrap gap-1">
-                                {SUPPORTED_LANGUAGES.slice(0, 3).map(langCode => (
-                                  <button
-                                    key={langCode}
-                                    onClick={() => handleLanguageToggle(resource.id, langCode)}
-                                    className={`text-lg ${resource.languages.includes(langCode) ? 'opacity-100' : 'opacity-30'}`}
-                                    title={LANGUAGE_NAME_MAP[langCode]}
-                                    data-testid={`button-lang-${langCode}-${resource.id}`}
+                              <Popover>
+                                <PopoverTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    className="w-full justify-between"
+                                    data-testid={`button-languages-${resource.id}`}
                                   >
-                                    {LANGUAGE_FLAG_MAP[langCode]}
-                                  </button>
-                                ))}
-                                <span className="text-xs text-gray-500 self-center">
-                                  +{Math.max(0, resource.languages.length - 3)} more
-                                </span>
-                              </div>
+                                    <span className="flex items-center gap-1">
+                                      <Languages className="h-4 w-4" />
+                                      {resource.languages.length} selected
+                                    </span>
+                                  </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-80 max-h-96 overflow-y-auto" align="start">
+                                  <div className="space-y-2">
+                                    <h4 className="font-medium text-sm mb-3">Select Languages</h4>
+                                    <div className="space-y-2">
+                                      {SUPPORTED_LANGUAGES.map((langCode) => (
+                                        <div key={langCode} className="flex items-center space-x-2">
+                                          <Checkbox
+                                            id={`${resource.id}-language-${langCode}`}
+                                            checked={resource.languages.includes(langCode)}
+                                            onCheckedChange={() => handleLanguageToggle(resource.id, langCode)}
+                                            data-testid={`checkbox-lang-${langCode}-${resource.id}`}
+                                          />
+                                          <label
+                                            htmlFor={`${resource.id}-language-${langCode}`}
+                                            className="text-sm font-medium leading-none cursor-pointer"
+                                          >
+                                            {LANGUAGE_FLAG_MAP[langCode]} {LANGUAGE_NAME_MAP[langCode]}
+                                          </label>
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </PopoverContent>
+                              </Popover>
                             </td>
                           </tr>
                         ))}
