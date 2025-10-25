@@ -39,7 +39,7 @@
     "subtitle": "Ons bewezen raamwerk splitst de transformatie van uw school op in drie eenvoudige fasen.",
     "stage_1_title": "INSPIREREN",
     "stage_1_description": "Leer over plasticvervuiling en inspireer anderen op school om actie te ondernemen.",
-    "stage_2_title": "ONDERZOEKEN", 
+    "stage_2_title": "ONDERZOEKEN",
     "stage_2_description": "Identificeer problematisch plastic op school en maak een plan om deze aan te pakken.",
     "stage_3_title": "HANDELEN",
     "stage_3_description": "Onderneem actie om afscheid te nemen van eenmalig plastic.",
@@ -50,8 +50,10 @@
     "progress_tracking": "Voortgangsmonitoring"
   },
   "partnership": {
-    "title": "Gebouwd op Sterke Partnerschappen",
-    "description": "Plastic Clever Schools is een samenwerking tussen toonaangevende milieuorganisaties, die samenwerken om betekenisvolle verandering in het onderwijs te creëren."
+    "collaboration_title": "Plastic Clever Schools is een samenwerking tussen",
+    "partnership_with": "in samenwerking met",
+    "title": "Built on Strong Partnerships",
+    "description": "Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education."
   },
   "testimonials": {
     "title": "Waarom Scholen voor Ons Kiezen",
@@ -63,7 +65,7 @@
     },
     "testimonial_2": {
       "quote": "We hebben plastic afval met 60% verminderd! De hele schoolgemeenschap is betrokken en enthousiast over duurzaamheid.",
-      "name": "Maria Rodriguez", 
+      "name": "Maria Rodriguez",
       "school": "Sunshine Elementary, Australië"
     },
     "testimonial_3": {
@@ -73,9 +75,17 @@
     }
   },
   "instagram": {
-    "title": "Volg <highlight>Onze Reis</highlight>",
-    "description": "Zie de laatste updates van scholen over de hele wereld die het verschil maken. Echte verhalen, echte impact, dagelijks gedeeld op onze Instagram.",
-    "follow_button": "Volg op Instagram"
+    "follow_handle": "Volg @plastic_clever_schools",
+    "follow_short": "Volg Ons",
+    "hashtag_intro": "Doe mee aan het gesprek en deel de plastic clever reis van jouw school met",
+    "main_hashtag": "#PlasticCleverSchools",
+    "hashtag_sustainable": "#DuurzameScholen",
+    "hashtag_plastic_free": "#PlastikVrij",
+    "hashtag_eco_education": "#EcoEducatie",
+    "hashtag_young_activists": "#JongeActivisten",
+    "title": "Follow <highlight>Our Journey</highlight>",
+    "description": "See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.",
+    "follow_button": "Follow on Instagram"
   },
   "newsletter": {
     "title": "Blijf Verbonden",
@@ -89,10 +99,13 @@
     "contact_support": "Vragen? Neem Contact Op met Support"
   },
   "stats": {
-    "schools_registered": "Geregistreerde Scholen",
-    "students_impacted": "Beïnvloede Studenten", 
-    "countries_participating": "Deelnemende Landen",
-    "awards_completed": "Voltooide Awards"
+    "schools_label": "scholen",
+    "countries_label": "landen",
+    "actions_taken_label": "acties ondernomen",
+    "schools_registered": "Schools Registered",
+    "students_impacted": "Students Impacted",
+    "countries_participating": "Countries Participating",
+    "awards_completed": "Awards Completed"
   },
   "program": {
     "title": "Ons Drie-Fasen Programma",
@@ -103,7 +116,7 @@
       "details": "Betrek studenten met overtuigende presentaties, video's en interactieve activiteiten die de urgentie van plasticvervuiling benadrukken en hen inspireren om actie te ondernemen."
     },
     "stage_2": {
-      "title": "Onderzoeken", 
+      "title": "Onderzoeken",
       "description": "Onderzoek en analyseer plasticgebruik in uw school",
       "details": "Voer uitgebreide plastic-audits uit, verzamel gegevens en analyseer patronen van plasticverbruik om de milieuimpact van uw school te begrijpen."
     },
@@ -137,7 +150,7 @@
       "description": "Maak meetbare verschillen in plasticafvalvermindering en milieubewustzijn"
     },
     "award_recognition": {
-      "title": "Awarderkenning", 
+      "title": "Awarderkenning",
       "description": "Verdien certificaten en erkenning voor de milieuprestaties van uw school"
     }
   },
@@ -149,7 +162,7 @@
       "description": "Schrijf uw school in en creëer uw opvoedersprofiel"
     },
     "step_2": {
-      "title": "Leren", 
+      "title": "Leren",
       "description": "Toegang tot curriculummaterialen en trainingsmiddelen"
     },
     "step_3": {
@@ -167,12 +180,12 @@
     "description": "We werken samen met toonaangevende milieuorganisaties, onderwijsinstellingen en duurzaamheidsexperts om de hoogste kwaliteit middelen en ondersteuning te leveren voor de reis van uw school."
   },
   "cta_section": {
-    "title": "Klaar om Het Verschil te Maken?",
-    "subtitle": "Sluit je aan bij duizenden scholen wereldwijd in de strijd tegen plasticvervuiling",
-    "description": "Uw school kan deel uitmaken van de oplossing. Registreer vandaag en start uw reis om een Plastic Clever School te worden.",
-    "register_now": "Registreer Uw School Nu",
-    "have_questions": "Heeft u vragen?",
-    "contact_support": "Neem contact op met ons supportteam"
+    "title": "Klaar om het Verschil te Maken?",
+    "subtitle": "Sluit je aan bij duizenden scholen wereldwijd om een plastic-slimme toekomst te creëren",
+    "description": "Jouw school kan deel uitmaken van de oplossing. Registreer vandaag en begin je reis naar het worden van een Plastic Clever School.",
+    "register_now": "Registreer Je School",
+    "have_questions": "Heb je vragen?",
+    "contact_support": "Neem contact op met ons ondersteuningsteam"
   },
   "accessibility": {
     "hero_video_title": "Plastic Clever Schools Introductievideo",
@@ -188,29 +201,9 @@
     "river_cleanup_logo_alt": "River Cleanup organisatielogo",
     "plastic_clever_schools_logo_alt": "Plastic Clever Schools logo"
   },
-
   "popup": {
     "latest_news": "Laatste Nieuws!",
     "community_message": "Sluit je aan bij onze groeiende gemeenschap"
-  },
-  "partnership": {
-    "collaboration_title": "Plastic Clever Schools is een samenwerking tussen",
-    "partnership_with": "in samenwerking met"
-  },
-  "instagram": {
-    "follow_handle": "Volg @plastic_clever_schools",
-    "follow_short": "Volg Ons",
-    "hashtag_intro": "Doe mee aan het gesprek en deel de plastic clever reis van jouw school met",
-    "main_hashtag": "#PlasticCleverSchools",
-    "hashtag_sustainable": "#DuurzameScholen",
-    "hashtag_plastic_free": "#PlastikVrij",
-    "hashtag_eco_education": "#EcoEducatie",
-    "hashtag_young_activists": "#JongeActivisten"
-  },
-  "stats": {
-    "schools_label": "scholen",
-    "countries_label": "landen",
-    "actions_taken_label": "acties ondernomen"
   },
   "testimonial": {
     "quote": "Plastic Clever Schools heeft de manier waarop we omgaan met duurzaamheid getransformeerd. Onze leerlingen zijn nu gepassioneerde milieuvoorvechters!",
@@ -220,14 +213,6 @@
   "video_section": {
     "title": "Wat is Plastic Clever Schools?",
     "caption": "Openingscitaat van een docent om de video te introduceren - afbeelding als tijdelijke aanduiding voor lazy loading"
-  },
-  "cta_section": {
-    "title": "Klaar om het Verschil te Maken?",
-    "subtitle": "Sluit je aan bij duizenden scholen wereldwijd om een plastic-slimme toekomst te creëren",
-    "description": "Jouw school kan deel uitmaken van de oplossing. Registreer vandaag en begin je reis naar het worden van een Plastic Clever School.",
-    "register_now": "Registreer Je School",
-    "have_questions": "Heb je vragen?",
-    "contact_support": "Neem contact op met ons ondersteuningsteam"
   },
   "footer": {
     "description": "Scholen wereldwijd empoweren om plasticvrije omgevingen te creëren door middel van educatie, onderzoek en actie.",
@@ -249,5 +234,33 @@
     "copyright": "© 2024 Plastic Clever Schools. Alle rechten voorbehouden.",
     "privacy": "Privacy",
     "terms": "Voorwaarden"
+  },
+  "events": {
+    "page_title": "Events & Workshops",
+    "page_description": "Join our community events, workshops, and webinars to learn and connect with other Plastic Clever Schools",
+    "upcoming_events": "Upcoming Events",
+    "past_events": "Past Events",
+    "no_upcoming_events": "No upcoming events at the moment. Check back soon!",
+    "event_live_now": "🎉 Event is Live Now!",
+    "join_meeting_now": "Join Meeting Now",
+    "event_not_started": "This event hasn't started yet. Please check back on {{date}}",
+    "meeting_link_available": "The meeting link will be available when the event starts.",
+    "catch_up_recording": "📺 Catch Up on the Recording",
+    "missed_event_message": "Missed this event? No worries! You can watch the full recording and access all event resources below.",
+    "registered": "You're registered for this event!",
+    "waitlisted": "You're on the waitlist for this event",
+    "registering": "Registering...",
+    "register_event": "Register for This Event",
+    "sign_up_to_register": "Sign Up to Register",
+    "badges": {
+      "past_event": "PAST EVENT",
+      "full": "FULL"
+    },
+    "location": {
+      "virtual_event": "Virtual Event"
+    },
+    "capacity": {
+      "registered": "{{current}} / {{total}} registered"
+    }
   }
 }

@@ -126,7 +126,9 @@
     "alert_circle_icon": "Alert icon",
     "user_check_icon": "User check icon",
     "arrow_left_icon": "Arrow left icon",
-    "book_open_icon": "Book icon"
+    "book_open_icon": "Book icon",
+    "collapse": "Collapse",
+    "expand": "Expand"
   },
   "general": {
     "search": "Chwilio",

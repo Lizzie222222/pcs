@@ -113,6 +113,8 @@
   "accessibility": {
     "skip_to_main_content": "Skip to main content",
     "back_button": "Back",
+    "collapse": "Collapse",
+    "expand": "Expand",
     "mail_icon": "Email icon",
     "phone_icon": "Phone icon",
     "location_icon": "Location icon",

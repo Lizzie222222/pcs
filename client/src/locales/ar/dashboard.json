@@ -288,14 +288,12 @@
     "provide_item_label": "يرجى تقديم تسمية للعنصر البلاستيكي",
     "baseline_min": "يجب أن تكون الكمية الأساسية على الأقل 1",
     "target_min": "يجب أن تكون الكمية المستهدفة على الأقل 0"
-  }
   },
   "accessibility": {
     "dismiss_notification": "Dismiss notification"
-  }
   },
   "units": {
     "kg": "kg",
     "liters": "liters"
-  }
+  },
 }

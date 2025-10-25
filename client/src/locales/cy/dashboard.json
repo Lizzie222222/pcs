@@ -288,14 +288,12 @@
     "provide_item_label": "Darparwch label ar gyfer yr eitem blastig",
     "baseline_min": "Rhaid i'r maint sylfaenol fod o leiaf 1",
     "target_min": "Rhaid i'r maint targed fod o leiaf 0"
-  }
   },
   "accessibility": {
     "dismiss_notification": "Dismiss notification"
-  }
   },
   "units": {
     "kg": "kg",
     "liters": "liters"
-  }
+  },
 }

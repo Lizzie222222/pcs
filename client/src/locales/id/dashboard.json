@@ -288,14 +288,12 @@
     "provide_item_label": "Harap berikan label untuk item plastik",
     "baseline_min": "Jumlah baseline harus minimal 1",
     "target_min": "Jumlah target harus minimal 0"
-  }
   },
   "accessibility": {
     "dismiss_notification": "Dismiss notification"
-  }
   },
   "units": {
     "kg": "kg",
     "liters": "liters"
-  }
+  },
 }

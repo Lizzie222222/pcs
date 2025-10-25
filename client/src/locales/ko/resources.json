@@ -22,7 +22,7 @@
   },
   "stages": {
     "inspire": "영감 주기",
-    "investigate": "조사하기", 
+    "investigate": "조사하기",
     "act": "행동하기"
   },
   "languages": {
@@ -67,7 +67,7 @@
   },
   "categories": {
     "lesson_plans": "수업 계획",
-    "worksheets": "워크시트", 
+    "worksheets": "워크시트",
     "presentations": "프레젠테이션",
     "videos": "동영상",
     "posters": "포스터",
@@ -80,5 +80,34 @@
     "download_started": "{{title}} 다운로드가 시작되었습니다",
     "resource_unavailable": "이 자료는 현재 이용할 수 없습니다",
     "large_file_warning": "대용량 파일입니다 ({{size}}). 다운로드하는 데 시간이 걸릴 수 있습니다."
-  }
+  },
+  "toasts": {
+    "link_copied": "Link Copied!",
+    "link_copied_desc": "The resource link has been copied to your clipboard.",
+    "copy_failed": "Copy Failed",
+    "copy_failed_desc": "Unable to copy link to clipboard. Please try again.",
+    "pack_link_copied": "Pack Link Copied!",
+    "pack_link_copied_desc": "The resource pack link has been copied to your clipboard.",
+    "download_started": "Download Started",
+    "download_started_desc": "Downloading {{count}} resources from the pack...",
+    "download_failed": "Download Failed",
+    "download_failed_desc": "Unable to download all resources. Please try again."
+  },
+  "badges": {
+    "new": "NEW",
+    "recommended": "RECOMMENDED"
+  },
+  "buttons": {
+    "view": "View",
+    "copy_link": "Copy Link",
+    "download_all": "Download All",
+    "view_pack": "View Pack"
+  },
+  "dynamic_text": {
+    "resource_count_one": "{{count}} resource",
+    "resource_count_other": "{{count}} resources",
+    "pack_download_count_one": "{{count}} download",
+    "pack_download_count_other": "{{count}} downloads"
+  },
+  "register_to_access": "Please register or log in to access this resource"
 }

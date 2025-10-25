@@ -288,14 +288,12 @@
     "provide_item_label": "Veuillez fournir une étiquette pour l'article en plastique",
     "baseline_min": "La quantité de référence doit être d'au moins 1",
     "target_min": "La quantité cible doit être d'au moins 0"
-  }
   },
   "accessibility": {
     "dismiss_notification": "Dismiss notification"
-  }
   },
   "units": {
     "kg": "kg",
     "liters": "liters"
-  }
+  },
 }

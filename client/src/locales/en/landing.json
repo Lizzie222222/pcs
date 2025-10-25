@@ -250,6 +250,16 @@
     "waitlisted": "You're on the waitlist for this event",
     "registering": "Registering...",
     "register_event": "Register for This Event",
-    "sign_up_to_register": "Sign Up to Register"
+    "sign_up_to_register": "Sign Up to Register",
+    "badges": {
+      "past_event": "PAST EVENT",
+      "full": "FULL"
+    },
+    "location": {
+      "virtual_event": "Virtual Event"
+    },
+    "capacity": {
+      "registered": "{{current}} / {{total}} registered"
+    }
   }
 }

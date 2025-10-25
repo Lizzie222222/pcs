@@ -39,7 +39,7 @@
     "subtitle": "Mae ein fframwaith profedig yn rhannu trawsnewidiad eich ysgol yn dri cham hawdd.",
     "stage_1_title": "YSBRYDOLI",
     "stage_1_description": "Dysgu am lygredd plastig ac ysbrydoli eraill yn yr ysgol i weithredu.",
-    "stage_2_title": "YMCHWILIO", 
+    "stage_2_title": "YMCHWILIO",
     "stage_2_description": "Nodi plastigau problemus yn yr ysgol a chreu cynllun i fynd i'r afael â nhw.",
     "stage_3_title": "GWEITHREDU",
     "stage_3_description": "Cymryd camau i ffarwelio â phlastig untro.",
@@ -50,8 +50,10 @@
     "progress_tracking": "Olrhain Cynnydd"
   },
   "partnership": {
-    "title": "Wedi'i Adeiladu ar Bartneriaethau Cryf",
-    "description": "Mae Plastic Clever Schools yn gydweithrediad rhwng sefydliadau amgylcheddol blaenllaw, sy'n gweithio gyda'i gilydd i greu newid ystyrlon mewn addysg."
+    "collaboration_title": "Mae Plastic Clever Schools yn gydweithrediad rhwng",
+    "partnership_with": "mewn partneriaeth â",
+    "title": "Built on Strong Partnerships",
+    "description": "Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education."
   },
   "testimonials": {
     "title": "Pam Mae Ysgolion yn Ein Dewis",
@@ -63,7 +65,7 @@
     },
     "testimonial_2": {
       "quote": "Rydym wedi lleihau gwastraff plastig 60%! Mae'r holl gymuned ysgol wedi ymgysylltu ac yn frwdfrydig am gynaliadwyedd.",
-      "name": "Maria Rodriguez", 
+      "name": "Maria Rodriguez",
       "school": "Sunshine Elementary, Awstralia"
     },
     "testimonial_3": {
@@ -73,9 +75,17 @@
     }
   },
   "instagram": {
-    "title": "Dilynwch <highlight>Ein Taith</highlight>",
-    "description": "Gweld y diweddariadau diweddaraf o ysgolion ledled y byd sy'n gwneud gwahaniaeth. Straeon go iawn, effaith go iawn, yn cael eu rhannu bob dydd ar ein Instagram.",
-    "follow_button": "Dilyn ar Instagram"
+    "follow_handle": "Dilynwch @plastic_clever_schools",
+    "follow_short": "Dilynwch Ni",
+    "hashtag_intro": "Ymunwch â'r sgwrs a rhannwch daith plastig clyfar eich ysgol gyda",
+    "main_hashtag": "#PlasticCleverSchools",
+    "hashtag_sustainable": "#YsgolionCynaliadwy",
+    "hashtag_plastic_free": "#DiBlastig",
+    "hashtag_eco_education": "#AddysgEco",
+    "hashtag_young_activists": "#ActifyddionIeuanc",
+    "title": "Follow <highlight>Our Journey</highlight>",
+    "description": "See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.",
+    "follow_button": "Follow on Instagram"
   },
   "newsletter": {
     "title": "Cadw Mewn Cysylltiad",
@@ -89,10 +99,13 @@
     "contact_support": "Cwestiynau? Cysylltu â Chymorth"
   },
   "stats": {
-    "schools_registered": "Ysgolion Cofrestredig",
-    "students_impacted": "Myfyrwyr â'u Heffeithio", 
-    "countries_participating": "Gwledydd yn Cymryd Rhan",
-    "awards_completed": "Gwobrau wedi'u Cwblhau"
+    "schools_label": "ysgolion",
+    "countries_label": "gwledydd",
+    "actions_taken_label": "camau gweithredu wedi'u cymryd",
+    "schools_registered": "Schools Registered",
+    "students_impacted": "Students Impacted",
+    "countries_participating": "Countries Participating",
+    "awards_completed": "Awards Completed"
   },
   "program": {
     "title": "Ein Rhaglen Tri Cham",
@@ -103,7 +116,7 @@
       "details": "Ymgysylltu â myfyrwyr gyda chyflwyniadau cyfareddol, fideos a gweithgareddau rhyngweithiol sy'n tynnu sylw at frys llygredd plastig ac yn eu hysbrydoli i weithredu."
     },
     "stage_2": {
-      "title": "Ymchwilio", 
+      "title": "Ymchwilio",
       "description": "Ymchwilio a dadansoddi defnydd plastig yn eich ysgol",
       "details": "Cynnal archwiliadau plastig cynhwysfawr, casglu data a dadansoddi patrymau defnydd plastig i ddeall effaith amgylcheddol eich ysgol."
     },
@@ -137,7 +150,7 @@
       "description": "Gwneud gwahaniaethau mesuradwy mewn lleihau gwastraff plastig ac ymwybyddiaeth amgylcheddol"
     },
     "award_recognition": {
-      "title": "Cydnabyddiaeth Gwobrau", 
+      "title": "Cydnabyddiaeth Gwobrau",
       "description": "Ennill tystysgrifau a chydnabyddiaeth am gyflawniadau amgylcheddol eich ysgol"
     }
   },
@@ -149,7 +162,7 @@
       "description": "Cofrestru eich ysgol a chreu eich proffil addysgwr"
     },
     "step_2": {
-      "title": "Dysgu", 
+      "title": "Dysgu",
       "description": "Mynediad at ddeunyddiau cwricwlwm ac adnoddau hyfforddi"
     },
     "step_3": {
@@ -168,11 +181,11 @@
   },
   "cta_section": {
     "title": "Yn Barod i Wneud Gwahaniaeth?",
-    "subtitle": "Ymunwch â miloedd o ysgolion ledled y byd yn y frwydr yn erbyn llygredd plastig",
-    "description": "Gall eich ysgol fod yn rhan o'r ateb. Cofrestrwch heddiw a dechreuwch eich taith i ddod yn Plastic Clever School.",
-    "register_now": "Cofrestrwch Eich Ysgol Nawr",
+    "subtitle": "Ymunwch â miloedd o ysgolion ledled y byd i greu dyfodol plastig clyfar",
+    "description": "Gall eich ysgol fod yn rhan o'r ateb. Cofrestrwch heddiw a dechreuwch eich taith tuag at ddod yn Ysgol Plastig Glyfar.",
+    "register_now": "Cofrestrwch Eich Ysgol",
     "have_questions": "Cwestiynau?",
-    "contact_support": "Cysylltu â'n tîm cymorth"
+    "contact_support": "Cysylltwch â'n tîm cymorth"
   },
   "accessibility": {
     "hero_video_title": "Fideo Cyflwyno Plastic Clever Schools",
@@ -188,29 +201,9 @@
     "river_cleanup_logo_alt": "Logo sefydliad River Cleanup",
     "plastic_clever_schools_logo_alt": "Logo Plastic Clever Schools"
   },
-
   "popup": {
     "latest_news": "Newyddion Diweddaraf!",
     "community_message": "Ymunwch â'n cymuned sy'n tyfu"
-  },
-  "partnership": {
-    "collaboration_title": "Mae Plastic Clever Schools yn gydweithrediad rhwng",
-    "partnership_with": "mewn partneriaeth â"
-  },
-  "instagram": {
-    "follow_handle": "Dilynwch @plastic_clever_schools",
-    "follow_short": "Dilynwch Ni",
-    "hashtag_intro": "Ymunwch â'r sgwrs a rhannwch daith plastig clyfar eich ysgol gyda",
-    "main_hashtag": "#PlasticCleverSchools",
-    "hashtag_sustainable": "#YsgolionCynaliadwy",
-    "hashtag_plastic_free": "#DiBlastig",
-    "hashtag_eco_education": "#AddysgEco",
-    "hashtag_young_activists": "#ActifyddionIeuanc"
-  },
-  "stats": {
-    "schools_label": "ysgolion",
-    "countries_label": "gwledydd",
-    "actions_taken_label": "camau gweithredu wedi'u cymryd"
   },
   "testimonial": {
     "quote": "Mae Plastic Clever Schools wedi trawsnewid sut rydyn ni'n mynd ati i gynaliadwyedd. Mae ein myfyrwyr bellach yn eiriolwyr amgylcheddol angerddol!",
@@ -220,14 +213,6 @@
   "video_section": {
     "title": "Beth yw Plastic Clever Schools?",
     "caption": "Dyfyniad agoriadol gan athro i gyflwyno'r fideo - delwedd fel daliedydd ar gyfer llwytho araf"
-  },
-  "cta_section": {
-    "title": "Yn Barod i Wneud Gwahaniaeth?",
-    "subtitle": "Ymunwch â miloedd o ysgolion ledled y byd i greu dyfodol plastig clyfar",
-    "description": "Gall eich ysgol fod yn rhan o'r ateb. Cofrestrwch heddiw a dechreuwch eich taith tuag at ddod yn Ysgol Plastig Glyfar.",
-    "register_now": "Cofrestrwch Eich Ysgol",
-    "have_questions": "Cwestiynau?",
-    "contact_support": "Cysylltwch â'n tîm cymorth"
   },
   "footer": {
     "description": "Grymuso ysgolion ledled y byd i greu amgylcheddau di-blastig trwy addysg, ymchwil a gweithredu.",
@@ -249,5 +234,33 @@
     "copyright": "© 2024 Plastic Clever Schools. Cedwir pob hawl.",
     "privacy": "Preifatrwydd",
     "terms": "Telerau"
+  },
+  "events": {
+    "page_title": "Events & Workshops",
+    "page_description": "Join our community events, workshops, and webinars to learn and connect with other Plastic Clever Schools",
+    "upcoming_events": "Upcoming Events",
+    "past_events": "Past Events",
+    "no_upcoming_events": "No upcoming events at the moment. Check back soon!",
+    "event_live_now": "🎉 Event is Live Now!",
+    "join_meeting_now": "Join Meeting Now",
+    "event_not_started": "This event hasn't started yet. Please check back on {{date}}",
+    "meeting_link_available": "The meeting link will be available when the event starts.",
+    "catch_up_recording": "📺 Catch Up on the Recording",
+    "missed_event_message": "Missed this event? No worries! You can watch the full recording and access all event resources below.",
+    "registered": "You're registered for this event!",
+    "waitlisted": "You're on the waitlist for this event",
+    "registering": "Registering...",
+    "register_event": "Register for This Event",
+    "sign_up_to_register": "Sign Up to Register",
+    "badges": {
+      "past_event": "PAST EVENT",
+      "full": "FULL"
+    },
+    "location": {
+      "virtual_event": "Virtual Event"
+    },
+    "capacity": {
+      "registered": "{{current}} / {{total}} registered"
+    }
   }
 }

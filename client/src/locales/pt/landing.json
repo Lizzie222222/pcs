@@ -39,7 +39,7 @@
     "subtitle": "Nossa estrutura comprovada divide a transformação da sua escola em três etapas diretas.",
     "stage_1_title": "INSPIRAR",
     "stage_1_description": "Aprenda sobre poluição plástica e inspire outros na escola a agir.",
-    "stage_2_title": "INVESTIGAR", 
+    "stage_2_title": "INVESTIGAR",
     "stage_2_description": "Identifique plásticos problemáticos na escola e faça um plano para combatê-los.",
     "stage_3_title": "AGIR",
     "stage_3_description": "Tome medidas para dizer adeus aos plásticos descartáveis.",
@@ -50,8 +50,10 @@
     "progress_tracking": "Acompanhamento do Progresso"
   },
   "partnership": {
-    "title": "Construído em Parcerias Fortes",
-    "description": "Plastic Clever Schools é uma colaboração entre organizações ambientais líderes, trabalhando juntas para criar mudanças significativas na educação."
+    "collaboration_title": "Plastic Clever Schools é uma colaboração entre",
+    "partnership_with": "em parceria com",
+    "title": "Built on Strong Partnerships",
+    "description": "Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education."
   },
   "testimonials": {
     "title": "Por Que as Escolas nos Escolhem",
@@ -63,7 +65,7 @@
     },
     "testimonial_2": {
       "quote": "Reduzimos os resíduos plásticos em 60%! Toda a comunidade escolar está envolvida e entusiasmada com a sustentabilidade.",
-      "name": "Maria Rodriguez", 
+      "name": "Maria Rodriguez",
       "school": "Sunshine Elementary, Austrália"
     },
     "testimonial_3": {
@@ -73,9 +75,17 @@
     }
   },
   "instagram": {
-    "title": "Siga <highlight>a Nossa Jornada</highlight>",
-    "description": "Veja as últimas atualizações de escolas ao redor do mundo que estão fazendo a diferença. Histórias reais, impacto real, compartilhados diariamente no nosso Instagram.",
-    "follow_button": "Seguir no Instagram"
+    "follow_handle": "Siga @plastic_clever_schools",
+    "follow_short": "Siga-nos",
+    "hashtag_intro": "Junte-se à conversa e compartilhe a jornada plastic clever da sua escola com",
+    "main_hashtag": "#PlasticCleverSchools",
+    "hashtag_sustainable": "#EscolasSustentáveis",
+    "hashtag_plastic_free": "#LivreDePlástico",
+    "hashtag_eco_education": "#EducaçãoEcológica",
+    "hashtag_young_activists": "#JovensAtivistas",
+    "title": "Follow <highlight>Our Journey</highlight>",
+    "description": "See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.",
+    "follow_button": "Follow on Instagram"
   },
   "newsletter": {
     "title": "Mantenha-se Conectado",
@@ -89,10 +99,13 @@
     "contact_support": "Perguntas? Entre em Contato com o Suporte"
   },
   "stats": {
-    "schools_registered": "Escolas Registradas",
-    "students_impacted": "Alunos Impactados", 
-    "countries_participating": "Países Participantes",
-    "awards_completed": "Prêmios Concluídos"
+    "schools_label": "escolas",
+    "countries_label": "países",
+    "actions_taken_label": "ações realizadas",
+    "schools_registered": "Schools Registered",
+    "students_impacted": "Students Impacted",
+    "countries_participating": "Countries Participating",
+    "awards_completed": "Awards Completed"
   },
   "program": {
     "title": "Nosso Programa de Três Etapas",
@@ -103,7 +116,7 @@
       "details": "Envolva os alunos com apresentações convincentes, vídeos e atividades interativas que destacam a urgência da poluição plástica e os inspiram a agir."
     },
     "stage_2": {
-      "title": "Investigar", 
+      "title": "Investigar",
       "description": "Pesquise e analise o uso de plástico na sua escola",
       "details": "Realize auditorias abrangentes de plástico, colete dados e analise padrões de consumo de plástico para entender o impacto ambiental da sua escola."
     },
@@ -137,7 +150,7 @@
       "description": "Faça diferenças mensuráveis na redução de resíduos plásticos e conscientização ambiental"
     },
     "award_recognition": {
-      "title": "Reconhecimento de Prêmios", 
+      "title": "Reconhecimento de Prêmios",
       "description": "Ganhe certificados e reconhecimento pelas conquistas ambientais da sua escola"
     }
   },
@@ -149,7 +162,7 @@
       "description": "Inscreva a sua escola e crie o seu perfil de educador"
     },
     "step_2": {
-      "title": "Aprender", 
+      "title": "Aprender",
       "description": "Acesse materiais curriculares e recursos de treinamento"
     },
     "step_3": {
@@ -168,10 +181,10 @@
   },
   "cta_section": {
     "title": "Pronto para Fazer a Diferença?",
-    "subtitle": "Junte-se a milhares de escolas em todo o mundo na luta contra a poluição plástica",
-    "description": "A sua escola pode fazer parte da solução. Registre-se hoje e comece a sua jornada para se tornar uma Plastic Clever School.",
-    "register_now": "Registre a Sua Escola Agora",
-    "have_questions": "Tem perguntas?",
+    "subtitle": "Junte-se a milhares de escolas em todo o mundo para criar um futuro inteligente em relação ao plástico",
+    "description": "Sua escola pode fazer parte da solução. Registre-se hoje e comece sua jornada para se tornar uma Plastic Clever School.",
+    "register_now": "Registre Sua Escola",
+    "have_questions": "Tem dúvidas?",
     "contact_support": "Entre em contato com nossa equipe de suporte"
   },
   "accessibility": {
@@ -188,29 +201,9 @@
     "river_cleanup_logo_alt": "Logo da organização River Cleanup",
     "plastic_clever_schools_logo_alt": "Logo Plastic Clever Schools"
   },
-
   "popup": {
     "latest_news": "Últimas Notícias!",
     "community_message": "Junte-se à nossa comunidade em crescimento"
-  },
-  "partnership": {
-    "collaboration_title": "Plastic Clever Schools é uma colaboração entre",
-    "partnership_with": "em parceria com"
-  },
-  "instagram": {
-    "follow_handle": "Siga @plastic_clever_schools",
-    "follow_short": "Siga-nos",
-    "hashtag_intro": "Junte-se à conversa e compartilhe a jornada plastic clever da sua escola com",
-    "main_hashtag": "#PlasticCleverSchools",
-    "hashtag_sustainable": "#EscolasSustentáveis",
-    "hashtag_plastic_free": "#LivreDePlástico",
-    "hashtag_eco_education": "#EducaçãoEcológica",
-    "hashtag_young_activists": "#JovensAtivistas"
-  },
-  "stats": {
-    "schools_label": "escolas",
-    "countries_label": "países",
-    "actions_taken_label": "ações realizadas"
   },
   "testimonial": {
     "quote": "Plastic Clever Schools transformou a forma como abordamos a sustentabilidade. Nossos alunos agora são defensores apaixonados do meio ambiente!",
@@ -220,14 +213,6 @@
   "video_section": {
     "title": "O que é Plastic Clever Schools?",
     "caption": "Citação de abertura de um professor para apresentar o vídeo - imagem como marcador de posição para carregamento lento"
-  },
-  "cta_section": {
-    "title": "Pronto para Fazer a Diferença?",
-    "subtitle": "Junte-se a milhares de escolas em todo o mundo para criar um futuro inteligente em relação ao plástico",
-    "description": "Sua escola pode fazer parte da solução. Registre-se hoje e comece sua jornada para se tornar uma Plastic Clever School.",
-    "register_now": "Registre Sua Escola",
-    "have_questions": "Tem dúvidas?",
-    "contact_support": "Entre em contato com nossa equipe de suporte"
   },
   "footer": {
     "description": "Capacitar escolas em todo o mundo para criar ambientes livres de plástico por meio de educação, investigação e ação.",
@@ -249,5 +234,33 @@
     "copyright": "© 2024 Plastic Clever Schools. Todos os direitos reservados.",
     "privacy": "Privacidade",
     "terms": "Termos"
+  },
+  "events": {
+    "page_title": "Events & Workshops",
+    "page_description": "Join our community events, workshops, and webinars to learn and connect with other Plastic Clever Schools",
+    "upcoming_events": "Upcoming Events",
+    "past_events": "Past Events",
+    "no_upcoming_events": "No upcoming events at the moment. Check back soon!",
+    "event_live_now": "🎉 Event is Live Now!",
+    "join_meeting_now": "Join Meeting Now",
+    "event_not_started": "This event hasn't started yet. Please check back on {{date}}",
+    "meeting_link_available": "The meeting link will be available when the event starts.",
+    "catch_up_recording": "📺 Catch Up on the Recording",
+    "missed_event_message": "Missed this event? No worries! You can watch the full recording and access all event resources below.",
+    "registered": "You're registered for this event!",
+    "waitlisted": "You're on the waitlist for this event",
+    "registering": "Registering...",
+    "register_event": "Register for This Event",
+    "sign_up_to_register": "Sign Up to Register",
+    "badges": {
+      "past_event": "PAST EVENT",
+      "full": "FULL"
+    },
+    "location": {
+      "virtual_event": "Virtual Event"
+    },
+    "capacity": {
+      "registered": "{{current}} / {{total}} registered"
+    }
   }
 }

@@ -39,7 +39,7 @@
     "subtitle": "Kerangka terbukti kami memecah transformasi sekolah Anda menjadi tiga tahap yang mudah.",
     "stage_1_title": "INSPIRASI",
     "stage_1_description": "Pelajari tentang polusi plastik dan inspirasi orang lain di sekolah untuk mengambil tindakan.",
-    "stage_2_title": "INVESTIGASI", 
+    "stage_2_title": "INVESTIGASI",
     "stage_2_description": "Identifikasi plastik bermasalah di sekolah dan buat rencana untuk mengatasinya.",
     "stage_3_title": "TINDAKAN",
     "stage_3_description": "Ambil tindakan untuk melambaikan selamat tinggal pada plastik sekali pakai.",
@@ -50,8 +50,10 @@
     "progress_tracking": "Pelacakan Kemajuan"
   },
   "partnership": {
-    "title": "Dibangun atas Kemitraan yang Kuat",
-    "description": "Plastic Clever Schools adalah kolaborasi antara organisasi lingkungan terkemuka, bekerja sama untuk menciptakan perubahan berarti dalam pendidikan."
+    "collaboration_title": "Plastic Clever Schools adalah kolaborasi antara",
+    "partnership_with": "bermitra dengan",
+    "title": "Built on Strong Partnerships",
+    "description": "Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education."
   },
   "testimonials": {
     "title": "Mengapa Sekolah Memilih Kami",
@@ -63,7 +65,7 @@
     },
     "testimonial_2": {
       "quote": "Kami telah mengurangi sampah plastik sebesar 60%! Seluruh komunitas sekolah terlibat dan bersemangat tentang keberlanjutan.",
-      "name": "Maria Rodriguez", 
+      "name": "Maria Rodriguez",
       "school": "Sunshine Elementary, Australia"
     },
     "testimonial_3": {
@@ -73,9 +75,17 @@
     }
   },
   "instagram": {
-    "title": "Ikuti <highlight>Perjalanan Kami</highlight>",
-    "description": "Lihat pembaruan terbaru dari sekolah di seluruh dunia yang membuat perbedaan. Cerita nyata, dampak nyata, dibagikan setiap hari di Instagram kami.",
-    "follow_button": "Ikuti di Instagram"
+    "follow_handle": "Ikuti @plastic_clever_schools",
+    "follow_short": "Ikuti Kami",
+    "hashtag_intro": "Bergabunglah dalam percakapan dan bagikan perjalanan plastic clever sekolah Anda dengan",
+    "main_hashtag": "#PlasticCleverSchools",
+    "hashtag_sustainable": "#SekolahBerkelanjutan",
+    "hashtag_plastic_free": "#BebasPlastik",
+    "hashtag_eco_education": "#PendidikanEko",
+    "hashtag_young_activists": "#AktivisMuda",
+    "title": "Follow <highlight>Our Journey</highlight>",
+    "description": "See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.",
+    "follow_button": "Follow on Instagram"
   },
   "newsletter": {
     "title": "Tetap Terhubung",
@@ -89,10 +99,13 @@
     "contact_support": "Pertanyaan? Hubungi Dukungan"
   },
   "stats": {
-    "schools_registered": "Sekolah Terdaftar",
-    "students_impacted": "Siswa Terdampak", 
-    "countries_participating": "Negara Berpartisipasi",
-    "awards_completed": "Penghargaan Selesai"
+    "schools_label": "sekolah",
+    "countries_label": "negara",
+    "actions_taken_label": "tindakan diambil",
+    "schools_registered": "Schools Registered",
+    "students_impacted": "Students Impacted",
+    "countries_participating": "Countries Participating",
+    "awards_completed": "Awards Completed"
   },
   "program": {
     "title": "Program Tiga Tahap Kami",
@@ -103,7 +116,7 @@
       "details": "Libatkan siswa dengan presentasi yang menarik, video, dan aktivitas interaktif yang menyoroti urgensi polusi plastik dan menginspirasi mereka untuk mengambil tindakan."
     },
     "stage_2": {
-      "title": "Investigasi", 
+      "title": "Investigasi",
       "description": "Teliti dan analisis penggunaan plastik di sekolah Anda",
       "details": "Lakukan audit plastik komprehensif, kumpulkan data, dan analisis pola konsumsi plastik untuk memahami dampak lingkungan sekolah Anda."
     },
@@ -137,7 +150,7 @@
       "description": "Buat perbedaan yang terukur dalam pengurangan sampah plastik dan kesadaran lingkungan"
     },
     "award_recognition": {
-      "title": "Pengakuan Penghargaan", 
+      "title": "Pengakuan Penghargaan",
       "description": "Dapatkan sertifikat dan pengakuan untuk pencapaian lingkungan sekolah Anda"
     }
   },
@@ -149,7 +162,7 @@
       "description": "Daftarkan sekolah Anda dan buat profil pendidik Anda"
     },
     "step_2": {
-      "title": "Belajar", 
+      "title": "Belajar",
       "description": "Akses materi kurikulum dan sumber daya pelatihan"
     },
     "step_3": {
@@ -168,9 +181,9 @@
   },
   "cta_section": {
     "title": "Siap Membuat Perbedaan?",
-    "subtitle": "Bergabunglah dengan ribuan sekolah di seluruh dunia dalam perjuangan melawan polusi plastik",
-    "description": "Sekolah Anda dapat menjadi bagian dari solusi. Daftar hari ini dan mulai perjalanan Anda menuju menjadi Plastic Clever School.",
-    "register_now": "Daftarkan Sekolah Anda Sekarang",
+    "subtitle": "Bergabunglah dengan ribuan sekolah di seluruh dunia dalam menciptakan masa depan yang cerdas plastik",
+    "description": "Sekolah Anda bisa menjadi bagian dari solusi. Daftar hari ini dan mulai perjalanan Anda menuju menjadi Plastic Clever School.",
+    "register_now": "Daftarkan Sekolah Anda",
     "have_questions": "Ada pertanyaan?",
     "contact_support": "Hubungi tim dukungan kami"
   },
@@ -188,29 +201,9 @@
     "river_cleanup_logo_alt": "Logo organisasi River Cleanup",
     "plastic_clever_schools_logo_alt": "Logo Plastic Clever Schools"
   },
-
   "popup": {
     "latest_news": "Berita Terbaru!",
     "community_message": "Bergabunglah dengan komunitas kami yang berkembang"
-  },
-  "partnership": {
-    "collaboration_title": "Plastic Clever Schools adalah kolaborasi antara",
-    "partnership_with": "bermitra dengan"
-  },
-  "instagram": {
-    "follow_handle": "Ikuti @plastic_clever_schools",
-    "follow_short": "Ikuti Kami",
-    "hashtag_intro": "Bergabunglah dalam percakapan dan bagikan perjalanan plastic clever sekolah Anda dengan",
-    "main_hashtag": "#PlasticCleverSchools",
-    "hashtag_sustainable": "#SekolahBerkelanjutan",
-    "hashtag_plastic_free": "#BebasPlastik",
-    "hashtag_eco_education": "#PendidikanEko",
-    "hashtag_young_activists": "#AktivisMuda"
-  },
-  "stats": {
-    "schools_label": "sekolah",
-    "countries_label": "negara",
-    "actions_taken_label": "tindakan diambil"
   },
   "testimonial": {
     "quote": "Plastic Clever Schools telah mengubah cara kami mendekati keberlanjutan. Siswa kami sekarang adalah pendukung lingkungan yang bersemangat!",
@@ -220,14 +213,6 @@
   "video_section": {
     "title": "Apa itu Plastic Clever Schools?",
     "caption": "Kutipan pembuka dari guru untuk memperkenalkan video - gambar sebagai placeholder untuk lazy loading"
-  },
-  "cta_section": {
-    "title": "Siap Membuat Perbedaan?",
-    "subtitle": "Bergabunglah dengan ribuan sekolah di seluruh dunia dalam menciptakan masa depan yang cerdas plastik",
-    "description": "Sekolah Anda bisa menjadi bagian dari solusi. Daftar hari ini dan mulai perjalanan Anda menuju menjadi Plastic Clever School.",
-    "register_now": "Daftarkan Sekolah Anda",
-    "have_questions": "Ada pertanyaan?",
-    "contact_support": "Hubungi tim dukungan kami"
   },
   "footer": {
     "description": "Memberdayakan sekolah di seluruh dunia untuk menciptakan lingkungan bebas plastik melalui pendidikan, investigasi, dan tindakan.",
@@ -249,5 +234,33 @@
     "copyright": "© 2024 Plastic Clever Schools. Semua hak dilindungi.",
     "privacy": "Privasi",
     "terms": "Ketentuan"
+  },
+  "events": {
+    "page_title": "Events & Workshops",
+    "page_description": "Join our community events, workshops, and webinars to learn and connect with other Plastic Clever Schools",
+    "upcoming_events": "Upcoming Events",
+    "past_events": "Past Events",
+    "no_upcoming_events": "No upcoming events at the moment. Check back soon!",
+    "event_live_now": "🎉 Event is Live Now!",
+    "join_meeting_now": "Join Meeting Now",
+    "event_not_started": "This event hasn't started yet. Please check back on {{date}}",
+    "meeting_link_available": "The meeting link will be available when the event starts.",
+    "catch_up_recording": "📺 Catch Up on the Recording",
+    "missed_event_message": "Missed this event? No worries! You can watch the full recording and access all event resources below.",
+    "registered": "You're registered for this event!",
+    "waitlisted": "You're on the waitlist for this event",
+    "registering": "Registering...",
+    "register_event": "Register for This Event",
+    "sign_up_to_register": "Sign Up to Register",
+    "badges": {
+      "past_event": "PAST EVENT",
+      "full": "FULL"
+    },
+    "location": {
+      "virtual_event": "Virtual Event"
+    },
+    "capacity": {
+      "registered": "{{current}} / {{total}} registered"
+    }
   }
 }

@@ -22,7 +22,7 @@
   },
   "stages": {
     "inspire": "Inspirieren",
-    "investigate": "Untersuchen", 
+    "investigate": "Untersuchen",
     "act": "Handeln"
   },
   "languages": {
@@ -67,7 +67,7 @@
   },
   "categories": {
     "lesson_plans": "Unterrichtspläne",
-    "worksheets": "Arbeitsblätter", 
+    "worksheets": "Arbeitsblätter",
     "presentations": "Präsentationen",
     "videos": "Videos",
     "posters": "Poster",
@@ -80,5 +80,34 @@
     "download_started": "Download gestartet für {{title}}",
     "resource_unavailable": "Diese Ressource ist derzeit nicht verfügbar",
     "large_file_warning": "Dies ist eine große Datei ({{size}}). Der Download kann einige Zeit dauern."
-  }
+  },
+  "toasts": {
+    "link_copied": "Link Copied!",
+    "link_copied_desc": "The resource link has been copied to your clipboard.",
+    "copy_failed": "Copy Failed",
+    "copy_failed_desc": "Unable to copy link to clipboard. Please try again.",
+    "pack_link_copied": "Pack Link Copied!",
+    "pack_link_copied_desc": "The resource pack link has been copied to your clipboard.",
+    "download_started": "Download Started",
+    "download_started_desc": "Downloading {{count}} resources from the pack...",
+    "download_failed": "Download Failed",
+    "download_failed_desc": "Unable to download all resources. Please try again."
+  },
+  "badges": {
+    "new": "NEW",
+    "recommended": "RECOMMENDED"
+  },
+  "buttons": {
+    "view": "View",
+    "copy_link": "Copy Link",
+    "download_all": "Download All",
+    "view_pack": "View Pack"
+  },
+  "dynamic_text": {
+    "resource_count_one": "{{count}} resource",
+    "resource_count_other": "{{count}} resources",
+    "pack_download_count_one": "{{count}} download",
+    "pack_download_count_other": "{{count}} downloads"
+  },
+  "register_to_access": "Please register or log in to access this resource"
 }

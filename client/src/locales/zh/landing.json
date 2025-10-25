@@ -39,7 +39,7 @@
     "subtitle": "我们经过验证的框架将您学校的转型分解为三个简单的阶段。",
     "stage_1_title": "启发",
     "stage_1_description": "了解塑料污染，激励学校其他人采取行动。",
-    "stage_2_title": "调查", 
+    "stage_2_title": "调查",
     "stage_2_description": "识别学校中的问题塑料并制定应对计划。",
     "stage_3_title": "行动",
     "stage_3_description": "采取行动告别一次性塑料。",
@@ -50,8 +50,10 @@
     "progress_tracking": "进度跟踪"
   },
   "partnership": {
-    "title": "建立在牢固的伙伴关系之上",
-    "description": "Plastic Clever Schools是领先的环境组织之间的合作，共同努力在教育领域创造有意义的变化。"
+    "collaboration_title": "Plastic Clever Schools 是以下机构的合作项目",
+    "partnership_with": "合作伙伴",
+    "title": "Built on Strong Partnerships",
+    "description": "Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education."
   },
   "testimonials": {
     "title": "为什么学校选择我们",
@@ -63,7 +65,7 @@
     },
     "testimonial_2": {
       "quote": "我们减少了60%的塑料废物！整个学校社区都参与其中，并对可持续发展充满热情。",
-      "name": "Maria Rodriguez", 
+      "name": "Maria Rodriguez",
       "school": "Sunshine Elementary, 澳大利亚"
     },
     "testimonial_3": {
@@ -73,9 +75,17 @@
     }
   },
   "instagram": {
-    "title": "关注<highlight>我们的旅程</highlight>",
-    "description": "看看来自世界各地学校的最新动态，他们正在产生影响。真实的故事，真实的影响，每天在我们的Instagram上分享。",
-    "follow_button": "在Instagram上关注"
+    "follow_handle": "关注 @plastic_clever_schools",
+    "follow_short": "关注我们",
+    "hashtag_intro": "加入对话，分享您学校的塑料智慧之旅",
+    "main_hashtag": "#PlasticCleverSchools",
+    "hashtag_sustainable": "#可持续学校",
+    "hashtag_plastic_free": "#无塑料",
+    "hashtag_eco_education": "#生态教育",
+    "hashtag_young_activists": "#青年活动家",
+    "title": "Follow <highlight>Our Journey</highlight>",
+    "description": "See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.",
+    "follow_button": "Follow on Instagram"
   },
   "newsletter": {
     "title": "保持联系",
@@ -89,10 +99,13 @@
     "contact_support": "有疑问？联系支持"
   },
   "stats": {
-    "schools_registered": "已注册学校",
-    "students_impacted": "受影响的学生", 
-    "countries_participating": "参与国家",
-    "awards_completed": "已完成奖励"
+    "schools_label": "所学校",
+    "countries_label": "个国家",
+    "actions_taken_label": "项行动",
+    "schools_registered": "Schools Registered",
+    "students_impacted": "Students Impacted",
+    "countries_participating": "Countries Participating",
+    "awards_completed": "Awards Completed"
   },
   "program": {
     "title": "我们的三阶段计划",
@@ -103,7 +116,7 @@
       "details": "通过引人入胜的演示、视频和互动活动吸引学生，突出塑料污染的紧迫性并激励他们采取行动。"
     },
     "stage_2": {
-      "title": "调查", 
+      "title": "调查",
       "description": "研究和分析您学校的塑料使用情况",
       "details": "进行全面的塑料审计，收集数据并分析塑料消费模式，以了解您学校的环境影响。"
     },
@@ -137,7 +150,7 @@
       "description": "在减少塑料废物和提高环境意识方面产生可衡量的差异"
     },
     "award_recognition": {
-      "title": "奖励认可", 
+      "title": "奖励认可",
       "description": "为您学校的环境成就赢得证书和认可"
     }
   },
@@ -149,7 +162,7 @@
       "description": "注册您的学校并创建您的教育工作者资料"
     },
     "step_2": {
-      "title": "学习", 
+      "title": "学习",
       "description": "访问课程材料和培训资源"
     },
     "step_3": {
@@ -167,10 +180,10 @@
     "description": "我们与领先的环境组织、教育机构和可持续发展专家合作，为您学校的旅程提供最高质量的资源和支持。"
   },
   "cta_section": {
-    "title": "准备好产生影响了吗？",
-    "subtitle": "加入全球成千上万所学校，共同对抗塑料污染",
-    "description": "您的学校可以成为解决方案的一部分。今天注册，开始您成为Plastic Clever School的旅程。",
-    "register_now": "立即注册您的学校",
+    "title": "准备好做出改变了吗？",
+    "subtitle": "加入全球数千所学校，共创塑料智慧未来",
+    "description": "您的学校可以成为解决方案的一部分。立即注册，开始您成为 Plastic Clever School 的旅程。",
+    "register_now": "注册您的学校",
     "have_questions": "有疑问？",
     "contact_support": "联系我们的支持团队"
   },
@@ -188,29 +201,9 @@
     "river_cleanup_logo_alt": "River Cleanup组织标志",
     "plastic_clever_schools_logo_alt": "Plastic Clever Schools标志"
   },
-
   "popup": {
     "latest_news": "最新消息！",
     "community_message": "加入我们不断增长的社区"
-  },
-  "partnership": {
-    "collaboration_title": "Plastic Clever Schools 是以下机构的合作项目",
-    "partnership_with": "合作伙伴"
-  },
-  "instagram": {
-    "follow_handle": "关注 @plastic_clever_schools",
-    "follow_short": "关注我们",
-    "hashtag_intro": "加入对话，分享您学校的塑料智慧之旅",
-    "main_hashtag": "#PlasticCleverSchools",
-    "hashtag_sustainable": "#可持续学校",
-    "hashtag_plastic_free": "#无塑料",
-    "hashtag_eco_education": "#生态教育",
-    "hashtag_young_activists": "#青年活动家"
-  },
-  "stats": {
-    "schools_label": "所学校",
-    "countries_label": "个国家",
-    "actions_taken_label": "项行动"
   },
   "testimonial": {
     "quote": "Plastic Clever Schools 改变了我们对可持续发展的态度。我们的学生现在是充满热情的环境倡导者！",
@@ -220,14 +213,6 @@
   "video_section": {
     "title": "什么是 Plastic Clever Schools？",
     "caption": "教师开场语介绍视频 - 图像作为延迟加载的占位符"
-  },
-  "cta_section": {
-    "title": "准备好做出改变了吗？",
-    "subtitle": "加入全球数千所学校，共创塑料智慧未来",
-    "description": "您的学校可以成为解决方案的一部分。立即注册，开始您成为 Plastic Clever School 的旅程。",
-    "register_now": "注册您的学校",
-    "have_questions": "有疑问？",
-    "contact_support": "联系我们的支持团队"
   },
   "footer": {
     "description": "通过教育、调查和行动，赋能全球学校创造无塑料环境。",
@@ -249,5 +234,33 @@
     "copyright": "© 2024 Plastic Clever Schools. 保留所有权利。",
     "privacy": "隐私",
     "terms": "条款"
+  },
+  "events": {
+    "page_title": "Events & Workshops",
+    "page_description": "Join our community events, workshops, and webinars to learn and connect with other Plastic Clever Schools",
+    "upcoming_events": "Upcoming Events",
+    "past_events": "Past Events",
+    "no_upcoming_events": "No upcoming events at the moment. Check back soon!",
+    "event_live_now": "🎉 Event is Live Now!",
+    "join_meeting_now": "Join Meeting Now",
+    "event_not_started": "This event hasn't started yet. Please check back on {{date}}",
+    "meeting_link_available": "The meeting link will be available when the event starts.",
+    "catch_up_recording": "📺 Catch Up on the Recording",
+    "missed_event_message": "Missed this event? No worries! You can watch the full recording and access all event resources below.",
+    "registered": "You're registered for this event!",
+    "waitlisted": "You're on the waitlist for this event",
+    "registering": "Registering...",
+    "register_event": "Register for This Event",
+    "sign_up_to_register": "Sign Up to Register",
+    "badges": {
+      "past_event": "PAST EVENT",
+      "full": "FULL"
+    },
+    "location": {
+      "virtual_event": "Virtual Event"
+    },
+    "capacity": {
+      "registered": "{{current}} / {{total}} registered"
+    }
   }
 }

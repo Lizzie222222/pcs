@@ -288,14 +288,12 @@
     "provide_item_label": "플라스틱 항목에 대한 라벨을 제공하세요",
     "baseline_min": "기준 수량은 최소 1이어야 합니다",
     "target_min": "목표 수량은 최소 0이어야 합니다"
-  }
   },
   "accessibility": {
     "dismiss_notification": "Dismiss notification"
-  }
   },
   "units": {
     "kg": "kg",
     "liters": "liters"
-  }
+  },
 }

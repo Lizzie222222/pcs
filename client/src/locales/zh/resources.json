@@ -22,7 +22,7 @@
   },
   "stages": {
     "inspire": "启发",
-    "investigate": "调查", 
+    "investigate": "调查",
     "act": "行动"
   },
   "languages": {
@@ -67,7 +67,7 @@
   },
   "categories": {
     "lesson_plans": "课程计划",
-    "worksheets": "工作表", 
+    "worksheets": "工作表",
     "presentations": "演示文稿",
     "videos": "视频",
     "posters": "海报",
@@ -80,5 +80,34 @@
     "download_started": "已开始下载{{title}}",
     "resource_unavailable": "此资源目前不可用",
     "large_file_warning": "这是一个大文件（{{size}}）。下载可能需要一些时间。"
-  }
+  },
+  "toasts": {
+    "link_copied": "Link Copied!",
+    "link_copied_desc": "The resource link has been copied to your clipboard.",
+    "copy_failed": "Copy Failed",
+    "copy_failed_desc": "Unable to copy link to clipboard. Please try again.",
+    "pack_link_copied": "Pack Link Copied!",
+    "pack_link_copied_desc": "The resource pack link has been copied to your clipboard.",
+    "download_started": "Download Started",
+    "download_started_desc": "Downloading {{count}} resources from the pack...",
+    "download_failed": "Download Failed",
+    "download_failed_desc": "Unable to download all resources. Please try again."
+  },
+  "badges": {
+    "new": "NEW",
+    "recommended": "RECOMMENDED"
+  },
+  "buttons": {
+    "view": "View",
+    "copy_link": "Copy Link",
+    "download_all": "Download All",
+    "view_pack": "View Pack"
+  },
+  "dynamic_text": {
+    "resource_count_one": "{{count}} resource",
+    "resource_count_other": "{{count}} resources",
+    "pack_download_count_one": "{{count}} download",
+    "pack_download_count_other": "{{count}} downloads"
+  },
+  "register_to_access": "Please register or log in to access this resource"
 }
