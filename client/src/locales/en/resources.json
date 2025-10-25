@@ -30,6 +30,16 @@
     "spanish": "Spanish",
     "french": "French",
     "german": "German",
+    "greek": "Greek (ελληνικά)",
+    "arabic": "Arabic (العربية)",
+    "welsh": "Welsh (Cymraeg)",
+    "indonesian": "Indonesian (Bahasa Indonesia)",
+    "italian": "Italian (Italiano)",
+    "korean": "Korean (한국어)",
+    "dutch": "Dutch (Nederlands)",
+    "portuguese": "Portuguese (Português)",
+    "russian": "Russian (Русский)",
+    "chinese": "Chinese (中文)",
     "other": "Other"
   },
   "age_ranges": {

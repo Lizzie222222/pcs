@@ -652,6 +652,16 @@ export default function Resources() {
                       <SelectItem value="Spanish">{t('languages.spanish')}</SelectItem>
                       <SelectItem value="French">{t('languages.french')}</SelectItem>
                       <SelectItem value="German">{t('languages.german')}</SelectItem>
+                      <SelectItem value="Greek">{t('languages.greek')}</SelectItem>
+                      <SelectItem value="Arabic">{t('languages.arabic')}</SelectItem>
+                      <SelectItem value="Welsh">{t('languages.welsh')}</SelectItem>
+                      <SelectItem value="Indonesian">{t('languages.indonesian')}</SelectItem>
+                      <SelectItem value="Italian">{t('languages.italian')}</SelectItem>
+                      <SelectItem value="Korean">{t('languages.korean')}</SelectItem>
+                      <SelectItem value="Dutch">{t('languages.dutch')}</SelectItem>
+                      <SelectItem value="Portuguese">{t('languages.portuguese')}</SelectItem>
+                      <SelectItem value="Russian">{t('languages.russian')}</SelectItem>
+                      <SelectItem value="Chinese">{t('languages.chinese')}</SelectItem>
                     </SelectContent>
                   </Select>
                   

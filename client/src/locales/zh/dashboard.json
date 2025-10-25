@@ -262,7 +262,49 @@
     "delete_confirmation_message": "此操作无法撤消。这将永久删除您的行动项并从影响计算中删除。"
   },
   "team": {
-    "loading": "正在加载团队管理..."
+    "loading": "正在加载团队管理...",
+    "toasts": {
+      "auth_required": "Authentication Required",
+      "auth_required_desc": "Please log in to access team management.",
+      "access_denied": "Access Denied",
+      "access_denied_desc": "Only head teachers can access team management.",
+      "teacher_removed": "Teacher Removed",
+      "teacher_removed_desc": "The teacher has been removed from your school.",
+      "error": "Error",
+      "error_remove_teacher": "Failed to remove teacher.",
+      "request_approved": "Request Approved",
+      "request_approved_desc": "The teacher has been added to your school.",
+      "error_approve_request": "Failed to approve request.",
+      "request_rejected": "Request Rejected",
+      "request_rejected_desc": "The verification request has been rejected.",
+      "error_reject_request": "Failed to reject request.",
+      "invitation_sent": "Invitation Sent!",
+      "invitation_sent_desc": "The teacher invitation has been sent successfully.",
+      "error_send_invitation": "Failed to send invitation.",
+      "email_required": "Email Required",
+      "email_required_desc": "Please enter an email address."
+    },
+    "dialogs": {
+      "remove_teacher_title": "Remove Teacher",
+      "approve_request_title": "Approve Access Request",
+      "reject_request_title": "Reject Access Request"
+    },
+    "tabs": {
+      "members": "Team Members",
+      "requests": "Verification Requests",
+      "invitations": "Invitations"
+    },
+    "table_headers": {
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "status": "Status",
+      "joined": "Joined",
+      "actions": "Actions",
+      "expires": "Expires",
+      "sent": "Sent",
+      "evidence": "Evidence"
+    }
   },
   "events": {
     "loading": "正在加载活动..."
@@ -295,5 +337,24 @@
   "units": {
     "kg": "kg",
     "liters": "liters"
+  },
+  "photo_consent": {
+    "title": "Action Required: Photo Consent Confirmation",
+    "description": "Please confirm that your school has the necessary permission to share images of children in your evidence submissions. Download and complete the template, then upload the signed document.",
+    "download_template": "Download Template",
+    "upload_signed_document": "Upload Signed Document",
+    "reupload_document": "Re-upload Document",
+    "uploading": "Uploading...",
+    "view_uploaded_document": "View Uploaded Document",
+    "status_pending": "Your document is under review by the admin team.",
+    "status_rejected": "Document was rejected",
+    "toast_invalid_file_type": "Invalid File Type",
+    "toast_invalid_file_type_desc": "Please upload a PDF, JPG, PNG, or DOCX file.",
+    "toast_file_too_large": "File Too Large",
+    "toast_file_too_large_desc": "Please upload a file smaller than 10MB.",
+    "toast_success": "Success!",
+    "toast_success_desc": "Photo consent document uploaded successfully. It will be reviewed by our admin team.",
+    "toast_upload_failed": "Upload Failed",
+    "toast_upload_failed_desc": "Failed to upload document. Please try again."
   }
 }

@@ -5,12 +5,14 @@ import { AlertCircle, Download, Upload, CheckCircle, XCircle, Clock } from "luci
 import { useState, useRef } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useTranslation } from "react-i18next";
 
 interface PhotoConsentBannerProps {
   schoolId: string;
 }
 
 export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
+  const { t } = useTranslation('dashboard');
   const { toast } = useToast();
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -40,8 +42,8 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
     ];
     if (!validTypes.includes(file.type)) {
       toast({
-        title: "Invalid File Type",
-        description: "Please upload a PDF, JPG, PNG, or DOCX file.",
+        title: t('photo_consent.toast_invalid_file_type'),
+        description: t('photo_consent.toast_invalid_file_type_desc'),
         variant: "destructive",
       });
       return;
@@ -50,8 +52,8 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
     // Validate file size (10MB max)
     if (file.size > 10 * 1024 * 1024) {
       toast({
-        title: "File Too Large",
-        description: "Please upload a file smaller than 10MB.",
+        title: t('photo_consent.toast_file_too_large'),
+        description: t('photo_consent.toast_file_too_large_desc'),
         variant: "destructive",
       });
       return;
@@ -65,8 +67,8 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
       await apiRequest('POST', `/api/schools/${schoolId}/photo-consent/upload`, formData);
       
       toast({
-        title: "Success!",
-        description: "Photo consent document uploaded successfully. It will be reviewed by our admin team.",
+        title: t('photo_consent.toast_success'),
+        description: t('photo_consent.toast_success_desc'),
       });
 
       queryClient.invalidateQueries({ queryKey: ['/api/schools', schoolId, 'photo-consent'] });
@@ -76,8 +78,8 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
       }
     } catch (error: any) {
       toast({
-        title: "Upload Failed",
-        description: error.message || "Failed to upload document. Please try again.",
+        title: t('photo_consent.toast_upload_failed'),
+        description: error.message || t('photo_consent.toast_upload_failed_desc'),
         variant: "destructive",
       });
     } finally {
@@ -97,18 +99,17 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
         <div className="flex flex-col gap-4">
           <div>
             <p className="font-semibold text-orange-900 mb-2">
-              Action Required: Photo Consent Confirmation
+              {t('photo_consent.title')}
             </p>
             <p className="text-sm text-orange-800 mb-3">
-              Please confirm that your school has the necessary permission to share images of children in your evidence submissions.
-              Download and complete the template, then upload the signed document.
+              {t('photo_consent.description')}
             </p>
           </div>
 
           {consentStatus?.status === 'pending' && (
             <div className="bg-yellow-50 border border-yellow-200 rounded p-3 flex items-center gap-2">
               <Clock className="h-4 w-4 text-yellow-600" />
-              <span className="text-sm text-yellow-800">Your document is under review by the admin team.</span>
+              <span className="text-sm text-yellow-800">{t('photo_consent.status_pending')}</span>
             </div>
           )}
 
@@ -116,7 +117,7 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
             <div className="bg-red-50 border border-red-200 rounded p-3 flex items-start gap-2">
               <XCircle className="h-4 w-4 text-red-600 mt-0.5" />
               <div className="text-sm text-red-800">
-                <p className="font-semibold">Document was rejected</p>
+                <p className="font-semibold">{t('photo_consent.status_rejected')}</p>
                 <p>{consentStatus.reviewNotes}</p>
               </div>
             </div>
@@ -126,7 +127,7 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
             <a href="/Photo_Consent_Confirmation_Template_2025.docx" download>
               <Button variant="outline" size="sm" data-testid="button-download-consent-template">
                 <Download className="h-4 w-4 mr-2" />
-                Download Template
+                {t('photo_consent.download_template')}
               </Button>
             </a>
 
@@ -138,7 +139,7 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
               data-testid="button-upload-consent"
             >
               <Upload className="h-4 w-4 mr-2" />
-              {isUploading ? 'Uploading...' : consentStatus?.documentUrl ? 'Re-upload Document' : 'Upload Signed Document'}
+              {isUploading ? t('photo_consent.uploading') : consentStatus?.documentUrl ? t('photo_consent.reupload_document') : t('photo_consent.upload_signed_document')}
             </Button>
             
             <input
@@ -152,7 +153,7 @@ export function PhotoConsentBanner({ schoolId }: PhotoConsentBannerProps) {
             {consentStatus?.documentUrl && (
               <a href={consentStatus.documentUrl} target="_blank" rel="noopener noreferrer">
                 <Button variant="ghost" size="sm" data-testid="button-view-consent-doc">
-                  View Uploaded Document
+                  {t('photo_consent.view_uploaded_document')}
                 </Button>
               </a>
             )}

@@ -30,7 +30,17 @@
     "spanish": "Spanisch",
     "french": "Französisch",
     "german": "Deutsch",
-    "other": "Andere"
+    "other": "Andere",
+    "greek": "Greek (ελληνικά)",
+    "arabic": "Arabic (العربية)",
+    "welsh": "Welsh (Cymraeg)",
+    "indonesian": "Indonesian (Bahasa Indonesia)",
+    "italian": "Italian (Italiano)",
+    "korean": "Korean (한국어)",
+    "dutch": "Dutch (Nederlands)",
+    "portuguese": "Portuguese (Português)",
+    "russian": "Russian (Русский)",
+    "chinese": "Chinese (中文)"
   },
   "age_ranges": {
     "5_7": "5-7 Jahre",
