@@ -868,6 +868,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.json({ suggestions: [] });
       }
 
+      // Check if OpenAI API key is configured
+      if (!process.env.OPENAI_API_KEY) {
+        console.warn('OpenAI API key not configured for AI metadata analysis');
+        return res.status(503).json({ 
+          message: "AI analysis service not configured. Please contact administrator.",
+          suggestions: [] 
+        });
+      }
+
       // Initialize OpenAI client
       const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 

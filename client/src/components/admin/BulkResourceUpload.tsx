@@ -331,6 +331,18 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
       const response = await res.json();
 
       if (response.suggestions && Array.isArray(response.suggestions)) {
+        const suggestionsCount = response.suggestions.length;
+        const totalCount = uploadedResources.length;
+
+        if (suggestionsCount === 0) {
+          toast({
+            title: "No AI Suggestions",
+            description: response.message || "AI analysis did not return any suggestions. You can edit metadata manually.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         setUploadedResources(prev => 
           prev.map(resource => {
             const suggestion = response.suggestions.find((s: any) => s.id === resource.id);
@@ -354,18 +366,34 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
           })
         );
 
-        toast({
-          title: "AI Suggestions Applied",
-          description: `AI-generated titles and descriptions applied to ${response.suggestions.length} resources.`,
-        });
+        if (suggestionsCount < totalCount) {
+          toast({
+            title: "AI Suggestions Partially Applied",
+            description: `AI-generated metadata applied to ${suggestionsCount} of ${totalCount} resources. Some resources could not be analyzed.`,
+          });
+        } else {
+          toast({
+            title: "AI Suggestions Applied",
+            description: `AI-generated metadata successfully applied to all ${suggestionsCount} resources.`,
+          });
+        }
       } else {
         throw new Error('Invalid response format from AI service');
       }
     } catch (error: any) {
       console.error('AI auto-fill error:', error);
+      
+      // Better error message based on error type
+      let errorMessage = "Failed to generate AI suggestions. You can still edit metadata manually.";
+      if (error.message?.includes('not configured')) {
+        errorMessage = error.message;
+      } else if (error.message?.includes('503')) {
+        errorMessage = "AI analysis service is temporarily unavailable. Please try again later or edit metadata manually.";
+      }
+      
       toast({
         title: "AI Analysis Failed",
-        description: error.message || "Failed to generate AI suggestions. You can still edit metadata manually.",
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
