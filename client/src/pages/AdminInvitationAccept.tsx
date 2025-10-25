@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { createLoginSchema, type LoginForm } from "@shared/schema";
 import { z } from "zod";
+import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
 
 interface InvitationDetails {
   email: string;
@@ -336,12 +337,21 @@ export default function AdminInvitationAccept() {
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 flex items-center justify-center pt-20 px-4">
         <Card className="w-full max-w-lg shadow-xl border-0">
           <CardHeader className="text-center pb-4">
+            <img 
+              src={pcsLogoUrl} 
+              alt="Plastic Clever Schools" 
+              className="h-20 w-auto mx-auto mb-4"
+              data-testid="img-admin-pcs-logo"
+            />
             <div className="w-16 h-16 bg-pcs_blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <Shield className="h-8 w-8 text-pcs_blue" />
             </div>
             <CardTitle className="text-2xl font-bold text-navy mb-2" data-testid="text-admin-invitation-title">
               You've Been Invited to be an Administrator!
             </CardTitle>
+            <p className="text-xl font-semibold bg-gradient-to-r from-pcs_blue to-teal bg-clip-text text-transparent mb-3" data-testid="text-admin-lucky-you">
+              Lucky You!
+            </p>
             <CardDescription className="text-base" data-testid="text-admin-invitation-subtitle">
               Accept this invitation to gain admin access
             </CardDescription>
@@ -353,7 +363,7 @@ export default function AdminInvitationAccept() {
                 <div>
                   <p className="text-sm font-medium text-gray-700">Invited by</p>
                   <p className="text-base font-semibold text-navy" data-testid="text-admin-inviter-name">
-                    {invitation.inviterName}
+                    Plastic Clever Schools
                   </p>
                 </div>
               </div>
@@ -519,12 +529,21 @@ export default function AdminInvitationAccept() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 flex items-center justify-center pt-20 px-4">
       <Card className="w-full max-w-lg shadow-xl border-0">
         <CardHeader className="text-center pb-4">
+          <img 
+            src={pcsLogoUrl} 
+            alt="Plastic Clever Schools" 
+            className="h-20 w-auto mx-auto mb-4"
+            data-testid="img-admin-pcs-logo-auth"
+          />
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Shield className="h-8 w-8 text-green-600" />
           </div>
           <CardTitle className="text-2xl font-bold text-navy mb-2" data-testid="text-admin-invitation-title-auth">
             You've Been Invited to be an Administrator!
           </CardTitle>
+          <p className="text-xl font-semibold bg-gradient-to-r from-pcs_blue to-teal bg-clip-text text-transparent mb-3" data-testid="text-admin-lucky-you-auth">
+            Lucky You!
+          </p>
           <CardDescription className="text-base" data-testid="text-admin-invitation-subtitle-auth">
             {needsOnboarding ? "Complete your profile to continue" : "Accept this invitation to gain admin access"}
           </CardDescription>
@@ -536,7 +555,7 @@ export default function AdminInvitationAccept() {
               <div>
                 <p className="text-sm font-medium text-gray-700">Invited by</p>
                 <p className="text-base font-semibold text-navy" data-testid="text-admin-inviter-name-auth">
-                  {invitation.inviterName}
+                  Plastic Clever Schools
                 </p>
               </div>
             </div>
