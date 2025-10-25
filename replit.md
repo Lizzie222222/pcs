@@ -45,6 +45,7 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 -   **Communication**: Enhanced bulk email editor with image picker and AI-powered auto-translation. New Contact Us and Help Center pages provide user support.
 -   **SEO Optimization**: Server-side meta tag injection for case study pages, JSON-LD structured data, proper heading hierarchy, and descriptive image alt text.
 -   **User Profile Management**: Comprehensive user profile page for editing details, language preferences, password changes, and account deletion.
+-   **Legal Pages**: Privacy Policy and Terms & Conditions pages fully internationalized with comprehensive translations covering all 13 sections (Privacy) and 10 sections (Terms) respectively, including nested subsections and bullet points. Both pages use a reusable Footer component to eliminate code duplication and support all 14 languages.
 
 ## External Dependencies
 -   **Database**: Neon PostgreSQL
