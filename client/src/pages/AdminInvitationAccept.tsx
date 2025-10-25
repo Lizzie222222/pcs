@@ -67,7 +67,7 @@ export default function AdminInvitationAccept() {
     }
   }, [invitation, form]);
 
-  // Custom login mutation that doesn't redirect (stays on invitation page)
+  // Custom login mutation that redirects to appropriate dashboard based on user role
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginForm) => {
       const response = await apiRequest("POST", "/api/auth/login", credentials);
@@ -80,16 +80,27 @@ export default function AdminInvitationAccept() {
       return result.user;
     },
     onSuccess: async (loggedInUser: User) => {
-      // Update auth cache without redirecting
+      // Update auth cache
       queryClient.setQueryData(["/api/auth/user"], loggedInUser);
+      
+      // Store invitation token for later completion
+      if (token) {
+        sessionStorage.setItem('pendingAdminInvitation', token);
+      }
       
       toast({
         title: "Signed in successfully!",
-        description: "You can now accept the admin invitation below",
+        description: "Please return to the invitation link to complete acceptance.",
       });
       
       // Force refetch to update the page state
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // Redirect to appropriate dashboard based on user role
+      const dashboardPath = loggedInUser.isAdmin ? '/admin' : '/dashboard';
+      setTimeout(() => {
+        setLocation(dashboardPath);
+      }, 500);
     },
     onError: (error: Error) => {
       let errorMessage = "Login failed. Please try again.";
