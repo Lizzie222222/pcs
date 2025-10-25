@@ -9,7 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -37,6 +39,9 @@ import {
   MoreVertical,
   Shield,
   Trash2,
+  AlertTriangle,
+  Archive,
+  Trash,
 } from "lucide-react";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import AssignTeacherForm from "@/components/admin/AssignTeacherForm";
@@ -58,6 +63,17 @@ interface UserWithSchools {
   }>;
 }
 
+interface DeletionPreview {
+  evidence: number;
+  caseStudies: number;
+  reductionPromises: number;
+  mediaAssets: number;
+  certificates: number;
+  importBatches: number;
+  teacherInvitations: number;
+  adminInvitations: number;
+}
+
 export default function UserManagementTab() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -72,15 +88,22 @@ export default function UserManagementTab() {
   const [invitePartnerEmail, setInvitePartnerEmail] = useState('');
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedUserToDelete, setSelectedUserToDelete] = useState<{ id: string; name: string } | null>(null);
+  const [deletionMode, setDeletionMode] = useState<'soft' | 'transfer' | 'hard'>('soft');
   const [roleDialogOpen, setRoleDialogOpen] = useState(false);
   const [selectedUserForRole, setSelectedUserForRole] = useState<{ id: string; name: string; isAdmin: boolean; role: string } | null>(null);
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
+  const [bulkDeletionMode, setBulkDeletionMode] = useState<'soft' | 'transfer' | 'hard'>('soft');
 
   const isPartner = user?.role === 'partner';
 
   const { data: usersWithSchools = [], isLoading } = useQuery<UserWithSchools[]>({
     queryKey: ['/api/admin/users'],
+  });
+
+  const { data: deletionPreview, isLoading: isLoadingPreview } = useQuery<DeletionPreview>({
+    queryKey: ['/api/admin/users', selectedUserToDelete?.id, 'deletion-preview'],
+    enabled: !!selectedUserToDelete?.id && deleteDialogOpen,
   });
 
   const inviteAdminMutation = useMutation({
@@ -128,16 +151,22 @@ export default function UserManagementTab() {
   });
 
   const deleteUserMutation = useMutation({
-    mutationFn: async (userId: string) => {
-      await apiRequest('DELETE', `/api/admin/users/${userId}`);
+    mutationFn: async ({ userId, mode }: { userId: string; mode: 'soft' | 'transfer' | 'hard' }) => {
+      await apiRequest('DELETE', `/api/admin/users/${userId}?mode=${mode}`);
     },
-    onSuccess: () => {
+    onSuccess: (_, variables) => {
+      const modeLabels = {
+        soft: 'soft deleted',
+        transfer: 'deleted (content transferred)',
+        hard: 'permanently deleted'
+      };
       toast({
         title: "User Deleted",
-        description: "The user has been successfully deleted.",
+        description: `The user has been successfully ${modeLabels[variables.mode]}.`,
       });
       setDeleteDialogOpen(false);
       setSelectedUserToDelete(null);
+      setDeletionMode('soft');
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     },
     onError: (error: any) => {
@@ -151,8 +180,8 @@ export default function UserManagementTab() {
   });
 
   const bulkDeleteMutation = useMutation({
-    mutationFn: async (userIds: string[]) => {
-      const response = await apiRequest('POST', '/api/admin/users/bulk-delete', { userIds });
+    mutationFn: async ({ userIds, mode }: { userIds: string[]; mode: 'soft' | 'transfer' | 'hard' }) => {
+      const response = await apiRequest('POST', '/api/admin/users/bulk-delete', { userIds, mode });
       return response;
     },
     onSuccess: (data: any) => {
@@ -304,7 +333,13 @@ export default function UserManagementTab() {
   };
 
   const confirmBulkDelete = () => {
-    bulkDeleteMutation.mutate(Array.from(selectedUserIds));
+    bulkDeleteMutation.mutate({ userIds: Array.from(selectedUserIds), mode: bulkDeletionMode });
+  };
+
+  const confirmDelete = () => {
+    if (selectedUserToDelete) {
+      deleteUserMutation.mutate({ userId: selectedUserToDelete.id, mode: deletionMode });
+    }
   };
 
   if (isLoading) {
@@ -730,31 +765,118 @@ export default function UserManagementTab() {
           </DialogContent>
         </Dialog>
 
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent data-testid="dialog-delete-user">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Delete User</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete <strong>{selectedUserToDelete?.name}</strong>? 
-                This action cannot be undone and will remove all user data including school associations.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
-              <AlertDialogAction
+        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+          <DialogContent className="max-w-2xl" data-testid="dialog-delete-user">
+            <DialogHeader>
+              <DialogTitle>Delete User: {selectedUserToDelete?.name}</DialogTitle>
+              <DialogDescription>
+                Choose how to handle this user's content and data
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              {isLoadingPreview ? (
+                <div className="flex items-center justify-center py-8">
+                  <LoadingSpinner message="Loading deletion preview..." />
+                </div>
+              ) : deletionPreview && (
+                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
+                  <h4 className="font-semibold text-sm mb-3">Affected Content:</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    {deletionPreview.evidence > 0 && (
+                      <div>Evidence Submissions: <strong>{deletionPreview.evidence}</strong></div>
+                    )}
+                    {deletionPreview.caseStudies > 0 && (
+                      <div>Case Studies: <strong>{deletionPreview.caseStudies}</strong></div>
+                    )}
+                    {deletionPreview.mediaAssets > 0 && (
+                      <div>Media Assets: <strong>{deletionPreview.mediaAssets}</strong></div>
+                    )}
+                    {deletionPreview.certificates > 0 && (
+                      <div>Certificates: <strong>{deletionPreview.certificates}</strong></div>
+                    )}
+                    {deletionPreview.importBatches > 0 && (
+                      <div>Import Batches: <strong>{deletionPreview.importBatches}</strong></div>
+                    )}
+                    {deletionPreview.teacherInvitations > 0 && (
+                      <div>Teacher Invitations: <strong>{deletionPreview.teacherInvitations}</strong></div>
+                    )}
+                    {deletionPreview.adminInvitations > 0 && (
+                      <div>Admin Invitations: <strong>{deletionPreview.adminInvitations}</strong></div>
+                    )}
+                    {deletionPreview.reductionPromises > 0 && (
+                      <div>Reduction Promises: <strong>{deletionPreview.reductionPromises}</strong></div>
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              <RadioGroup value={deletionMode} onValueChange={(value) => setDeletionMode(value as 'soft' | 'transfer' | 'hard')}>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                    <RadioGroupItem value="soft" id="soft" data-testid="radio-soft-delete" />
+                    <Label htmlFor="soft" className="flex-1 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <Archive className="h-5 w-5 text-blue-500" />
+                        <span className="font-semibold">Soft Delete (Recommended)</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        User will be hidden from the system but all data is preserved. Can be restored later.
+                      </p>
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                    <RadioGroupItem value="transfer" id="transfer" data-testid="radio-transfer-delete" />
+                    <Label htmlFor="transfer" className="flex-1 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-orange-500" />
+                        <span className="font-semibold">Transfer Ownership</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Transfer all content to "Archived User" system account, then delete the user. Historical data is preserved.
+                      </p>
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 p-4 border border-red-200 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
+                    <RadioGroupItem value="hard" id="hard" data-testid="radio-hard-delete" />
+                    <Label htmlFor="hard" className="flex-1 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <Trash className="h-5 w-5 text-red-500" />
+                        <span className="font-semibold text-red-600 dark:text-red-400">Hard Delete (Permanent)</span>
+                      </div>
+                      <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                        <strong>WARNING:</strong> Permanently delete user AND all their content. This cannot be undone!
+                      </p>
+                    </Label>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            <DialogFooter>
+              <Button
+                variant="outline"
                 onClick={() => {
-                  if (selectedUserToDelete) {
-                    deleteUserMutation.mutate(selectedUserToDelete.id);
-                  }
+                  setDeleteDialogOpen(false);
+                  setDeletionMode('soft');
                 }}
-                className="bg-red-600 hover:bg-red-700"
+                data-testid="button-cancel-delete"
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmDelete}
+                disabled={deleteUserMutation.isPending}
+                className={deletionMode === 'hard' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
                 data-testid="button-confirm-delete"
               >
-                {deleteUserMutation.isPending ? 'Deleting...' : 'Delete User'}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                {deleteUserMutation.isPending ? 'Deleting...' : `Confirm ${deletionMode === 'soft' ? 'Soft Delete' : deletionMode === 'transfer' ? 'Transfer' : 'Hard Delete'}`}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
           <DialogContent data-testid="dialog-change-role">
@@ -834,27 +956,88 @@ export default function UserManagementTab() {
           </DialogContent>
         </Dialog>
 
-        <AlertDialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
-          <AlertDialogContent data-testid="dialog-bulk-delete">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Bulk Delete Users</AlertDialogTitle>
-              <AlertDialogDescription>
-                Are you sure you want to delete <strong>{selectedUserIds.size} user{selectedUserIds.size > 1 ? 's' : ''}</strong>? 
-                This action cannot be undone and will remove all user data including school associations.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel data-testid="button-cancel-bulk-delete">Cancel</AlertDialogCancel>
-              <AlertDialogAction
+        <Dialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
+          <DialogContent className="max-w-2xl" data-testid="dialog-bulk-delete">
+            <DialogHeader>
+              <DialogTitle>Bulk Delete {selectedUserIds.size} User{selectedUserIds.size > 1 ? 's' : ''}</DialogTitle>
+              <DialogDescription>
+                Choose how to handle the selected users' content and data
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-6">
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <p className="text-sm text-blue-800 dark:text-blue-200">
+                  <strong>Selected Users:</strong> {selectedUserIds.size} user{selectedUserIds.size > 1 ? 's' : ''}
+                </p>
+              </div>
+              
+              <RadioGroup value={bulkDeletionMode} onValueChange={(value) => setBulkDeletionMode(value as 'soft' | 'transfer' | 'hard')}>
+                <div className="space-y-4">
+                  <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                    <RadioGroupItem value="soft" id="bulk-soft" data-testid="radio-bulk-soft-delete" />
+                    <Label htmlFor="bulk-soft" className="flex-1 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <Archive className="h-5 w-5 text-blue-500" />
+                        <span className="font-semibold">Soft Delete (Recommended)</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Users will be hidden from the system but all data is preserved. Can be restored later.
+                      </p>
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 p-4 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                    <RadioGroupItem value="transfer" id="bulk-transfer" data-testid="radio-bulk-transfer-delete" />
+                    <Label htmlFor="bulk-transfer" className="flex-1 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <Users className="h-5 w-5 text-orange-500" />
+                        <span className="font-semibold">Transfer Ownership</span>
+                      </div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                        Transfer all content to "Archived User" system account, then delete the users. Historical data is preserved.
+                      </p>
+                    </Label>
+                  </div>
+                  
+                  <div className="flex items-start space-x-3 p-4 border border-red-200 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 cursor-pointer">
+                    <RadioGroupItem value="hard" id="bulk-hard" data-testid="radio-bulk-hard-delete" />
+                    <Label htmlFor="bulk-hard" className="flex-1 cursor-pointer">
+                      <div className="flex items-center gap-2">
+                        <Trash className="h-5 w-5 text-red-500" />
+                        <span className="font-semibold text-red-600 dark:text-red-400">Hard Delete (Permanent)</span>
+                      </div>
+                      <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+                        <strong>WARNING:</strong> Permanently delete users AND all their content. This cannot be undone!
+                      </p>
+                    </Label>
+                  </div>
+                </div>
+              </RadioGroup>
+            </div>
+            
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setBulkDeleteDialogOpen(false);
+                  setBulkDeletionMode('soft');
+                }}
+                data-testid="button-cancel-bulk-delete"
+              >
+                Cancel
+              </Button>
+              <Button
                 onClick={confirmBulkDelete}
-                className="bg-red-600 hover:bg-red-700"
+                disabled={bulkDeleteMutation.isPending}
+                className={bulkDeletionMode === 'hard' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
                 data-testid="button-confirm-bulk-delete"
               >
-                {bulkDeleteMutation.isPending ? 'Deleting...' : `Delete ${selectedUserIds.size} User${selectedUserIds.size > 1 ? 's' : ''}`}
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+                {bulkDeleteMutation.isPending ? 'Deleting...' : `Confirm ${bulkDeletionMode === 'soft' ? 'Soft Delete' : bulkDeletionMode === 'transfer' ? 'Transfer' : 'Hard Delete'}`}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );

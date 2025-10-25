@@ -5310,8 +5310,8 @@ Return JSON with:
     }
   });
 
-  // Delete user
-  app.delete('/api/admin/users/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Get deletion preview for a user
+  app.get('/api/admin/users/:id/deletion-preview', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const { id } = req.params;
       const adminUserId = req.user.id;
@@ -5321,17 +5321,51 @@ Return JSON with:
         return res.status(400).json({ message: "You cannot delete your own account" });
       }
 
-      console.log(`[Delete User] Admin ${adminUserId} deleting user ${id}`);
+      console.log(`[Deletion Preview] Admin ${adminUserId} previewing deletion of user ${id}`);
       
-      const result = await storage.deleteUser(id);
+      // Get counts of content that will be affected
+      const preview = await storage.getUserContentCounts(id);
+      
+      if (!preview) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json(preview);
+    } catch (error: any) {
+      console.error("[Deletion Preview] Error:", error);
+      res.status(500).json({ message: "Failed to get deletion preview" });
+    }
+  });
+
+  // Delete user with mode selection
+  app.delete('/api/admin/users/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { mode = 'soft' } = req.query;
+      const adminUserId = req.user.id;
+      
+      // Prevent admin from deleting themselves
+      if (id === adminUserId) {
+        return res.status(400).json({ message: "You cannot delete your own account" });
+      }
+
+      // Validate mode parameter
+      if (!['soft', 'transfer', 'hard'].includes(mode as string)) {
+        return res.status(400).json({ message: "Invalid mode. Must be 'soft', 'transfer', or 'hard'" });
+      }
+
+      console.log(`[Delete User] Admin ${adminUserId} deleting user ${id} with mode: ${mode}`);
+      
+      const result = await storage.deleteUser(id, mode as 'soft' | 'transfer' | 'hard');
       
       if (!result.success) {
         return res.status(404).json({ message: "User not found" });
       }
 
-      console.log(`[Delete User] Successfully deleted user ${id}. Evidence deleted: ${result.evidenceDeleted}, Case studies affected: ${result.caseStudiesAffected.length}`);
+      console.log(`[Delete User] Successfully ${mode} deleted user ${id}`);
       res.json({ 
         message: "User deleted successfully",
+        mode: result.mode,
         evidenceDeleted: result.evidenceDeleted,
         caseStudiesAffected: result.caseStudiesAffected
       });
@@ -5341,10 +5375,10 @@ Return JSON with:
     }
   });
 
-  // Bulk delete users
+  // Bulk delete users with mode selection
   app.post('/api/admin/users/bulk-delete', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
-      const { userIds } = req.body;
+      const { userIds, mode = 'soft' } = req.body;
       const adminUserId = req.user.id;
       
       if (!Array.isArray(userIds) || userIds.length === 0) {
@@ -5356,7 +5390,12 @@ Return JSON with:
         return res.status(400).json({ message: "You cannot delete your own account" });
       }
 
-      console.log(`[Bulk Delete Users] Admin ${adminUserId} deleting ${userIds.length} users`);
+      // Validate mode parameter
+      if (!['soft', 'transfer', 'hard'].includes(mode)) {
+        return res.status(400).json({ message: "Invalid mode. Must be 'soft', 'transfer', or 'hard'" });
+      }
+
+      console.log(`[Bulk Delete Users] Admin ${adminUserId} deleting ${userIds.length} users with mode: ${mode}`);
       
       // Fetch user information before deletion to get emails
       const usersToDelete = await storage.getAllUsers();
@@ -5369,20 +5408,22 @@ Return JSON with:
 
       for (const userId of userIds) {
         try {
-          const result = await storage.deleteUser(userId);
+          const result = await storage.deleteUser(userId, mode as 'soft' | 'transfer' | 'hard');
           
           if (result.success) {
             successCount++;
-            totalEvidenceDeleted += result.evidenceDeleted;
+            if (result.evidenceDeleted) totalEvidenceDeleted += result.evidenceDeleted;
             
             // Aggregate affected case studies (avoid duplicates)
-            result.caseStudiesAffected.forEach(cs => {
-              if (!affectedCaseStudiesMap.has(cs.id)) {
-                affectedCaseStudiesMap.set(cs.id, cs);
-              }
-            });
+            if (result.caseStudiesAffected) {
+              result.caseStudiesAffected.forEach(cs => {
+                if (!affectedCaseStudiesMap.has(cs.id)) {
+                  affectedCaseStudiesMap.set(cs.id, cs);
+                }
+              });
+            }
             
-            console.log(`[Bulk Delete Users] Deleted user ${userId}. Evidence deleted: ${result.evidenceDeleted}, Case studies affected: ${result.caseStudiesAffected.length}`);
+            console.log(`[Bulk Delete Users] ${mode} deleted user ${userId}`);
           } else {
             failures.push({ 
               email: userMap.get(userId) || userId, 
@@ -5401,12 +5442,13 @@ Return JSON with:
       const affectedCaseStudies = Array.from(affectedCaseStudiesMap.values());
       const failedCount = failures.length;
 
-      console.log(`[Bulk Delete Users] Completed: ${successCount} successful, ${failedCount} failed, ${totalEvidenceDeleted} evidence deleted, ${affectedCaseStudies.length} case studies affected`);
+      console.log(`[Bulk Delete Users] Completed: ${successCount} successful, ${failedCount} failed, mode: ${mode}`);
       
       res.json({ 
         successCount,
         failedCount,
         failures,
+        mode,
         totalEvidenceDeleted,
         affectedCaseStudies
       });

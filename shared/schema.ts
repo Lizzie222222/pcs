@@ -135,6 +135,7 @@ export const users = pgTable("users", {
   preferredLanguage: varchar("preferred_language").default("en"),
   hasSeenOnboarding: boolean("has_seen_onboarding").default(false),
   lastViewedEventsAt: timestamp("last_viewed_events_at"),
+  deletedAt: timestamp("deleted_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -223,7 +224,7 @@ export const schoolUsers = pgTable("school_users", {
 export const teacherInvitations = pgTable("teacher_invitations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
-  invitedBy: varchar("invited_by").notNull().references(() => users.id),
+  invitedBy: varchar("invited_by").references(() => users.id),
   email: varchar("email").notNull(),
   token: varchar("token").notNull().unique(),
   status: invitationStatusEnum("status").default('pending'),
@@ -234,7 +235,7 @@ export const teacherInvitations = pgTable("teacher_invitations", {
 
 export const adminInvitations = pgTable("admin_invitations", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  invitedBy: varchar("invited_by").notNull().references(() => users.id),
+  invitedBy: varchar("invited_by").references(() => users.id),
   email: varchar("email").notNull(),
   token: varchar("token").notNull().unique(),
   role: varchar("role").default('admin'), // 'admin' or 'partner'
@@ -431,7 +432,7 @@ export const caseStudyTagRelations = pgTable("case_study_tag_relations", {
 export const caseStudyReviewComments = pgTable("case_study_review_comments", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   caseStudyId: varchar("case_study_id").notNull().references(() => caseStudies.id, { onDelete: 'cascade' }),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: varchar("user_id").references(() => users.id),
   comment: text("comment").notNull(),
   action: varchar("action"),
   createdAt: timestamp("created_at").defaultNow(),
@@ -516,7 +517,7 @@ export const certificates = pgTable("certificates", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
   stage: programStageEnum("stage").notNull(),
-  issuedBy: varchar("issued_by").notNull().references(() => users.id),
+  issuedBy: varchar("issued_by").references(() => users.id),
   certificateNumber: varchar("certificate_number").notNull().unique(),
   completedDate: timestamp("completed_date").notNull(),
   issuedDate: timestamp("issued_date").defaultNow(),
@@ -810,7 +811,7 @@ export const eventAnnouncements = pgTable("event_announcements", {
   recipientType: recipientTypeEnum("recipient_type").notNull(),
   campaignId: varchar("campaign_id"),
   announcementType: varchar("announcement_type").notNull(),
-  sentBy: varchar("sent_by").notNull().references(() => users.id),
+  sentBy: varchar("sent_by").references(() => users.id),
   sentAt: timestamp("sent_at").defaultNow(),
   recipientCount: integer("recipient_count").notNull(),
   status: varchar("status").default('sent'),
@@ -831,7 +832,7 @@ export const eventBanners = pgTable("event_banners", {
   backgroundColor: varchar("background_color").default('#0B3D5D'),
   textColor: varchar("text_color").default('#FFFFFF'),
   gradient: varchar("gradient").default('ocean'),
-  createdBy: varchar("created_by").notNull().references(() => users.id),
+  createdBy: varchar("created_by").references(() => users.id),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
@@ -875,7 +876,7 @@ export const mediaAssets = pgTable("media_assets", {
   durationSeconds: integer("duration_seconds"),
   altText: text("alt_text"),
   description: text("description"),
-  uploadedBy: varchar("uploaded_by").notNull().references(() => users.id),
+  uploadedBy: varchar("uploaded_by").references(() => users.id),
   schoolId: varchar("school_id").references(() => schools.id, { onDelete: 'cascade' }),
   visibility: visibilityEnum("visibility").default('registered'),
   isActive: boolean("is_active").default(true),
@@ -924,7 +925,7 @@ export const importStatusEnum = pgEnum('import_status', [
 
 export const importBatches = pgTable("import_batches", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  importedBy: varchar("imported_by").notNull().references(() => users.id),
+  importedBy: varchar("imported_by").references(() => users.id),
   status: importStatusEnum("status").default('processing'),
   totalRecords: integer("total_records").default(0),
   successCount: integer("success_count").default(0),

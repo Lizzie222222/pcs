@@ -129,6 +129,12 @@ export class ConstraintError extends Error {
   }
 }
 
+/**
+ * System user ID for archived/transferred content
+ * When users are deleted with 'transfer' mode, their content is reassigned to this system user
+ */
+export const ARCHIVED_USER_ID = 'archived-user-system';
+
 export interface IStorage {
   // User operations (required for authentication system)
   getUser(id: string): Promise<User | undefined>;
@@ -148,11 +154,23 @@ export interface IStorage {
   
   // User management (admin operations)
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
-  deleteUser(id: string): Promise<{
+  deleteUser(id: string, mode?: 'soft' | 'transfer' | 'hard'): Promise<{
     success: boolean;
-    evidenceDeleted: number;
-    caseStudiesAffected: Array<{ id: string; title: string }>;
+    mode: string;
+    evidenceDeleted?: number;
+    caseStudiesAffected?: Array<{ id: string; title: string }>;
   }>;
+  getOrCreateArchivedUser(): Promise<User>;
+  getUserContentCounts(userId: string): Promise<{
+    evidence: number;
+    caseStudies: number;
+    reductionPromises: number;
+    mediaAssets: number;
+    certificates: number;
+    importBatches: number;
+    teacherInvitations: number;
+    adminInvitations: number;
+  } | null>;
   getTeacherEmails(): Promise<string[]>;
   markOnboardingComplete(userId: string): Promise<User | undefined>;
   
@@ -754,10 +772,11 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async deleteUser(id: string): Promise<{
+  async deleteUser(id: string, mode: 'soft' | 'transfer' | 'hard' = 'soft'): Promise<{
     success: boolean;
-    evidenceDeleted: number;
-    caseStudiesAffected: Array<{ id: string; title: string }>;
+    mode: string;
+    evidenceDeleted?: number;
+    caseStudiesAffected?: Array<{ id: string; title: string }>;
   }> {
     // First check if user exists
     const existingUser = await db
@@ -770,14 +789,204 @@ export class DatabaseStorage implements IStorage {
       console.log(`User deletion failed: User ${id} does not exist`);
       return {
         success: false,
-        evidenceDeleted: 0,
-        caseStudiesAffected: [],
+        mode,
       };
     }
 
     try {
-      console.log(`[Delete User] Starting cascade deletion for user ${id}`);
-      
+      console.log(`[Delete User] Starting ${mode} deletion for user ${id}`);
+
+      // MODE 1: SOFT DELETE - Just mark as deleted
+      if (mode === 'soft') {
+        await db
+          .update(users)
+          .set({ deletedAt: new Date(), updatedAt: new Date() })
+          .where(eq(users.id, id));
+        
+        console.log(`[Delete User] User ${id} soft deleted successfully`);
+        return {
+          success: true,
+          mode: 'soft',
+        };
+      }
+
+      // MODE 2: TRANSFER - Transfer content to archived user, then delete user
+      if (mode === 'transfer') {
+        // Get or create the archived user
+        const archivedUser = await this.getOrCreateArchivedUser();
+        console.log(`[Delete User] Transferring content to archived user ${archivedUser.id}`);
+
+        // Transfer all content to archived user
+        // Transfer evidence submissions
+        await db
+          .update(evidence)
+          .set({ submittedBy: archivedUser.id })
+          .where(eq(evidence.submittedBy, id));
+        
+        // Transfer evidence reviews
+        await db
+          .update(evidence)
+          .set({ reviewedBy: archivedUser.id })
+          .where(eq(evidence.reviewedBy, id));
+        
+        // Transfer case studies
+        await db
+          .update(caseStudies)
+          .set({ createdBy: archivedUser.id })
+          .where(eq(caseStudies.createdBy, id));
+        
+        // Transfer case study reviews
+        await db
+          .update(caseStudies)
+          .set({ reviewedBy: archivedUser.id })
+          .where(eq(caseStudies.reviewedBy, id));
+        
+        // Transfer case study versions
+        await db
+          .update(caseStudyVersions)
+          .set({ createdBy: archivedUser.id })
+          .where(eq(caseStudyVersions.createdBy, id));
+        
+        // Transfer reduction promises
+        await db
+          .update(reductionPromises)
+          .set({ createdBy: archivedUser.id })
+          .where(eq(reductionPromises.createdBy, id));
+        
+        // Transfer printable forms
+        await db
+          .update(printableFormSubmissions)
+          .set({ submittedBy: archivedUser.id })
+          .where(eq(printableFormSubmissions.submittedBy, id));
+        
+        // Transfer printable form reviews
+        await db
+          .update(printableFormSubmissions)
+          .set({ reviewedBy: archivedUser.id })
+          .where(eq(printableFormSubmissions.reviewedBy, id));
+        
+        // Transfer audit submissions
+        await db
+          .update(auditResponses)
+          .set({ submittedBy: archivedUser.id })
+          .where(eq(auditResponses.submittedBy, id));
+        
+        // Transfer audit reviews
+        await db
+          .update(auditResponses)
+          .set({ reviewedBy: archivedUser.id })
+          .where(eq(auditResponses.reviewedBy, id));
+        
+        // Transfer media assets
+        await db
+          .update(mediaAssets)
+          .set({ uploadedBy: archivedUser.id })
+          .where(eq(mediaAssets.uploadedBy, id));
+        
+        // Transfer event banners
+        await db
+          .update(eventBanners)
+          .set({ createdBy: archivedUser.id })
+          .where(eq(eventBanners.createdBy, id));
+        
+        // Transfer events
+        await db
+          .update(events)
+          .set({ createdBy: archivedUser.id })
+          .where(eq(events.createdBy, id));
+        
+        // Transfer teacher invitations
+        await db
+          .update(teacherInvitations)
+          .set({ invitedBy: archivedUser.id })
+          .where(eq(teacherInvitations.invitedBy, id));
+        
+        // Transfer admin invitations
+        await db
+          .update(adminInvitations)
+          .set({ invitedBy: archivedUser.id })
+          .where(eq(adminInvitations.invitedBy, id));
+        
+        // Transfer certificates
+        await db
+          .update(certificates)
+          .set({ issuedBy: archivedUser.id })
+          .where(eq(certificates.issuedBy, id));
+        
+        // Transfer import batches
+        await db
+          .update(importBatches)
+          .set({ importedBy: archivedUser.id })
+          .where(eq(importBatches.importedBy, id));
+        
+        // Transfer event announcements
+        await db
+          .update(eventAnnouncements)
+          .set({ sentBy: archivedUser.id })
+          .where(eq(eventAnnouncements.sentBy, id));
+        
+        // Transfer verification request reviews
+        await db
+          .update(verificationRequests)
+          .set({ reviewedBy: archivedUser.id })
+          .where(eq(verificationRequests.reviewedBy, id));
+        
+        // Transfer case study review comments
+        await db
+          .update(caseStudyReviewComments)
+          .set({ userId: archivedUser.id })
+          .where(eq(caseStudyReviewComments.userId, id));
+        
+        // Transfer resource packs
+        await db
+          .update(resourcePacks)
+          .set({ createdBy: archivedUser.id })
+          .where(eq(resourcePacks.createdBy, id));
+        
+        // Set recipientId to NULL for email logs (these aren't content, just logs)
+        await db
+          .update(emailLogs)
+          .set({ recipientId: null })
+          .where(eq(emailLogs.recipientId, id));
+        
+        // Set primaryContactId and photoConsentApprovedBy to NULL for schools
+        await db
+          .update(schools)
+          .set({ primaryContactId: null })
+          .where(eq(schools.primaryContactId, id));
+        
+        await db
+          .update(schools)
+          .set({ photoConsentApprovedBy: null })
+          .where(eq(schools.photoConsentApprovedBy, id));
+        
+        // Set invitedBy to NULL for school users
+        await db
+          .update(schoolUsers)
+          .set({ invitedBy: null })
+          .where(eq(schoolUsers.invitedBy, id));
+        
+        // Delete user activity logs (these are just logs, not content)
+        await db
+          .delete(userActivityLogs)
+          .where(eq(userActivityLogs.userId, id));
+        
+        // Finally, delete the user
+        const result = await db
+          .delete(users)
+          .where(eq(users.id, id))
+          .returning();
+        
+        const success = result.length > 0;
+        console.log(`[Delete User] User ${id} successfully deleted after transferring content to archived user`);
+        
+        return {
+          success,
+          mode: 'transfer',
+        };
+      }
+
+      // MODE 3: HARD DELETE - Delete all content and user (original implementation)
       // Track affected case studies before updating them
       const affectedCaseStudiesData = await db
         .select({ id: caseStudies.id, title: caseStudies.title })
@@ -912,15 +1121,16 @@ export class DatabaseStorage implements IStorage {
       
       const success = result.length > 0;
       
-      console.log(`[Delete User] User ${id} successfully deleted. Evidence deleted: ${evidenceDeleted}, Case studies affected: ${caseStudiesAffected.length}`);
+      console.log(`[Delete User] User ${id} successfully hard deleted. Evidence deleted: ${evidenceDeleted}, Case studies affected: ${caseStudiesAffected.length}`);
       
       return {
         success,
+        mode: 'hard',
         evidenceDeleted,
         caseStudiesAffected,
       };
     } catch (error: any) {
-      console.error('Unexpected error deleting user:', {
+      console.error(`Unexpected error during ${mode} deletion:`, {
         userId: id,
         error: error.message,
         code: error.code,
@@ -959,7 +1169,112 @@ export class DatabaseStorage implements IStorage {
     return await db
       .select()
       .from(users)
+      .where(sql`${users.deletedAt} IS NULL`)
       .orderBy(asc(users.firstName), asc(users.lastName));
+  }
+
+  async getOrCreateArchivedUser(): Promise<User> {
+    // Check if archived user already exists
+    const [existingUser] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, ARCHIVED_USER_ID))
+      .limit(1);
+
+    if (existingUser) {
+      return existingUser;
+    }
+
+    // Create archived user if it doesn't exist
+    const [archivedUser] = await db
+      .insert(users)
+      .values({
+        id: ARCHIVED_USER_ID,
+        email: 'archived@plasticcleverschools.system',
+        firstName: 'Archived',
+        lastName: 'User',
+        role: 'admin',
+        isAdmin: false,
+        emailVerified: true,
+      })
+      .returning();
+
+    console.log('[Archived User] Created system archived user');
+    return archivedUser;
+  }
+
+  async getUserContentCounts(userId: string): Promise<{
+    evidence: number;
+    caseStudies: number;
+    reductionPromises: number;
+    mediaAssets: number;
+    certificates: number;
+    importBatches: number;
+    teacherInvitations: number;
+    adminInvitations: number;
+  } | null> {
+    // Check if user exists
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(eq(users.id, userId))
+      .limit(1);
+
+    if (!user) {
+      return null;
+    }
+
+    // Get counts of all content types
+    const [evidenceCount] = await db
+      .select({ count: count() })
+      .from(evidence)
+      .where(eq(evidence.submittedBy, userId));
+
+    const [caseStudiesCount] = await db
+      .select({ count: count() })
+      .from(caseStudies)
+      .where(eq(caseStudies.createdBy, userId));
+
+    const [reductionPromisesCount] = await db
+      .select({ count: count() })
+      .from(reductionPromises)
+      .where(eq(reductionPromises.createdBy, userId));
+
+    const [mediaAssetsCount] = await db
+      .select({ count: count() })
+      .from(mediaAssets)
+      .where(eq(mediaAssets.uploadedBy, userId));
+
+    const [certificatesCount] = await db
+      .select({ count: count() })
+      .from(certificates)
+      .where(eq(certificates.issuedBy, userId));
+
+    const [importBatchesCount] = await db
+      .select({ count: count() })
+      .from(importBatches)
+      .where(eq(importBatches.importedBy, userId));
+
+    const [teacherInvitationsCount] = await db
+      .select({ count: count() })
+      .from(teacherInvitations)
+      .where(eq(teacherInvitations.invitedBy, userId));
+
+    const [adminInvitationsCount] = await db
+      .select({ count: count() })
+      .from(adminInvitations)
+      .where(eq(adminInvitations.invitedBy, userId));
+
+    return {
+      evidence: evidenceCount?.count || 0,
+      caseStudies: caseStudiesCount?.count || 0,
+      reductionPromises: reductionPromisesCount?.count || 0,
+      mediaAssets: mediaAssetsCount?.count || 0,
+      certificates: certificatesCount?.count || 0,
+      importBatches: importBatchesCount?.count || 0,
+      teacherInvitations: teacherInvitationsCount?.count || 0,
+      adminInvitations: adminInvitationsCount?.count || 0,
+    };
   }
 
   async getTeacherEmails(): Promise<string[]> {
