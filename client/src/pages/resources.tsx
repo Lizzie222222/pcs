@@ -10,11 +10,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Search, Download, Filter, BookOpen, FileText, Video, Image, Lock, Sparkles, Star, Eye, Share2, Package, ExternalLink } from "lucide-react";
+import { Search, Download, Filter, BookOpen, FileText, Video, Image, Lock, Sparkles, Star, Eye, Share2, Package, ExternalLink, File } from "lucide-react";
 import { useCountries } from "@/hooks/useCountries";
 import { EmptyState } from "@/components/ui/states";
 import { LANGUAGE_FLAG_MAP, LANGUAGE_NAME_MAP } from "@/lib/languageUtils";
 import { useToast } from "@/hooks/use-toast";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { PDFThumbnail } from "@/components/PDFThumbnail";
 
 interface Resource {
   id: string;
@@ -330,6 +332,58 @@ export default function Resources() {
 
   const { recommended: recommendedPacks, others: otherPacks } = separatePacks(resourcePacks || []);
 
+  // Resource Thumbnail component with CORS support
+  const ResourceThumbnail = ({ resource }: { resource: Resource }) => {
+    const fileType = resource.fileType?.toLowerCase() || '';
+    
+    // Image files
+    if (fileType.includes('image')) {
+      return (
+        <div className="w-full h-48 bg-gray-100 relative overflow-hidden">
+          <img 
+            src={resource.fileUrl} 
+            alt={resource.title}
+            crossOrigin="anonymous"
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              // Fallback to icon on error
+              e.currentTarget.style.display = 'none';
+              const parent = e.currentTarget.parentElement;
+              if (parent) {
+                parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-pcs_blue/10 to-teal/10"><svg class="h-16 w-16 text-pcs_blue/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>';
+              }
+            }}
+          />
+        </div>
+      );
+    }
+    
+    // PDF files
+    if (fileType.includes('pdf')) {
+      return (
+        <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+          <PDFThumbnail url={resource.fileUrl} className="w-full h-full" />
+        </div>
+      );
+    }
+    
+    // Video files
+    if (fileType.includes('video')) {
+      return (
+        <div className="w-full h-48 bg-gradient-to-br from-coral/10 to-orange/10 flex items-center justify-center">
+          <Video className="h-16 w-16 text-coral/30" />
+        </div>
+      );
+    }
+    
+    // Other file types
+    return (
+      <div className="w-full h-48 bg-gradient-to-br from-pcs_blue/10 to-teal/10 flex items-center justify-center">
+        <FileText className="h-16 w-16 text-pcs_blue/30" />
+      </div>
+    );
+  };
+
   const ResourceCard = ({ resource }: { resource: Resource }) => {
     const isNew = isNewResource(resource.createdAt);
     const isRecommended = isRecommendedResource(resource.stage);
@@ -343,6 +397,9 @@ export default function Resources() {
         }`} 
         data-testid={`resource-${resource.id}`}
       >
+        {/* Resource Thumbnail */}
+        <ResourceThumbnail resource={resource} />
+        
         <CardHeader className="pb-3 space-y-2">
           {/* Top row: NEW/RECOMMENDED badges (left) and Age range badge (right) */}
           <div className="flex justify-between items-start gap-3">
