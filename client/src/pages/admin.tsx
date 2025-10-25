@@ -1227,6 +1227,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [uploadingPackFiles, setUploadingPackFiles] = useState<Record<number, boolean>>({});
   const [showPageBuilderWarning, setShowPageBuilderWarning] = useState(false);
   const [eventDialogTab, setEventDialogTab] = useState<'details' | 'page-builder'>('details');
+  const eventDialogContentRef = useRef<HTMLDivElement>(null);
   
   // Multi-language state
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
@@ -1346,6 +1347,25 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       setIsVirtualEventCreationInProgress(false); // Clear flag when dialog closes
     }
   }, [eventDialogOpen]);
+
+  // Scroll to top when switching tabs
+  useEffect(() => {
+    // Use a small delay to ensure DOM has updated
+    const timer = setTimeout(() => {
+      // Try to scroll the ref
+      if (eventDialogContentRef.current) {
+        eventDialogContentRef.current.scrollTop = 0;
+      }
+      
+      // Also try to find and scroll the dialog content directly
+      const dialogContent = document.querySelector('[role="dialog"] [data-radix-scroll-area-viewport], [role="dialog"].overflow-y-auto, [role="dialog"] > div');
+      if (dialogContent) {
+        dialogContent.scrollTop = 0;
+      }
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }, [eventDialogTab]);
 
   // Initialize page builder form when editing event
   useEffect(() => {
@@ -5242,7 +5262,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           setEventDialogOpen(open);
         }}
       >
-        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto" ref={eventDialogContentRef}>
           <DialogHeader>
             <DialogTitle data-testid="text-event-dialog-title">
               {editingEvent ? 'Edit Event' : 'Create Event'}
