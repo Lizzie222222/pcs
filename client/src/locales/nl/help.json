@@ -1,0 +1,163 @@
+{
+  "page": {
+    "title": "Helpcentrum",
+    "subtitle": "Vind antwoorden op veelgestelde vragen over het Plastic Clever Schools programma",
+    "search_placeholder": "Zoek naar antwoorden... (bijv. 'hoe registreren', 'bewijs indienen')",
+    "search_results": "{{count}} overeenkomende vragen gevonden",
+    "browse_by_category": "Bladeren op Categorie",
+    "all_categories": "Alle Categorieën ({{count}})",
+    "no_results_title": "Geen resultaten gevonden",
+    "no_results_message": "We konden geen FAQ's vinden die overeenkomen met uw zoekopdracht. Probeer andere zoekwoorden of blader door alle categorieën.",
+    "browse_all": "Alle Categorieën Bekijken",
+    "still_need_help_title": "Heeft u Nog Hulp Nodig?",
+    "still_need_help_message": "Kunt u niet vinden wat u zoekt? Ons ondersteuningsteam is er om te helpen!",
+    "contact_support": "Contact Opnemen met Ondersteuning",
+    "back_to_categories": "Terug naar Alle Categorieën"
+  },
+  "categories": {
+    "getting_started": {
+      "title": "Aan de Slag",
+      "description": "Leer hoe u kunt deelnemen aan en beginnen met Plastic Clever Schools",
+      "faqs": {
+        "register_school": {
+          "question": "Hoe registreer ik mijn school voor het Plastic Clever Schools programma?",
+          "answer": "Om uw school te registreren, klikt u op de knop 'Registreren' in het navigatiemenu. U moet uw schoolgegevens, contactgegevens verstrekken en uw land selecteren. Na registratie ontvangt u een bevestigingsmail met de volgende stappen om uw profiel te voltooien en het programma te starten."
+        },
+        "who_can_participate": {
+          "question": "Wie kan deelnemen aan het Plastic Clever Schools programma?",
+          "answer": "Het programma staat open voor alle scholen wereldwijd - basis-, middelbare en hoger onderwijsinstellingen. Leraren, beheerders en schoolpersoneel kunnen hun school registreren en teams maken. Leerlingen nemen deel via de accounts van hun leraren en kunnen bijdragen aan het indienen van bewijs en actieplannen."
+        },
+        "cost_to_join": {
+          "question": "Zijn er kosten verbonden aan deelname aan het programma?",
+          "answer": "Nee! Het Plastic Clever Schools programma is volledig gratis voor alle deelnemende scholen. We geloven dat milieueducatie voor iedereen toegankelijk moet zijn. Alle bronnen, tools, certificaten en ondersteuning worden kosteloos verstrekt."
+        },
+        "multiple_teachers": {
+          "question": "Kunnen meerdere leraren van dezelfde school deelnemen?",
+          "answer": "Absoluut! We moedigen meerdere leraren aan om deel te nemen van dezelfde school. De eerste leraar maakt het schoolaccount aan en kan vervolgens andere leraren uitnodigen om lid te worden van het team via het Team Beheer-gedeelte in het dashboard. Dit maakt samenwerkingsverbanden mogelijk tussen verschillende klassen en jaargroepen."
+        },
+        "age_groups": {
+          "question": "Voor welke leeftijdsgroepen is het programma geschikt?",
+          "answer": "Het Plastic Clever Schools programma is ontworpen voor leerlingen van 5-18 jaar. Bronnen en activiteiten zijn beschikbaar voor verschillende leeftijdscategorieën (5-7 jaar, 8-11 jaar, 12-16 jaar en 17+ jaar), zodat u materialen kunt kiezen die geschikt zijn voor het niveau van uw leerlingen."
+        }
+      }
+    },
+    "program_stages": {
+      "title": "Programmafasen",
+      "description": "De fasen Inspireren, Onderzoeken en Handelen begrijpen",
+      "faqs": {
+        "three_stages": {
+          "question": "Wat zijn de drie fasen van het programma?",
+          "answer": "Het programma bestaat uit drie progressieve fasen: 1) INSPIREREN - Leer over plasticvervuiling en de impact ervan door middel van educatieve bronnen en activiteiten. 2) ONDERZOEKEN - Voer een plasticafvalaudit uit op uw school om uw huidige plastic gebruik te begrijpen. 3) HANDELEN - Maak en implementeer een actieplan om plasticafval op uw school te verminderen."
+        },
+        "stage_order": {
+          "question": "Kunnen we bij elke fase beginnen of moeten we ze in volgorde voltooien?",
+          "answer": "We raden sterk aan om de fasen in volgorde te voltooien (Inspireren → Onderzoeken → Handelen) aangezien elke fase voortbouwt op de vorige. De Inspireren-fase biedt essentiële kennis, de Onderzoeken-fase helpt u uw specifieke situatie te begrijpen, en de Handelen-fase stelt u in staat om weloverwogen veranderingen door te voeren. Scholen met bestaande plasticreductie-initiatieven kunnen echter verzoeken om direct naar latere fasen te gaan."
+        },
+        "stage_duration": {
+          "question": "Hoe lang duurt het om elke fase te voltooien?",
+          "answer": "De tijdlijn varieert per school. Typisch: INSPIREREN (2-4 weken) - Tijd om bronnen te verkennen en leerlingen bij het onderwerp te betrekken. ONDERZOEKEN (3-6 weken) - De afvalaudit uitvoeren en resultaten analyseren. HANDELEN (Doorlopend) - Het implementeren van uw actieplan is een voortdurende reis. De meeste scholen voltooien alle drie fasen binnen een academisch kwartaal (12-16 weken)."
+        },
+        "after_completion": {
+          "question": "Wat gebeurt er nadat we alle drie fasen hebben voltooid?",
+          "answer": "Na het voltooien van alle drie fasen ontvangt uw school een Plastic Clever Schools certificaat! U kunt uw impact blijven volgen, uw actieplan bijwerken, nieuw bewijs van uw initiatieven indienen en uw succesverhaal delen om andere scholen te inspireren. Veel scholen gaan ook verder met meer geavanceerde duurzaamheidsprojecten."
+        }
+      }
+    },
+    "evidence_submission": {
+      "title": "Bewijs Indienen",
+      "description": "Richtlijnen voor het indienen van foto's, video's en documentatie",
+      "faqs": {
+        "evidence_per_stage": {
+          "question": "Welk bewijs moet ik voor elke fase indienen?",
+          "answer": "INSPIREREN: Dien foto's of video's in van klasactiviteiten, leerlingenprojecten of presentaties over plasticvervuiling. ONDERZOEKEN: Upload uw ingevulde afvalauditformulier met foto's van het auditproces en verzamelde gegevens. HANDELEN: Lever bewijs van de implementatie van uw actieplan - voor/na foto's, video's van initiatieven, getuigenissen van leerlingen en impactmetingen."
+        },
+        "file_formats": {
+          "question": "Welke bestandsformaten worden geaccepteerd voor bewijs?",
+          "answer": "We accepteren de volgende formaten: Afbeeldingen (JPEG, PNG, GIF tot 10MB elk), Video's (MP4, MOV tot 100MB, of YouTube/Vimeo links), Documenten (PDF tot 10MB). Voor grote videobestanden raden we aan om deze naar YouTube of Vimeo te uploaden en in plaats daarvan de link te delen."
+        },
+        "approval_time": {
+          "question": "Hoe lang duurt de goedkeuring van bewijs?",
+          "answer": "Ons team beoordeelt alle ingediende bewijzen binnen 3-5 werkdagen. U ontvangt een e-mailmelding zodra uw bewijs is beoordeeld. Bij goedkeuring kunt u doorgaan naar de volgende fase. Als revisies nodig zijn, geven we duidelijke feedback over wat te verbeteren en kunt u opnieuw indienen."
+        },
+        "language_support": {
+          "question": "Kunnen we bewijs indienen in andere talen dan Engels?",
+          "answer": "Ja! We verwelkomen bewijsinzendingen in elke taal. Hoewel de interface van ons platform beschikbaar is in meerdere talen, kan bewijs worden ingediend in de hoofdtaal van uw school. Indien nodig kan ons beoordelingsteam vertaaltools gebruiken om de inhoud te beoordelen."
+        },
+        "quality_evidence": {
+          "question": "Wat maakt bewijs van goede kwaliteit?",
+          "answer": "Goed bewijs is duidelijk, authentiek en toont oprechte betrokkenheid van leerlingen. Voeg toe: Duidelijke foto's die activiteiten of resultaten tonen, Zichtbare betrokkenheid van leerlingen in afbeeldingen/video's, Korte bijschriften die uitleggen wat wordt getoond, Authentiek werk (geen geënsceneerde foto's), en Meetgegevens waar van toepassing (bijv. kilogrammen verminderd plastic)."
+        }
+      }
+    },
+    "action_plans": {
+      "title": "Actieplannen",
+      "description": "Uw plasticreductie-initiatieven creëren en volgen",
+      "faqs": {
+        "what_is_action_plan": {
+          "question": "Wat is een actieplan en hoe maak ik er een?",
+          "answer": "Een actieplan is de toewijding van uw school om plasticafval te verminderen. Om er een te maken, gaat u naar de fase 'Handelen' in uw dashboard en klikt u op 'Actieplan Maken'. U definieert specifieke, meetbare doelen (bijv. 'Elimineer wegwerpplastic flessen uit de kantine'), stelt tijdlijnen vast, wijst verantwoordelijkheden toe en schetst de stappen om uw doelen te bereiken. Neem op hoe u succes zult meten en betrek leerlingen bij het planningsproces."
+        },
+        "tracking_impact": {
+          "question": "Hoe volgen we onze plasticreductie-impact?",
+          "answer": "Volg de impact via de trackingtools van het dashboard: Log basislijnmetingen van uw audit, registreer wekelijkse of maandelijkse voortgangsupdates, upload foto's van geïmplementeerde veranderingen, voer kwantitatieve gegevens in (verminderde items, gewicht van bespaard plastic) en documenteer deelnemersaantallen van leerlingen. Het systeem genereert grafieken en rapporten die uw voortgang in de loop van de tijd tonen."
+        },
+        "student_involvement": {
+          "question": "Hoe moeten leerlingen betrokken worden bij het actieplan?",
+          "answer": "Betrokkenheid van leerlingen is cruciaal! Betrek leerlingen door: Ze op te nemen in planningsgesprekken en beslissingen, Leerlingenrollen toe te wijzen (afvalmonitoren, bewustzijnsambassadeurs), Leerlingen bewustwordingscampagnes te laten leiden, Door leerlingen ontworpen oplossingen en initiatieven aan te moedigen, en Leerlingen voortgang te laten volgen en rapporteren. Eigenaarschap door leerlingen maakt initiatieven succesvoller en educatiever."
+        },
+        "modify_plan": {
+          "question": "Kunnen we ons actieplan na indiening wijzigen?",
+          "answer": "Ja, actieplannen zijn levende documenten! U kunt uw actieplan op elk moment bijwerken via uw dashboard. We moedigen scholen aan om hun plannen te verfijnen op basis van wat werkt, nieuwe initiatieven toe te voegen, tijdlijnen aan te passen en doelen bij te werken naarmate u vordert. Elke update wordt opgeslagen in uw versiegeschiedenis."
+        }
+      }
+    },
+    "awards_certificates": {
+      "title": "Onderscheidingen & Certificaten",
+      "description": "Erkenning verdienen en certificaten downloaden",
+      "faqs": {
+        "earn_certificate": {
+          "question": "Hoe verdienen we ons Plastic Clever Schools certificaat?",
+          "answer": "Om uw certificaat te verdienen, voltooit u alle drie programmafasen: 1) Dien bewijs in en krijg goedkeuring voor de INSPIREREN-fase, 2) Voltooi en dien uw plasticafvalaudit in (ONDERZOEKEN-fase), 3) Maak een actieplan en dien bewijs van implementatie in (HANDELEN-fase). Zodra alle fasen zijn goedgekeurd, kunt u uw certificaat downloaden vanuit het dashboard."
+        },
+        "when_receive_certificate": {
+          "question": "Wanneer ontvangen we ons certificaat?",
+          "answer": "Uw certificaat is beschikbaar voor onmiddellijke download zodra u alle drie fasen heeft voltooid en goedkeuring heeft ontvangen voor uw definitieve bewijs indiening. U ontvangt een e-mailmelding wanneer uw certificaat klaar is. Het certificaat bevat uw schoolnaam, voltooiingsdatum en een unieke verificatiecode."
+        },
+        "download_copies": {
+          "question": "Kunnen we meerdere exemplaren van ons certificaat downloaden?",
+          "answer": "Ja! Zodra u het heeft verdiend, kunt u uw certificaat zo vaak als nodig downloaden vanuit uw dashboard. Het certificaat wordt verstrekt als een hoge resolutie PDF geschikt voor afdrukken en tentoonstelling. U kunt exemplaren afdrukken voor uw schoolreceptie, klaslokalen of om te delen met belanghebbenden."
+        },
+        "achievement_levels": {
+          "question": "Zijn er verschillende niveaus van prestaties of onderscheidingen?",
+          "answer": "Momenteel verdienen alle scholen die de drie fasen voltooien het Plastic Clever Schools certificaat. We belichten echter uitstekende initiatieven in ons 'Inspiratie'-gedeelte waar scholen gedetailleerde casestudies kunnen delen. Scholen met uitzonderlijke impact of innovatieve oplossingen kunnen worden uitgelicht als spotlightscholen op onze website en sociale media."
+        }
+      }
+    },
+    "technical_support": {
+      "title": "Technische Ondersteuning",
+      "description": "Probleemoplossing voor inlogproblemen en platformfuncties",
+      "faqs": {
+        "login_trouble": {
+          "question": "Ik heb problemen met inloggen. Wat moet ik doen?",
+          "answer": "Zorg er eerst voor dat u het juiste e-mailadres gebruikt dat bij uw account is geregistreerd. Klik op 'Wachtwoord vergeten?' om uw wachtwoord opnieuw in te stellen. Als u zich heeft geregistreerd met Google, klik dan op 'Inloggen met Google' in plaats van e-mail/wachtwoord te gebruiken. Wis uw browsercache en cookies als problemen aanhouden. Als u nog steeds geen toegang heeft tot uw account, neem dan contact met ons op via de Contactpagina met uw schoolnaam en geregistreerde e-mail."
+        },
+        "invite_teachers": {
+          "question": "Hoe nodig ik andere leraren uit om lid te worden van het team van mijn school?",
+          "answer": "Ga naar uw Dashboard → Team Beheer → Leraren Uitnodigen. Voer het e-mailadres van de leraar in en klik op 'Uitnodiging Verzenden'. Ze ontvangen een e-mail met een unieke uitnodigingslink om lid te worden van het team van uw school. U kunt lopende uitnodigingen volgen en teamleden beheren vanaf de Team Beheer-pagina."
+        },
+        "change_school_info": {
+          "question": "Kan ik de informatie van mijn school wijzigen na registratie?",
+          "answer": "Ja, u kunt de meeste schoolinformatie bijwerken vanuit uw dashboard. Ga naar Instellingen of Schoolprofiel om details zoals schooladres, contactgegevens en beschrijving te bewerken. Sommige kerndetails (zoals land) kunnen goedkeuring van de beheerder vereisen om te wijzigen. Neem contact op met ondersteuning als u aanzienlijke wijzigingen moet aanbrengen."
+        },
+        "upload_issues": {
+          "question": "De geüploade afbeelding/video wordt niet correct weergegeven. Wat is er mis?",
+          "answer": "Dit gebeurt meestal vanwege bestandsformaat- of grootteproblemen. Zorg ervoor dat uw bestanden voldoen aan de vereisten: Afbeeldingen - JPEG, PNG of GIF onder 10MB; Video's - MP4 of MOV onder 100MB. Probeer grote bestanden te comprimeren of gebruik een ander formaat. Voor video's, overweeg ze te uploaden naar YouTube/Vimeo en in plaats daarvan de link te delen. Als problemen aanhouden, neem dan contact op met technische ondersteuning."
+        },
+        "data_security": {
+          "question": "Zijn de gegevens van mijn school veilig en privé?",
+          "answer": "Ja! We nemen gegevensbeveiliging serieus. Alle gegevens worden versleuteld tijdens transport en in rust. We verzamelen alleen informatie die nodig is voor programmadeelname. Schoolinformatie is zichtbaar op onze schoolkaart, maar contactgegevens blijven privé. Leerlingnamen en persoonlijke informatie worden nooit openbaar weergegeven. Lees ons Privacybeleid voor volledige details."
+        }
+      }
+    }
+  }
+}

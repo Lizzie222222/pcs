@@ -1,0 +1,163 @@
+{
+  "page": {
+    "title": "Hilfe-Center",
+    "subtitle": "Finden Sie Antworten auf häufig gestellte Fragen zum Plastic Clever Schools Programm",
+    "search_placeholder": "Nach Antworten suchen... (z.B. 'wie registrieren', 'Nachweise einreichen')",
+    "search_results": "{{count}} passende Fragen gefunden",
+    "browse_by_category": "Nach Kategorie durchsuchen",
+    "all_categories": "Alle Kategorien ({{count}})",
+    "no_results_title": "Keine Ergebnisse gefunden",
+    "no_results_message": "Wir konnten keine FAQs finden, die Ihrer Suche entsprechen. Versuchen Sie andere Schlüsselwörter oder durchsuchen Sie alle Kategorien.",
+    "browse_all": "Alle Kategorien durchsuchen",
+    "still_need_help_title": "Benötigen Sie noch Hilfe?",
+    "still_need_help_message": "Können Sie nicht finden, wonach Sie suchen? Unser Support-Team ist hier, um zu helfen!",
+    "contact_support": "Support kontaktieren",
+    "back_to_categories": "Zurück zu allen Kategorien"
+  },
+  "categories": {
+    "getting_started": {
+      "title": "Erste Schritte",
+      "description": "Erfahren Sie, wie Sie bei Plastic Clever Schools teilnehmen und loslegen können",
+      "faqs": {
+        "register_school": {
+          "question": "Wie registriere ich meine Schule für das Plastic Clever Schools Programm?",
+          "answer": "Um Ihre Schule zu registrieren, klicken Sie auf die Schaltfläche 'Registrieren' im Navigationsmenü. Sie müssen Ihre Schuldetails, Kontaktinformationen angeben und Ihr Land auswählen. Nach der Registrierung erhalten Sie eine Bestätigungs-E-Mail mit den nächsten Schritten, um Ihr Profil zu vervollständigen und das Programm zu starten."
+        },
+        "who_can_participate": {
+          "question": "Wer kann am Plastic Clever Schools Programm teilnehmen?",
+          "answer": "Das Programm steht allen Schulen weltweit offen - Grund-, Sekundar- und Hochschuleinrichtungen. Lehrer, Administratoren und Schulpersonal können ihre Schule registrieren und Teams erstellen. Schüler nehmen über die Konten ihrer Lehrer teil und können zur Einreichung von Nachweisen und Aktionsplänen beitragen."
+        },
+        "cost_to_join": {
+          "question": "Kostet die Teilnahme am Programm etwas?",
+          "answer": "Nein! Das Plastic Clever Schools Programm ist für alle teilnehmenden Schulen völlig kostenlos. Wir glauben, dass Umweltbildung für alle zugänglich sein sollte. Alle Ressourcen, Tools, Zertifikate und Unterstützung werden kostenlos bereitgestellt."
+        },
+        "multiple_teachers": {
+          "question": "Können mehrere Lehrer von derselben Schule teilnehmen?",
+          "answer": "Absolut! Wir ermutigen mehrere Lehrer, von derselben Schule beizutreten. Der erste Lehrer erstellt das Schulkonto und kann dann andere Lehrer einladen, dem Team über den Bereich Team-Verwaltung im Dashboard beizutreten. Dies ermöglicht gemeinsame Bemühungen über verschiedene Klassen und Jahrgangsstufen hinweg."
+        },
+        "age_groups": {
+          "question": "Für welche Altersgruppen ist das Programm geeignet?",
+          "answer": "Das Plastic Clever Schools Programm ist für Schüler im Alter von 5-18 Jahren konzipiert. Ressourcen und Aktivitäten sind für verschiedene Altersgruppen verfügbar (5-7 Jahre, 8-11 Jahre, 12-16 Jahre und 17+ Jahre), sodass Sie Materialien auswählen können, die dem Niveau Ihrer Schüler entsprechen."
+        }
+      }
+    },
+    "program_stages": {
+      "title": "Programmphasen",
+      "description": "Verstehen der Phasen Inspirieren, Untersuchen und Handeln",
+      "faqs": {
+        "three_stages": {
+          "question": "Was sind die drei Phasen des Programms?",
+          "answer": "Das Programm besteht aus drei aufeinander aufbauenden Phasen: 1) INSPIRIEREN - Lernen Sie durch Bildungsressourcen und Aktivitäten über Plastikverschmutzung und deren Auswirkungen. 2) UNTERSUCHEN - Führen Sie eine Plastikabfall-Prüfung an Ihrer Schule durch, um Ihren aktuellen Plastikverbrauch zu verstehen. 3) HANDELN - Erstellen und implementieren Sie einen Aktionsplan zur Reduzierung von Plastikabfällen an Ihrer Schule."
+        },
+        "stage_order": {
+          "question": "Können wir bei jeder Phase beginnen oder müssen wir sie in der Reihenfolge abschließen?",
+          "answer": "Wir empfehlen dringend, die Phasen in der Reihenfolge (Inspirieren → Untersuchen → Handeln) abzuschließen, da jede Phase auf der vorherigen aufbaut. Die Inspirieren-Phase vermittelt wesentliches Wissen, die Untersuchen-Phase hilft Ihnen, Ihre spezifische Situation zu verstehen, und die Handeln-Phase ermöglicht es Ihnen, fundierte Änderungen vorzunehmen. Schulen mit bestehenden Plastikreduzierungsinitiativen können jedoch beantragen, direkt zu späteren Phasen zu springen."
+        },
+        "stage_duration": {
+          "question": "Wie lange dauert es, jede Phase abzuschließen?",
+          "answer": "Der Zeitplan variiert je nach Schule. Typischerweise: INSPIRIEREN (2-4 Wochen) - Zeit, um Ressourcen zu erkunden und Schüler mit dem Thema zu beschäftigen. UNTERSUCHEN (3-6 Wochen) - Durchführung der Abfallprüfung und Analyse der Ergebnisse. HANDELN (Fortlaufend) - Die Umsetzung Ihres Aktionsplans ist eine kontinuierliche Reise. Die meisten Schulen schließen alle drei Phasen innerhalb eines Schulquartals (12-16 Wochen) ab."
+        },
+        "after_completion": {
+          "question": "Was passiert, nachdem wir alle drei Phasen abgeschlossen haben?",
+          "answer": "Nach Abschluss aller drei Phasen erhält Ihre Schule ein Plastic Clever Schools Zertifikat! Sie können weiterhin Ihre Auswirkungen verfolgen, Ihren Aktionsplan aktualisieren, neue Nachweise Ihrer Initiativen einreichen und Ihre Erfolgsgeschichte teilen, um andere Schulen zu inspirieren. Viele Schulen gehen auch zu fortgeschritteneren Nachhaltigkeitsprojekten über."
+        }
+      }
+    },
+    "evidence_submission": {
+      "title": "Nachweise einreichen",
+      "description": "Richtlinien für die Einreichung von Fotos, Videos und Dokumentation",
+      "faqs": {
+        "evidence_per_stage": {
+          "question": "Welche Nachweise muss ich für jede Phase einreichen?",
+          "answer": "INSPIRIEREN: Reichen Sie Fotos oder Videos von Unterrichtsaktivitäten, Schülerprojekten oder Präsentationen über Plastikverschmutzung ein. UNTERSUCHEN: Laden Sie Ihr ausgefülltes Abfallprüfungsformular mit Fotos des Prüfungsprozesses und gesammelten Daten hoch. HANDELN: Legen Sie Nachweise für die Umsetzung Ihres Aktionsplans vor - Vorher/Nachher-Fotos, Videos von Initiativen, Schüleraussagen und Wirkungsmessungen."
+        },
+        "file_formats": {
+          "question": "Welche Dateiformate werden für Nachweise akzeptiert?",
+          "answer": "Wir akzeptieren folgende Formate: Bilder (JPEG, PNG, GIF bis zu 10MB jeweils), Videos (MP4, MOV bis zu 100MB oder YouTube/Vimeo-Links), Dokumente (PDF bis zu 10MB). Für große Videodateien empfehlen wir, sie auf YouTube oder Vimeo hochzuladen und stattdessen den Link zu teilen."
+        },
+        "approval_time": {
+          "question": "Wie lange dauert die Genehmigung von Nachweisen?",
+          "answer": "Unser Team überprüft alle eingereichten Nachweise innerhalb von 3-5 Werktagen. Sie erhalten eine E-Mail-Benachrichtigung, sobald Ihre Nachweise überprüft wurden. Bei Genehmigung können Sie mit der nächsten Phase fortfahren. Wenn Überarbeitungen erforderlich sind, geben wir klares Feedback darüber, was verbessert werden muss, und Sie können erneut einreichen."
+        },
+        "language_support": {
+          "question": "Können wir Nachweise in anderen Sprachen als Englisch einreichen?",
+          "answer": "Ja! Wir begrüßen Nachweis-Einreichungen in jeder Sprache. Während unsere Plattformoberfläche in mehreren Sprachen verfügbar ist, können Nachweise in der Hauptsprache Ihrer Schule eingereicht werden. Bei Bedarf kann unser Überprüfungsteam Übersetzungstools verwenden, um den Inhalt zu bewerten."
+        },
+        "quality_evidence": {
+          "question": "Was macht qualitativ hochwertige Nachweise aus?",
+          "answer": "Gute Nachweise sind klar, authentisch und zeigen echtes Schülerengagement. Fügen Sie hinzu: Klare Fotos, die Aktivitäten oder Ergebnisse zeigen, Sichtbare Schülerbeteiligung in Bildern/Videos, Kurze Bildunterschriften, die erklären, was gezeigt wird, Authentische Arbeit (keine inszenierten Fotos), und Messdaten, wo zutreffend (z.B. reduzierte Kilogramm Plastik)."
+        }
+      }
+    },
+    "action_plans": {
+      "title": "Aktionspläne",
+      "description": "Erstellen und Verfolgen Ihrer Plastikreduzierungsinitiativen",
+      "faqs": {
+        "what_is_action_plan": {
+          "question": "Was ist ein Aktionsplan und wie erstelle ich einen?",
+          "answer": "Ein Aktionsplan ist die Verpflichtung Ihrer Schule zur Reduzierung von Plastikabfällen. Um einen zu erstellen, gehen Sie zur Phase 'Handeln' in Ihrem Dashboard und klicken Sie auf 'Aktionsplan erstellen'. Sie definieren spezifische, messbare Ziele (z.B. 'Beseitigung von Einweg-Plastikflaschen aus der Cafeteria'), legen Zeitpläne fest, weisen Verantwortlichkeiten zu und skizzieren die Schritte zur Erreichung Ihrer Ziele. Geben Sie an, wie Sie den Erfolg messen werden, und beziehen Sie Schüler in den Planungsprozess ein."
+        },
+        "tracking_impact": {
+          "question": "Wie verfolgen wir unsere Plastikreduzierungswirkung?",
+          "answer": "Verfolgen Sie die Wirkung über die Tracking-Tools des Dashboards: Protokollieren Sie Basismessungen aus Ihrer Prüfung, erfassen Sie wöchentliche oder monatliche Fortschrittsaktualisierungen, laden Sie Fotos der umgesetzten Änderungen hoch, geben Sie quantitative Daten ein (reduzierte Artikel, eingesparte Plastikmenge) und dokumentieren Sie Schülerteilnehmerzahlen. Das System generiert Diagramme und Berichte, die Ihren Fortschritt im Laufe der Zeit zeigen."
+        },
+        "student_involvement": {
+          "question": "Wie sollten Schüler in den Aktionsplan einbezogen werden?",
+          "answer": "Schülerbeteiligung ist entscheidend! Beziehen Sie Schüler ein, indem Sie: Sie in Planungsdiskussionen und Entscheidungen einbeziehen, Schülerrollen zuweisen (Abfallmonitore, Bewusstseins-Botschafter), Schüler Bewusstseinskampagnen leiten lassen, Von Schülern entworfene Lösungen und Initiativen fördern, und Schülern ermöglichen, Fortschritte zu verfolgen und zu berichten. Schülerverantwortung macht Initiativen erfolgreicher und lehrreicher."
+        },
+        "modify_plan": {
+          "question": "Können wir unseren Aktionsplan nach der Einreichung ändern?",
+          "answer": "Ja, Aktionspläne sind lebendige Dokumente! Sie können Ihren Aktionsplan jederzeit über Ihr Dashboard aktualisieren. Wir ermutigen Schulen, ihre Pläne basierend auf dem, was funktioniert, zu verfeinern, neue Initiativen hinzuzufügen, Zeitpläne anzupassen und Ziele im Laufe Ihres Fortschritts zu aktualisieren. Jedes Update wird in Ihrem Versionsverlauf gespeichert."
+        }
+      }
+    },
+    "awards_certificates": {
+      "title": "Auszeichnungen & Zertifikate",
+      "description": "Anerkennung verdienen und Zertifikate herunterladen",
+      "faqs": {
+        "earn_certificate": {
+          "question": "Wie verdienen wir unser Plastic Clever Schools Zertifikat?",
+          "answer": "Um Ihr Zertifikat zu verdienen, schließen Sie alle drei Programmphasen ab: 1) Reichen Sie Nachweise für die INSPIRIEREN-Phase ein und lassen Sie sie genehmigen, 2) Schließen Sie Ihre Plastikabfall-Prüfung ab und reichen Sie sie ein (UNTERSUCHEN-Phase), 3) Erstellen Sie einen Aktionsplan und reichen Sie Nachweise der Umsetzung ein (HANDELN-Phase). Sobald alle Phasen genehmigt sind, können Sie Ihr Zertifikat aus dem Dashboard herunterladen."
+        },
+        "when_receive_certificate": {
+          "question": "Wann erhalten wir unser Zertifikat?",
+          "answer": "Ihr Zertifikat steht zum sofortigen Download zur Verfügung, sobald Sie alle drei Phasen abgeschlossen und die Genehmigung für Ihre endgültige Nachweis-Einreichung erhalten haben. Sie erhalten eine E-Mail-Benachrichtigung, wenn Ihr Zertifikat bereit ist. Das Zertifikat enthält Ihren Schulnamen, das Abschlussdatum und einen eindeutigen Verifizierungscode."
+        },
+        "download_copies": {
+          "question": "Können wir mehrere Kopien unseres Zertifikats herunterladen?",
+          "answer": "Ja! Sobald Sie es verdient haben, können Sie Ihr Zertifikat so oft wie nötig aus Ihrem Dashboard herunterladen. Das Zertifikat wird als hochauflösendes PDF bereitgestellt, das zum Drucken und Ausstellen geeignet ist. Sie können Kopien für Ihren Schulempfang, Klassenzimmer oder zum Teilen mit Stakeholdern drucken."
+        },
+        "achievement_levels": {
+          "question": "Gibt es unterschiedliche Leistungsstufen oder Auszeichnungen?",
+          "answer": "Derzeit erhalten alle Schulen, die die drei Phasen abschließen, das Plastic Clever Schools Zertifikat. Wir präsentieren jedoch herausragende Initiativen in unserem Bereich 'Inspiration', wo Schulen detaillierte Fallstudien teilen können. Schulen mit außergewöhnlicher Wirkung oder innovativen Lösungen können als Spotlight-Schulen auf unserer Website und in sozialen Medien vorgestellt werden."
+        }
+      }
+    },
+    "technical_support": {
+      "title": "Technischer Support",
+      "description": "Fehlerbehebung bei Login-Problemen und Plattformfunktionen",
+      "faqs": {
+        "login_trouble": {
+          "question": "Ich habe Probleme beim Einloggen. Was soll ich tun?",
+          "answer": "Stellen Sie zunächst sicher, dass Sie die richtige E-Mail-Adresse verwenden, die mit Ihrem Konto registriert ist. Klicken Sie auf 'Passwort vergessen?', um Ihr Passwort zurückzusetzen. Wenn Sie sich mit Google registriert haben, klicken Sie auf 'Mit Google anmelden' anstatt E-Mail/Passwort zu verwenden. Löschen Sie Ihren Browser-Cache und Cookies, wenn Probleme bestehen bleiben. Wenn Sie immer noch nicht auf Ihr Konto zugreifen können, kontaktieren Sie uns über die Kontaktseite mit Ihrem Schulnamen und der registrierten E-Mail."
+        },
+        "invite_teachers": {
+          "question": "Wie lade ich andere Lehrer ein, dem Team meiner Schule beizutreten?",
+          "answer": "Gehen Sie zu Ihrem Dashboard → Team-Verwaltung → Lehrer einladen. Geben Sie die E-Mail-Adresse des Lehrers ein und klicken Sie auf 'Einladung senden'. Sie erhalten eine E-Mail mit einem eindeutigen Einladungslink, um dem Team Ihrer Schule beizutreten. Sie können ausstehende Einladungen verfolgen und Teammitglieder von der Team-Verwaltungsseite aus verwalten."
+        },
+        "change_school_info": {
+          "question": "Kann ich die Informationen meiner Schule nach der Registrierung ändern?",
+          "answer": "Ja, Sie können die meisten Schulinformationen über Ihr Dashboard aktualisieren. Gehen Sie zu Einstellungen oder Schulprofil, um Details wie Schuladresse, Kontaktinformationen und Beschreibung zu bearbeiten. Einige Kerndetails (wie Land) können eine Admin-Genehmigung zur Änderung erfordern. Kontaktieren Sie den Support, wenn Sie wesentliche Änderungen vornehmen müssen."
+        },
+        "upload_issues": {
+          "question": "Das hochgeladene Bild/Video wird nicht richtig angezeigt. Was ist los?",
+          "answer": "Dies geschieht normalerweise aufgrund von Dateiformat- oder Größenproblemen. Stellen Sie sicher, dass Ihre Dateien die Anforderungen erfüllen: Bilder - JPEG, PNG oder GIF unter 10MB; Videos - MP4 oder MOV unter 100MB. Versuchen Sie, große Dateien zu komprimieren oder ein anderes Format zu verwenden. Für Videos sollten Sie erwägen, sie auf YouTube/Vimeo hochzuladen und stattdessen den Link zu teilen. Wenn Probleme bestehen bleiben, kontaktieren Sie den technischen Support."
+        },
+        "data_security": {
+          "question": "Sind die Daten meiner Schule sicher und privat?",
+          "answer": "Ja! Wir nehmen Datensicherheit ernst. Alle Daten werden während der Übertragung und im Ruhezustand verschlüsselt. Wir sammeln nur Informationen, die für die Programmteilnahme erforderlich sind. Schulinformationen sind in unserer Schulkarte sichtbar, aber Kontaktdaten bleiben privat. Schülernamen und persönliche Informationen werden niemals öffentlich angezeigt. Lesen Sie unsere Datenschutzrichtlinie für vollständige Details."
+        }
+      }
+    }
+  }
+}

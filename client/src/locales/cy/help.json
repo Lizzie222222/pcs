@@ -1,0 +1,163 @@
+{
+  "page": {
+    "title": "Canolfan Gymorth",
+    "subtitle": "Darganfyddwch atebion i gwestiynau cyffredin am y rhaglen Ysgolion Plastig Craff",
+    "search_placeholder": "Chwilio am atebion... (e.e., 'sut i gofrestru', 'cyflwyno tystiolaeth')",
+    "search_results": "Wedi dod o hyd i {{count}} cwestiwn sy'n cyfateb",
+    "browse_by_category": "Pori yn ôl Categori",
+    "all_categories": "Pob Categori ({{count}})",
+    "no_results_title": "Dim canlyniadau wedi'u canfod",
+    "no_results_message": "Ni allem ddod o hyd i unrhyw gwestiynau cyffredin sy'n cyfateb i'ch chwiliad. Rhowch gynnig ar eiriau allweddol gwahanol neu borwch drwy'r holl gategorïau.",
+    "browse_all": "Pori Pob Categori",
+    "still_need_help_title": "Dal Angen Cymorth?",
+    "still_need_help_message": "Methu dod o hyd i'r hyn rydych chi'n chwilio amdano? Mae ein tîm cymorth yma i helpu!",
+    "contact_support": "Cysylltu â Chymorth",
+    "back_to_categories": "Yn ôl i Bob Categori"
+  },
+  "categories": {
+    "getting_started": {
+      "title": "Dechrau Arni",
+      "description": "Dysgwch sut i ymuno a dechrau gydag Ysgolion Plastig Craff",
+      "faqs": {
+        "register_school": {
+          "question": "Sut ydw i'n cofrestru fy ysgol ar gyfer y rhaglen Ysgolion Plastig Craff?",
+          "answer": "I gofrestru eich ysgol, cliciwch ar y botwm 'Cofrestru' yn y ddewislen llywio. Bydd angen i chi ddarparu manylion eich ysgol, gwybodaeth cyswllt, a dewis eich gwlad. Ar ôl cofrestru, byddwch yn derbyn e-bost cadarnhau gyda'r camau nesaf i gwblhau eich proffil a dechrau'r rhaglen."
+        },
+        "who_can_participate": {
+          "question": "Pwy all gymryd rhan yn y rhaglen Ysgolion Plastig Craff?",
+          "answer": "Mae'r rhaglen ar agor i bob ysgol ledled y byd - sefydliadau addysg gynradd, uwchradd ac uwch. Gall athrawon, gweinyddwyr a staff ysgol gofrestru eu hysgol a chreu timau. Mae disgyblion yn cymryd rhan trwy gyfrifon eu hathrawon a gallant gyfrannu at gyflwyno tystiolaeth a chynlluniau gweithredu."
+        },
+        "cost_to_join": {
+          "question": "Oes cost i ymuno â'r rhaglen?",
+          "answer": "Na! Mae'r rhaglen Ysgolion Plastig Craff yn gwbl am ddim i bob ysgol sy'n cymryd rhan. Rydym yn credu y dylai addysg amgylcheddol fod yn hygyrch i bawb. Darperir yr holl adnoddau, offer, tystysgrifau a chymorth heb unrhyw gost."
+        },
+        "multiple_teachers": {
+          "question": "A all sawl athro o'r un ysgol gymryd rhan?",
+          "answer": "Yn bendant! Rydym yn annog sawl athro i ymuno o'r un ysgol. Mae'r athro cyntaf yn creu cyfrif yr ysgol, ac yna gallant wahodd athrawon eraill i ymuno â'r tîm trwy'r adran Rheoli Tîm yn y dangosfwrdd. Mae hyn yn caniatáu ymdrechion cydweithredol ar draws gwahanol ddosbarthiadau a grwpiau blwyddyn."
+        },
+        "age_groups": {
+          "question": "Pa grwpiau oedran sy'n addas ar gyfer y rhaglen?",
+          "answer": "Mae'r rhaglen Ysgolion Plastig Craff wedi'i gynllunio ar gyfer disgyblion 5-18 oed. Mae adnoddau a gweithgareddau ar gael ar gyfer gwahanol ystodau oedran (5-7 oed, 8-11 oed, 12-16 oed, a 17+ oed), felly gallwch ddewis deunyddiau sy'n addas ar gyfer lefel eich disgyblion."
+        }
+      }
+    },
+    "program_stages": {
+      "title": "Camau'r Rhaglen",
+      "description": "Deall y camau Ysbrydoli, Ymchwilio a Gweithredu",
+      "faqs": {
+        "three_stages": {
+          "question": "Beth yw tair cam y rhaglen?",
+          "answer": "Mae'r rhaglen yn cynnwys tri cham cynyddol: 1) YSBRYDOLI - Dysgwch am lygredd plastig a'i effaith trwy adnoddau addysgol a gweithgareddau. 2) YMCHWILIO - Cynhaliwch archwiliad gwastraff plastig yn eich ysgol i ddeall eich defnydd plastig cyfredol. 3) GWEITHREDU - Creu a gweithredu cynllun gweithredu i leihau gwastraff plastig yn eich ysgol."
+        },
+        "stage_order": {
+          "question": "A allwn ni ddechrau ar unrhyw gam neu a oes rhaid i ni eu cwblhau yn eu trefn?",
+          "answer": "Rydym yn argymell yn gryf gwblhau'r camau yn eu trefn (Ysbrydoli → Ymchwilio → Gweithredu) gan fod pob cam yn adeiladu ar yr un blaenorol. Mae'r cam Ysbrydoli yn darparu gwybodaeth hanfodol, mae'r cam Ymchwilio yn eich helpu i ddeall eich sefyllfa benodol, ac mae'r cam Gweithredu yn eich galluogi i wneud newidiadau gwybodus. Fodd bynnag, gall ysgolion sydd â mentrau lleihau plastig presennol ofyn am neidio'n syth i gamau diweddarach."
+        },
+        "stage_duration": {
+          "question": "Faint o amser mae'n ei gymryd i gwblhau pob cam?",
+          "answer": "Mae'r amserlen yn amrywio yn ôl ysgol. Yn nodweddiadol: YSBRYDOLI (2-4 wythnos) - Amser i archwilio adnoddau ac ymgysylltu disgyblion â'r pwnc. YMCHWILIO (3-6 wythnos) - Cynnal yr archwiliad gwastraff a dadansoddi canlyniadau. GWEITHREDU (Parhaus) - Mae gweithredu eich cynllun gweithredu yn daith barhaus. Mae'r rhan fwyaf o ysgolion yn cwblhau'r tri cham o fewn un tymor academaidd (12-16 wythnos)."
+        },
+        "after_completion": {
+          "question": "Beth sy'n digwydd ar ôl i ni gwblhau'r tri cham?",
+          "answer": "Ar ôl cwblhau'r tri cham, mae eich ysgol yn derbyn tystysgrif Ysgolion Plastig Craff! Gallwch barhau i olrhain eich effaith, diweddaru eich cynllun gweithredu, cyflwyno tystiolaeth newydd o'ch mentrau, a rhannu eich stori llwyddiant i ysbrydoli ysgolion eraill. Mae llawer o ysgolion hefyd yn symud ymlaen i brosiectau cynaliadwyedd mwy datblygedig."
+        }
+      }
+    },
+    "evidence_submission": {
+      "title": "Cyflwyno Tystiolaeth",
+      "description": "Canllawiau ar gyfer cyflwyno lluniau, fideos a dogfennaeth",
+      "faqs": {
+        "evidence_per_stage": {
+          "question": "Pa dystiolaeth sydd angen i mi ei chyflwyno ar gyfer pob cam?",
+          "answer": "YSBRYDOLI: Cyflwynwch luniau neu fideos o weithgareddau dosbarth, prosiectau myfyrwyr, neu gyflwyniadau am lygredd plastig. YMCHWILIO: Uwchlwythwch eich ffurflen archwiliad gwastraff wedi'i chwblhau gyda lluniau o'r broses archwilio a data a gasglwyd. GWEITHREDU: Darparwch dystiolaeth o weithredu eich cynllun gweithredu - lluniau cyn/ar ôl, fideos o fentrau, tystiolaeth disgyblion, a mesuriadau effaith."
+        },
+        "file_formats": {
+          "question": "Pa fformatau ffeil sy'n cael eu derbyn ar gyfer tystiolaeth?",
+          "answer": "Rydym yn derbyn y fformatau canlynol: Delweddau (JPEG, PNG, GIF hyd at 10MB yr un), Fideos (MP4, MOV hyd at 100MB, neu ddolenni YouTube/Vimeo), Dogfennau (PDF hyd at 10MB). Ar gyfer ffeiliau fideo mawr, rydym yn argymell eu huwchlwytho i YouTube neu Vimeo a rhannu'r ddolen yn lle hynny."
+        },
+        "approval_time": {
+          "question": "Faint o amser mae cymeradwyaeth tystiolaeth yn ei gymryd?",
+          "answer": "Mae ein tîm yn adolygu'r holl dystiolaeth a gyflwynwyd o fewn 3-5 diwrnod gwaith. Byddwch yn derbyn hysbysiad e-bost unwaith y bydd eich tystiolaeth wedi'i hadolygu. Os caiff ei chymeradwyo, gallwch symud ymlaen i'r cam nesaf. Os oes angen diwygiadau, byddwn yn darparu adborth clir ar beth i'w wella a gallwch ail-gyflwyno."
+        },
+        "language_support": {
+          "question": "A allwn gyflwyno tystiolaeth mewn ieithoedd heblaw Saesneg?",
+          "answer": "Ie! Rydym yn croesawu cyflwyniadau tystiolaeth mewn unrhyw iaith. Er bod rhyngwyneb ein platfform ar gael mewn ieithoedd lluosog, gellir cyflwyno tystiolaeth yn iaith gynradd eich ysgol. Os oes angen, gall ein tîm adolygu ddefnyddio offer cyfieithu i asesu'r cynnwys."
+        },
+        "quality_evidence": {
+          "question": "Beth sy'n gwneud tystiolaeth o ansawdd da?",
+          "answer": "Mae tystiolaeth dda yn glir, yn ddilys ac yn dangos ymgysylltiad dilys gan ddisgyblion. Cynhwyswch: Lluniau clir yn dangos gweithgareddau neu ganlyniadau, Ymgysylltiad disgyblion yn weladwy mewn delweddau/fideos, Capsiynnau byr yn egluro beth sy'n cael ei ddangos, Gwaith dilys (nid lluniau wedi'u llwyfannu), a Data mesur lle bo'n berthnasol (e.e., cilogramau o blastig a leihawyd)."
+        }
+      }
+    },
+    "action_plans": {
+      "title": "Cynlluniau Gweithredu",
+      "description": "Creu ac olrhain eich mentrau lleihau plastig",
+      "faqs": {
+        "what_is_action_plan": {
+          "question": "Beth yw cynllun gweithredu a sut ydw i'n creu un?",
+          "answer": "Cynllun gweithredu yw ymrwymiad eich ysgol i leihau gwastraff plastig. I greu un, ewch i gam 'Gweithredu' yn eich dangosfwrdd a chliciwch 'Creu Cynllun Gweithredu'. Byddwch yn diffinio nodau penodol, mesuradwy (e.e., 'Dileu poteli plastig untro o'r ffreutur'), yn gosod amserlenni, yn neilltuo cyfrifoldebau, ac yn amlinellu'r camau i gyflawni eich nodau. Cynhwyswch sut byddwch yn mesur llwyddiant ac yn cynnwys disgyblion yn y broses gynllunio."
+        },
+        "tracking_impact": {
+          "question": "Sut ydyn ni'n olrhain ein heffaith lleihau plastig?",
+          "answer": "Olrheiniwch effaith trwy offer olrhain y dangosfwrdd: Cofnodwch fesuriadau llinell sylfaen o'ch archwiliad, cofnodwch ddiweddariadau cynnydd wythnosol neu fisol, uwchlwythwch luniau o newidiadau a weithredwyd, mewnbynnwch ddata meintiol (eitemau a leihawyd, pwysau plastig a arbedwyd), a dogfennwch niferoedd cyfranogiad disgyblion. Mae'r system yn cynhyrchu siartiau ac adroddiadau sy'n dangos eich cynnydd dros amser."
+        },
+        "student_involvement": {
+          "question": "Sut ddylai disgyblion fod yn rhan o'r cynllun gweithredu?",
+          "answer": "Mae cyfranogiad disgyblion yn hanfodol! Ymgysylltwch ddisgyblion trwy: Eu cynnwys mewn trafodaethau a phenderfyniadau cynllunio, Neilltuo rolau i ddisgyblion (monitwyr gwastraff, llysgenhadon ymwybyddiaeth), Gadael i ddisgyblion arwain ymgyrchoedd ymwybyddiaeth, Annog atebion a mentrau a ddyluniwyd gan ddisgyblion, a Gadael i ddisgyblion olrhain a chofnodi cynnydd. Mae perchnogaeth disgyblion yn gwneud mentrau'n fwy llwyddiannus ac addysgol."
+        },
+        "modify_plan": {
+          "question": "A allwn ni addasu ein cynllun gweithredu ar ôl ei gyflwyno?",
+          "answer": "Ie, mae cynlluniau gweithredu yn ddogfennau byw! Gallwch ddiweddaru eich cynllun gweithredu ar unrhyw adeg trwy eich dangosfwrdd. Rydym yn annog ysgolion i fireinio eu cynlluniau yn seiliedig ar yr hyn sy'n gweithio, ychwanegu mentrau newydd, addasu amserlenni, a diweddaru nodau wrth i chi symud ymlaen. Mae pob diweddariad yn cael ei gadw yn eich hanes fersiynau."
+        }
+      }
+    },
+    "awards_certificates": {
+      "title": "Gwobrau a Thystysgrifau",
+      "description": "Ennill cydnabyddiaeth a lawrlwytho tystysgrifau",
+      "faqs": {
+        "earn_certificate": {
+          "question": "Sut ydyn ni'n ennill ein tystysgrif Ysgolion Plastig Craff?",
+          "answer": "I ennill eich tystysgrif, cwblhewch bob tri cham y rhaglen: 1) Cyflwynwch a chael cymeradwyaeth ar gyfer tystiolaeth cam YSBRYDOLI, 2) Cwblhewch a chyflwyno eich archwiliad gwastraff plastig (cam YMCHWILIO), 3) Creu cynllun gweithredu a chyflwyno tystiolaeth o weithredu (cam GWEITHREDU). Unwaith y bydd pob cam wedi'i gymeradwyo, gallwch lawrlwytho eich tystysgrif o'r dangosfwrdd."
+        },
+        "when_receive_certificate": {
+          "question": "Pryd fyddwn ni'n derbyn ein tystysgrif?",
+          "answer": "Mae eich tystysgrif ar gael i'w lawrlwytho ar unwaith unwaith y byddwch wedi cwblhau'r tri cham a derbyn cymeradwyaeth ar gyfer eich cyflwyniad tystiolaeth terfynol. Byddwch yn derbyn hysbysiad e-bost pan fydd eich tystysgrif yn barod. Mae'r dystysgrif yn cynnwys enw eich ysgol, dyddiad cwblhau, a chod dilysu unigryw."
+        },
+        "download_copies": {
+          "question": "A allwn lawrlwytho copïau lluosog o'n tystysgrif?",
+          "answer": "Ie! Unwaith y'i hennillir, gallwch lawrlwytho eich tystysgrif gymaint o weithiau ag sydd ei angen o'ch dangosfwrdd. Darperir y dystysgrif fel PDF cydraniad uchel sy'n addas ar gyfer argraffu ac arddangos. Gallwch argraffu copïau ar gyfer derbynfa eich ysgol, ystafelloedd dosbarth, neu i'w rhannu â rhanddeiliaid."
+        },
+        "achievement_levels": {
+          "question": "Oes yna wahanol lefelau cyflawniad neu wobrau?",
+          "answer": "Ar hyn o bryd, mae pob ysgol sy'n cwblhau'r tri cham yn ennill tystysgrif Ysgolion Plastig Craff. Fodd bynnag, rydym yn dangos mentrau eithriadol yn ein hadran 'Ysbrydoliaeth' lle gall ysgolion rannu astudiaethau achos manwl. Gall ysgolion ag effaith eithriadol neu atebion arloesol gael eu dangos fel ysgolion dan sylw ar ein gwefan a chyfryngau cymdeithasol."
+        }
+      }
+    },
+    "technical_support": {
+      "title": "Cymorth Technegol",
+      "description": "Datrys problemau mewngofnodi a nodweddion platfform",
+      "faqs": {
+        "login_trouble": {
+          "question": "Rwy'n cael trafferth mewngofnodi. Beth ddylwn i ei wneud?",
+          "answer": "Yn gyntaf, sicrhewch eich bod yn defnyddio'r cyfeiriad e-bost cywir a gofrestrwyd gyda'ch cyfrif. Cliciwch 'Wedi anghofio'r Cyfrinair?' i ailosod eich cyfrinair. Os gwnaethoch gofrestru gan ddefnyddio Google, cliciwch 'Mewngofnodi gyda Google' yn lle defnyddio e-bost/cyfrinair. Clirio storfa dros dro a chwcis eich porwr os yw problemau'n parhau. Os na allwch dal i gael mynediad i'ch cyfrif, cysylltwch â ni drwy'r dudalen Cyswllt gydag enw eich ysgol ac e-bost cofrestredig."
+        },
+        "invite_teachers": {
+          "question": "Sut ydw i'n gwahodd athrawon eraill i ymuno â thîm fy ysgol?",
+          "answer": "Ewch i'ch Dangosfwrdd → Rheoli Tîm → Gwahodd Athrawon. Rhowch gyfeiriad e-bost yr athro a chliciwch 'Anfon Gwahoddiad'. Byddant yn derbyn e-bost gyda dolen wahoddiad unigryw i ymuno â thîm eich ysgol. Gallwch olrhain gwahoddiadau ar y gweill a rheoli aelodau'r tîm o'r dudalen Rheoli Tîm."
+        },
+        "change_school_info": {
+          "question": "A allaf newid gwybodaeth fy ysgol ar ôl cofrestru?",
+          "answer": "Ie, gallwch ddiweddaru'r rhan fwyaf o wybodaeth yr ysgol o'ch dangosfwrdd. Ewch i Gosodiadau neu Broffil Ysgol i olygu manylion fel cyfeiriad yr ysgol, gwybodaeth gyswllt, a disgrifiad. Gall rhai manylion craidd (fel gwlad) fod angen cymeradwyaeth gweinyddwr i newid. Cysylltwch â chymorth os oes angen i chi wneud newidiadau sylweddol."
+        },
+        "upload_issues": {
+          "question": "Dydy'r ddelwedd/fideo a uwchlwythwyd ddim yn cael ei arddangos yn gywir. Beth sy'n bod?",
+          "answer": "Mae hyn fel arfer yn digwydd oherwydd problemau fformat neu faint ffeil. Sicrhewch fod eich ffeiliau'n bodloni gofynion: Delweddau - JPEG, PNG, neu GIF o dan 10MB; Fideos - MP4 neu MOV o dan 100MB. Rhowch gynnig ar gywasgu ffeiliau mawr neu ddefnyddio fformat gwahanol. Ar gyfer fideos, ystyriwch eu huwchlwytho i YouTube/Vimeo a rhannu'r ddolen yn lle hynny. Os yw problemau'n parhau, cysylltwch â chymorth technegol."
+        },
+        "data_security": {
+          "question": "Ydy data fy ysgol yn ddiogel ac yn breifat?",
+          "answer": "Ydy! Rydym yn cymryd diogelwch data o ddifrif. Mae'r holl ddata wedi'i amgryptio wrth drafnidiaeth ac wrth orffwys. Dim ond gwybodaeth sy'n angenrheidiol ar gyfer cyfranogiad rhaglen yr ydym yn ei chasglu. Mae gwybodaeth yr ysgol yn weladwy yn ein map ysgol, ond mae manylion cyswllt yn aros yn breifat. Nid yw enwau myfyrwyr a gwybodaeth bersonol byth yn cael eu harddangos yn gyhoeddus. Darllenwch ein Polisi Preifatrwydd am fanylion llawn."
+        }
+      }
+    }
+  }
+}

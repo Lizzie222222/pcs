@@ -1,0 +1,163 @@
+{
+  "page": {
+    "title": "Centro de Ayuda",
+    "subtitle": "Encuentre respuestas a las preguntas frecuentes sobre el programa Plastic Clever Schools",
+    "search_placeholder": "Buscar respuestas... (por ejemplo, 'cómo registrarse', 'presentación de evidencias')",
+    "search_results": "Se encontraron {{count}} preguntas coincidentes",
+    "browse_by_category": "Explorar por Categoría",
+    "all_categories": "Todas las Categorías ({{count}})",
+    "no_results_title": "No se encontraron resultados",
+    "no_results_message": "No pudimos encontrar preguntas frecuentes que coincidan con su búsqueda. Intente con diferentes palabras clave o explore todas las categorías.",
+    "browse_all": "Explorar Todas las Categorías",
+    "still_need_help_title": "¿Todavía Necesita Ayuda?",
+    "still_need_help_message": "¿No encuentra la respuesta que busca? Nuestro equipo de soporte amigable está aquí para ayudarle!",
+    "contact_support": "Contactar Soporte",
+    "back_to_categories": "Volver a Todas las Categorías"
+  },
+  "categories": {
+    "getting_started": {
+      "title": "Primeros Pasos",
+      "description": "Aprenda cómo unirse y comenzar con Plastic Clever Schools",
+      "faqs": {
+        "register_school": {
+          "question": "¿Cómo registro mi escuela para el programa Plastic Clever Schools?",
+          "answer": "Para registrar su escuela, haga clic en el botón 'Registrarse' en el menú de navegación. Deberá proporcionar los detalles de su escuela, información de contacto y seleccionar su país. Una vez registrado, recibirá un correo electrónico de confirmación con los próximos pasos para completar su perfil y comenzar el programa."
+        },
+        "who_can_participate": {
+          "question": "¿Quién puede participar en el programa Plastic Clever Schools?",
+          "answer": "El programa está abierto a todas las escuelas del mundo: instituciones de educación primaria, secundaria y superior. Los maestros, administradores y personal escolar pueden registrar su escuela y crear equipos. Los estudiantes participan a través de las cuentas de sus maestros y pueden contribuir a la presentación de evidencias y planes de acción."
+        },
+        "cost_to_join": {
+          "question": "¿Hay algún costo para unirse al programa?",
+          "answer": "¡No! El programa Plastic Clever Schools es completamente gratuito para todas las escuelas participantes. Creemos que la educación ambiental debe ser accesible para todos. Todos los recursos, herramientas, certificados y apoyo se proporcionan sin costo alguno."
+        },
+        "multiple_teachers": {
+          "question": "¿Pueden participar varios maestros de la misma escuela?",
+          "answer": "¡Por supuesto! Fomentamos que varios maestros se unan desde la misma escuela. El primer maestro crea la cuenta de la escuela y luego puede invitar a otros maestros a unirse al equipo a través de la sección de Gestión de Equipos en el panel. Esto permite esfuerzos colaborativos entre diferentes clases y grupos de edad."
+        },
+        "age_groups": {
+          "question": "¿Para qué grupos de edad es adecuado el programa?",
+          "answer": "El programa Plastic Clever Schools está diseñado para estudiantes de 5 a 18 años. Los recursos y actividades están disponibles para diferentes rangos de edad (5-7 años, 8-11 años, 12-16 años y 17+ años), para que pueda elegir materiales apropiados para el nivel de sus estudiantes."
+        }
+      }
+    },
+    "program_stages": {
+      "title": "Etapas del Programa",
+      "description": "Comprender las etapas Inspirar, Investigar y Actuar",
+      "faqs": {
+        "three_stages": {
+          "question": "¿Cuáles son las tres etapas del programa?",
+          "answer": "El programa consta de tres etapas progresivas: 1) INSPIRAR - Aprenda sobre la contaminación plástica y su impacto a través de recursos educativos y actividades. 2) INVESTIGAR - Realice una auditoría de residuos plásticos en su escuela para comprender su uso actual de plástico. 3) ACTUAR - Cree e implemente un plan de acción para reducir los residuos plásticos en su escuela."
+        },
+        "stage_order": {
+          "question": "¿Podemos comenzar en cualquier etapa o debemos completarlas en orden?",
+          "answer": "Recomendamos encarecidamente completar las etapas en orden (Inspirar → Investigar → Actuar) ya que cada etapa se basa en la anterior. La etapa Inspirar proporciona conocimientos esenciales, la etapa Investigar le ayuda a comprender su situación específica, y la etapa Actuar le permite hacer cambios informados. Sin embargo, las escuelas con iniciativas existentes de reducción de plástico pueden solicitar saltar directamente a etapas posteriores."
+        },
+        "stage_duration": {
+          "question": "¿Cuánto tiempo toma completar cada etapa?",
+          "answer": "El cronograma varía según la escuela. Típicamente: INSPIRAR (2-4 semanas) - Tiempo para explorar recursos e involucrar a los estudiantes con el tema. INVESTIGAR (3-6 semanas) - Realizar la auditoría de residuos y analizar resultados. ACTUAR (Continuo) - Implementar su plan de acción es un viaje continuo. La mayoría de las escuelas completan las tres etapas dentro de un trimestre académico (12-16 semanas)."
+        },
+        "after_completion": {
+          "question": "¿Qué sucede después de completar las tres etapas?",
+          "answer": "Después de completar las tres etapas, ¡su escuela recibe un certificado de Plastic Clever Schools! Puede continuar rastreando su impacto, actualizar su plan de acción, enviar nuevas evidencias de sus iniciativas y compartir su historia de éxito para inspirar a otras escuelas. Muchas escuelas también avanzan a proyectos de sostenibilidad más avanzados."
+        }
+      }
+    },
+    "evidence_submission": {
+      "title": "Presentación de Evidencias",
+      "description": "Directrices para enviar fotos, videos y documentación",
+      "faqs": {
+        "evidence_per_stage": {
+          "question": "¿Qué evidencia debo presentar para cada etapa?",
+          "answer": "INSPIRAR: Envíe fotos o videos de actividades en el aula, proyectos estudiantiles o presentaciones sobre contaminación plástica. INVESTIGAR: Cargue su formulario de auditoría de residuos completado con fotos del proceso de auditoría y datos recopilados. ACTUAR: Proporcione evidencia de la implementación de su plan de acción: fotos de antes/después, videos de iniciativas, testimonios de estudiantes y mediciones de impacto."
+        },
+        "file_formats": {
+          "question": "¿Qué formatos de archivo se aceptan para evidencia?",
+          "answer": "Aceptamos los siguientes formatos: Imágenes (JPEG, PNG, GIF hasta 10MB cada una), Videos (MP4, MOV hasta 100MB, o enlaces de YouTube/Vimeo), Documentos (PDF hasta 10MB). Para archivos de video grandes, recomendamos subirlos a YouTube o Vimeo y compartir el enlace en su lugar."
+        },
+        "approval_time": {
+          "question": "¿Cuánto tiempo tarda la aprobación de evidencia?",
+          "answer": "Nuestro equipo revisa todas las evidencias enviadas dentro de 3-5 días hábiles. Recibirá una notificación por correo electrónico una vez que su evidencia sea revisada. Si se aprueba, puede proceder a la siguiente etapa. Si se necesitan revisiones, proporcionaremos comentarios claros sobre qué mejorar y puede volver a enviar."
+        },
+        "language_support": {
+          "question": "¿Podemos enviar evidencia en idiomas distintos al inglés?",
+          "answer": "¡Sí! Aceptamos envíos de evidencia en cualquier idioma. Aunque la interfaz de nuestra plataforma está disponible en varios idiomas, la evidencia puede enviarse en el idioma principal de su escuela. Si es necesario, nuestro equipo de revisión puede usar herramientas de traducción para evaluar el contenido."
+        },
+        "quality_evidence": {
+          "question": "¿Qué hace que la evidencia sea de buena calidad?",
+          "answer": "La evidencia de buena calidad es clara, auténtica y demuestra un genuino compromiso estudiantil. Incluya: Fotos claras que muestren actividades o resultados, Participación estudiantil visible en imágenes/videos, Leyendas breves que expliquen lo que se muestra, Trabajo auténtico (no fotos escenificadas), y Datos de medición cuando sea aplicable (por ejemplo, kilogramos de plástico reducidos)."
+        }
+      }
+    },
+    "action_plans": {
+      "title": "Planes de Acción",
+      "description": "Creación y seguimiento de sus iniciativas de reducción de plástico",
+      "faqs": {
+        "what_is_action_plan": {
+          "question": "¿Qué es un plan de acción y cómo creo uno?",
+          "answer": "Un plan de acción es el compromiso de su escuela para reducir los residuos plásticos. Para crear uno, vaya a la etapa 'Actuar' en su panel y haga clic en 'Crear Plan de Acción'. Definirá objetivos específicos y medibles (por ejemplo, 'Eliminar botellas de plástico de un solo uso de la cafetería'), establecerá plazos, asignará responsabilidades y describirá los pasos para lograr sus objetivos. Incluya cómo medirá el éxito e involucre a los estudiantes en el proceso de planificación."
+        },
+        "tracking_impact": {
+          "question": "¿Cómo rastreamos nuestro impacto de reducción de plástico?",
+          "answer": "Rastree el impacto a través de las herramientas de seguimiento del panel: Registre las mediciones de referencia de su auditoría, registre actualizaciones de progreso semanales o mensuales, cargue fotos de cambios implementados, ingrese datos cuantitativos (artículos reducidos, peso de plástico ahorrado) y documente números de participación estudiantil. El sistema genera gráficos e informes que muestran su progreso a lo largo del tiempo."
+        },
+        "student_involvement": {
+          "question": "¿Cómo deberían involucrarse los estudiantes en el plan de acción?",
+          "answer": "¡La participación estudiantil es crucial! Involucre a los estudiantes mediante: Incluirlos en discusiones y decisiones de planificación, Asignar roles estudiantiles (monitores de residuos, embajadores de concienciación), Hacer que los estudiantes lideren campañas de concienciación, Fomentar soluciones e iniciativas diseñadas por estudiantes, y Permitir que los estudiantes rastreen e informen el progreso. La apropiación estudiantil hace que las iniciativas sean más exitosas y educativas."
+        },
+        "modify_plan": {
+          "question": "¿Podemos modificar nuestro plan de acción después de enviarlo?",
+          "answer": "Sí, ¡los planes de acción son documentos vivos! Puede actualizar su plan de acción en cualquier momento a través de su panel. Fomentamos a las escuelas a refinar sus planes según lo que funcione, agregar nuevas iniciativas, ajustar plazos y actualizar objetivos a medida que avanzan. Cada actualización se guarda en su historial de versiones."
+        }
+      }
+    },
+    "awards_certificates": {
+      "title": "Premios y Certificados",
+      "description": "Ganar reconocimiento y descargar certificados",
+      "faqs": {
+        "earn_certificate": {
+          "question": "¿Cómo ganamos nuestro certificado de Plastic Clever Schools?",
+          "answer": "Para ganar su certificado, complete las tres etapas del programa: 1) Envíe y obtenga aprobación para la evidencia de la etapa INSPIRAR, 2) Complete y envíe su auditoría de residuos plásticos (etapa INVESTIGAR), 3) Cree un plan de acción y envíe evidencia de implementación (etapa ACTUAR). Una vez que todas las etapas sean aprobadas, puede descargar su certificado desde el panel."
+        },
+        "when_receive_certificate": {
+          "question": "¿Cuándo recibiremos nuestro certificado?",
+          "answer": "Su certificado está disponible para descarga inmediata una vez que complete las tres etapas y reciba aprobación para su envío final de evidencia. Recibirá una notificación por correo electrónico cuando su certificado esté listo. El certificado incluye el nombre de su escuela, fecha de finalización y un código de verificación único."
+        },
+        "download_copies": {
+          "question": "¿Podemos descargar varias copias de nuestro certificado?",
+          "answer": "¡Sí! Una vez ganado, puede descargar su certificado tantas veces como sea necesario desde su panel. El certificado se proporciona como un PDF de alta resolución adecuado para imprimir y exhibir. Puede imprimir copias para la recepción de su escuela, aulas o para compartir con las partes interesadas."
+        },
+        "achievement_levels": {
+          "question": "¿Hay diferentes niveles de logro o premios?",
+          "answer": "Actualmente, todas las escuelas que completan las tres etapas ganan el certificado de Plastic Clever Schools. Sin embargo, mostramos iniciativas destacadas en nuestra sección de 'Inspiración' donde las escuelas pueden compartir estudios de casos detallados. Las escuelas con impacto excepcional o soluciones innovadoras pueden ser destacadas como escuelas destacadas en nuestro sitio web y redes sociales."
+        }
+      }
+    },
+    "technical_support": {
+      "title": "Soporte Técnico",
+      "description": "Solución de problemas de inicio de sesión y funciones de la plataforma",
+      "faqs": {
+        "login_trouble": {
+          "question": "Tengo problemas para iniciar sesión. ¿Qué debo hacer?",
+          "answer": "Primero, asegúrese de estar usando la dirección de correo electrónico correcta registrada con su cuenta. Haga clic en '¿Olvidó la contraseña?' para restablecer su contraseña. Si se registró usando Google, haga clic en 'Iniciar sesión con Google' en lugar de usar correo electrónico/contraseña. Borre el caché y las cookies de su navegador si los problemas persisten. Si aún no puede acceder a su cuenta, contáctenos a través de la página de Contacto con el nombre de su escuela y correo electrónico registrado."
+        },
+        "invite_teachers": {
+          "question": "¿Cómo invito a otros maestros a unirse al equipo de mi escuela?",
+          "answer": "Vaya a su Panel → Gestión de Equipos → Invitar Maestros. Ingrese la dirección de correo electrónico del maestro y haga clic en 'Enviar Invitación'. Recibirán un correo electrónico con un enlace de invitación único para unirse al equipo de su escuela. Puede rastrear invitaciones pendientes y administrar miembros del equipo desde la página de Gestión de Equipos."
+        },
+        "change_school_info": {
+          "question": "¿Puedo cambiar la información de mi escuela después del registro?",
+          "answer": "Sí, puede actualizar la mayoría de la información de la escuela desde su panel. Vaya a Configuración o Perfil de la Escuela para editar detalles como dirección de la escuela, información de contacto y descripción. Algunos detalles principales (como el país) pueden requerir aprobación del administrador para cambiar. Contacte al soporte si necesita hacer cambios significativos."
+        },
+        "upload_issues": {
+          "question": "La imagen/video cargado no se muestra correctamente. ¿Qué está mal?",
+          "answer": "Esto generalmente sucede debido a problemas de formato o tamaño de archivo. Asegúrese de que sus archivos cumplan con los requisitos: Imágenes - JPEG, PNG o GIF menores de 10MB; Videos - MP4 o MOV menores de 100MB. Intente comprimir archivos grandes o use un formato diferente. Para videos, considere subirlos a YouTube/Vimeo y compartir el enlace en su lugar. Si los problemas persisten, contacte al soporte técnico."
+        },
+        "data_security": {
+          "question": "¿Los datos de mi escuela están seguros y privados?",
+          "answer": "¡Sí! Tomamos la seguridad de los datos muy en serio. Todos los datos están encriptados en tránsito y en reposo. Solo recopilamos información necesaria para la participación en el programa. La información de la escuela es visible en nuestro mapa de escuelas, pero los detalles de contacto permanecen privados. Los nombres de estudiantes y la información personal nunca se muestran públicamente. Lea nuestra Política de Privacidad para obtener detalles completos."
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "page": {
+    "title": "Pusat Bantuan",
+    "subtitle": "Temukan jawaban untuk pertanyaan umum tentang program Plastic Clever Schools",
+    "search_placeholder": "Cari jawaban... (mis., 'cara mendaftar', 'mengirim bukti')",
+    "search_results": "Ditemukan {{count}} pertanyaan yang cocok",
+    "browse_by_category": "Telusuri berdasarkan Kategori",
+    "all_categories": "Semua Kategori ({{count}})",
+    "no_results_title": "Tidak ada hasil ditemukan",
+    "no_results_message": "Kami tidak dapat menemukan FAQ yang cocok dengan pencarian Anda. Coba kata kunci yang berbeda atau telusuri semua kategori.",
+    "browse_all": "Telusuri Semua Kategori",
+    "still_need_help_title": "Masih Butuh Bantuan?",
+    "still_need_help_message": "Tidak dapat menemukan yang Anda cari? Tim dukungan kami siap membantu!",
+    "contact_support": "Hubungi Dukungan",
+    "back_to_categories": "Kembali ke Semua Kategori"
+  },
+  "categories": {
+    "getting_started": {
+      "title": "Memulai",
+      "description": "Pelajari cara bergabung dan memulai dengan Plastic Clever Schools",
+      "faqs": {
+        "register_school": {
+          "question": "Bagaimana cara mendaftarkan sekolah saya untuk program Plastic Clever Schools?",
+          "answer": "Untuk mendaftarkan sekolah Anda, klik tombol 'Daftar' di menu navigasi. Anda perlu memberikan detail sekolah, informasi kontak, dan memilih negara Anda. Setelah mendaftar, Anda akan menerima email konfirmasi dengan langkah selanjutnya untuk melengkapi profil Anda dan memulai program."
+        },
+        "who_can_participate": {
+          "question": "Siapa yang dapat berpartisipasi dalam program Plastic Clever Schools?",
+          "answer": "Program ini terbuka untuk semua sekolah di seluruh dunia - lembaga pendidikan dasar, menengah, dan tinggi. Guru, administrator, dan staf sekolah dapat mendaftarkan sekolah mereka dan membuat tim. Siswa berpartisipasi melalui akun guru mereka dan dapat berkontribusi dalam pengiriman bukti dan rencana aksi."
+        },
+        "cost_to_join": {
+          "question": "Apakah ada biaya untuk bergabung dengan program ini?",
+          "answer": "Tidak! Program Plastic Clever Schools sepenuhnya gratis untuk semua sekolah yang berpartisipasi. Kami percaya bahwa pendidikan lingkungan harus dapat diakses oleh semua orang. Semua sumber daya, alat, sertifikat, dan dukungan disediakan tanpa biaya apa pun."
+        },
+        "multiple_teachers": {
+          "question": "Bisakah beberapa guru dari sekolah yang sama berpartisipasi?",
+          "answer": "Tentu saja! Kami mendorong beberapa guru untuk bergabung dari sekolah yang sama. Guru pertama membuat akun sekolah, kemudian dapat mengundang guru lain untuk bergabung dengan tim melalui bagian Manajemen Tim di dasbor. Ini memungkinkan upaya kolaboratif di berbagai kelas dan kelompok usia."
+        },
+        "age_groups": {
+          "question": "Untuk kelompok usia berapa program ini cocok?",
+          "answer": "Program Plastic Clever Schools dirancang untuk siswa berusia 5-18 tahun. Sumber daya dan aktivitas tersedia untuk berbagai rentang usia (5-7 tahun, 8-11 tahun, 12-16 tahun, dan 17+ tahun), sehingga Anda dapat memilih materi yang sesuai dengan tingkat siswa Anda."
+        }
+      }
+    },
+    "program_stages": {
+      "title": "Tahapan Program",
+      "description": "Memahami tahapan Menginspirasi, Menyelidiki, dan Bertindak",
+      "faqs": {
+        "three_stages": {
+          "question": "Apa saja tiga tahapan program ini?",
+          "answer": "Program ini terdiri dari tiga tahap progresif: 1) MENGINSPIRASI - Pelajari tentang polusi plastik dan dampaknya melalui sumber daya pendidikan dan aktivitas. 2) MENYELIDIKI - Lakukan audit sampah plastik di sekolah Anda untuk memahami penggunaan plastik saat ini. 3) BERTINDAK - Buat dan implementasikan rencana aksi untuk mengurangi sampah plastik di sekolah Anda."
+        },
+        "stage_order": {
+          "question": "Bisakah kita memulai dari tahap mana pun atau harus menyelesaikannya secara berurutan?",
+          "answer": "Kami sangat merekomendasikan menyelesaikan tahapan secara berurutan (Menginspirasi → Menyelidiki → Bertindak) karena setiap tahap membangun dari tahap sebelumnya. Tahap Menginspirasi memberikan pengetahuan penting, tahap Menyelidiki membantu Anda memahami situasi spesifik Anda, dan tahap Bertindak memungkinkan Anda membuat perubahan yang terinformasi. Namun, sekolah dengan inisiatif pengurangan plastik yang ada dapat meminta untuk langsung ke tahap selanjutnya."
+        },
+        "stage_duration": {
+          "question": "Berapa lama waktu yang diperlukan untuk menyelesaikan setiap tahap?",
+          "answer": "Garis waktu bervariasi menurut sekolah. Biasanya: MENGINSPIRASI (2-4 minggu) - Waktu untuk menjelajahi sumber daya dan melibatkan siswa dengan topik. MENYELIDIKI (3-6 minggu) - Melakukan audit sampah dan menganalisis hasil. BERTINDAK (Berkelanjutan) - Mengimplementasikan rencana aksi Anda adalah perjalanan berkelanjutan. Sebagian besar sekolah menyelesaikan ketiga tahap dalam satu semester akademik (12-16 minggu)."
+        },
+        "after_completion": {
+          "question": "Apa yang terjadi setelah kami menyelesaikan ketiga tahap?",
+          "answer": "Setelah menyelesaikan ketiga tahap, sekolah Anda menerima sertifikat Plastic Clever Schools! Anda dapat terus melacak dampak Anda, memperbarui rencana aksi Anda, mengirimkan bukti baru dari inisiatif Anda, dan berbagi kisah sukses Anda untuk menginspirasi sekolah lain. Banyak sekolah juga berkembang ke proyek keberlanjutan yang lebih maju."
+        }
+      }
+    },
+    "evidence_submission": {
+      "title": "Pengiriman Bukti",
+      "description": "Panduan untuk mengirimkan foto, video, dan dokumentasi",
+      "faqs": {
+        "evidence_per_stage": {
+          "question": "Bukti apa yang harus saya kirimkan untuk setiap tahap?",
+          "answer": "MENGINSPIRASI: Kirimkan foto atau video dari aktivitas kelas, proyek siswa, atau presentasi tentang polusi plastik. MENYELIDIKI: Unggah formulir audit sampah yang telah diisi lengkap dengan foto proses audit dan data yang dikumpulkan. BERTINDAK: Berikan bukti implementasi rencana aksi Anda - foto sebelum/sesudah, video inisiatif, kesaksian siswa, dan pengukuran dampak."
+        },
+        "file_formats": {
+          "question": "Format file apa yang diterima untuk bukti?",
+          "answer": "Kami menerima format berikut: Gambar (JPEG, PNG, GIF hingga 10MB masing-masing), Video (MP4, MOV hingga 100MB, atau tautan YouTube/Vimeo), Dokumen (PDF hingga 10MB). Untuk file video besar, kami merekomendasikan mengunggahnya ke YouTube atau Vimeo dan membagikan tautannya saja."
+        },
+        "approval_time": {
+          "question": "Berapa lama waktu persetujuan bukti?",
+          "answer": "Tim kami meninjau semua bukti yang dikirimkan dalam waktu 3-5 hari kerja. Anda akan menerima pemberitahuan email setelah bukti Anda ditinjau. Jika disetujui, Anda dapat melanjutkan ke tahap berikutnya. Jika diperlukan revisi, kami akan memberikan umpan balik yang jelas tentang apa yang perlu diperbaiki dan Anda dapat mengirim ulang."
+        },
+        "language_support": {
+          "question": "Bisakah kami mengirimkan bukti dalam bahasa selain bahasa Inggris?",
+          "answer": "Ya! Kami menerima pengiriman bukti dalam bahasa apa pun. Meskipun antarmuka platform kami tersedia dalam berbagai bahasa, bukti dapat dikirimkan dalam bahasa utama sekolah Anda. Jika diperlukan, tim peninjau kami dapat menggunakan alat terjemahan untuk menilai konten."
+        },
+        "quality_evidence": {
+          "question": "Apa yang membuat bukti berkualitas baik?",
+          "answer": "Bukti yang baik jelas, autentik, dan menunjukkan keterlibatan siswa yang tulus. Sertakan: Foto yang jelas menunjukkan aktivitas atau hasil, Keterlibatan siswa yang terlihat dalam gambar/video, Keterangan singkat menjelaskan apa yang ditampilkan, Karya autentik (bukan foto yang dipentaskan), dan Data pengukuran bila berlaku (mis., kilogram plastik yang dikurangi)."
+        }
+      }
+    },
+    "action_plans": {
+      "title": "Rencana Aksi",
+      "description": "Membuat dan melacak inisiatif pengurangan plastik Anda",
+      "faqs": {
+        "what_is_action_plan": {
+          "question": "Apa itu rencana aksi dan bagaimana cara membuatnya?",
+          "answer": "Rencana aksi adalah komitmen sekolah Anda untuk mengurangi sampah plastik. Untuk membuatnya, buka tahap 'Bertindak' di dasbor Anda dan klik 'Buat Rencana Aksi'. Anda akan menentukan tujuan spesifik dan terukur (mis., 'Hilangkan botol plastik sekali pakai dari kantin'), menetapkan garis waktu, menugaskan tanggung jawab, dan menguraikan langkah-langkah untuk mencapai tujuan Anda. Sertakan bagaimana Anda akan mengukur kesuksesan dan libatkan siswa dalam proses perencanaan."
+        },
+        "tracking_impact": {
+          "question": "Bagaimana kami melacak dampak pengurangan plastik kami?",
+          "answer": "Lacak dampak melalui alat pelacakan dasbor: Catat pengukuran dasar dari audit Anda, catat pembaruan kemajuan mingguan atau bulanan, unggah foto perubahan yang diimplementasikan, masukkan data kuantitatif (item yang dikurangi, berat plastik yang dihemat), dan dokumentasikan jumlah partisipasi siswa. Sistem menghasilkan grafik dan laporan yang menunjukkan kemajuan Anda dari waktu ke waktu."
+        },
+        "student_involvement": {
+          "question": "Bagaimana siswa harus terlibat dalam rencana aksi?",
+          "answer": "Keterlibatan siswa sangat penting! Libatkan siswa dengan: Menyertakan mereka dalam diskusi dan keputusan perencanaan, Menugaskan peran siswa (monitor sampah, duta kesadaran), Membiarkan siswa memimpin kampanye kesadaran, Mendorong solusi dan inisiatif yang dirancang siswa, dan Mengizinkan siswa untuk melacak dan melaporkan kemajuan. Kepemilikan siswa membuat inisiatif lebih sukses dan mendidik."
+        },
+        "modify_plan": {
+          "question": "Bisakah kami memodifikasi rencana aksi kami setelah pengiriman?",
+          "answer": "Ya, rencana aksi adalah dokumen hidup! Anda dapat memperbarui rencana aksi Anda kapan saja melalui dasbor Anda. Kami mendorong sekolah untuk menyempurnakan rencana mereka berdasarkan apa yang berhasil, menambahkan inisiatif baru, menyesuaikan garis waktu, dan memperbarui tujuan saat Anda maju. Setiap pembaruan disimpan dalam riwayat versi Anda."
+        }
+      }
+    },
+    "awards_certificates": {
+      "title": "Penghargaan & Sertifikat",
+      "description": "Mendapatkan pengakuan dan mengunduh sertifikat",
+      "faqs": {
+        "earn_certificate": {
+          "question": "Bagaimana kami mendapatkan sertifikat Plastic Clever Schools?",
+          "answer": "Untuk mendapatkan sertifikat Anda, selesaikan ketiga tahap program: 1) Kirimkan dan dapatkan persetujuan untuk bukti tahap MENGINSPIRASI, 2) Selesaikan dan kirimkan audit sampah plastik Anda (tahap MENYELIDIKI), 3) Buat rencana aksi dan kirimkan bukti implementasi (tahap BERTINDAK). Setelah semua tahap disetujui, Anda dapat mengunduh sertifikat Anda dari dasbor."
+        },
+        "when_receive_certificate": {
+          "question": "Kapan kami akan menerima sertifikat kami?",
+          "answer": "Sertifikat Anda tersedia untuk diunduh segera setelah Anda menyelesaikan ketiga tahap dan menerima persetujuan untuk pengiriman bukti akhir Anda. Anda akan menerima pemberitahuan email ketika sertifikat Anda siap. Sertifikat mencakup nama sekolah Anda, tanggal penyelesaian, dan kode verifikasi unik."
+        },
+        "download_copies": {
+          "question": "Bisakah kami mengunduh beberapa salinan sertifikat kami?",
+          "answer": "Ya! Setelah mendapatkannya, Anda dapat mengunduh sertifikat Anda sebanyak yang Anda perlukan dari dasbor Anda. Sertifikat disediakan sebagai PDF resolusi tinggi yang cocok untuk dicetak dan dipajang. Anda dapat mencetak salinan untuk resepsionis sekolah Anda, ruang kelas, atau untuk dibagikan dengan pemangku kepentingan."
+        },
+        "achievement_levels": {
+          "question": "Apakah ada tingkat pencapaian atau penghargaan yang berbeda?",
+          "answer": "Saat ini, semua sekolah yang menyelesaikan ketiga tahap mendapatkan sertifikat Plastic Clever Schools. Namun, kami menyoroti inisiatif luar biasa di bagian 'Inspirasi' kami di mana sekolah dapat berbagi studi kasus terperinci. Sekolah dengan dampak luar biasa atau solusi inovatif dapat ditampilkan sebagai sekolah sorotan di situs web dan media sosial kami."
+        }
+      }
+    },
+    "technical_support": {
+      "title": "Dukungan Teknis",
+      "description": "Pemecahan masalah login dan fitur platform",
+      "faqs": {
+        "login_trouble": {
+          "question": "Saya mengalami masalah login. Apa yang harus saya lakukan?",
+          "answer": "Pertama, pastikan Anda menggunakan alamat email yang benar yang terdaftar dengan akun Anda. Klik 'Lupa Kata Sandi?' untuk mengatur ulang kata sandi Anda. Jika Anda mendaftar menggunakan Google, klik 'Masuk dengan Google' alih-alih menggunakan email/kata sandi. Hapus cache dan cookie browser Anda jika masalah berlanjut. Jika Anda masih tidak dapat mengakses akun Anda, hubungi kami melalui halaman Kontak dengan nama sekolah dan email terdaftar Anda."
+        },
+        "invite_teachers": {
+          "question": "Bagaimana cara mengundang guru lain untuk bergabung dengan tim sekolah saya?",
+          "answer": "Buka Dasbor Anda → Manajemen Tim → Undang Guru. Masukkan alamat email guru dan klik 'Kirim Undangan'. Mereka akan menerima email dengan tautan undangan unik untuk bergabung dengan tim sekolah Anda. Anda dapat melacak undangan yang tertunda dan mengelola anggota tim dari halaman Manajemen Tim."
+        },
+        "change_school_info": {
+          "question": "Bisakah saya mengubah informasi sekolah saya setelah registrasi?",
+          "answer": "Ya, Anda dapat memperbarui sebagian besar informasi sekolah dari dasbor Anda. Buka Pengaturan atau Profil Sekolah untuk mengedit detail seperti alamat sekolah, informasi kontak, dan deskripsi. Beberapa detail inti (seperti negara) mungkin memerlukan persetujuan administrator untuk diubah. Hubungi dukungan jika Anda perlu membuat perubahan signifikan."
+        },
+        "upload_issues": {
+          "question": "Gambar/video yang diunggah tidak ditampilkan dengan benar. Ada apa?",
+          "answer": "Ini biasanya terjadi karena masalah format atau ukuran file. Pastikan file Anda memenuhi persyaratan: Gambar - JPEG, PNG, atau GIF di bawah 10MB; Video - MP4 atau MOV di bawah 100MB. Coba kompres file besar atau gunakan format berbeda. Untuk video, pertimbangkan untuk mengunggahnya ke YouTube/Vimeo dan membagikan tautannya saja. Jika masalah berlanjut, hubungi dukungan teknis."
+        },
+        "data_security": {
+          "question": "Apakah data sekolah saya aman dan pribadi?",
+          "answer": "Ya! Kami sangat memperhatikan keamanan data. Semua data dienkripsi dalam transit dan saat istirahat. Kami hanya mengumpulkan informasi yang diperlukan untuk partisipasi program. Informasi sekolah terlihat di peta sekolah kami, tetapi detail kontak tetap pribadi. Nama siswa dan informasi pribadi tidak pernah ditampilkan secara publik. Baca Kebijakan Privasi kami untuk detail lengkap."
+        }
+      }
+    }
+  }
+}
