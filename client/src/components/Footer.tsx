@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import whiteLogoUrl from "@assets/logo-white.png";
+import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 
 export function Footer() {
   const { t } = useTranslation('landing');

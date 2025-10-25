@@ -250,7 +250,19 @@
     "faq_demo": "Can I schedule a demo?",
     "faq_demo_answer": "Yes! Mention it in your message and we'll arrange a convenient time for a platform walkthrough.",
     "faq_support": "Need technical support?",
-    "faq_support_answer": "Include \"Technical Support\" in your subject line and describe the issue you're experiencing."
+    "faq_support_answer": "Include \"Technical Support\" in your subject line and describe the issue you're experiencing.",
+    "validation": {
+      "full_name_required": "Full name is required",
+      "email_invalid": "Please enter a valid email address",
+      "subject_required": "Subject is required",
+      "message_min_length": "Message must be at least 10 characters"
+    },
+    "toast": {
+      "success_title": "Message sent successfully!",
+      "success_description": "We'll get back to you as soon as possible.",
+      "error_title": "Failed to send message",
+      "error_description": "Please try again later."
+    }
   },
   "help_center": {
     "title": "Help Center",
