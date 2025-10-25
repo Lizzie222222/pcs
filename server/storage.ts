@@ -806,10 +806,9 @@ export class DatabaseStorage implements IStorage {
         .set({ reviewedBy: null })
         .where(eq(evidence.reviewedBy, id));
       
-      // Set createdBy to NULL for case studies created by this user
+      // DELETE case studies created by this user (createdBy is NOT NULL)
       await db
-        .update(caseStudies)
-        .set({ createdBy: null })
+        .delete(caseStudies)
         .where(eq(caseStudies.createdBy, id));
       
       // Set reviewedBy to NULL for case studies reviewed by this user
@@ -818,69 +817,57 @@ export class DatabaseStorage implements IStorage {
         .set({ reviewedBy: null })
         .where(eq(caseStudies.reviewedBy, id));
       
-      // Set createdBy to NULL for resources created by this user
-      await db
-        .update(resources)
-        .set({ createdBy: null })
-        .where(eq(resources.createdBy, id));
+      // NOTE: resources table does not have a createdBy field, so we skip it
       
-      // Set createdBy to NULL for reduction promises
+      // DELETE reduction promises created by this user (createdBy is NOT NULL)
       await db
-        .update(reductionPromises)
-        .set({ createdBy: null })
+        .delete(reductionPromises)
         .where(eq(reductionPromises.createdBy, id));
       
-      // Set submittedBy and reviewedBy to NULL for printable forms
+      // DELETE printable forms submitted by this user (submittedBy is NOT NULL)
       await db
-        .update(printableFormSubmissions)
-        .set({ submittedBy: null })
+        .delete(printableFormSubmissions)
         .where(eq(printableFormSubmissions.submittedBy, id));
       
+      // Set reviewedBy to NULL for printable forms reviewed by this user
       await db
         .update(printableFormSubmissions)
         .set({ reviewedBy: null })
         .where(eq(printableFormSubmissions.reviewedBy, id));
       
-      // Set uploadedBy to NULL for media assets
+      // DELETE media assets uploaded by this user (uploadedBy is NOT NULL)
       await db
-        .update(mediaAssets)
-        .set({ uploadedBy: null })
+        .delete(mediaAssets)
         .where(eq(mediaAssets.uploadedBy, id));
       
-      // Set createdBy to NULL for event banners
+      // DELETE event banners created by this user (createdBy is NOT NULL)
       await db
-        .update(eventBanners)
-        .set({ createdBy: null })
+        .delete(eventBanners)
         .where(eq(eventBanners.createdBy, id));
       
-      // Set invitedBy to NULL for teacher invitations
+      // DELETE teacher invitations sent by this user (invitedBy is NOT NULL)
       await db
-        .update(teacherInvitations)
-        .set({ invitedBy: null })
+        .delete(teacherInvitations)
         .where(eq(teacherInvitations.invitedBy, id));
       
-      // Set invitedBy to NULL for admin invitations
+      // DELETE admin invitations sent by this user (invitedBy is NOT NULL)
       await db
-        .update(adminInvitations)
-        .set({ invitedBy: null })
+        .delete(adminInvitations)
         .where(eq(adminInvitations.invitedBy, id));
       
-      // Set issuedBy to NULL for certificates
+      // DELETE certificates issued by this user (issuedBy is NOT NULL)
       await db
-        .update(certificates)
-        .set({ issuedBy: null })
+        .delete(certificates)
         .where(eq(certificates.issuedBy, id));
       
-      // Set importedBy to NULL for import batches
+      // DELETE import batches created by this user (importedBy is NOT NULL)
       await db
-        .update(importBatches)
-        .set({ importedBy: null })
+        .delete(importBatches)
         .where(eq(importBatches.importedBy, id));
       
-      // Set sentBy to NULL for event announcements
+      // DELETE event announcements sent by this user (sentBy is NOT NULL)
       await db
-        .update(eventAnnouncements)
-        .set({ sentBy: null })
+        .delete(eventAnnouncements)
         .where(eq(eventAnnouncements.sentBy, id));
       
       // Set reviewedBy to NULL for verification requests
@@ -889,10 +876,9 @@ export class DatabaseStorage implements IStorage {
         .set({ reviewedBy: null })
         .where(eq(verificationRequests.reviewedBy, id));
       
-      // Set userId to NULL for case study review comments
+      // DELETE case study review comments by this user (userId is NOT NULL)
       await db
-        .update(caseStudyReviewComments)
-        .set({ userId: null })
+        .delete(caseStudyReviewComments)
         .where(eq(caseStudyReviewComments.userId, id));
       
       // Set recipientId to NULL for email logs
