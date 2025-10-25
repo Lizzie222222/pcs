@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -145,6 +146,8 @@ function ImageCarousel({ images, title }: { images: { url: string; caption?: str
 }
 
 function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
+  const { t } = useTranslation('inspiration');
+  
   const getStageColor = (stage: string) => {
     switch (stage) {
       case 'inspire': return 'bg-pcs_blue text-white';
@@ -193,7 +196,7 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
         <div className="flex items-center justify-between mb-3 flex-wrap gap-2">
           <div className="flex items-center gap-2">
             <Badge className={getStageColor(caseStudy.stage)}>
-              {caseStudy.stage}
+              {t(`stages.${caseStudy.stage}`)}
             </Badge>
             {caseStudy.contentType && (
               <Badge 
@@ -203,14 +206,14 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
                   : 'bg-green-50 text-green-700 border-green-200'}
                 data-testid={`badge-content-type-${caseStudy.id}`}
               >
-                {caseStudy.contentType === 'case-study' ? 'Case Study' : 'School Evidence'}
+                {caseStudy.contentType === 'case-study' ? t('badges.case_study') : t('badges.school_evidence')}
               </Badge>
             )}
           </div>
           {caseStudy.featured && (
             <div className="flex items-center text-yellow-500">
               <Star className="h-4 w-4 mr-1 fill-current" />
-              <span className="text-xs font-medium">Featured</span>
+              <span className="text-xs font-medium">{t('badges.featured')}</span>
             </div>
           )}
         </div>
@@ -293,7 +296,7 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
               className="text-pcs_blue hover:bg-pcs_blue hover:text-white transition-all group-hover:translate-x-1"
               data-testid={`button-read-more-${caseStudy.id}`}
             >
-              Read More
+              {t('actions.read_more')}
               <ChevronRight className="ml-1 h-3 w-3" />
             </Button>
           </Link>
@@ -320,6 +323,8 @@ function MasonrySkeleton() {
 }
 
 export default function Inspiration() {
+  const { t } = useTranslation('inspiration');
+  
   const [filters, setFilters] = useState({
     search: '',
     country: '',
@@ -448,11 +453,11 @@ export default function Inspiration() {
           <div className="flex items-center justify-center gap-2 mb-4">
             <Sparkles className="h-8 w-8 text-pcs_blue" />
             <h1 className="text-4xl font-bold text-navy" data-testid="text-inspiration-title">
-              Inspiring Success Stories
+              {t('page.title')}
             </h1>
           </div>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Discover amazing initiatives from schools around the world making a real difference in the fight against plastic pollution
+            {t('page.description')}
           </p>
         </div>
 
@@ -462,7 +467,7 @@ export default function Inspiration() {
             <div className="flex items-center justify-between">
               <CardTitle className="flex items-center gap-2">
                 <Filter className="h-5 w-5" />
-                Filter Success Stories
+                {t('filters.title')}
               </CardTitle>
               {hasActiveFilters && (
                 <Button 
@@ -473,7 +478,7 @@ export default function Inspiration() {
                   className="text-gray-600 hover:text-gray-900"
                 >
                   <X className="h-4 w-4 mr-1" />
-                  Clear All
+                  {t('filters.clear_all')}
                 </Button>
               )}
             </div>
@@ -483,7 +488,7 @@ export default function Inspiration() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <div>
                 <Input
-                  placeholder="Search by school name..."
+                  placeholder={t('filters.search_placeholder')}
                   value={filters.search}
                   onChange={(e) => handleFilterChange('search', e.target.value)}
                   data-testid="input-search-schools"
@@ -493,7 +498,7 @@ export default function Inspiration() {
               
               <Select value={filters.country} onValueChange={(value) => handleFilterChange('country', value)}>
                 <SelectTrigger data-testid="select-country">
-                  <SelectValue placeholder="All Countries" />
+                  <SelectValue placeholder={t('filters.all_countries')} />
                 </SelectTrigger>
                 <SelectContent>
                   {countryOptions.map((option) => (
@@ -506,24 +511,24 @@ export default function Inspiration() {
               
               <Select value={filters.stage} onValueChange={(value) => handleFilterChange('stage', value)}>
                 <SelectTrigger data-testid="select-stage">
-                  <SelectValue placeholder="All Stages" />
+                  <SelectValue placeholder={t('filters.all_stages')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Stages</SelectItem>
-                  <SelectItem value="inspire">Inspire</SelectItem>
-                  <SelectItem value="investigate">Investigate</SelectItem>
-                  <SelectItem value="act">Act</SelectItem>
+                  <SelectItem value="all">{t('filters.all_stages')}</SelectItem>
+                  <SelectItem value="inspire">{t('stages.inspire')}</SelectItem>
+                  <SelectItem value="investigate">{t('stages.investigate')}</SelectItem>
+                  <SelectItem value="act">{t('stages.act')}</SelectItem>
                 </SelectContent>
               </Select>
               
               <Select value={filters.contentType} onValueChange={(value) => handleFilterChange('contentType', value)}>
                 <SelectTrigger data-testid="select-content-type">
-                  <SelectValue placeholder="All Content" />
+                  <SelectValue placeholder={t('filters.all_content')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Content</SelectItem>
-                  <SelectItem value="case-study">Case Studies</SelectItem>
-                  <SelectItem value="evidence">School Evidence</SelectItem>
+                  <SelectItem value="all">{t('filters.all_content')}</SelectItem>
+                  <SelectItem value="case-study">{t('content_types.case_study')}</SelectItem>
+                  <SelectItem value="evidence">{t('content_types.evidence')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -541,15 +546,15 @@ export default function Inspiration() {
                     >
                       <span>
                         {filters.categories.length > 0 
-                          ? `${filters.categories.length} Categories` 
-                          : 'All Categories'}
+                          ? t('filters.categories_count', { count: filters.categories.length })
+                          : t('filters.all_categories')}
                       </span>
                       <ChevronRight className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-64">
                     <div className="space-y-2">
-                      <h4 className="font-medium text-sm mb-3">Select Categories</h4>
+                      <h4 className="font-medium text-sm mb-3">{t('filters.select_categories')}</h4>
                       {allCategories.map((category) => (
                         <div key={category} className="flex items-center space-x-2">
                           <Checkbox 
@@ -582,15 +587,15 @@ export default function Inspiration() {
                     >
                       <span>
                         {filters.tags.length > 0 
-                          ? `${filters.tags.length} Tags` 
-                          : 'All Tags'}
+                          ? t('filters.tags_count', { count: filters.tags.length })
+                          : t('filters.all_tags')}
                       </span>
                       <ChevronRight className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-64">
                     <div className="space-y-2">
-                      <h4 className="font-medium text-sm mb-3">Select Tags</h4>
+                      <h4 className="font-medium text-sm mb-3">{t('filters.select_tags')}</h4>
                       {allTags.map((tag) => (
                         <div key={tag} className="flex items-center space-x-2">
                           <Checkbox 
@@ -622,7 +627,7 @@ export default function Inspiration() {
                 />
                 <Label htmlFor="featured-toggle" className="cursor-pointer flex items-center gap-2">
                   <Star className="h-4 w-4 text-yellow-500" />
-                  Featured Only
+                  {t('filters.featured_only')}
                 </Label>
               </div>
             </div>
@@ -633,8 +638,11 @@ export default function Inspiration() {
         {!isLoading && caseStudies && (
           <div className="mb-6 text-sm text-gray-600 flex items-center justify-between">
             <span data-testid="text-results-count">
-              Showing {regularStories.length} {regularStories.length === 1 ? 'story' : 'stories'}
-              {hasActiveFilters && ' (filtered)'}
+              {t('results.showing', { 
+                count: regularStories.length,
+                story: regularStories.length === 1 ? t('results.story') : t('results.stories')
+              })}
+              {hasActiveFilters && ` ${t('results.filtered')}`}
             </span>
           </div>
         )}
@@ -647,7 +655,7 @@ export default function Inspiration() {
                 <div>
                   <div className="flex items-center gap-2 mb-4">
                     <Star className="h-5 w-5 text-yellow-400 fill-current" />
-                    <Badge className="bg-white/20 text-white">Featured Success Story</Badge>
+                    <Badge className="bg-white/20 text-white">{t('featured.badge')}</Badge>
                   </div>
                   <h2 className="text-3xl font-bold mb-4" data-testid="text-featured-title">
                     {featuredStory.title}
@@ -670,7 +678,7 @@ export default function Inspiration() {
                       className="bg-white text-pcs_blue hover:bg-gray-100 transition-all hover:scale-105"
                       data-testid="button-read-featured"
                     >
-                      Read Full Story
+                      {t('featured.read_full_story')}
                       <ChevronRight className="ml-2 h-4 w-4" />
                     </Button>
                   </Link>
@@ -711,7 +719,7 @@ export default function Inspiration() {
                   data-testid="button-load-more"
                   className="hover:bg-pcs_blue hover:text-white transition-all"
                 >
-                  {isFetchingNextPage ? 'Loading...' : 'Load More Stories'}
+                  {isFetchingNextPage ? t('actions.loading') : t('actions.load_more')}
                   <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -720,9 +728,9 @@ export default function Inspiration() {
         ) : (
           <div className="text-center py-16">
             <Award className="h-20 w-20 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-2xl font-semibold text-gray-600 mb-2">No Success Stories Found</h3>
+            <h3 className="text-2xl font-semibold text-gray-600 mb-2">{t('empty.title')}</h3>
             <p className="text-gray-500 mb-6">
-              Try adjusting your search criteria or check back later for new inspiring stories.
+              {t('empty.description')}
             </p>
             <Button
               variant="outline"
@@ -731,7 +739,7 @@ export default function Inspiration() {
               className="hover:bg-pcs_blue hover:text-white"
             >
               <X className="mr-2 h-4 w-4" />
-              Clear All Filters
+              {t('empty.clear_filters')}
             </Button>
           </div>
         )}

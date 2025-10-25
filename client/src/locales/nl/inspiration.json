@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "Inspirerende Succesverhalen",
+    "description": "Ontdek verbazingwekkende initiatieven van scholen over de hele wereld die een echt verschil maken in de strijd tegen plastic vervuiling"
+  },
+  "filters": {
+    "title": "Succesverhalen Filteren",
+    "clear_all": "Alles Wissen",
+    "search_placeholder": "Zoeken op schoolnaam...",
+    "all_countries": "Alle Landen",
+    "all_stages": "Alle Fases",
+    "all_content": "Alle Inhoud",
+    "all_categories": "Alle Categorieën",
+    "all_tags": "Alle Tags",
+    "select_categories": "Selecteer Categorieën",
+    "select_tags": "Selecteer Tags",
+    "featured_only": "Alleen Uitgelicht",
+    "categories_count": "{{count}} Categorieën",
+    "tags_count": "{{count}} Tags"
+  },
+  "stages": {
+    "inspire": "Inspireren",
+    "investigate": "Onderzoeken",
+    "act": "Handelen"
+  },
+  "content_types": {
+    "case_study": "Casestudies",
+    "evidence": "Schoolbewijs"
+  },
+  "badges": {
+    "case_study": "Casestudy",
+    "school_evidence": "Schoolbewijs",
+    "featured": "Uitgelicht"
+  },
+  "results": {
+    "showing": "{{count}} {{story}} weergeven",
+    "story": "verhaal",
+    "stories": "verhalen",
+    "filtered": "(gefilterd)"
+  },
+  "featured": {
+    "badge": "Uitgelicht Succesverhaal",
+    "read_full_story": "Volledig Verhaal Lezen"
+  },
+  "actions": {
+    "read_more": "Lees Meer",
+    "load_more": "Meer Verhalen Laden",
+    "loading": "Laden..."
+  },
+  "empty": {
+    "title": "Geen Succesverhalen Gevonden",
+    "description": "Probeer uw zoekcriteria aan te passen of kom later terug voor nieuwe inspirerende verhalen.",
+    "clear_filters": "Alle Filters Wissen"
+  }
+}

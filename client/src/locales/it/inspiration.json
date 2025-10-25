@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "Storie di Successo Ispiratrici",
+    "description": "Scopri incredibili iniziative da scuole di tutto il mondo che fanno davvero la differenza nella lotta contro l'inquinamento da plastica"
+  },
+  "filters": {
+    "title": "Filtra Storie di Successo",
+    "clear_all": "Cancella Tutto",
+    "search_placeholder": "Cerca per nome scuola...",
+    "all_countries": "Tutti i Paesi",
+    "all_stages": "Tutte le Fasi",
+    "all_content": "Tutti i Contenuti",
+    "all_categories": "Tutte le Categorie",
+    "all_tags": "Tutti i Tag",
+    "select_categories": "Seleziona Categorie",
+    "select_tags": "Seleziona Tag",
+    "featured_only": "Solo In Evidenza",
+    "categories_count": "{{count}} Categorie",
+    "tags_count": "{{count}} Tag"
+  },
+  "stages": {
+    "inspire": "Ispirare",
+    "investigate": "Investigare",
+    "act": "Agire"
+  },
+  "content_types": {
+    "case_study": "Casi Studio",
+    "evidence": "Prove Scolastiche"
+  },
+  "badges": {
+    "case_study": "Caso Studio",
+    "school_evidence": "Prova Scolastica",
+    "featured": "In Evidenza"
+  },
+  "results": {
+    "showing": "Mostrando {{count}} {{story}}",
+    "story": "storia",
+    "stories": "storie",
+    "filtered": "(filtrato)"
+  },
+  "featured": {
+    "badge": "Storia di Successo in Evidenza",
+    "read_full_story": "Leggi la Storia Completa"
+  },
+  "actions": {
+    "read_more": "Leggi di Più",
+    "load_more": "Carica Più Storie",
+    "loading": "Caricamento..."
+  },
+  "empty": {
+    "title": "Nessuna Storia di Successo Trovata",
+    "description": "Prova a modificare i criteri di ricerca o torna più tardi per nuove storie ispiratrici.",
+    "clear_filters": "Cancella Tutti i Filtri"
+  }
+}

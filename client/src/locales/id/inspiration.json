@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "Kisah Sukses yang Menginspirasi",
+    "description": "Temukan inisiatif luar biasa dari sekolah-sekolah di seluruh dunia yang membuat perbedaan nyata dalam memerangi polusi plastik"
+  },
+  "filters": {
+    "title": "Saring Kisah Sukses",
+    "clear_all": "Hapus Semua",
+    "search_placeholder": "Cari berdasarkan nama sekolah...",
+    "all_countries": "Semua Negara",
+    "all_stages": "Semua Tahap",
+    "all_content": "Semua Konten",
+    "all_categories": "Semua Kategori",
+    "all_tags": "Semua Tag",
+    "select_categories": "Pilih Kategori",
+    "select_tags": "Pilih Tag",
+    "featured_only": "Hanya Unggulan",
+    "categories_count": "{{count}} Kategori",
+    "tags_count": "{{count}} Tag"
+  },
+  "stages": {
+    "inspire": "Menginspirasi",
+    "investigate": "Menyelidiki",
+    "act": "Bertindak"
+  },
+  "content_types": {
+    "case_study": "Studi Kasus",
+    "evidence": "Bukti Sekolah"
+  },
+  "badges": {
+    "case_study": "Studi Kasus",
+    "school_evidence": "Bukti Sekolah",
+    "featured": "Unggulan"
+  },
+  "results": {
+    "showing": "Menampilkan {{count}} {{story}}",
+    "story": "cerita",
+    "stories": "cerita",
+    "filtered": "(disaring)"
+  },
+  "featured": {
+    "badge": "Kisah Sukses Unggulan",
+    "read_full_story": "Baca Kisah Lengkap"
+  },
+  "actions": {
+    "read_more": "Baca Selengkapnya",
+    "load_more": "Muat Lebih Banyak Kisah",
+    "loading": "Memuat..."
+  },
+  "empty": {
+    "title": "Tidak Ada Kisah Sukses Ditemukan",
+    "description": "Coba sesuaikan kriteria pencarian Anda atau periksa kembali nanti untuk kisah-kisah inspiratif baru.",
+    "clear_filters": "Hapus Semua Filter"
+  }
+}

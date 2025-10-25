@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "قصص نجاح ملهمة",
+    "description": "اكتشف المبادرات المذهلة من المدارس حول العالم التي تحدث فرقًا حقيقيًا في مكافحة التلوث البلاستيكي"
+  },
+  "filters": {
+    "title": "تصفية قصص النجاح",
+    "clear_all": "مسح الكل",
+    "search_placeholder": "البحث بحسب اسم المدرسة...",
+    "all_countries": "جميع البلدان",
+    "all_stages": "جميع المراحل",
+    "all_content": "جميع المحتويات",
+    "all_categories": "جميع الفئات",
+    "all_tags": "جميع الوسوم",
+    "select_categories": "اختر الفئات",
+    "select_tags": "اختر الوسوم",
+    "featured_only": "المميزة فقط",
+    "categories_count": "{{count}} فئات",
+    "tags_count": "{{count}} وسوم"
+  },
+  "stages": {
+    "inspire": "إلهام",
+    "investigate": "استقصاء",
+    "act": "عمل"
+  },
+  "content_types": {
+    "case_study": "دراسات الحالة",
+    "evidence": "أدلة المدارس"
+  },
+  "badges": {
+    "case_study": "دراسة حالة",
+    "school_evidence": "دليل المدرسة",
+    "featured": "مميز"
+  },
+  "results": {
+    "showing": "عرض {{count}} {{story}}",
+    "story": "قصة",
+    "stories": "قصص",
+    "filtered": "(مفلتر)"
+  },
+  "featured": {
+    "badge": "قصة نجاح مميزة",
+    "read_full_story": "اقرأ القصة كاملة"
+  },
+  "actions": {
+    "read_more": "اقرأ المزيد",
+    "load_more": "تحميل المزيد من القصص",
+    "loading": "جاري التحميل..."
+  },
+  "empty": {
+    "title": "لم يتم العثور على قصص نجاح",
+    "description": "حاول تعديل معايير البحث أو راجعنا لاحقًا للحصول على قصص ملهمة جديدة.",
+    "clear_filters": "مسح جميع المرشحات"
+  }
+}

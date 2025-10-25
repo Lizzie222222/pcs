@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "Straeon Llwyddiant Ysbrydoledig",
+    "description": "Darganfyddwch fentrau rhyfeddol gan ysgolion ledled y byd sy'n gwneud gwahaniaeth go iawn yn y frwydr yn erbyn llygredd plastig"
+  },
+  "filters": {
+    "title": "Hidlo Straeon Llwyddiant",
+    "clear_all": "Clirio Popeth",
+    "search_placeholder": "Chwilio yn ôl enw'r ysgol...",
+    "all_countries": "Pob Gwlad",
+    "all_stages": "Pob Cam",
+    "all_content": "Pob Cynnwys",
+    "all_categories": "Pob Categori",
+    "all_tags": "Pob Tag",
+    "select_categories": "Dewis Categorïau",
+    "select_tags": "Dewis Tagiau",
+    "featured_only": "Rhai Arbennig yn Unig",
+    "categories_count": "{{count}} Categorïau",
+    "tags_count": "{{count}} Tagiau"
+  },
+  "stages": {
+    "inspire": "Ysbrydoli",
+    "investigate": "Ymchwilio",
+    "act": "Gweithredu"
+  },
+  "content_types": {
+    "case_study": "Astudiaethau Achos",
+    "evidence": "Tystiolaeth Ysgolion"
+  },
+  "badges": {
+    "case_study": "Astudiaeth Achos",
+    "school_evidence": "Tystiolaeth Ysgol",
+    "featured": "Arbennig"
+  },
+  "results": {
+    "showing": "Dangos {{count}} {{story}}",
+    "story": "stori",
+    "stories": "straeon",
+    "filtered": "(wedi'i hidlo)"
+  },
+  "featured": {
+    "badge": "Stori Llwyddiant Arbennig",
+    "read_full_story": "Darllen y Stori Lawn"
+  },
+  "actions": {
+    "read_more": "Darllen Mwy",
+    "load_more": "Llwytho Mwy o Straeon",
+    "loading": "Yn llwytho..."
+  },
+  "empty": {
+    "title": "Ni Ddarganfuwyd Straeon Llwyddiant",
+    "description": "Ceisiwch addasu eich meini prawf chwilio neu ddod yn ôl yn nes ymlaen am straeon ysbrydoledig newydd.",
+    "clear_filters": "Clirio Pob Hidlydd"
+  }
+}

@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "鼓舞人心的成功故事",
+    "description": "发现来自世界各地学校的惊人倡议，在对抗塑料污染的斗争中产生真正的影响"
+  },
+  "filters": {
+    "title": "筛选成功故事",
+    "clear_all": "清除全部",
+    "search_placeholder": "按学校名称搜索...",
+    "all_countries": "所有国家",
+    "all_stages": "所有阶段",
+    "all_content": "所有内容",
+    "all_categories": "所有类别",
+    "all_tags": "所有标签",
+    "select_categories": "选择类别",
+    "select_tags": "选择标签",
+    "featured_only": "仅精选",
+    "categories_count": "{{count}} 个类别",
+    "tags_count": "{{count}} 个标签"
+  },
+  "stages": {
+    "inspire": "激励",
+    "investigate": "调查",
+    "act": "行动"
+  },
+  "content_types": {
+    "case_study": "案例研究",
+    "evidence": "学校证据"
+  },
+  "badges": {
+    "case_study": "案例研究",
+    "school_evidence": "学校证据",
+    "featured": "精选"
+  },
+  "results": {
+    "showing": "显示 {{count}} {{story}}",
+    "story": "个故事",
+    "stories": "个故事",
+    "filtered": "（已筛选）"
+  },
+  "featured": {
+    "badge": "精选成功故事",
+    "read_full_story": "阅读完整故事"
+  },
+  "actions": {
+    "read_more": "阅读更多",
+    "load_more": "加载更多故事",
+    "loading": "加载中..."
+  },
+  "empty": {
+    "title": "未找到成功故事",
+    "description": "尝试调整您的搜索条件，或稍后再来查看新的鼓舞人心的故事。",
+    "clear_filters": "清除所有筛选器"
+  }
+}

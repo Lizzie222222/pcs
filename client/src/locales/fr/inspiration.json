@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "Histoires de Réussite Inspirantes",
+    "description": "Découvrez des initiatives incroyables d'écoles du monde entier qui font une réelle différence dans la lutte contre la pollution plastique"
+  },
+  "filters": {
+    "title": "Filtrer les Histoires de Réussite",
+    "clear_all": "Tout Effacer",
+    "search_placeholder": "Rechercher par nom d'école...",
+    "all_countries": "Tous les Pays",
+    "all_stages": "Toutes les Étapes",
+    "all_content": "Tout le Contenu",
+    "all_categories": "Toutes les Catégories",
+    "all_tags": "Tous les Tags",
+    "select_categories": "Sélectionner les Catégories",
+    "select_tags": "Sélectionner les Tags",
+    "featured_only": "Seulement les Vedettes",
+    "categories_count": "{{count}} Catégories",
+    "tags_count": "{{count}} Tags"
+  },
+  "stages": {
+    "inspire": "Inspirer",
+    "investigate": "Enquêter",
+    "act": "Agir"
+  },
+  "content_types": {
+    "case_study": "Études de Cas",
+    "evidence": "Preuves des Écoles"
+  },
+  "badges": {
+    "case_study": "Étude de Cas",
+    "school_evidence": "Preuve de l'École",
+    "featured": "En Vedette"
+  },
+  "results": {
+    "showing": "Affichage de {{count}} {{story}}",
+    "story": "histoire",
+    "stories": "histoires",
+    "filtered": "(filtré)"
+  },
+  "featured": {
+    "badge": "Histoire de Réussite en Vedette",
+    "read_full_story": "Lire l'Histoire Complète"
+  },
+  "actions": {
+    "read_more": "Lire Plus",
+    "load_more": "Charger Plus d'Histoires",
+    "loading": "Chargement..."
+  },
+  "empty": {
+    "title": "Aucune Histoire de Réussite Trouvée",
+    "description": "Essayez d'ajuster vos critères de recherche ou revenez plus tard pour de nouvelles histoires inspirantes.",
+    "clear_filters": "Effacer Tous les Filtres"
+  }
+}

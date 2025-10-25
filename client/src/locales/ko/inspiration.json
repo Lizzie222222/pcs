@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "영감을 주는 성공 사례",
+    "description": "플라스틱 오염과의 싸움에서 실질적인 변화를 만들고 있는 전 세계 학교들의 놀라운 이니셔티브를 발견하세요"
+  },
+  "filters": {
+    "title": "성공 사례 필터링",
+    "clear_all": "모두 지우기",
+    "search_placeholder": "학교 이름으로 검색...",
+    "all_countries": "모든 국가",
+    "all_stages": "모든 단계",
+    "all_content": "모든 콘텐츠",
+    "all_categories": "모든 카테고리",
+    "all_tags": "모든 태그",
+    "select_categories": "카테고리 선택",
+    "select_tags": "태그 선택",
+    "featured_only": "추천만",
+    "categories_count": "{{count}}개 카테고리",
+    "tags_count": "{{count}}개 태그"
+  },
+  "stages": {
+    "inspire": "영감",
+    "investigate": "조사",
+    "act": "행동"
+  },
+  "content_types": {
+    "case_study": "사례 연구",
+    "evidence": "학교 증거"
+  },
+  "badges": {
+    "case_study": "사례 연구",
+    "school_evidence": "학교 증거",
+    "featured": "추천"
+  },
+  "results": {
+    "showing": "{{count}}개 {{story}} 표시",
+    "story": "사례",
+    "stories": "사례",
+    "filtered": "(필터링됨)"
+  },
+  "featured": {
+    "badge": "추천 성공 사례",
+    "read_full_story": "전체 스토리 읽기"
+  },
+  "actions": {
+    "read_more": "더 읽기",
+    "load_more": "더 많은 사례 로드",
+    "loading": "로딩 중..."
+  },
+  "empty": {
+    "title": "성공 사례를 찾을 수 없습니다",
+    "description": "검색 기준을 조정하거나 나중에 다시 확인하여 새로운 영감을 주는 사례를 확인하세요.",
+    "clear_filters": "모든 필터 지우기"
+  }
+}

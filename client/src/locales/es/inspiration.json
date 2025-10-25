@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "Historias de Éxito Inspiradoras",
+    "description": "Descubre increíbles iniciativas de escuelas de todo el mundo que están marcando una diferencia real en la lucha contra la contaminación plástica"
+  },
+  "filters": {
+    "title": "Filtrar Historias de Éxito",
+    "clear_all": "Borrar Todo",
+    "search_placeholder": "Buscar por nombre de escuela...",
+    "all_countries": "Todos los Países",
+    "all_stages": "Todas las Etapas",
+    "all_content": "Todo el Contenido",
+    "all_categories": "Todas las Categorías",
+    "all_tags": "Todas las Etiquetas",
+    "select_categories": "Seleccionar Categorías",
+    "select_tags": "Seleccionar Etiquetas",
+    "featured_only": "Solo Destacadas",
+    "categories_count": "{{count}} Categorías",
+    "tags_count": "{{count}} Etiquetas"
+  },
+  "stages": {
+    "inspire": "Inspirar",
+    "investigate": "Investigar",
+    "act": "Actuar"
+  },
+  "content_types": {
+    "case_study": "Estudios de Caso",
+    "evidence": "Evidencias Escolares"
+  },
+  "badges": {
+    "case_study": "Estudio de Caso",
+    "school_evidence": "Evidencia Escolar",
+    "featured": "Destacado"
+  },
+  "results": {
+    "showing": "Mostrando {{count}} {{story}}",
+    "story": "historia",
+    "stories": "historias",
+    "filtered": "(filtrado)"
+  },
+  "featured": {
+    "badge": "Historia de Éxito Destacada",
+    "read_full_story": "Leer Historia Completa"
+  },
+  "actions": {
+    "read_more": "Leer Más",
+    "load_more": "Cargar Más Historias",
+    "loading": "Cargando..."
+  },
+  "empty": {
+    "title": "No Se Encontraron Historias de Éxito",
+    "description": "Intenta ajustar tus criterios de búsqueda o vuelve más tarde para ver nuevas historias inspiradoras.",
+    "clear_filters": "Borrar Todos los Filtros"
+  }
+}

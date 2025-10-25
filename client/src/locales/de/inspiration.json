@@ -1,0 +1,55 @@
+{
+  "page": {
+    "title": "Inspirierende Erfolgsgeschichten",
+    "description": "Entdecken Sie erstaunliche Initiativen von Schulen auf der ganzen Welt, die einen echten Unterschied im Kampf gegen Plastikverschmutzung machen"
+  },
+  "filters": {
+    "title": "Erfolgsgeschichten filtern",
+    "clear_all": "Alle löschen",
+    "search_placeholder": "Nach Schulname suchen...",
+    "all_countries": "Alle Länder",
+    "all_stages": "Alle Phasen",
+    "all_content": "Alle Inhalte",
+    "all_categories": "Alle Kategorien",
+    "all_tags": "Alle Tags",
+    "select_categories": "Kategorien auswählen",
+    "select_tags": "Tags auswählen",
+    "featured_only": "Nur Hervorgehobene",
+    "categories_count": "{{count}} Kategorien",
+    "tags_count": "{{count}} Tags"
+  },
+  "stages": {
+    "inspire": "Inspirieren",
+    "investigate": "Untersuchen",
+    "act": "Handeln"
+  },
+  "content_types": {
+    "case_study": "Fallstudien",
+    "evidence": "Schulnachweise"
+  },
+  "badges": {
+    "case_study": "Fallstudie",
+    "school_evidence": "Schulnachweis",
+    "featured": "Hervorgehoben"
+  },
+  "results": {
+    "showing": "{{count}} {{story}} anzeigen",
+    "story": "Geschichte",
+    "stories": "Geschichten",
+    "filtered": "(gefiltert)"
+  },
+  "featured": {
+    "badge": "Hervorgehobene Erfolgsgeschichte",
+    "read_full_story": "Vollständige Geschichte lesen"
+  },
+  "actions": {
+    "read_more": "Mehr lesen",
+    "load_more": "Mehr Geschichten laden",
+    "loading": "Wird geladen..."
+  },
+  "empty": {
+    "title": "Keine Erfolgsgeschichten gefunden",
+    "description": "Versuchen Sie, Ihre Suchkriterien anzupassen, oder schauen Sie später nach neuen inspirierenden Geschichten.",
+    "clear_filters": "Alle Filter löschen"
+  }
+}
