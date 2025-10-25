@@ -338,7 +338,7 @@ export default function Resources() {
     return (
       <Card 
         key={resource.id} 
-        className={`relative hover:shadow-xl transition-all duration-300 hover:scale-[1.02] ${
+        className={`relative hover:shadow-xl transition-all duration-300 hover:scale-[1.02] overflow-hidden ${
           isLocked ? 'opacity-80' : ''
         }`} 
         data-testid={`resource-${resource.id}`}
@@ -407,17 +407,17 @@ export default function Resources() {
               <Download className="h-3 w-3" />
               {resource.downloadCount} {t('resource_card.downloads', { defaultValue: 'downloads' })}
             </span>
-            <div className="flex flex-col gap-2">
-              <div className="flex gap-2">
-                <Link href={`/resources/view/${resource.id}`} asChild>
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex gap-2 w-full">
+                <Link href={`/resources/view/${resource.id}`} className="flex-1">
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1"
+                    className="w-full"
                     data-testid={`button-view-${resource.id}`}
                   >
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
+                    <Eye className="h-4 w-4 sm:mr-1" />
+                    <span className="hidden sm:inline">View</span>
                   </Button>
                 </Link>
                 <Button
@@ -427,31 +427,31 @@ export default function Resources() {
                   onClick={() => handleCopyLink(resource.id)}
                   data-testid={`button-copy-link-${resource.id}`}
                 >
-                  <Share2 className="h-4 w-4 mr-1" />
-                  Copy Link
+                  <Share2 className="h-4 w-4 sm:mr-1" />
+                  <span className="hidden sm:inline">Share</span>
                 </Button>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-2 w-full">
                 {isLocked ? (
                   <Button
                     size="sm"
                     variant="outline"
-                    className="flex-1 bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    className="w-full bg-gray-100 text-gray-600 hover:bg-gray-200"
                     onClick={() => handleDownload(resource.id, resource.fileUrl, resource.title, resource.visibility)}
                     data-testid={`button-download-${resource.id}`}
                   >
                     <Lock className="h-4 w-4 mr-1" />
-                    {t('register_to_access', { defaultValue: 'Access' })}
+                    <span className="truncate">{t('register_to_access', { defaultValue: 'Access' })}</span>
                   </Button>
                 ) : (
                   <Button
                     size="sm"
-                    className="flex-1 bg-gradient-to-r from-coral to-orange-500 hover:from-coral/90 hover:to-orange-600 text-white shadow-md"
+                    className="w-full bg-gradient-to-r from-coral to-orange-500 hover:from-coral/90 hover:to-orange-600 text-white shadow-md"
                     onClick={() => handleDownload(resource.id, resource.fileUrl, resource.title, resource.visibility)}
                     data-testid={`button-download-${resource.id}`}
                   >
                     <Download className="h-4 w-4 mr-1" />
-                    {t('resource_card.download_resource', { defaultValue: 'Download' })}
+                    <span className="truncate">{t('resource_card.download_resource', { defaultValue: 'Download' })}</span>
                   </Button>
                 )}
               </div>
@@ -469,7 +469,7 @@ export default function Resources() {
 
     return (
       <Card 
-        className={`relative hover:shadow-xl transition-all duration-300 hover:scale-[1.02] ${
+        className={`relative hover:shadow-xl transition-all duration-300 hover:scale-[1.02] overflow-hidden ${
           isLocked ? 'opacity-80' : ''
         }`} 
         data-testid={`pack-${pack.id}`}
@@ -592,7 +592,7 @@ export default function Resources() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-20">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-20 overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-12">
