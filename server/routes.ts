@@ -9189,7 +9189,7 @@ Return JSON with:
   // AI Chat endpoint
   app.post('/api/chat', async (req, res) => {
     try {
-      const { messages } = req.body;
+      const { messages, language = 'en' } = req.body;
 
       if (!messages || !Array.isArray(messages)) {
         return res.status(400).json({ error: 'Messages array is required' });
@@ -9203,8 +9203,30 @@ Return JSON with:
         apiKey: process.env.OPENAI_API_KEY,
       });
 
+      // Language map for AI responses
+      const languageNames: Record<string, string> = {
+        en: 'English',
+        el: 'Greek',
+        fr: 'French',
+        es: 'Spanish',
+        ar: 'Arabic',
+        cy: 'Welsh',
+        de: 'German',
+        id: 'Indonesian',
+        it: 'Italian',
+        ko: 'Korean',
+        nl: 'Dutch',
+        pt: 'Portuguese',
+        ru: 'Russian',
+        zh: 'Chinese'
+      };
+
+      const languageInstruction = language && language !== 'en' 
+        ? `\n\nIMPORTANT: You MUST respond in ${languageNames[language] || language}. All your responses should be in ${languageNames[language] || language}, not English.`
+        : '';
+
       // System prompt with Plastic Clever Schools program context
-      const systemPrompt = `You are a helpful assistant for the Plastic Clever Schools program. Your role is to answer questions about the program, help schools reduce plastic waste, and provide guidance on their journey.
+      const systemPrompt = `You are a helpful assistant for the Plastic Clever Schools program. Your role is to answer questions about the program, help schools reduce plastic waste, and provide guidance on their journey.${languageInstruction}
 
 ABOUT PLASTIC CLEVER SCHOOLS:
 Plastic Clever Schools is an environmental education program that helps schools reduce plastic waste through a three-stage journey:

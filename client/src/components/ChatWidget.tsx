@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,17 +13,25 @@ interface Message {
 }
 
 export function ChatWidget() {
+  const { t, i18n } = useTranslation('common');
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'assistant',
-      content: 'Hi! I\'m here to help you with the Plastic Clever Schools program. Ask me anything about reducing plastic waste in your school!'
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Reset messages with initial greeting when language changes
+  useEffect(() => {
+    setMessages([
+      {
+        role: 'assistant',
+        content: t('chat.greeting', { 
+          defaultValue: 'Hi! I\'m here to help you with the Plastic Clever Schools program. Ask me anything about reducing plastic waste in your school!' 
+        })
+      }
+    ]);
+  }, [i18n.language, t]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -51,7 +60,8 @@ export function ChatWidget() {
         messages: [...messages, userMessage].map(m => ({
           role: m.role,
           content: m.content
-        }))
+        })),
+        language: i18n.language
       });
 
       const data = await response.json();
@@ -66,7 +76,9 @@ export function ChatWidget() {
       console.error('Chat error:', error);
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, I encountered an error. Please try again later.'
+        content: t('chat.error', { 
+          defaultValue: 'Sorry, I encountered an error. Please try again later.' 
+        })
       }]);
     } finally {
       setIsLoading(false);
@@ -88,7 +100,7 @@ export function ChatWidget() {
           onClick={() => setIsOpen(true)}
           className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white z-50 transition-all duration-300 hover:scale-110"
           data-testid="button-open-chat"
-          aria-label="Open chat"
+          aria-label={t('chat.open', { defaultValue: 'Open chat' })}
         >
           <MessageCircle className="h-6 w-6" />
         </Button>
@@ -103,7 +115,9 @@ export function ChatWidget() {
                 <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
                   <MessageCircle className="h-5 w-5" />
                 </div>
-                <CardTitle className="text-lg font-semibold">PCS Assistant</CardTitle>
+                <CardTitle className="text-lg font-semibold">
+                  {t('chat.title', { defaultValue: 'PCS Assistant' })}
+                </CardTitle>
               </div>
               <Button
                 variant="ghost"
@@ -111,12 +125,14 @@ export function ChatWidget() {
                 onClick={() => setIsOpen(false)}
                 className="text-white hover:bg-white/20 h-8 w-8"
                 data-testid="button-close-chat"
-                aria-label="Close chat"
+                aria-label={t('chat.close', { defaultValue: 'Close chat' })}
               >
                 <X className="h-5 w-5" />
               </Button>
             </div>
-            <p className="text-xs text-white/90 mt-1">Ask me about plastic reduction!</p>
+            <p className="text-xs text-white/90 mt-1">
+              {t('chat.subtitle', { defaultValue: 'Ask me about plastic reduction!' })}
+            </p>
           </CardHeader>
 
           <CardContent className="flex-1 flex flex-col p-0 overflow-hidden">
@@ -162,7 +178,7 @@ export function ChatWidget() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  placeholder="Type your question..."
+                  placeholder={t('chat.placeholder', { defaultValue: 'Type your question...' })}
                   className="flex-1"
                   disabled={isLoading}
                   data-testid="input-chat-message"
@@ -172,7 +188,7 @@ export function ChatWidget() {
                   disabled={!input.trim() || isLoading}
                   className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white"
                   data-testid="button-send-message"
-                  aria-label="Send message"
+                  aria-label={t('chat.send', { defaultValue: 'Send message' })}
                 >
                   {isLoading ? (
                     <Loader2 className="h-4 w-4 animate-spin" />

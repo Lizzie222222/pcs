@@ -110,6 +110,16 @@
     "change_language": "Change Language",
     "language_switcher_label": "Language"
   },
+  "chat": {
+    "title": "PCS Assistant",
+    "subtitle": "Ask me about plastic reduction!",
+    "greeting": "Hi! I'm here to help you with the Plastic Clever Schools program. Ask me anything about reducing plastic waste in your school!",
+    "placeholder": "Type your question...",
+    "send": "Send message",
+    "open": "Open chat",
+    "close": "Close chat",
+    "error": "Sorry, I encountered an error. Please try again later."
+  },
   "accessibility": {
     "skip_to_main_content": "Skip to main content",
     "back_button": "Back",
