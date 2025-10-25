@@ -190,7 +190,7 @@ export default function Home() {
 
   const { data: dashboardData, isLoading: isDashboardLoading, error } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
-    enabled: isAuthenticated,
+    enabled: isAuthenticated && !user?.isAdmin,
     retry: false,
   });
 
