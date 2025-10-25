@@ -572,7 +572,7 @@ export default function ResourcesManagement() {
       return response;
     },
     onSuccess: (data: any) => {
-      const { successCount, failedCount, failures } = data;
+      const { successCount, failedCount, failures = [] } = data;
       
       // Build description message
       let description = '';
@@ -587,7 +587,9 @@ export default function ResourcesManagement() {
         });
       } else if (successCount === 0) {
         // All failed
-        const failureDetails = failures.map((f: any) => `${f.id}: ${f.reason}`).join('\n');
+        const failureDetails = Array.isArray(failures) 
+          ? failures.map((f: any) => `${f.id}: ${f.reason}`).join('\n')
+          : 'Unknown error occurred';
         toast({
           title: "Bulk Delete Failed",
           description: `Failed to delete all selected resources:\n${failureDetails}`,
@@ -597,7 +599,9 @@ export default function ResourcesManagement() {
         // Partial success
         description = `Successfully deleted ${successCount} resource${successCount > 1 ? 's' : ''}. Failed to delete ${failedCount}.`;
         
-        const failureDetails = failures.map((f: any) => `${f.id}: ${f.reason}`).join('\n');
+        const failureDetails = Array.isArray(failures)
+          ? failures.map((f: any) => `${f.id}: ${f.reason}`).join('\n')
+          : 'Unknown error occurred';
         description += `\n${failureDetails}`;
         
         toast({
