@@ -6382,6 +6382,7 @@ Return JSON with:
           email: invitation.email,
           expiresAt: invitation.expiresAt,
         },
+        token, // Include token for testing/manual sharing
         emailSent,
       });
     } catch (error) {

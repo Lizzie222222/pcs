@@ -175,16 +175,20 @@ export default function AdminInvitationAccept() {
   const profileMutation = useMutation({
     mutationFn: async (data: OnboardingForm) => {
       const response = await apiRequest("POST", `/api/admin-invitations/${token}/profile`, data);
-      return await response.json();
+      const result = await response.json();
+      return result.user; // Return the user object from the response
     },
-    onSuccess: async () => {
+    onSuccess: async (updatedUser: User) => {
+      // Update auth cache immediately with the returned user data
+      queryClient.setQueryData(["/api/auth/user"], updatedUser);
+      
       toast({
         title: "Profile updated!",
         description: "Your profile has been updated successfully",
       });
-      // Refetch user data to get updated profile
+      
+      // Also invalidate and refetch to ensure consistency
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      await queryClient.refetchQueries({ queryKey: ['/api/auth/user'] });
     },
     onError: (error: Error) => {
       const errorMessage = error.message || "Failed to update profile";
