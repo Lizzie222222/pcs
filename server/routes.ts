@@ -7582,10 +7582,13 @@ Return JSON with:
         }
       }
       
-      // Validate date changes - cannot reschedule past events
+      // Validate date changes - cannot reschedule past events (except drafts)
+      // Allow editing dates on draft events (e.g., duplicated events) regardless of date
       if (updates.startDateTime || updates.endDateTime) {
         const eventHasStarted = new Date(existingEvent.startDateTime) < new Date();
-        if (eventHasStarted) {
+        const isDraft = existingEvent.status === 'draft';
+        
+        if (eventHasStarted && !isDraft) {
           return res.status(400).json({ 
             message: "Cannot reschedule events that have already started" 
           });
