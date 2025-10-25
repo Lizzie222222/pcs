@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LoadingSpinner } from "@/components/ui/states";
 import { Upload, X, FileText, CheckCircle2, XCircle, Edit2, Save, Sparkles, Loader2, Languages } from "lucide-react";
 import { LANGUAGE_FLAG_MAP, LANGUAGE_NAME_MAP } from "@/lib/languageUtils";
@@ -781,20 +782,31 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                       Uploaded Resources ({uploadedResources.length})
                     </CardTitle>
                     <div className="flex gap-2">
-                      <Button
-                        onClick={handleAIAutoFill}
-                        disabled={isGeneratingMetadata}
-                        variant="outline"
-                        className="gap-2"
-                        data-testid="button-ai-autofill"
-                      >
-                        {isGeneratingMetadata ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Sparkles className="h-4 w-4" />
-                        )}
-                        {isGeneratingMetadata ? 'Generating...' : 'Auto-fill with AI'}
-                      </Button>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              onClick={handleAIAutoFill}
+                              disabled={isGeneratingMetadata}
+                              variant="outline"
+                              className="gap-2"
+                              data-testid="button-ai-autofill"
+                            >
+                              {isGeneratingMetadata ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Sparkles className="h-4 w-4" />
+                              )}
+                              {isGeneratingMetadata ? 'Generating...' : 'Auto-fill with AI'}
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent side="bottom" className="max-w-xs">
+                            <p className="text-sm">
+                              AI analyzes your uploaded files and automatically suggests titles, descriptions, themes, age ranges, and resource types based on file content and names.
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
                       {!batchEditMode && (
                         <Button
                           variant="outline"
