@@ -827,7 +827,7 @@ export default function Home() {
                     onClick={dismissPromiseNotification}
                     className="absolute top-4 right-4 p-1 rounded-full hover:bg-teal/20 transition-colors"
                     data-testid="button-dismiss-promise-notification"
-                    aria-label="Dismiss notification"
+                    aria-label={t('accessibility.dismiss_notification', { ns: 'dashboard' })}
                   >
                     <X className="h-4 w-4 text-teal" />
                   </button>
@@ -886,7 +886,7 @@ export default function Home() {
                         onClick={() => recentApproved.forEach(e => dismissNotification(e.id))}
                         className="absolute top-2 right-2 p-1 rounded-full hover:bg-green-200 transition-colors"
                         data-testid="button-dismiss-approved"
-                        aria-label="Dismiss notification"
+                        aria-label={t('accessibility.dismiss_notification', { ns: 'dashboard' })}
                       >
                         <X className="h-4 w-4 text-green-700" />
                       </button>
@@ -927,7 +927,7 @@ export default function Home() {
                         onClick={() => recentRejected.forEach(e => dismissNotification(e.id))}
                         className="absolute top-2 right-2 p-1 rounded-full hover:bg-red-200 transition-colors"
                         data-testid="button-dismiss-rejected"
-                        aria-label="Dismiss notification"
+                        aria-label={t('accessibility.dismiss_notification', { ns: 'dashboard' })}
                       >
                         <X className="h-4 w-4 text-red-700" />
                       </button>
@@ -1446,7 +1446,7 @@ export default function Home() {
                                     <div>
                                       <div className="text-sm font-semibold opacity-90">{t('action_plan.weight_reduced_per_year', { ns: 'dashboard' })}</div>
                                       <div className="text-3xl font-bold" data-testid="text-weight-reduced">
-                                        {metrics.seriousMetrics.kilograms.toFixed(1)} kg
+                                        {metrics.seriousMetrics.kilograms.toFixed(1)} {t('units.kg', { ns: 'dashboard' })}
                                       </div>
                                     </div>
                                   </div>
@@ -1524,7 +1524,7 @@ export default function Home() {
                                   <div className="p-4 bg-orange-50 rounded-lg cursor-help">
                                     <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.co2_emissions_prevented', { ns: 'dashboard' })}</p>
                                     <p className="text-2xl font-bold text-orange-600" data-testid="text-co2-prevented">
-                                      {metrics.seriousMetrics.co2Prevented.toFixed(1)} kg
+                                      {metrics.seriousMetrics.co2Prevented.toFixed(1)} {t('units.kg', { ns: 'dashboard' })}
                                     </p>
                                   </div>
                                 </TooltipTrigger>
@@ -1537,7 +1537,7 @@ export default function Home() {
                                   <div className="p-4 bg-purple-50 rounded-lg cursor-help">
                                     <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.oil_saved', { ns: 'dashboard' })}</p>
                                     <p className="text-2xl font-bold text-purple-600" data-testid="text-oil-saved">
-                                      {metrics.seriousMetrics.oilSaved.toFixed(1)} liters
+                                      {metrics.seriousMetrics.oilSaved.toFixed(1)} {t('units.liters', { ns: 'dashboard' })}
                                     </p>
                                   </div>
                                 </TooltipTrigger>

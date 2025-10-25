@@ -288,5 +288,12 @@
     "provide_item_label": "Please provide a label for the plastic item",
     "baseline_min": "Baseline quantity must be at least 1",
     "target_min": "Target quantity must be at least 0"
+  },
+  "accessibility": {
+    "dismiss_notification": "Dismiss notification"
+  },
+  "units": {
+    "kg": "kg",
+    "liters": "liters"
   }
 }

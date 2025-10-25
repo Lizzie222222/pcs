@@ -13,14 +13,14 @@ export default function PrivacyPage() {
       <div className="bg-navy text-white py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/" className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors" data-testid="link-back-home">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" aria-label={t('accessibility.arrow_left_icon')} />
             {t('navigation.back_to_home')}
           </Link>
           <h1 className="text-3xl sm:text-4xl font-bold mb-4" data-testid="heading-privacy-title">
-            Privacy Policy
+            {t('privacy.title')}
           </h1>
           <p className="text-white/90 text-lg">
-            Last updated: October 2025
+            {t('privacy.last_updated')}
           </p>
         </div>
       </div>
@@ -31,7 +31,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-pcs_blue" />
+              <Shield className="w-5 h-5 text-pcs_blue" aria-label={t('accessibility.shield_icon')} />
               Introduction
             </CardTitle>
           </CardHeader>
@@ -49,7 +49,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Database className="w-5 h-5 text-pcs_blue" />
+              <Database className="w-5 h-5 text-pcs_blue" aria-label={t('accessibility.database_icon')} />
               1. Information We Collect
             </CardTitle>
           </CardHeader>
@@ -106,7 +106,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Eye className="w-5 h-5 text-pcs_blue" />
+              <Eye className="w-5 h-5 text-pcs_blue" aria-label={t('accessibility.eye_icon')} />
               2. How We Use Your Information
             </CardTitle>
           </CardHeader>
@@ -131,7 +131,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-pcs_blue" />
+              <FileText className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.file_text_icon")} />
               3. Legal Basis for Processing (GDPR)
             </CardTitle>
           </CardHeader>
@@ -152,7 +152,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-pcs_blue" />
+              <Users className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.users_icon")} />
               4. Data Sharing and Disclosure
             </CardTitle>
           </CardHeader>
@@ -192,7 +192,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Lock className="w-5 h-5 text-pcs_blue" />
+              <Lock className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.lock_icon")} />
               5. Data Security
             </CardTitle>
           </CardHeader>
@@ -243,7 +243,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <UserCheck className="w-5 h-5 text-pcs_blue" />
+              <UserCheck className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.user_check_icon")} />
               7. Your Rights
             </CardTitle>
           </CardHeader>
@@ -270,7 +270,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-pcs_blue" />
+              <Globe className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.globe_icon")} />
               8. Cookies and Tracking Technologies
             </CardTitle>
           </CardHeader>
@@ -293,7 +293,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-pcs_blue" />
+              <Globe className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.globe_icon")} />
               9. International Data Transfers
             </CardTitle>
           </CardHeader>
@@ -343,7 +343,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Globe className="w-5 h-5 text-pcs_blue" />
+              <Globe className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.globe_icon")} />
               11. Third-Party Links
             </CardTitle>
           </CardHeader>
@@ -361,7 +361,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-pcs_blue" />
+              <FileText className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.file_text_icon")} />
               12. Changes to This Privacy Policy
             </CardTitle>
           </CardHeader>
@@ -387,7 +387,7 @@ export default function PrivacyPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-pcs_blue" />
+              <Users className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.users_icon")} />
               13. Contact Us & Data Protection Officer
             </CardTitle>
           </CardHeader>
@@ -419,10 +419,10 @@ export default function PrivacyPage() {
         {/* Acknowledgment */}
         <div className="bg-ocean-blue/10 border-l-4 border-ocean-blue p-6 rounded-r-lg mb-12">
           <p className="text-gray-800 leading-relaxed">
-            <strong>Your privacy is important to us. We are committed to protecting your personal information and being transparent about our data practices.</strong>
+            <strong>{t('privacy.acknowledgment')}</strong>
           </p>
           <p className="text-gray-700 mt-4 text-sm">
-            Thank you for trusting Plastic Clever Schools with your data as we work together to reduce plastic waste in schools worldwide! 🌍🔒
+            {t('privacy.acknowledgment_message')}
           </p>
         </div>
       </div>

@@ -25,7 +25,7 @@ type ContactForm = z.infer<typeof contactSchema>;
 
 export default function Contact() {
   const { toast } = useToast();
-  const { t } = useTranslation('landing');
+  const { t } = useTranslation('common');
   const [submitted, setSubmitted] = useState(false);
 
   const form = useForm<ContactForm>({
@@ -74,14 +74,13 @@ export default function Contact() {
             className="text-4xl md:text-5xl font-bold text-white mb-4"
             data-testid="text-contact-title"
           >
-            Contact Us
+            {t('contact.title')}
           </h1>
           <p 
             className="text-lg md:text-xl text-white/90 max-w-2xl mx-auto"
             data-testid="text-contact-subtitle"
           >
-            Have questions about Plastic Clever Schools? We'd love to hear from you. 
-            Get in touch and we'll respond as soon as possible.
+            {t('contact.subtitle')}
           </p>
         </div>
       </section>
@@ -93,10 +92,10 @@ export default function Contact() {
           <Card className="bg-white border border-gray-200 shadow-lg">
             <CardHeader>
               <CardTitle className="text-2xl text-navy" data-testid="text-form-title">
-                Send us a message
+                {t('contact.form_title')}
               </CardTitle>
               <CardDescription data-testid="text-form-description">
-                Fill out the form below and we'll get back to you within 24-48 hours.
+                {t('contact.form_description')}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -105,10 +104,10 @@ export default function Contact() {
                   className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-start gap-3"
                   data-testid="message-success"
                 >
-                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" />
+                  <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5 flex-shrink-0" aria-label={t('accessibility.user_check_icon')} />
                   <div>
-                    <p className="font-medium text-green-800">Thank you for reaching out!</p>
-                    <p className="text-sm text-green-700">Your message has been sent successfully.</p>
+                    <p className="font-medium text-green-800">{t('contact.success_title')}</p>
+                    <p className="text-sm text-green-700">{t('contact.success_message')}</p>
                   </div>
                 </div>
               )}
@@ -121,10 +120,10 @@ export default function Contact() {
                     name="fullName"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Full Name *</FormLabel>
+                        <FormLabel>{t('contact.full_name_label')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="John Doe"
+                            placeholder={t('contact.full_name_placeholder')}
                             {...field}
                             data-testid="input-fullname"
                             disabled={contactMutation.isPending}
@@ -141,11 +140,11 @@ export default function Contact() {
                     name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Email Address *</FormLabel>
+                        <FormLabel>{t('contact.email_label')}</FormLabel>
                         <FormControl>
                           <Input
                             type="email"
-                            placeholder="john.doe@school.edu"
+                            placeholder={t('contact.email_placeholder')}
                             {...field}
                             data-testid="input-email"
                             disabled={contactMutation.isPending}
@@ -162,10 +161,10 @@ export default function Contact() {
                     name="subject"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Subject *</FormLabel>
+                        <FormLabel>{t('contact.subject_label')}</FormLabel>
                         <FormControl>
                           <Input
-                            placeholder="How can we help you?"
+                            placeholder={t('contact.subject_placeholder')}
                             {...field}
                             data-testid="input-subject"
                             disabled={contactMutation.isPending}
@@ -182,10 +181,10 @@ export default function Contact() {
                     name="message"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Message *</FormLabel>
+                        <FormLabel>{t('contact.message_label')}</FormLabel>
                         <FormControl>
                           <Textarea
-                            placeholder="Tell us more about your inquiry..."
+                            placeholder={t('contact.message_placeholder')}
                             rows={6}
                             {...field}
                             data-testid="textarea-message"
@@ -205,11 +204,11 @@ export default function Contact() {
                     data-testid="button-submit"
                   >
                     {contactMutation.isPending ? (
-                      <>Sending...</>
+                      <>{t('contact.sending')}</>
                     ) : (
                       <>
-                        <Send className="h-4 w-4 mr-2" />
-                        Send Message
+                        <Send className="h-4 w-4 mr-2" aria-label={t('accessibility.mail_icon')} />
+                        {t('contact.send_message')}
                       </>
                     )}
                   </Button>
@@ -223,26 +222,26 @@ export default function Contact() {
             <Card className="bg-gradient-to-br from-pcs_blue to-ocean-blue text-white border-0 shadow-lg">
               <CardHeader>
                 <CardTitle className="text-2xl" data-testid="text-info-title">
-                  Get in Touch
+                  {t('contact.get_in_touch')}
                 </CardTitle>
                 <CardDescription className="text-white/80" data-testid="text-info-description">
-                  Reach out to us directly through any of these channels
+                  {t('contact.info_description')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 {/* Email */}
                 <div className="flex items-start gap-4" data-testid="contact-email">
                   <div className="bg-white/10 p-3 rounded-lg">
-                    <Mail className="h-6 w-6" />
+                    <Mail className="h-6 w-6" aria-label={t('accessibility.mail_icon')} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Email</h3>
+                    <h3 className="font-semibold mb-1">{t('contact.email_heading')}</h3>
                     <a 
                       href="mailto:info@plasticcleverschools.org"
                       className="text-white/90 hover:text-white underline"
                       data-testid="link-email"
                     >
-                      info@plasticcleverschools.org
+                      {t('contact.email_address')}
                     </a>
                   </div>
                 </div>
@@ -250,24 +249,24 @@ export default function Contact() {
                 {/* Office Hours */}
                 <div className="flex items-start gap-4" data-testid="contact-hours">
                   <div className="bg-white/10 p-3 rounded-lg">
-                    <Phone className="h-6 w-6" />
+                    <Phone className="h-6 w-6" aria-label={t('accessibility.phone_icon')} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Office Hours</h3>
-                    <p className="text-white/90">Monday - Friday</p>
-                    <p className="text-white/90">9:00 AM - 5:00 PM GMT</p>
+                    <h3 className="font-semibold mb-1">{t('contact.office_hours')}</h3>
+                    <p className="text-white/90">{t('contact.monday_friday')}</p>
+                    <p className="text-white/90">{t('contact.working_hours')}</p>
                   </div>
                 </div>
 
                 {/* Address */}
                 <div className="flex items-start gap-4" data-testid="contact-location">
                   <div className="bg-white/10 p-3 rounded-lg">
-                    <MapPin className="h-6 w-6" />
+                    <MapPin className="h-6 w-6" aria-label={t('accessibility.location_icon')} />
                   </div>
                   <div>
-                    <h3 className="font-semibold mb-1">Location</h3>
+                    <h3 className="font-semibold mb-1">{t('contact.location')}</h3>
                     <p className="text-white/90">
-                      Supporting schools worldwide in their mission to reduce plastic waste
+                      {t('contact.location_description')}
                     </p>
                   </div>
                 </div>
@@ -278,26 +277,26 @@ export default function Contact() {
             <Card className="bg-white border border-gray-200 shadow-lg">
               <CardHeader>
                 <CardTitle className="text-xl text-navy" data-testid="text-faq-title">
-                  Frequently Asked Questions
+                  {t('contact.faq_title')}
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <h4 className="font-semibold text-navy mb-2">How long does it take to get a response?</h4>
+                  <h4 className="font-semibold text-navy mb-2">{t('contact.faq_response_time')}</h4>
                   <p className="text-sm text-gray-600">
-                    We typically respond to all inquiries within 24-48 hours during business days.
+                    {t('contact.faq_response_answer')}
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-navy mb-2">Can I schedule a demo?</h4>
+                  <h4 className="font-semibold text-navy mb-2">{t('contact.faq_demo')}</h4>
                   <p className="text-sm text-gray-600">
-                    Yes! Mention it in your message and we'll arrange a convenient time for a platform walkthrough.
+                    {t('contact.faq_demo_answer')}
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-navy mb-2">Need technical support?</h4>
+                  <h4 className="font-semibold text-navy mb-2">{t('contact.faq_support')}</h4>
                   <p className="text-sm text-gray-600">
-                    Include "Technical Support" in your subject line and describe the issue you're experiencing.
+                    {t('contact.faq_support_answer')}
                   </p>
                 </div>
               </CardContent>

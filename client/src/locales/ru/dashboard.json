@@ -289,4 +289,13 @@
     "baseline_min": "Базовое количество должно быть не менее 1",
     "target_min": "Целевое количество должно быть не менее 0"
   }
+  },
+  "accessibility": {
+    "dismiss_notification": "Dismiss notification"
+  }
+  },
+  "units": {
+    "kg": "kg",
+    "liters": "liters"
+  }
 }

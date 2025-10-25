@@ -289,4 +289,13 @@
     "baseline_min": "Ausgangsmenge muss mindestens 1 sein",
     "target_min": "Zielmenge muss mindestens 0 sein"
   }
+  },
+  "accessibility": {
+    "dismiss_notification": "Dismiss notification"
+  }
+  },
+  "units": {
+    "kg": "kg",
+    "liters": "liters"
+  }
 }

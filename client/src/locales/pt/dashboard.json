@@ -289,4 +289,13 @@
     "baseline_min": "A quantidade baseline deve ser pelo menos 1",
     "target_min": "A quantidade objetivo deve ser pelo menos 0"
   }
+  },
+  "accessibility": {
+    "dismiss_notification": "Dismiss notification"
+  }
+  },
+  "units": {
+    "kg": "kg",
+    "liters": "liters"
+  }
 }

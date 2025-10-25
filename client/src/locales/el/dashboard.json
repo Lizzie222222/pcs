@@ -289,4 +289,13 @@
     "baseline_min": "Η ποσότητα βασικής γραμμής πρέπει να είναι τουλάχιστον 1",
     "target_min": "Η ποσότητα στόχου πρέπει να είναι τουλάχιστον 0"
   }
+  },
+  "accessibility": {
+    "dismiss_notification": "Dismiss notification"
+  }
+  },
+  "units": {
+    "kg": "kg",
+    "liters": "liters"
+  }
 }

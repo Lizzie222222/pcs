@@ -13,14 +13,14 @@ export default function TermsPage() {
       <div className="bg-navy text-white py-12">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
           <Link href="/" className="inline-flex items-center text-white/80 hover:text-white mb-6 transition-colors" data-testid="link-back-home">
-            <ArrowLeft className="w-4 h-4 mr-2" />
+            <ArrowLeft className="w-4 h-4 mr-2" aria-label={t('accessibility.arrow_left_icon')} />
             {t('navigation.back_to_home')}
           </Link>
           <h1 className="text-3xl sm:text-4xl font-bold mb-4" data-testid="heading-terms-title">
-            Terms and Conditions
+            {t('terms.title')}
           </h1>
           <p className="text-white/90 text-lg">
-            Last updated: October 2025
+            {t('terms.last_updated')}
           </p>
         </div>
       </div>
@@ -31,7 +31,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-pcs_blue" />
+              <FileText className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.file_text_icon")} />
               Introduction
             </CardTitle>
           </CardHeader>
@@ -49,7 +49,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-pcs_blue" />
+              <Shield className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.shield_icon")} />
               1. Acceptance of Terms
             </CardTitle>
           </CardHeader>
@@ -70,7 +70,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-pcs_blue" />
+              <Users className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.users_icon")} />
               2. User Accounts and Responsibilities
             </CardTitle>
           </CardHeader>
@@ -109,7 +109,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BookOpen className="w-5 h-5 text-pcs_blue" />
+              <BookOpen className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.book_open_icon")} />
               3. Program Participation
             </CardTitle>
           </CardHeader>
@@ -146,7 +146,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-pcs_blue" />
+              <Shield className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.shield_icon")} />
               4. Content and Intellectual Property
             </CardTitle>
           </CardHeader>
@@ -178,7 +178,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-pcs_blue" />
+              <Shield className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.shield_icon")} />
               5. Privacy and Data Protection
             </CardTitle>
           </CardHeader>
@@ -199,7 +199,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-coral" />
+              <AlertCircle className="w-5 h-5 text-coral" aria-label={t("accessibility.alert_circle_icon")} />
               6. Termination and Suspension
             </CardTitle>
           </CardHeader>
@@ -223,7 +223,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-yellow" />
+              <AlertCircle className="w-5 h-5 text-yellow" aria-label={t("accessibility.alert_circle_icon")} />
               7. Disclaimers and Limitations of Liability
             </CardTitle>
           </CardHeader>
@@ -246,7 +246,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5 text-pcs_blue" />
+              <FileText className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.file_text_icon")} />
               8. Changes to These Terms
             </CardTitle>
           </CardHeader>
@@ -261,7 +261,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Shield className="w-5 h-5 text-pcs_blue" />
+              <Shield className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.shield_icon")} />
               9. Governing Law and Disputes
             </CardTitle>
           </CardHeader>
@@ -276,7 +276,7 @@ export default function TermsPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="w-5 h-5 text-pcs_blue" />
+              <Users className="w-5 h-5 text-pcs_blue" aria-label={t("accessibility.users_icon")} />
               10. Contact Information
             </CardTitle>
           </CardHeader>
@@ -302,10 +302,10 @@ export default function TermsPage() {
         {/* Acknowledgment */}
         <div className="bg-ocean-blue/10 border-l-4 border-ocean-blue p-6 rounded-r-lg mb-12">
           <p className="text-gray-800 leading-relaxed">
-            <strong>By using the Plastic Clever Schools platform, you acknowledge that you have read, understood, and agree to be bound by these Terms and Conditions.</strong>
+            <strong>{t('terms.acknowledgment')}</strong>
           </p>
           <p className="text-gray-700 mt-4 text-sm">
-            Thank you for being part of our mission to reduce single-use plastic in schools worldwide! 🌍
+            {t('terms.acknowledgment_message')}
           </p>
         </div>
       </div>

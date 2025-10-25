@@ -289,4 +289,13 @@
     "baseline_min": "Baseline hoeveelheid moet minimaal 1 zijn",
     "target_min": "Doel hoeveelheid moet minimaal 0 zijn"
   }
+  },
+  "accessibility": {
+    "dismiss_notification": "Dismiss notification"
+  }
+  },
+  "units": {
+    "kg": "kg",
+    "liters": "liters"
+  }
 }

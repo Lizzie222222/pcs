@@ -289,4 +289,13 @@
     "baseline_min": "基线数量必须至少为1",
     "target_min": "目标数量必须至少为0"
   }
+  },
+  "accessibility": {
+    "dismiss_notification": "Dismiss notification"
+  }
+  },
+  "units": {
+    "kg": "kg",
+    "liters": "liters"
+  }
 }
