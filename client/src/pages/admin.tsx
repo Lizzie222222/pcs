@@ -73,6 +73,8 @@ import {
   UserPlus,
   MoreVertical,
   Shield,
+  ShieldCheck,
+  ShieldAlert,
   Info,
   Copy,
   Table as TableIcon,
@@ -152,6 +154,13 @@ interface PendingEvidence {
   submittedBy: string;
   files: any[];
   videoLinks: string | null;
+  school?: {
+    id: string;
+    name: string;
+    country: string;
+    photoConsentStatus?: 'pending' | 'approved' | 'rejected' | null;
+    photoConsentDocumentUrl?: string | null;
+  };
 }
 
 interface SchoolData {
@@ -3689,6 +3698,25 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                                 Public
                               </Badge>
                             )}
+                            {/* Photo Consent Permission Badge */}
+                            {evidence.school?.photoConsentStatus === 'approved' && (
+                              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
+                                <ShieldCheck className="h-3 w-3 mr-1" />
+                                Photo Approved
+                              </Badge>
+                            )}
+                            {evidence.school?.photoConsentStatus === 'pending' && (
+                              <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
+                                <ShieldAlert className="h-3 w-3 mr-1" />
+                                Photo Pending
+                              </Badge>
+                            )}
+                            {(!evidence.school?.photoConsentStatus || evidence.school?.photoConsentStatus === 'rejected') && (
+                              <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">
+                                <Shield className="h-3 w-3 mr-1" />
+                                No Photo Consent
+                              </Badge>
+                            )}
                             {(() => {
                               const submittedDate = new Date(evidence.submittedAt);
                               const now = new Date();
@@ -3741,14 +3769,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           >
                             <XCircle className="h-4 w-4 mr-1" />
                             Reject
-                          </Button>
-                          <Button 
-                            size="sm" 
-                            className="bg-pcs_blue hover:bg-pcs_blue/90"
-                            data-testid={`button-feature-${evidence.id}`}
-                          >
-                            <Star className="h-4 w-4 mr-1" />
-                            Feature
                           </Button>
                         </div>
                       </div>
