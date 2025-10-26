@@ -45,7 +45,7 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
     }
   }, [customImages.length]);
 
-  const handleImageUpload = async () => {
+  const handleImageUpload = async (file: any) => {
     try {
       const response = await fetch('/api/case-studies/upload', {
         method: 'POST',
@@ -56,6 +56,9 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
       return {
         method: 'PUT' as const,
         url: data.uploadURL,
+        headers: {
+          'Content-Type': file.type || 'image/jpeg',
+        },
       };
     } catch (error) {
       toast({

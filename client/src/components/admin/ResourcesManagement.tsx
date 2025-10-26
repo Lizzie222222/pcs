@@ -106,7 +106,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
     });
   };
 
-  const handleGetUploadParameters = async () => {
+  const handleGetUploadParameters = async (file: any) => {
     try {
       const response = await fetch('/api/objects/upload', {
         method: 'POST',
@@ -121,6 +121,9 @@ function ResourceForm({ resource, onClose, onSuccess }: {
       return {
         method: 'PUT' as const,
         url: data.uploadURL,
+        headers: {
+          'Content-Type': file.type || 'application/octet-stream',
+        },
       };
     } catch (error) {
       toast({

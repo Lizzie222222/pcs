@@ -18,7 +18,7 @@ export function BeforeAfterBuilder({ form }: BeforeAfterBuilderProps) {
   const beforeImage = form.watch("beforeImage");
   const afterImage = form.watch("afterImage");
 
-  const handleImageUpload = async () => {
+  const handleImageUpload = async (file: any) => {
     try {
       const response = await fetch('/api/case-studies/upload', {
         method: 'POST',
@@ -29,6 +29,9 @@ export function BeforeAfterBuilder({ form }: BeforeAfterBuilderProps) {
       return {
         method: 'PUT' as const,
         url: data.uploadURL,
+        headers: {
+          'Content-Type': file.type || 'image/jpeg',
+        },
       };
     } catch (error) {
       toast({

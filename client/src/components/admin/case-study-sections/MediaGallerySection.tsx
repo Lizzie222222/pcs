@@ -45,7 +45,7 @@ export function MediaGallerySection({ form, headingLevel = 3 }: MediaGallerySect
     name: "videos",
   });
 
-  const handleImageUpload = async () => {
+  const handleImageUpload = async (file: any) => {
     try {
       const response = await fetch('/api/case-studies/upload', {
         method: 'POST',
@@ -56,6 +56,9 @@ export function MediaGallerySection({ form, headingLevel = 3 }: MediaGallerySect
       return {
         method: 'PUT' as const,
         url: data.uploadURL,
+        headers: {
+          'Content-Type': file.type || 'image/jpeg',
+        },
       };
     } catch (error) {
       toast({
