@@ -193,5 +193,24 @@
     "referral_placeholder": "Sélectionnez une option",
     "button_back": "Retour",
     "button_next_student_info": "Suivant : Informations sur les élèves"
+  },
+  "student_info": {
+    "section_title": "À propos de vos élèves",
+    "student_count_label": "Nombre d'élèves *",
+    "student_count_placeholder": "par ex., 500",
+    "student_count_description": "Nombre total d'élèves dans votre école",
+    "student_count_min": "Veuillez saisir au moins 1 élève",
+    "student_count_max": "Maximum 10 000 élèves autorisés",
+    "age_ranges_label": "Tranches d'âge / Niveaux scolaires *",
+    "age_ranges_description": "Sélectionnez tout ce qui s'applique à votre école",
+    "age_ranges_min": "Veuillez sélectionner au moins une tranche d'âge",
+    "button_back": "Retour",
+    "button_submit": "Terminer l'inscription",
+    "button_submitting": "Création de l'école..."
+  },
+  "registration_steps": {
+    "step_school": "Informations de l'école",
+    "step_teacher": "Informations de l'enseignant",
+    "step_student": "Informations sur les élèves"
   }
 }

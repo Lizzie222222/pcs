@@ -193,5 +193,24 @@
     "referral_placeholder": "Выберите вариант",
     "button_back": "Назад",
     "button_next_student_info": "Далее: Информация об Ученике"
+  },
+  "student_info": {
+    "section_title": "О Ваших Учениках",
+    "student_count_label": "Количество Учащихся *",
+    "student_count_placeholder": "например, 500",
+    "student_count_description": "Общее количество учащихся в вашей школе",
+    "student_count_min": "Пожалуйста, введите не менее 1 учащегося",
+    "student_count_max": "Допускается максимум 10 000 учащихся",
+    "age_ranges_label": "Возрастные Группы / Классы *",
+    "age_ranges_description": "Выберите все, что относится к вашей школе",
+    "age_ranges_min": "Пожалуйста, выберите хотя бы одну возрастную группу",
+    "button_back": "Назад",
+    "button_submit": "Завершить Регистрацию",
+    "button_submitting": "Создание Школы..."
+  },
+  "registration_steps": {
+    "step_school": "Информация о Школе",
+    "step_teacher": "Информация об Учителе",
+    "step_student": "Информация об Ученике"
   }
 }

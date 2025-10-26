@@ -193,5 +193,24 @@
     "referral_placeholder": "옵션 선택",
     "button_back": "뒤로",
     "button_next_student_info": "다음: 학생 정보"
+  },
+  "student_info": {
+    "section_title": "학생에 대한 정보",
+    "student_count_label": "학생 수 *",
+    "student_count_placeholder": "예: 500",
+    "student_count_description": "학교의 총 학생 수",
+    "student_count_min": "최소 1명의 학생을 입력하세요",
+    "student_count_max": "최대 10,000명의 학생이 허용됩니다",
+    "age_ranges_label": "연령대 / 학년 그룹 *",
+    "age_ranges_description": "학교에 해당하는 모든 항목을 선택하세요",
+    "age_ranges_min": "최소 한 개의 연령대를 선택하세요",
+    "button_back": "뒤로",
+    "button_submit": "등록 완료",
+    "button_submitting": "학교 생성 중..."
+  },
+  "registration_steps": {
+    "step_school": "학교 정보",
+    "step_teacher": "교사 정보",
+    "step_student": "학생 정보"
   }
 }

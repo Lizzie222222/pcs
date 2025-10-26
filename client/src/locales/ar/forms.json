@@ -193,5 +193,24 @@
     "referral_placeholder": "اختر خيارًا",
     "button_back": "رجوع",
     "button_next_student_info": "التالي: معلومات الطالب"
+  },
+  "student_info": {
+    "section_title": "عن طلابك",
+    "student_count_label": "عدد الطلاب *",
+    "student_count_placeholder": "مثال: 500",
+    "student_count_description": "إجمالي عدد الطلاب في مدرستك",
+    "student_count_min": "يرجى إدخال طالب واحد على الأقل",
+    "student_count_max": "الحد الأقصى 10,000 طالب مسموح",
+    "age_ranges_label": "الفئات العمرية / المجموعات السنوية *",
+    "age_ranges_description": "حدد كل ما ينطبق على مدرستك",
+    "age_ranges_min": "يرجى تحديد فئة عمرية واحدة على الأقل",
+    "button_back": "رجوع",
+    "button_submit": "إكمال التسجيل",
+    "button_submitting": "إنشاء المدرسة..."
+  },
+  "registration_steps": {
+    "step_school": "معلومات المدرسة",
+    "step_teacher": "معلومات المعلم",
+    "step_student": "معلومات الطالب"
   }
 }

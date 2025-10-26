@@ -193,5 +193,24 @@
     "referral_placeholder": "选择一个选项",
     "button_back": "返回",
     "button_next_student_info": "下一步：学生信息"
+  },
+  "student_info": {
+    "section_title": "关于您的学生",
+    "student_count_label": "学生人数 *",
+    "student_count_placeholder": "例如：500",
+    "student_count_description": "您学校的学生总数",
+    "student_count_min": "请至少输入1名学生",
+    "student_count_max": "最多允许10,000名学生",
+    "age_ranges_label": "年龄范围 / 年级组 *",
+    "age_ranges_description": "选择适用于您学校的所有项目",
+    "age_ranges_min": "请至少选择一个年龄范围",
+    "button_back": "返回",
+    "button_submit": "完成注册",
+    "button_submitting": "正在创建学校..."
+  },
+  "registration_steps": {
+    "step_school": "学校信息",
+    "step_teacher": "教师信息",
+    "step_student": "学生信息"
   }
 }

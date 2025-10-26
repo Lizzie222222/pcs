@@ -37,9 +37,9 @@ export default function Step3StudentInfo({
 
   const schema = z.object({
     studentCount: z.number()
-      .min(1, 'Please enter at least 1 student')
-      .max(10000, 'Maximum 10,000 students allowed'),
-    ageRanges: z.array(z.string()).min(1, 'Please select at least one age range'),
+      .min(1, t('forms:student_info.student_count_min'))
+      .max(10000, t('forms:student_info.student_count_max')),
+    ageRanges: z.array(z.string()).min(1, t('forms:student_info.age_ranges_min')),
     showOnMap: z.boolean().default(false),
     gdprConsent: z.boolean().refine(val => val === true, {
       message: t('forms:school_registration.gdpr_consent_required'),
@@ -69,7 +69,7 @@ export default function Step3StudentInfo({
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" data-testid="form-step3-student-info">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-navy" data-testid="text-step3-title">
-            About Your Students
+            {t('forms:student_info.section_title')}
           </h3>
 
           {/* Number of Students */}
@@ -78,20 +78,20 @@ export default function Step3StudentInfo({
             name="studentCount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Number of Students *</FormLabel>
+                <FormLabel>{t('forms:student_info.student_count_label')}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
                     min="1"
                     max="10000"
-                    placeholder="e.g., 500"
+                    placeholder={t('forms:student_info.student_count_placeholder')}
                     {...field}
                     onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
                     data-testid="input-student-count"
                   />
                 </FormControl>
                 <FormDescription>
-                  Total number of students at your school
+                  {t('forms:student_info.student_count_description')}
                 </FormDescription>
                 <FormMessage data-testid="error-student-count" />
               </FormItem>
@@ -104,9 +104,9 @@ export default function Step3StudentInfo({
             name="ageRanges"
             render={() => (
               <FormItem>
-                <FormLabel>Age Ranges / Year Groups *</FormLabel>
+                <FormLabel>{t('forms:student_info.age_ranges_label')}</FormLabel>
                 <FormDescription>
-                  Select all that apply to your school
+                  {t('forms:student_info.age_ranges_description')}
                 </FormDescription>
                 <div className="space-y-2 mt-2">
                   {countryConfig.ageRangeOptions.map((option) => (
@@ -231,7 +231,7 @@ export default function Step3StudentInfo({
             data-testid="button-back-step3"
             className="flex-1"
           >
-            Back
+            {t('forms:student_info.button_back')}
           </Button>
           <Button
             type="submit"
@@ -242,10 +242,10 @@ export default function Step3StudentInfo({
             {isSubmitting ? (
               <>
                 <LoadingSpinner size="sm" className="mr-2" />
-                Creating School...
+                {t('forms:student_info.button_submitting')}
               </>
             ) : (
-              'Complete Registration'
+              t('forms:student_info.button_submit')
             )}
           </Button>
         </div>

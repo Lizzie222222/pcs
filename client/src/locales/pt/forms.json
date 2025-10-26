@@ -193,5 +193,24 @@
     "referral_placeholder": "Selecione uma opção",
     "button_back": "Voltar",
     "button_next_student_info": "Próximo: Informações do Aluno"
+  },
+  "student_info": {
+    "section_title": "Sobre os Seus Alunos",
+    "student_count_label": "Número de Alunos *",
+    "student_count_placeholder": "por exemplo, 500",
+    "student_count_description": "Número total de alunos na sua escola",
+    "student_count_min": "Por favor, insira pelo menos 1 aluno",
+    "student_count_max": "Máximo de 10.000 alunos permitido",
+    "age_ranges_label": "Faixas Etárias / Anos Escolares *",
+    "age_ranges_description": "Selecione todos os que se aplicam à sua escola",
+    "age_ranges_min": "Por favor, selecione pelo menos uma faixa etária",
+    "button_back": "Voltar",
+    "button_submit": "Concluir Registo",
+    "button_submitting": "A Criar Escola..."
+  },
+  "registration_steps": {
+    "step_school": "Informações da Escola",
+    "step_teacher": "Informações do Professor",
+    "step_student": "Informações do Aluno"
   }
 }

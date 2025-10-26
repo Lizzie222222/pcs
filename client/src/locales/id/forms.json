@@ -193,5 +193,24 @@
     "referral_placeholder": "Pilih opsi",
     "button_back": "Kembali",
     "button_next_student_info": "Selanjutnya: Info Siswa"
+  },
+  "student_info": {
+    "section_title": "Tentang Siswa Anda",
+    "student_count_label": "Jumlah Siswa *",
+    "student_count_placeholder": "mis., 500",
+    "student_count_description": "Jumlah total siswa di sekolah Anda",
+    "student_count_min": "Harap masukkan minimal 1 siswa",
+    "student_count_max": "Maksimal 10.000 siswa diperbolehkan",
+    "age_ranges_label": "Rentang Usia / Tingkat Tahun *",
+    "age_ranges_description": "Pilih semua yang berlaku untuk sekolah Anda",
+    "age_ranges_min": "Harap pilih setidaknya satu rentang usia",
+    "button_back": "Kembali",
+    "button_submit": "Selesaikan Pendaftaran",
+    "button_submitting": "Membuat Sekolah..."
+  },
+  "registration_steps": {
+    "step_school": "Info Sekolah",
+    "step_teacher": "Info Guru",
+    "step_student": "Info Siswa"
   }
 }

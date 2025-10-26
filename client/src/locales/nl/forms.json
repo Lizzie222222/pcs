@@ -193,5 +193,24 @@
     "referral_placeholder": "Selecteer een optie",
     "button_back": "Terug",
     "button_next_student_info": "Volgende: Leerlinginformatie"
+  },
+  "student_info": {
+    "section_title": "Over Uw Leerlingen",
+    "student_count_label": "Aantal Leerlingen *",
+    "student_count_placeholder": "bijv. 500",
+    "student_count_description": "Totaal aantal leerlingen op uw school",
+    "student_count_min": "Voer minimaal 1 leerling in",
+    "student_count_max": "Maximaal 10.000 leerlingen toegestaan",
+    "age_ranges_label": "Leeftijdsgroepen / Jaargroepen *",
+    "age_ranges_description": "Selecteer alles wat van toepassing is op uw school",
+    "age_ranges_min": "Selecteer minimaal één leeftijdsgroep",
+    "button_back": "Terug",
+    "button_submit": "Registratie Voltooien",
+    "button_submitting": "School Aanmaken..."
+  },
+  "registration_steps": {
+    "step_school": "Schoolinformatie",
+    "step_teacher": "Docentinformatie",
+    "step_student": "Leerlinginformatie"
   }
 }

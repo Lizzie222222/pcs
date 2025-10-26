@@ -110,6 +110,25 @@
     "button_back": "Atrás",
     "button_next_student_info": "Siguiente: Información del Estudiante"
   },
+  "student_info": {
+    "section_title": "Acerca de sus Estudiantes",
+    "student_count_label": "Número de Estudiantes *",
+    "student_count_placeholder": "por ejemplo, 500",
+    "student_count_description": "Número total de estudiantes en su escuela",
+    "student_count_min": "Por favor, ingrese al menos 1 estudiante",
+    "student_count_max": "Máximo 10,000 estudiantes permitidos",
+    "age_ranges_label": "Rangos de Edad / Grupos de Año *",
+    "age_ranges_description": "Seleccione todos los que apliquen a su escuela",
+    "age_ranges_min": "Por favor, seleccione al menos un rango de edad",
+    "button_back": "Atrás",
+    "button_submit": "Completar Registro",
+    "button_submitting": "Creando Escuela..."
+  },
+  "registration_steps": {
+    "step_school": "Información de la Escuela",
+    "step_teacher": "Información del Maestro",
+    "step_student": "Información del Estudiante"
+  },
   "evidence_submission": {
     "title": "Enviar Evidencia",
     "subtitle": "Comparte tu progreso y actividades",

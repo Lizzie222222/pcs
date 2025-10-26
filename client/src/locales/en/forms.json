@@ -109,6 +109,25 @@
     "button_back": "Back",
     "button_next_student_info": "Next: Student Info"
   },
+  "student_info": {
+    "section_title": "About Your Students",
+    "student_count_label": "Number of Students *",
+    "student_count_placeholder": "e.g., 500",
+    "student_count_description": "Total number of students at your school",
+    "student_count_min": "Please enter at least 1 student",
+    "student_count_max": "Maximum 10,000 students allowed",
+    "age_ranges_label": "Age Ranges / Year Groups *",
+    "age_ranges_description": "Select all that apply to your school",
+    "age_ranges_min": "Please select at least one age range",
+    "button_back": "Back",
+    "button_submit": "Complete Registration",
+    "button_submitting": "Creating School..."
+  },
+  "registration_steps": {
+    "step_school": "School Info",
+    "step_teacher": "Teacher Info",
+    "step_student": "Student Info"
+  },
   "evidence_submission": {
     "title": "Submit Evidence",
     "subtitle": "Share your progress and activities",

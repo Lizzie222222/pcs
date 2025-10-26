@@ -26,9 +26,9 @@ export default function MultiStepSchoolRegistration({ onClose }: MultiStepSchool
   const [step3Data, setStep3Data] = useState<Step3Data | null>(null);
 
   const steps = [
-    { number: 1, title: 'School Info' },
-    { number: 2, title: 'Teacher Info' },
-    { number: 3, title: 'Student Info' },
+    { number: 1, title: t('forms:registration_steps.step_school') },
+    { number: 2, title: t('forms:registration_steps.step_teacher') },
+    { number: 3, title: t('forms:registration_steps.step_student') },
   ];
 
   const handleStep1Next = (data: Step1Data) => {

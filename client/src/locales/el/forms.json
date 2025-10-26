@@ -193,5 +193,24 @@
     "referral_placeholder": "Επιλέξτε μια επιλογή",
     "button_back": "Πίσω",
     "button_next_student_info": "Επόμενο: Πληροφορίες Μαθητών"
+  },
+  "student_info": {
+    "section_title": "Σχετικά με τους Μαθητές σας",
+    "student_count_label": "Αριθμός Μαθητών *",
+    "student_count_placeholder": "π.χ., 500",
+    "student_count_description": "Συνολικός αριθμός μαθητών στο σχολείο σας",
+    "student_count_min": "Παρακαλώ εισάγετε τουλάχιστον 1 μαθητή",
+    "student_count_max": "Επιτρέπονται έως 10.000 μαθητές",
+    "age_ranges_label": "Ηλικιακές Ομάδες / Τάξεις *",
+    "age_ranges_description": "Επιλέξτε όλα όσα ισχύουν για το σχολείο σας",
+    "age_ranges_min": "Παρακαλώ επιλέξτε τουλάχιστον μία ηλικιακή ομάδα",
+    "button_back": "Πίσω",
+    "button_submit": "Ολοκλήρωση Εγγραφής",
+    "button_submitting": "Δημιουργία Σχολείου..."
+  },
+  "registration_steps": {
+    "step_school": "Πληροφορίες Σχολείου",
+    "step_teacher": "Πληροφορίες Εκπαιδευτικού",
+    "step_student": "Πληροφορίες Μαθητών"
   }
 }

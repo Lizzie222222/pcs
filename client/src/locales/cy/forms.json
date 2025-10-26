@@ -193,5 +193,24 @@
     "referral_placeholder": "Dewiswch opsiwn",
     "button_back": "Yn Ôl",
     "button_next_student_info": "Nesaf: Gwybodaeth Disgyblion"
+  },
+  "student_info": {
+    "section_title": "Ynghylch eich Disgyblion",
+    "student_count_label": "Nifer y Disgyblion *",
+    "student_count_placeholder": "e.e., 500",
+    "student_count_description": "Cyfanswm nifer y disgyblion yn eich ysgol",
+    "student_count_min": "Rhowch o leiaf 1 disgybl",
+    "student_count_max": "Uchafswm o 10,000 o ddisgyblion yn cael eu caniatáu",
+    "age_ranges_label": "Ystodau Oedran / Grwpiau Blwyddyn *",
+    "age_ranges_description": "Dewiswch bopeth sy'n berthnasol i'ch ysgol",
+    "age_ranges_min": "Dewiswch o leiaf un ystod oedran",
+    "button_back": "Yn Ôl",
+    "button_submit": "Cwblhau Cofrestriad",
+    "button_submitting": "Yn Creu Ysgol..."
+  },
+  "registration_steps": {
+    "step_school": "Gwybodaeth yr Ysgol",
+    "step_teacher": "Gwybodaeth yr Athro",
+    "step_student": "Gwybodaeth Disgyblion"
   }
 }
