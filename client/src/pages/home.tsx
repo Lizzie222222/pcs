@@ -76,8 +76,10 @@ import {
   Plus,
   X,
   Download,
-  FileText
+  FileText,
+  Video
 } from "lucide-react";
+import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -92,6 +94,33 @@ const EventNotificationBanner = lazy(() => import("@/components/dashboard/EventN
 const ResourceNotificationBanner = lazy(() => import("@/components/dashboard/ResourceNotificationBanner"));
 const PhotoConsentBanner = lazy(() => import("@/components/PhotoConsentBanner").then(module => ({ default: module.PhotoConsentBanner })));
 const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
+
+// Helper function to convert GCS URLs to proxy URLs for CORS support
+function getProxyUrl(url: string | null): string {
+  if (!url) return '';
+  try {
+    const urlObj = new URL(url);
+    const pathname = decodeURIComponent(urlObj.pathname);
+    
+    const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
+    if (privateUploadsMatch) {
+      return `/objects/uploads/${privateUploadsMatch[1]}`;
+    }
+    
+    const publicMatch = pathname.match(/\/public\/(.+)$/);
+    if (publicMatch) {
+      return `/objects/public/${publicMatch[1]}`;
+    }
+    
+    if (url.startsWith('/objects/')) {
+      return url;
+    }
+    
+    return url;
+  } catch {
+    return url;
+  }
+}
 
 interface Certificate {
   id: string;
@@ -160,6 +189,59 @@ interface DashboardData {
     act: { total: number; approved: number };
   };
 }
+
+// Component for resource thumbnails
+const ResourceThumbnail = ({ resource }: { resource: Resource }) => {
+  const fileType = resource.fileType?.toLowerCase() || '';
+  
+  // Image files
+  if (fileType.includes('image')) {
+    const imageProxyUrl = getProxyUrl(resource.fileUrl);
+    return (
+      <div className="w-full h-40 bg-gray-100 relative overflow-hidden rounded-t-lg">
+        <img 
+          src={imageProxyUrl} 
+          alt={resource.title}
+          crossOrigin="anonymous"
+          className="w-full h-full object-cover"
+          onError={(e) => {
+            e.currentTarget.style.display = 'none';
+            const parent = e.currentTarget.parentElement;
+            if (parent) {
+              parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-pcs_blue/10 to-teal/10"><svg class="h-12 w-12 text-pcs_blue/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>';
+            }
+          }}
+        />
+      </div>
+    );
+  }
+  
+  // PDF files
+  if (fileType.includes('pdf')) {
+    const pdfProxyUrl = getProxyUrl(resource.fileUrl);
+    return (
+      <div className="w-full h-40 bg-gray-100 flex items-center justify-center rounded-t-lg overflow-hidden">
+        <PDFThumbnail url={pdfProxyUrl} className="w-full h-full" />
+      </div>
+    );
+  }
+  
+  // Video files
+  if (fileType.includes('video')) {
+    return (
+      <div className="w-full h-40 bg-gradient-to-br from-coral/10 to-orange/10 flex items-center justify-center rounded-t-lg">
+        <Video className="h-12 w-12 text-coral/30" />
+      </div>
+    );
+  }
+  
+  // Other file types
+  return (
+    <div className="w-full h-40 bg-gradient-to-br from-pcs_blue/10 to-teal/10 flex items-center justify-center rounded-t-lg">
+      <FileText className="h-12 w-12 text-pcs_blue/30" />
+    </div>
+  );
+};
 
 export default function Home() {
   const { t } = useTranslation('dashboard');
@@ -1328,116 +1410,6 @@ export default function Home() {
         {/* Resources Tab Content */}
         {activeTab === 'resources' && (
           <div className="space-y-8">
-            {/* Quick Access Resources */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              <Card className="shadow-lg border-0 hover:shadow-2xl transition-all duration-300 cursor-pointer hover:-translate-y-2 group h-full" onClick={() => window.location.href = '/resources'} data-testid="card-browse-resources">
-                <CardContent className="p-8 h-full flex flex-col">
-                  <div className="w-16 h-16 bg-gradient-to-br from-pcs_blue to-teal rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                    <BookOpen className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-pcs_blue transition-colors">{t('resources.browse_title')}</h3>
-                  <p className="text-sm text-gray-600 mb-6 flex-grow">{t('resources.browse_description')}</p>
-                  <Button className="w-full bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white shadow-lg font-semibold">
-                    {t('actions.view_resources')}
-                  </Button>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-lg border-0 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group h-full">
-                <CardContent className="p-8 h-full flex flex-col">
-                  <div className="w-16 h-16 bg-gradient-to-br from-teal to-green-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                    <Lightbulb className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-teal transition-colors">{t('resources.evidence_guides_title')}</h3>
-                  <p className="text-sm text-gray-600 mb-6">{t('resources.evidence_guides_description')}</p>
-                  <ul className="space-y-3 text-sm flex-grow">
-                    <li className="flex items-center gap-3 text-gray-700 font-medium">
-                      <div className="w-2 h-2 bg-pcs_blue rounded-full"></div>
-                      {t('resources.photo_video_guidelines')}
-                    </li>
-                    <li className="flex items-center gap-3 text-gray-700 font-medium">
-                      <div className="w-2 h-2 bg-pcs_blue rounded-full"></div>
-                      {t('resources.documentation_tips')}
-                    </li>
-                    <li className="flex items-center gap-3 text-gray-700 font-medium">
-                      <div className="w-2 h-2 bg-pcs_blue rounded-full"></div>
-                      {t('resources.best_practices')}
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-
-              <Card className="shadow-lg border-0 hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 group h-full">
-                <CardContent className="p-8 h-full flex flex-col">
-                  <div className="w-16 h-16 bg-gradient-to-br from-coral to-red-400 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                    <Award className="h-8 w-8 text-white" />
-                  </div>
-                  <h3 className="text-xl font-bold text-navy mb-3 group-hover:text-coral transition-colors">{t('resources.program_stages_title')}</h3>
-                  <p className="text-sm text-gray-600 mb-6">{t('resources.program_stages_description')}</p>
-                  <ul className="space-y-3 text-sm flex-grow">
-                    <li className="flex items-center gap-3 text-gray-700 font-medium">
-                      <div className="w-2 h-2 bg-teal rounded-full"></div>
-                      {t('stages.inspire_brief')}
-                    </li>
-                    <li className="flex items-center gap-3 text-gray-700 font-medium">
-                      <div className="w-2 h-2 bg-yellow rounded-full"></div>
-                      {t('stages.investigate_brief')}
-                    </li>
-                    <li className="flex items-center gap-3 text-gray-700 font-medium">
-                      <div className="w-2 h-2 bg-coral rounded-full"></div>
-                      {t('stages.act_brief')}
-                    </li>
-                  </ul>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Helpful Tips */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <AlertCircle className="h-5 w-5 text-pcs_blue" />
-                  {t('tips.title')}
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-navy mb-2">{t('tips.photo_guidelines_title')}</h4>
-                    <ul className="space-y-1 text-sm text-gray-700">
-                      <li>• {t('tips.photo_clear')}</li>
-                      <li>• {t('tips.photo_context')}</li>
-                      <li>• {t('tips.photo_consent')}</li>
-                    </ul>
-                  </div>
-                  <div className="bg-green-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-navy mb-2">{t('tips.documentation_title')}</h4>
-                    <ul className="space-y-1 text-sm text-gray-700">
-                      <li>• {t('tips.doc_detailed')}</li>
-                      <li>• {t('tips.doc_impact')}</li>
-                      <li>• {t('tips.doc_reflections')}</li>
-                    </ul>
-                  </div>
-                  <div className="bg-purple-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-navy mb-2">{t('tips.video_best_practices_title')}</h4>
-                    <ul className="space-y-1 text-sm text-gray-700">
-                      <li>• {t('tips.video_length')}</li>
-                      <li>• {t('tips.video_stable')}</li>
-                      <li>• {t('tips.video_captions')}</li>
-                    </ul>
-                  </div>
-                  <div className="bg-yellow-50 p-4 rounded-lg">
-                    <h4 className="font-semibold text-navy mb-2">{t('tips.quick_wins_title')}</h4>
-                    <ul className="space-y-1 text-sm text-gray-700">
-                      <li>• {t('tips.quick_submit')}</li>
-                      <li>• {t('tips.quick_respond')}</li>
-                      <li>• {t('tips.quick_collaborate')}</li>
-                    </ul>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
             {/* Recommended Resources for Your Stage */}
             <Card>
               <CardHeader>
@@ -1502,24 +1474,23 @@ export default function Home() {
                       return (
                         <Card 
                           key={resource.id} 
-                          className={`group hover:shadow-xl transition-all duration-300 border-2 ${
+                          className={`group hover:shadow-xl transition-all duration-300 border-2 overflow-hidden ${
                             isStageMatch ? 'border-pcs_blue/30 bg-blue-50/30' : 'border-gray-100'
                           }`}
                           data-testid={`card-resource-${resource.id}`}
                         >
-                          <CardContent className="p-6">
-                            <div className="flex items-start justify-between mb-3">
-                              <div className="flex-1">
-                                <h4 className="font-bold text-navy mb-2 line-clamp-2 group-hover:text-pcs_blue transition-colors">
-                                  {resource.title}
-                                </h4>
-                                {resource.description && (
-                                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">
-                                    {resource.description}
-                                  </p>
-                                )}
-                              </div>
-                            </div>
+                          {/* Thumbnail */}
+                          <ResourceThumbnail resource={resource} />
+                          
+                          <CardContent className="p-4">
+                            <h4 className="font-bold text-navy mb-2 line-clamp-2 group-hover:text-pcs_blue transition-colors">
+                              {resource.title}
+                            </h4>
+                            {resource.description && (
+                              <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                                {resource.description}
+                              </p>
+                            )}
                             
                             <div className="flex flex-wrap gap-2 mb-4">
                               <Badge className={`${
