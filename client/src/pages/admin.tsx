@@ -93,7 +93,8 @@ import {
   Bell,
   ExternalLink,
   Languages,
-  Sparkles
+  Sparkles,
+  AlertTriangle
 } from "lucide-react";
 import {
   BarChart,

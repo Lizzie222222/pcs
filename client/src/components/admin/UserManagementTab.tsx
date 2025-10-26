@@ -128,6 +128,7 @@ export default function UserManagementTab() {
       setInviteAdminDialogOpen(false);
       setInviteAdminEmail('');
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/invitations'] });
     },
     onError: (error: any) => {
       toast({
@@ -791,7 +792,7 @@ export default function UserManagementTab() {
                   <EmptyState
                     icon={UserPlus}
                     title="No Pending Invitations"
-                    message="There are no pending admin invitations at this time."
+                    description="There are no pending admin invitations at this time."
                   />
                 ) : (
                   <div className="overflow-x-auto">
