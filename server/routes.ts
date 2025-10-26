@@ -1931,7 +1931,7 @@ Return JSON with:
       
       // Get school and inviter details
       const school = await storage.getSchool(invitation.schoolId);
-      const inviter = await storage.getUser(invitation.invitedBy);
+      const inviter = invitation.invitedBy ? await storage.getUser(invitation.invitedBy) : null;
       
       console.log(`[Get Invitation] Returning invitation details for ${invitation.email}`);
       
@@ -6554,7 +6554,28 @@ Return JSON with:
       }
       
       // Get inviter details
-      const inviter = await storage.getUser(invitation.invitedBy);
+      const inviter = invitation.invitedBy ? await storage.getUser(invitation.invitedBy) : null;
+      
+      // Check if user with this email already exists and what auth methods they have
+      const existingUser = await storage.findUserByEmail(invitation.email);
+      let authMethod: 'none' | 'password' | 'google' | 'both' = 'none';
+      
+      if (existingUser) {
+        const hasPassword = !!existingUser.passwordHash;
+        const hasGoogle = !!existingUser.googleId;
+        
+        if (hasPassword && hasGoogle) {
+          authMethod = 'both';
+        } else if (hasPassword) {
+          authMethod = 'password';
+        } else if (hasGoogle) {
+          authMethod = 'google';
+        }
+        
+        console.log(`[Get Admin Invitation] User exists with auth method: ${authMethod}`);
+      } else {
+        console.log(`[Get Admin Invitation] No existing user found, new account will be created`);
+      }
       
       console.log(`[Get Admin Invitation] Returning invitation details for ${invitation.email}`);
       
@@ -6563,6 +6584,8 @@ Return JSON with:
         inviterName: inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : 'An administrator',
         expiresAt: invitation.expiresAt,
         status: invitation.status,
+        authMethod: authMethod,
+        hasExistingAccount: !!existingUser,
       });
     } catch (error) {
       console.error("[Get Admin Invitation] Error:", error);
@@ -8071,6 +8094,7 @@ Return JSON with:
         pagePublishedStatus: originalEvent.pagePublishedStatus || 'draft',
         accessType: originalEvent.accessType,
         publicSlug: publicSlug,
+        status: 'draft' as const,
         createdBy: req.user.id, // Set to current user
         
         // Copy multi-language fields
@@ -8506,8 +8530,11 @@ Return JSON with:
   });
 
   // Create event banner (admin)
-  app.post('/api/admin/banners', isAuthenticated, requireAdmin, async (req, res) => {
+  app.post('/api/admin/banners', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
+      if (!req.user?.id) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
       const newBanner = await storage.createEventBanner({
         ...req.body,
         createdBy: req.user.id,
@@ -9153,6 +9180,13 @@ Return JSON with:
         // For relationships, we can't validate foreign keys without context
         // So we only validate the structure
         validationResult = await importRelationships(parsed.data, dryRunContext);
+      }
+
+      if (!validationResult) {
+        return res.status(400).json({ 
+          success: false,
+          message: 'Invalid import type' 
+        });
       }
 
       // Sanitize for preview
