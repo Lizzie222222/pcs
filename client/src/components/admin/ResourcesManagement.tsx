@@ -169,10 +169,15 @@ function ResourceForm({ resource, onClose, onSuccess }: {
           throw new Error(errorData.message || 'Failed to set file permissions');
         }
 
+        // Extract the normalized object path from the ACL response
+        const aclData = await aclResponse.json();
+        const normalizedObjectPath = aclData.objectPath || fileUrl;
+
         // Update form data with file information
+        // Use the normalized object path (not the raw upload URL)
         setFormData(prev => ({
           ...prev,
-          fileUrl: fileUrl,
+          fileUrl: normalizedObjectPath,
           fileType: uploadedFile.type || '',
           fileSize: uploadedFile.size || 0,
         }));
