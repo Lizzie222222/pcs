@@ -443,6 +443,64 @@ export async function setupAuth(app: Express) {
     }
   });
 
+  // TEMPORARY: POST /api/auth/migrate-oauth-account - Add password to Google OAuth account
+  // This endpoint allows admins to add a password to their Google OAuth account
+  // before we remove Google OAuth support
+  app.post("/api/auth/migrate-oauth-account", isAuthenticated, isAdmin, async (req, res) => {
+    try {
+      const { password } = req.body;
+      
+      if (!password || typeof password !== 'string' || password.length < 8) {
+        return res.status(400).json({
+          success: false,
+          message: "Password must be at least 8 characters long"
+        });
+      }
+      
+      const userId = req.user!.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+      
+      // Check that user has Google OAuth (googleId) but no password
+      if (!user.googleId) {
+        return res.status(400).json({
+          success: false,
+          message: "This endpoint is only for Google OAuth accounts"
+        });
+      }
+      
+      if (user.passwordHash) {
+        return res.status(400).json({
+          success: false,
+          message: "This account already has a password"
+        });
+      }
+      
+      // Hash the password and update the user
+      const passwordHash = await storage.hashPassword(password);
+      await storage.updateUserPassword(userId, passwordHash);
+      
+      console.log(`[OAuth Migration] Added password to account ${user.email}`);
+      
+      res.json({
+        success: true,
+        message: "Password added successfully. You can now log in with email and password."
+      });
+    } catch (error) {
+      console.error('[OAuth Migration] Error:', error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to add password to account"
+      });
+    }
+  });
+
   // GET /api/auth/google - Initiate Google OAuth flow
   app.get("/api/auth/google", (req, res, next) => {
     // Handle returnTo parameter for secure redirects
