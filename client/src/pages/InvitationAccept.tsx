@@ -1,20 +1,32 @@
+import { useState } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient, apiRequest } from "@/lib/queryClient";
+import type { User } from "@shared/schema";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/ui/states";
 import { 
   CheckCircle, 
   XCircle, 
   Mail, 
   School, 
-  User, 
+  User as UserIcon, 
   AlertCircle,
-  LogIn
+  LogIn,
+  Eye,
+  EyeOff,
+  ArrowRight,
+  Globe
 } from "lucide-react";
+import { z } from "zod";
 
 interface InvitationDetails {
   email: string;
@@ -23,7 +35,39 @@ interface InvitationDetails {
   inviterName: string;
   expiresAt: string;
   status: string;
+  authMethod: 'none' | 'password';
+  hasExistingAccount: boolean;
 }
+
+const languages = [
+  { code: 'ar', nativeName: 'العربية' },
+  { code: 'zh', nativeName: '中文' },
+  { code: 'nl', nativeName: 'Nederlands' },
+  { code: 'en', nativeName: 'English' },
+  { code: 'fr', nativeName: 'Français' },
+  { code: 'de', nativeName: 'Deutsch' },
+  { code: 'el', nativeName: 'Ελληνικά' },
+  { code: 'id', nativeName: 'Bahasa Indonesia' },
+  { code: 'it', nativeName: 'Italiano' },
+  { code: 'ko', nativeName: '한국어' },
+  { code: 'pt', nativeName: 'Português' },
+  { code: 'ru', nativeName: 'Русский' },
+  { code: 'es', nativeName: 'Español' },
+  { code: 'cy', nativeName: 'Cymraeg' },
+];
+
+const registrationSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+  confirmPassword: z.string(),
+  preferredLanguage: z.string().min(1, "Please select a language"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+type RegistrationForm = z.infer<typeof registrationSchema>;
 
 export default function InvitationAccept() {
   const params = useParams();
@@ -31,12 +75,25 @@ export default function InvitationAccept() {
   const { user, isAuthenticated, isLoading: authLoading } = useAuth();
   const { toast } = useToast();
   const [, setLocation] = useLocation();
+  const [showPassword, setShowPassword] = useState(false);
 
   // Fetch invitation details (public endpoint, no auth required)
   const { data: invitation, isLoading: invitationLoading, error } = useQuery<InvitationDetails>({
     queryKey: ['/api/invitations', token],
     enabled: !!token,
     retry: false,
+  });
+
+  // Registration form for new users
+  const registrationForm = useForm<RegistrationForm>({
+    resolver: zodResolver(registrationSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      password: "",
+      confirmPassword: "",
+      preferredLanguage: "en",
+    },
   });
 
   // Accept invitation mutation
@@ -71,12 +128,66 @@ export default function InvitationAccept() {
     },
   });
 
+  // Registration mutation for new users
+  const registrationMutation = useMutation({
+    mutationFn: async (data: RegistrationForm) => {
+      const response = await apiRequest("POST", "/api/auth/register", {
+        email: invitation?.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        preferredLanguage: data.preferredLanguage,
+      });
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || "Registration failed");
+      }
+      
+      return result.user;
+    },
+    onSuccess: async (newUser: User) => {
+      // Update auth cache
+      queryClient.setQueryData(["/api/auth/user"], newUser);
+      
+      toast({
+        title: "Account created successfully!",
+        description: "Accepting your invitation...",
+      });
+      
+      // Wait a moment for the auth state to settle
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // Accept the invitation automatically
+      setTimeout(() => {
+        acceptMutation.mutate();
+      }, 500);
+    },
+    onError: (error: Error) => {
+      let errorMessage = "Registration failed. Please try again.";
+      
+      if (error.message.includes("already exists")) {
+        errorMessage = "An account with this email already exists. Please log in instead.";
+      }
+      
+      toast({
+        title: "Registration failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleLogin = () => {
     setLocation("/login");
   };
 
   const handleAccept = () => {
     acceptMutation.mutate();
+  };
+
+  const handleRegistration = (data: RegistrationForm) => {
+    registrationMutation.mutate(data);
   };
 
   // Loading state
@@ -154,7 +265,7 @@ export default function InvitationAccept() {
     );
   }
 
-  // Not authenticated - show login prompt
+  // Not authenticated - show registration form for new users or login redirect for existing users
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 flex items-center justify-center pt-20 px-4">
@@ -167,7 +278,9 @@ export default function InvitationAccept() {
               You've Been Invited!
             </CardTitle>
             <CardDescription className="text-base" data-testid="text-invitation-subtitle">
-              Please log in to accept this invitation
+              {invitation.authMethod === 'none' 
+                ? "Create your account to accept this invitation" 
+                : "Please log in to accept this invitation"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -187,7 +300,7 @@ export default function InvitationAccept() {
                 </div>
               </div>
               <div className="flex items-start gap-3">
-                <User className="h-5 w-5 text-pcs_blue mt-0.5" />
+                <UserIcon className="h-5 w-5 text-pcs_blue mt-0.5" />
                 <div>
                   <p className="text-sm font-medium text-gray-700">Invited by</p>
                   <p className="text-base font-semibold text-navy" data-testid="text-inviter-name">
@@ -206,19 +319,186 @@ export default function InvitationAccept() {
               </div>
             </div>
 
-            <div className="text-center">
-              <p className="text-sm text-gray-600 mb-4" data-testid="text-login-message">
-                Please log in to accept this invitation
-              </p>
-              <Button 
-                onClick={handleLogin}
-                className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                data-testid="button-login"
-              >
-                <LogIn className="h-5 w-5 mr-2" />
-                Log In
-              </Button>
-            </div>
+            {/* Show registration form for new users */}
+            {invitation.authMethod === 'none' ? (
+              <div>
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 mb-2 text-center" data-testid="text-signup-message">
+                    Create your account to accept this invitation
+                  </p>
+                  <p className="text-xs text-gray-500 text-center" data-testid="text-email-notice">
+                    Account will be created for <strong>{invitation?.email}</strong>
+                  </p>
+                </div>
+                
+                <Form {...registrationForm}>
+                  <form onSubmit={registrationForm.handleSubmit(handleRegistration)} className="space-y-4">
+                    <FormField
+                      control={registrationForm.control}
+                      name="firstName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>First Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="text"
+                              placeholder="Enter your first name"
+                              {...field}
+                              data-testid="input-teacher-firstname"
+                              disabled={registrationMutation.isPending}
+                            />
+                          </FormControl>
+                          <FormMessage data-testid="error-teacher-firstname" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registrationForm.control}
+                      name="lastName"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Last Name</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="text"
+                              placeholder="Enter your last name"
+                              {...field}
+                              data-testid="input-teacher-lastname"
+                              disabled={registrationMutation.isPending}
+                            />
+                          </FormControl>
+                          <FormMessage data-testid="error-teacher-lastname" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registrationForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Create a password (min 8 characters)"
+                                {...field}
+                                data-testid="input-teacher-password"
+                                disabled={registrationMutation.isPending}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowPassword(!showPassword)}
+                                data-testid="button-teacher-toggle-password"
+                                disabled={registrationMutation.isPending}
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4 text-gray-500" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-gray-500" />
+                                )}
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage data-testid="error-teacher-password" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registrationForm.control}
+                      name="confirmPassword"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Confirm Password</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="password"
+                              placeholder="Confirm your password"
+                              {...field}
+                              data-testid="input-teacher-confirm-password"
+                              disabled={registrationMutation.isPending}
+                            />
+                          </FormControl>
+                          <FormMessage data-testid="error-teacher-confirm-password" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={registrationForm.control}
+                      name="preferredLanguage"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>
+                            <Globe className="h-4 w-4 inline mr-1" />
+                            Preferred Language
+                          </FormLabel>
+                          <Select
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            disabled={registrationMutation.isPending}
+                          >
+                            <FormControl>
+                              <SelectTrigger data-testid="select-teacher-language">
+                                <SelectValue placeholder="Select your preferred language" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {languages.map((lang) => (
+                                <SelectItem key={lang.code} value={lang.code}>
+                                  {lang.nativeName}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage data-testid="error-teacher-language" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button 
+                      type="submit"
+                      disabled={registrationMutation.isPending}
+                      className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      data-testid="button-teacher-register-submit"
+                    >
+                      {registrationMutation.isPending ? (
+                        <>
+                          <LoadingSpinner size="sm" className="mr-2" />
+                          Creating account...
+                        </>
+                      ) : (
+                        <>
+                          <ArrowRight className="h-5 w-5 mr-2" />
+                          Create Account & Accept Invitation
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
+              </div>
+            ) : (
+              // Show login redirect for existing users
+              <div className="text-center">
+                <p className="text-sm text-gray-600 mb-4" data-testid="text-login-message">
+                  Please log in to accept this invitation
+                </p>
+                <Button 
+                  onClick={handleLogin}
+                  className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                  data-testid="button-login"
+                >
+                  <LogIn className="h-5 w-5 mr-2" />
+                  Log In
+                </Button>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -257,7 +537,7 @@ export default function InvitationAccept() {
               </div>
             </div>
             <div className="flex items-start gap-3">
-              <User className="h-5 w-5 text-pcs_blue mt-0.5" />
+              <UserIcon className="h-5 w-5 text-pcs_blue mt-0.5" />
               <div>
                 <p className="text-sm font-medium text-gray-700">Invited by</p>
                 <p className="text-base font-semibold text-navy" data-testid="text-inviter-name-auth">
