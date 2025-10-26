@@ -2941,31 +2941,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     enabled: !!viewingSchool?.id,
   });
 
-  // Approve photo consent mutation
-  const approvePhotoConsentMutation = useMutation({
-    mutationFn: async (notes?: string) => {
-      if (!viewingSchool?.id) throw new Error('No school selected');
-      return apiRequest('PATCH', `/api/schools/${viewingSchool.id}/photo-consent/approve`, { notes });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Photo Consent Approved",
-        description: "The photo consent document has been approved.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/schools', viewingSchool?.id, 'photo-consent'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/schools'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
-      refetchPhotoConsent();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Approval Failed",
-        description: error.message || "Failed to approve photo consent. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
   // Reject photo consent mutation
   const rejectPhotoConsentMutation = useMutation({
     mutationFn: async (notes: string) => {
@@ -8013,7 +7988,11 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           <div className="flex gap-2">
                             <Button
                               size="sm"
-                              onClick={() => approvePhotoConsentMutation.mutate(undefined)}
+                              onClick={() => {
+                                if (viewingSchool?.id) {
+                                  approvePhotoConsentMutation.mutate({ schoolId: viewingSchool.id, notes: '' });
+                                }
+                              }}
                               disabled={approvePhotoConsentMutation.isPending}
                               className="bg-green-500 hover:bg-green-600 text-white"
                               data-testid="button-approve-photo-consent"
