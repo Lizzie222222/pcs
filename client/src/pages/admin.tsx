@@ -1061,7 +1061,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [location] = useLocation();
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
   const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library' | 'data-import' | 'activity'>(initialTab);
-  const [reviewType, setReviewType] = useState<'evidence' | 'audits'>('evidence');
+  const [reviewType, setReviewType] = useState<'evidence' | 'audits' | 'photo-consent'>('evidence');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [schoolFilters, setSchoolFilters] = useState({
     search: '',
@@ -1580,6 +1580,20 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   // Pending audits query - always enabled so badge shows correct count
   const { data: pendingAudits = [] } = useQuery<PendingAudit[]>({
     queryKey: ['/api/admin/audits/pending'],
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin)),
+    retry: false,
+  });
+
+  // Fetch pending photo consent
+  const { data: pendingPhotoConsent = [] } = useQuery<Array<{
+    id: string;
+    name: string;
+    country: string;
+    photoConsentDocumentUrl: string | null;
+    photoConsentUploadedAt: Date | null;
+    photoConsentStatus: string | null;
+  }>>({
+    queryKey: ['/api/admin/photo-consent/pending'],
     enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin)),
     retry: false,
   });
@@ -2608,6 +2622,48 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     },
   });
 
+  // Approve photo consent mutation
+  const approvePhotoConsentMutation = useMutation({
+    mutationFn: async ({ schoolId, notes }: { schoolId: string; notes: string }) => {
+      return await apiRequest('PATCH', `/api/schools/${schoolId}/photo-consent/approve`, { notes });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
+      toast({
+        title: "Photo Consent Approved",
+        description: "The school can now proceed with photo submissions.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to approve photo consent",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reject photo consent mutation
+  const rejectPhotoConsentMutation = useMutation({
+    mutationFn: async ({ schoolId, notes }: { schoolId: string; notes: string }) => {
+      return await apiRequest('PATCH', `/api/schools/${schoolId}/photo-consent/reject`, { notes });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
+      toast({
+        title: "Photo Consent Rejected",
+        description: "The school has been notified to upload a new document.",
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to reject photo consent",
+        variant: "destructive",
+      });
+    },
+  });
+
   // Bulk evidence review mutation
   const bulkEvidenceReviewMutation = useMutation({
     mutationFn: async ({ evidenceIds, status, reviewNotes }: {
@@ -3362,12 +3418,33 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             </DropdownMenuContent>
           </DropdownMenu>
 
-          {/* Program - Dropdown with badge */}
+          {/* Review Queue - Top Level Tab */}
+          <button
+            onClick={() => setActiveTab('reviews')}
+            className={`px-4 py-2 rounded-md font-medium transition-colors relative ${
+              activeTab === 'reviews' 
+                ? 'bg-white text-navy shadow-sm' 
+                : 'text-gray-600 hover:text-navy'
+            }`}
+            data-testid="tab-reviews"
+          >
+            Review Queue
+            {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0 || pendingPhotoConsent.length > 0) && (
+              <span 
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
+                data-testid="badge-reviews-count"
+              >
+                {(stats?.pendingEvidence || 0) + pendingAudits.length + pendingPhotoConsent.length}
+              </span>
+            )}
+          </button>
+
+          {/* Program - Dropdown */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
                 className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 relative ${
-                  ['evidence-requirements', 'reviews', 'printable-forms'].includes(activeTab)
+                  ['evidence-requirements', 'printable-forms'].includes(activeTab)
                     ? 'bg-white text-navy shadow-sm' 
                     : 'text-gray-600 hover:text-navy'
                 }`}
@@ -3375,14 +3452,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               >
                 Program
                 <ChevronDown className="h-4 w-4" />
-                {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0) && (
-                  <span 
-                    className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
-                    data-testid="badge-pending-reviews-count"
-                  >
-                    {(stats?.pendingEvidence || 0) + pendingAudits.length}
-                  </span>
-                )}
               </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="start">
@@ -3392,18 +3461,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 data-testid="tab-program-evidence-requirements"
               >
                 Evidence Requirements
-              </DropdownMenuItem>
-              <DropdownMenuItem 
-                onClick={() => setActiveTab('reviews')}
-                className={`${activeTab === 'reviews' ? 'bg-gray-100 font-medium' : ''} relative`}
-                data-testid="tab-program-review-queue"
-              >
-                Review Queue
-                {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0) && (
-                  <Badge className="ml-2 bg-red-500 text-white">
-                    {(stats?.pendingEvidence || 0) + pendingAudits.length}
-                  </Badge>
-                )}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('printable-forms')}
@@ -3476,6 +3533,22 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 {pendingAudits.length > 0 && (
                   <Badge className="ml-2 bg-red-500 text-white" data-testid="badge-audits-count">
                     {pendingAudits.length}
+                  </Badge>
+                )}
+              </button>
+              <button
+                className={`px-4 py-2 rounded-md font-medium transition-colors ${
+                  reviewType === 'photo-consent'
+                    ? 'bg-white text-navy shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                onClick={() => setReviewType('photo-consent')}
+                data-testid="tab-review-photo-consent"
+              >
+                Photo Consent
+                {pendingPhotoConsent.length > 0 && (
+                  <Badge className="ml-2 bg-red-500 text-white">
+                    {pendingPhotoConsent.length}
                   </Badge>
                 )}
               </button>
@@ -3946,6 +4019,98 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               )}
             </CardContent>
           </Card>
+            )}
+
+            {/* Photo Consent Review Content */}
+            {reviewType === 'photo-consent' && (
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center gap-2">
+                      <Shield className="h-5 w-5" />
+                      Photo Consent Review Queue
+                    </CardTitle>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  {pendingPhotoConsent.length === 0 ? (
+                    <EmptyState
+                      icon={Shield}
+                      title="No Pending Photo Consent"
+                      description="All photo consent submissions have been reviewed!"
+                    />
+                  ) : (
+                    <div className="space-y-4">
+                      {pendingPhotoConsent.map((school) => (
+                        <div key={school.id} className="border rounded-lg p-4 hover:bg-gray-50">
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <h3 className="font-semibold text-lg mb-1">{school.name}</h3>
+                              <div className="flex items-center gap-4 text-sm text-gray-600 mb-2">
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  {school.country}
+                                </span>
+                                {school.photoConsentUploadedAt && (
+                                  <span className="flex items-center gap-1">
+                                    <Clock className="h-4 w-4" />
+                                    {new Date(school.photoConsentUploadedAt).toLocaleDateString()}
+                                  </span>
+                                )}
+                              </div>
+                              {school.photoConsentDocumentUrl && (
+                                <div className="mt-2">
+                                  <a
+                                    href={school.photoConsentDocumentUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="inline-flex items-center gap-1 text-pcs_blue hover:underline text-sm"
+                                    data-testid={`link-view-consent-${school.id}`}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                    View Document
+                                  </a>
+                                </div>
+                              )}
+                            </div>
+                            <div className="flex gap-2 ml-4">
+                              <Button
+                                size="sm"
+                                className="bg-green-500 hover:bg-green-600"
+                                onClick={() => {
+                                  if (confirm(`Approve photo consent for ${school.name}?`)) {
+                                    approvePhotoConsentMutation.mutate({ schoolId: school.id, notes: '' });
+                                  }
+                                }}
+                                data-testid={`button-approve-consent-${school.id}`}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Approve
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="destructive"
+                                onClick={() => {
+                                  const notes = prompt(`Rejection notes for ${school.name}:`);
+                                  if (notes && notes.trim()) {
+                                    rejectPhotoConsentMutation.mutate({ schoolId: school.id, notes });
+                                  } else if (notes !== null) {
+                                    alert('Rejection notes are required');
+                                  }
+                                }}
+                                data-testid={`button-reject-consent-${school.id}`}
+                              >
+                                <XCircle className="h-4 w-4 mr-1" />
+                                Reject
+                              </Button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             )}
           </div>
         )}

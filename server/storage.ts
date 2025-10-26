@@ -208,6 +208,14 @@ export interface IStorage {
   updateSchoolPhotoConsent(schoolId: string, documentUrl: string): Promise<School | undefined>;
   reviewSchoolPhotoConsent(schoolId: string, status: 'approved' | 'rejected', reviewedBy: string, notes?: string): Promise<School | undefined>;
   getSchoolPhotoConsentStatus(schoolId: string): Promise<{ status: string | null; documentUrl: string | null; uploadedAt: Date | null; approvedAt: Date | null; reviewNotes: string | null } | undefined>;
+  getSchoolsWithPendingPhotoConsent(): Promise<Array<{
+    id: string;
+    name: string;
+    country: string;
+    photoConsentDocumentUrl: string | null;
+    photoConsentUploadedAt: Date | null;
+    photoConsentStatus: string | null;
+  }>>;
   
   // School User operations
   addUserToSchool(schoolUser: InsertSchoolUser): Promise<SchoolUser>;
@@ -1537,6 +1545,29 @@ export class DatabaseStorage implements IStorage {
       approvedAt: school.photoConsentApprovedAt,
       reviewNotes: school.photoConsentReviewNotes,
     };
+  }
+
+  async getSchoolsWithPendingPhotoConsent(): Promise<Array<{
+    id: string;
+    name: string;
+    country: string;
+    photoConsentDocumentUrl: string | null;
+    photoConsentUploadedAt: Date | null;
+    photoConsentStatus: string | null;
+  }>> {
+    const pendingSchools = await db
+      .select({
+        id: schools.id,
+        name: schools.name,
+        country: schools.country,
+        photoConsentDocumentUrl: schools.photoConsentDocumentUrl,
+        photoConsentUploadedAt: schools.photoConsentUploadedAt,
+        photoConsentStatus: schools.photoConsentStatus,
+      })
+      .from(schools)
+      .where(eq(schools.photoConsentStatus, 'pending'));
+    
+    return pendingSchools;
   }
 
   // School User operations

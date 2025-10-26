@@ -3585,6 +3585,17 @@ Return JSON with:
     }
   };
 
+  // GET /api/admin/photo-consent/pending - Get all schools with pending photo consent
+  app.get('/api/admin/photo-consent/pending', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const pendingSchools = await storage.getSchoolsWithPendingPhotoConsent();
+      res.json(pendingSchools);
+    } catch (error) {
+      console.error("Error fetching pending photo consent:", error);
+      res.status(500).json({ message: "Failed to fetch pending photo consent" });
+    }
+  });
+
   // Middleware to allow both admin and partner roles
   const requireAdminOrPartner = async (req: any, res: any, next: any) => {
     try {
