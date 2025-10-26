@@ -2291,7 +2291,7 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(schools.country, filters.country));
     }
 
-    // Query with JOIN to include school data
+    // Query with JOIN to include school data and reviewer info
     const query = db
       .select({
         id: evidence.id,
@@ -2322,9 +2322,16 @@ export class DatabaseStorage implements IStorage {
           photoConsentStatus: schools.photoConsentStatus,
           photoConsentDocumentUrl: schools.photoConsentDocumentUrl,
         },
+        reviewer: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+        },
       })
       .from(evidence)
-      .leftJoin(schools, eq(evidence.schoolId, schools.id));
+      .leftJoin(schools, eq(evidence.schoolId, schools.id))
+      .leftJoin(users, eq(evidence.reviewedBy, users.id));
 
     if (conditions.length > 0) {
       const school = query.where(and(...conditions));

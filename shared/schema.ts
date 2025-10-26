@@ -1656,6 +1656,12 @@ export type EvidenceWithSchool = Evidence & {
     photoConsentStatus?: typeof schools.$inferSelect.photoConsentStatus;
     photoConsentDocumentUrl?: string | null;
   };
+  reviewer?: {
+    id: string | null;
+    email: string | null;
+    firstName: string | null;
+    lastName: string | null;
+  } | null;
 };
 export type CaseStudy = typeof caseStudies.$inferSelect;
 export type InsertCaseStudy = z.infer<typeof insertCaseStudySchema>;
