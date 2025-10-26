@@ -158,6 +158,7 @@ export default function Home() {
   const [hasAttemptedOnboarding, setHasAttemptedOnboarding] = useState(false);
   const [hasCompletedTour, setHasCompletedTour] = useState<boolean>(() => {
     const stored = localStorage.getItem('hasCompletedTour');
+    console.log('[Tour Debug] Initial hasCompletedTour from localStorage:', stored);
     return stored === 'true';
   });
 
@@ -440,18 +441,24 @@ export default function Home() {
 
   const handleStartTour = () => {
     // Only start tour if user hasn't completed it before
+    console.log('[Tour Debug] handleStartTour called, hasCompletedTour:', hasCompletedTour);
     if (!hasCompletedTour) {
+      console.log('[Tour Debug] Starting tour...');
       setShowTour(true);
+    } else {
+      console.log('[Tour Debug] Tour already completed, not showing');
     }
   };
 
   const handleTourComplete = () => {
+    console.log('[Tour Debug] Tour completed');
     setShowTour(false);
     setHasCompletedTour(true);
     localStorage.setItem('hasCompletedTour', 'true');
   };
 
   const handleTourSkip = () => {
+    console.log('[Tour Debug] Tour skipped');
     setShowTour(false);
     setHasCompletedTour(true);
     localStorage.setItem('hasCompletedTour', 'true');
