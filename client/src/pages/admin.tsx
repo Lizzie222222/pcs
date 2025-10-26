@@ -2941,33 +2941,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     enabled: !!viewingSchool?.id,
   });
 
-  // Reject photo consent mutation
-  const rejectPhotoConsentMutation = useMutation({
-    mutationFn: async (notes: string) => {
-      if (!viewingSchool?.id) throw new Error('No school selected');
-      return apiRequest('PATCH', `/api/schools/${viewingSchool.id}/photo-consent/reject`, { notes });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Photo Consent Rejected",
-        description: "The photo consent document has been rejected.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/schools', viewingSchool?.id, 'photo-consent'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/schools'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
-      setPhotoConsentRejectDialogOpen(false);
-      setPhotoConsentRejectNotes('');
-      refetchPhotoConsent();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Rejection Failed",
-        description: error.message || "Failed to reject photo consent. Please try again.",
-        variant: "destructive",
-      });
-    },
-  });
-
   // Helper functions for bulk operations
   const toggleEvidenceSelection = (evidenceId: string) => {
     setSelectedEvidence(prev => 
@@ -8156,7 +8129,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                   });
                   return;
                 }
-                rejectPhotoConsentMutation.mutate(photoConsentRejectNotes);
+                if (viewingSchool?.id) {
+                  rejectPhotoConsentMutation.mutate({ schoolId: viewingSchool.id, notes: photoConsentRejectNotes });
+                }
               }}
               className="bg-red-600 hover:bg-red-700"
               disabled={!photoConsentRejectNotes.trim() || rejectPhotoConsentMutation.isPending}
