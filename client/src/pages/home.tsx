@@ -162,7 +162,10 @@ export default function Home() {
   const [promiseToDelete, setPromiseToDelete] = useState<string | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showTour, setShowTour] = useState(false);
-  const [hasAttemptedOnboarding, setHasAttemptedOnboarding] = useState(false);
+  const [hasAttemptedOnboarding, setHasAttemptedOnboarding] = useState<boolean>(() => {
+    const stored = sessionStorage.getItem('hasAttemptedOnboarding');
+    return stored === 'true';
+  });
   const [hasCompletedTour, setHasCompletedTour] = useState<boolean>(() => {
     const stored = localStorage.getItem('hasCompletedTour');
     return stored === 'true';
@@ -434,14 +437,18 @@ export default function Home() {
     // 3. Dashboard data is loaded
     // 4. All loading states are complete
     if (user && !user.hasSeenOnboarding && !hasAttemptedOnboarding && dashboardData && !isLoading && !isDashboardLoading) {
+      console.log('[Welcome Modal] Showing welcome modal - first time onboarding');
       setShowWelcomeModal(true);
-      setHasAttemptedOnboarding(true); // Mark as attempted immediately to prevent re-triggering
+      setHasAttemptedOnboarding(true);
+      sessionStorage.setItem('hasAttemptedOnboarding', 'true');
     }
   }, [user?.hasSeenOnboarding, hasAttemptedOnboarding, isLoading, isDashboardLoading]);
 
   const handleWelcomeModalClose = () => {
+    console.log('[Welcome Modal] Closing welcome modal');
     setShowWelcomeModal(false);
     setHasAttemptedOnboarding(true);
+    sessionStorage.setItem('hasAttemptedOnboarding', 'true');
     markOnboardingCompleteMutation.mutate();
   };
 
