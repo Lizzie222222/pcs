@@ -382,7 +382,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
             </div>
             <h2 className="text-2xl font-bold text-navy mb-3">{t('events.no_upcoming')}</h2>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
-              There are no upcoming events at the moment. Check back soon for new workshops, webinars, and community events!
+              {t('events.no_upcoming_description')}
             </p>
           </CardContent>
         </Card>
