@@ -3337,14 +3337,14 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 className={activeTab === 'schools' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-schools-schools"
               >
-                Schools
+                Manage Schools
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('teams')}
                 className={activeTab === 'teams' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-schools-teams"
               >
-                Teams
+                Manage Teams
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('users')}
@@ -3392,28 +3392,28 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 className={activeTab === 'resources' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-content-resources"
               >
-                Resources
+                Manage Resources
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('resource-packs')}
                 className={activeTab === 'resource-packs' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-content-resource-packs"
               >
-                Resource Packs
+                Manage Resource Packs
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('case-studies')}
                 className={activeTab === 'case-studies' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-content-case-studies"
               >
-                Case Studies
+                Create Case Studies
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('events')}
                 className={activeTab === 'events' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-content-events"
               >
-                Events
+                Manage Events
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('media-library')}
@@ -3467,14 +3467,14 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 className={activeTab === 'evidence-requirements' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-program-evidence-requirements"
               >
-                Evidence Requirements
+                Set Evidence Requirements
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('printable-forms')}
                 className={activeTab === 'printable-forms' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-program-printable-forms"
               >
-                Printable Forms
+                Review Printable Forms
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

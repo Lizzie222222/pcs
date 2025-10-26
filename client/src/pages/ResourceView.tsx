@@ -90,6 +90,10 @@ export default function ResourceView() {
 
         const loadingTask = pdfjsLib.getDocument({
           url: resource.fileUrl,
+          httpHeaders: {
+            'Accept': 'application/pdf',
+          },
+          withCredentials: true,
         });
         
         const pdf = await loadingTask.promise;
