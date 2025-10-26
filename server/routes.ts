@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isSchoolMember } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, caseStudies, importBatches, userActivityLogs } from "@shared/schema";
 import { nanoid } from 'nanoid';
@@ -1843,7 +1843,7 @@ Return JSON with:
         const inviteUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/invitations/${token}`;
         await sendEmail({
           to: email,
-          from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
+          from: getFromAddress(),
           subject: `You're invited to join ${school.name} on Plastic Clever Schools`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -2201,7 +2201,7 @@ Return JSON with:
         if (headTeacher?.email) {
           await sendEmail({
             to: headTeacher.email,
-            from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
+            from: getFromAddress(),
             subject: `New access request for ${school.name}`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -2311,7 +2311,7 @@ Return JSON with:
       if (requester?.email && school) {
         await sendEmail({
           to: requester.email,
-          from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
+          from: getFromAddress(),
           subject: `Access approved for ${school.name}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -2383,7 +2383,7 @@ Return JSON with:
       if (requester?.email && school) {
         await sendEmail({
           to: requester.email,
-          from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
+          from: getFromAddress(),
           subject: `Access request update for ${school.name}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -6427,7 +6427,7 @@ Return JSON with:
 
       const success = await sendEmail({
         to: testEmail,
-        from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+        from: getFromAddress(),
         subject: 'Test Email - Plastic Clever Schools Email System',
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -6444,7 +6444,7 @@ Return JSON with:
                 <h3 style="color: #02BBB4; margin-top: 0;">System Information:</h3>
                 <ul style="color: #666; margin-bottom: 0;">
                   <li><strong>Sent at:</strong> ${new Date().toISOString()}</li>
-                  <li><strong>From:</strong> ${process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>'}</li>
+                  <li><strong>From:</strong> ${getFromAddress()}</li>
                   <li><strong>Environment:</strong> ${process.env.NODE_ENV || 'development'}</li>
                 </ul>
               </div>
@@ -7005,7 +7005,7 @@ Return JSON with:
       try {
         await sendEmail({
           to: email,
-          from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
+          from: getFromAddress(),
           subject: `You've been added to ${school.name} on Plastic Clever Schools`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -7090,7 +7090,7 @@ Return JSON with:
         if (user?.email) {
           await sendEmail({
             to: user.email,
-            from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
+            from: getFromAddress(),
             subject: `Update: Your Access to ${school.name}`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
