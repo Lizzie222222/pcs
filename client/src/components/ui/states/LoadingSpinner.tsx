@@ -46,8 +46,8 @@ export function LoadingSpinner({
     setFunMessage(getRandomFunMessage(t));
   }, [t, i18n.language]);
   
-  // Always use fun messages - ignore the message prop (old custom messages were boring)
-  const displayMessage = funMessage;
+  // Use provided message if available, otherwise use fun random message
+  const displayMessage = message || funMessage;
   
   const content = (
     <div 
@@ -60,31 +60,37 @@ export function LoadingSpinner({
       aria-live="polite"
       data-testid="loading-spinner"
     >
-      <div className="relative inline-block">
+      <div className="relative inline-flex items-center justify-center">
+        {/* Animated ocean gradient spinner */}
         <div 
           className={cn(
-            "absolute inset-0 rounded-full blur-sm opacity-60",
+            "rounded-full animate-spin",
             sizeClasses[size]
           )}
           style={{
-            background: 'radial-gradient(circle, rgba(6,182,212,0.8) 0%, rgba(14,165,233,0.6) 50%, rgba(244,114,182,0.4) 100%)',
+            background: 'conic-gradient(from 0deg, #06b6d4, #0ea5e9, #3b82f6, #8b5cf6, #ec4899, #f97316, #06b6d4)',
+            WebkitMask: 'radial-gradient(circle, transparent 50%, black 50%)',
+            mask: 'radial-gradient(circle, transparent 50%, black 50%)',
+            filter: 'drop-shadow(0 0 8px rgba(6, 182, 212, 0.6))',
+            animation: 'spin 1s linear infinite'
           }}
           aria-hidden="true"
         />
-        <Loader2 
+        {/* Pulsing glow effect */}
+        <div 
           className={cn(
-            "animate-spin relative z-10",
+            "absolute rounded-full opacity-40 blur-md",
             sizeClasses[size]
           )}
           style={{
-            color: '#06b6d4',
-            filter: 'drop-shadow(0 0 4px rgba(6,182,212,0.5))'
+            background: 'radial-gradient(circle, rgba(6,182,212,0.8), rgba(236,72,153,0.4), transparent)',
+            animation: 'pulse 2s ease-in-out infinite'
           }}
           aria-hidden="true"
         />
       </div>
       {displayMessage && (
-        <p className="mt-2 text-sm text-muted-foreground">
+        <p className="mt-4 text-sm font-medium bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
           {displayMessage}
         </p>
       )}
