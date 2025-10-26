@@ -65,6 +65,19 @@ const onboardingSchema = z.object({
 
 type OnboardingForm = z.infer<typeof onboardingSchema>;
 
+const registrationSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+  password: z.string().min(8, "Password must be at least 8 characters long"),
+  confirmPassword: z.string(),
+  preferredLanguage: z.string().min(1, "Please select a language"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+type RegistrationForm = z.infer<typeof registrationSchema>;
+
 export default function AdminInvitationAccept() {
   const params = useParams();
   const token = params.token;
@@ -91,6 +104,18 @@ export default function AdminInvitationAccept() {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
       preferredLanguage: user?.preferredLanguage || "en",
+    },
+  });
+
+  // Registration form for new users
+  const registrationForm = useForm<RegistrationForm>({
+    resolver: zodResolver(registrationSchema),
+    defaultValues: {
+      firstName: "",
+      lastName: "",
+      password: "",
+      confirmPassword: "",
+      preferredLanguage: "en",
     },
   });
 
@@ -250,6 +275,60 @@ export default function AdminInvitationAccept() {
     acceptMutation.mutate();
   };
 
+  // Registration mutation for new users
+  const registrationMutation = useMutation({
+    mutationFn: async (data: RegistrationForm) => {
+      const response = await apiRequest("POST", "/api/auth/register", {
+        email: invitation?.email,
+        password: data.password,
+        firstName: data.firstName,
+        lastName: data.lastName,
+        preferredLanguage: data.preferredLanguage,
+      });
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || "Registration failed");
+      }
+      
+      return result.user;
+    },
+    onSuccess: async (newUser: User) => {
+      // Update auth cache
+      queryClient.setQueryData(["/api/auth/user"], newUser);
+      
+      toast({
+        title: "Account created successfully!",
+        description: "Accepting your admin invitation...",
+      });
+      
+      // Wait a moment for the auth state to settle
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // Accept the invitation automatically
+      setTimeout(() => {
+        acceptMutation.mutate();
+      }, 500);
+    },
+    onError: (error: Error) => {
+      let errorMessage = "Registration failed. Please try again.";
+      
+      if (error.message.includes("already exists")) {
+        errorMessage = "An account with this email already exists. Please log in instead.";
+      }
+      
+      toast({
+        title: "Registration failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleRegistration = (data: RegistrationForm) => {
+    registrationMutation.mutate(data);
+  };
+
   // Check if user needs onboarding
   const needsOnboarding = user && (!user.firstName || !user.lastName || !user.hasSeenOnboarding);
 
@@ -376,99 +455,264 @@ export default function AdminInvitationAccept() {
             </div>
 
             <div>
-              <div className="mb-4">
-                <p className="text-sm text-gray-600 mb-2 text-center" data-testid="text-admin-login-message">
-                  Please log in to accept this invitation
-                </p>
-                <p className="text-xs text-gray-500 text-center" data-testid="text-admin-email-notice">
-                  You must log in with <strong>{invitation?.email}</strong>
-                </p>
-              </div>
-              
-              {/* Show password login form */}
-              {(invitation.authMethod === 'password' || invitation.authMethod === 'none') && (
-                <Form {...form}>
-                  <form onSubmit={form.handleSubmit(handleEmailLogin)} className="space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="email"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Email</FormLabel>
-                          <FormControl>
-                            <Input
-                              type="email"
-                              placeholder="your.email@example.com"
-                              {...field}
-                              data-testid="input-admin-email"
-                              disabled={true}
-                              readOnly
-                              className="bg-gray-50"
-                            />
-                          </FormControl>
-                          <FormMessage data-testid="error-admin-email" />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="password"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Password</FormLabel>
-                          <FormControl>
-                            <div className="relative">
+              {/* Show registration form for new users */}
+              {invitation.authMethod === 'none' && (
+                <>
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 mb-2 text-center" data-testid="text-admin-signup-message">
+                      Create your account to accept this invitation
+                    </p>
+                    <p className="text-xs text-gray-500 text-center" data-testid="text-admin-email-notice">
+                      Account will be created for <strong>{invitation?.email}</strong>
+                    </p>
+                  </div>
+                  
+                  <Form {...registrationForm}>
+                    <form onSubmit={registrationForm.handleSubmit(handleRegistration)} className="space-y-4">
+                      <FormField
+                        control={registrationForm.control}
+                        name="firstName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>First Name</FormLabel>
+                            <FormControl>
                               <Input
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Enter your password"
+                                type="text"
+                                placeholder="Enter your first name"
                                 {...field}
-                                data-testid="input-admin-password"
-                                disabled={loginMutation.isPending}
+                                data-testid="input-admin-firstname"
+                                disabled={registrationMutation.isPending}
                               />
-                              <Button
-                                type="button"
-                                variant="ghost"
-                                size="sm"
-                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                                onClick={() => setShowPassword(!showPassword)}
-                                data-testid="button-admin-toggle-password"
-                                disabled={loginMutation.isPending}
-                              >
-                                {showPassword ? (
-                                  <EyeOff className="h-4 w-4 text-gray-500" />
-                                ) : (
-                                  <Eye className="h-4 w-4 text-gray-500" />
-                                )}
-                              </Button>
-                            </div>
-                          </FormControl>
-                          <FormMessage data-testid="error-admin-password" />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <Button
-                      type="submit"
-                      size="lg"
-                      className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
-                      disabled={loginMutation.isPending}
-                      data-testid="button-admin-login-submit"
-                    >
-                      {loginMutation.isPending ? (
-                        <>
-                          <LoadingSpinner size="sm" className="mr-2" />
-                          Signing in...
-                        </>
-                      ) : (
-                        <>
-                          <Mail className="h-5 w-5 mr-2" />
-                          Sign In
-                        </>
-                      )}
-                    </Button>
-                  </form>
-                </Form>
+                            </FormControl>
+                            <FormMessage data-testid="error-admin-firstname" />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={registrationForm.control}
+                        name="lastName"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Last Name</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="text"
+                                placeholder="Enter your last name"
+                                {...field}
+                                data-testid="input-admin-lastname"
+                                disabled={registrationMutation.isPending}
+                              />
+                            </FormControl>
+                            <FormMessage data-testid="error-admin-lastname" />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={registrationForm.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="Create a password (min 8 characters)"
+                                  {...field}
+                                  data-testid="input-admin-password"
+                                  disabled={registrationMutation.isPending}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  data-testid="button-admin-toggle-password"
+                                  disabled={registrationMutation.isPending}
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4 text-gray-500" />
+                                  ) : (
+                                    <Eye className="h-4 w-4 text-gray-500" />
+                                  )}
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage data-testid="error-admin-password" />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={registrationForm.control}
+                        name="confirmPassword"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Confirm Password</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="password"
+                                placeholder="Confirm your password"
+                                {...field}
+                                data-testid="input-admin-confirm-password"
+                                disabled={registrationMutation.isPending}
+                              />
+                            </FormControl>
+                            <FormMessage data-testid="error-admin-confirm-password" />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={registrationForm.control}
+                        name="preferredLanguage"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>
+                              <Globe className="h-4 w-4 inline mr-1" />
+                              Preferred Language
+                            </FormLabel>
+                            <Select onValueChange={field.onChange} defaultValue={field.value}>
+                              <FormControl>
+                                <SelectTrigger data-testid="select-admin-language">
+                                  <SelectValue placeholder="Select a language" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {languages.map((lang) => (
+                                  <SelectItem key={lang.code} value={lang.code} data-testid={`option-language-${lang.code}`}>
+                                    {lang.nativeName}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage data-testid="error-admin-language" />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
+                        disabled={registrationMutation.isPending}
+                        data-testid="button-admin-register-submit"
+                      >
+                        {registrationMutation.isPending ? (
+                          <>
+                            <LoadingSpinner size="sm" className="mr-2" />
+                            Creating account...
+                          </>
+                        ) : (
+                          <>
+                            <ArrowRight className="h-5 w-5 mr-2" />
+                            Create Account & Accept Invitation
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </Form>
+                </>
+              )}
+              
+              {/* Show login form for existing users */}
+              {invitation.authMethod === 'password' && (
+                <>
+                  <div className="mb-4">
+                    <p className="text-sm text-gray-600 mb-2 text-center" data-testid="text-admin-login-message">
+                      Please log in to accept this invitation
+                    </p>
+                    <p className="text-xs text-gray-500 text-center" data-testid="text-admin-email-notice">
+                      You must log in with <strong>{invitation?.email}</strong>
+                    </p>
+                  </div>
+                  
+                  <Form {...form}>
+                    <form onSubmit={form.handleSubmit(handleEmailLogin)} className="space-y-4">
+                      <FormField
+                        control={form.control}
+                        name="email"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Email</FormLabel>
+                            <FormControl>
+                              <Input
+                                type="email"
+                                placeholder="your.email@example.com"
+                                {...field}
+                                data-testid="input-admin-email"
+                                disabled={true}
+                                readOnly
+                                className="bg-gray-50"
+                              />
+                            </FormControl>
+                            <FormMessage data-testid="error-admin-email" />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <FormField
+                        control={form.control}
+                        name="password"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Password</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input
+                                  type={showPassword ? "text" : "password"}
+                                  placeholder="Enter your password"
+                                  {...field}
+                                  data-testid="input-admin-password"
+                                  disabled={loginMutation.isPending}
+                                />
+                                <Button
+                                  type="button"
+                                  variant="ghost"
+                                  size="sm"
+                                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                  onClick={() => setShowPassword(!showPassword)}
+                                  data-testid="button-admin-toggle-password"
+                                  disabled={loginMutation.isPending}
+                                >
+                                  {showPassword ? (
+                                    <EyeOff className="h-4 w-4 text-gray-500" />
+                                  ) : (
+                                    <Eye className="h-4 w-4 text-gray-500" />
+                                  )}
+                                </Button>
+                              </div>
+                            </FormControl>
+                            <FormMessage data-testid="error-admin-password" />
+                          </FormItem>
+                        )}
+                      />
+                      
+                      <Button
+                        type="submit"
+                        size="lg"
+                        className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
+                        disabled={loginMutation.isPending}
+                        data-testid="button-admin-login-submit"
+                      >
+                        {loginMutation.isPending ? (
+                          <>
+                            <LoadingSpinner size="sm" className="mr-2" />
+                            Signing in...
+                          </>
+                        ) : (
+                          <>
+                            <Mail className="h-5 w-5 mr-2" />
+                            Sign In
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  </Form>
+                </>
               )}
             </div>
           </CardContent>
