@@ -7341,7 +7341,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmApprovalWithoutConsent}
-              className="bg-yellow-600 hover:bg-yellow-700"
+              className="bg-yellow-600 hover:bg-yellow-700 text-white"
               data-testid="button-confirm-consent-warning"
             >
               Yes, Approve Anyway
