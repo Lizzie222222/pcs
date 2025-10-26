@@ -2249,10 +2249,39 @@ export class DatabaseStorage implements IStorage {
     return evidenceRecord as any;
   }
 
-  async getSchoolEvidence(schoolId: string): Promise<Evidence[]> {
+  async getSchoolEvidence(schoolId: string): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null }>> {
     return await db
-      .select()
+      .select({
+        id: evidence.id,
+        schoolId: evidence.schoolId,
+        submittedBy: evidence.submittedBy,
+        evidenceRequirementId: evidence.evidenceRequirementId,
+        title: evidence.title,
+        description: evidence.description,
+        stage: evidence.stage,
+        status: evidence.status,
+        visibility: evidence.visibility,
+        files: evidence.files,
+        videoLinks: evidence.videoLinks,
+        reviewedBy: evidence.reviewedBy,
+        reviewedAt: evidence.reviewedAt,
+        reviewNotes: evidence.reviewNotes,
+        isFeatured: evidence.isFeatured,
+        isAuditQuiz: evidence.isAuditQuiz,
+        roundNumber: evidence.roundNumber,
+        hasChildren: evidence.hasChildren,
+        parentalConsentFiles: evidence.parentalConsentFiles,
+        submittedAt: evidence.submittedAt,
+        updatedAt: evidence.updatedAt,
+        reviewer: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+        },
+      })
       .from(evidence)
+      .leftJoin(users, eq(evidence.reviewedBy, users.id))
       .where(eq(evidence.schoolId, schoolId))
       .orderBy(desc(evidence.submittedAt));
   }

@@ -123,6 +123,12 @@ interface DashboardData {
     submittedAt: string;
     reviewedAt?: string;
     reviewNotes?: string;
+    reviewer?: {
+      id: string | null;
+      email: string | null;
+      firstName: string | null;
+      lastName: string | null;
+    } | null;
   }>;
   evidenceCounts: {
     inspire: { total: number; approved: number };
@@ -923,18 +929,27 @@ export default function Home() {
                             }
                           </p>
                           <div className="mt-2 space-y-2">
-                            {recentApproved.map(evidence => (
-                              <div key={evidence.id} className="text-xs">
-                                <div className="text-green-700 font-medium">
-                                  ✓ {evidence.title}
-                                </div>
-                                {evidence.reviewNotes && (
-                                  <div className="text-green-600 mt-1 pl-4 italic">
-                                    "{evidence.reviewNotes}"
+                            {recentApproved.map(evidence => {
+                              const reviewerName = evidence.reviewer?.firstName && evidence.reviewer?.lastName
+                                ? `${evidence.reviewer.firstName} ${evidence.reviewer.lastName}`
+                                : evidence.reviewer?.email || 'Platform Admin';
+                              
+                              return (
+                                <div key={evidence.id} className="text-xs">
+                                  <div className="text-green-700 font-medium">
+                                    ✓ {evidence.title}
                                   </div>
-                                )}
-                              </div>
-                            ))}
+                                  {evidence.reviewNotes && (
+                                    <div className="text-green-600 mt-1 pl-4 italic">
+                                      "{evidence.reviewNotes}"
+                                    </div>
+                                  )}
+                                  <div className="text-green-600 mt-1 pl-4 text-xs">
+                                    Reviewed by {reviewerName}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
@@ -963,12 +978,28 @@ export default function Home() {
                               : t('notifications.action_required_message_plural', { ns: 'dashboard', count: recentRejected.length })
                             }
                           </p>
-                          <div className="mt-2 space-y-1">
-                            {recentRejected.map(evidence => (
-                              <div key={evidence.id} className="text-xs text-red-700 font-medium">
-                                ✗ {evidence.title}
-                              </div>
-                            ))}
+                          <div className="mt-2 space-y-2">
+                            {recentRejected.map(evidence => {
+                              const reviewerName = evidence.reviewer?.firstName && evidence.reviewer?.lastName
+                                ? `${evidence.reviewer.firstName} ${evidence.reviewer.lastName}`
+                                : evidence.reviewer?.email || 'Platform Admin';
+                              
+                              return (
+                                <div key={evidence.id} className="text-xs">
+                                  <div className="text-red-700 font-medium">
+                                    ✗ {evidence.title}
+                                  </div>
+                                  {evidence.reviewNotes && (
+                                    <div className="text-red-600 mt-1 pl-4 italic">
+                                      "{evidence.reviewNotes}"
+                                    </div>
+                                  )}
+                                  <div className="text-red-600 mt-1 pl-4 text-xs">
+                                    Reviewed by {reviewerName}
+                                  </div>
+                                </div>
+                              );
+                            })}
                           </div>
                         </div>
                       </div>
