@@ -84,6 +84,7 @@ import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { PLASTIC_ITEM_WEIGHTS, calculateAggregateMetrics } from "@/../../shared/plasticMetrics";
 import type { ReductionPromise, InsertReductionPromise, AuditResponse } from "@/../../shared/schema";
+import { LANGUAGE_FLAG_MAP, languageCodeFromName } from "@/lib/languageUtils";
 
 // Lazy load heavy components
 const EventsSection = lazy(() => import("@/components/dashboard/EventsSection"));
@@ -101,12 +102,34 @@ interface Certificate {
   stage: string;
 }
 
+interface Resource {
+  id: string;
+  title: string;
+  description: string | null;
+  stage: 'inspire' | 'investigate' | 'act';
+  ageRange: string | null;
+  language: string | null;
+  languages: string[] | null;
+  country: string | null;
+  resourceType: string | null;
+  theme: string | null;
+  fileUrl: string | null;
+  fileType: string | null;
+  fileSize: number | null;
+  downloadCount: number;
+  visibility: 'public' | 'registered';
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 interface DashboardData {
   school: {
     id: string;
     name: string;
     country: string;
     type?: string;
+    primaryLanguage?: string | null;
     currentStage: string;
     progressPercentage: number;
     inspireCompleted: boolean;
@@ -251,6 +274,67 @@ export default function Home() {
     enabled: activeTab === 'promises' && !!schoolAudit?.id,
     retry: false,
   });
+
+  // Fetch resources for the resources tab
+  const { data: allResources = [], isLoading: resourcesLoading } = useQuery<Resource[]>({
+    queryKey: ['/api/resources?limit=50'],
+    enabled: activeTab === 'resources',
+    retry: false,
+  });
+
+  // Sort resources by relevance to school's current stage and language
+  const sortedResources = (() => {
+    if (!dashboardData?.school || !allResources.length) return [];
+    
+    const school = dashboardData.school;
+    const schoolLangCode = school.primaryLanguage ? languageCodeFromName(school.primaryLanguage) : null;
+    
+    // Calculate relevance score for each resource
+    const resourcesWithScores = allResources.map(resource => {
+      let score = 0;
+      
+      // +100 points if stage matches school's current stage
+      if (resource.stage === school.currentStage) {
+        score += 100;
+      }
+      
+      // +50 points if resource language matches school's primary language
+      if (schoolLangCode && resource.languages && resource.languages.length > 0) {
+        const resourceLangCodes = resource.languages
+          .map(lang => languageCodeFromName(lang) || lang.toLowerCase())
+          .filter(Boolean);
+        
+        if (resourceLangCodes.includes(schoolLangCode)) {
+          score += 50;
+        }
+      }
+      
+      return { resource, score };
+    });
+    
+    // Sort by score (highest first), then by createdAt (newest first)
+    resourcesWithScores.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return new Date(b.resource.createdAt).getTime() - new Date(a.resource.createdAt).getTime();
+    });
+    
+    // Take top scored resources
+    const topResources = resourcesWithScores.slice(0, 9).map(item => item.resource);
+    
+    // If we have fewer than 6 resources, backfill with random ones
+    if (topResources.length < 6 && allResources.length > topResources.length) {
+      const remainingResources = allResources.filter(
+        r => !topResources.find(tr => tr.id === r.id)
+      );
+      
+      // Shuffle and take enough to reach 6
+      const shuffled = [...remainingResources].sort(() => Math.random() - 0.5);
+      const needed = Math.min(6 - topResources.length, shuffled.length);
+      topResources.push(...shuffled.slice(0, needed));
+    }
+    
+    return topResources;
+  })();
 
   // Delete evidence mutation
   const deleteMutation = useMutation({
@@ -1354,22 +1438,152 @@ export default function Home() {
               </CardContent>
             </Card>
 
-            {/* Recent Resources (if available) */}
+            {/* Recommended Resources for Your Stage */}
             <Card>
               <CardHeader>
-                <CardTitle>{t('resources.featured_title')}</CardTitle>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center gap-2">
+                      <BookOpen className="h-5 w-5 text-pcs_blue" />
+                      Recommended for You
+                    </CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">
+                      Resources matching your current stage ({dashboardData?.school?.currentStage}) 
+                      {dashboardData?.school?.primaryLanguage && ` and language (${dashboardData.school.primaryLanguage})`}
+                    </p>
+                  </div>
+                  <Button 
+                    variant="outline"
+                    className="border-pcs_blue text-pcs_blue hover:bg-pcs_blue hover:text-white"
+                    onClick={() => window.location.href = '/resources'}
+                    data-testid="button-view-all-resources"
+                  >
+                    View All Resources
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent>
-                <p className="text-gray-600 text-sm mb-4">
-                  {t('resources.featured_description')}
-                </p>
-                <Button 
-                  className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
-                  onClick={() => window.location.href = '/resources'}
-                >
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  {t('actions.explore_all_resources')}
-                </Button>
+                {resourcesLoading ? (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                      <Card key={i} className="animate-pulse">
+                        <CardContent className="p-6">
+                          <div className="h-4 bg-gray-200 rounded w-3/4 mb-3"></div>
+                          <div className="h-3 bg-gray-200 rounded w-full mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-5/6"></div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                ) : sortedResources.length === 0 ? (
+                  <div className="text-center py-12">
+                    <BookOpen className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <p className="text-gray-600 mb-4">No resources available yet.</p>
+                    <Button 
+                      className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
+                      onClick={() => window.location.href = '/resources'}
+                    >
+                      <BookOpen className="h-4 w-4 mr-2" />
+                      Explore Resources Page
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {sortedResources.map((resource) => {
+                      const isStageMatch = resource.stage === dashboardData?.school?.currentStage;
+                      const schoolLangCode = dashboardData?.school?.primaryLanguage 
+                        ? languageCodeFromName(dashboardData.school.primaryLanguage) 
+                        : null;
+                      const resourceLangCodes = resource.languages?.map(lang => 
+                        languageCodeFromName(lang) || lang.toLowerCase()
+                      ).filter(Boolean) || [];
+                      const isLangMatch = schoolLangCode && resourceLangCodes.includes(schoolLangCode);
+                      
+                      return (
+                        <Card 
+                          key={resource.id} 
+                          className={`group hover:shadow-xl transition-all duration-300 border-2 ${
+                            isStageMatch ? 'border-pcs_blue/30 bg-blue-50/30' : 'border-gray-100'
+                          }`}
+                          data-testid={`card-resource-${resource.id}`}
+                        >
+                          <CardContent className="p-6">
+                            <div className="flex items-start justify-between mb-3">
+                              <div className="flex-1">
+                                <h4 className="font-bold text-navy mb-2 line-clamp-2 group-hover:text-pcs_blue transition-colors">
+                                  {resource.title}
+                                </h4>
+                                {resource.description && (
+                                  <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                                    {resource.description}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                            
+                            <div className="flex flex-wrap gap-2 mb-4">
+                              <Badge className={`${
+                                resource.stage === 'inspire' ? 'bg-pcs_blue' :
+                                resource.stage === 'investigate' ? 'bg-teal' : 'bg-coral'
+                              } text-white`}>
+                                {resource.stage.charAt(0).toUpperCase() + resource.stage.slice(1)}
+                              </Badge>
+                              
+                              {isStageMatch && (
+                                <Badge className="bg-green-500 text-white">
+                                  Your Stage
+                                </Badge>
+                              )}
+                              
+                              {resource.languages && resource.languages.length > 0 && (
+                                <div className="flex gap-1">
+                                  {resource.languages.slice(0, 3).map((lang, idx) => {
+                                    const langCode = languageCodeFromName(lang) || lang.toLowerCase();
+                                    const flag = LANGUAGE_FLAG_MAP[langCode] || '🏳️';
+                                    const isMatch = schoolLangCode === langCode;
+                                    return (
+                                      <span 
+                                        key={idx} 
+                                        className={`text-lg ${isMatch ? 'ring-2 ring-green-500 rounded' : ''}`}
+                                        title={lang}
+                                      >
+                                        {flag}
+                                      </span>
+                                    );
+                                  })}
+                                  {resource.languages.length > 3 && (
+                                    <span className="text-xs text-gray-500 self-center">
+                                      +{resource.languages.length - 3}
+                                    </span>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-2 text-xs text-gray-500">
+                                <Download className="h-3 w-3" />
+                                {resource.downloadCount} downloads
+                              </div>
+                              
+                              {resource.fileUrl && (
+                                <Button
+                                  size="sm"
+                                  className="bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white"
+                                  onClick={() => window.open(resource.fileUrl!, '_blank')}
+                                  data-testid={`button-view-resource-${resource.id}`}
+                                >
+                                  <FileText className="h-3 w-3 mr-1" />
+                                  View
+                                </Button>
+                              )}
+                            </div>
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
