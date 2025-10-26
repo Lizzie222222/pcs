@@ -18,6 +18,36 @@ import { useToast } from "@/hooks/use-toast";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 
+// Helper function to convert GCS URLs to proxy URLs for CORS support
+function getProxyUrl(url: string | null): string {
+  if (!url) return '';
+  try {
+    const urlObj = new URL(url);
+    // Decode pathname to handle URL-encoded paths from GCS (e.g., public%2Ffile.pdf)
+    const pathname = decodeURIComponent(urlObj.pathname);
+    
+    // Extract object path from GCS URL
+    const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
+    if (privateUploadsMatch) {
+      return `/objects/uploads/${privateUploadsMatch[1]}`;
+    }
+    
+    const publicMatch = pathname.match(/\/public\/(.+)$/);
+    if (publicMatch) {
+      return `/objects/public/${publicMatch[1]}`;
+    }
+    
+    // If already a proxy URL, return as is
+    if (url.startsWith('/objects/')) {
+      return url;
+    }
+    
+    return url; // Fallback to original URL
+  } catch {
+    return url; // Invalid URL, return original
+  }
+}
+
 interface Resource {
   id: string;
   title: string;
@@ -360,9 +390,10 @@ export default function Resources() {
     
     // PDF files
     if (fileType.includes('pdf')) {
+      const pdfProxyUrl = getProxyUrl(resource.fileUrl);
       return (
         <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
-          <PDFThumbnail url={resource.fileUrl} className="w-full h-full" />
+          <PDFThumbnail url={pdfProxyUrl} className="w-full h-full" />
         </div>
       );
     }
