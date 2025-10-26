@@ -816,6 +816,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
             fileUrl: objectPath,
             fileType: mimeType,
             fileSize,
+            languages: ['en'], // Default to English until admin sets the correct language
           });
 
           results.push({
