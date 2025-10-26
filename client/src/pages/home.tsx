@@ -432,13 +432,12 @@ export default function Home() {
     // 1. User exists and hasn't seen onboarding
     // 2. Haven't attempted to show it in this session
     // 3. Dashboard data is loaded
-    // 4. Modal is not already showing
-    // 5. All loading states are complete
-    if (user && !user.hasSeenOnboarding && !hasAttemptedOnboarding && dashboardData && !isLoading && !isDashboardLoading && !showWelcomeModal) {
+    // 4. All loading states are complete
+    if (user && !user.hasSeenOnboarding && !hasAttemptedOnboarding && dashboardData && !isLoading && !isDashboardLoading) {
       setShowWelcomeModal(true);
       setHasAttemptedOnboarding(true); // Mark as attempted immediately to prevent re-triggering
     }
-  }, [user, user?.hasSeenOnboarding, user?.id, dashboardData, isLoading, isDashboardLoading, hasAttemptedOnboarding, showWelcomeModal]);
+  }, [user?.hasSeenOnboarding, hasAttemptedOnboarding, isLoading, isDashboardLoading]);
 
   const handleWelcomeModalClose = () => {
     setShowWelcomeModal(false);
