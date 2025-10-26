@@ -196,6 +196,7 @@ export default function Home() {
   // (but allow manual restarts via the "Restart Tour" button)
   useEffect(() => {
     if (showTour && hasCompletedTour && !isManualTourTrigger.current) {
+      console.log('[Tour] Blocking auto-trigger - tour already completed');
       setShowTour(false);
     }
   }, [showTour, hasCompletedTour]);
@@ -447,8 +448,12 @@ export default function Home() {
 
   const handleStartTour = () => {
     // Only start tour if user hasn't completed it before
+    console.log('[Tour] handleStartTour called - hasCompletedTour:', hasCompletedTour);
     if (!hasCompletedTour) {
+      console.log('[Tour] Starting tour via handleStartTour');
       setShowTour(true);
+    } else {
+      console.log('[Tour] Tour already completed, not starting');
     }
   };
 
@@ -468,6 +473,7 @@ export default function Home() {
 
   const handleRestartTour = () => {
     // Allow manual restart regardless of completion status
+    console.log('[Tour] Manual restart triggered');
     isManualTourTrigger.current = true;
     setShowTour(true);
   };
