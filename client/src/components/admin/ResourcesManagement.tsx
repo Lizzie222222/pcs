@@ -143,12 +143,13 @@ function ResourceForm({ resource, onClose, onSuccess }: {
         }
 
         // Set ACL policy for the uploaded file
+        // Always use 'public' for object storage (resource-level access control is handled separately)
         const aclResponse = await fetch('/api/evidence-files', {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             fileURL: fileUrl,
-            visibility: formData.visibility,
+            visibility: 'public',
             filename: uploadedFile.name || `resource-${Date.now()}`,
             owner: user.id,
           }),
