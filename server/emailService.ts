@@ -25,7 +25,7 @@ export function getBaseUrl(): string {
     }
     console.log(`[Email Service] Using FRONTEND_URL: ${baseUrl}`);
   } else {
-    baseUrl = 'https://plasticclever.org';
+    baseUrl = 'https://plasticcleverschools.org';
     console.warn(`[Email Service] WARNING: No REPLIT_DEV_DOMAIN or FRONTEND_URL set, using fallback: ${baseUrl}`);
   }
   
@@ -52,7 +52,7 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
   try {
     const emailData: any = {
       to: params.to,
-      from: params.from || process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+      from: params.from || process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
       subject: params.subject,
     };
     
@@ -96,7 +96,7 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
 export async function sendWelcomeEmail(userEmail: string, schoolName: string): Promise<boolean> {
   return await sendEmail({
     to: userEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Welcome to Plastic Clever Schools - ${schoolName}`,
     templateId: 'd-67435cbdbfbf42d5b3b3167a7efa2e1c',
     dynamicTemplateData: {
@@ -114,7 +114,7 @@ export async function sendEvidenceApprovalEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: userEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Evidence Approved - ${evidenceTitle}`,
     templateId: 'd-3349376322ca47c79729d04b402372c6',
     dynamicTemplateData: {
@@ -135,7 +135,7 @@ export async function sendEvidenceRejectionEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: userEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Evidence Feedback - ${evidenceTitle}`,
     templateId: 'd-df7b17c32ee04fc78db7dc888f6849da',
     dynamicTemplateData: {
@@ -157,7 +157,7 @@ export async function sendTeacherInvitationEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: recipientEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `You've been invited to join ${schoolName} on Plastic Clever Schools`,
     templateId: 'd-0940098ba7ec4188824e4b14274e668c',
     dynamicTemplateData: {
@@ -278,7 +278,7 @@ export async function sendAdminInvitationEmail(
   
   return await sendEmail({
     to: recipientEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: "You've been invited to join Plastic Clever Schools as an Administrator",
     html: html,
   });
@@ -393,7 +393,7 @@ export async function sendPartnerInvitationEmail(
   
   return await sendEmail({
     to: recipientEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: "You've been invited to join Plastic Clever Schools as a Partner",
     html: html,
   });
@@ -408,7 +408,7 @@ export async function sendVerificationRequestEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: headTeacherEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `New Teacher Verification Request for ${schoolName}`,
     templateId: 'd-19393590bcaf43e091737b69c49139ac',
     dynamicTemplateData: {
@@ -429,7 +429,7 @@ export async function sendVerificationApprovalEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: requesterEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Welcome to ${schoolName} on Plastic Clever Schools!`,
     templateId: 'd-adcb01d8edd5403490263da8ab97f402',
     dynamicTemplateData: {
@@ -449,7 +449,7 @@ export async function sendVerificationRejectionEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: requesterEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Update on Your Request to Join ${schoolName}`,
     templateId: 'd-6df35ffa36604ed9a62e919f5fa48962',
     dynamicTemplateData: {
@@ -470,7 +470,7 @@ export async function sendEvidenceSubmissionEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: userEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Evidence Submitted Successfully - ${evidenceTitle}`,
     templateId: 'd-2a045eb4f5a0477689d385a315dc2938',
     dynamicTemplateData: {
@@ -491,7 +491,7 @@ export async function sendAdminNewEvidenceEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: adminEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `New Evidence Submission - ${evidenceTitle}`,
     templateId: 'd-cf5207c6e0734984bc8008f5285fcef4',
     dynamicTemplateData: {
@@ -511,7 +511,7 @@ export async function sendAuditSubmissionEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: userEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Plastic Waste Audit Submitted - ${schoolName}`,
     templateId: 'd-audit-submission-placeholder',
     dynamicTemplateData: {
@@ -528,7 +528,7 @@ export async function sendAdminNewAuditEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: adminEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `New Audit Submission - ${schoolName}`,
     templateId: 'd-admin-audit-notification-placeholder',
     dynamicTemplateData: {
@@ -545,7 +545,7 @@ export async function sendAuditApprovalEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: userEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Audit Approved - ${schoolName}`,
     templateId: 'd-audit-approval-placeholder',
     dynamicTemplateData: {
@@ -562,7 +562,7 @@ export async function sendAuditRejectionEmail(
 ): Promise<boolean> {
   return await sendEmail({
     to: userEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Audit Feedback - ${schoolName}`,
     templateId: 'd-audit-rejection-placeholder',
     dynamicTemplateData: {
@@ -604,7 +604,7 @@ export async function sendBulkEmail(params: BulkEmailParams): Promise<{ sent: nu
     try {
       const success = await sendEmail({
         to: email,
-        from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+        from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
         subject: params.subject,
         templateId: BULK_EMAIL_TEMPLATE_ID,
         dynamicTemplateData: {
@@ -795,7 +795,7 @@ export async function sendEventRegistrationEmail(
 
   return await sendEmail({
     to: to,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Registration Confirmed: ${event.title}`,
     html: html,
   });
@@ -909,7 +909,7 @@ export async function sendEventCancellationEmail(
 
   return await sendEmail({
     to: to,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Registration Cancelled: ${event.title}`,
     html: html,
   });
@@ -1074,7 +1074,7 @@ export async function sendEventReminderEmail(
 
   return await sendEmail({
     to: to,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Reminder: ${event.title} starts ${timeMessage}`,
     html: html,
   });
@@ -1240,7 +1240,7 @@ export async function sendEventUpdatedEmail(
 
   return await sendEmail({
     to: to,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `Event Updated: ${event.title}`,
     html: html,
   });
@@ -1423,7 +1423,7 @@ export async function sendEventAnnouncementEmail(
     const emailData: any = {
       to: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
       bcc: recipients,
-      from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+      from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
       subject: `${eventTypeLabel}: ${event.title}`,
       html: html,
     };
@@ -1619,7 +1619,7 @@ export async function sendEventDigestEmail(
     const emailData: any = {
       to: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
       bcc: recipients,
-      from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+      from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
       subject: `📅 Upcoming Events from Plastic Clever Schools`,
       html: html,
     };
@@ -1767,7 +1767,7 @@ export async function sendCourseCompletionCelebrationEmail(
   
   return await sendEmail({
     to: recipientEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     subject: `🎉 Congratulations! ${schoolName} Completed Round ${roundNumber}!`,
     html: html,
   });
@@ -1871,7 +1871,7 @@ export async function sendContactFormEmail(
   
   return await sendEmail({
     to: adminEmail,
-    from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+    from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
     replyTo: email,
     subject: `Contact Form: ${subject}`,
     html: html,
