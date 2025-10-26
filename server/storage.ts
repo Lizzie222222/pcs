@@ -237,6 +237,7 @@ export interface IStorage {
   getAllAdminInvitations(): Promise<AdminInvitation[]>;
   acceptAdminInvitation(token: string): Promise<AdminInvitation | undefined>;
   expireAdminInvitation(token: string): Promise<AdminInvitation | undefined>;
+  deleteAdminInvitation(id: string): Promise<boolean>;
 
   // Verification request operations
   createVerificationRequest(request: InsertVerificationRequest): Promise<VerificationRequest>;
@@ -1767,6 +1768,14 @@ export class DatabaseStorage implements IStorage {
       )
       .returning();
     return invitation;
+  }
+
+  async deleteAdminInvitation(id: string): Promise<boolean> {
+    const result = await db
+      .delete(adminInvitations)
+      .where(eq(adminInvitations.id, id))
+      .returning();
+    return result.length > 0;
   }
 
   // Verification request operations

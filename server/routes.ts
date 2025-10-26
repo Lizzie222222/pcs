@@ -5608,10 +5608,55 @@ Return JSON with:
     }
   });
 
+  // Get school users count for deletion preview
+  app.get('/api/admin/schools/:id/users-preview', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const schoolId = req.params.id;
+      
+      // Get school users with details
+      const schoolUsers = await storage.getSchoolUsersWithDetails(schoolId);
+      
+      const users = schoolUsers.map(su => ({
+        id: su.user?.id || '',
+        name: su.user ? `${su.user.firstName} ${su.user.lastName}`.trim() : 'Unknown',
+        email: su.user?.email || 'N/A',
+        role: su.role,
+      })).filter(u => u.id); // Filter out null users
+      
+      res.json({
+        count: users.length,
+        users
+      });
+    } catch (error) {
+      console.error("Error fetching school users preview:", error);
+      res.status(500).json({ message: "Failed to fetch school users" });
+    }
+  });
+
   // Delete school
   app.delete('/api/admin/schools/:id', isAuthenticated, requireAdmin, async (req, res) => {
     try {
       const schoolId = req.params.id;
+      const { deleteUsers = false } = req.query;
+      
+      // If deleteUsers is true, delete all users associated with this school
+      if (deleteUsers === 'true') {
+        const schoolUsers = await storage.getSchoolUsersWithDetails(schoolId);
+        const userIds = schoolUsers.map(su => su.userId).filter(id => id);
+        
+        console.log(`[Delete School] Deleting ${userIds.length} associated users`);
+        
+        // Delete all users (using hard delete mode)
+        for (const userId of userIds) {
+          try {
+            await storage.deleteUser(userId, 'hard');
+          } catch (error) {
+            console.error(`[Delete School] Error deleting user ${userId}:`, error);
+            // Continue with other users even if one fails
+          }
+        }
+      }
+      
       const deleted = await storage.deleteSchool(schoolId);
       
       if (!deleted) {
@@ -6523,6 +6568,28 @@ Return JSON with:
     } catch (error) {
       console.error("[Admin Invitations] Error:", error);
       res.status(500).json({ message: "Failed to fetch invitations" });
+    }
+  });
+
+  // DELETE /api/admin/invitations/:id - Delete an admin invitation
+  app.delete('/api/admin/invitations/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+      
+      console.log(`[Delete Admin Invitation] Admin ${userId} deleting invitation ${id}`);
+      
+      const deleted = await storage.deleteAdminInvitation(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Invitation not found" });
+      }
+      
+      console.log(`[Delete Admin Invitation] Successfully deleted invitation ${id}`);
+      res.json({ message: "Invitation deleted successfully" });
+    } catch (error) {
+      console.error("[Delete Admin Invitation] Error:", error);
+      res.status(500).json({ message: "Failed to delete invitation" });
     }
   });
 
