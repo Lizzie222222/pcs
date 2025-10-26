@@ -156,6 +156,10 @@ export default function Home() {
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [hasAttemptedOnboarding, setHasAttemptedOnboarding] = useState(false);
+  const [hasCompletedTour, setHasCompletedTour] = useState<boolean>(() => {
+    const stored = localStorage.getItem('hasCompletedTour');
+    return stored === 'true';
+  });
 
   // Redirect admins to admin dashboard
   useEffect(() => {
@@ -435,18 +439,26 @@ export default function Home() {
   };
 
   const handleStartTour = () => {
-    setShowTour(true);
+    // Only start tour if user hasn't completed it before
+    if (!hasCompletedTour) {
+      setShowTour(true);
+    }
   };
 
   const handleTourComplete = () => {
     setShowTour(false);
+    setHasCompletedTour(true);
+    localStorage.setItem('hasCompletedTour', 'true');
   };
 
   const handleTourSkip = () => {
     setShowTour(false);
+    setHasCompletedTour(true);
+    localStorage.setItem('hasCompletedTour', 'true');
   };
 
   const handleRestartTour = () => {
+    // Allow manual restart regardless of completion status
     setShowTour(true);
   };
 
