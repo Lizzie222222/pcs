@@ -203,7 +203,7 @@ export class MailchimpService {
           subject_line: campaign.subject,
           title: campaign.title,
           from_name: campaign.fromName || 'Plastic Clever Schools',
-          reply_to: campaign.fromEmail || process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+          reply_to: campaign.fromEmail || process.env.FROM_EMAIL || 'noreply@plasticcleverschools.org',
         },
       });
 
@@ -309,7 +309,7 @@ export class MailchimpService {
 
   // Get Mailchimp email template
   private getMailchimpTemplate(content: string, subject: string): string {
-    const baseUrl = process.env.FRONTEND_URL || 'https://plasticclever.org';
+    const baseUrl = process.env.FRONTEND_URL || 'https://plasticcleverschools.org';
     
     return `
       <!DOCTYPE html>
@@ -406,7 +406,7 @@ export class MailchimpService {
         ? '💻 Virtual Event' 
         : `📍 ${event.location || 'Location TBA'}`;
 
-      const baseUrl = process.env.FRONTEND_URL || 'https://plasticclever.org';
+      const baseUrl = process.env.FRONTEND_URL || 'https://plasticcleverschools.org';
       const registrationUrl = `${baseUrl}/events/${event.id}`;
 
       const subject = `${eventTypeLabel}: ${event.title}`;
@@ -498,7 +498,7 @@ export class MailchimpService {
     }
 
     try {
-      const baseUrl = process.env.FRONTEND_URL || 'https://plasticclever.org';
+      const baseUrl = process.env.FRONTEND_URL || 'https://plasticcleverschools.org';
 
       const eventTypeLabels: { [key: string]: string } = {
         workshop: '🎨 Workshop',
