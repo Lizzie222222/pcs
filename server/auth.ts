@@ -51,7 +51,7 @@ const loginSchema = z.object({
 });
 
 export function getSession() {
-  const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
+  const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days
   const isProduction = process.env.NODE_ENV === 'production';
   
   // Use PostgreSQL store in production, memory store in development/test
