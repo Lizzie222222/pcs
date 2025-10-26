@@ -1839,9 +1839,22 @@ export class DatabaseStorage implements IStorage {
 
   // Resource operations
   async createResource(resourceData: InsertResource): Promise<Resource> {
+    // Sync language fields if languages array is provided
+    const dataWithSync = { ...resourceData };
+    if (resourceData.languages && Array.isArray(resourceData.languages) && resourceData.languages.length > 0) {
+      // Map language code to name for backward compatibility
+      const languageNames: Record<string, string> = {
+        'en': 'English', 'es': 'Spanish', 'fr': 'French', 'de': 'German',
+        'it': 'Italian', 'pt': 'Portuguese', 'nl': 'Dutch', 'ar': 'Arabic',
+        'zh': 'Chinese', 'el': 'Greek', 'ru': 'Russian', 'ko': 'Korean',
+        'id': 'Indonesian', 'cy': 'Welsh'
+      };
+      dataWithSync.language = languageNames[resourceData.languages[0]] || 'English';
+    }
+    
     const [resource] = await db
       .insert(resources)
-      .values(resourceData)
+      .values(dataWithSync)
       .returning();
     return resource;
   }
@@ -1867,7 +1880,21 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(resources.country, filters.country));
     }
     if (filters.language) {
-      conditions.push(eq(resources.language, filters.language));
+      // Map language names to codes if needed
+      const languageCodes: Record<string, string> = {
+        'English': 'en', 'Spanish': 'es', 'French': 'fr', 'German': 'de',
+        'Italian': 'it', 'Portuguese': 'pt', 'Dutch': 'nl', 'Arabic': 'ar',
+        'Chinese': 'zh', 'Greek': 'el', 'Russian': 'ru', 'Korean': 'ko',
+        'Indonesian': 'id', 'Welsh': 'cy'
+      };
+      
+      // Convert language name to code if it's not already a 2-letter code
+      const languageCode = filters.language.length === 2 
+        ? filters.language 
+        : (languageCodes[filters.language] || filters.language);
+      
+      // Check if the language exists in the languages array
+      conditions.push(sql`${languageCode} = ANY(${resources.languages})`);
     }
     if (filters.ageRange) {
       conditions.push(eq(resources.ageRange, filters.ageRange));
@@ -1913,9 +1940,22 @@ export class DatabaseStorage implements IStorage {
   }
 
   async updateResource(id: string, updates: Partial<InsertResource>): Promise<Resource | undefined> {
+    // If languages array is provided, sync the old language field with the first language
+    const updatesWithSync = { ...updates };
+    if (updates.languages && Array.isArray(updates.languages) && updates.languages.length > 0) {
+      // Map language code to name for backward compatibility
+      const languageNames: Record<string, string> = {
+        'en': 'English', 'es': 'Spanish', 'fr': 'French', 'de': 'German',
+        'it': 'Italian', 'pt': 'Portuguese', 'nl': 'Dutch', 'ar': 'Arabic',
+        'zh': 'Chinese', 'el': 'Greek', 'ru': 'Russian', 'ko': 'Korean',
+        'id': 'Indonesian', 'cy': 'Welsh'
+      };
+      updatesWithSync.language = languageNames[updates.languages[0]] || 'English';
+    }
+    
     const [resource] = await db
       .update(resources)
-      .set({ ...updates, updatedAt: new Date() })
+      .set({ ...updatesWithSync, updatedAt: new Date() })
       .where(eq(resources.id, id))
       .returning();
     return resource;
