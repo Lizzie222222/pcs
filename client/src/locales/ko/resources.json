@@ -121,7 +121,7 @@
   },
   "register_to_access": "Please register or log in to access this resource",
   "recommendations": {
-    "recommended_for_you": "Recommended for You",
-    "resources_matching_stage": "Resources matching your current stage ({{stage}})"
+    "recommended_for_you": "추천 자료",
+    "resources_matching_stage": "현재 단계에 맞는 자료 ({{stage}})"
   }
 }

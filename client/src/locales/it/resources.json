@@ -121,7 +121,7 @@
   },
   "register_to_access": "Please register or log in to access this resource",
   "recommendations": {
-    "recommended_for_you": "Recommended for You",
-    "resources_matching_stage": "Resources matching your current stage ({{stage}})"
+    "recommended_for_you": "Consigliato per Te",
+    "resources_matching_stage": "Risorse corrispondenti alla tua fase attuale ({{stage}})"
   }
 }

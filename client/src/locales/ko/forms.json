@@ -82,16 +82,16 @@
     "domain_match_more": "+ {{count}}개 더",
     "domain_match_join_button": "기존 학교 가입 요청",
     "domain_match_dismiss": "등록 계속",
-    "about_your_school": "About Your School",
-    "school_name_label": "School Name *",
-    "country_label": "Country *",
-    "country_button": "Select country...",
-    "admin_email_label": "School Admin Email (Optional)",
+    "about_your_school": "학교 정보",
+    "school_name_label": "학교 이름 *",
+    "country_label": "국가 *",
+    "country_button": "국가 선택...",
+    "admin_email_label": "학교 관리자 이메일 (선택사항)",
     "admin_email_placeholder": "admin@school.edu",
-    "primary_language_label": "Primary Language Spoken *",
-    "primary_language_placeholder": "Select language",
-    "button_cancel": "Cancel",
-    "button_next_about_you": "Next: About You"
+    "primary_language_label": "주로 사용하는 언어 *",
+    "primary_language_placeholder": "언어 선택",
+    "button_cancel": "취소",
+    "button_next_about_you": "다음: 귀하의 정보"
   },
   "evidence_submission": {
     "title": "증거 제출",
@@ -179,19 +179,19 @@
     "optional": "선택사항"
   },
   "teacher_info": {
-    "section_title": "About You (Lead Teacher)",
-    "first_name_label": "First Name *",
-    "first_name_placeholder": "Enter your first name",
-    "last_name_label": "Last Name *",
-    "last_name_placeholder": "Enter your last name",
-    "email_label": "Email Address *",
+    "section_title": "귀하의 정보 (담당 교사)",
+    "first_name_label": "이름 *",
+    "first_name_placeholder": "이름을 입력하세요",
+    "last_name_label": "성 *",
+    "last_name_placeholder": "성을 입력하세요",
+    "email_label": "이메일 주소 *",
     "email_placeholder": "your.email@school.edu",
-    "email_description": "Personal or professional email address",
-    "role_label": "Your Role at School (Optional)",
-    "role_placeholder": "e.g., Head of Science, Class Teacher",
-    "referral_label": "How did you hear about Plastic Clever Schools? (Optional)",
-    "referral_placeholder": "Select an option",
-    "button_back": "Back",
-    "button_next_student_info": "Next: Student Info"
+    "email_description": "개인 또는 업무용 이메일 주소",
+    "role_label": "학교에서의 역할 (선택사항)",
+    "role_placeholder": "예: 과학부장, 담임교사",
+    "referral_label": "Plastic Clever Schools를 어떻게 알게 되셨나요? (선택사항)",
+    "referral_placeholder": "옵션 선택",
+    "button_back": "뒤로",
+    "button_next_student_info": "다음: 학생 정보"
   }
 }

@@ -82,16 +82,16 @@
     "domain_match_more": "+ {{count}}个更多",
     "domain_match_join_button": "请求加入现有学校",
     "domain_match_dismiss": "继续注册",
-    "about_your_school": "About Your School",
-    "school_name_label": "School Name *",
-    "country_label": "Country *",
-    "country_button": "Select country...",
-    "admin_email_label": "School Admin Email (Optional)",
+    "about_your_school": "关于您的学校",
+    "school_name_label": "学校名称 *",
+    "country_label": "国家 *",
+    "country_button": "选择国家...",
+    "admin_email_label": "学校管理员电子邮件（可选）",
     "admin_email_placeholder": "admin@school.edu",
-    "primary_language_label": "Primary Language Spoken *",
-    "primary_language_placeholder": "Select language",
-    "button_cancel": "Cancel",
-    "button_next_about_you": "Next: About You"
+    "primary_language_label": "主要使用语言 *",
+    "primary_language_placeholder": "选择语言",
+    "button_cancel": "取消",
+    "button_next_about_you": "下一步：关于您"
   },
   "evidence_submission": {
     "title": "提交证据",
@@ -179,19 +179,19 @@
     "optional": "可选"
   },
   "teacher_info": {
-    "section_title": "About You (Lead Teacher)",
-    "first_name_label": "First Name *",
-    "first_name_placeholder": "Enter your first name",
-    "last_name_label": "Last Name *",
-    "last_name_placeholder": "Enter your last name",
-    "email_label": "Email Address *",
+    "section_title": "关于您（主管教师）",
+    "first_name_label": "名字 *",
+    "first_name_placeholder": "输入您的名字",
+    "last_name_label": "姓氏 *",
+    "last_name_placeholder": "输入您的姓氏",
+    "email_label": "电子邮件地址 *",
     "email_placeholder": "your.email@school.edu",
-    "email_description": "Personal or professional email address",
-    "role_label": "Your Role at School (Optional)",
-    "role_placeholder": "e.g., Head of Science, Class Teacher",
-    "referral_label": "How did you hear about Plastic Clever Schools? (Optional)",
-    "referral_placeholder": "Select an option",
-    "button_back": "Back",
-    "button_next_student_info": "Next: Student Info"
+    "email_description": "个人或专业电子邮件地址",
+    "role_label": "您在学校的角色（可选）",
+    "role_placeholder": "例如：科学部主任、班主任",
+    "referral_label": "您是如何了解 Plastic Clever Schools 的？（可选）",
+    "referral_placeholder": "选择一个选项",
+    "button_back": "返回",
+    "button_next_student_info": "下一步：学生信息"
   }
 }

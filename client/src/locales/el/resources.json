@@ -121,7 +121,7 @@
   },
   "register_to_access": "Please register or log in to access this resource",
   "recommendations": {
-    "recommended_for_you": "Recommended for You",
-    "resources_matching_stage": "Resources matching your current stage ({{stage}})"
+    "recommended_for_you": "Προτεινόμενα για Εσάς",
+    "resources_matching_stage": "Πόροι που ταιριάζουν στην τρέχουσα φάση σας ({{stage}})"
   }
 }

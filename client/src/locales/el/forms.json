@@ -82,16 +82,16 @@
     "domain_match_more": "+ {{count}} περισσότερα",
     "domain_match_join_button": "Αίτημα Συμμετοχής σε Υπάρχον Σχολείο",
     "domain_match_dismiss": "Συνέχεια Εγγραφής",
-    "about_your_school": "About Your School",
-    "school_name_label": "School Name *",
-    "country_label": "Country *",
-    "country_button": "Select country...",
-    "admin_email_label": "School Admin Email (Optional)",
+    "about_your_school": "Σχετικά με το Σχολείο σας",
+    "school_name_label": "Όνομα Σχολείου *",
+    "country_label": "Χώρα *",
+    "country_button": "Επιλογή χώρας...",
+    "admin_email_label": "Email Διαχειριστή Σχολείου (Προαιρετικό)",
     "admin_email_placeholder": "admin@school.edu",
-    "primary_language_label": "Primary Language Spoken *",
-    "primary_language_placeholder": "Select language",
-    "button_cancel": "Cancel",
-    "button_next_about_you": "Next: About You"
+    "primary_language_label": "Κύρια Γλώσσα Ομιλίας *",
+    "primary_language_placeholder": "Επιλογή γλώσσας",
+    "button_cancel": "Ακύρωση",
+    "button_next_about_you": "Επόμενο: Σχετικά με Εσάς"
   },
   "evidence_submission": {
     "title": "Υποβολή Αποδεικτικών",
@@ -179,19 +179,19 @@
     "optional": "Προαιρετικό"
   },
   "teacher_info": {
-    "section_title": "About You (Lead Teacher)",
-    "first_name_label": "First Name *",
-    "first_name_placeholder": "Enter your first name",
-    "last_name_label": "Last Name *",
-    "last_name_placeholder": "Enter your last name",
-    "email_label": "Email Address *",
+    "section_title": "Σχετικά με Εσάς (Κύριος Εκπαιδευτικός)",
+    "first_name_label": "Όνομα *",
+    "first_name_placeholder": "Εισάγετε το όνομά σας",
+    "last_name_label": "Επώνυμο *",
+    "last_name_placeholder": "Εισάγετε το επώνυμό σας",
+    "email_label": "Διεύθυνση Email *",
     "email_placeholder": "your.email@school.edu",
-    "email_description": "Personal or professional email address",
-    "role_label": "Your Role at School (Optional)",
-    "role_placeholder": "e.g., Head of Science, Class Teacher",
-    "referral_label": "How did you hear about Plastic Clever Schools? (Optional)",
-    "referral_placeholder": "Select an option",
-    "button_back": "Back",
-    "button_next_student_info": "Next: Student Info"
+    "email_description": "Προσωπική ή επαγγελματική διεύθυνση email",
+    "role_label": "Ο Ρόλος σας στο Σχολείο (Προαιρετικό)",
+    "role_placeholder": "π.χ., Υπεύθυνος Επιστημών, Δάσκαλος Τάξης",
+    "referral_label": "Πώς μάθατε για τα Plastic Clever Schools; (Προαιρετικό)",
+    "referral_placeholder": "Επιλέξτε μια επιλογή",
+    "button_back": "Πίσω",
+    "button_next_student_info": "Επόμενο: Πληροφορίες Μαθητών"
   }
 }

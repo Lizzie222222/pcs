@@ -121,7 +121,7 @@
   },
   "register_to_access": "Please register or log in to access this resource",
   "recommendations": {
-    "recommended_for_you": "Recommended for You",
-    "resources_matching_stage": "Resources matching your current stage ({{stage}})"
+    "recommended_for_you": "Aanbevolen voor Jou",
+    "resources_matching_stage": "Bronnen die passen bij je huidige fase ({{stage}})"
   }
 }

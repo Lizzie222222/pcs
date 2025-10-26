@@ -121,7 +121,7 @@
   },
   "register_to_access": "Please register or log in to access this resource",
   "recommendations": {
-    "recommended_for_you": "Recommended for You",
-    "resources_matching_stage": "Resources matching your current stage ({{stage}})"
+    "recommended_for_you": "Direkomendasikan untuk Anda",
+    "resources_matching_stage": "Sumber daya yang cocok dengan tahap Anda saat ini ({{stage}})"
   }
 }
