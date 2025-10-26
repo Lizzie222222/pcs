@@ -1123,6 +1123,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [showAdminEvidenceForm, setShowAdminEvidenceForm] = useState(false);
   const [evidenceFormSchoolId, setEvidenceFormSchoolId] = useState<string | null>(null);
   const [deletingSchool, setDeletingSchool] = useState<SchoolData | null>(null);
+  const [deleteSchoolUsers, setDeleteSchoolUsers] = useState(false);
   const [bulkEvidenceDialogOpen, setBulkEvidenceDialogOpen] = useState(false);
   const [bulkSchoolDialogOpen, setBulkSchoolDialogOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState<{
@@ -2782,21 +2783,35 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     },
   });
 
+  // Fetch school users preview when deletion dialog opens
+  const { data: schoolUsersPreview, isLoading: isLoadingSchoolUsers } = useQuery<{
+    count: number;
+    users: Array<{ id: string; name: string; email: string; role: string }>;
+  }>({
+    queryKey: ['/api/admin/schools', deletingSchool?.id, 'users-preview'],
+    enabled: !!deletingSchool,
+    retry: false,
+  });
+
   // Individual school delete mutation
   const deleteSchoolMutation = useMutation({
-    mutationFn: async (schoolId: string) => {
-      await apiRequest('DELETE', `/api/admin/schools/${schoolId}`);
+    mutationFn: async ({ schoolId, deleteUsers }: { schoolId: string; deleteUsers: boolean }) => {
+      await apiRequest('DELETE', `/api/admin/schools/${schoolId}?deleteUsers=${deleteUsers}`);
     },
-    onSuccess: (_, schoolId) => {
+    onSuccess: (_, variables) => {
       toast({
         title: "School Deleted",
-        description: "The school has been successfully deleted.",
+        description: variables.deleteUsers 
+          ? "The school and all associated users have been successfully deleted."
+          : "The school has been successfully deleted.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/overview'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/school-progress'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       setDeletingSchool(null);
+      setDeleteSchoolUsers(false);
     },
     onError: (error: any) => {
       toast({
@@ -2805,6 +2820,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         variant: "destructive",
       });
       setDeletingSchool(null);
+      setDeleteSchoolUsers(false);
     },
   });
 
@@ -8065,12 +8081,69 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       )}
 
       {/* Delete School Confirmation Dialog */}
-      <AlertDialog open={!!deletingSchool} onOpenChange={(open) => !open && setDeletingSchool(null)}>
-        <AlertDialogContent data-testid="dialog-delete-school-confirmation">
+      <AlertDialog open={!!deletingSchool} onOpenChange={(open) => {
+        if (!open) {
+          setDeletingSchool(null);
+          setDeleteSchoolUsers(false);
+        }
+      }}>
+        <AlertDialogContent data-testid="dialog-delete-school-confirmation" className="max-w-2xl">
           <AlertDialogHeader>
             <AlertDialogTitle>Delete School</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete <strong>{deletingSchool?.name}</strong>? This action cannot be undone and will permanently remove the school and all associated data.
+            <AlertDialogDescription className="space-y-4">
+              <div>
+                Are you sure you want to delete <strong>{deletingSchool?.name}</strong>? This action cannot be undone and will permanently remove the school and all associated data.
+              </div>
+              
+              {isLoadingSchoolUsers ? (
+                <div className="text-sm text-gray-500">Loading school users...</div>
+              ) : schoolUsersPreview && schoolUsersPreview.count > 0 ? (
+                <div className="space-y-3">
+                  <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
+                    <div className="flex items-start gap-2">
+                      <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                      <div className="text-sm text-amber-800 dark:text-amber-200">
+                        <strong>Warning:</strong> This school has {schoolUsersPreview.count} associated user{schoolUsersPreview.count > 1 ? 's' : ''}.
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 max-h-40 overflow-y-auto">
+                    <div className="text-sm font-medium mb-2">Associated Users:</div>
+                    <ul className="space-y-1 text-sm">
+                      {schoolUsersPreview.users.map((user) => (
+                        <li key={user.id} className="flex items-center gap-2">
+                          <span className="w-2 h-2 bg-gray-400 rounded-full"></span>
+                          <span>{user.name} ({user.email}) - {user.role}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg">
+                    <input
+                      type="checkbox"
+                      id="delete-school-users"
+                      checked={deleteSchoolUsers}
+                      onChange={(e) => setDeleteSchoolUsers(e.target.checked)}
+                      className="mt-1"
+                      data-testid="checkbox-delete-school-users"
+                    />
+                    <label htmlFor="delete-school-users" className="text-sm cursor-pointer">
+                      <div className="font-medium text-gray-900 dark:text-gray-100">
+                        Also delete all associated user accounts
+                      </div>
+                      <div className="text-gray-600 dark:text-gray-400 mt-1">
+                        If unchecked, the user accounts will remain in the system and can be reassigned to other schools. If checked, the users will be permanently deleted and won't be able to register again with the same email addresses.
+                      </div>
+                    </label>
+                  </div>
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500">
+                  This school has no associated users.
+                </div>
+              )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -8078,12 +8151,15 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deletingSchool && deleteSchoolMutation.mutate(deletingSchool.id)}
+              onClick={() => deletingSchool && deleteSchoolMutation.mutate({ 
+                schoolId: deletingSchool.id, 
+                deleteUsers: deleteSchoolUsers 
+              })}
               className="bg-red-600 hover:bg-red-700"
               disabled={deleteSchoolMutation.isPending}
               data-testid="button-confirm-delete-school"
             >
-              {deleteSchoolMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteSchoolMutation.isPending ? "Deleting..." : "Delete School"}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
