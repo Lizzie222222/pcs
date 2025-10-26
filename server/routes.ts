@@ -311,31 +311,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/pdfs/:filename', async (req, res) => {
     try {
       const { filename } = req.params;
+      const { lang } = req.query;
       
       // Whitelist allowed filenames for security
       const allowedFiles = [
         'PCS_PRIMARY_Teacher_Toolkit.pdf',
         'PCS_SECONDARY_Teacher_Toolkit.pdf',
         'PCS_PRIMARY_Pupil_Workbook.pdf',
-        'PCS_SECONDARY_Student_Workbook.pdf'
+        'PCS_SECONDARY_Student_Workbook.pdf',
+        // Language-specific files
+        'PCS_TeacherToolkit_Dutch.pdf',
+        'PCS_TeacherToolkit_French.pdf',
+        'PCS_TeacherToolkit_Greek.pdf',
+        'PCS_TeacherToolkit_Indonesian.pdf',
+        'PCS_StudentWorkbook_Dutch.pdf',
+        'PCS_StudentWorkbook_French.pdf',
+        'PCS_StudentWorkbook_Greek.pdf',
+        'PCS_StudentWorkbook_Indonesian.pdf'
       ];
       
-      if (!allowedFiles.includes(filename)) {
+      let targetFilename = filename;
+      
+      // If language parameter is provided, map to language-specific file
+      if (lang && typeof lang === 'string') {
+        const languageMap: Record<string, string> = {
+          'nl': 'Dutch',
+          'fr': 'French',
+          'el': 'Greek',
+          'id': 'Indonesian'
+        };
+        
+        const languageName = languageMap[lang];
+        
+        if (languageName) {
+          // Map base filename to language-specific filename
+          if (filename.includes('Teacher_Toolkit')) {
+            targetFilename = `PCS_TeacherToolkit_${languageName}.pdf`;
+          } else if (filename.includes('Pupil_Workbook') || filename.includes('Student_Workbook')) {
+            targetFilename = `PCS_StudentWorkbook_${languageName}.pdf`;
+          }
+        }
+      }
+      
+      if (!allowedFiles.includes(targetFilename)) {
         return res.status(404).json({ message: 'File not found' });
       }
       
-      const filePath = path.resolve(import.meta.dirname, '..', 'public', filename);
+      const filePath = path.resolve(import.meta.dirname, '..', 'public', targetFilename);
       
       // Check if file exists
       try {
         await fs.access(filePath);
       } catch {
+        // If language-specific file doesn't exist, fall back to original filename
+        if (targetFilename !== filename) {
+          const fallbackPath = path.resolve(import.meta.dirname, '..', 'public', filename);
+          try {
+            await fs.access(fallbackPath);
+            // Use fallback file
+            const fallbackStream = await fs.readFile(fallbackPath);
+            res.setHeader('Content-Type', 'application/pdf');
+            res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+            res.setHeader('Access-Control-Allow-Origin', '*');
+            res.setHeader('Cache-Control', 'public, max-age=31536000');
+            return res.send(fallbackStream);
+          } catch {
+            return res.status(404).json({ message: 'File not found' });
+          }
+        }
         return res.status(404).json({ message: 'File not found' });
       }
       
       // Set proper headers for PDF
       res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+      res.setHeader('Content-Disposition', `inline; filename="${targetFilename}"`);
       res.setHeader('Access-Control-Allow-Origin', '*');
       res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
       

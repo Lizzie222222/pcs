@@ -629,14 +629,20 @@ export default function Home() {
     }
   };
 
-  // Determine resource URLs based on school type
+  // Determine resource URLs based on school type and current language
   const isPrimary = !school.type || school.type === 'primary';
-  const teacherToolkitUrl = isPrimary 
-    ? '/api/pdfs/PCS_PRIMARY_Teacher_Toolkit.pdf'
-    : '/api/pdfs/PCS_SECONDARY_Teacher_Toolkit.pdf';
-  const studentWorkbookUrl = isPrimary
-    ? '/api/pdfs/PCS_PRIMARY_Pupil_Workbook.pdf'
-    : '/api/pdfs/PCS_SECONDARY_Student_Workbook.pdf';
+  const currentLanguage = i18n.language || 'en';
+  
+  // Build URLs with language parameter for language-specific PDFs
+  const baseTeacherToolkitFilename = isPrimary 
+    ? 'PCS_PRIMARY_Teacher_Toolkit.pdf'
+    : 'PCS_SECONDARY_Teacher_Toolkit.pdf';
+  const baseStudentWorkbookFilename = isPrimary
+    ? 'PCS_PRIMARY_Pupil_Workbook.pdf'
+    : 'PCS_SECONDARY_Student_Workbook.pdf';
+  
+  const teacherToolkitUrl = `/api/pdfs/${baseTeacherToolkitFilename}?lang=${currentLanguage}`;
+  const studentWorkbookUrl = `/api/pdfs/${baseStudentWorkbookFilename}?lang=${currentLanguage}`;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 pt-20">
