@@ -192,10 +192,10 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
             name="address"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{countryConfig.addressLabel} *</FormLabel>
+                <FormLabel>{t('forms:school_registration.address_label')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter school address"
+                    placeholder={t('forms:school_registration.address_placeholder')}
                     {...field}
                     data-testid="input-address"
                   />
@@ -212,10 +212,19 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
               name="postcode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{countryConfig.postalCodeLabel} *</FormLabel>
+                  <FormLabel>
+                    {country === 'United Kingdom' 
+                      ? t('forms:school_registration.postcode_label')
+                      : t('forms:school_registration.postal_code_label')
+                    }
+                  </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder={countryConfig.postalCodePlaceholder}
+                      placeholder={
+                        country === 'United Kingdom'
+                          ? t('forms:school_registration.postcode_placeholder')
+                          : t('forms:school_registration.postal_code_placeholder')
+                      }
                       {...field}
                       data-testid="input-postcode"
                     />
@@ -230,10 +239,19 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
               name="zipCode"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>{countryConfig.postalCodeLabel} *</FormLabel>
+                  <FormLabel>
+                    {country === 'United States' 
+                      ? t('forms:school_registration.zipcode_label')
+                      : t('forms:school_registration.postal_code_label')
+                    }
+                  </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder={countryConfig.postalCodePlaceholder}
+                      placeholder={
+                        country === 'United States'
+                          ? t('forms:school_registration.zipcode_placeholder')
+                          : t('forms:school_registration.postal_code_placeholder')
+                      }
                       {...field}
                       data-testid="input-zipcode"
                     />
