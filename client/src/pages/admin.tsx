@@ -1145,6 +1145,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   // Photo consent state
   const [photoConsentRejectDialogOpen, setPhotoConsentRejectDialogOpen] = useState(false);
   const [photoConsentRejectNotes, setPhotoConsentRejectNotes] = useState('');
+  
+  // Evidence approval without consent warning state
+  const [consentWarningDialogOpen, setConsentWarningDialogOpen] = useState(false);
+  const [pendingApprovalEvidence, setPendingApprovalEvidence] = useState<PendingEvidence | null>(null);
 
   // Expandable schools state
   const [expandedSchools, setExpandedSchools] = useState<Set<string>>(new Set());
@@ -2983,6 +2987,36 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       setSelectedEvidence(pendingEvidence?.map(e => e.id) || []);
     }
   };
+  
+  // Handle approve click with photo consent check
+  const handleApproveClick = (evidence: PendingEvidence) => {
+    // Check if school has approved photo consent
+    if (evidence.school?.photoConsentStatus !== 'approved') {
+      // Show warning dialog
+      setPendingApprovalEvidence(evidence);
+      setConsentWarningDialogOpen(true);
+    } else {
+      // Proceed with approval directly
+      setReviewData({
+        evidenceId: evidence.id,
+        action: 'approved',
+        notes: ''
+      });
+    }
+  };
+  
+  // Confirm approval without photo consent
+  const confirmApprovalWithoutConsent = () => {
+    if (pendingApprovalEvidence) {
+      setReviewData({
+        evidenceId: pendingApprovalEvidence.id,
+        action: 'approved',
+        notes: ''
+      });
+      setConsentWarningDialogOpen(false);
+      setPendingApprovalEvidence(null);
+    }
+  };
 
   const toggleSchoolSelection = (schoolId: string) => {
     setSelectedSchools(prev => 
@@ -3731,6 +3765,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           <p className="text-gray-600 mb-2">{evidence.description}</p>
                           <EvidenceVideoLinks videoLinks={evidence.videoLinks} />
                           <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                            {evidence.school?.name && (
+                              <span className="font-medium text-gray-700">
+                                <Building className="h-3 w-3 inline mr-1" />
+                                {evidence.school.name}
+                              </span>
+                            )}
                             <span>School ID: {evidence.schoolId}</span>
                             <span>Submitted: {new Date(evidence.submittedAt).toLocaleDateString()}</span>
                             <span>Files: {evidence.files?.length || 0}</span>
@@ -3747,11 +3787,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                           <Button 
                             size="sm" 
                             className="bg-green-500 hover:bg-green-600"
-                            onClick={() => setReviewData({
-                              evidenceId: evidence.id,
-                              action: 'approved',
-                              notes: ''
-                            })}
+                            onClick={() => handleApproveClick(evidence)}
                             data-testid={`button-approve-${evidence.id}`}
                           >
                             <CheckCircle className="h-4 w-4 mr-1" />
@@ -7271,6 +7307,48 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           </div>
         </div>
       )}
+      
+      {/* Photo Consent Warning Dialog */}
+      <AlertDialog open={consentWarningDialogOpen} onOpenChange={setConsentWarningDialogOpen}>
+        <AlertDialogContent data-testid="dialog-consent-warning">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              Approve Without Photo Consent? 📸
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3 pt-2">
+              <p className="text-base">
+                This school has <strong>not provided approved photo consent</strong>.
+              </p>
+              <p className="text-sm text-gray-600">
+                {pendingApprovalEvidence?.school?.photoConsentStatus === 'pending' 
+                  ? 'Their photo consent document is currently under review.'
+                  : pendingApprovalEvidence?.school?.photoConsentStatus === 'rejected'
+                  ? 'Their photo consent document was rejected.'
+                  : 'No photo consent document has been uploaded.'}
+              </p>
+              <p className="text-sm text-gray-600">
+                Approving this evidence means it <strong>will not be eligible</strong> for use in public case studies or promotional materials unless photo consent is later approved.
+              </p>
+              <p className="font-medium text-gray-900">
+                Are you sure you want to approve this submission?
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-consent-warning">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmApprovalWithoutConsent}
+              className="bg-yellow-600 hover:bg-yellow-700"
+              data-testid="button-confirm-consent-warning"
+            >
+              Yes, Approve Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Audit Review Modal */}
       {auditReviewData && (
