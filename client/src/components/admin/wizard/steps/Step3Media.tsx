@@ -73,12 +73,13 @@ export function Step3Media({ form, templateType: propTemplateType }: Step3MediaP
     }
   }, [templateType, form]);
 
-  // Fetch approved public evidence submissions for this school
+  // Fetch approved public evidence submissions for this school with photo consent
   const { data: evidenceList, isLoading: isLoadingEvidence } = useQuery<Evidence[]>({
     queryKey: ['/api/evidence', { 
       schoolId, 
       status: 'approved', 
-      visibility: 'public' 
+      visibility: 'public',
+      requirePhotoConsent: 'true'
     }],
     enabled: !!schoolId,
   });

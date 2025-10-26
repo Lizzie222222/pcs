@@ -2684,19 +2684,66 @@ Return JSON with:
     }
   });
 
-  // Get user's evidence
+  // Get user's evidence with optional filters for case study creation
   app.get('/api/evidence', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const schools = await storage.getUserSchools(userId);
+      const user = await storage.getUser(userId);
+      const { schoolId, status, visibility, requirePhotoConsent } = req.query;
       
-      if (schools.length === 0) {
-        return res.json([]);
+      // If schoolId is provided, verify user has access to it
+      let targetSchoolId = schoolId as string | undefined;
+      
+      if (targetSchoolId) {
+        // Admins can access any school's evidence
+        if (!user?.isAdmin) {
+          // Non-admins must be a member of the school
+          const schoolUser = await storage.getSchoolUser(targetSchoolId, userId);
+          if (!schoolUser) {
+            return res.status(403).json({ 
+              message: "You don't have permission to view evidence for this school" 
+            });
+          }
+        }
+      } else {
+        // No schoolId provided, get user's first school
+        const schools = await storage.getUserSchools(userId);
+        if (schools.length === 0) {
+          return res.json([]);
+        }
+        targetSchoolId = schools[0].id;
       }
 
-      // Get evidence for all user's schools
-      const evidence = await storage.getSchoolEvidence(schools[0].id);
-      res.json(evidence);
+      // Build filters
+      const filters: any = { schoolId: targetSchoolId };
+      if (status) filters.status = status as 'pending' | 'approved' | 'rejected';
+      if (visibility) filters.visibility = visibility as 'public' | 'registered';
+
+      // Get evidence with school data (includes photo consent status)
+      let evidence = await storage.getAllEvidence(filters);
+      
+      // Filter by photo consent status if required
+      if (requirePhotoConsent === 'true') {
+        evidence = evidence.filter(ev => ev.school?.photoConsentStatus === 'approved');
+      }
+      
+      // Transform to match the expected format with file URLs extracted
+      const transformedEvidence = evidence.map(ev => ({
+        id: ev.id,
+        title: ev.title,
+        stage: ev.stage,
+        status: ev.status,
+        visibility: ev.visibility,
+        schoolId: ev.schoolId,
+        schoolName: ev.school?.name || '',
+        fileUrls: Array.isArray(ev.files) 
+          ? (ev.files as any[]).filter((f: any) => f.type?.startsWith('image/')).map((f: any) => f.url) 
+          : [],
+        createdAt: ev.submittedAt,
+        photoConsentStatus: ev.school?.photoConsentStatus || null,
+      }));
+      
+      res.json(transformedEvidence);
     } catch (error) {
       console.error("Error fetching evidence:", error);
       res.status(500).json({ message: "Failed to fetch evidence" });

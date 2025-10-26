@@ -101,8 +101,15 @@ export function EvidenceSelector({ form, evidence, isLoading, schoolId }: Eviden
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          No approved public evidence submissions found for this school. 
-          You can upload custom images in the "Upload Custom Images" section below.
+          <strong>No eligible evidence found.</strong> To appear here, evidence must be:
+          <ul className="mt-2 ml-4 space-y-1 text-sm list-disc">
+            <li><strong>Approved</strong> by an administrator</li>
+            <li>Set to <strong>Public</strong> visibility</li>
+            <li>From a school with <strong>approved photo consent</strong></li>
+          </ul>
+          <p className="mt-2 text-sm">
+            You can upload custom images in the "Upload Custom Images" section below.
+          </p>
         </AlertDescription>
       </Alert>
     );
@@ -110,6 +117,14 @@ export function EvidenceSelector({ form, evidence, isLoading, schoolId }: Eviden
 
   return (
     <div className="space-y-6">
+      {/* Permission Info Alert */}
+      <Alert className="bg-blue-50 dark:bg-blue-950 border-blue-200 dark:border-blue-800">
+        <Info className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+        <AlertDescription className="text-blue-800 dark:text-blue-200">
+          <strong>Permission Verified:</strong> All images shown below are from schools with approved photo consent and are set to public visibility, making them safe to use in case studies.
+        </AlertDescription>
+      </Alert>
+      
       {/* Filter and count */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">

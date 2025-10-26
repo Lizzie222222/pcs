@@ -2319,6 +2319,8 @@ export class DatabaseStorage implements IStorage {
           id: schools.id,
           name: schools.name,
           country: schools.country,
+          photoConsentStatus: schools.photoConsentStatus,
+          photoConsentDocumentUrl: schools.photoConsentDocumentUrl,
         },
       })
       .from(evidence)

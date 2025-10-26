@@ -1653,6 +1653,8 @@ export type EvidenceWithSchool = Evidence & {
     id: string;
     name: string;
     country: string;
+    photoConsentStatus?: typeof schools.$inferSelect.photoConsentStatus;
+    photoConsentDocumentUrl?: string | null;
   };
 };
 export type CaseStudy = typeof caseStudies.$inferSelect;

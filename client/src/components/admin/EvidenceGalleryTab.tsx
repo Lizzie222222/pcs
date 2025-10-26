@@ -8,13 +8,15 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { 
-  Star,
   Eye,
   Globe,
   FileText,
   Building,
   Check,
-  X
+  X,
+  Shield,
+  ShieldAlert,
+  ShieldCheck
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
@@ -91,20 +93,35 @@ export default function EvidenceGalleryTab() {
     },
   });
 
-  // Toggle featured mutation
-  const toggleFeaturedMutation = useMutation({
-    mutationFn: async ({ id, isFeatured }: { id: string; isFeatured: boolean }) => {
-      const response = await apiRequest('PATCH', `/api/admin/evidence/${id}/featured`, { isFeatured: !isFeatured });
-      return response;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
-      toast({ title: "Success", description: "Evidence featured status updated" });
-    },
-    onError: () => {
-      toast({ title: "Error", description: "Failed to update featured status", variant: "destructive" });
-    },
-  });
+  // Helper function to get permission badge
+  const getPermissionBadge = (photoConsentStatus: string | null | undefined) => {
+    if (!photoConsentStatus || photoConsentStatus === 'pending') {
+      return {
+        icon: ShieldAlert,
+        color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
+        text: photoConsentStatus === 'pending' ? 'Permission Pending' : 'No Permission',
+      };
+    }
+    if (photoConsentStatus === 'approved') {
+      return {
+        icon: ShieldCheck,
+        color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
+        text: 'Permission Approved',
+      };
+    }
+    if (photoConsentStatus === 'rejected') {
+      return {
+        icon: Shield,
+        color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
+        text: 'Permission Rejected',
+      };
+    }
+    return {
+      icon: ShieldAlert,
+      color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
+      text: 'No Permission',
+    };
+  };
 
   // Get status badge color
   const getStatusBadgeColor = (status: string) => {
@@ -337,13 +354,21 @@ export default function EvidenceGalleryTab() {
                         Public
                       </Badge>
                     )}
-                    {evidence.isFeatured && (
-                      <Badge className="bg-amber-100 text-amber-800">
-                        <Star className="h-3 w-3 mr-1" />
-                        Featured
-                      </Badge>
-                    )}
                   </div>
+                  
+                  {/* Permission Status Badge */}
+                  {(() => {
+                    const permissionBadge = getPermissionBadge(evidence.school?.photoConsentStatus);
+                    const PermissionIcon = permissionBadge.icon;
+                    return (
+                      <div className="mt-2">
+                        <Badge className={permissionBadge.color} variant="outline">
+                          <PermissionIcon className="h-3 w-3 mr-1" />
+                          {permissionBadge.text}
+                        </Badge>
+                      </div>
+                    );
+                  })()}
                   
                   {/* Actions */}
                   <div className="flex gap-2 pt-2">
@@ -380,14 +405,6 @@ export default function EvidenceGalleryTab() {
                         </Button>
                       </>
                     )}
-                    <Button 
-                      size="sm" 
-                      variant={evidence.isFeatured ? "default" : "outline"}
-                      onClick={() => toggleFeaturedMutation.mutate({ id: evidence.id, isFeatured: evidence.isFeatured })}
-                      data-testid={`button-feature-evidence-${evidence.id}`}
-                    >
-                      <Star className="h-3 w-3" />
-                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -434,6 +451,40 @@ export default function EvidenceGalleryTab() {
                   </Badge>
                 </div>
               </div>
+              
+              {/* Visibility and Permission Status */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
+                <div>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">Visibility Setting</label>
+                  <Badge variant="outline" className={selectedEvidence.visibility === 'public' ? 'bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200'}>
+                    <Eye className="h-3 w-3 mr-1" />
+                    {selectedEvidence.visibility === 'public' ? 'Public' : 'Registered Only'}
+                  </Badge>
+                </div>
+                <div>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">Photo Permission</label>
+                  {(() => {
+                    const permissionBadge = getPermissionBadge(selectedEvidence.school?.photoConsentStatus);
+                    const PermissionIcon = permissionBadge.icon;
+                    return (
+                      <Badge className={permissionBadge.color} variant="outline">
+                        <PermissionIcon className="h-3 w-3 mr-1" />
+                        {permissionBadge.text}
+                      </Badge>
+                    );
+                  })()}
+                </div>
+              </div>
+              
+              {/* Permission Warning */}
+              {selectedEvidence.school?.photoConsentStatus !== 'approved' && (
+                <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
+                  <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                    <ShieldAlert className="h-4 w-4 inline mr-1" />
+                    <strong>Permission Required:</strong> This school {selectedEvidence.school?.photoConsentStatus === 'pending' ? 'has a pending' : 'has not uploaded a'} photo consent document. This evidence should not be used in public case studies until permission is approved.
+                  </p>
+                </div>
+              )}
               {selectedEvidence.files && Array.isArray(selectedEvidence.files) && selectedEvidence.files.length > 0 ? (
                 <div>
                   <label className="text-sm font-medium text-gray-700 mb-2 block">Files ({selectedEvidence.files.length})</label>
