@@ -2634,6 +2634,17 @@ export class DatabaseStorage implements IStorage {
     const investigateEvidence = allEvidence.filter(e => e.stage === 'investigate');
     const actEvidence = allEvidence.filter(e => e.stage === 'act');
 
+    // Count unique requirements with approved evidence (not total approved evidence)
+    const getApprovedRequirementsCount = (stageEvidence: typeof allEvidence) => {
+      const approvedEvidence = stageEvidence.filter(e => e.status === 'approved');
+      const uniqueRequirementIds = new Set(
+        approvedEvidence
+          .filter(e => e.evidenceRequirementId !== null)
+          .map(e => e.evidenceRequirementId)
+      );
+      return uniqueRequirementIds.size;
+    };
+
     // Check if school has an approved audit
     const approvedAudit = await db
       .select()
@@ -2660,17 +2671,17 @@ export class DatabaseStorage implements IStorage {
     return {
       inspire: {
         total: inspireEvidence.length,
-        approved: inspireEvidence.filter(e => e.status === 'approved').length
+        approved: getApprovedRequirementsCount(inspireEvidence)
       },
       investigate: {
         total: investigateEvidence.length,
-        approved: investigateEvidence.filter(e => e.status === 'approved').length,
+        approved: getApprovedRequirementsCount(investigateEvidence),
         hasQuiz,
         hasActionPlan
       },
       act: {
         total: actEvidence.length,
-        approved: actEvidence.filter(e => e.status === 'approved').length
+        approved: getApprovedRequirementsCount(actEvidence)
       }
     };
   }

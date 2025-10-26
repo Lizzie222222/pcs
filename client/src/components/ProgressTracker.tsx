@@ -173,15 +173,15 @@ export default function ProgressTracker({
   const getStageBadgeClasses = (color: string) => {
     switch (color) {
       case 'pcs_blue':
-        return 'bg-gradient-to-r from-blue-500 to-blue-600';
+        return 'bg-blue-500';
       case 'teal':
-        return 'bg-gradient-to-r from-teal-500 to-teal-600';
+        return 'bg-teal-500';
       case 'yellow':
-        return 'bg-gradient-to-r from-yellow-400 to-yellow-500';
+        return 'bg-yellow-400';
       case 'coral':
-        return 'bg-gradient-to-r from-orange-500 to-orange-600';
+        return 'bg-orange-500';
       default:
-        return 'bg-gradient-to-r from-blue-500 to-blue-600';
+        return 'bg-blue-500';
     }
   };
 
