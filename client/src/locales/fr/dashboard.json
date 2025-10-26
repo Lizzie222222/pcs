@@ -123,7 +123,8 @@
     "delete_confirmation_title": "Supprimer la Preuve ?",
     "delete_confirmation_description": "Cela supprimera définitivement cette soumission de preuve. Cette action ne peut pas être annulée.",
     "delete_success": "Preuve supprimée avec succès",
-    "delete_error": "Échec de la suppression de la preuve"
+    "delete_error": "Échec de la suppression de la preuve",
+    "reviewed_by": "Reviewed by {{name}}"
   },
   "quick_actions": {
     "title": "Actions Rapides",
@@ -307,7 +308,23 @@
     }
   },
   "events": {
-    "loading": "Chargement des événements..."
+    "loading": "Chargement des événements...",
+    "header": "Upcoming Events",
+    "description": "Join workshops, webinars, and community events",
+    "filter_placeholder": "Filter by type",
+    "filter_all": "All Events",
+    "filter_workshop": "Workshops",
+    "filter_webinar": "Webinars",
+    "filter_community": "Community Events",
+    "filter_training": "Training",
+    "filter_celebration": "Celebrations",
+    "filter_other": "Other",
+    "view_all_button": "View All Events",
+    "my_events": "My Events",
+    "no_upcoming": "No Upcoming Events",
+    "no_upcoming_description": "There are no upcoming events at the moment. Check back soon for new workshops, webinars, and community events!",
+    "no_registered": "No Registered Events",
+    "no_registered_description": "You haven't registered for any events yet. Browse upcoming events and join us!"
   },
   "errors": {
     "unexpected_error": "Une erreur inattendue s'est produite",
@@ -356,5 +373,42 @@
     "toast_success_desc": "Photo consent document uploaded successfully. It will be reviewed by our admin team.",
     "toast_upload_failed": "Upload Failed",
     "toast_upload_failed_desc": "Failed to upload document. Please try again."
+  },
+  "welcome_modal": {
+    "title": "Welcome to Your Dashboard!",
+    "description": "Your central hub for reducing plastic waste at your school. Here's what you can do:",
+    "section_progress_title": "Progress",
+    "section_progress_description": "Track your school's journey through the Inspire, Investigate, and Act stages",
+    "section_evidence_title": "Evidence",
+    "section_evidence_description": "Submit photos and videos showing your plastic reduction achievements",
+    "section_resources_title": "Resources",
+    "section_resources_description": "Access helpful guides, lesson plans, and educational materials",
+    "section_action_plan_title": "Action Plan",
+    "section_action_plan_description": "Create and manage your plastic reduction promises and goals",
+    "section_team_title": "Team",
+    "section_team_description": "Invite and manage your school's team members",
+    "section_events_title": "Events",
+    "section_events_description": "Join workshops, webinars, and community gatherings",
+    "button_get_started": "Get Started",
+    "button_take_tour": "Take a Quick Tour"
+  },
+  "audit": {
+    "select_plastic_item": "Select plastic item",
+    "select_timeframe": "Select timeframe",
+    "timeframe_week": "Per Week",
+    "timeframe_month": "Per Month",
+    "timeframe_year": "Per Year",
+    "select_destination": "Select destination",
+    "waste_general": "General Waste (Landfill)",
+    "waste_recycling": "Recycling Center",
+    "waste_mixed": "Mixed (Some recycled, some to landfill)",
+    "waste_unknown": "Unknown",
+    "placeholder_audit_team": "List the names of team members who conducted this audit",
+    "placeholder_lunchroom_notes": "Any observations about plastic use in lunchroom/staffroom areas?",
+    "placeholder_classroom_notes": "Any observations about plastic use in classrooms/bathrooms?",
+    "placeholder_bin_locations": "E.g., classrooms, hallways, cafeteria",
+    "placeholder_policy_details": "Describe your school's plastic reduction policy",
+    "placeholder_waste_notes": "Any other observations about waste management?",
+    "placeholder_promise_notes": "How will you achieve this reduction?"
   }
 }

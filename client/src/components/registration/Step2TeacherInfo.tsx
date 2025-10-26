@@ -55,7 +55,7 @@ export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2T
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" data-testid="form-step2-teacher-info">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-navy" data-testid="text-step2-title">
-            About You (Lead Teacher)
+            {t('forms:teacher_info.section_title')}
           </h3>
 
           {/* First Name */}
@@ -64,10 +64,10 @@ export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2T
             name="firstName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>First Name *</FormLabel>
+                <FormLabel>{t('forms:teacher_info.first_name_label')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter your first name"
+                    placeholder={t('forms:teacher_info.first_name_placeholder')}
                     {...field}
                     data-testid="input-teacher-first-name"
                   />
@@ -83,10 +83,10 @@ export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2T
             name="lastName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Last Name *</FormLabel>
+                <FormLabel>{t('forms:teacher_info.last_name_label')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter your last name"
+                    placeholder={t('forms:teacher_info.last_name_placeholder')}
                     {...field}
                     data-testid="input-teacher-last-name"
                   />
@@ -102,17 +102,17 @@ export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2T
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email Address *</FormLabel>
+                <FormLabel>{t('forms:teacher_info.email_label')}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="your.email@school.edu"
+                    placeholder={t('forms:teacher_info.email_placeholder')}
                     {...field}
                     data-testid="input-teacher-email"
                   />
                 </FormControl>
                 <FormDescription>
-                  Personal or professional email address
+                  {t('forms:teacher_info.email_description')}
                 </FormDescription>
                 <FormMessage data-testid="error-teacher-email" />
               </FormItem>
@@ -125,10 +125,10 @@ export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2T
             name="teacherRole"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Your Role at School (Optional)</FormLabel>
+                <FormLabel>{t('forms:teacher_info.role_label')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="e.g., Head of Science, Class Teacher"
+                    placeholder={t('forms:teacher_info.role_placeholder')}
                     {...field}
                     data-testid="input-teacher-role"
                   />
@@ -144,11 +144,11 @@ export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2T
             name="referralSource"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>How did you hear about Plastic Clever Schools? (Optional)</FormLabel>
+                <FormLabel>{t('forms:teacher_info.referral_label')}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-referral-source">
-                      <SelectValue placeholder="Select an option" />
+                      <SelectValue placeholder={t('forms:teacher_info.referral_placeholder')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -178,14 +178,14 @@ export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2T
             data-testid="button-back-step2"
             className="flex-1"
           >
-            Back
+            {t('forms:teacher_info.button_back')}
           </Button>
           <Button
             type="submit"
             className="btn-primary flex-1"
             data-testid="button-next-step2"
           >
-            Next: Student Info
+            {t('forms:teacher_info.button_next_student_info')}
           </Button>
         </div>
       </form>

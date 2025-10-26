@@ -1126,7 +1126,7 @@ export default function Home() {
                                     </div>
                                   )}
                                   <div className="text-green-600 mt-1 pl-4 text-xs">
-                                    Reviewed by {reviewerName}
+                                    {t('evidence.reviewed_by', { name: reviewerName })}
                                   </div>
                                 </div>
                               );
@@ -1176,7 +1176,7 @@ export default function Home() {
                                     </div>
                                   )}
                                   <div className="text-red-600 mt-1 pl-4 text-xs">
-                                    Reviewed by {reviewerName}
+                                    {t('evidence.reviewed_by', { name: reviewerName })}
                                   </div>
                                 </div>
                               );

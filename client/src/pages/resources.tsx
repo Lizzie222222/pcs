@@ -875,8 +875,8 @@ export default function Resources() {
                         <Star className="h-6 w-6 text-white" />
                       </div>
                       <div>
-                        <h2 className="text-2xl font-bold text-navy">Recommended for Your School</h2>
-                        <p className="text-gray-600">Resources matching your current stage: {dashboardData?.school?.currentStage}</p>
+                        <h2 className="text-2xl font-bold text-navy">{t('recommendations.recommended_for_you')}</h2>
+                        <p className="text-gray-600">{t('recommendations.resources_matching_stage', { stage: dashboardData?.school?.currentStage })}</p>
                       </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="recommended-resources-section">

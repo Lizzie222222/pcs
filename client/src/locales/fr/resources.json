@@ -119,5 +119,9 @@
     "pack_download_count_one": "{{count}} download",
     "pack_download_count_other": "{{count}} downloads"
   },
-  "register_to_access": "Please register or log in to access this resource"
+  "register_to_access": "Please register or log in to access this resource",
+  "recommendations": {
+    "recommended_for_you": "Recommended for You",
+    "resources_matching_stage": "Resources matching your current stage ({{stage}})"
+  }
 }

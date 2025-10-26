@@ -22,10 +22,10 @@
     "contact_section": "Κύρια Επαφή",
     "preferences_section": "Προτιμήσεις",
     "school_name": "Όνομα Σχολείου",
-    "school_name_placeholder": "Εισάγετε το όνομα του σχολείου σας",
+    "school_name_placeholder": "Το Όνομα του Σχολείου σας",
     "school_type": "Τύπος Σχολείου",
     "school_type_primary": "Δημοτικό Σχολείο",
-    "school_type_secondary": "Γυμνάσιο", 
+    "school_type_secondary": "Γυμνάσιο",
     "school_type_high": "Λύκειο",
     "school_type_international": "Διεθνές Σχολείο",
     "school_type_other": "Άλλο",
@@ -73,7 +73,6 @@
     "student_count_min": "Ο αριθμός μαθητών πρέπει να είναι τουλάχιστον 1",
     "student_count_max": "Ο αριθμός μαθητών είναι πολύ υψηλός (μέγιστο 10,000)",
     "school_name_required": "Το όνομα του σχολείου είναι υποχρεωτικό",
-    "school_name_placeholder": "Το Όνομα του Σχολείου σας",
     "gdpr_consent": "Συναινώ στην επεξεργασία δεδομένων σύμφωνα με το GDPR",
     "gdpr_consent_description": "Κατανοώ ότι τα προσωπικά μου δεδομένα θα επεξεργαστούν σύμφωνα με τον Γενικό Κανονισμό Προστασίας Δεδομένων (GDPR) και την Πολιτική Απορρήτου μας. Μπορώ να αποσύρω αυτή τη συναίνεση ανά πάσα στιγμή επικοινωνώντας με την υποστήριξη.",
     "gdpr_consent_required": "Πρέπει να συναινέσετε στην επεξεργασία δεδομένων για να εγγραφείτε",
@@ -82,7 +81,17 @@
     "domain_match_users": "χρήστες",
     "domain_match_more": "+ {{count}} περισσότερα",
     "domain_match_join_button": "Αίτημα Συμμετοχής σε Υπάρχον Σχολείο",
-    "domain_match_dismiss": "Συνέχεια Εγγραφής"
+    "domain_match_dismiss": "Συνέχεια Εγγραφής",
+    "about_your_school": "About Your School",
+    "school_name_label": "School Name *",
+    "country_label": "Country *",
+    "country_button": "Select country...",
+    "admin_email_label": "School Admin Email (Optional)",
+    "admin_email_placeholder": "admin@school.edu",
+    "primary_language_label": "Primary Language Spoken *",
+    "primary_language_placeholder": "Select language",
+    "button_cancel": "Cancel",
+    "button_next_about_you": "Next: About You"
   },
   "evidence_submission": {
     "title": "Υποβολή Αποδεικτικών",
@@ -168,5 +177,21 @@
     "enter_text": "Εισάγετε κείμενο",
     "choose_file": "Επιλέξτε αρχείο",
     "optional": "Προαιρετικό"
+  },
+  "teacher_info": {
+    "section_title": "About You (Lead Teacher)",
+    "first_name_label": "First Name *",
+    "first_name_placeholder": "Enter your first name",
+    "last_name_label": "Last Name *",
+    "last_name_placeholder": "Enter your last name",
+    "email_label": "Email Address *",
+    "email_placeholder": "your.email@school.edu",
+    "email_description": "Personal or professional email address",
+    "role_label": "Your Role at School (Optional)",
+    "role_placeholder": "e.g., Head of Science, Class Teacher",
+    "referral_label": "How did you hear about Plastic Clever Schools? (Optional)",
+    "referral_placeholder": "Select an option",
+    "button_back": "Back",
+    "button_next_student_info": "Next: Student Info"
   }
 }

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
@@ -134,6 +135,7 @@ function getEventTypeBadgeColor(eventType: string) {
 }
 
 export default function EventsSection({ schoolId, isActive, isAuthenticated }: EventsSectionProps) {
+  const { t } = useTranslation('dashboard');
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [eventFilter, setEventFilter] = useState<string>('all');
@@ -327,7 +329,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <div className="flex items-center gap-3">
-            <h2 className="text-3xl font-bold text-navy mb-2">Upcoming Events</h2>
+            <h2 className="text-3xl font-bold text-navy mb-2">{t('events.header')}</h2>
             {newEventsCount > 0 && (
               <Badge className="bg-red-500 text-white px-2.5 py-1 text-sm animate-pulse" data-testid="badge-new-events">
                 {newEventsCount} New
@@ -340,16 +342,16 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
           <Filter className="h-5 w-5 text-gray-500" />
           <Select value={eventFilter} onValueChange={setEventFilter}>
             <SelectTrigger className="w-48" data-testid="select-event-filter">
-              <SelectValue placeholder="Filter by type" />
+              <SelectValue placeholder={t('events.filter_placeholder')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Events</SelectItem>
-              <SelectItem value="workshop">Workshops</SelectItem>
-              <SelectItem value="webinar">Webinars</SelectItem>
-              <SelectItem value="community_event">Community Events</SelectItem>
-              <SelectItem value="training">Training</SelectItem>
-              <SelectItem value="celebration">Celebrations</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              <SelectItem value="all">{t('events.filter_all')}</SelectItem>
+              <SelectItem value="workshop">{t('events.filter_workshop')}</SelectItem>
+              <SelectItem value="webinar">{t('events.filter_webinar')}</SelectItem>
+              <SelectItem value="community_event">{t('events.filter_community')}</SelectItem>
+              <SelectItem value="training">{t('events.filter_training')}</SelectItem>
+              <SelectItem value="celebration">{t('events.filter_celebration')}</SelectItem>
+              <SelectItem value="other">{t('events.filter_other')}</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -378,7 +380,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                 <Calendar className="h-12 w-12 text-pcs_blue" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-navy mb-3">No Upcoming Events</h2>
+            <h2 className="text-2xl font-bold text-navy mb-3">{t('events.no_upcoming')}</h2>
             <p className="text-gray-600 mb-6 max-w-md mx-auto">
               There are no upcoming events at the moment. Check back soon for new workshops, webinars, and community events!
             </p>
@@ -521,7 +523,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                 data-testid="button-view-all-events"
               >
                 <ExternalLink className="h-5 w-5 mr-2" />
-                View All Events
+                {t('events.view_all_button')}
               </Button>
             </div>
           )}
@@ -530,7 +532,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
 
       {/* My Events Section */}
       <div className="mt-12">
-        <h2 className="text-3xl font-bold text-navy mb-6">My Events</h2>
+        <h2 className="text-3xl font-bold text-navy mb-6">{t('events.my_events')}</h2>
         {myEventsLoading ? (
           <div className="space-y-4">
             {[...Array(3)].map((_, i) => (
@@ -552,7 +554,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                   <Calendar className="h-8 w-8 text-gray-400" />
                 </div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-700 mb-2">No Registered Events</h3>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('events.no_registered')}</h3>
               <p className="text-gray-500">You haven't registered for any events yet. Browse upcoming events and join us!</p>
             </CardContent>
           </Card>

@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -86,6 +87,7 @@ type Part5Data = z.infer<typeof part5Schema>;
 type PromiseItem = z.infer<typeof promiseItemSchema>;
 
 export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps) {
+  const { t } = useTranslation('dashboard');
   const [currentStep, setCurrentStep] = useState(1);
   const [auditId, setAuditId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -1320,14 +1322,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-waste-destination">
-                          <SelectValue placeholder="Select destination" />
+                          <SelectValue placeholder={t('audit.select_destination')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="general-waste">General Waste (Landfill)</SelectItem>
-                        <SelectItem value="recycling-center">Recycling Center</SelectItem>
-                        <SelectItem value="mixed">Mixed (Some recycled, some to landfill)</SelectItem>
-                        <SelectItem value="unknown">Unknown</SelectItem>
+                        <SelectItem value="general-waste">{t('audit.waste_general')}</SelectItem>
+                        <SelectItem value="recycling-center">{t('audit.waste_recycling')}</SelectItem>
+                        <SelectItem value="mixed">{t('audit.waste_mixed')}</SelectItem>
+                        <SelectItem value="unknown">{t('audit.waste_unknown')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -1488,7 +1490,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                             >
                               <FormControl>
                                 <SelectTrigger data-testid={`select-promise-type-${index}`}>
-                                  <SelectValue placeholder="Select plastic item" />
+                                  <SelectValue placeholder={t('audit.select_plastic_item')} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
@@ -1555,13 +1557,13 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                             <Select onValueChange={formField.onChange} value={formField.value}>
                               <FormControl>
                                 <SelectTrigger data-testid={`select-promise-timeframe-${index}`}>
-                                  <SelectValue placeholder="Select timeframe" />
+                                  <SelectValue placeholder={t('audit.select_timeframe')} />
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="week">Per Week</SelectItem>
-                                <SelectItem value="month">Per Month</SelectItem>
-                                <SelectItem value="year">Per Year</SelectItem>
+                                <SelectItem value="week">{t('audit.timeframe_week')}</SelectItem>
+                                <SelectItem value="month">{t('audit.timeframe_month')}</SelectItem>
+                                <SelectItem value="year">{t('audit.timeframe_year')}</SelectItem>
                               </SelectContent>
                             </Select>
                             <FormMessage />

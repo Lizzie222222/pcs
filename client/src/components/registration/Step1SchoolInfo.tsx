@@ -82,7 +82,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6" data-testid="form-step1-school-info">
         <div className="space-y-4">
           <h3 className="text-lg font-semibold text-navy" data-testid="text-step1-title">
-            About Your School
+            {t('forms:school_registration.about_your_school')}
           </h3>
 
           {/* Country */}
@@ -91,7 +91,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
             name="country"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Country *</FormLabel>
+                <FormLabel>{t('forms:school_registration.country_label')}</FormLabel>
                 <Popover open={countryOpen} onOpenChange={setCountryOpen}>
                   <PopoverTrigger asChild>
                     <FormControl>
@@ -102,15 +102,15 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
                         className="w-full justify-between"
                         data-testid="button-select-country"
                       >
-                        {field.value || "Select country..."}
+                        {field.value || t('forms:school_registration.country_button')}
                         <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                       </Button>
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-full p-0">
                     <Command>
-                      <CommandInput placeholder="Search country..." />
-                      <CommandEmpty>No country found.</CommandEmpty>
+                      <CommandInput placeholder={t('forms:school_registration.country_search_placeholder')} />
+                      <CommandEmpty>{t('forms:school_registration.country_not_found')}</CommandEmpty>
                       <CommandGroup className="max-h-64 overflow-auto">
                         {isLoadingCountries ? (
                           <div className="p-2">
@@ -153,10 +153,10 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
             name="schoolName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>School Name *</FormLabel>
+                <FormLabel>{t('forms:school_registration.school_name_label')}</FormLabel>
                 <FormControl>
                   <Input
-                    placeholder="Enter school name"
+                    placeholder={t('forms:school_registration.school_name_placeholder')}
                     {...field}
                     data-testid="input-school-name"
                   />
@@ -172,11 +172,11 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
             name="adminEmail"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>School Admin Email (Optional)</FormLabel>
+                <FormLabel>{t('forms:school_registration.admin_email_label')}</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
-                    placeholder="admin@school.edu"
+                    placeholder={t('forms:school_registration.admin_email_placeholder')}
                     {...field}
                     data-testid="input-admin-email"
                   />
@@ -250,11 +250,11 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
             name="primaryLanguage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Primary Language Spoken *</FormLabel>
+                <FormLabel>{t('forms:school_registration.primary_language_label')}</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-primary-language">
-                      <SelectValue placeholder="Select language" />
+                      <SelectValue placeholder={t('forms:school_registration.primary_language_placeholder')} />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -284,14 +284,14 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
             data-testid="button-cancel-step1"
             className="flex-1"
           >
-            Cancel
+            {t('forms:school_registration.button_cancel')}
           </Button>
           <Button
             type="submit"
             className="btn-primary flex-1"
             data-testid="button-next-step1"
           >
-            Next: About You
+            {t('forms:school_registration.button_next_about_you')}
           </Button>
         </div>
       </form>
