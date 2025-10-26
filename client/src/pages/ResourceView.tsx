@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
 import * as pdfjsLib from 'pdfjs-dist';
+import type { PDFDocumentProxy } from 'pdfjs-dist';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,6 +13,36 @@ import { Download, FileText, Video, Image as ImageIcon, BookOpen, ZoomIn, ZoomOu
 import { useAuth } from "@/hooks/useAuth";
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
+
+// Helper function to convert GCS URLs to proxy URLs for CORS support
+function getProxyUrl(url: string | null): string {
+  if (!url) return '';
+  try {
+    const urlObj = new URL(url);
+    // Decode pathname to handle URL-encoded paths from GCS
+    const pathname = decodeURIComponent(urlObj.pathname);
+    
+    // Extract object path from GCS URL
+    const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
+    if (privateUploadsMatch) {
+      return `/objects/uploads/${privateUploadsMatch[1]}`;
+    }
+    
+    const publicMatch = pathname.match(/\/public\/(.+)$/);
+    if (publicMatch) {
+      return `/objects/public/${publicMatch[1]}`;
+    }
+    
+    // If already a proxy URL, return as is
+    if (url.startsWith('/objects/')) {
+      return url;
+    }
+    
+    return url; // Fallback to original URL
+  } catch {
+    return url; // Invalid URL, return original
+  }
+}
 
 interface Resource {
   id: string;
@@ -37,12 +68,13 @@ export default function ResourceView() {
   const [, navigate] = useLocation();
   const { t, i18n } = useTranslation('resources');
   const { isAuthenticated } = useAuth();
+  const [pdfDocument, setPdfDocument] = useState<PDFDocumentProxy | null>(null);
   const [pdfPages, setPdfPages] = useState<number>(0);
   const [pdfLoading, setPdfLoading] = useState(true);
   const [pdfError, setPdfError] = useState(false);
   const [zoom, setZoom] = useState(1.0);
   const containerRef = useRef<HTMLDivElement>(null);
-  const canvasRefs = useRef<Map<number, HTMLCanvasElement>>(new Map());
+  const renderedPagesRef = useRef<Set<number>>(new Set());
 
   // Fetch resource details
   const { data: resource, isLoading, error } = useQuery<Resource>({
@@ -76,7 +108,7 @@ export default function ResourceView() {
     }
   }, [resource]);
 
-  // Load PDF if file is PDF
+  // Load PDF document
   useEffect(() => {
     const loadPdf = async () => {
       if (!resource?.fileUrl || !resource.fileType?.includes('pdf')) {
@@ -87,9 +119,15 @@ export default function ResourceView() {
       try {
         setPdfLoading(true);
         setPdfError(false);
+        setPdfDocument(null);
+        setPdfPages(0);
+        renderedPagesRef.current.clear();
+
+        // Use proxy URL for GCS files to avoid CORS issues
+        const pdfUrl = getProxyUrl(resource.fileUrl);
 
         const loadingTask = pdfjsLib.getDocument({
-          url: resource.fileUrl,
+          url: pdfUrl,
           httpHeaders: {
             'Accept': 'application/pdf',
           },
@@ -97,29 +135,8 @@ export default function ResourceView() {
         });
         
         const pdf = await loadingTask.promise;
+        setPdfDocument(pdf);
         setPdfPages(pdf.numPages);
-
-        // Render all pages
-        for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-          const page = await pdf.getPage(pageNum);
-          const canvas = canvasRefs.current.get(pageNum);
-          
-          if (!canvas) continue;
-
-          const context = canvas.getContext('2d');
-          if (!context) continue;
-
-          const viewport = page.getViewport({ scale: zoom });
-          canvas.width = viewport.width;
-          canvas.height = viewport.height;
-
-          await page.render({
-            canvasContext: context,
-            viewport: viewport,
-            canvas: canvas,
-          }).promise;
-        }
-
         setPdfLoading(false);
       } catch (err) {
         console.error('PDF Loading Error:', err);
@@ -131,7 +148,51 @@ export default function ResourceView() {
     if (resource?.fileType?.includes('pdf')) {
       loadPdf();
     }
-  }, [resource, zoom]);
+  }, [resource]);
+
+  // Render a specific PDF page to a canvas
+  const renderPdfPage = useCallback(async (pageNum: number, canvas: HTMLCanvasElement) => {
+    if (!pdfDocument || !canvas || renderedPagesRef.current.has(pageNum)) {
+      return;
+    }
+
+    try {
+      const page = await pdfDocument.getPage(pageNum);
+      const context = canvas.getContext('2d');
+      if (!context) return;
+
+      const viewport = page.getViewport({ scale: zoom });
+      canvas.width = viewport.width;
+      canvas.height = viewport.height;
+
+      await page.render({
+        canvasContext: context,
+        viewport: viewport,
+        canvas: canvas,
+      }).promise;
+
+      renderedPagesRef.current.add(pageNum);
+    } catch (err) {
+      console.error(`Error rendering page ${pageNum}:`, err);
+    }
+  }, [pdfDocument, zoom]);
+
+  // Re-render all pages when zoom changes
+  useEffect(() => {
+    if (!pdfDocument) return;
+
+    // Clear rendered pages tracking
+    renderedPagesRef.current.clear();
+
+    // Find all canvas elements and re-render them
+    const canvasElements = containerRef.current?.querySelectorAll('canvas');
+    if (canvasElements) {
+      canvasElements.forEach((canvas, index) => {
+        const pageNum = index + 1;
+        renderPdfPage(pageNum, canvas as HTMLCanvasElement);
+      });
+    }
+  }, [zoom, pdfDocument]);
 
   const handleDownload = async () => {
     if (!resource) return;
@@ -397,7 +458,9 @@ export default function ResourceView() {
                     <div key={pageNum} className="mb-4 bg-white shadow-lg">
                       <canvas
                         ref={(el) => {
-                          if (el) canvasRefs.current.set(pageNum, el);
+                          if (el && pdfDocument) {
+                            renderPdfPage(pageNum, el);
+                          }
                         }}
                         className="w-full"
                         data-testid={`canvas-pdf-page-${pageNum}`}
