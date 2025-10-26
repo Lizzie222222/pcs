@@ -45,6 +45,7 @@ const Privacy = lazy(() => import("@/pages/privacy"));
 const Profile = lazy(() => import("@/pages/profile"));
 const InvitationAccept = lazy(() => import("@/pages/InvitationAccept"));
 const AdminInvitationAccept = lazy(() => import("@/pages/AdminInvitationAccept"));
+const MigrateAccount = lazy(() => import("@/pages/MigrateAccount"));
 const TestLogin = lazy(() => import("@/pages/TestLogin"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
@@ -181,6 +182,7 @@ function Router() {
               {isAuthenticated && (
                 <>
                   <Route path="/profile" component={Profile} />
+                  <Route path="/migrate-account" component={MigrateAccount} />
                   <Route path="/dashboard">
                     {() => {
                       if (user?.isAdmin) {
