@@ -26,6 +26,7 @@ interface EvidenceRequirement {
   description: string;
   orderIndex: number;
   resourceUrl?: string;
+  resourceId?: string;
 }
 
 interface Evidence {
@@ -68,6 +69,11 @@ export default function ProgressTracker({
   // Fetch all school evidence to match with requirements
   const { data: allEvidence = [] } = useQuery<Evidence[]>({
     queryKey: ['/api/evidence'],
+  });
+
+  // Fetch all resources to lookup attached resources by ID
+  const { data: allResources = [] } = useQuery<any[]>({
+    queryKey: ['/api/resources'],
   });
 
   // Fetch audit status
@@ -522,21 +528,67 @@ export default function ProgressTracker({
                             </div>
                           )}
 
-                          {/* Resource Link */}
-                          {requirement.resourceUrl && (
-                            <div className="mt-2 pt-2 border-t">
-                              <a
-                                href={requirement.resourceUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 hover:underline"
-                                data-testid={`link-resource-${requirement.id}`}
-                              >
-                                <ExternalLink className="h-3 w-3" />
-                                View Helpful Resource
-                              </a>
-                            </div>
-                          )}
+                          {/* Resource Link - Check resourceId first, then fallback to resourceUrl */}
+                          {(requirement.resourceId || requirement.resourceUrl) && (() => {
+                            // If resourceId is set, find the resource from the library
+                            if (requirement.resourceId) {
+                              const resource = allResources.find(r => r.id === requirement.resourceId);
+                              if (resource) {
+                                return (
+                                  <div className="mt-2 pt-2 border-t">
+                                    <a
+                                      href={resource.fileUrl || ''}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 hover:underline"
+                                      data-testid={`link-resource-${requirement.id}`}
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                      {resource.title}
+                                    </a>
+                                  </div>
+                                );
+                              }
+                              // If resourceId is set but resource not found, try resourceUrl
+                              if (requirement.resourceUrl) {
+                                return (
+                                  <div className="mt-2 pt-2 border-t">
+                                    <a
+                                      href={requirement.resourceUrl}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 hover:underline"
+                                      data-testid={`link-resource-${requirement.id}`}
+                                    >
+                                      <ExternalLink className="h-3 w-3" />
+                                      View Helpful Resource
+                                    </a>
+                                  </div>
+                                );
+                              }
+                              return null;
+                            }
+                            
+                            // Fallback to resourceUrl if resourceId is not set
+                            if (requirement.resourceUrl) {
+                              return (
+                                <div className="mt-2 pt-2 border-t">
+                                  <a
+                                    href={requirement.resourceUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 hover:underline"
+                                    data-testid={`link-resource-${requirement.id}`}
+                                  >
+                                    <ExternalLink className="h-3 w-3" />
+                                    View Helpful Resource
+                                  </a>
+                                </div>
+                              );
+                            }
+                            
+                            return null;
+                          })()}
                         </div>
                       );
                     })
