@@ -191,6 +191,13 @@
     "role_placeholder": "par ex., Chef de sciences, Enseignant de classe",
     "referral_label": "Comment avez-vous entendu parler de Plastic Clever Schools ? (facultatif)",
     "referral_placeholder": "Sélectionnez une option",
+    "referral_google_search": "Recherche Google",
+    "referral_social_media": "Réseaux Sociaux",
+    "referral_colleague": "Recommandation d'un Collègue",
+    "referral_conference": "Conférence/Événement",
+    "referral_email": "Newsletter par Email",
+    "referral_website": "Article de Site Web/Blog",
+    "referral_other": "Autre",
     "button_back": "Retour",
     "button_next_student_info": "Suivant : Informations sur les élèves"
   },

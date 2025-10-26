@@ -191,6 +191,13 @@
     "role_placeholder": "예: 과학부장, 담임교사",
     "referral_label": "Plastic Clever Schools를 어떻게 알게 되셨나요? (선택사항)",
     "referral_placeholder": "옵션 선택",
+    "referral_google_search": "Google 검색",
+    "referral_social_media": "소셜 미디어",
+    "referral_colleague": "동료 추천",
+    "referral_conference": "컨퍼런스/이벤트",
+    "referral_email": "이메일 뉴스레터",
+    "referral_website": "웹사이트/블로그 기사",
+    "referral_other": "기타",
     "button_back": "뒤로",
     "button_next_student_info": "다음: 학생 정보"
   },

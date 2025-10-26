@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { REFERRAL_SOURCE_OPTIONS } from "@/lib/countryConfig";
 import { useAuth } from "@/hooks/useAuth";
 
 export interface Step2Data {
@@ -26,6 +25,16 @@ interface Step2TeacherInfoProps {
 export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2TeacherInfoProps) {
   const { t } = useTranslation(['forms', 'common']);
   const { user } = useAuth();
+
+  const referralSourceOptions = [
+    { value: 'google_search', label: t('forms:teacher_info.referral_google_search') },
+    { value: 'social_media', label: t('forms:teacher_info.referral_social_media') },
+    { value: 'colleague', label: t('forms:teacher_info.referral_colleague') },
+    { value: 'conference', label: t('forms:teacher_info.referral_conference') },
+    { value: 'email', label: t('forms:teacher_info.referral_email') },
+    { value: 'website', label: t('forms:teacher_info.referral_website') },
+    { value: 'other', label: t('forms:teacher_info.referral_other') },
+  ];
 
   const schema = z.object({
     firstName: z.string().min(1, t('forms:validation.first_name_required')),
@@ -152,7 +161,7 @@ export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2T
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    {REFERRAL_SOURCE_OPTIONS.map((option) => (
+                    {referralSourceOptions.map((option) => (
                       <SelectItem 
                         key={option.value} 
                         value={option.value}

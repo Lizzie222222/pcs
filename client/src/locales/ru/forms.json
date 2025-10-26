@@ -191,6 +191,13 @@
     "role_placeholder": "напр.: Заведующий кафедрой естественных наук, Классный руководитель",
     "referral_label": "Как вы узнали о Plastic Clever Schools? (Необязательно)",
     "referral_placeholder": "Выберите вариант",
+    "referral_google_search": "Поиск Google",
+    "referral_social_media": "Социальные Сети",
+    "referral_colleague": "Рекомендация Коллеги",
+    "referral_conference": "Конференция/Мероприятие",
+    "referral_email": "Электронная Рассылка",
+    "referral_website": "Статья на Сайте/Блоге",
+    "referral_other": "Другое",
     "button_back": "Назад",
     "button_next_student_info": "Далее: Информация об Ученике"
   },

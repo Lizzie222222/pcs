@@ -191,6 +191,13 @@
     "role_placeholder": "π.χ., Υπεύθυνος Επιστημών, Δάσκαλος Τάξης",
     "referral_label": "Πώς μάθατε για τα Plastic Clever Schools; (Προαιρετικό)",
     "referral_placeholder": "Επιλέξτε μια επιλογή",
+    "referral_google_search": "Αναζήτηση Google",
+    "referral_social_media": "Μέσα Κοινωνικής Δικτύωσης",
+    "referral_colleague": "Σύσταση Συναδέλφου",
+    "referral_conference": "Συνέδριο/Εκδήλωση",
+    "referral_email": "Ενημερωτικό Δελτίο Email",
+    "referral_website": "Άρθρο Ιστοσελίδας/Blog",
+    "referral_other": "Άλλο",
     "button_back": "Πίσω",
     "button_next_student_info": "Επόμενο: Πληροφορίες Μαθητών"
   },

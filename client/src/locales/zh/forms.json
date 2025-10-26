@@ -191,6 +191,13 @@
     "role_placeholder": "例如：科学部主任、班主任",
     "referral_label": "您是如何了解 Plastic Clever Schools 的？（可选）",
     "referral_placeholder": "选择一个选项",
+    "referral_google_search": "Google搜索",
+    "referral_social_media": "社交媒体",
+    "referral_colleague": "同事推荐",
+    "referral_conference": "会议/活动",
+    "referral_email": "电子邮件通讯",
+    "referral_website": "网站/博客文章",
+    "referral_other": "其他",
     "button_back": "返回",
     "button_next_student_info": "下一步：学生信息"
   },

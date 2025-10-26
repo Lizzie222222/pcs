@@ -191,6 +191,13 @@
     "role_placeholder": "e.e., Pennaeth Gwyddoniaeth, Athro Dosbarth",
     "referral_label": "Sut glywsoch chi am Plastic Clever Schools? (Dewisol)",
     "referral_placeholder": "Dewiswch opsiwn",
+    "referral_google_search": "Chwiliad Google",
+    "referral_social_media": "Cyfryngau Cymdeithasol",
+    "referral_colleague": "Argymhelliad Cydweithiwr",
+    "referral_conference": "Cynhadledd/Digwyddiad",
+    "referral_email": "Cylchlythyr E-bost",
+    "referral_website": "Erthygl Gwefan/Blog",
+    "referral_other": "Arall",
     "button_back": "Yn Ôl",
     "button_next_student_info": "Nesaf: Gwybodaeth Disgyblion"
   },

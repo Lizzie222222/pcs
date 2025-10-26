@@ -191,6 +191,13 @@
     "role_placeholder": "mis., Kepala Sains, Guru Kelas",
     "referral_label": "Bagaimana Anda mendengar tentang Plastic Clever Schools? (Opsional)",
     "referral_placeholder": "Pilih opsi",
+    "referral_google_search": "Pencarian Google",
+    "referral_social_media": "Media Sosial",
+    "referral_colleague": "Rekomendasi Rekan Kerja",
+    "referral_conference": "Konferensi/Acara",
+    "referral_email": "Newsletter Email",
+    "referral_website": "Artikel Website/Blog",
+    "referral_other": "Lainnya",
     "button_back": "Kembali",
     "button_next_student_info": "Selanjutnya: Info Siswa"
   },

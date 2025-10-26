@@ -191,6 +191,13 @@
     "role_placeholder": "مثال: رئيس قسم العلوم، معلم صف",
     "referral_label": "كيف سمعت عن Plastic Clever Schools؟ (اختياري)",
     "referral_placeholder": "اختر خيارًا",
+    "referral_google_search": "بحث Google",
+    "referral_social_media": "وسائل التواصل الاجتماعي",
+    "referral_colleague": "توصية زميل",
+    "referral_conference": "مؤتمر/حدث",
+    "referral_email": "النشرة الإخبارية عبر البريد الإلكتروني",
+    "referral_website": "مقال موقع ويب/مدونة",
+    "referral_other": "أخرى",
     "button_back": "رجوع",
     "button_next_student_info": "التالي: معلومات الطالب"
   },

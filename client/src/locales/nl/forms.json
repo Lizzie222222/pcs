@@ -191,6 +191,13 @@
     "role_placeholder": "bijv.: Hoofd Wetenschappen, Klasdocent",
     "referral_label": "Hoe heb je gehoord over Plastic Clever Schools? (Optioneel)",
     "referral_placeholder": "Selecteer een optie",
+    "referral_google_search": "Google Zoeken",
+    "referral_social_media": "Sociale Media",
+    "referral_colleague": "Aanbeveling van Collega",
+    "referral_conference": "Conferentie/Evenement",
+    "referral_email": "E-mail Nieuwsbrief",
+    "referral_website": "Website/Blog Artikel",
+    "referral_other": "Anders",
     "button_back": "Terug",
     "button_next_student_info": "Volgende: Leerlinginformatie"
   },
