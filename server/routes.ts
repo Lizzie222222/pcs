@@ -4366,17 +4366,20 @@ Return JSON with:
       // Send notification email
       const user = await storage.getUser(evidence.submittedBy);
       const school = await storage.getSchool(evidence.schoolId);
+      const reviewer = await storage.getUser(reviewerId);
+      const reviewerName = reviewer?.firstName && reviewer?.lastName 
+        ? `${reviewer.firstName} ${reviewer.lastName}` 
+        : reviewer?.email || 'Platform Admin';
       
       if (user?.email && school) {
         if (status === 'approved') {
-          await sendEvidenceApprovalEmail(user.email, school.name, evidence.title);
+          await sendEvidenceApprovalEmail(user.email, school.name, evidence.title, reviewerName);
         } else {
-          await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit');
+          await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit', reviewerName);
         }
       }
 
       // Log evidence approval or rejection
-      const reviewer = await storage.getUser(reviewerId);
       await logUserActivity(
         reviewerId,
         reviewer?.email || undefined,
