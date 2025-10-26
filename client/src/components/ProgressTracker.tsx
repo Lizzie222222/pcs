@@ -173,15 +173,15 @@ export default function ProgressTracker({
   const getStageBadgeClasses = (color: string) => {
     switch (color) {
       case 'pcs_blue':
-        return 'bg-blue-500';
+        return '!bg-blue-500 border-0';
       case 'teal':
-        return 'bg-teal-500';
+        return '!bg-teal-500 border-0';
       case 'yellow':
-        return 'bg-yellow-400';
+        return '!bg-yellow-400 border-0';
       case 'coral':
-        return 'bg-orange-500';
+        return '!bg-orange-500 border-0';
       default:
-        return 'bg-blue-500';
+        return '!bg-blue-500 border-0';
     }
   };
 
