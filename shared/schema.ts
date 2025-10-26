@@ -117,7 +117,7 @@ export const photoConsentStatusEnum = pgEnum('photo_consent_status', [
 ]);
 
 /**
- * @description Core users table supporting both email/password and Google OAuth authentication. Central entity linking to schools, evidence submissions, and all user-generated content.
+ * @description Core users table supporting email/password authentication. Central entity linking to schools, evidence submissions, and all user-generated content.
  * @location shared/schema.ts#L73
  * @related schoolUsers table (many-to-many with schools), evidence table (submittedBy), server/auth.ts, client/src/hooks/useAuth.ts
  */
@@ -125,11 +125,9 @@ export const users = pgTable("users", {
   id: varchar("id").primaryKey(),
   email: varchar("email").unique(),
   emailVerified: boolean("email_verified").default(false),
-  passwordHash: varchar("password_hash"), // nullable for Google OAuth users
-  googleId: varchar("google_id").unique(), // nullable, unique when not null
+  passwordHash: varchar("password_hash"),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
-  profileImageUrl: varchar("profile_image_url"),
   role: varchar("role").default("teacher"), // Supports: teacher, admin, partner, school
   isAdmin: boolean("is_admin").default(false),
   preferredLanguage: varchar("preferred_language").default("en"),
@@ -1321,26 +1319,14 @@ export const registerSchema = z.object({
   path: ["confirmPassword"],
 });
 
-// Password-based user creation schema (excludes OAuth fields)
+// Password-based user creation schema
 export const createPasswordUserSchema = createInsertSchema(users).omit({
   id: true,
-  googleId: true,
   createdAt: true,
   updatedAt: true,
 }).extend({
   passwordHash: z.string().min(1, "Password hash is required"),
   emailVerified: z.boolean().default(false),
-});
-
-// OAuth user creation schema (excludes password fields)
-export const createOAuthUserSchema = createInsertSchema(users).omit({
-  id: true,
-  passwordHash: true,
-  createdAt: true,
-  updatedAt: true,
-}).extend({
-  googleId: z.string().min(1, "Google ID is required"),
-  emailVerified: z.boolean().default(true),
 });
 
 /**
@@ -1771,4 +1757,3 @@ export interface EventAnalytics {
 export type LoginForm = z.infer<typeof loginSchema>;
 export type RegisterForm = z.infer<typeof registerSchema>;
 export type CreatePasswordUser = z.infer<typeof createPasswordUserSchema>;
-export type CreateOAuthUser = z.infer<typeof createOAuthUserSchema>;

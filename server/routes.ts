@@ -6558,18 +6558,13 @@ Return JSON with:
       
       // Check if user with this email already exists and what auth methods they have
       const existingUser = await storage.findUserByEmail(invitation.email);
-      let authMethod: 'none' | 'password' | 'google' | 'both' = 'none';
+      let authMethod: 'none' | 'password' = 'none';
       
       if (existingUser) {
         const hasPassword = !!existingUser.passwordHash;
-        const hasGoogle = !!existingUser.googleId;
         
-        if (hasPassword && hasGoogle) {
-          authMethod = 'both';
-        } else if (hasPassword) {
+        if (hasPassword) {
           authMethod = 'password';
-        } else if (hasGoogle) {
-          authMethod = 'google';
         }
         
         console.log(`[Get Admin Invitation] User exists with auth method: ${authMethod}`);

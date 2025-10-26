@@ -1,11 +1,10 @@
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
-import { Strategy as GoogleStrategy } from "passport-google-oauth20";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
-import type { User, CreatePasswordUser, CreateOAuthUser } from "@shared/schema";
+import type { User, CreatePasswordUser } from "@shared/schema";
 import { z } from "zod";
 import { logUserActivity } from "./auditLog";
 
@@ -24,10 +23,8 @@ declare global {
       email: string | null;
       emailVerified: boolean | null;
       passwordHash: string | null;
-      googleId: string | null;
       firstName: string | null;
       lastName: string | null;
-      profileImageUrl: string | null;
       role: string | null;
       isAdmin: boolean | null;
       preferredLanguage: string | null;
@@ -104,7 +101,7 @@ export async function setupAuth(app: Express) {
       }
 
       if (!user.passwordHash) {
-        return done(null, false, { message: 'Please use Google Sign-In for this account' });
+        return done(null, false, { message: 'Invalid email or password' });
       }
 
       const isValidPassword = await storage.verifyPassword(password, user.passwordHash);
@@ -117,52 +114,6 @@ export async function setupAuth(app: Express) {
       return done(error);
     }
   }));
-
-  // Configure Google OAuth Strategy
-  if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
-    passport.use(new GoogleStrategy({
-      clientID: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "/api/auth/google/callback"
-    }, async (accessToken: string, refreshToken: string, profile: any, done) => {
-      try {
-        // Check if user already exists with this Google ID
-        let user = await storage.getUserByGoogleId(profile.id);
-        
-        if (user) {
-          return done(null, user);
-        }
-
-        // Check if user exists with the same email
-        const email = profile.emails?.[0]?.value;
-        if (email) {
-          const existingUser = await storage.findUserByEmail(email);
-          if (existingUser) {
-            // Link Google account to existing user
-            user = await storage.linkGoogleAccount(existingUser.id, profile.id);
-            return done(null, user);
-          }
-        }
-
-        // Create new user with OAuth
-        const userData: CreateOAuthUser = {
-          email: email || '',
-          emailVerified: true, // Google emails are verified
-          googleId: profile.id,
-          firstName: profile.name?.givenName || '',
-          lastName: profile.name?.familyName || '',
-          profileImageUrl: profile.photos?.[0]?.value || null,
-          role: "teacher",
-          isAdmin: false,
-        };
-
-        user = await storage.createUserWithOAuth(userData);
-        return done(null, user);
-      } catch (error) {
-        return done(error);
-      }
-    }));
-  }
 
   // Serialize/deserialize user for session
   passport.serializeUser((user: Express.User, done) => {
@@ -400,10 +351,8 @@ export async function setupAuth(app: Express) {
         role: req.user.role,
         isAdmin: req.user.isAdmin,
         emailVerified: req.user.emailVerified,
-        profileImageUrl: req.user.profileImageUrl,
         preferredLanguage: req.user.preferredLanguage,
         hasSeenOnboarding: req.user.hasSeenOnboarding,
-        googleId: req.user.googleId, // Needed to determine if user is OAuth-only
         hasPassword: !!req.user.passwordHash, // True if user has password authentication enabled
       }
     });
@@ -443,137 +392,9 @@ export async function setupAuth(app: Express) {
     }
   });
 
-  // TEMPORARY: POST /api/auth/migrate-oauth-account - Add password to Google OAuth account
-  // This endpoint allows admins to add a password to their Google OAuth account
-  // before we remove Google OAuth support
-  app.post("/api/auth/migrate-oauth-account", isAuthenticated, isAdmin, async (req, res) => {
-    try {
-      const { password } = req.body;
-      
-      if (!password || typeof password !== 'string' || password.length < 8) {
-        return res.status(400).json({
-          success: false,
-          message: "Password must be at least 8 characters long"
-        });
-      }
-      
-      const userId = req.user!.id;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          message: "User not found"
-        });
-      }
-      
-      // Check that user has Google OAuth (googleId) but no password
-      if (!user.googleId) {
-        return res.status(400).json({
-          success: false,
-          message: "This endpoint is only for Google OAuth accounts"
-        });
-      }
-      
-      if (user.passwordHash) {
-        return res.status(400).json({
-          success: false,
-          message: "This account already has a password"
-        });
-      }
-      
-      // Hash the password and update the user
-      const passwordHash = await storage.hashPassword(password);
-      await storage.updateUserPassword(userId, passwordHash);
-      
-      console.log(`[OAuth Migration] Added password to account ${user.email}`);
-      
-      res.json({
-        success: true,
-        message: "Password added successfully. You can now log in with email and password."
-      });
-    } catch (error) {
-      console.error('[OAuth Migration] Error:', error);
-      res.status(500).json({
-        success: false,
-        message: "Failed to add password to account"
-      });
-    }
-  });
-
-  // GET /api/auth/google - Initiate Google OAuth flow
-  app.get("/api/auth/google", (req, res, next) => {
-    // Handle returnTo parameter for secure redirects
-    const returnTo = req.query.returnTo as string;
-    if (returnTo && typeof returnTo === 'string') {
-      // Sanitize returnTo - only allow relative paths starting with '/'
-      // Reject external URLs, protocol-relative URLs, and non-relative paths
-      if (returnTo.startsWith('/') && !returnTo.startsWith('//') && !returnTo.includes('://')) {
-        req.session.returnTo = returnTo;
-      }
-    }
-
-    const authOptions = {
-      scope: ['profile', 'email'],
-      prompt: 'consent select_account',
-      accessType: 'offline'
-    };
-    
-    console.log('[Google OAuth] Initiating with options:', authOptions);
-
-    passport.authenticate('google', authOptions)(req, res, next);
-  });
-
-  // GET /api/auth/google/callback - Handle Google OAuth callback
-  app.get("/api/auth/google/callback", (req, res, next) => {
-    passport.authenticate('google', (err: any, user: Express.User | false) => {
-      if (err) {
-        console.error('Google OAuth error:', err);
-        return res.redirect('/?error=oauth_failed');
-      }
-      
-      if (!user) {
-        return res.redirect('/?error=oauth_cancelled');
-      }
-
-      req.login(user, (err) => {
-        if (err) {
-          console.error('Google OAuth login error:', err);
-          return res.redirect('/?error=login_failed');
-        }
-        
-        // DEBUG: Log user details
-        console.log('OAuth user logged in:', {
-          id: user.id,
-          email: user.email,
-          role: user.role,
-          isAdmin: user.isAdmin
-        });
-        
-        // Redirect based on user role (same logic as login)
-        // Admin users go directly to admin dashboard, teachers to their dashboard
-        let redirectPath = req.session.returnTo || '/dashboard';
-        delete req.session.returnTo;
-        
-        // Override redirect for admin users
-        if (user.isAdmin || user.role === 'admin') {
-          console.log('Admin user detected, redirecting to /admin');
-          redirectPath = '/admin';
-        } else {
-          console.log('Non-admin user, redirecting to:', redirectPath);
-        }
-        
-        // Add auth=success flag to signal successful OAuth to client
-        const redirectUrl = new URL(redirectPath, `${req.protocol}://${req.get('host')}`);
-        redirectUrl.searchParams.set('auth', 'success');
-        console.log('Final redirect URL:', redirectUrl.toString());
-        res.redirect(redirectUrl.toString());
-      });
-    })(req, res, next);
-  });
 
   // TEST-ONLY: Authentication bypass for Playwright E2E tests
-  // This endpoint allows tests to authenticate without external OAuth providers
+  // This endpoint allows tests to authenticate without external providers
   if (process.env.NODE_ENV === 'development' || process.env.REPLIT_CONTEXT === 'testing') {
     app.post('/api/test-auth/login', async (req, res) => {
       try {
@@ -585,38 +406,22 @@ export async function setupAuth(app: Express) {
         
         console.log(`[Test Auth] Logging in test user: ${email}`);
         
-        // Find or create user - check both email and googleId to avoid duplicates
+        // Find or create user by email
         let user = await storage.findUserByEmail(email);
-        
-        // If not found by email, try finding by googleId
-        if (!user) {
-          const { db } = await import('./db');
-          const { users } = await import('@shared/schema');
-          const { eq } = await import('drizzle-orm');
-          
-          const usersByGoogleId = await db
-            .select()
-            .from(users)
-            .where(eq(users.googleId, sub))
-            .limit(1);
-          
-          if (usersByGoogleId.length > 0) {
-            user = usersByGoogleId[0];
-            console.log(`[Test Auth] Found existing user by googleId: ${user.email}`);
-          }
-        }
         
         if (!user) {
           console.log(`[Test Auth] Creating new user: ${email}`);
-          user = await storage.createUserWithOAuth({
+          // Create with a random password hash (test users won't need to log in with password)
+          const passwordHash = await storage.hashPassword(`test-${sub}-${Date.now()}`);
+          user = await storage.createUserWithPassword({
             email,
             firstName,
             lastName,
-            googleId: sub,
+            passwordHash,
             emailVerified: true,
             role: 'teacher',
             isAdmin: isAdmin || false,
-            profileImageUrl: null,
+            preferredLanguage: 'en'
           });
         } else {
           console.log(`[Test Auth] Found existing user: ${email}`);

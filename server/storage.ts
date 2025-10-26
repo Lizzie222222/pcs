@@ -102,7 +102,6 @@ import {
   type Notification,
   type InsertNotification,
   type CreatePasswordUser,
-  type CreateOAuthUser,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne } from "drizzle-orm";
@@ -144,10 +143,7 @@ export interface IStorage {
   // Authentication methods
   findUserByEmail(email: string): Promise<User | undefined>;
   createUserWithPassword(userData: CreatePasswordUser): Promise<User>;
-  createUserWithOAuth(userData: CreateOAuthUser): Promise<User>;
-  getUserByGoogleId(googleId: string): Promise<User | undefined>;
   updateUserPassword(id: string, passwordHash: string): Promise<User | undefined>;
-  linkGoogleAccount(userId: string, googleId: string): Promise<User | undefined>;
   verifyEmail(userId: string): Promise<User | undefined>;
   verifyPassword(password: string, passwordHash: string): Promise<boolean>;
   hashPassword(password: string): Promise<string>;
@@ -709,37 +705,11 @@ export class DatabaseStorage implements IStorage {
     return user;
   }
 
-  async createUserWithOAuth(userData: CreateOAuthUser): Promise<User> {
-    const userId = crypto.randomUUID();
-    const [user] = await db
-      .insert(users)
-      .values({
-        id: userId,
-        ...userData,
-      })
-      .returning();
-    return user;
-  }
-
-  async getUserByGoogleId(googleId: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.googleId, googleId));
-    return user;
-  }
-
   async updateUserPassword(id: string, passwordHash: string): Promise<User | undefined> {
     const [user] = await db
       .update(users)
       .set({ passwordHash, updatedAt: new Date() })
       .where(eq(users.id, id))
-      .returning();
-    return user;
-  }
-
-  async linkGoogleAccount(userId: string, googleId: string): Promise<User | undefined> {
-    const [user] = await db
-      .update(users)
-      .set({ googleId, updatedAt: new Date() })
-      .where(eq(users.id, userId))
       .returning();
     return user;
   }

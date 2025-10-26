@@ -191,15 +191,9 @@ export default function SchoolSignUpForm({ onClose, inline = false, onRequestJoi
         description: t('forms:school_registration.success_message'),
       });
       onClose();
-      // Redirect based on user's authentication method after brief delay
+      // Redirect to home (teacher dashboard) after brief delay
       setTimeout(() => {
-        // If user has googleId, they used Google auth and should complete OAuth flow
-        if (user?.googleId) {
-          window.location.href = "/api/auth/google";
-        } else {
-          // If user doesn't have googleId, they used email/password and should go to home (teacher dashboard)
-          window.location.href = "/";
-        }
+        window.location.href = "/";
       }, 2000);
     },
     onError: (error: any) => {

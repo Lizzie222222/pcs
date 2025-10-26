@@ -72,7 +72,7 @@ export default function InvitationAccept() {
   });
 
   const handleLogin = () => {
-    window.location.href = "/api/auth/google";
+    setLocation("/login");
   };
 
   const handleAccept = () => {
@@ -216,7 +216,7 @@ export default function InvitationAccept() {
                 data-testid="button-login"
               >
                 <LogIn className="h-5 w-5 mr-2" />
-                Log In with Google
+                Log In
               </Button>
             </div>
           </CardContent>
