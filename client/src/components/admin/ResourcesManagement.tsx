@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,7 +22,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { LoadingSpinner } from "@/components/ui/states";
-import { BookOpen, Plus, Search, Edit, Trash2, X, FileText, Upload, Eye, Image, FileType, Sheet, File as FileIcon } from "lucide-react";
+import { BookOpen, Plus, Search, Edit, Trash2, X, FileText, Upload, Eye, Image, FileType, Sheet, File as FileIcon, Sparkles, Loader2 } from "lucide-react";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { LANGUAGE_FLAG_MAP, LANGUAGE_NAME_MAP, languageCodeFromName } from "@/lib/languageUtils";
 import type { UploadResult } from "@uppy/core";
@@ -50,6 +51,8 @@ interface Resource {
 
 // All 14 supported language codes
 const SUPPORTED_LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ar', 'zh', 'el', 'ru', 'ko', 'id', 'cy'];
+const RESOURCE_TYPES = ['lesson_plan', 'assembly', 'teacher_toolkit', 'student_workbook', 'printable_activities', 'none'];
+const RESOURCE_THEMES = ['ocean_literacy', 'climate_change', 'plastic_pollution', 'science', 'design_technology', 'geography', 'cross_curricular', 'enrichment', 'none'];
 
 function ResourceForm({ resource, onClose, onSuccess }: {
   resource?: Resource;
@@ -61,11 +64,14 @@ function ResourceForm({ resource, onClose, onSuccess }: {
   const { data: countryOptions = [] } = useCountries();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);
   const [formData, setFormData] = useState({
     title: resource?.title || '',
     description: resource?.description || '',
     stage: resource?.stage || 'inspire',
     ageRange: resource?.ageRange || '',
+    resourceType: (resource as any)?.resourceType || 'none',
+    theme: (resource as any)?.theme || 'none',
     languages: resource?.languages || (() => {
       if (resource?.language) {
         const code = languageCodeFromName(resource.language);
@@ -186,6 +192,69 @@ function ResourceForm({ resource, onClose, onSuccess }: {
         });
         setIsUploading(false);
       }
+    }
+  };
+
+  const handleAIAutoFill = async () => {
+    if (!formData.fileUrl || !formData.title) {
+      toast({
+        title: "Cannot Auto-fill",
+        description: "Please upload a file first to use AI auto-fill.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsGeneratingMetadata(true);
+
+    try {
+      const resourcePayload = [{
+        id: resource?.id || 'temp',
+        title: formData.title,
+        filename: formData.title,
+        fileType: formData.fileType,
+      }];
+
+      const res = await apiRequest('POST', '/api/resources/ai-analyze-metadata', {
+        resources: resourcePayload,
+      });
+
+      const response = await res.json();
+
+      if (response.suggestions && Array.isArray(response.suggestions) && response.suggestions.length > 0) {
+        const suggestion = response.suggestions[0];
+        
+        // Update form data with AI suggestions
+        setFormData(prev => ({
+          ...prev,
+          title: suggestion.title || prev.title,
+          description: suggestion.description || prev.description,
+          stage: suggestion.stage || prev.stage,
+          ageRange: suggestion.ageRange || prev.ageRange,
+          resourceType: suggestion.resourceType || prev.resourceType,
+          theme: suggestion.theme || prev.theme,
+        }));
+
+        toast({
+          title: "AI Auto-fill Complete",
+          description: "Resource metadata has been filled with AI suggestions. Review and adjust as needed.",
+        });
+      } else {
+        toast({
+          title: "No Suggestions",
+          description: "AI couldn't generate suggestions for this resource.",
+          variant: "destructive",
+        });
+      }
+    } catch (error: any) {
+      console.error('AI auto-fill error:', error);
+      toast({
+        title: "AI Auto-fill Failed",
+        description: error.message || "Failed to generate AI suggestions. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsGeneratingMetadata(false);
     }
   };
 
@@ -463,6 +532,96 @@ function ResourceForm({ resource, onClose, onSuccess }: {
                     </ObjectUploader>
                   </div>
                 )}
+              </div>
+            </div>
+
+            {formData.fileUrl && (
+              <div className="border rounded-lg p-4 bg-gradient-to-r from-purple-50 to-blue-50">
+                <div className="flex items-center justify-between mb-3">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="h-5 w-5 text-purple-600" />
+                    <h3 className="font-medium text-gray-900">AI Auto-fill</h3>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          onClick={handleAIAutoFill}
+                          disabled={isGeneratingMetadata}
+                          variant="outline"
+                          size="sm"
+                          className="gap-2 bg-white hover:bg-purple-50 border-purple-200"
+                          data-testid="button-ai-autofill-single"
+                        >
+                          {isGeneratingMetadata ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Sparkles className="h-4 w-4" />
+                          )}
+                          {isGeneratingMetadata ? 'Generating...' : 'Auto-fill with AI'}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="max-w-xs">
+                        <p className="text-sm">
+                          AI analyzes your uploaded file and automatically suggests a title, description, stage, theme, age range, and resource type based on the file content and name.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <p className="text-xs text-gray-600">
+                  Let AI analyze your file and suggest metadata to save time. You can review and adjust the suggestions before saving.
+                </p>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Resource Type
+                </label>
+                <Select 
+                  value={formData.resourceType} 
+                  onValueChange={(value) => handleInputChange('resourceType', value)}
+                >
+                  <SelectTrigger data-testid="select-resource-type">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="lesson_plan">Lesson Plan</SelectItem>
+                    <SelectItem value="assembly">Assembly</SelectItem>
+                    <SelectItem value="teacher_toolkit">Teacher Toolkit</SelectItem>
+                    <SelectItem value="student_workbook">Student Workbook</SelectItem>
+                    <SelectItem value="printable_activities">Printable Activities</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Theme
+                </label>
+                <Select 
+                  value={formData.theme} 
+                  onValueChange={(value) => handleInputChange('theme', value)}
+                >
+                  <SelectTrigger data-testid="select-resource-theme">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">None</SelectItem>
+                    <SelectItem value="ocean_literacy">Ocean Literacy</SelectItem>
+                    <SelectItem value="climate_change">Climate Change</SelectItem>
+                    <SelectItem value="plastic_pollution">Plastic Pollution</SelectItem>
+                    <SelectItem value="science">Science</SelectItem>
+                    <SelectItem value="design_technology">Design Technology</SelectItem>
+                    <SelectItem value="geography">Geography</SelectItem>
+                    <SelectItem value="cross_curricular">Cross Curricular</SelectItem>
+                    <SelectItem value="enrichment">Enrichment</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
 

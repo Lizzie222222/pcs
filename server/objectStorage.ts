@@ -264,6 +264,17 @@ export class ObjectStorageService {
     const objectFile = await this.getObjectEntityFile(normalizedPath);
     await setObjectAclPolicy(objectFile, aclPolicy);
     
+    // If visibility is public, make the file actually public in GCS
+    if (aclPolicy.visibility === 'public') {
+      try {
+        await objectFile.makePublic();
+        console.log(`Made file public in GCS: ${normalizedPath}`);
+      } catch (error) {
+        console.error(`Failed to make file public in GCS: ${normalizedPath}`, error);
+        // Continue even if makePublic fails - the ACL policy is still set
+      }
+    }
+    
     if (filename) {
       await objectFile.setMetadata({
         metadata: {
