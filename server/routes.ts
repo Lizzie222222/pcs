@@ -5502,9 +5502,19 @@ Return JSON with:
 
       console.log(`[Bulk Delete Users] Admin ${adminUserId} deleting ${userIds.length} users with mode: ${mode}`);
       
-      // Fetch user information before deletion to get emails
-      const usersToDelete = await storage.getAllUsers();
-      const userMap = new Map(usersToDelete.map(u => [u.id, u.email || 'Unknown']));
+      // Fetch user information before deletion to get emails (only for the users being deleted)
+      const userMap = new Map<string, string>();
+      for (const userId of userIds) {
+        try {
+          const user = await storage.getUser(userId);
+          if (user) {
+            userMap.set(userId, user.email || 'Unknown');
+          }
+        } catch (error) {
+          // User might not exist, will be handled in deletion loop
+          userMap.set(userId, 'Unknown');
+        }
+      }
       
       let successCount = 0;
       let totalEvidenceDeleted = 0;

@@ -22,8 +22,6 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
         setLoading(true);
         setError(false);
 
-        console.log('Loading PDF from URL:', url);
-
         const loadingTask = pdfjsLib.getDocument({
           url,
           httpHeaders: {
@@ -33,15 +31,11 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
         });
         
         const pdf = await loadingTask.promise;
-        console.log('PDF loaded successfully, pages:', pdf.numPages);
-        
         const page = await pdf.getPage(1);
-        console.log('Got first page');
 
         const canvas = canvasRef.current;
         const context = canvas.getContext('2d');
         if (!context) {
-          console.error('Failed to get canvas context');
           setError(true);
           setLoading(false);
           return;
@@ -58,18 +52,12 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
         canvas.width = scaledViewport.width;
         canvas.height = scaledViewport.height;
 
-        console.log('Rendering PDF page with dimensions:', {
-          width: canvas.width,
-          height: canvas.height
-        });
-
         await page.render({
           canvasContext: context,
           viewport: scaledViewport,
           canvas: canvas,
         }).promise;
 
-        console.log('PDF rendered successfully');
         setLoading(false);
       } catch (err) {
         console.error('PDF Loading Error Details:', {
