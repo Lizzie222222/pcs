@@ -93,6 +93,9 @@ i18n
       escapeValue: false, // React already does escaping
     },
     
+    // Allow returning arrays and objects from translations
+    returnObjects: true,
+    
     // React options
     react: {
       useSuspense: false, // Set to false to avoid suspense mode
