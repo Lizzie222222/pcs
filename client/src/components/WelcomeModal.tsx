@@ -15,6 +15,7 @@ import {
   Calendar,
   Sparkles 
 } from "lucide-react";
+import { useTranslation } from "react-i18next";
 
 interface WelcomeModalProps {
   open: boolean;
@@ -23,36 +24,38 @@ interface WelcomeModalProps {
 }
 
 export function WelcomeModal({ open, onClose, onStartTour }: WelcomeModalProps) {
+  const { t } = useTranslation('dashboard');
+
   const sections = [
     {
       icon: Target,
-      title: "Progress",
-      description: "Track your school's journey through the Inspire, Investigate, and Act stages"
+      title: t('welcome_modal.section_progress_title'),
+      description: t('welcome_modal.section_progress_description')
     },
     {
       icon: Upload,
-      title: "Evidence",
-      description: "Submit photos and videos showing your plastic reduction achievements"
+      title: t('welcome_modal.section_evidence_title'),
+      description: t('welcome_modal.section_evidence_description')
     },
     {
       icon: BookOpen,
-      title: "Resources",
-      description: "Access helpful guides, lesson plans, and educational materials"
+      title: t('welcome_modal.section_resources_title'),
+      description: t('welcome_modal.section_resources_description')
     },
     {
       icon: Target,
-      title: "Action Plan",
-      description: "Create and manage your plastic reduction promises and goals"
+      title: t('welcome_modal.section_action_plan_title'),
+      description: t('welcome_modal.section_action_plan_description')
     },
     {
       icon: Users,
-      title: "Team",
-      description: "Invite and manage your school's team members"
+      title: t('welcome_modal.section_team_title'),
+      description: t('welcome_modal.section_team_description')
     },
     {
       icon: Calendar,
-      title: "Events",
-      description: "Join workshops, webinars, and community gatherings"
+      title: t('welcome_modal.section_events_title'),
+      description: t('welcome_modal.section_events_description')
     }
   ];
 
@@ -63,11 +66,11 @@ export function WelcomeModal({ open, onClose, onStartTour }: WelcomeModalProps) 
           <div className="flex items-center gap-2 mb-2">
             <Sparkles className="h-6 w-6 text-[#00A6A0]" />
             <DialogTitle className="text-2xl" data-testid="text-welcome-title">
-              Welcome to Your Dashboard!
+              {t('welcome_modal.title')}
             </DialogTitle>
           </div>
           <DialogDescription data-testid="text-welcome-description">
-            Your central hub for reducing plastic waste at your school. Here's what you can do:
+            {t('welcome_modal.description')}
           </DialogDescription>
         </DialogHeader>
 
@@ -105,7 +108,7 @@ export function WelcomeModal({ open, onClose, onStartTour }: WelcomeModalProps) 
             className="w-full sm:w-auto"
             data-testid="button-skip-tour"
           >
-            Get Started
+            {t('welcome_modal.button_get_started')}
           </Button>
           <Button
             onClick={() => {
@@ -115,7 +118,7 @@ export function WelcomeModal({ open, onClose, onStartTour }: WelcomeModalProps) 
             className="w-full sm:w-auto bg-[#00A6A0] hover:bg-[#00A6A0]/90"
             data-testid="button-start-tour"
           >
-            Take a Quick Tour
+            {t('welcome_modal.button_take_tour')}
           </Button>
         </DialogFooter>
       </DialogContent>
