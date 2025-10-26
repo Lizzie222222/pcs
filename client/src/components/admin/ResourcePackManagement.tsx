@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { Package, Plus, Search, Edit, Trash2, X, BookOpen, Download, GripVertical } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
@@ -716,6 +717,23 @@ export default function ResourcePackManagement() {
           Create Pack
         </Button>
       </div>
+
+      <Alert className="bg-blue-50 border-blue-200">
+        <AlertDescription className="text-sm text-gray-700">
+          <strong className="text-navy">How to create a resource pack:</strong>
+          <ol className="mt-2 ml-4 space-y-1 list-decimal">
+            <li>Click "Create Pack" to start a new pack</li>
+            <li>Fill in pack details (title, description, stage, theme)</li>
+            <li>Switch to the "Resources" tab in the dialog</li>
+            <li>Search and add individual resources to your pack</li>
+            <li>Drag and drop to reorder resources</li>
+            <li>Save when finished</li>
+          </ol>
+          <p className="mt-2 text-xs text-gray-600">
+            💡 Tip: Resource packs are collections of related materials that schools can download together. Perfect for themed lessons or multi-part activities.
+          </p>
+        </AlertDescription>
+      </Alert>
 
       <Card>
         <CardHeader>
