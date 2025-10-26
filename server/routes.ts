@@ -307,6 +307,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Serve PDF resources from public folder with proper CORS headers
+  app.get('/api/pdfs/:filename', async (req, res) => {
+    try {
+      const { filename } = req.params;
+      
+      // Whitelist allowed filenames for security
+      const allowedFiles = [
+        'PCS_PRIMARY_Teacher_Toolkit.pdf',
+        'PCS_SECONDARY_Teacher_Toolkit.pdf',
+        'PCS_PRIMARY_Pupil_Workbook.pdf',
+        'PCS_SECONDARY_Student_Workbook.pdf'
+      ];
+      
+      if (!allowedFiles.includes(filename)) {
+        return res.status(404).json({ message: 'File not found' });
+      }
+      
+      const filePath = path.resolve(import.meta.dirname, '..', 'public', filename);
+      
+      // Check if file exists
+      try {
+        await fs.access(filePath);
+      } catch {
+        return res.status(404).json({ message: 'File not found' });
+      }
+      
+      // Set proper headers for PDF
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+      
+      // Stream the file
+      const fileStream = await fs.readFile(filePath);
+      res.send(fileStream);
+    } catch (error) {
+      console.error('Error serving PDF:', error);
+      res.status(500).json({ message: 'Failed to serve PDF' });
+    }
+  });
 
   // Public routes
   
