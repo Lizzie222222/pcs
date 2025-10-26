@@ -64,6 +64,12 @@ export default function Profile() {
     confirmPassword: '',
   });
 
+  // OAuth migration form state (for adding password to Google OAuth accounts)
+  const [oauthMigrationForm, setOauthMigrationForm] = useState({
+    password: '',
+    confirmPassword: '',
+  });
+
   // Delete account dialog state
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
@@ -144,6 +150,35 @@ export default function Profile() {
     },
   });
 
+  // OAuth migration mutation (add password to Google OAuth account)
+  const oauthMigrationMutation = useMutation({
+    mutationFn: async (password: string) => {
+      const response = await apiRequest('POST', '/api/auth/migrate-oauth-account', {
+        password
+      });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: 'Password Added!',
+        description: 'You can now log in with your email and password.',
+      });
+      setOauthMigrationForm({
+        password: '',
+        confirmPassword: '',
+      });
+      // Refresh user data to reflect the change
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Failed to add password',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   // Delete account mutation
   const deleteAccountMutation = useMutation({
     mutationFn: async () => {
@@ -202,6 +237,30 @@ export default function Profile() {
       currentPassword: passwordForm.currentPassword,
       newPassword: passwordForm.newPassword,
     });
+  };
+
+  const handleOAuthMigrationSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (oauthMigrationForm.password !== oauthMigrationForm.confirmPassword) {
+      toast({
+        title: 'Passwords don\'t match',
+        description: 'Please make sure both passwords match',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (oauthMigrationForm.password.length < 8) {
+      toast({
+        title: 'Password too short',
+        description: 'Password must be at least 8 characters long',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    oauthMigrationMutation.mutate(oauthMigrationForm.password);
   };
 
   const handleDeleteAccount = () => {
@@ -362,6 +421,66 @@ export default function Profile() {
               </form>
             </CardContent>
           </Card>
+
+          {/* Add Password for Google OAuth Users (only for users without password) */}
+          {!hasPassword && user?.isAdmin && (
+            <Card className="border-blue-200 bg-blue-50">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-blue-900">
+                  <Lock className="h-5 w-5" />
+                  Add Password to Your Account
+                </CardTitle>
+                <CardDescription className="text-blue-800">
+                  You're currently using Google to sign in. Add a password to enable email/password login as well.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleOAuthMigrationSubmit} className="space-y-4">
+                  <div className="bg-blue-100 border border-blue-300 rounded-lg p-4 mb-4">
+                    <p className="text-sm text-blue-900">
+                      <strong>Important:</strong> After setting a password, you'll be able to log in with either Google or email/password.
+                    </p>
+                  </div>
+                  <div>
+                    <Label htmlFor="oauthPassword" data-testid="label-oauth-password">
+                      New Password
+                    </Label>
+                    <Input
+                      id="oauthPassword"
+                      type="password"
+                      value={oauthMigrationForm.password}
+                      onChange={(e) => setOauthMigrationForm({ ...oauthMigrationForm, password: e.target.value })}
+                      placeholder="Enter your new password"
+                      data-testid="input-oauth-password"
+                    />
+                    <p className="text-sm text-gray-600 mt-1">Must be at least 8 characters long</p>
+                  </div>
+                  <div>
+                    <Label htmlFor="oauthConfirmPassword" data-testid="label-oauth-confirm-password">
+                      Confirm Password
+                    </Label>
+                    <Input
+                      id="oauthConfirmPassword"
+                      type="password"
+                      value={oauthMigrationForm.confirmPassword}
+                      onChange={(e) => setOauthMigrationForm({ ...oauthMigrationForm, confirmPassword: e.target.value })}
+                      placeholder="Re-enter your password"
+                      data-testid="input-oauth-confirm-password"
+                    />
+                  </div>
+                  <Button
+                    type="submit"
+                    disabled={oauthMigrationMutation.isPending}
+                    className="bg-blue-600 hover:bg-blue-700"
+                    data-testid="button-add-password"
+                  >
+                    <Lock className="h-4 w-4 mr-2" />
+                    {oauthMigrationMutation.isPending ? 'Adding Password...' : 'Add Password'}
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Password Change (only for users with password) */}
           {hasPassword && (
