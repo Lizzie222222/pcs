@@ -1315,7 +1315,7 @@ export class DatabaseStorage implements IStorage {
     language?: string;
     limit?: number;
     offset?: number;
-  } = {}): Promise<School[]> {
+  } = {}): Promise<Array<School & { primaryContactEmail: string | null }>> {
     const conditions = [];
     if (filters.country) {
       conditions.push(eq(schools.country, filters.country));
@@ -1334,8 +1334,12 @@ export class DatabaseStorage implements IStorage {
     }
     
     let query = db
-      .select(getTableColumns(schools))
-      .from(schools);
+      .select({
+        ...getTableColumns(schools),
+        primaryContactEmail: users.email,
+      })
+      .from(schools)
+      .leftJoin(users, eq(schools.primaryContactId, users.id));
     
     if (conditions.length > 0) {
       query = query.where(and(...conditions)) as any;
