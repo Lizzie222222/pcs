@@ -7,7 +7,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDes
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { getCountryConfig } from "@/lib/countryConfig";
-import { LoadingSpinner } from "@/components/ui/states";
+import { Loader2 } from "lucide-react";
 
 export interface Step3Data {
   studentCount: number;
@@ -235,18 +235,14 @@ export default function Step3StudentInfo({
           </Button>
           <Button
             type="submit"
-            className="btn-primary flex-1"
+            className="btn-primary flex-1 inline-flex items-center justify-center"
             disabled={isSubmitting}
             data-testid="button-submit-registration"
           >
-            {isSubmitting ? (
-              <>
-                <LoadingSpinner size="sm" className="mr-2" />
-                {t('forms:student_info.button_submitting')}
-              </>
-            ) : (
-              t('forms:student_info.button_submit')
+            {isSubmitting && (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             )}
+            {isSubmitting ? t('forms:student_info.button_submitting') : t('forms:student_info.button_submit')}
           </Button>
         </div>
       </form>
