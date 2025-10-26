@@ -2722,18 +2722,44 @@ export class DatabaseStorage implements IStorage {
       updates.roundsCompleted = roundsCompleted;
     }
 
-    // Calculate progress percentage based on completed stages
-    const inspireComplete = updates.inspireCompleted ?? school.inspireCompleted;
-    const investigateComplete = updates.investigateCompleted ?? school.investigateCompleted;
-    const actComplete = updates.actCompleted ?? school.actCompleted;
+    // Calculate granular progress percentage based on approved requirements
+    // Get total requirements for each stage
+    const allRequirements = await db
+      .select()
+      .from(evidenceRequirements);
     
+    const inspireRequirements = allRequirements.filter(r => r.stage === 'inspire').length;
+    const investigateRequirements = allRequirements.filter(r => r.stage === 'investigate').length;
+    const actRequirements = allRequirements.filter(r => r.stage === 'act').length;
+    
+    // Calculate total approved items (including audit and action plan for investigate)
+    const totalApproved = 
+      counts.inspire.approved + 
+      counts.investigate.approved + 
+      (counts.investigate.hasQuiz ? 1 : 0) +
+      (counts.investigate.hasActionPlan ? 1 : 0) +
+      counts.act.approved;
+    
+    // Calculate total required items (requirements + audit + action plan)
+    const totalRequired = inspireRequirements + investigateRequirements + actRequirements + 2; // +2 for audit and action plan
+    
+    // Calculate percentage (fallback to stage-based if no requirements defined)
     let progressPercentage = 0;
-    if (actComplete) {
-      progressPercentage = 100;
-    } else if (investigateComplete) {
-      progressPercentage = 67;
-    } else if (inspireComplete) {
-      progressPercentage = 33;
+    if (totalRequired > 0) {
+      progressPercentage = Math.round((totalApproved / totalRequired) * 100);
+    } else {
+      // Fallback to old stage-based calculation
+      const inspireComplete = updates.inspireCompleted ?? school.inspireCompleted;
+      const investigateComplete = updates.investigateCompleted ?? school.investigateCompleted;
+      const actComplete = updates.actCompleted ?? school.actCompleted;
+      
+      if (actComplete) {
+        progressPercentage = 100;
+      } else if (investigateComplete) {
+        progressPercentage = 67;
+      } else if (inspireComplete) {
+        progressPercentage = 33;
+      }
     }
     
     // Update progress percentage if it has changed
