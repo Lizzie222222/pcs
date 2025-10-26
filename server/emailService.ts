@@ -109,7 +109,8 @@ export async function sendWelcomeEmail(userEmail: string, schoolName: string): P
 export async function sendEvidenceApprovalEmail(
   userEmail: string, 
   schoolName: string, 
-  evidenceTitle: string
+  evidenceTitle: string,
+  reviewerName?: string
 ): Promise<boolean> {
   return await sendEmail({
     to: userEmail,
@@ -119,6 +120,7 @@ export async function sendEvidenceApprovalEmail(
     dynamicTemplateData: {
       schoolName: schoolName,
       evidenceTitle: evidenceTitle,
+      reviewerName: reviewerName || 'Platform Admin',
       dashboardUrl: getBaseUrl(),
     },
   });
@@ -128,7 +130,8 @@ export async function sendEvidenceRejectionEmail(
   userEmail: string, 
   schoolName: string, 
   evidenceTitle: string, 
-  feedback: string
+  feedback: string,
+  reviewerName?: string
 ): Promise<boolean> {
   return await sendEmail({
     to: userEmail,
@@ -139,6 +142,7 @@ export async function sendEvidenceRejectionEmail(
       schoolName: schoolName,
       evidenceTitle: evidenceTitle,
       feedback: feedback,
+      reviewerName: reviewerName || 'Platform Admin',
       dashboardUrl: getBaseUrl(),
     },
   });
