@@ -60,8 +60,13 @@ export function InteractiveTour({ isActive, onComplete, onSkip }: InteractiveTou
   useEffect(() => {
     if (!isActive) {
       setCurrentStep(0);
+      setTargetElement(null);
       return;
     }
+
+    let retryCount = 0;
+    const MAX_RETRIES = 20;
+    let timeoutId: NodeJS.Timeout | null = null;
 
     const findAndHighlightTarget = () => {
       const element = document.querySelector(currentTourStep.target) as HTMLElement;
@@ -100,9 +105,12 @@ export function InteractiveTour({ isActive, onComplete, onSkip }: InteractiveTou
         }
 
         setTooltipPosition({ top, left });
+      } else if (retryCount < MAX_RETRIES) {
+        // If target not found, try again after a short delay (limited retries)
+        retryCount++;
+        timeoutId = setTimeout(findAndHighlightTarget, 100);
       } else {
-        // If target not found, try again after a short delay
-        setTimeout(findAndHighlightTarget, 100);
+        console.warn(`Tour: Could not find target element ${currentTourStep.target} after ${MAX_RETRIES} attempts`);
       }
     };
 
@@ -110,7 +118,13 @@ export function InteractiveTour({ isActive, onComplete, onSkip }: InteractiveTou
 
     const handleResize = () => findAndHighlightTarget();
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
   }, [isActive, currentStep, currentTourStep]);
 
   if (!isActive || !targetElement) return null;

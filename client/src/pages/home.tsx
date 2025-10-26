@@ -1,4 +1,4 @@
-import { useEffect, useState, lazy, Suspense } from "react";
+import { useEffect, useState, useRef, lazy, Suspense } from "react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { useTranslation } from "react-i18next";
@@ -165,22 +165,13 @@ export default function Home() {
   const [hasAttemptedOnboarding, setHasAttemptedOnboarding] = useState(false);
   const [hasCompletedTour, setHasCompletedTour] = useState<boolean>(() => {
     const stored = localStorage.getItem('hasCompletedTour');
-    console.log('[Tour Debug] Initial hasCompletedTour from localStorage:', stored);
     return stored === 'true';
   });
+  const isManualTourTrigger = useRef(false);
 
   // Redirect admins to admin dashboard
   useEffect(() => {
-    console.log('Home component - admin redirect check:', {
-      isLoading,
-      isAuthenticated,
-      userIsAdmin: user?.isAdmin,
-      userRole: user?.role,
-      willRedirect: !isLoading && isAuthenticated && user?.isAdmin
-    });
-    
     if (!isLoading && isAuthenticated && user?.isAdmin) {
-      console.log('Home: Admin detected, redirecting to /admin');
       setLocation("/admin");
       return;
     }
@@ -200,6 +191,14 @@ export default function Home() {
       return;
     }
   }, [isAuthenticated, isLoading, toast]);
+
+  // Safeguard: Prevent tour from showing automatically if already completed
+  // (but allow manual restarts via the "Restart Tour" button)
+  useEffect(() => {
+    if (showTour && hasCompletedTour && !isManualTourTrigger.current) {
+      setShowTour(false);
+    }
+  }, [showTour, hasCompletedTour]);
 
   const { data: dashboardData, isLoading: isDashboardLoading, error } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
@@ -448,31 +447,28 @@ export default function Home() {
 
   const handleStartTour = () => {
     // Only start tour if user hasn't completed it before
-    console.log('[Tour Debug] handleStartTour called, hasCompletedTour:', hasCompletedTour);
     if (!hasCompletedTour) {
-      console.log('[Tour Debug] Starting tour...');
       setShowTour(true);
-    } else {
-      console.log('[Tour Debug] Tour already completed, not showing');
     }
   };
 
   const handleTourComplete = () => {
-    console.log('[Tour Debug] Tour completed');
     setShowTour(false);
     setHasCompletedTour(true);
     localStorage.setItem('hasCompletedTour', 'true');
+    isManualTourTrigger.current = false;
   };
 
   const handleTourSkip = () => {
-    console.log('[Tour Debug] Tour skipped');
     setShowTour(false);
     setHasCompletedTour(true);
     localStorage.setItem('hasCompletedTour', 'true');
+    isManualTourTrigger.current = false;
   };
 
   const handleRestartTour = () => {
     // Allow manual restart regardless of completion status
+    isManualTourTrigger.current = true;
     setShowTour(true);
   };
 
