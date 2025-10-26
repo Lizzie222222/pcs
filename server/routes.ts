@@ -3352,13 +3352,14 @@ Return JSON with:
       'Access-Control-Allow-Origin': origin,
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Allow-Methods': 'GET, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization, Range',
+      'Access-Control-Expose-Headers': 'Content-Length, Content-Range, Accept-Ranges',
       'Access-Control-Max-Age': '86400', // 24 hours
     });
     res.sendStatus(204);
   });
   
-  // Serve objects with ACL check (both public and private)
+  // Serve objects with ACL check (both public and private) with range request support for PDF.js
   app.get("/objects/:objectPath(*)", async (req: any, res) => {
     const objectStorageService = new ObjectStorageService();
     const shouldDownload = req.query.download === 'true';
@@ -3370,6 +3371,7 @@ Return JSON with:
       const [metadata] = await objectFile.getMetadata();
       const filename = metadata.metadata?.filename || req.path.split('/').pop() || 'download';
       const contentType = metadata.contentType || 'application/octet-stream';
+      const fileSize = Number(metadata.size) || 0;
       
       // Check if object is public first (fast path for public objects)
       const aclPolicy = await getObjectAclPolicy(objectFile);
@@ -3380,48 +3382,99 @@ Return JSON with:
         'Access-Control-Allow-Origin': origin,
         'Access-Control-Allow-Credentials': 'true',
         'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, Range',
+        'Access-Control-Expose-Headers': 'Content-Length, Content-Range, Accept-Ranges',
       });
       
-      if (aclPolicy?.visibility === 'public') {
-        // Public objects are accessible to everyone
-        // Set Content-Disposition based on download parameter
-        // Use 'inline' for browser viewing (especially PDFs), 'attachment' for downloads
-        res.set('Content-Disposition', shouldDownload 
-          ? `attachment; filename="${filename}"` 
-          : 'inline'
-        );
-        return objectStorageService.downloadObject(objectFile, res);
-      }
-      
-      // For private objects, require authentication
-      if (!req.isAuthenticated() || !req.user) {
-        return res.sendStatus(401);
-      }
-      
-      // Check access with user credentials and admin status
-      const userId = req.user.id;
-      const isAdmin = req.user.isAdmin || false;
-      
-      const canAccess = await objectStorageService.canAccessObjectEntity({
-        objectFile,
-        userId: userId,
-        requestedPermission: ObjectPermission.READ,
-        isAdmin: isAdmin,
-      });
-      
-      if (!canAccess) {
-        return res.sendStatus(403);
+      // Check access permissions
+      if (aclPolicy?.visibility !== 'public') {
+        // For private objects, require authentication
+        if (!req.isAuthenticated() || !req.user) {
+          return res.sendStatus(401);
+        }
+        
+        // Check access with user credentials and admin status
+        const userId = req.user.id;
+        const isAdmin = req.user.isAdmin || false;
+        
+        const canAccess = await objectStorageService.canAccessObjectEntity({
+          objectFile,
+          userId: userId,
+          requestedPermission: ObjectPermission.READ,
+          isAdmin: isAdmin,
+        });
+        
+        if (!canAccess) {
+          return res.sendStatus(403);
+        }
       }
       
       // Set Content-Disposition based on download parameter
-      // Use 'inline' for browser viewing (especially PDFs), 'attachment' for downloads
       res.set('Content-Disposition', shouldDownload 
         ? `attachment; filename="${filename}"` 
         : 'inline'
       );
       
-      objectStorageService.downloadObject(objectFile, res);
+      // Set Content-Type
+      res.set('Content-Type', contentType);
+      
+      // Indicate that we support range requests
+      res.set('Accept-Ranges', 'bytes');
+      
+      // Handle range requests (required for PDF.js)
+      const rangeHeader = req.headers.range;
+      
+      if (rangeHeader) {
+        // Parse range header (e.g., "bytes=0-1023")
+        const parts = rangeHeader.replace(/bytes=/, '').split('-');
+        const start = parseInt(parts[0], 10);
+        const end = parts[1] ? parseInt(parts[1], 10) : fileSize - 1;
+        const chunkSize = (end - start) + 1;
+        
+        // Validate range
+        if (start >= fileSize || end >= fileSize || start > end) {
+          res.status(416).set({
+            'Content-Range': `bytes */${fileSize}`
+          });
+          return res.end();
+        }
+        
+        // Set headers for partial content
+        res.status(206);
+        res.set({
+          'Content-Range': `bytes ${start}-${end}/${fileSize}`,
+          'Content-Length': chunkSize.toString(),
+        });
+        
+        // Stream the requested range
+        const stream = objectFile.createReadStream({
+          start,
+          end,
+        });
+        
+        stream.on('error', (err) => {
+          console.error('Stream error:', err);
+          if (!res.headersSent) {
+            res.status(500).json({ error: 'Error streaming file' });
+          }
+        });
+        
+        stream.pipe(res);
+      } else {
+        // No range requested, send entire file
+        res.set('Content-Length', fileSize.toString());
+        
+        const stream = objectFile.createReadStream();
+        
+        stream.on('error', (err) => {
+          console.error('Stream error:', err);
+          if (!res.headersSent) {
+            res.status(500).json({ error: 'Error streaming file' });
+          }
+        });
+        
+        stream.pipe(res);
+      }
     } catch (error) {
       console.error("Error checking object access:", error);
       if (error instanceof ObjectNotFoundError) {
