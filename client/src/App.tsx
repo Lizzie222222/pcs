@@ -18,7 +18,7 @@ import { ChatWidget } from "@/components/ChatWidget";
 // Page Loading Component
 const PageLoadingFallback = () => (
   <div className="flex justify-center items-center min-h-[50vh]">
-    <LoadingSpinner size="lg" message="Loading page..." />
+    <LoadingSpinner size="lg" />
   </div>
 );
 
