@@ -1843,7 +1843,7 @@ Return JSON with:
         const inviteUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/invitations/${token}`;
         await sendEmail({
           to: email,
-          from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+          from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
           subject: `You're invited to join ${school.name} on Plastic Clever Schools`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -2201,7 +2201,7 @@ Return JSON with:
         if (headTeacher?.email) {
           await sendEmail({
             to: headTeacher.email,
-            from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+            from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
             subject: `New access request for ${school.name}`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -2311,7 +2311,7 @@ Return JSON with:
       if (requester?.email && school) {
         await sendEmail({
           to: requester.email,
-          from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+          from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
           subject: `Access approved for ${school.name}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -2383,7 +2383,7 @@ Return JSON with:
       if (requester?.email && school) {
         await sendEmail({
           to: requester.email,
-          from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+          from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
           subject: `Access request update for ${school.name}`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -6444,7 +6444,7 @@ Return JSON with:
                 <h3 style="color: #02BBB4; margin-top: 0;">System Information:</h3>
                 <ul style="color: #666; margin-bottom: 0;">
                   <li><strong>Sent at:</strong> ${new Date().toISOString()}</li>
-                  <li><strong>From:</strong> ${process.env.FROM_EMAIL || 'noreply@plasticclever.org'}</li>
+                  <li><strong>From:</strong> ${process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>'}</li>
                   <li><strong>Environment:</strong> ${process.env.NODE_ENV || 'development'}</li>
                 </ul>
               </div>
@@ -7005,7 +7005,7 @@ Return JSON with:
       try {
         await sendEmail({
           to: email,
-          from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+          from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
           subject: `You've been added to ${school.name} on Plastic Clever Schools`,
           html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -7021,7 +7021,7 @@ Return JSON with:
                   You can now access your school dashboard and participate in the Plastic Clever Schools program.
                 </p>
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="${process.env.FRONTEND_URL || 'https://plasticclever.org'}/dashboard" 
+                  <a href="${process.env.FRONTEND_URL || 'https://plasticcleverschools.org'}/dashboard" 
                      style="background: #02BBB4; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
                     Go to Dashboard
                   </a>
@@ -7090,7 +7090,7 @@ Return JSON with:
         if (user?.email) {
           await sendEmail({
             to: user.email,
-            from: process.env.FROM_EMAIL || 'noreply@plasticclever.org',
+            from: process.env.FROM_EMAIL || 'Plastic Clever Schools <noreply@plasticcleverschools.org>',
             subject: `Update: Your Access to ${school.name}`,
             html: `
               <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
