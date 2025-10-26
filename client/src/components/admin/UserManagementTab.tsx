@@ -106,6 +106,16 @@ export default function UserManagementTab() {
     enabled: !!selectedUserToDelete?.id && deleteDialogOpen,
   });
 
+  const { data: adminInvitations = [], isLoading: isLoadingInvitations } = useQuery<Array<{
+    id: string;
+    email: string;
+    status: string;
+    createdAt: string;
+    expiresAt: string;
+  }>>({
+    queryKey: ['/api/admin/invitations'],
+  });
+
   const inviteAdminMutation = useMutation({
     mutationFn: async (email: string) => {
       await apiRequest('POST', '/api/admin/invite-admin', { email });
@@ -145,6 +155,26 @@ export default function UserManagementTab() {
       toast({
         title: "Invitation Failed",
         description: error.message || "Failed to send partner invitation. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const deleteInvitationMutation = useMutation({
+    mutationFn: async (invitationId: string) => {
+      await apiRequest('DELETE', `/api/admin/invitations/${invitationId}`);
+    },
+    onSuccess: () => {
+      toast({
+        title: "Invitation Deleted",
+        description: "The admin invitation has been successfully deleted.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/invitations'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Delete Failed",
+        description: error.message || "Failed to delete invitation. Please try again.",
         variant: "destructive",
       });
     },
@@ -743,6 +773,102 @@ export default function UserManagementTab() {
             </div>
           )}
         </div>
+
+        {/* Admin Invitations Section */}
+        {!isPartner && (
+          <div className="mt-8">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <UserPlus className="h-5 w-5" />
+                  Pending Admin Invitations
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {isLoadingInvitations ? (
+                  <LoadingSpinner message="Loading invitations..." />
+                ) : adminInvitations.length === 0 ? (
+                  <EmptyState
+                    icon={UserPlus}
+                    title="No Pending Invitations"
+                    message="There are no pending admin invitations at this time."
+                  />
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full">
+                      <thead className="bg-gray-50 dark:bg-gray-800">
+                        <tr>
+                          <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Email
+                          </th>
+                          <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                          </th>
+                          <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Sent Date
+                          </th>
+                          <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Expires
+                          </th>
+                          <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
+                        {adminInvitations.map((invitation) => {
+                          const isExpired = new Date(invitation.expiresAt) < new Date();
+                          return (
+                            <tr key={invitation.id} data-testid={`invitation-row-${invitation.id}`}>
+                              <td className="p-3 text-sm" data-testid={`text-invitation-email-${invitation.id}`}>
+                                {invitation.email}
+                              </td>
+                              <td className="p-3 text-sm">
+                                <Badge
+                                  variant={
+                                    invitation.status === 'accepted'
+                                      ? 'default'
+                                      : isExpired
+                                      ? 'destructive'
+                                      : 'outline'
+                                  }
+                                  data-testid={`badge-invitation-status-${invitation.id}`}
+                                >
+                                  {isExpired && invitation.status === 'pending' ? 'Expired' : invitation.status}
+                                </Badge>
+                              </td>
+                              <td className="p-3 text-sm text-gray-600" data-testid={`text-invitation-sent-${invitation.id}`}>
+                                {new Date(invitation.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="p-3 text-sm text-gray-600" data-testid={`text-invitation-expires-${invitation.id}`}>
+                                {new Date(invitation.expiresAt).toLocaleDateString()}
+                              </td>
+                              <td className="p-3">
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => {
+                                    if (confirm(`Are you sure you want to delete the invitation for ${invitation.email}?`)) {
+                                      deleteInvitationMutation.mutate(invitation.id);
+                                    }
+                                  }}
+                                  disabled={deleteInvitationMutation.isPending}
+                                  data-testid={`button-delete-invitation-${invitation.id}`}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        )}
 
         <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
           <DialogContent className="max-w-2xl" data-testid="dialog-assign-teacher">
