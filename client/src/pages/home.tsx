@@ -105,6 +105,7 @@ interface DashboardData {
     id: string;
     name: string;
     country: string;
+    type?: string;
     currentStage: string;
     progressPercentage: number;
     inspireCompleted: boolean;
