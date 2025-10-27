@@ -1,10 +1,9 @@
-import { useState, useEffect, useRef, lazy, Suspense } from "react";
+import { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
-import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import { Link, useLocation } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -12,18 +11,8 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Switch } from "@/components/ui/switch";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { useCountries } from "@/hooks/useCountries";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { subDays } from "date-fns";
-import { useForm, useFieldArray, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
-import type { DateRange } from "react-day-picker";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -98,28 +87,9 @@ import {
   Sparkles,
   AlertTriangle
 } from "lucide-react";
-import {
-  BarChart,
-  Bar,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from "recharts";
-
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
-import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
-import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
-import { PDFThumbnail } from "@/components/PDFThumbnail";
-import AssignTeacherForm from "@/components/admin/AssignTeacherForm";
 import UserManagementTab from "@/components/admin/UserManagementTab";
 import ResourcesManagement from "@/components/admin/ResourcesManagement";
 import ResourcePackManagement from "@/components/admin/ResourcePackManagement";
@@ -135,10 +105,6 @@ import SchoolsSection from '@/components/admin/schools/SchoolsSection';
 import TeamsSection from '@/components/admin/teams/TeamsSection';
 import EvidenceRequirementsSection from '@/components/admin/evidence-requirements/EvidenceRequirementsSection';
 import EventsSection from '@/components/admin/events/EventsSection';
-import type { ReductionPromise, Event, EventRegistration, EvidenceWithSchool, CaseStudy } from "@shared/schema";
-import { calculateAggregateMetrics } from "@shared/plasticMetrics";
-import { format, parseISO } from "date-fns";
-import { BANNER_GRADIENTS, getGradientById } from "@shared/gradients";
 import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
 import type { 
   AdminStats, 
