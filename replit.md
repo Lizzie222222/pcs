@@ -72,18 +72,29 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
   - Three sub-tabs: Evidence Review, Audit Review, Photo Consent Review
   - Photo consent mutations centralized in admin.tsx and passed as props to avoid endpoint drift
   - Badge queries (pendingAudits, pendingPhotoConsent) remain in admin.tsx for navigation
-- Reduced admin.tsx from 8,572 lines to ~7,400 lines
+- Extracted Schools section (~200 lines) into `SchoolsSection` component at `client/src/components/admin/schools/SchoolsSection.tsx`
+  - All school-specific state, queries, and mutations co-located in component
+  - Preserves bulk actions, filtering, school detail viewing, photo consent controls
+  - 14 state variables, 4 queries, 5 mutations properly encapsulated
+- Extracted Teams section (~40 lines) into `TeamsSection` component at `client/src/components/admin/teams/TeamsSection.tsx`
+  - Cleanly composes three sub-components: AssignTeacherForm, SchoolTeachersList, VerificationRequestsList
+  - Sub-components extracted to `client/src/components/admin/teams/components/`
+  - All teacher assignment and verification workflows preserved
+- Reduced admin.tsx from 8,572 lines to ~5,890 lines (total reduction: ~2,700 lines, ~31%)
 - Maintained tab-based navigation without page reloads for fast switching
+- Fixed regressions: duplicate ActivityLogsTab, orphaned schoolsError references, broken dialog blocks
+- All sections tested and passing with zero LSP errors
 
 **Architecture Pattern**:
 - Shared mutations passed as props from admin.tsx to section components
+- State, queries, and mutations co-located within feature components
 - Queries remain in TanStack Query cache for data consistency
-- May evolve to shared context/provider as more sections are extracted
+- Prop drilling acceptable short-term; may evolve to shared context only if multiple tabs need same controls
 
 **Next Steps**:
-- Extract Schools/Teams section
 - Extract Evidence Requirements section
 - Extract Events section
 - Extract Activity Logs section
 - Extract Email section
 - Final shell refactor
+- Consider consolidating shared admin utilities/types as more sections are extracted
