@@ -263,48 +263,108 @@
     "delete_confirmation_message": "Αυτή η ενέργεια δεν μπορεί να αναιρεθεί. Θα διαγράψει μόνιμα το στοιχείο δράσης σας και θα το αφαιρέσει από τους υπολογισμούς αντίκτυπου."
   },
   "team": {
+    "page_title": "Διαχείριση Ομάδας",
+    "page_description": "Διαχειριστείτε τα μέλη της ομάδας του σχολείου σας, ελέγξτε τα αιτήματα πρόσβασης και προσκαλέστε νέους καθηγητές",
     "loading": "Φόρτωση διαχείρισης ομάδας...",
+    "loading_members": "Φόρτωση μελών ομάδας...",
+    "loading_requests": "Φόρτωση αιτημάτων...",
+    "error_no_school": "Δεν βρέθηκε σχολείο. Παρακαλώ εγγράψτε πρώτα το σχολείο σας.",
+    "unknown_user": "Άγνωστος Χρήστης",
+    "not_applicable": "Μ/Δ",
+    "this_user": "αυτός ο χρήστης",
     "toasts": {
-      "auth_required": "Authentication Required",
-      "auth_required_desc": "Please log in to access team management.",
-      "access_denied": "Access Denied",
-      "access_denied_desc": "Only head teachers can access team management.",
-      "teacher_removed": "Teacher Removed",
-      "teacher_removed_desc": "The teacher has been removed from your school.",
-      "error": "Error",
-      "error_remove_teacher": "Failed to remove teacher.",
-      "request_approved": "Request Approved",
-      "request_approved_desc": "The teacher has been added to your school.",
-      "error_approve_request": "Failed to approve request.",
-      "request_rejected": "Request Rejected",
-      "request_rejected_desc": "The verification request has been rejected.",
-      "error_reject_request": "Failed to reject request.",
-      "invitation_sent": "Invitation Sent!",
-      "invitation_sent_desc": "The teacher invitation has been sent successfully.",
-      "error_send_invitation": "Failed to send invitation.",
-      "email_required": "Email Required",
-      "email_required_desc": "Please enter an email address."
+      "auth_required": "Απαιτείται Ταυτοποίηση",
+      "auth_required_desc": "Παρακαλώ συνδεθείτε για πρόσβαση στη διαχείριση ομάδας.",
+      "access_denied": "Άρνηση Πρόσβασης",
+      "access_denied_desc": "Μόνο οι διευθυντές μπορούν να έχουν πρόσβαση στη διαχείριση ομάδας.",
+      "teacher_removed": "Ο Καθηγητής Αφαιρέθηκε",
+      "teacher_removed_desc": "Ο καθηγητής έχει αφαιρεθεί από το σχολείο σας.",
+      "error": "Σφάλμα",
+      "error_remove_teacher": "Αποτυχία αφαίρεσης καθηγητή.",
+      "request_approved": "Το Αίτημα Εγκρίθηκε",
+      "request_approved_desc": "Το αίτημα επαλήθευσης έχει εγκριθεί.",
+      "error_approve_request": "Αποτυχία έγκρισης αιτήματος.",
+      "request_rejected": "Το Αίτημα Απορρίφθηκε",
+      "request_rejected_desc": "Το αίτημα επαλήθευσης έχει απορριφθεί.",
+      "error_reject_request": "Αποτυχία απόρριψης αιτήματος.",
+      "invitation_sent": "Η Πρόσκληση Στάλθηκε",
+      "invitation_sent_desc": "Η πρόσκληση καθηγητή έχει σταλεί επιτυχώς.",
+      "error_send_invitation": "Αποτυχία αποστολής πρόσκλησης.",
+      "email_required": "Απαιτείται Email",
+      "email_required_desc": "Παρακαλώ εισάγετε μια διεύθυνση email."
     },
     "dialogs": {
-      "remove_teacher_title": "Remove Teacher",
-      "approve_request_title": "Approve Access Request",
-      "reject_request_title": "Reject Access Request"
+      "remove_teacher_title": "Αφαίρεση Καθηγητή",
+      "remove_teacher_desc": "Είστε βέβαιοι ότι θέλετε να αφαιρέσετε τον/την {name} από το σχολείο σας; Αυτή η ενέργεια δεν μπορεί να αναιρεθεί.",
+      "approve_request_title": "Έγκριση Αιτήματος Πρόσβασης",
+      "approve_request_desc": "Πρόκειται να εγκρίνετε το αίτημα πρόσβασης από τον/την {name}.",
+      "reject_request_title": "Απόρριψη Αιτήματος Πρόσβασης",
+      "reject_request_desc": "Πρόκειται να απορρίψετε το αίτημα πρόσβασης από τον/την {name}.",
+      "review_notes_label": "Σημειώσεις Ελέγχου (Προαιρετικό)",
+      "review_notes_placeholder": "Προσθέστε σημειώσεις σχετικά με αυτήν την έγκριση...",
+      "rejection_reason_label": "Αιτία Απόρριψης (Απαιτείται)",
+      "rejection_reason_placeholder": "Εξηγήστε γιατί απορρίπτεται αυτό το αίτημα...",
+      "cancel": "Ακύρωση",
+      "remove_button": "Αφαίρεση Καθηγητή",
+      "approve_button": "Έγκριση Αιτήματος",
+      "reject_button": "Απόρριψη Αιτήματος",
+      "approving": "Έγκριση...",
+      "rejecting": "Απόρριψη..."
     },
     "tabs": {
-      "members": "Team Members",
-      "requests": "Verification Requests",
-      "invitations": "Invitations"
+      "members": "Μέλη Ομάδας",
+      "pending_requests": "Εκκρεμή Αιτήματα",
+      "invite": "Πρόσκληση Καθηγητή"
+    },
+    "cards": {
+      "team_members": "Μέλη Ομάδας",
+      "pending_verification": "Εκκρεμή Αιτήματα Επαλήθευσης",
+      "invite_teacher": "Πρόσκληση Καθηγητή"
+    },
+    "empty": {
+      "no_members_title": "Δεν Υπάρχουν Μέλη Ομάδας",
+      "no_members_desc": "Το σχολείο σας δεν έχει ακόμη μέλη ομάδας.",
+      "no_requests_title": "Δεν Υπάρχουν Εκκρεμή Αιτήματα",
+      "no_requests_desc": "Δεν υπάρχουν αιτήματα επαλήθευσης που περιμένουν τον έλεγχό σας."
     },
     "table_headers": {
-      "name": "Name",
+      "name": "Όνομα",
       "email": "Email",
-      "role": "Role",
-      "status": "Status",
-      "joined": "Joined",
-      "actions": "Actions",
-      "expires": "Expires",
-      "sent": "Sent",
-      "evidence": "Evidence"
+      "role": "Ρόλος",
+      "status": "Κατάσταση",
+      "joined": "Εντάχθηκε",
+      "join_date": "Ημερομηνία Ένταξης",
+      "actions": "Ενέργειες",
+      "expires": "Λήγει",
+      "sent": "Στάλθηκε",
+      "evidence": "Αποδεικτικά"
+    },
+    "roles": {
+      "head_teacher": "Διευθυντής",
+      "teacher": "Καθηγητής"
+    },
+    "actions": {
+      "remove": "Αφαίρεση",
+      "approve": "Έγκριση",
+      "reject": "Απόρριψη",
+      "send_invitation": "Αποστολή Πρόσκλησης",
+      "sending": "Αποστολή..."
+    },
+    "status": {
+      "pending": "Εκκρεμεί"
+    },
+    "invite": {
+      "email_label": "Διεύθυνση Email *",
+      "email_placeholder": "kathigitis@paradeigma.com",
+      "message_label": "Μήνυμα (Προαιρετικό)",
+      "message_placeholder": "Προσθέστε ένα προσωπικό μήνυμα στην πρόσκλησή σας..."
+    },
+    "evidence": {
+      "label": "Αποδεικτικά/Αιτία:"
+    },
+    "invitations": {
+      "title": "Εκκρεμείς Προσκλήσεις",
+      "sent_expires": "Στάλθηκε {sentDate} • Λήγει {expiresDate}"
     }
   },
   "events": {

@@ -263,48 +263,108 @@
     "delete_confirmation_message": "Diese Aktion kann nicht rückgängig gemacht werden. Es wird Ihr Aktionselement dauerhaft löschen und aus den Auswirkungsberechnungen entfernen."
   },
   "team": {
+    "page_title": "Team-Verwaltung",
+    "page_description": "Verwalten Sie die Teammitglieder Ihrer Schule, überprüfen Sie Zugriffsanfragen und laden Sie neue Lehrer ein",
     "loading": "Team-Management wird geladen...",
+    "loading_members": "Teammitglieder werden geladen...",
+    "loading_requests": "Anfragen werden geladen...",
+    "error_no_school": "Keine Schule gefunden. Bitte registrieren Sie zuerst Ihre Schule.",
+    "unknown_user": "Unbekannter Benutzer",
+    "not_applicable": "N/V",
+    "this_user": "dieser Benutzer",
     "toasts": {
-      "auth_required": "Authentication Required",
-      "auth_required_desc": "Please log in to access team management.",
-      "access_denied": "Access Denied",
-      "access_denied_desc": "Only head teachers can access team management.",
-      "teacher_removed": "Teacher Removed",
-      "teacher_removed_desc": "The teacher has been removed from your school.",
-      "error": "Error",
-      "error_remove_teacher": "Failed to remove teacher.",
-      "request_approved": "Request Approved",
-      "request_approved_desc": "The teacher has been added to your school.",
-      "error_approve_request": "Failed to approve request.",
-      "request_rejected": "Request Rejected",
-      "request_rejected_desc": "The verification request has been rejected.",
-      "error_reject_request": "Failed to reject request.",
-      "invitation_sent": "Invitation Sent!",
-      "invitation_sent_desc": "The teacher invitation has been sent successfully.",
-      "error_send_invitation": "Failed to send invitation.",
-      "email_required": "Email Required",
-      "email_required_desc": "Please enter an email address."
+      "auth_required": "Authentifizierung Erforderlich",
+      "auth_required_desc": "Bitte melden Sie sich an, um auf die Team-Verwaltung zuzugreifen.",
+      "access_denied": "Zugriff Verweigert",
+      "access_denied_desc": "Nur Schulleiter können auf die Team-Verwaltung zugreifen.",
+      "teacher_removed": "Lehrer Entfernt",
+      "teacher_removed_desc": "Der Lehrer wurde von Ihrer Schule entfernt.",
+      "error": "Fehler",
+      "error_remove_teacher": "Fehler beim Entfernen des Lehrers.",
+      "request_approved": "Anfrage Genehmigt",
+      "request_approved_desc": "Die Verifizierungsanfrage wurde genehmigt.",
+      "error_approve_request": "Fehler beim Genehmigen der Anfrage.",
+      "request_rejected": "Anfrage Abgelehnt",
+      "request_rejected_desc": "Die Verifizierungsanfrage wurde abgelehnt.",
+      "error_reject_request": "Fehler beim Ablehnen der Anfrage.",
+      "invitation_sent": "Einladung Gesendet",
+      "invitation_sent_desc": "Die Lehrereinladung wurde erfolgreich gesendet.",
+      "error_send_invitation": "Fehler beim Senden der Einladung.",
+      "email_required": "E-Mail Erforderlich",
+      "email_required_desc": "Bitte geben Sie eine E-Mail-Adresse ein."
     },
     "dialogs": {
-      "remove_teacher_title": "Remove Teacher",
-      "approve_request_title": "Approve Access Request",
-      "reject_request_title": "Reject Access Request"
+      "remove_teacher_title": "Lehrer Entfernen",
+      "remove_teacher_desc": "Sind Sie sicher, dass Sie {name} von Ihrer Schule entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "approve_request_title": "Zugriffsanfrage Genehmigen",
+      "approve_request_desc": "Sie sind dabei, die Zugriffsanfrage von {name} zu genehmigen.",
+      "reject_request_title": "Zugriffsanfrage Ablehnen",
+      "reject_request_desc": "Sie sind dabei, die Zugriffsanfrage von {name} abzulehnen.",
+      "review_notes_label": "Überprüfungsnotizen (Optional)",
+      "review_notes_placeholder": "Fügen Sie Notizen zu dieser Genehmigung hinzu...",
+      "rejection_reason_label": "Ablehnungsgrund (Erforderlich)",
+      "rejection_reason_placeholder": "Erklären Sie, warum diese Anfrage abgelehnt wird...",
+      "cancel": "Abbrechen",
+      "remove_button": "Lehrer Entfernen",
+      "approve_button": "Anfrage Genehmigen",
+      "reject_button": "Anfrage Ablehnen",
+      "approving": "Wird genehmigt...",
+      "rejecting": "Wird abgelehnt..."
     },
     "tabs": {
-      "members": "Team Members",
-      "requests": "Verification Requests",
-      "invitations": "Invitations"
+      "members": "Teammitglieder",
+      "pending_requests": "Ausstehende Anfragen",
+      "invite": "Lehrer Einladen"
+    },
+    "cards": {
+      "team_members": "Teammitglieder",
+      "pending_verification": "Ausstehende Verifizierungsanfragen",
+      "invite_teacher": "Lehrer Einladen"
+    },
+    "empty": {
+      "no_members_title": "Keine Teammitglieder",
+      "no_members_desc": "Ihre Schule hat noch keine Teammitglieder.",
+      "no_requests_title": "Keine Ausstehenden Anfragen",
+      "no_requests_desc": "Es gibt keine Verifizierungsanfragen, die auf Ihre Überprüfung warten."
     },
     "table_headers": {
       "name": "Name",
-      "email": "Email",
-      "role": "Role",
+      "email": "E-Mail",
+      "role": "Rolle",
       "status": "Status",
-      "joined": "Joined",
-      "actions": "Actions",
-      "expires": "Expires",
-      "sent": "Sent",
-      "evidence": "Evidence"
+      "joined": "Beigetreten",
+      "join_date": "Beitrittsdatum",
+      "actions": "Aktionen",
+      "expires": "Läuft ab",
+      "sent": "Gesendet",
+      "evidence": "Nachweis"
+    },
+    "roles": {
+      "head_teacher": "Schulleiter",
+      "teacher": "Lehrer"
+    },
+    "actions": {
+      "remove": "Entfernen",
+      "approve": "Genehmigen",
+      "reject": "Ablehnen",
+      "send_invitation": "Einladung Senden",
+      "sending": "Wird gesendet..."
+    },
+    "status": {
+      "pending": "Ausstehend"
+    },
+    "invite": {
+      "email_label": "E-Mail-Adresse *",
+      "email_placeholder": "lehrer@beispiel.com",
+      "message_label": "Nachricht (Optional)",
+      "message_placeholder": "Fügen Sie Ihrer Einladung eine persönliche Nachricht hinzu..."
+    },
+    "evidence": {
+      "label": "Nachweis/Grund:"
+    },
+    "invitations": {
+      "title": "Ausstehende Einladungen",
+      "sent_expires": "Gesendet {sentDate} • Läuft ab {expiresDate}"
     }
   },
   "events": {

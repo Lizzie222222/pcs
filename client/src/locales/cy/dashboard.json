@@ -263,48 +263,108 @@
     "delete_confirmation_message": "Ni ellir dadwneud y weithred hon. Bydd hyn yn dileu eich eitem weithredu yn barhaol a'i thynnu o gyfrifiadau effaith."
   },
   "team": {
+    "page_title": "Rheoli Tîm",
+    "page_description": "Rheoli aelodau tîm eich ysgol, adolygu ceisiadau mynediad, a gwahodd athrawon newydd",
     "loading": "Yn llwytho rheoli tîm...",
+    "loading_members": "Yn llwytho aelodau'r tîm...",
+    "loading_requests": "Yn llwytho ceisiadau...",
+    "error_no_school": "Dim ysgol wedi'i chanfod. Cofrestrwch eich ysgol yn gyntaf.",
+    "unknown_user": "Defnyddiwr Anhysbys",
+    "not_applicable": "D/B",
+    "this_user": "y defnyddiwr hwn",
     "toasts": {
-      "auth_required": "Authentication Required",
-      "auth_required_desc": "Please log in to access team management.",
-      "access_denied": "Access Denied",
-      "access_denied_desc": "Only head teachers can access team management.",
-      "teacher_removed": "Teacher Removed",
-      "teacher_removed_desc": "The teacher has been removed from your school.",
-      "error": "Error",
-      "error_remove_teacher": "Failed to remove teacher.",
-      "request_approved": "Request Approved",
-      "request_approved_desc": "The teacher has been added to your school.",
-      "error_approve_request": "Failed to approve request.",
-      "request_rejected": "Request Rejected",
-      "request_rejected_desc": "The verification request has been rejected.",
-      "error_reject_request": "Failed to reject request.",
-      "invitation_sent": "Invitation Sent!",
-      "invitation_sent_desc": "The teacher invitation has been sent successfully.",
-      "error_send_invitation": "Failed to send invitation.",
-      "email_required": "Email Required",
-      "email_required_desc": "Please enter an email address."
+      "auth_required": "Mae Angen Dilysu",
+      "auth_required_desc": "Mewngofnodwch i gael mynediad at reoli tîm.",
+      "access_denied": "Mynediad Wedi'i Wrthod",
+      "access_denied_desc": "Dim ond penaethiaid athrawon all gael mynediad at reoli tîm.",
+      "teacher_removed": "Athro Wedi'i Dynnu",
+      "teacher_removed_desc": "Mae'r athro wedi'i dynnu o'ch ysgol.",
+      "error": "Gwall",
+      "error_remove_teacher": "Methodd tynnu athro.",
+      "request_approved": "Cais Wedi'i Gymeradwyo",
+      "request_approved_desc": "Mae'r cais dilysu wedi'i gymeradwyo.",
+      "error_approve_request": "Methodd cymeradwyo'r cais.",
+      "request_rejected": "Cais Wedi'i Wrthod",
+      "request_rejected_desc": "Mae'r cais dilysu wedi'i wrthod.",
+      "error_reject_request": "Methodd gwrthod y cais.",
+      "invitation_sent": "Gwahoddiad Wedi'i Anfon",
+      "invitation_sent_desc": "Mae'r gwahoddiad athro wedi'i anfon yn llwyddiannus.",
+      "error_send_invitation": "Methodd anfon gwahoddiad.",
+      "email_required": "E-bost yn Angenrheidiol",
+      "email_required_desc": "Rhowch gyfeiriad e-bost."
     },
     "dialogs": {
-      "remove_teacher_title": "Remove Teacher",
-      "approve_request_title": "Approve Access Request",
-      "reject_request_title": "Reject Access Request"
+      "remove_teacher_title": "Tynnu Athro",
+      "remove_teacher_desc": "Ydych chi'n siŵr eich bod am dynnu {name} o'ch ysgol? Ni ellir dadwneud y weithred hon.",
+      "approve_request_title": "Cymeradwyo Cais Mynediad",
+      "approve_request_desc": "Rydych ar fin cymeradwyo'r cais mynediad gan {name}.",
+      "reject_request_title": "Gwrthod Cais Mynediad",
+      "reject_request_desc": "Rydych ar fin gwrthod y cais mynediad gan {name}.",
+      "review_notes_label": "Nodiadau Adolygu (Dewisol)",
+      "review_notes_placeholder": "Ychwanegu nodiadau am y cymeradwyaeth hwn...",
+      "rejection_reason_label": "Rheswm dros Wrthod (Angenrheidiol)",
+      "rejection_reason_placeholder": "Eglurwch pam mae'r cais hwn yn cael ei wrthod...",
+      "cancel": "Canslo",
+      "remove_button": "Tynnu Athro",
+      "approve_button": "Cymeradwyo Cais",
+      "reject_button": "Gwrthod Cais",
+      "approving": "Yn cymeradwyo...",
+      "rejecting": "Yn gwrthod..."
     },
     "tabs": {
-      "members": "Team Members",
-      "requests": "Verification Requests",
-      "invitations": "Invitations"
+      "members": "Aelodau'r Tîm",
+      "pending_requests": "Ceisiadau ar Aros",
+      "invite": "Gwahodd Athro"
+    },
+    "cards": {
+      "team_members": "Aelodau'r Tîm",
+      "pending_verification": "Ceisiadau Dilysu ar Aros",
+      "invite_teacher": "Gwahodd Athro"
+    },
+    "empty": {
+      "no_members_title": "Dim Aelodau Tîm",
+      "no_members_desc": "Nid oes gan eich ysgol unrhyw aelodau tîm eto.",
+      "no_requests_title": "Dim Ceisiadau ar Aros",
+      "no_requests_desc": "Nid oes unrhyw geisiadau dilysu yn aros am eich adolygiad."
     },
     "table_headers": {
-      "name": "Name",
-      "email": "Email",
-      "role": "Role",
-      "status": "Status",
-      "joined": "Joined",
-      "actions": "Actions",
-      "expires": "Expires",
-      "sent": "Sent",
-      "evidence": "Evidence"
+      "name": "Enw",
+      "email": "E-bost",
+      "role": "Rôl",
+      "status": "Statws",
+      "joined": "Ymunodd",
+      "join_date": "Dyddiad Ymuno",
+      "actions": "Gweithredoedd",
+      "expires": "Yn Dod i Ben",
+      "sent": "Wedi'i Anfon",
+      "evidence": "Tystiolaeth"
+    },
+    "roles": {
+      "head_teacher": "Pennaeth",
+      "teacher": "Athro"
+    },
+    "actions": {
+      "remove": "Tynnu",
+      "approve": "Cymeradwyo",
+      "reject": "Gwrthod",
+      "send_invitation": "Anfon Gwahoddiad",
+      "sending": "Yn anfon..."
+    },
+    "status": {
+      "pending": "Ar Aros"
+    },
+    "invite": {
+      "email_label": "Cyfeiriad E-bost *",
+      "email_placeholder": "athro@enghraifft.com",
+      "message_label": "Neges (Dewisol)",
+      "message_placeholder": "Ychwanegu neges bersonol at eich gwahoddiad..."
+    },
+    "evidence": {
+      "label": "Tystiolaeth/Rheswm:"
+    },
+    "invitations": {
+      "title": "Gwahoddiadau ar Aros",
+      "sent_expires": "Anfonwyd {sentDate} • Yn dod i ben {expiresDate}"
     }
   },
   "events": {

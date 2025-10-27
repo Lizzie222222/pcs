@@ -263,48 +263,108 @@
     "delete_confirmation_message": "Это действие не может быть отменено. Это навсегда удалит ваш пункт действия и удалит его из расчетов воздействия."
   },
   "team": {
+    "page_title": "Управление Командой",
+    "page_description": "Управляйте членами команды вашей школы, просматривайте запросы на доступ и приглашайте новых учителей",
     "loading": "Загрузка управления командой...",
+    "loading_members": "Загрузка членов команды...",
+    "loading_requests": "Загрузка запросов...",
+    "error_no_school": "Школа не найдена. Сначала зарегистрируйте свою школу.",
+    "unknown_user": "Неизвестный Пользователь",
+    "not_applicable": "Н/Д",
+    "this_user": "этот пользователь",
     "toasts": {
-      "auth_required": "Authentication Required",
-      "auth_required_desc": "Please log in to access team management.",
-      "access_denied": "Access Denied",
-      "access_denied_desc": "Only head teachers can access team management.",
-      "teacher_removed": "Teacher Removed",
-      "teacher_removed_desc": "The teacher has been removed from your school.",
-      "error": "Error",
-      "error_remove_teacher": "Failed to remove teacher.",
-      "request_approved": "Request Approved",
-      "request_approved_desc": "The teacher has been added to your school.",
-      "error_approve_request": "Failed to approve request.",
-      "request_rejected": "Request Rejected",
-      "request_rejected_desc": "The verification request has been rejected.",
-      "error_reject_request": "Failed to reject request.",
-      "invitation_sent": "Invitation Sent!",
-      "invitation_sent_desc": "The teacher invitation has been sent successfully.",
-      "error_send_invitation": "Failed to send invitation.",
-      "email_required": "Email Required",
-      "email_required_desc": "Please enter an email address."
+      "auth_required": "Требуется Аутентификация",
+      "auth_required_desc": "Войдите в систему для доступа к управлению командой.",
+      "access_denied": "Доступ Запрещен",
+      "access_denied_desc": "Только директора школ имеют доступ к управлению командой.",
+      "teacher_removed": "Учитель Удален",
+      "teacher_removed_desc": "Учитель был удален из вашей школы.",
+      "error": "Ошибка",
+      "error_remove_teacher": "Не удалось удалить учителя.",
+      "request_approved": "Запрос Одобрен",
+      "request_approved_desc": "Запрос на верификацию был одобрен.",
+      "error_approve_request": "Не удалось одобрить запрос.",
+      "request_rejected": "Запрос Отклонен",
+      "request_rejected_desc": "Запрос на верификацию был отклонен.",
+      "error_reject_request": "Не удалось отклонить запрос.",
+      "invitation_sent": "Приглашение Отправлено",
+      "invitation_sent_desc": "Приглашение для учителя было успешно отправлено.",
+      "error_send_invitation": "Не удалось отправить приглашение.",
+      "email_required": "Требуется Email",
+      "email_required_desc": "Пожалуйста, введите адрес электронной почты."
     },
     "dialogs": {
-      "remove_teacher_title": "Remove Teacher",
-      "approve_request_title": "Approve Access Request",
-      "reject_request_title": "Reject Access Request"
+      "remove_teacher_title": "Удалить Учителя",
+      "remove_teacher_desc": "Вы уверены, что хотите удалить {name} из вашей школы? Это действие нельзя отменить.",
+      "approve_request_title": "Одобрить Запрос на Доступ",
+      "approve_request_desc": "Вы собираетесь одобрить запрос на доступ от {name}.",
+      "reject_request_title": "Отклонить Запрос на Доступ",
+      "reject_request_desc": "Вы собираетесь отклонить запрос на доступ от {name}.",
+      "review_notes_label": "Примечания к Проверке (Необязательно)",
+      "review_notes_placeholder": "Добавьте примечания об этом одобрении...",
+      "rejection_reason_label": "Причина Отклонения (Обязательно)",
+      "rejection_reason_placeholder": "Объясните, почему этот запрос отклоняется...",
+      "cancel": "Отменить",
+      "remove_button": "Удалить Учителя",
+      "approve_button": "Одобрить Запрос",
+      "reject_button": "Отклонить Запрос",
+      "approving": "Одобрение...",
+      "rejecting": "Отклонение..."
     },
     "tabs": {
-      "members": "Team Members",
-      "requests": "Verification Requests",
-      "invitations": "Invitations"
+      "members": "Члены Команды",
+      "pending_requests": "Ожидающие Запросы",
+      "invite": "Пригласить Учителя"
+    },
+    "cards": {
+      "team_members": "Члены Команды",
+      "pending_verification": "Ожидающие Запросы на Верификацию",
+      "invite_teacher": "Пригласить Учителя"
+    },
+    "empty": {
+      "no_members_title": "Нет Членов Команды",
+      "no_members_desc": "В вашей школе еще нет членов команды.",
+      "no_requests_title": "Нет Ожидающих Запросов",
+      "no_requests_desc": "Нет запросов на верификацию, ожидающих вашей проверки."
     },
     "table_headers": {
-      "name": "Name",
+      "name": "Имя",
       "email": "Email",
-      "role": "Role",
-      "status": "Status",
-      "joined": "Joined",
-      "actions": "Actions",
-      "expires": "Expires",
-      "sent": "Sent",
-      "evidence": "Evidence"
+      "role": "Роль",
+      "status": "Статус",
+      "joined": "Присоединился",
+      "join_date": "Дата Присоединения",
+      "actions": "Действия",
+      "expires": "Истекает",
+      "sent": "Отправлено",
+      "evidence": "Доказательство"
+    },
+    "roles": {
+      "head_teacher": "Директор Школы",
+      "teacher": "Учитель"
+    },
+    "actions": {
+      "remove": "Удалить",
+      "approve": "Одобрить",
+      "reject": "Отклонить",
+      "send_invitation": "Отправить Приглашение",
+      "sending": "Отправка..."
+    },
+    "status": {
+      "pending": "В Ожидании"
+    },
+    "invite": {
+      "email_label": "Адрес Электронной Почты *",
+      "email_placeholder": "uchitel@primer.ru",
+      "message_label": "Сообщение (Необязательно)",
+      "message_placeholder": "Добавьте персональное сообщение к вашему приглашению..."
+    },
+    "evidence": {
+      "label": "Доказательство/Причина:"
+    },
+    "invitations": {
+      "title": "Ожидающие Приглашения",
+      "sent_expires": "Отправлено {sentDate} • Истекает {expiresDate}"
     }
   },
   "events": {

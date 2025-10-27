@@ -263,7 +263,15 @@
     "welcome_message": "Welcome to Plastic Clever Schools!"
   },
   "team": {
+    "page_title": "Team Management",
+    "page_description": "Manage your school's team members, review access requests, and invite new teachers",
     "loading": "Loading team management...",
+    "loading_members": "Loading team members...",
+    "loading_requests": "Loading requests...",
+    "error_no_school": "No school found. Please register your school first.",
+    "unknown_user": "Unknown User",
+    "not_applicable": "N/A",
+    "this_user": "this user",
     "toasts": {
       "auth_required": "Authentication Required",
       "auth_required_desc": "Please log in to access team management.",
@@ -274,26 +282,50 @@
       "error": "Error",
       "error_remove_teacher": "Failed to remove teacher.",
       "request_approved": "Request Approved",
-      "request_approved_desc": "The teacher has been added to your school.",
+      "request_approved_desc": "The verification request has been approved.",
       "error_approve_request": "Failed to approve request.",
       "request_rejected": "Request Rejected",
       "request_rejected_desc": "The verification request has been rejected.",
       "error_reject_request": "Failed to reject request.",
-      "invitation_sent": "Invitation Sent!",
-      "invitation_sent_desc": "The teacher invitation has been sent successfully.",
+      "invitation_sent": "Invitation Sent",
+      "invitation_sent_desc": "Teacher invitation has been sent successfully.",
       "error_send_invitation": "Failed to send invitation.",
       "email_required": "Email Required",
       "email_required_desc": "Please enter an email address."
     },
     "dialogs": {
       "remove_teacher_title": "Remove Teacher",
+      "remove_teacher_desc": "Are you sure you want to remove {name} from your school? This action cannot be undone.",
       "approve_request_title": "Approve Access Request",
-      "reject_request_title": "Reject Access Request"
+      "approve_request_desc": "You are about to approve the access request from {name}.",
+      "reject_request_title": "Reject Access Request",
+      "reject_request_desc": "You are about to reject the access request from {name}.",
+      "review_notes_label": "Review Notes (Optional)",
+      "review_notes_placeholder": "Add any notes about this approval...",
+      "rejection_reason_label": "Rejection Reason (Required)",
+      "rejection_reason_placeholder": "Explain why this request is being rejected...",
+      "cancel": "Cancel",
+      "remove_button": "Remove Teacher",
+      "approve_button": "Approve Request",
+      "reject_button": "Reject Request",
+      "approving": "Approving...",
+      "rejecting": "Rejecting..."
     },
     "tabs": {
       "members": "Team Members",
-      "requests": "Verification Requests",
-      "invitations": "Invitations"
+      "pending_requests": "Pending Requests",
+      "invite": "Invite Teacher"
+    },
+    "cards": {
+      "team_members": "Team Members",
+      "pending_verification": "Pending Verification Requests",
+      "invite_teacher": "Invite Teacher"
+    },
+    "empty": {
+      "no_members_title": "No Team Members",
+      "no_members_desc": "Your school doesn't have any team members yet.",
+      "no_requests_title": "No Pending Requests",
+      "no_requests_desc": "There are no verification requests waiting for your review."
     },
     "table_headers": {
       "name": "Name",
@@ -301,10 +333,38 @@
       "role": "Role",
       "status": "Status",
       "joined": "Joined",
+      "join_date": "Join Date",
       "actions": "Actions",
       "expires": "Expires",
       "sent": "Sent",
       "evidence": "Evidence"
+    },
+    "roles": {
+      "head_teacher": "Head Teacher",
+      "teacher": "Teacher"
+    },
+    "actions": {
+      "remove": "Remove",
+      "approve": "Approve",
+      "reject": "Reject",
+      "send_invitation": "Send Invitation",
+      "sending": "Sending..."
+    },
+    "status": {
+      "pending": "Pending"
+    },
+    "invite": {
+      "email_label": "Email Address *",
+      "email_placeholder": "teacher@example.com",
+      "message_label": "Message (Optional)",
+      "message_placeholder": "Add a personal message to your invitation..."
+    },
+    "evidence": {
+      "label": "Evidence/Reason:"
+    },
+    "invitations": {
+      "title": "Pending Invitations",
+      "sent_expires": "Sent {sentDate} • Expires {expiresDate}"
     }
   },
   "events": {

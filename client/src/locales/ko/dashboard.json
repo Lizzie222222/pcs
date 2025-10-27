@@ -263,48 +263,108 @@
     "delete_confirmation_message": "이 작업은 되돌릴 수 없습니다. 행동 항목을 영구적으로 삭제하고 영향 계산에서 제거합니다."
   },
   "team": {
+    "page_title": "팀 관리",
+    "page_description": "학교 팀원 관리, 액세스 요청 검토 및 새 교사 초대",
     "loading": "팀 관리를 로딩 중...",
+    "loading_members": "팀원을 로딩 중...",
+    "loading_requests": "요청을 로딩 중...",
+    "error_no_school": "학교를 찾을 수 없습니다. 먼저 학교를 등록하세요.",
+    "unknown_user": "알 수 없는 사용자",
+    "not_applicable": "해당 없음",
+    "this_user": "이 사용자",
     "toasts": {
-      "auth_required": "Authentication Required",
-      "auth_required_desc": "Please log in to access team management.",
-      "access_denied": "Access Denied",
-      "access_denied_desc": "Only head teachers can access team management.",
-      "teacher_removed": "Teacher Removed",
-      "teacher_removed_desc": "The teacher has been removed from your school.",
-      "error": "Error",
-      "error_remove_teacher": "Failed to remove teacher.",
-      "request_approved": "Request Approved",
-      "request_approved_desc": "The teacher has been added to your school.",
-      "error_approve_request": "Failed to approve request.",
-      "request_rejected": "Request Rejected",
-      "request_rejected_desc": "The verification request has been rejected.",
-      "error_reject_request": "Failed to reject request.",
-      "invitation_sent": "Invitation Sent!",
-      "invitation_sent_desc": "The teacher invitation has been sent successfully.",
-      "error_send_invitation": "Failed to send invitation.",
-      "email_required": "Email Required",
-      "email_required_desc": "Please enter an email address."
+      "auth_required": "인증 필요",
+      "auth_required_desc": "팀 관리에 액세스하려면 로그인하세요.",
+      "access_denied": "액세스 거부됨",
+      "access_denied_desc": "교장만 팀 관리에 액세스할 수 있습니다.",
+      "teacher_removed": "교사 제거됨",
+      "teacher_removed_desc": "교사가 학교에서 제거되었습니다.",
+      "error": "오류",
+      "error_remove_teacher": "교사 제거 실패.",
+      "request_approved": "요청 승인됨",
+      "request_approved_desc": "확인 요청이 승인되었습니다.",
+      "error_approve_request": "요청 승인 실패.",
+      "request_rejected": "요청 거부됨",
+      "request_rejected_desc": "확인 요청이 거부되었습니다.",
+      "error_reject_request": "요청 거부 실패.",
+      "invitation_sent": "초대 전송됨",
+      "invitation_sent_desc": "교사 초대가 성공적으로 전송되었습니다.",
+      "error_send_invitation": "초대 전송 실패.",
+      "email_required": "이메일 필요",
+      "email_required_desc": "이메일 주소를 입력하세요."
     },
     "dialogs": {
-      "remove_teacher_title": "Remove Teacher",
-      "approve_request_title": "Approve Access Request",
-      "reject_request_title": "Reject Access Request"
+      "remove_teacher_title": "교사 제거",
+      "remove_teacher_desc": "학교에서 {name}을(를) 제거하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "approve_request_title": "액세스 요청 승인",
+      "approve_request_desc": "{name}의 액세스 요청을 승인하려고 합니다.",
+      "reject_request_title": "액세스 요청 거부",
+      "reject_request_desc": "{name}의 액세스 요청을 거부하려고 합니다.",
+      "review_notes_label": "검토 노트 (선택사항)",
+      "review_notes_placeholder": "이 승인에 대한 메모 추가...",
+      "rejection_reason_label": "거부 사유 (필수)",
+      "rejection_reason_placeholder": "이 요청이 거부되는 이유를 설명하세요...",
+      "cancel": "취소",
+      "remove_button": "교사 제거",
+      "approve_button": "요청 승인",
+      "reject_button": "요청 거부",
+      "approving": "승인 중...",
+      "rejecting": "거부 중..."
     },
     "tabs": {
-      "members": "Team Members",
-      "requests": "Verification Requests",
-      "invitations": "Invitations"
+      "members": "팀원",
+      "pending_requests": "대기 중인 요청",
+      "invite": "교사 초대"
+    },
+    "cards": {
+      "team_members": "팀원",
+      "pending_verification": "대기 중인 확인 요청",
+      "invite_teacher": "교사 초대"
+    },
+    "empty": {
+      "no_members_title": "팀원 없음",
+      "no_members_desc": "아직 학교에 팀원이 없습니다.",
+      "no_requests_title": "대기 중인 요청 없음",
+      "no_requests_desc": "검토를 기다리는 확인 요청이 없습니다."
     },
     "table_headers": {
-      "name": "Name",
-      "email": "Email",
-      "role": "Role",
-      "status": "Status",
-      "joined": "Joined",
-      "actions": "Actions",
-      "expires": "Expires",
-      "sent": "Sent",
-      "evidence": "Evidence"
+      "name": "이름",
+      "email": "이메일",
+      "role": "역할",
+      "status": "상태",
+      "joined": "가입일",
+      "join_date": "가입 날짜",
+      "actions": "작업",
+      "expires": "만료",
+      "sent": "전송됨",
+      "evidence": "증거"
+    },
+    "roles": {
+      "head_teacher": "교장",
+      "teacher": "교사"
+    },
+    "actions": {
+      "remove": "제거",
+      "approve": "승인",
+      "reject": "거부",
+      "send_invitation": "초대 전송",
+      "sending": "전송 중..."
+    },
+    "status": {
+      "pending": "대기 중"
+    },
+    "invite": {
+      "email_label": "이메일 주소 *",
+      "email_placeholder": "teacher@example.com",
+      "message_label": "메시지 (선택사항)",
+      "message_placeholder": "초대에 개인 메시지 추가..."
+    },
+    "evidence": {
+      "label": "증거/이유:"
+    },
+    "invitations": {
+      "title": "대기 중인 초대",
+      "sent_expires": "{sentDate} 전송됨 • {expiresDate} 만료"
     }
   },
   "events": {

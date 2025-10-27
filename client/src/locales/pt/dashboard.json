@@ -263,48 +263,108 @@
     "delete_confirmation_message": "Esta ação não pode ser revertida. Isto eliminará permanentemente o seu item de ação e removerá dos cálculos de impacto."
   },
   "team": {
+    "page_title": "Gestão de Equipa",
+    "page_description": "Gerir os membros da equipa da sua escola, rever pedidos de acesso e convidar novos professores",
     "loading": "Carregando gestão de equipa...",
+    "loading_members": "Carregando membros da equipa...",
+    "loading_requests": "Carregando pedidos...",
+    "error_no_school": "Nenhuma escola encontrada. Por favor registe a sua escola primeiro.",
+    "unknown_user": "Utilizador Desconhecido",
+    "not_applicable": "N/A",
+    "this_user": "este utilizador",
     "toasts": {
-      "auth_required": "Authentication Required",
-      "auth_required_desc": "Please log in to access team management.",
-      "access_denied": "Access Denied",
-      "access_denied_desc": "Only head teachers can access team management.",
-      "teacher_removed": "Teacher Removed",
-      "teacher_removed_desc": "The teacher has been removed from your school.",
-      "error": "Error",
-      "error_remove_teacher": "Failed to remove teacher.",
-      "request_approved": "Request Approved",
-      "request_approved_desc": "The teacher has been added to your school.",
-      "error_approve_request": "Failed to approve request.",
-      "request_rejected": "Request Rejected",
-      "request_rejected_desc": "The verification request has been rejected.",
-      "error_reject_request": "Failed to reject request.",
-      "invitation_sent": "Invitation Sent!",
-      "invitation_sent_desc": "The teacher invitation has been sent successfully.",
-      "error_send_invitation": "Failed to send invitation.",
-      "email_required": "Email Required",
-      "email_required_desc": "Please enter an email address."
+      "auth_required": "Autenticação Necessária",
+      "auth_required_desc": "Por favor inicie sessão para aceder à gestão de equipa.",
+      "access_denied": "Acesso Negado",
+      "access_denied_desc": "Apenas professores coordenadores podem aceder à gestão de equipa.",
+      "teacher_removed": "Professor Removido",
+      "teacher_removed_desc": "O professor foi removido da sua escola.",
+      "error": "Erro",
+      "error_remove_teacher": "Falha ao remover professor.",
+      "request_approved": "Pedido Aprovado",
+      "request_approved_desc": "O pedido de verificação foi aprovado.",
+      "error_approve_request": "Falha ao aprovar pedido.",
+      "request_rejected": "Pedido Rejeitado",
+      "request_rejected_desc": "O pedido de verificação foi rejeitado.",
+      "error_reject_request": "Falha ao rejeitar pedido.",
+      "invitation_sent": "Convite Enviado",
+      "invitation_sent_desc": "O convite do professor foi enviado com sucesso.",
+      "error_send_invitation": "Falha ao enviar convite.",
+      "email_required": "Email Necessário",
+      "email_required_desc": "Por favor introduza um endereço de email."
     },
     "dialogs": {
-      "remove_teacher_title": "Remove Teacher",
-      "approve_request_title": "Approve Access Request",
-      "reject_request_title": "Reject Access Request"
+      "remove_teacher_title": "Remover Professor",
+      "remove_teacher_desc": "Tem a certeza de que deseja remover {name} da sua escola? Esta ação não pode ser revertida.",
+      "approve_request_title": "Aprovar Pedido de Acesso",
+      "approve_request_desc": "Está prestes a aprovar o pedido de acesso de {name}.",
+      "reject_request_title": "Rejeitar Pedido de Acesso",
+      "reject_request_desc": "Está prestes a rejeitar o pedido de acesso de {name}.",
+      "review_notes_label": "Notas de Revisão (Opcional)",
+      "review_notes_placeholder": "Adicione notas sobre esta aprovação...",
+      "rejection_reason_label": "Razão da Rejeição (Necessário)",
+      "rejection_reason_placeholder": "Explique porque este pedido está a ser rejeitado...",
+      "cancel": "Cancelar",
+      "remove_button": "Remover Professor",
+      "approve_button": "Aprovar Pedido",
+      "reject_button": "Rejeitar Pedido",
+      "approving": "Aprovando...",
+      "rejecting": "Rejeitando..."
     },
     "tabs": {
-      "members": "Team Members",
-      "requests": "Verification Requests",
-      "invitations": "Invitations"
+      "members": "Membros da Equipa",
+      "pending_requests": "Pedidos Pendentes",
+      "invite": "Convidar Professor"
+    },
+    "cards": {
+      "team_members": "Membros da Equipa",
+      "pending_verification": "Pedidos de Verificação Pendentes",
+      "invite_teacher": "Convidar Professor"
+    },
+    "empty": {
+      "no_members_title": "Sem Membros da Equipa",
+      "no_members_desc": "A sua escola ainda não tem membros de equipa.",
+      "no_requests_title": "Sem Pedidos Pendentes",
+      "no_requests_desc": "Não há pedidos de verificação à espera da sua revisão."
     },
     "table_headers": {
-      "name": "Name",
+      "name": "Nome",
       "email": "Email",
-      "role": "Role",
-      "status": "Status",
-      "joined": "Joined",
-      "actions": "Actions",
-      "expires": "Expires",
-      "sent": "Sent",
-      "evidence": "Evidence"
+      "role": "Função",
+      "status": "Estado",
+      "joined": "Aderiu",
+      "join_date": "Data de Adesão",
+      "actions": "Ações",
+      "expires": "Expira",
+      "sent": "Enviado",
+      "evidence": "Evidência"
+    },
+    "roles": {
+      "head_teacher": "Professor Coordenador",
+      "teacher": "Professor"
+    },
+    "actions": {
+      "remove": "Remover",
+      "approve": "Aprovar",
+      "reject": "Rejeitar",
+      "send_invitation": "Enviar Convite",
+      "sending": "Enviando..."
+    },
+    "status": {
+      "pending": "Pendente"
+    },
+    "invite": {
+      "email_label": "Endereço de Email *",
+      "email_placeholder": "professor@exemplo.com",
+      "message_label": "Mensagem (Opcional)",
+      "message_placeholder": "Adicione uma mensagem pessoal ao seu convite..."
+    },
+    "evidence": {
+      "label": "Evidência/Razão:"
+    },
+    "invitations": {
+      "title": "Convites Pendentes",
+      "sent_expires": "Enviado {sentDate} • Expira {expiresDate}"
     }
   },
   "events": {

@@ -263,48 +263,108 @@
     "delete_confirmation_message": "Cette action ne peut pas être annulée. Cela supprimera définitivement votre élément d'action et le retirera des calculs d'impact."
   },
   "team": {
+    "page_title": "Gestion de l'Équipe",
+    "page_description": "Gérez les membres de l'équipe de votre école, examinez les demandes d'accès et invitez de nouveaux enseignants",
     "loading": "Chargement de la gestion de l'équipe...",
+    "loading_members": "Chargement des membres de l'équipe...",
+    "loading_requests": "Chargement des demandes...",
+    "error_no_school": "Aucune école trouvée. Veuillez d'abord enregistrer votre école.",
+    "unknown_user": "Utilisateur Inconnu",
+    "not_applicable": "N/A",
+    "this_user": "cet utilisateur",
     "toasts": {
-      "auth_required": "Authentication Required",
-      "auth_required_desc": "Please log in to access team management.",
-      "access_denied": "Access Denied",
-      "access_denied_desc": "Only head teachers can access team management.",
-      "teacher_removed": "Teacher Removed",
-      "teacher_removed_desc": "The teacher has been removed from your school.",
-      "error": "Error",
-      "error_remove_teacher": "Failed to remove teacher.",
-      "request_approved": "Request Approved",
-      "request_approved_desc": "The teacher has been added to your school.",
-      "error_approve_request": "Failed to approve request.",
-      "request_rejected": "Request Rejected",
-      "request_rejected_desc": "The verification request has been rejected.",
-      "error_reject_request": "Failed to reject request.",
-      "invitation_sent": "Invitation Sent!",
-      "invitation_sent_desc": "The teacher invitation has been sent successfully.",
-      "error_send_invitation": "Failed to send invitation.",
-      "email_required": "Email Required",
-      "email_required_desc": "Please enter an email address."
+      "auth_required": "Authentification Requise",
+      "auth_required_desc": "Veuillez vous connecter pour accéder à la gestion de l'équipe.",
+      "access_denied": "Accès Refusé",
+      "access_denied_desc": "Seuls les chefs d'établissement peuvent accéder à la gestion de l'équipe.",
+      "teacher_removed": "Enseignant Supprimé",
+      "teacher_removed_desc": "L'enseignant a été retiré de votre école.",
+      "error": "Erreur",
+      "error_remove_teacher": "Échec de la suppression de l'enseignant.",
+      "request_approved": "Demande Approuvée",
+      "request_approved_desc": "La demande de vérification a été approuvée.",
+      "error_approve_request": "Échec de l'approbation de la demande.",
+      "request_rejected": "Demande Rejetée",
+      "request_rejected_desc": "La demande de vérification a été rejetée.",
+      "error_reject_request": "Échec du rejet de la demande.",
+      "invitation_sent": "Invitation Envoyée",
+      "invitation_sent_desc": "L'invitation de l'enseignant a été envoyée avec succès.",
+      "error_send_invitation": "Échec de l'envoi de l'invitation.",
+      "email_required": "Email Requis",
+      "email_required_desc": "Veuillez entrer une adresse email."
     },
     "dialogs": {
-      "remove_teacher_title": "Remove Teacher",
-      "approve_request_title": "Approve Access Request",
-      "reject_request_title": "Reject Access Request"
+      "remove_teacher_title": "Supprimer l'Enseignant",
+      "remove_teacher_desc": "Êtes-vous sûr de vouloir supprimer {name} de votre école ? Cette action ne peut pas être annulée.",
+      "approve_request_title": "Approuver la Demande d'Accès",
+      "approve_request_desc": "Vous êtes sur le point d'approuver la demande d'accès de {name}.",
+      "reject_request_title": "Rejeter la Demande d'Accès",
+      "reject_request_desc": "Vous êtes sur le point de rejeter la demande d'accès de {name}.",
+      "review_notes_label": "Notes de Révision (Optionnel)",
+      "review_notes_placeholder": "Ajoutez des notes sur cette approbation...",
+      "rejection_reason_label": "Raison du Rejet (Requis)",
+      "rejection_reason_placeholder": "Expliquez pourquoi cette demande est rejetée...",
+      "cancel": "Annuler",
+      "remove_button": "Supprimer l'Enseignant",
+      "approve_button": "Approuver la Demande",
+      "reject_button": "Rejeter la Demande",
+      "approving": "Approbation...",
+      "rejecting": "Rejet..."
     },
     "tabs": {
-      "members": "Team Members",
-      "requests": "Verification Requests",
-      "invitations": "Invitations"
+      "members": "Membres de l'Équipe",
+      "pending_requests": "Demandes en Attente",
+      "invite": "Inviter un Enseignant"
+    },
+    "cards": {
+      "team_members": "Membres de l'Équipe",
+      "pending_verification": "Demandes de Vérification en Attente",
+      "invite_teacher": "Inviter un Enseignant"
+    },
+    "empty": {
+      "no_members_title": "Aucun Membre de l'Équipe",
+      "no_members_desc": "Votre école n'a pas encore de membres d'équipe.",
+      "no_requests_title": "Aucune Demande en Attente",
+      "no_requests_desc": "Il n'y a pas de demandes de vérification en attente de votre examen."
     },
     "table_headers": {
-      "name": "Name",
+      "name": "Nom",
       "email": "Email",
-      "role": "Role",
-      "status": "Status",
-      "joined": "Joined",
+      "role": "Rôle",
+      "status": "Statut",
+      "joined": "Rejoint",
+      "join_date": "Date d'Adhésion",
       "actions": "Actions",
-      "expires": "Expires",
-      "sent": "Sent",
-      "evidence": "Evidence"
+      "expires": "Expire",
+      "sent": "Envoyé",
+      "evidence": "Preuve"
+    },
+    "roles": {
+      "head_teacher": "Chef d'Établissement",
+      "teacher": "Enseignant"
+    },
+    "actions": {
+      "remove": "Supprimer",
+      "approve": "Approuver",
+      "reject": "Rejeter",
+      "send_invitation": "Envoyer l'Invitation",
+      "sending": "Envoi..."
+    },
+    "status": {
+      "pending": "En Attente"
+    },
+    "invite": {
+      "email_label": "Adresse Email *",
+      "email_placeholder": "enseignant@exemple.com",
+      "message_label": "Message (Optionnel)",
+      "message_placeholder": "Ajoutez un message personnel à votre invitation..."
+    },
+    "evidence": {
+      "label": "Preuve/Raison :"
+    },
+    "invitations": {
+      "title": "Invitations en Attente",
+      "sent_expires": "Envoyé {sentDate} • Expire {expiresDate}"
     }
   },
   "events": {

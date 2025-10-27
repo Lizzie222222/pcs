@@ -263,48 +263,108 @@
     "delete_confirmation_message": "Tindakan ini tidak dapat dibatalkan. Ini akan menghapus item tindakan Anda secara permanen dan menghapusnya dari perhitungan dampak."
   },
   "team": {
+    "page_title": "Manajemen Tim",
+    "page_description": "Kelola anggota tim sekolah Anda, tinjau permintaan akses, dan undang guru baru",
     "loading": "Memuat manajemen tim...",
+    "loading_members": "Memuat anggota tim...",
+    "loading_requests": "Memuat permintaan...",
+    "error_no_school": "Tidak ada sekolah yang ditemukan. Harap daftarkan sekolah Anda terlebih dahulu.",
+    "unknown_user": "Pengguna Tidak Dikenal",
+    "not_applicable": "T/A",
+    "this_user": "pengguna ini",
     "toasts": {
-      "auth_required": "Authentication Required",
-      "auth_required_desc": "Please log in to access team management.",
-      "access_denied": "Access Denied",
-      "access_denied_desc": "Only head teachers can access team management.",
-      "teacher_removed": "Teacher Removed",
-      "teacher_removed_desc": "The teacher has been removed from your school.",
-      "error": "Error",
-      "error_remove_teacher": "Failed to remove teacher.",
-      "request_approved": "Request Approved",
-      "request_approved_desc": "The teacher has been added to your school.",
-      "error_approve_request": "Failed to approve request.",
-      "request_rejected": "Request Rejected",
-      "request_rejected_desc": "The verification request has been rejected.",
-      "error_reject_request": "Failed to reject request.",
-      "invitation_sent": "Invitation Sent!",
-      "invitation_sent_desc": "The teacher invitation has been sent successfully.",
-      "error_send_invitation": "Failed to send invitation.",
-      "email_required": "Email Required",
-      "email_required_desc": "Please enter an email address."
+      "auth_required": "Autentikasi Diperlukan",
+      "auth_required_desc": "Harap login untuk mengakses manajemen tim.",
+      "access_denied": "Akses Ditolak",
+      "access_denied_desc": "Hanya kepala sekolah yang dapat mengakses manajemen tim.",
+      "teacher_removed": "Guru Dihapus",
+      "teacher_removed_desc": "Guru telah dihapus dari sekolah Anda.",
+      "error": "Kesalahan",
+      "error_remove_teacher": "Gagal menghapus guru.",
+      "request_approved": "Permintaan Disetujui",
+      "request_approved_desc": "Permintaan verifikasi telah disetujui.",
+      "error_approve_request": "Gagal menyetujui permintaan.",
+      "request_rejected": "Permintaan Ditolak",
+      "request_rejected_desc": "Permintaan verifikasi telah ditolak.",
+      "error_reject_request": "Gagal menolak permintaan.",
+      "invitation_sent": "Undangan Terkirim",
+      "invitation_sent_desc": "Undangan guru telah berhasil dikirim.",
+      "error_send_invitation": "Gagal mengirim undangan.",
+      "email_required": "Email Diperlukan",
+      "email_required_desc": "Harap masukkan alamat email."
     },
     "dialogs": {
-      "remove_teacher_title": "Remove Teacher",
-      "approve_request_title": "Approve Access Request",
-      "reject_request_title": "Reject Access Request"
+      "remove_teacher_title": "Hapus Guru",
+      "remove_teacher_desc": "Apakah Anda yakin ingin menghapus {name} dari sekolah Anda? Tindakan ini tidak dapat dibatalkan.",
+      "approve_request_title": "Setujui Permintaan Akses",
+      "approve_request_desc": "Anda akan menyetujui permintaan akses dari {name}.",
+      "reject_request_title": "Tolak Permintaan Akses",
+      "reject_request_desc": "Anda akan menolak permintaan akses dari {name}.",
+      "review_notes_label": "Catatan Tinjauan (Opsional)",
+      "review_notes_placeholder": "Tambahkan catatan tentang persetujuan ini...",
+      "rejection_reason_label": "Alasan Penolakan (Diperlukan)",
+      "rejection_reason_placeholder": "Jelaskan mengapa permintaan ini ditolak...",
+      "cancel": "Batal",
+      "remove_button": "Hapus Guru",
+      "approve_button": "Setujui Permintaan",
+      "reject_button": "Tolak Permintaan",
+      "approving": "Menyetujui...",
+      "rejecting": "Menolak..."
     },
     "tabs": {
-      "members": "Team Members",
-      "requests": "Verification Requests",
-      "invitations": "Invitations"
+      "members": "Anggota Tim",
+      "pending_requests": "Permintaan Tertunda",
+      "invite": "Undang Guru"
+    },
+    "cards": {
+      "team_members": "Anggota Tim",
+      "pending_verification": "Permintaan Verifikasi Tertunda",
+      "invite_teacher": "Undang Guru"
+    },
+    "empty": {
+      "no_members_title": "Tidak Ada Anggota Tim",
+      "no_members_desc": "Sekolah Anda belum memiliki anggota tim.",
+      "no_requests_title": "Tidak Ada Permintaan Tertunda",
+      "no_requests_desc": "Tidak ada permintaan verifikasi yang menunggu tinjauan Anda."
     },
     "table_headers": {
-      "name": "Name",
+      "name": "Nama",
       "email": "Email",
-      "role": "Role",
+      "role": "Peran",
       "status": "Status",
-      "joined": "Joined",
-      "actions": "Actions",
-      "expires": "Expires",
-      "sent": "Sent",
-      "evidence": "Evidence"
+      "joined": "Bergabung",
+      "join_date": "Tanggal Bergabung",
+      "actions": "Tindakan",
+      "expires": "Kedaluwarsa",
+      "sent": "Terkirim",
+      "evidence": "Bukti"
+    },
+    "roles": {
+      "head_teacher": "Kepala Sekolah",
+      "teacher": "Guru"
+    },
+    "actions": {
+      "remove": "Hapus",
+      "approve": "Setujui",
+      "reject": "Tolak",
+      "send_invitation": "Kirim Undangan",
+      "sending": "Mengirim..."
+    },
+    "status": {
+      "pending": "Tertunda"
+    },
+    "invite": {
+      "email_label": "Alamat Email *",
+      "email_placeholder": "guru@contoh.com",
+      "message_label": "Pesan (Opsional)",
+      "message_placeholder": "Tambahkan pesan pribadi ke undangan Anda..."
+    },
+    "evidence": {
+      "label": "Bukti/Alasan:"
+    },
+    "invitations": {
+      "title": "Undangan Tertunda",
+      "sent_expires": "Terkirim {sentDate} • Kedaluwarsa {expiresDate}"
     }
   },
   "events": {
