@@ -1067,11 +1067,11 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
             onMessagesRead={() => setUnreadChatCount(0)}
           />
 
-          {/* Floating Chat Button */}
+          {/* Floating Admin Chat Button */}
           <Button
             onClick={() => setChatPanelOpen(true)}
-            className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full shadow-lg bg-pcs_blue hover:bg-pcs_blue/90"
-            data-testid="button-open-chat"
+            className="fixed bottom-24 right-6 z-30 w-14 h-14 rounded-full shadow-lg bg-pcs_blue hover:bg-pcs_blue/90"
+            data-testid="button-open-admin-chat"
           >
             <MessageSquare className="h-6 w-6" />
             {unreadChatCount > 0 && (

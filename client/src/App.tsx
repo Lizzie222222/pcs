@@ -209,8 +209,8 @@ function Router() {
         </ErrorBoundary>
       </main>
 
-      {/* AI Chat Widget - appears on all pages */}
-      <ChatWidget />
+      {/* AI Chat Widget - appears on all pages except admin */}
+      {!location.startsWith('/admin') && <ChatWidget />}
       </div>
     </CollaborationProvider>
   );

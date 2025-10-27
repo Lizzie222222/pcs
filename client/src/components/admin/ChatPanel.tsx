@@ -79,7 +79,7 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
   });
 
   // Fetch initial chat messages
-  const { data: historicalMessages = [] } = useQuery<any[]>({
+  const { data: historicalMessagesData } = useQuery<{ messages: any[] }>({
     queryKey: ['/api/collaboration/chat/messages'],
     queryFn: async () => {
       const res = await fetch('/api/collaboration/chat/messages', { credentials: 'include' });
@@ -89,6 +89,8 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
     enabled: open,
     retry: false,
   });
+  
+  const historicalMessages = historicalMessagesData?.messages || [];
 
   // Merge historical and realtime messages
   useEffect(() => {
