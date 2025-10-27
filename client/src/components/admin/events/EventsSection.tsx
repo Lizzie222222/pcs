@@ -760,15 +760,13 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
 
       {/* Event Registrations Dialog */}
       <EventRegistrations
-        isOpen={!!viewingEventRegistrations}
-        onClose={() => setViewingEventRegistrations(null)}
-        event={viewingEventRegistrations}
+        viewingEvent={viewingEventRegistrations}
+        setViewingEvent={setViewingEventRegistrations}
         registrations={eventRegistrations}
         registrationsLoading={registrationsLoading}
         registrationStatusFilter={registrationStatusFilter}
-        onStatusFilterChange={setRegistrationStatusFilter}
-        onMarkAttended={(registrationId) => updateRegistrationMutation.mutate({ id: registrationId, status: 'attended' })}
-        isUpdating={updateRegistrationMutation.isPending}
+        setRegistrationStatusFilter={setRegistrationStatusFilter}
+        updateRegistrationMutation={updateRegistrationMutation}
       />
 
       {/* Delete Event Dialog */}

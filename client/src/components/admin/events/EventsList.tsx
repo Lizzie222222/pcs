@@ -10,110 +10,29 @@ interface EventsListProps {
   events: EventWithRegistrations[];
   eventsLoading: boolean;
   eventFilters: EventFilters;
-  setEventFilters: (filters: EventFilters) => void;
-  setEditingEvent: (event: Event | null) => void;
-  setEventFormData: (formData: EventFormData) => void;
-  setUploadedEventImage: (image: { name: string; url: string } | null) => void;
-  setEventDialogOpen: (open: boolean) => void;
-  setViewingEventRegistrations: (event: Event | null) => void;
-  setRegistrationStatusFilter: (status: string) => void;
-  setDeletingEvent: (event: Event | null) => void;
-  setEventDeleteDialogOpen: (open: boolean) => void;
-  setAnnouncingEvent: (event: Event | null) => void;
-  setNewsletterDialogOpen: (open: boolean) => void;
-  duplicateEventMutation: {
-    mutate: (id: string) => void;
-    isPending: boolean;
-  };
+  onFiltersChange: (filters: EventFilters) => void;
+  onCreateEvent: () => void;
+  onEditEvent: (event: Event) => void;
+  onDuplicateEvent: (eventId: string) => void;
+  onDeleteEvent: (event: Event) => void;
+  onViewRegistrations: (event: Event) => void;
+  onSendNewsletter: (event: Event) => void;
+  isDuplicating: boolean;
 }
 
 export default function EventsList({
   events,
   eventsLoading,
   eventFilters,
-  setEventFilters,
-  setEditingEvent,
-  setEventFormData,
-  setUploadedEventImage,
-  setEventDialogOpen,
-  setViewingEventRegistrations,
-  setRegistrationStatusFilter,
-  setDeletingEvent,
-  setEventDeleteDialogOpen,
-  setAnnouncingEvent,
-  setNewsletterDialogOpen,
-  duplicateEventMutation,
+  onFiltersChange,
+  onCreateEvent,
+  onEditEvent,
+  onDuplicateEvent,
+  onDeleteEvent,
+  onViewRegistrations,
+  onSendNewsletter,
+  isDuplicating,
 }: EventsListProps) {
-  const handleCreateEvent = () => {
-    setEditingEvent(null);
-    setEventFormData({
-      title: '',
-      description: '',
-      eventType: 'workshop',
-      status: 'draft',
-      startDateTime: '',
-      endDateTime: '',
-      location: '',
-      isVirtual: false,
-      meetingLink: '',
-      imageUrl: '',
-      capacity: '',
-      waitlistEnabled: false,
-      registrationDeadline: '',
-      tags: '',
-      isPreRecorded: false,
-      recordingAvailableFrom: '',
-      pagePublishedStatus: 'draft',
-      accessType: 'open',
-    });
-    setUploadedEventImage(null);
-    setEventDialogOpen(true);
-  };
-
-  const handleEditEvent = (event: Event) => {
-    setEditingEvent(event);
-    setEventFormData({
-      title: event.title,
-      description: event.description || '',
-      eventType: event.eventType,
-      status: event.status || 'draft',
-      startDateTime: new Date(event.startDateTime).toISOString().slice(0, 16),
-      endDateTime: new Date(event.endDateTime).toISOString().slice(0, 16),
-      location: event.location || '',
-      isVirtual: event.isVirtual ?? false,
-      meetingLink: event.meetingLink || '',
-      imageUrl: event.imageUrl || '',
-      capacity: event.capacity?.toString() || '',
-      waitlistEnabled: event.waitlistEnabled ?? false,
-      registrationDeadline: event.registrationDeadline ? new Date(event.registrationDeadline).toISOString().slice(0, 16) : '',
-      tags: event.tags?.join(', ') || '',
-      isPreRecorded: event.isPreRecorded ?? false,
-      recordingAvailableFrom: event.recordingAvailableFrom ? new Date(event.recordingAvailableFrom).toISOString().slice(0, 16) : '',
-      pagePublishedStatus: event.pagePublishedStatus || 'draft',
-      accessType: event.accessType || 'open',
-    });
-    if (event.imageUrl) {
-      setUploadedEventImage({ name: 'Event image', url: event.imageUrl });
-    } else {
-      setUploadedEventImage(null);
-    }
-    setEventDialogOpen(true);
-  };
-
-  const handleViewRegistrations = (event: Event) => {
-    setViewingEventRegistrations(event);
-    setRegistrationStatusFilter('all');
-  };
-
-  const handleDeleteEvent = (event: Event) => {
-    setDeletingEvent(event);
-    setEventDeleteDialogOpen(true);
-  };
-
-  const handleSendNewsletter = (event: Event) => {
-    setAnnouncingEvent(event);
-    setNewsletterDialogOpen(true);
-  };
 
   return (
     <Card>
@@ -121,7 +40,7 @@ export default function EventsList({
         <div className="flex items-center justify-between mb-4">
           <CardTitle>Events</CardTitle>
           <Button
-            onClick={handleCreateEvent}
+            onClick={onCreateEvent}
             className="bg-pcs_blue hover:bg-pcs_blue/90"
             data-testid="button-create-event"
           >
@@ -137,7 +56,7 @@ export default function EventsList({
             </label>
             <select
               value={eventFilters.status}
-              onChange={(e) => setEventFilters({ ...eventFilters, status: e.target.value })}
+              onChange={(e) => onFiltersChange({ ...eventFilters, status: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               data-testid="select-status-filter"
             >
@@ -154,7 +73,7 @@ export default function EventsList({
             </label>
             <select
               value={eventFilters.eventType}
-              onChange={(e) => setEventFilters({ ...eventFilters, eventType: e.target.value })}
+              onChange={(e) => onFiltersChange({ ...eventFilters, eventType: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               data-testid="select-type-filter"
             >
@@ -175,7 +94,7 @@ export default function EventsList({
             <input
               type="date"
               value={eventFilters.dateFrom}
-              onChange={(e) => setEventFilters({ ...eventFilters, dateFrom: e.target.value })}
+              onChange={(e) => onFiltersChange({ ...eventFilters, dateFrom: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               data-testid="input-date-from"
             />
@@ -187,7 +106,7 @@ export default function EventsList({
             <input
               type="date"
               value={eventFilters.dateTo}
-              onChange={(e) => setEventFilters({ ...eventFilters, dateTo: e.target.value })}
+              onChange={(e) => onFiltersChange({ ...eventFilters, dateTo: e.target.value })}
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               data-testid="input-date-to"
             />
@@ -286,7 +205,7 @@ export default function EventsList({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleEditEvent(event)}
+                          onClick={() => onEditEvent(event)}
                           data-testid={`button-edit-${event.id}`}
                         >
                           <Edit className="h-4 w-4" />
@@ -294,8 +213,8 @@ export default function EventsList({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => duplicateEventMutation.mutate(event.id)}
-                          disabled={duplicateEventMutation.isPending}
+                          onClick={() => onDuplicateEvent(event.id)}
+                          disabled={isDuplicating}
                           className="text-teal-600 hover:text-teal-700 hover:bg-teal-50"
                           data-testid={`button-duplicate-${event.id}`}
                           title="Duplicate event"
@@ -305,7 +224,7 @@ export default function EventsList({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleViewRegistrations(event)}
+                          onClick={() => onViewRegistrations(event)}
                           data-testid={`button-view-registrations-${event.id}`}
                         >
                           <Users className="h-4 w-4" />
@@ -327,7 +246,7 @@ export default function EventsList({
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDeleteEvent(event)}
+                          onClick={() => onDeleteEvent(event)}
                           className="text-red-600 hover:text-red-700 hover:bg-red-50"
                           data-testid={`button-delete-${event.id}`}
                         >
@@ -337,7 +256,7 @@ export default function EventsList({
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleSendNewsletter(event)}
+                            onClick={() => onSendNewsletter(event)}
                             className="text-pcs_blue hover:text-pcs_blue/80 hover:bg-pcs_blue/10"
                             data-testid={`button-send-newsletter-${event.id}`}
                           >
