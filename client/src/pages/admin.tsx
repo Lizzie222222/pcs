@@ -257,6 +257,21 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     }
   };
 
+  // Update tab title with unread count
+  useEffect(() => {
+    const originalTitle = document.title;
+    
+    if (unreadChatCount > 0) {
+      document.title = `(${unreadChatCount}) PCS Admin`;
+    } else {
+      document.title = 'PCS Admin';
+    }
+    
+    return () => {
+      document.title = originalTitle;
+    };
+  }, [unreadChatCount]);
+
   // Redirect if not authenticated or not admin (but only after loading completes)
   useEffect(() => {
     console.log('Admin page - access check:', {

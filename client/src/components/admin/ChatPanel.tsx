@@ -125,6 +125,42 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
     }
   }, [open, unreadCount, onMessagesRead]);
 
+  // Request notification permission on component mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  // Show desktop notifications for new messages
+  useEffect(() => {
+    if (allMessages.length === 0) return;
+    
+    const latestMessage = allMessages[allMessages.length - 1];
+    
+    // Don't notify for own messages, if panel is open, or no permission
+    if (
+      latestMessage.fromUserId === user?.id ||
+      open ||
+      !('Notification' in window) ||
+      Notification.permission !== 'granted'
+    ) {
+      return;
+    }
+    
+    const notification = new Notification(latestMessage.fromUserName, {
+      body: latestMessage.message.substring(0, 100),
+      tag: 'pcs-chat',
+      icon: '/favicon.ico',
+    });
+    
+    notification.onclick = () => {
+      window.focus();
+      onOpenChange(true);
+      notification.close();
+    };
+  }, [allMessages, user?.id, open, onOpenChange]);
+
   const getFilteredUsers = () => {
     const query = mentionState.searchQuery.toLowerCase();
     return onlineUsers.filter(u => {
