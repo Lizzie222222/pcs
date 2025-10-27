@@ -1945,5 +1945,738 @@
       "quoteRequired": "Quote is required",
       "authorRequired": "Author name is required"
     }
+  },
+  "schools": {
+    "title": "School Management",
+    "subtitle": "Manage schools, view progress, and handle verifications",
+    "tabs": {
+      "allSchools": "All Schools",
+      "verificationRequests": "Verification Requests"
+    },
+    "buttons": {
+      "viewDetails": "View Details",
+      "editSchool": "Edit School",
+      "deleteSchool": "Delete School",
+      "approveVerification": "Approve",
+      "rejectVerification": "Reject",
+      "bulkDelete": "Bulk Delete ({{count}})",
+      "updateStage": "Update Stage",
+      "cancel": "Cancel",
+      "confirmDelete": "Confirm Delete",
+      "deleting": "Deleting...",
+      "exportCSV": "Export CSV"
+    },
+    "filters": {
+      "labels": {
+        "search": "Search Schools",
+        "country": "Country",
+        "stage": "Stage",
+        "language": "Language"
+      },
+      "placeholders": {
+        "searchSchools": "Search by school name..."
+      },
+      "options": {
+        "allCountries": "All Countries",
+        "allStages": "All Stages",
+        "allLanguages": "All Languages"
+      }
+    },
+    "table": {
+      "headers": {
+        "school": "School",
+        "country": "Country",
+        "teachers": "Teachers",
+        "stage": "Stage",
+        "language": "Language",
+        "actions": "Actions"
+      },
+      "values": {
+        "noTeachers": "No teachers",
+        "teacherCount": "{{count}} teacher{{plural}}"
+      },
+      "teacherExpansion": {
+        "title": "Teachers ({{count}})",
+        "headers": {
+          "name": "Name",
+          "email": "Email",
+          "role": "Role",
+          "actions": "Actions"
+        },
+        "removeTeacher": "Remove from school"
+      }
+    },
+    "stages": {
+      "notStarted": "Not Started",
+      "inspire": "Inspire",
+      "investigate": "Investigate",
+      "act": "Act",
+      "completed": "Completed"
+    },
+    "dialogs": {
+      "schoolDetails": {
+        "title": "School Details",
+        "tabs": {
+          "overview": "Overview",
+          "teachers": "Teachers",
+          "photoConsent": "Photo Consent"
+        },
+        "overview": {
+          "schoolName": "School Name:",
+          "country": "Country:",
+          "city": "City:",
+          "type": "Type:",
+          "language": "Language:",
+          "stage": "Current Stage:",
+          "progression": "Progression",
+          "currentRound": "Current Round:",
+          "completionPercentage": "Completion Percentage:"
+        },
+        "teachers": {
+          "title": "School Teachers",
+          "noTeachers": "No teachers assigned to this school yet"
+        },
+        "photoConsent": {
+          "title": "Photo Consent Document",
+          "status": "Status:",
+          "uploadDate": "Upload Date:",
+          "downloadDocument": "Download Document",
+          "noDocument": "No photo consent document uploaded"
+        }
+      },
+      "deleteSchool": {
+        "title": "Delete School",
+        "description": "Are you sure you want to delete this school?",
+        "userPreview": {
+          "title": "The following users will also be affected:",
+          "userItem": "{{name}} ({{email}})"
+        },
+        "cannotUndo": "This action cannot be undone."
+      },
+      "bulkDelete": {
+        "title": "Bulk Delete Schools",
+        "description": "Are you sure you want to delete {{count}} school{{plural}}?",
+        "userWarning": "This will affect {{userCount}} user{{userPlural}}.",
+        "cannotUndo": "This action cannot be undone."
+      },
+      "updateStage": {
+        "title": "Update School Stage",
+        "description": "Select the new stage for the selected schools ({{count}})",
+        "label": "New Stage",
+        "placeholder": "Select stage..."
+      }
+    },
+    "badges": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "verificationRequests": {
+      "title": "Verification Requests",
+      "table": {
+        "headers": {
+          "school": "School",
+          "requestedBy": "Requested By",
+          "requestDate": "Request Date",
+          "status": "Status",
+          "actions": "Actions"
+        }
+      },
+      "emptyState": {
+        "title": "No Verification Requests",
+        "description": "There are no pending verification requests at this time."
+      }
+    },
+    "warnings": {
+      "photoConsentPending": {
+        "title": "Photo Consent Pending",
+        "description": "This school has a pending photo consent document that needs review."
+      },
+      "photoConsentMissing": {
+        "title": "Photo Consent Missing",
+        "description": "This school has not uploaded a photo consent document."
+      }
+    },
+    "toasts": {
+      "schoolDeleted": {
+        "title": "School Deleted",
+        "description": "The school has been successfully deleted."
+      },
+      "deleteFailed": {
+        "title": "Delete Failed",
+        "description": "Failed to delete school. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "bulkDeleteSuccessful": {
+        "title": "Bulk Delete Successful",
+        "description": "Successfully deleted {{count}} school{{plural}}."
+      },
+      "bulkDeleteFailed": {
+        "title": "Bulk Delete Failed",
+        "description": "Failed to delete schools. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "stageUpdated": {
+        "title": "Stage Updated",
+        "description": "Successfully updated stage for {{count}} school{{plural}}."
+      },
+      "stageUpdateFailed": {
+        "title": "Update Failed",
+        "description": "Failed to update school stage. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "verificationApproved": {
+        "title": "Verification Approved",
+        "description": "School verification has been approved."
+      },
+      "verificationRejected": {
+        "title": "Verification Rejected",
+        "description": "School verification has been rejected."
+      },
+      "verificationFailed": {
+        "title": "Verification Failed",
+        "description": "Failed to process verification request.",
+        "customMessage": "{{message}}"
+      }
+    },
+    "emptyStates": {
+      "noSchools": {
+        "title": "No Schools Found",
+        "description": "No schools match your search criteria."
+      }
+    },
+    "loadingStates": {
+      "loadingSchools": "Loading schools..."
+    }
+  },
+  "reviews": {
+    "title": "Review Management",
+    "subtitle": "Review and approve evidence submissions, photo consents, and audits",
+    "tabs": {
+      "evidenceReview": "Evidence Review",
+      "photoConsent": "Photo Consent",
+      "auditReview": "Audit Review"
+    },
+    "buttons": {
+      "approve": "Approve",
+      "reject": "Reject",
+      "requestRevision": "Request Revision",
+      "submitReview": "Submit Review",
+      "cancel": "Cancel",
+      "viewEvidence": "View Evidence",
+      "downloadDocument": "Download Document",
+      "bulkApprove": "Bulk Approve ({{count}})",
+      "bulkReject": "Bulk Reject ({{count}})"
+    },
+    "filters": {
+      "labels": {
+        "status": "Status",
+        "assignedTo": "Assigned To",
+        "searchSchool": "Search School"
+      },
+      "statusOptions": {
+        "all": "All",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "revisionRequested": "Needs Revision"
+      },
+      "assigneeOptions": {
+        "all": "All",
+        "unassigned": "Unassigned",
+        "me": "Assigned to Me",
+        "admin": "{{adminName}}"
+      },
+      "placeholders": {
+        "searchSchool": "Search by school name..."
+      }
+    },
+    "evidenceReview": {
+      "title": "Evidence Review Queue",
+      "assignment": {
+        "label": "Assign to",
+        "unassigned": "Unassigned",
+        "assignToMe": "Assign to Me",
+        "adminOption": "{{adminName}}"
+      },
+      "table": {
+        "headers": {
+          "school": "School",
+          "title": "Title",
+          "stage": "Stage",
+          "submittedBy": "Submitted By",
+          "submittedDate": "Submitted",
+          "assignedTo": "Assigned To",
+          "status": "Status",
+          "actions": "Actions"
+        }
+      },
+      "dialogs": {
+        "reviewEvidence": {
+          "title": "Review Evidence",
+          "labels": {
+            "school": "School:",
+            "title": "Title:",
+            "stage": "Stage:",
+            "submittedBy": "Submitted By:",
+            "description": "Description:",
+            "status": "Status",
+            "reviewNotes": "Review Notes"
+          },
+          "statusOptions": {
+            "approved": "Approved",
+            "rejected": "Rejected",
+            "revisionRequested": "Request Revision"
+          },
+          "placeholders": {
+            "reviewNotes": "Add notes for the teacher (required for rejection or revision request)..."
+          },
+          "helpText": {
+            "notesRequired": "Notes are required when rejecting or requesting revision"
+          }
+        }
+      },
+      "badges": {
+        "new": "NEW",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "revisionRequested": "Needs Revision"
+      }
+    },
+    "photoConsent": {
+      "title": "Photo Consent Queue",
+      "table": {
+        "headers": {
+          "school": "School",
+          "uploadDate": "Upload Date",
+          "uploadedBy": "Uploaded By",
+          "status": "Status",
+          "actions": "Actions"
+        }
+      },
+      "dialogs": {
+        "reviewConsent": {
+          "title": "Review Photo Consent",
+          "labels": {
+            "school": "School:",
+            "uploadDate": "Upload Date:",
+            "uploadedBy": "Uploaded By:",
+            "status": "Status",
+            "adminNotes": "Admin Notes (Optional)"
+          },
+          "statusOptions": {
+            "approved": "Approved",
+            "rejected": "Rejected"
+          },
+          "placeholders": {
+            "adminNotes": "Add any notes about this consent document..."
+          },
+          "previewDocument": "Preview Document"
+        }
+      },
+      "warnings": {
+        "consentRequired": {
+          "title": "Photo Consent Required",
+          "description": "Please ensure proper photo consent is obtained before approving evidence with student photos."
+        }
+      }
+    },
+    "auditReview": {
+      "title": "Audit Review Queue",
+      "table": {
+        "headers": {
+          "school": "School",
+          "auditType": "Audit Type",
+          "submittedBy": "Submitted By",
+          "submittedDate": "Submitted",
+          "status": "Status",
+          "actions": "Actions"
+        }
+      },
+      "dialogs": {
+        "reviewAudit": {
+          "title": "Review Audit",
+          "labels": {
+            "school": "School:",
+            "auditType": "Audit Type:",
+            "submittedBy": "Submitted By:",
+            "submittedDate": "Submitted Date:",
+            "status": "Status",
+            "reviewNotes": "Review Notes (Optional)"
+          },
+          "statusOptions": {
+            "approved": "Approved",
+            "rejected": "Rejected",
+            "revisionRequested": "Request Revision"
+          },
+          "placeholders": {
+            "reviewNotes": "Add any notes about this audit..."
+          }
+        }
+      },
+      "auditTypes": {
+        "plasticWaste": "Plastic Waste Audit",
+        "baseline": "Baseline Audit",
+        "followUp": "Follow-up Audit"
+      }
+    },
+    "toasts": {
+      "reviewSubmitted": {
+        "title": "Review Submitted",
+        "description": "The review has been successfully submitted."
+      },
+      "reviewFailed": {
+        "title": "Review Failed",
+        "description": "Failed to submit review. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "assignmentUpdated": {
+        "title": "Assignment Updated",
+        "description": "Evidence has been assigned to {{assignedTo}}."
+      },
+      "assignmentFailed": {
+        "title": "Assignment Failed",
+        "description": "Failed to update assignment. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "bulkApproveSuccessful": {
+        "title": "Bulk Approve Successful",
+        "description": "Successfully approved {{count}} item{{plural}}."
+      },
+      "bulkRejectSuccessful": {
+        "title": "Bulk Reject Successful",
+        "description": "Successfully rejected {{count}} item{{plural}}."
+      },
+      "bulkActionFailed": {
+        "title": "Bulk Action Failed",
+        "description": "Failed to process bulk action. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "notesRequired": {
+        "title": "Notes Required",
+        "description": "Please provide notes when rejecting or requesting revision."
+      }
+    },
+    "emptyStates": {
+      "noEvidence": {
+        "title": "No Evidence to Review",
+        "description": "All evidence submissions have been reviewed!"
+      },
+      "noConsent": {
+        "title": "No Photo Consent to Review",
+        "description": "All photo consent documents have been reviewed!"
+      },
+      "noAudits": {
+        "title": "No Audits to Review",
+        "description": "All audit submissions have been reviewed!"
+      }
+    },
+    "loadingStates": {
+      "loadingEvidence": "Loading evidence...",
+      "loadingConsent": "Loading photo consent documents...",
+      "loadingAudits": "Loading audits..."
+    }
+  },
+  "activityLogs": {
+    "title": "Activity Logs",
+    "subtitle": "Monitor user activity and system events",
+    "filters": {
+      "labels": {
+        "actionType": "Action Type",
+        "userSearch": "User Search",
+        "dateRange": "Date Range"
+      },
+      "actionTypes": {
+        "all": "All Actions",
+        "login": "Login",
+        "logout": "Logout",
+        "evidenceCreated": "Evidence Created",
+        "evidenceUpdated": "Evidence Updated",
+        "evidenceDeleted": "Evidence Deleted",
+        "evidenceApproved": "Evidence Approved",
+        "evidenceRejected": "Evidence Rejected",
+        "schoolCreated": "School Created",
+        "schoolUpdated": "School Updated",
+        "schoolDeleted": "School Deleted",
+        "userCreated": "User Created",
+        "userUpdated": "User Updated",
+        "userDeleted": "User Deleted",
+        "roleChanged": "Role Changed"
+      },
+      "placeholders": {
+        "searchUser": "Search by user email...",
+        "startDate": "Start date",
+        "endDate": "End date"
+      }
+    },
+    "table": {
+      "headers": {
+        "timestamp": "Timestamp",
+        "user": "User",
+        "action": "Action",
+        "details": "Details",
+        "ipAddress": "IP Address"
+      },
+      "values": {
+        "systemAction": "System",
+        "noDetails": "No additional details"
+      }
+    },
+    "badges": {
+      "login": "Login",
+      "logout": "Logout",
+      "create": "Create",
+      "update": "Update",
+      "delete": "Delete",
+      "approve": "Approve",
+      "reject": "Reject"
+    },
+    "pagination": {
+      "showing": "Showing {{start}}-{{end}} of {{total}} activities",
+      "previous": "Previous",
+      "next": "Next"
+    },
+    "emptyStates": {
+      "noActivity": {
+        "title": "No Activity Logs",
+        "description": "No activity logs match your search criteria."
+      }
+    },
+    "loadingStates": {
+      "loadingLogs": "Loading activity logs..."
+    },
+    "export": {
+      "button": "Export Logs",
+      "csv": "Export as CSV",
+      "excel": "Export as Excel"
+    }
+  },
+  "teams": {
+    "title": "Team Management",
+    "subtitle": "Manage teacher assignments and school teams",
+    "sections": {
+      "schoolTeachers": {
+        "title": "School Teachers",
+        "description": "View and manage teachers assigned to schools"
+      },
+      "verificationRequests": {
+        "title": "Verification Requests",
+        "description": "Review and approve teacher verification requests"
+      }
+    },
+    "buttons": {
+      "assignTeacher": "Assign Teacher",
+      "removeTeacher": "Remove Teacher",
+      "approveRequest": "Approve",
+      "rejectRequest": "Reject",
+      "cancel": "Cancel",
+      "saveChanges": "Save Changes"
+    },
+    "dialogs": {
+      "assignTeacher": {
+        "title": "Assign Teacher to School",
+        "labels": {
+          "selectSchool": "Select School",
+          "selectTeacher": "Select Teacher"
+        },
+        "placeholders": {
+          "searchSchool": "Search for a school...",
+          "searchTeacher": "Search for a teacher..."
+        }
+      },
+      "removeTeacher": {
+        "title": "Remove Teacher",
+        "description": "Are you sure you want to remove {{teacherName}} from {{schoolName}}?",
+        "cannotUndo": "This action cannot be undone."
+      }
+    },
+    "table": {
+      "headers": {
+        "school": "School",
+        "teacher": "Teacher",
+        "role": "Role",
+        "assignedDate": "Assigned Date",
+        "actions": "Actions"
+      }
+    },
+    "toasts": {
+      "teacherAssigned": {
+        "title": "Teacher Assigned",
+        "description": "Teacher has been successfully assigned to the school."
+      },
+      "assignmentFailed": {
+        "title": "Assignment Failed",
+        "description": "Failed to assign teacher. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "teacherRemoved": {
+        "title": "Teacher Removed",
+        "description": "Teacher has been successfully removed from the school."
+      },
+      "removeFailed": {
+        "title": "Remove Failed",
+        "description": "Failed to remove teacher. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "requestApproved": {
+        "title": "Request Approved",
+        "description": "Verification request has been approved."
+      },
+      "requestRejected": {
+        "title": "Request Rejected",
+        "description": "Verification request has been rejected."
+      },
+      "requestFailed": {
+        "title": "Request Failed",
+        "description": "Failed to process verification request.",
+        "customMessage": "{{message}}"
+      }
+    },
+    "emptyStates": {
+      "noTeachers": {
+        "title": "No Teachers Found",
+        "description": "No teachers are assigned to schools yet."
+      },
+      "noRequests": {
+        "title": "No Verification Requests",
+        "description": "There are no pending verification requests."
+      }
+    },
+    "loadingStates": {
+      "loadingTeachers": "Loading teachers...",
+      "loadingRequests": "Loading verification requests..."
+    }
+  },
+  "evidenceRequirements": {
+    "title": "Evidence Requirements",
+    "subtitle": "Manage evidence requirements for each program stage",
+    "tabs": {
+      "inspire": "Inspire",
+      "investigate": "Investigate",
+      "act": "Act"
+    },
+    "buttons": {
+      "addRequirement": "Add Requirement",
+      "editRequirement": "Edit Requirement",
+      "deleteRequirement": "Delete Requirement",
+      "moveUp": "Move Up",
+      "moveDown": "Move Down",
+      "saveChanges": "Save Changes",
+      "cancel": "Cancel",
+      "attachResource": "Attach Resource"
+    },
+    "dialogs": {
+      "addRequirement": {
+        "title": "Add Evidence Requirement",
+        "labels": {
+          "title": "Title *",
+          "description": "Description",
+          "stage": "Stage",
+          "order": "Display Order",
+          "helpfulResources": "Helpful Resources"
+        },
+        "placeholders": {
+          "title": "Enter requirement title",
+          "description": "Enter detailed description...",
+          "order": "e.g., 1"
+        },
+        "helpText": {
+          "orderInfo": "Lower numbers appear first. Leave blank to add at the end.",
+          "resourceInfo": "Attach resources from the resource library to help schools complete this requirement."
+        }
+      },
+      "editRequirement": {
+        "title": "Edit Evidence Requirement",
+        "labels": {
+          "title": "Title *",
+          "description": "Description",
+          "order": "Display Order",
+          "helpfulResources": "Helpful Resources"
+        }
+      },
+      "deleteRequirement": {
+        "title": "Delete Requirement",
+        "description": "Are you sure you want to delete this requirement?",
+        "warningNote": "This will not delete existing evidence submissions, but the requirement will no longer be visible to schools.",
+        "cannotUndo": "This action cannot be undone."
+      },
+      "attachResource": {
+        "title": "Attach Helpful Resources",
+        "description": "Select resources from the library to help schools complete this requirement",
+        "searchPlaceholder": "Search resources...",
+        "noResources": "No resources found",
+        "selectedResources": "Selected Resources ({{count}})"
+      }
+    },
+    "table": {
+      "headers": {
+        "order": "Order",
+        "title": "Title",
+        "description": "Description",
+        "resources": "Resources",
+        "actions": "Actions"
+      },
+      "values": {
+        "noDescription": "No description",
+        "noResources": "No resources attached",
+        "resourceCount": "{{count}} resource{{plural}}"
+      }
+    },
+    "toasts": {
+      "requirementAdded": {
+        "title": "Requirement Added",
+        "description": "Evidence requirement has been successfully added."
+      },
+      "requirementUpdated": {
+        "title": "Requirement Updated",
+        "description": "Evidence requirement has been successfully updated."
+      },
+      "requirementDeleted": {
+        "title": "Requirement Deleted",
+        "description": "Evidence requirement has been successfully deleted."
+      },
+      "saveFailed": {
+        "title": "Save Failed",
+        "description": "Failed to save requirement. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "deleteFailed": {
+        "title": "Delete Failed",
+        "description": "Failed to delete requirement. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "orderUpdated": {
+        "title": "Order Updated",
+        "description": "Requirement order has been updated."
+      },
+      "orderUpdateFailed": {
+        "title": "Update Failed",
+        "description": "Failed to update requirement order.",
+        "customMessage": "{{message}}"
+      },
+      "resourceAttached": {
+        "title": "Resource Attached",
+        "description": "Resource has been attached to the requirement."
+      },
+      "resourceRemoved": {
+        "title": "Resource Removed",
+        "description": "Resource has been removed from the requirement."
+      },
+      "resourceActionFailed": {
+        "title": "Action Failed",
+        "description": "Failed to update resource attachment.",
+        "customMessage": "{{message}}"
+      }
+    },
+    "emptyStates": {
+      "noRequirements": {
+        "title": "No Requirements Yet",
+        "description": "Add your first evidence requirement for this stage."
+      }
+    },
+    "loadingStates": {
+      "loadingRequirements": "Loading requirements..."
+    }
   }
 }
