@@ -59,6 +59,14 @@ interface SchoolsSectionProps {
   setPhotoConsentRejectDialogOpen: (open: boolean) => void;
   photoConsentRejectNotes: string;
   setPhotoConsentRejectNotes: (notes: string) => void;
+  schoolFilters: {
+    search: string;
+    country: string;
+    stage: string;
+    language: string;
+  };
+  setSchoolFilters: (filters: any) => void;
+  countryOptions: any[];
 }
 
 // SchoolTeachersRow component
@@ -184,19 +192,15 @@ export default function SchoolsSection({
   photoConsentRejectDialogOpen,
   setPhotoConsentRejectDialogOpen,
   photoConsentRejectNotes,
-  setPhotoConsentRejectNotes
+  setPhotoConsentRejectNotes,
+  schoolFilters,
+  setSchoolFilters,
+  countryOptions
 }: SchoolsSectionProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { data: countryOptions = [] } = useCountries();
 
-  // School filters and management state
-  const [schoolFilters, setSchoolFilters] = useState({
-    search: '',
-    country: 'all',
-    stage: 'all',
-    language: 'all',
-  });
+  // School management state
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
   const [viewingSchool, setViewingSchool] = useState<SchoolData | null>(null);
   const [editingSchoolLanguage, setEditingSchoolLanguage] = useState(false);
@@ -220,7 +224,7 @@ export default function SchoolsSection({
   });
   const [showAdminEvidenceForm, setShowAdminEvidenceForm] = useState(false);
 
-  // Clean filters for API (convert "all" values to empty strings)
+  // Helper function to clean filters (convert "all" values to empty strings)
   const cleanFilters = (filters: typeof schoolFilters) => {
     return Object.fromEntries(
       Object.entries(filters).map(([key, value]) => [key, value === 'all' ? '' : value])
@@ -541,14 +545,14 @@ export default function SchoolsSection({
                 <Input
                   placeholder="Search schools..."
                   value={schoolFilters.search}
-                  onChange={(e) => setSchoolFilters(prev => ({ ...prev, search: e.target.value }))}
+                  onChange={(e) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, search: e.target.value }))}
                   className="pl-10 w-64"
                   data-testid="input-search-schools"
                 />
               </div>
               <Select 
                 value={schoolFilters.country} 
-                onValueChange={(value) => setSchoolFilters(prev => ({ ...prev, country: value }))}
+                onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, country: value }))}
               >
                 <SelectTrigger className="w-48">
                   <SelectValue placeholder="All Countries" />

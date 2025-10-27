@@ -839,6 +839,14 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const [activityPage, setActivityPage] = useState(1);
   const [activityLimit] = useState(20);
 
+  // School filters state (shared between Schools and Email sections)
+  const [schoolFilters, setSchoolFilters] = useState({
+    search: '',
+    country: 'all',
+    stage: 'all',
+    language: 'all',
+  });
+
   // Check for welcomed parameter in URL
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -896,6 +904,13 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   const { data: pendingAudits = [] } = useQuery<PendingAudit[]>({
     queryKey: ['/api/admin/audits/pending'],
     enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin)),
+    retry: false,
+  });
+
+  // Fetch schools list for CaseStudyManagement
+  const { data: schools = [] } = useQuery<any[]>({
+    queryKey: ['/api/admin/schools'],
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'case-studies'),
     retry: false,
   });
 
@@ -1014,6 +1029,13 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     }
   };
 
+  // Helper function to clean filters (remove 'all' values)
+  const cleanFilters = (filters: typeof schoolFilters) => {
+    return Object.fromEntries(
+      Object.entries(filters).map(([key, value]) => [key, value === 'all' ? '' : value])
+    );
+  };
+
   // Send bulk email function
   const handleSendBulkEmail = async () => {
     try {
@@ -1079,19 +1101,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       case 'act': return 'bg-coral text-white';
       default: return 'bg-gray-500 text-white';
     }
-  };
-
-  // Toggle school expansion
-  const toggleSchoolExpansion = (schoolId: string) => {
-    const newExpandedSchools = new Set(expandedSchools);
-    
-    if (expandedSchools.has(schoolId)) {
-      newExpandedSchools.delete(schoolId);
-    } else {
-      newExpandedSchools.add(schoolId);
-    }
-    
-    setExpandedSchools(newExpandedSchools);
   };
 
   if (isLoading) {
@@ -1468,6 +1477,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
             setPhotoConsentRejectDialogOpen={setPhotoConsentRejectDialogOpen}
             photoConsentRejectNotes={photoConsentRejectNotes}
             setPhotoConsentRejectNotes={setPhotoConsentRejectNotes}
+            schoolFilters={schoolFilters}
+            setSchoolFilters={setSchoolFilters}
+            countryOptions={countryOptions}
           />
         )}
 
