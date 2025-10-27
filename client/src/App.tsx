@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getGradientById } from "@shared/gradients";
 import { ChatWidget } from "@/components/ChatWidget";
+import { CollaborationProvider } from "@/contexts/CollaborationContext";
 
 // Page Loading Component
 const PageLoadingFallback = () => (
@@ -101,17 +102,18 @@ function Router() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Skip Link for Screen Readers */}
-      <a
-        ref={skipLinkRef}
-        href="#main-content"
-        className="skip-link focus-visible:focus-visible"
-        onClick={skipToMainContent}
-        data-testid="link-skip-main"
-      >
-        {t('accessibility.skip_to_main_content')}
-      </a>
+    <CollaborationProvider user={user} isAuthenticated={isAuthenticated}>
+      <div className="min-h-screen bg-background">
+        {/* Skip Link for Screen Readers */}
+        <a
+          ref={skipLinkRef}
+          href="#main-content"
+          className="skip-link focus-visible:focus-visible"
+          onClick={skipToMainContent}
+          data-testid="link-skip-main"
+        >
+          {t('accessibility.skip_to_main_content')}
+        </a>
       
       {/* Global Event Banner */}
       {activeBanner && (
@@ -209,7 +211,8 @@ function Router() {
 
       {/* AI Chat Widget - appears on all pages */}
       <ChatWidget />
-    </div>
+      </div>
+    </CollaborationProvider>
   );
 }
 
