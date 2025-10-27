@@ -10,7 +10,9 @@
     "all_countries": "جميع البلدان",
     "all_languages": "جميع اللغات",
     "all_status": "جميع الحالات",
-    "all_ages": "جميع الأعمار"
+    "all_ages": "جميع الأعمار",
+    "all_resource_types": "جميع أنواع الموارد",
+    "all_themes": "جميع المواضيع"
   },
   "filters": {
     "stage": "المرحلة",
@@ -123,5 +125,9 @@
   "recommendations": {
     "recommended_for_you": "موصى به لك",
     "resources_matching_stage": "الموارد المطابقة لمرحلتك الحالية ({{stage}})"
+  },
+  "tabs": {
+    "resources": "الموارد",
+    "resource_packs": "حزم الموارد"
   }
 }

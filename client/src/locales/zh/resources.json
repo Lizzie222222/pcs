@@ -10,7 +10,9 @@
     "all_countries": "所有国家",
     "all_languages": "所有语言",
     "all_status": "所有状态",
-    "all_ages": "所有年龄"
+    "all_ages": "所有年龄",
+    "all_resource_types": "所有资源类型",
+    "all_themes": "所有主题"
   },
   "filters": {
     "stage": "阶段",
@@ -123,5 +125,9 @@
   "recommendations": {
     "recommended_for_you": "为您推荐",
     "resources_matching_stage": "与您当前阶段匹配的资源 ({{stage}})"
+  },
+  "tabs": {
+    "resources": "资源",
+    "resource_packs": "资源包"
   }
 }

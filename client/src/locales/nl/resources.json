@@ -10,7 +10,9 @@
     "all_countries": "Alle Landen",
     "all_languages": "Alle Talen",
     "all_status": "Alle Statussen",
-    "all_ages": "Alle Leeftijden"
+    "all_ages": "Alle Leeftijden",
+    "all_resource_types": "Alle Brontypen",
+    "all_themes": "Alle Thema's"
   },
   "filters": {
     "stage": "Fase",
@@ -123,5 +125,9 @@
   "recommendations": {
     "recommended_for_you": "Aanbevolen voor Jou",
     "resources_matching_stage": "Bronnen die passen bij je huidige fase ({{stage}})"
+  },
+  "tabs": {
+    "resources": "Bronnen",
+    "resource_packs": "Bronnenpakketten"
   }
 }

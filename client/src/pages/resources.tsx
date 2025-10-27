@@ -768,10 +768,10 @@ export default function Resources() {
 
                   <Select value={filters.resourceType} onValueChange={(value) => handleFilterChange('resourceType', value)}>
                     <SelectTrigger data-testid="select-resource-type">
-                      <SelectValue placeholder="All Resource Types" />
+                      <SelectValue placeholder={t('search.all_resource_types')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Resource Types</SelectItem>
+                      <SelectItem value="all">{t('search.all_resource_types')}</SelectItem>
                       <SelectItem value="lesson_plan">Lesson Plan</SelectItem>
                       <SelectItem value="assembly">Assembly</SelectItem>
                       <SelectItem value="teacher_toolkit">Teacher Toolkit</SelectItem>
@@ -784,10 +784,10 @@ export default function Resources() {
 
               <Select value={filters.theme} onValueChange={(value) => handleFilterChange('theme', value)}>
                 <SelectTrigger data-testid="select-theme">
-                  <SelectValue placeholder="All Themes" />
+                  <SelectValue placeholder={t('search.all_themes')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Themes</SelectItem>
+                  <SelectItem value="all">{t('search.all_themes')}</SelectItem>
                   <SelectItem value="ocean_literacy">Ocean Literacy</SelectItem>
                   <SelectItem value="climate_change">Climate Change</SelectItem>
                   <SelectItem value="plastic_pollution">Plastic Pollution</SelectItem>
@@ -842,11 +842,11 @@ export default function Resources() {
           <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 mb-8" data-testid="tabs-resources-packs">
             <TabsTrigger value="resources" data-testid="tab-resources">
               <BookOpen className="h-4 w-4 mr-2" />
-              Resources
+              {t('tabs.resources')}
             </TabsTrigger>
             <TabsTrigger value="packs" data-testid="tab-packs">
               <Package className="h-4 w-4 mr-2" />
-              Resource Packs
+              {t('tabs.resource_packs')}
             </TabsTrigger>
           </TabsList>
 

@@ -10,7 +10,9 @@
     "all_countries": "Semua Negara",
     "all_languages": "Semua Bahasa",
     "all_status": "Semua Status",
-    "all_ages": "Semua Usia"
+    "all_ages": "Semua Usia",
+    "all_resource_types": "Semua Jenis Sumber Daya",
+    "all_themes": "Semua Tema"
   },
   "filters": {
     "stage": "Tahap",
@@ -123,5 +125,9 @@
   "recommendations": {
     "recommended_for_you": "Direkomendasikan untuk Anda",
     "resources_matching_stage": "Sumber daya yang cocok dengan tahap Anda saat ini ({{stage}})"
+  },
+  "tabs": {
+    "resources": "Sumber Daya",
+    "resource_packs": "Paket Sumber Daya"
   }
 }

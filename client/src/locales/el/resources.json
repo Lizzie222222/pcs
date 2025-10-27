@@ -10,7 +10,9 @@
     "all_countries": "Όλες οι Χώρες",
     "all_languages": "Όλες οι Γλώσσες",
     "all_status": "Όλες οι Καταστάσεις",
-    "all_ages": "Όλες οι Ηλικίες"
+    "all_ages": "Όλες οι Ηλικίες",
+    "all_resource_types": "Όλοι οι Τύποι Πόρων",
+    "all_themes": "Όλα τα Θέματα"
   },
   "filters": {
     "stage": "Στάδιο",
@@ -123,5 +125,9 @@
   "recommendations": {
     "recommended_for_you": "Προτεινόμενα για Εσάς",
     "resources_matching_stage": "Πόροι που ταιριάζουν στην τρέχουσα φάση σας ({{stage}})"
+  },
+  "tabs": {
+    "resources": "Πόροι",
+    "resource_packs": "Πακέτα Πόρων"
   }
 }

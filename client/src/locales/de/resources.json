@@ -10,7 +10,9 @@
     "all_countries": "Alle Länder",
     "all_languages": "Alle Sprachen",
     "all_status": "Alle Status",
-    "all_ages": "Alle Altersgruppen"
+    "all_ages": "Alle Altersgruppen",
+    "all_resource_types": "Alle Ressourcentypen",
+    "all_themes": "Alle Themen"
   },
   "filters": {
     "stage": "Stufe",
@@ -123,5 +125,9 @@
   "recommendations": {
     "recommended_for_you": "Empfohlen für Sie",
     "resources_matching_stage": "Ressourcen passend zu Ihrer aktuellen Phase ({{stage}})"
+  },
+  "tabs": {
+    "resources": "Ressourcen",
+    "resource_packs": "Ressourcenpakete"
   }
 }

@@ -10,7 +10,9 @@
     "all_countries": "모든 국가",
     "all_languages": "모든 언어",
     "all_status": "모든 상태",
-    "all_ages": "모든 연령"
+    "all_ages": "모든 연령",
+    "all_resource_types": "모든 자료 유형",
+    "all_themes": "모든 주제"
   },
   "filters": {
     "stage": "단계",
@@ -123,5 +125,9 @@
   "recommendations": {
     "recommended_for_you": "추천 자료",
     "resources_matching_stage": "현재 단계에 맞는 자료 ({{stage}})"
+  },
+  "tabs": {
+    "resources": "자료",
+    "resource_packs": "자료 팩"
   }
 }
