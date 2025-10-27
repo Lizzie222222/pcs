@@ -3465,6 +3465,46 @@ Return JSON with:
 
   // Admin routes (require admin privileges)
 
+  // Helper function to log admin actions
+  async function logAuditAction(
+    userId: string,
+    action: string,
+    targetType: string,
+    targetId: string,
+    details?: any
+  ) {
+    try {
+      await storage.createAuditLog({
+        userId,
+        action,
+        targetType,
+        targetId,
+        details,
+      });
+    } catch (error) {
+      console.error('Failed to log audit action:', error);
+    }
+  }
+
+  // GET /api/admin/audit-logs - Get audit logs (admin only)
+  app.get('/api/admin/audit-logs', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { userId, targetType, targetId, limit } = req.query;
+      
+      const logs = await storage.getAuditLogs({
+        userId: userId as string,
+        targetType: targetType as string,
+        targetId: targetId as string,
+        limit: limit ? parseInt(limit as string) : undefined,
+      });
+      
+      res.json(logs);
+    } catch (error) {
+      console.error("Error fetching audit logs:", error);
+      res.status(500).json({ message: "Failed to fetch audit logs" });
+    }
+  });
+
   // GET /api/admin/photo-consent/pending - Get all schools with pending photo consent
   app.get('/api/admin/photo-consent/pending', isAuthenticated, requireAdmin, async (req, res) => {
     try {
@@ -4137,6 +4177,15 @@ Return JSON with:
         req
       );
 
+      // Log audit action
+      await logAuditAction(
+        reviewerId,
+        status === 'approved' ? 'approved' : 'rejected',
+        'evidence',
+        evidence.id,
+        { reason: reviewNotes }
+      );
+
       res.json(evidence);
     } catch (error) {
       console.error("Error reviewing evidence:", error);
@@ -4193,6 +4242,15 @@ Return JSON with:
             if (status === 'approved') {
               affectedSchools.add(evidence.schoolId);
             }
+
+            // Log audit action
+            await logAuditAction(
+              reviewerId,
+              status === 'approved' ? 'approved' : 'rejected',
+              'evidence',
+              evidenceId,
+              { reason: reviewNotes }
+            );
 
             // Send notification email (non-blocking)
             try {
@@ -4823,6 +4881,9 @@ Return JSON with:
         createdBy: userId,
       });
 
+      // Log audit action
+      await logAuditAction(userId, 'created', 'case_study', caseStudy.id);
+
       res.status(201).json(caseStudy);
     } catch (error) {
       console.error("Error creating case study from evidence:", error);
@@ -4859,6 +4920,9 @@ Return JSON with:
       
       const caseStudy = await storage.createCaseStudy(validatedData);
       
+      // Log audit action
+      await logAuditAction(req.user.id, 'created', 'case_study', caseStudy.id);
+      
       // Fetch the case study with school info joined
       const caseStudyWithSchool = await storage.getCaseStudyById(caseStudy.id);
       
@@ -4885,6 +4949,9 @@ Return JSON with:
       if (!caseStudy) {
         return res.status(404).json({ message: "Case study not found" });
       }
+
+      // Log audit action
+      await logAuditAction(req.user.id, 'edited', 'case_study', req.params.id, { changes: validatedData });
 
       // Auto-create version when publishing
       if (validatedData.status === 'published' && originalCaseStudy?.status !== 'published') {
@@ -7694,6 +7761,10 @@ Return JSON with:
       }
       
       const event = await storage.createEvent(eventData);
+
+      // Log audit action
+      await logAuditAction(req.user.id, 'created', 'event', event.id);
+
       res.json({ message: "Event created successfully", event });
     } catch (error) {
       console.error("Error creating event:", error);
@@ -7842,6 +7913,9 @@ Return JSON with:
       }
       
       const event = await storage.updateEvent(eventId, processedUpdates);
+
+      // Log audit action
+      await logAuditAction(req.user.id, 'edited', 'event', eventId, { changes });
       
       // Send update emails to registered users (only if there are meaningful changes)
       if (event && changes.length > 0 && existingEvent.status === 'published') {
@@ -9617,6 +9691,15 @@ Return JSON with:
 
       // Broadcast unlock via WebSocket
       broadcastDocumentUnlock(documentId, documentType, reason);
+
+      // Log audit action
+      await logAuditAction(
+        user.id,
+        'force_unlocked',
+        documentType,
+        documentId,
+        { reason }
+      );
 
       res.json({ success: true });
     } catch (error) {

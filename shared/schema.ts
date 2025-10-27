@@ -545,6 +545,20 @@ export const documentLocks = pgTable("document_locks", {
   uniqueIndex("idx_document_locks_unique").on(table.documentType, table.documentId),
 ]);
 
+export const auditLogs = pgTable("audit_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  action: varchar("action").notNull(),
+  targetType: varchar("target_type").notNull(),
+  targetId: varchar("target_id").notNull(),
+  details: jsonb("details"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (table) => [
+  index("idx_audit_logs_user").on(table.userId),
+  index("idx_audit_logs_target").on(table.targetType, table.targetId),
+  index("idx_audit_logs_created").on(table.createdAt),
+]);
+
 export const certificates = pgTable("certificates", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
@@ -1677,6 +1691,11 @@ export const insertDocumentLockSchema = createInsertSchema(documentLocks).omit({
   acquiredAt: true,
 });
 
+export const insertAuditLogSchema = createInsertSchema(auditLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -1778,6 +1797,8 @@ export type ChatMessage = typeof chatMessages.$inferSelect;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type DocumentLock = typeof documentLocks.$inferSelect;
 export type InsertDocumentLock = z.infer<typeof insertDocumentLockSchema>;
+export type AuditLog = typeof auditLogs.$inferSelect;
+export type InsertAuditLog = z.infer<typeof insertAuditLogSchema>;
 
 // Event Analytics Types
 export interface EventAnalytics {

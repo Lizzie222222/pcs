@@ -108,6 +108,9 @@ import {
   type InsertChatMessage,
   type DocumentLock,
   type InsertDocumentLock,
+  auditLogs,
+  type AuditLog,
+  type InsertAuditLog,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne } from "drizzle-orm";
@@ -697,6 +700,15 @@ export interface IStorage {
   forceUnlockDocument(documentId: string, documentType: string): Promise<void>;
   getActiveDocumentLocks(): Promise<Array<DocumentLock & { user: User | null }>>;
   cleanupExpiredLocks(): Promise<void>;
+
+  // Audit logs
+  createAuditLog(log: InsertAuditLog): Promise<AuditLog>;
+  getAuditLogs(filters?: {
+    userId?: string;
+    targetType?: string;
+    targetId?: string;
+    limit?: number;
+  }): Promise<Array<AuditLog & { user: { firstName: string | null, lastName: string | null } }>>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -6425,6 +6437,54 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(documentLocks)
       .where(sql`${documentLocks.expiresAt} <= NOW()`);
+  }
+
+  // Audit log operations
+  async createAuditLog(log: InsertAuditLog): Promise<AuditLog> {
+    const [auditLog] = await db.insert(auditLogs).values(log).returning();
+    return auditLog;
+  }
+
+  async getAuditLogs(filters: {
+    userId?: string;
+    targetType?: string;
+    targetId?: string;
+    limit?: number;
+  } = {}): Promise<Array<AuditLog & { user: { firstName: string | null, lastName: string | null } }>> {
+    const { userId, targetType, targetId, limit = 100 } = filters;
+    
+    let query = db.select({
+      id: auditLogs.id,
+      userId: auditLogs.userId,
+      action: auditLogs.action,
+      targetType: auditLogs.targetType,
+      targetId: auditLogs.targetId,
+      details: auditLogs.details,
+      createdAt: auditLogs.createdAt,
+      user: {
+        firstName: users.firstName,
+        lastName: users.lastName,
+      }
+    })
+    .from(auditLogs)
+    .leftJoin(users, eq(auditLogs.userId, users.id))
+    .$dynamic();
+    
+    // Apply filters
+    const conditions = [];
+    if (userId) conditions.push(eq(auditLogs.userId, userId));
+    if (targetType) conditions.push(eq(auditLogs.targetType, targetType));
+    if (targetId) conditions.push(eq(auditLogs.targetId, targetId));
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+    
+    const results = await query
+      .orderBy(desc(auditLogs.createdAt))
+      .limit(limit);
+    
+    return results;
   }
 }
 
