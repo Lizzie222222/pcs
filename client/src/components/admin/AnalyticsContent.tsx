@@ -138,13 +138,13 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
     to: new Date(),
   }));
 
-  // Analytics queries - only load when analytics tab is active
+  // Analytics queries - only load when this component is mounted (overview tab is active)
   const overviewQuery = useQuery<AnalyticsOverview>({
     queryKey: ['/api/admin/analytics/overview', { 
       startDate: dateRange?.from?.toISOString(), 
       endDate: dateRange?.to?.toISOString() 
     }],
-    enabled: activeTab === 'analytics'
+    enabled: activeTab === 'overview'
   });
 
   const schoolProgressQuery = useQuery<SchoolProgressAnalytics>({
@@ -152,7 +152,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
       startDate: dateRange?.from?.toISOString(), 
       endDate: dateRange?.to?.toISOString() 
     }],
-    enabled: activeTab === 'analytics'
+    enabled: activeTab === 'overview'
   });
 
   const evidenceQuery = useQuery<EvidenceAnalytics>({
@@ -160,7 +160,7 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
       startDate: dateRange?.from?.toISOString(), 
       endDate: dateRange?.to?.toISOString() 
     }],
-    enabled: activeTab === 'analytics'
+    enabled: activeTab === 'overview'
   });
 
   const userEngagementQuery = useQuery<UserEngagementAnalytics>({
@@ -168,27 +168,27 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
       startDate: dateRange?.from?.toISOString(), 
       endDate: dateRange?.to?.toISOString() 
     }],
-    enabled: activeTab === 'analytics'
+    enabled: activeTab === 'overview'
   });
 
   const auditOverviewQuery = useQuery<AuditOverviewAnalytics>({
     queryKey: ['/api/admin/analytics/audit-overview'],
-    enabled: activeTab === 'analytics'
+    enabled: activeTab === 'overview'
   });
 
   const auditBySchoolQuery = useQuery<AuditBySchoolAnalytics[]>({
     queryKey: ['/api/admin/analytics/audit-by-school'],
-    enabled: activeTab === 'analytics'
+    enabled: activeTab === 'overview'
   });
 
   const wasteTrendsQuery = useQuery<WasteTrendsAnalytics>({
     queryKey: ['/api/admin/analytics/waste-trends'],
-    enabled: activeTab === 'analytics'
+    enabled: activeTab === 'overview'
   });
 
   const adminPromiseMetricsQuery = useQuery<AdminPromiseMetrics>({
     queryKey: ['/api/admin/reduction-promises/metrics'],
-    enabled: activeTab === 'analytics'
+    enabled: activeTab === 'overview'
   });
 
   const [analyticsSubTab, setAnalyticsSubTab] = useState("overview");
