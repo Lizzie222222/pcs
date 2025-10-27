@@ -140,141 +140,18 @@ import { calculateAggregateMetrics } from "@shared/plasticMetrics";
 import { format, parseISO } from "date-fns";
 import { BANNER_GRADIENTS, getGradientById } from "@shared/gradients";
 import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
-
-interface AdminStats {
-  totalSchools: number;
-  pendingEvidence: number;
-  featuredCaseStudies: number;
-  activeUsers: number;
-}
-
-interface PendingEvidence {
-  id: string;
-  title: string;
-  description: string;
-  stage: string;
-  status: string;
-  visibility: string;
-  submittedAt: string;
-  schoolId: string;
-  submittedBy: string;
-  files: any[];
-  videoLinks: string | null;
-  school?: {
-    id: string;
-    name: string;
-    country: string;
-    photoConsentStatus?: 'pending' | 'approved' | 'rejected' | null;
-    photoConsentDocumentUrl?: string | null;
-  };
-}
-
-interface SchoolData {
-  id: string;
-  name: string;
-  country: string;
-  currentStage: string;
-  progressPercentage: number;
-  currentRound?: number;
-  inspireCompleted?: boolean;
-  investigateCompleted?: boolean;
-  actCompleted?: boolean;
-  studentCount: number;
-  createdAt: string;
-  primaryContactId: string;
-  primaryContactEmail: string | null;
-  type?: string;
-  address?: string;
-  primaryLanguage?: string | null;
-}
-
-interface VerificationRequest {
-  id: string;
-  schoolId: string;
-  schoolName: string;
-  userId: string;
-  userName: string;
-  userEmail: string;
-  evidence: string;
-  status: 'pending' | 'approved' | 'rejected';
-  createdAt: string;
-}
-
-interface SchoolTeacher {
-  userId: string;
-  name: string;
-  email: string;
-  role: 'head_teacher' | 'teacher';
-  isVerified: boolean;
-  joinedAt: string;
-}
-
-interface SchoolWithTeachers {
-  id: string;
-  name: string;
-  country: string;
-  teachers: SchoolTeacher[];
-}
-
-interface PendingAudit {
-  id: string;
-  schoolId: string;
-  submittedBy: string;
-  status: 'draft' | 'submitted' | 'approved' | 'rejected';
-  part1Data: any;
-  part2Data: any;
-  part3Data: any;
-  part4Data: any;
-  resultsData?: any;
-  totalPlasticItems?: number;
-  topProblemPlastics?: any[];
-  reviewedBy?: string;
-  reviewedAt?: string;
-  reviewNotes?: string;
-  submittedAt: string;
-  createdAt: string;
-  school: {
-    id: string;
-    name: string;
-    country: string;
-  };
-  submittedByUser: {
-    id: string;
-    email: string;
-    firstName: string;
-    lastName: string;
-  };
-}
-
-interface EvidenceRequirement {
-  id: string;
-  stage: 'inspire' | 'investigate' | 'act';
-  title: string;
-  description: string;
-  orderIndex: number;
-  resourceUrl: string | null;
-  resourceId: string | null;
-  createdAt: string;
-  updatedAt: string;
-}
-
-interface EventWithRegistrations extends Event {
-  registrationsCount?: number;
-}
-
-interface EventRegistrationWithDetails extends EventRegistration {
-  user: {
-    id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-  };
-  school: {
-    id: string;
-    name: string;
-    country: string;
-  } | null;
-}
+import type { 
+  AdminStats, 
+  PendingEvidence, 
+  SchoolData, 
+  VerificationRequest, 
+  SchoolTeacher, 
+  SchoolWithTeachers, 
+  PendingAudit, 
+  EvidenceRequirement, 
+  EventWithRegistrations, 
+  EventRegistrationWithDetails 
+} from "@/components/admin/shared/types";
 
 /**
  * @description Main admin panel component orchestrating all administrative functionality including evidence review, school management, case studies, events, and email campaigns. Manages state for multiple tabs and handles admin-only access control with automatic redirects.
