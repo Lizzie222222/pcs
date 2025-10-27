@@ -15,55 +15,199 @@
     "pending_evidence": "Pending Evidence",
     "resources_uploaded": "Resources Uploaded"
   },
-  "analytics": {
-    "title": "Platform Analytics",
-    "subtitle": "Comprehensive insights into program effectiveness",
-    "global_metrics": "Global Metrics",
-    "enrollment_over_time": "School Enrollment Over Time",
-    "evidence_submissions": "Evidence Submissions by Stage",
-    "geographic_distribution": "Geographic Distribution",
-    "completion_rates": "Stage Completion Rates",
-    "resource_downloads": "Resource Download Statistics",
-    "filter_by_period": "Filter by Period",
-    "last_30_days": "Last 30 Days",
-    "last_90_days": "Last 90 Days",
-    "last_year": "Last Year",
-    "all_time": "All Time",
-    "export_report": "Export Report",
-    "charts": {
-      "schools_by_country": "Schools by Country",
-      "completion_by_stage": "Completion Rate by Stage",
-      "monthly_registrations": "Monthly School Registrations",
-      "evidence_status": "Evidence Review Status"
+  "userManagement": {
+    "title": "User Management",
+    "buttons": {
+      "inviteAdmin": "Invite Admin",
+      "invitePartner": "Invite Partner",
+      "sendInvitation": "Send Invitation",
+      "sending": "Sending...",
+      "cancel": "Cancel",
+      "filterAll": "All Users",
+      "filterWithSchools": "With Schools",
+      "filterWithoutSchools": "Without Schools",
+      "bulkDelete": "Delete Selected Users ({{count}})",
+      "confirmDelete": "Confirm {{mode}}",
+      "deleting": "Deleting...",
+      "confirmSoftDelete": "Confirm Soft Delete",
+      "confirmTransfer": "Confirm Transfer",
+      "confirmHardDelete": "Confirm Hard Delete"
+    },
+    "dialogs": {
+      "invitePartner": {
+        "title": "Invite New Partner",
+        "description": "Partners have admin-like access but cannot assign roles or download school data."
+      },
+      "inviteAdmin": {
+        "title": "Invite New Administrator"
+      },
+      "deleteUser": {
+        "title": "Delete User",
+        "description": "Choose how to handle the user's content and data"
+      },
+      "bulkDelete": {
+        "title": "Bulk Delete {{count}} User{{plural}}",
+        "description": "Choose how to handle the selected users' content and data",
+        "selectedUsers": "Selected Users: {{count}} user{{plural}}"
+      },
+      "changeRole": {
+        "title": "Change User Role",
+        "description": "Update the role and permissions for {{name}}"
+      },
+      "deletionPreview": {
+        "title": "Deletion Preview",
+        "description": "This user has the following data:",
+        "evidence": "Evidence: {{count}}",
+        "caseStudies": "Case Studies: {{count}}",
+        "reductionPromises": "Reduction Promises: {{count}}",
+        "mediaAssets": "Media Assets: {{count}}",
+        "certificates": "Certificates: {{count}}",
+        "importBatches": "Import Batches: {{count}}",
+        "teacherInvitations": "Teacher Invitations: {{count}}",
+        "adminInvitations": "Admin Invitations: {{count}}"
+      }
+    },
+    "form": {
+      "labels": {
+        "emailAddress": "Email Address *",
+        "platformRole": "Platform Role",
+        "roleDescription": "Select the user's role and permissions"
+      },
+      "placeholders": {
+        "partnerEmail": "partner@example.com",
+        "adminEmail": "admin@example.com",
+        "searchUsers": "Search by name or email..."
+      }
+    },
+    "table": {
+      "headers": {
+        "name": "Name",
+        "email": "Email",
+        "role": "Role",
+        "schools": "Schools",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "showingCount": "Showing {{filtered}} of {{total}} users"
+    },
+    "deletionModes": {
+      "soft": {
+        "label": "Soft Delete (Recommended)",
+        "description": "Users will be hidden from the system but all data is preserved. Can be restored later."
+      },
+      "transfer": {
+        "label": "Transfer Ownership",
+        "description": "Transfer all content to \"Archived User\" system account, then delete the user. Historical data is preserved.",
+        "bulkDescription": "Transfer all content to \"Archived User\" system account, then delete the users. Historical data is preserved."
+      },
+      "hard": {
+        "label": "Hard Delete (Permanent)",
+        "description": "WARNING: Permanently delete user AND all their content. This cannot be undone!",
+        "bulkDescription": "WARNING: Permanently delete users AND all their content. This cannot be undone!"
+      }
+    },
+    "roles": {
+      "teacher": {
+        "label": "Teacher",
+        "description": "Standard user with school-level permissions"
+      },
+      "school": {
+        "label": "School (Head Teacher)",
+        "description": "Head teacher role with school management permissions"
+      },
+      "partner": {
+        "label": "Partner",
+        "description": "Admin-like access but cannot assign roles or download school data"
+      },
+      "admin": {
+        "label": "Admin",
+        "description": "Full platform access including role assignment and data downloads"
+      }
+    },
+    "badges": {
+      "pending": "Pending",
+      "pendingInvite": "Pending Invite",
+      "active": "Active",
+      "admin": "Admin",
+      "partner": "Partner"
+    },
+    "toasts": {
+      "invitationSent": {
+        "title": "Invitation Sent",
+        "adminDescription": "Admin invitation has been sent successfully.",
+        "partnerDescription": "Partner invitation has been sent successfully."
+      },
+      "invitationFailed": {
+        "title": "Invitation Failed",
+        "adminDescription": "Failed to send admin invitation. Please try again.",
+        "partnerDescription": "Failed to send partner invitation. Please try again.",
+        "defaultDescription": "{{message}}"
+      },
+      "invitationDeleted": {
+        "title": "Invitation Deleted",
+        "description": "The admin invitation has been successfully deleted."
+      },
+      "deleteFailed": {
+        "title": "Delete Failed",
+        "description": "Failed to delete invitation. Please try again.",
+        "userDescription": "Failed to delete user. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "userDeleted": {
+        "title": "User Deleted",
+        "softDeleted": "The user has been successfully soft deleted.",
+        "transferred": "The user has been successfully deleted (content transferred).",
+        "hardDeleted": "The user has been successfully permanently deleted."
+      },
+      "userUpdated": {
+        "title": "User Updated",
+        "description": "User role has been successfully updated."
+      },
+      "updateFailed": {
+        "title": "Update Failed",
+        "description": "Failed to update user role. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "emailRequired": {
+        "title": "Email Required",
+        "description": "Please enter an email address."
+      },
+      "bulkDeleteSuccessful": {
+        "title": "Bulk Delete Successful",
+        "description": "Successfully deleted {{count}} user{{plural}}",
+        "withEvidence": "Successfully deleted {{count}} user{{plural}} ({{evidenceCount}} evidence item{{evidencePlural}} deleted)",
+        "withCaseStudies": "Warning: {{caseStudyCount}} case {{caseStudyPlural}} affected",
+        "creatorsRemoved": "and their creators have been removed."
+      },
+      "bulkDeleteFailed": {
+        "title": "Bulk Delete Failed",
+        "description": "Failed to delete users. Please try again.",
+        "allFailed": "Failed to delete all selected users:",
+        "customMessage": "{{message}}"
+      },
+      "bulkDeletePartial": {
+        "title": "Bulk Delete Partially Successful",
+        "description": "Successfully deleted {{successCount}} user{{plural}}. Failed to delete {{failedCount}}."
+      }
+    },
+    "emptyStates": {
+      "noUsers": {
+        "title": "No Users Found",
+        "noMatch": "No users match your search criteria.",
+        "allAssigned": "All users are assigned to at least one school.",
+        "noneInSystem": "No users found in the system."
+      }
+    },
+    "adminInvitations": {
+      "title": "Admin Invitations",
+      "table": {
+        "email": "Email",
+        "status": "Status",
+        "createdAt": "Created",
+        "expiresAt": "Expires",
+        "actions": "Actions"
+      }
     }
-  },
-  "evidence": {
-    "title": "Evidence Review",
-    "subtitle": "Review and moderate evidence submissions",
-    "pending_review": "Pending Review",
-    "approved": "Approved",
-    "needs_revision": "Needs Revision",
-    "filter_by_stage": "Filter by Stage",
-    "filter_by_status": "Filter by Status",
-    "sort_by": "Sort by",
-    "newest_first": "Newest First",
-    "oldest_first": "Oldest First",
-    "school_name": "School Name",
-    "stage": "Stage",
-    "submitted_date": "Submitted Date",
-    "review_evidence": "Review Evidence",
-    "approve_evidence": "Approve Evidence",
-    "request_revision": "Request Revision",
-    "add_feedback": "Add Feedback",
-    "feedback_placeholder": "Provide feedback for the school...",
-    "approve_button": "Approve",
-    "revision_button": "Request Revision",
-    "evidence_approved": "Evidence approved successfully",
-    "evidence_revision_requested": "Revision requested successfully",
-    "bulk_actions": "Bulk Actions",
-    "select_all": "Select All",
-    "bulk_approve": "Bulk Approve",
-    "bulk_request_revision": "Bulk Request Revision"
   },
   "resources": {
     "title": "Resource Management",
@@ -71,10 +215,195 @@
     "upload_resource": "Upload New Resource",
     "resource_library": "Resource Library",
     "featured_resources": "Featured Resources",
+    "buttons": {
+      "addResource": "Add Resource",
+      "bulkUpload": "Bulk Upload Resources",
+      "uploadFile": "Upload File",
+      "uploading": "Uploading...",
+      "replaceFile": "Replace File",
+      "removeFile": "Remove File",
+      "autoFillAI": "Auto-fill with AI",
+      "generating": "Generating...",
+      "saveResource": "Save Resource",
+      "cancel": "Cancel",
+      "preview": "Preview",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteResources": "Delete Resources",
+      "deleting": "Deleting...",
+      "bulkDelete": "Bulk Delete ({{count}})",
+      "insertImage": "Insert Image"
+    },
+    "form": {
+      "titles": {
+        "addNew": "Add New Resource",
+        "edit": "Edit Resource"
+      },
+      "labels": {
+        "title": "Title *",
+        "description": "Description",
+        "stage": "Program Stage *",
+        "ageRange": "Age Range",
+        "languages": "Available Languages *",
+        "country": "Target Country",
+        "visibility": "Visibility *",
+        "resourceFile": "Resource File",
+        "resourceType": "Resource Type",
+        "theme": "Theme"
+      },
+      "placeholders": {
+        "title": "Enter resource title",
+        "description": "Enter resource description",
+        "ageRange": "e.g., 8-12 years",
+        "country": "Global (all countries)",
+        "searchResources": "Search resources..."
+      },
+      "helpText": {
+        "languageSelection": "Select all languages in which this resource is available",
+        "visibilityPublic": "This resource will be visible to all website visitors",
+        "visibilityRegistered": "This resource will only be visible to registered schools",
+        "uploadInstructions": "Upload a resource file (PDF, DOC, PPT, XLS, etc.)",
+        "maxFileSize": "Maximum file size: 150MB",
+        "replaceInstructions": "You can replace the file while keeping the same resource, or remove it entirely.",
+        "aiAutoFillTooltip": "AI analyzes your uploaded file and automatically suggests a title, description, stage, theme, age range, and resource type based on the file content and name.",
+        "aiAutoFillDescription": "Let AI analyze your file and suggest metadata to save time. You can review and adjust the suggestions before saving."
+      }
+    },
+    "filters": {
+      "allStages": "All Stages",
+      "allCountries": "All Countries",
+      "allLanguages": "All Languages",
+      "allVisibility": "All Visibility",
+      "allStatus": "All Status"
+    },
+    "stages": {
+      "inspire": "Inspire",
+      "investigate": "Investigate",
+      "act": "Act"
+    },
+    "visibility": {
+      "public": "Public (visible to everyone)",
+      "publicShort": "Public",
+      "registered": "Registered Only (requires login)",
+      "registeredShort": "Registered Only"
+    },
+    "resourceTypes": {
+      "lessonPlan": "Lesson Plan",
+      "assembly": "Assembly",
+      "teacherToolkit": "Teacher Toolkit",
+      "studentWorkbook": "Student Workbook",
+      "printableActivities": "Printable Activities",
+      "none": "None"
+    },
+    "themes": {
+      "oceanLiteracy": "Ocean Literacy",
+      "climateChange": "Climate Change",
+      "plasticPollution": "Plastic Pollution",
+      "science": "Science",
+      "designTechnology": "Design Technology",
+      "geography": "Geography",
+      "crossCurricular": "Cross Curricular",
+      "enrichment": "Enrichment",
+      "none": "None"
+    },
+    "table": {
+      "headers": {
+        "preview": "Preview",
+        "title": "Title",
+        "stage": "Stage",
+        "visibility": "Visibility",
+        "country": "Country",
+        "languages": "Languages",
+        "fileSize": "File Size",
+        "downloads": "Downloads",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "values": {
+        "global": "Global",
+        "active": "Active",
+        "inactive": "Inactive",
+        "notAvailable": "N/A"
+      }
+    },
+    "toasts": {
+      "fileUploaded": {
+        "title": "File Uploaded",
+        "description": "{{filename}} has been successfully uploaded."
+      },
+      "uploadError": {
+        "title": "Upload Error",
+        "failedToGetUrl": "Failed to get upload URL",
+        "failedToUpload": "Failed to upload file",
+        "customMessage": "{{message}}"
+      },
+      "aiAutoFillComplete": {
+        "title": "AI Auto-fill Complete",
+        "description": "Resource metadata has been filled with AI suggestions. Review and adjust as needed."
+      },
+      "aiAutoFillFailed": {
+        "title": "AI Auto-fill Failed",
+        "noSuggestions": "AI couldn't generate suggestions for this resource.",
+        "description": "Failed to generate AI suggestions. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "cannotAutoFill": {
+        "title": "Cannot Auto-fill",
+        "description": "Please upload a file first to use AI auto-fill."
+      },
+      "resourceCreated": {
+        "title": "Resource Created",
+        "description": "The resource has been successfully created."
+      },
+      "resourceUpdated": {
+        "title": "Resource Updated",
+        "description": "The resource has been successfully updated."
+      },
+      "saveFailed": {
+        "title": "Save Failed",
+        "description": "Failed to save resource. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "resourceDeleted": {
+        "title": "Resource Deleted",
+        "description": "The resource has been successfully deleted.",
+        "bulkDescription": "{{count}} resource{{plural}} have been successfully deleted."
+      },
+      "deleteFailed": {
+        "title": "Delete Failed",
+        "description": "Failed to delete resource. Please try again."
+      },
+      "bulkDeleteFailed": {
+        "title": "Bulk Delete Failed",
+        "description": "Failed to delete some resources."
+      },
+      "validationError": {
+        "title": "Validation Error",
+        "selectLanguage": "Please select at least one language."
+      }
+    },
+    "dialogs": {
+      "deleteConfirmation": {
+        "title": "Delete Resource",
+        "description": "Are you sure you want to delete this resource?",
+        "cannotUndo": "This action cannot be undone."
+      },
+      "bulkDelete": {
+        "title": "Delete Resources",
+        "description": "Are you sure you want to delete {{count}} resource{{plural}}? This action cannot be undone.",
+        "listTitle": "Resources to be deleted:"
+      }
+    },
+    "emptyStates": {
+      "noResources": "No resources found. Add your first resource to get started."
+    },
+    "ai": {
+      "sectionTitle": "AI Auto-fill"
+    },
     "upload_form": {
       "title": "Upload New Resource",
       "resource_title": "Resource Title",
-      "description": "Description", 
+      "description": "Description",
       "stage": "Target Stage",
       "language": "Language",
       "age_range": "Age Range",
@@ -107,6 +436,360 @@
     "resource_uploaded": "Resource uploaded successfully",
     "resource_updated": "Resource updated successfully",
     "resource_deleted": "Resource deleted successfully"
+  },
+  "analytics": {
+    "title": "Platform Analytics",
+    "subtitle": "Comprehensive insights into program effectiveness",
+    "dashboard": {
+      "title": "Analytics Dashboard",
+      "description": "Comprehensive insights and metrics for Plastic Clever Schools"
+    },
+    "buttons": {
+      "exportCSV": "Export CSV",
+      "exportExcel": "Export Excel",
+      "exportPDF": "Export PDF Report",
+      "cancel": "Cancel",
+      "exportReport": "Export Report",
+      "generating": "Generating...",
+      "confirmExport": "Export Report"
+    },
+    "tabs": {
+      "overview": "Overview",
+      "schoolsEvidence": "Schools & Evidence",
+      "plasticWasteAudits": "Plastic Waste Audits",
+      "userEngagement": "User Engagement"
+    },
+    "metrics": {
+      "totalSchools": {
+        "label": "Total Schools",
+        "description": "Participating schools"
+      },
+      "activeUsers": {
+        "label": "Active Users"
+      },
+      "evidenceSubmissions": {
+        "label": "Evidence Submissions"
+      },
+      "globalReach": {
+        "label": "Global Reach"
+      },
+      "totalEvidence": {
+        "label": "Total Evidence",
+        "description": "Submissions received"
+      },
+      "clickToView": "Click to view details →"
+    },
+    "dialogs": {
+      "exportPDF": {
+        "title": "Export PDF Report",
+        "description": "Select which sections to include in your analytics report. The report will include data from {{startDate}} - {{endDate}}",
+        "sections": {
+          "overview": "Overview",
+          "scoresEvidence": "Schools & Evidence",
+          "plasticWasteAudits": "Plastic Waste Audits",
+          "userEngagement": "User Engagement",
+          "aiInsights": "Include AI Insights"
+        }
+      }
+    },
+    "charts": {
+      "userRegistrationTrends": "User Registration Trends",
+      "userRoleDistribution": "User Role Distribution",
+      "teachers": "Teachers",
+      "admins": "Admins",
+      "schools_by_country": "Schools by Country",
+      "completion_by_stage": "Completion Rate by Stage",
+      "monthly_registrations": "Monthly School Registrations",
+      "evidence_status": "Evidence Review Status"
+    },
+    "actionPlan": {
+      "title": "Global Action Plan Impact",
+      "description": "Track the collective impact of all schools' action plans",
+      "metrics": {
+        "totalActionItems": {
+          "label": "Total Action Items",
+          "description": "Commitments made"
+        },
+        "schoolsParticipating": {
+          "label": "Schools Participating",
+          "description": "Making a difference"
+        },
+        "itemsReduced": {
+          "label": "Items Reduced Annually",
+          "description": "Items per year"
+        },
+        "weightReduced": {
+          "label": "Weight Reduced",
+          "description": "kg per year"
+        }
+      },
+      "oceanImpact": {
+        "title": "Ocean Impact",
+        "oceanBottles": {
+          "label": "Ocean Bottles Prevented",
+          "description": "Plastic bottles saved from oceans"
+        },
+        "fishSaved": {
+          "label": "Fish Saved",
+          "description": "Potential fish saved from plastic"
+        },
+        "seaTurtles": {
+          "label": "Sea Turtles Saved",
+          "description": "Sea turtle equivalents protected"
+        }
+      },
+      "environmentalImpact": {
+        "title": "Environmental Impact",
+        "co2Prevented": {
+          "label": "CO₂ Prevented",
+          "description": "kg of CO₂ emissions prevented"
+        },
+        "oilSaved": {
+          "label": "Oil Saved",
+          "description": "liters of oil conserved"
+        },
+        "wastePrevented": {
+          "label": "Waste Prevented",
+          "description": "tons of plastic waste avoided"
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingMetrics": "Loading reduction metrics..."
+    },
+    "errorStates": {
+      "failedToLoad": "Failed to load action plan metrics",
+      "refreshPage": "Please try refreshing the page"
+    },
+    "emptyStates": {
+      "noActionPlans": {
+        "title": "No action plans have been created yet.",
+        "description": "Encourage schools to create their first action plan!"
+      }
+    },
+    "toasts": {
+      "reportDownloaded": {
+        "title": "Report downloaded successfully",
+        "description": "Your PDF analytics report has been downloaded."
+      },
+      "exportFailed": {
+        "title": "Export failed",
+        "description": "Failed to export PDF report",
+        "customMessage": "{{message}}"
+      }
+    },
+    "global_metrics": "Global Metrics",
+    "enrollment_over_time": "School Enrollment Over Time",
+    "evidence_submissions": "Evidence Submissions by Stage",
+    "geographic_distribution": "Geographic Distribution",
+    "completion_rates": "Stage Completion Rates",
+    "resource_downloads": "Resource Download Statistics",
+    "filter_by_period": "Filter by Period",
+    "last_30_days": "Last 30 Days",
+    "last_90_days": "Last 90 Days",
+    "last_year": "Last Year",
+    "all_time": "All Time",
+    "export_report": "Export Report"
+  },
+  "email": {
+    "testTemplates": {
+      "title": "Test Email Templates",
+      "selectType": "Select Email Type",
+      "types": {
+        "welcome": "Welcome Email",
+        "invitation": "Teacher Invitation",
+        "joinRequest": "Join Request",
+        "joinApproved": "Join Request Approved",
+        "evidenceSubmitted": "Evidence Submitted",
+        "evidenceApproved": "Evidence Approved",
+        "evidenceRevision": "Evidence Needs Revision",
+        "newEvidence": "New Evidence for Admin"
+      }
+    },
+    "bulkComposer": {
+      "title": "Bulk Email Composer",
+      "previewTest": "Preview & Test"
+    },
+    "buttons": {
+      "sendTest": "Send Test",
+      "sending": "Sending...",
+      "previewEmail": "Preview Email",
+      "insertImage": "Insert Image",
+      "sendBulkEmail": "Send Bulk Email to {{recipientType}}",
+      "sendBulk": "Send Bulk Email",
+      "cancel": "Cancel",
+      "previewTranslations": "Preview Translations",
+      "generating": "Generating..."
+    },
+    "form": {
+      "labels": {
+        "recipientEmail": "Recipient Email *",
+        "schoolName": "School Name *",
+        "inviterName": "Inviter Name *",
+        "expiresInDays": "Expires In Days",
+        "requesterName": "Requester Name *",
+        "requesterEmail": "Requester Email *",
+        "evidence": "Evidence *",
+        "reviewerName": "Reviewer Name *",
+        "reviewNotes": "Review Notes (Optional)",
+        "evidenceTitle": "Evidence Title *",
+        "stage": "Stage *",
+        "feedback": "Feedback *",
+        "submitterName": "Submitter Name *",
+        "subject": "Subject *",
+        "preheader": "Preheader",
+        "title": "Title *",
+        "preTitle": "Pre-title (Subtitle)",
+        "messageContent": "Message Content *",
+        "recipientType": "Recipient Type",
+        "selectLanguages": "Select Languages for Translation Preview",
+        "viewEditTranslation": "View/Edit Translation"
+      },
+      "placeholders": {
+        "teacherEmail": "teacher@example.com",
+        "testSchool": "Test School",
+        "selectEmailType": "Select email type to test",
+        "emailSubject": "Email subject line",
+        "preheaderText": "Preview text shown in email clients (optional)",
+        "largeHeading": "Large heading inside the email",
+        "subtitleText": "Subtitle under the title (optional)",
+        "messageContent": "Enter the main message content. HTML tags are supported for formatting.",
+        "testEmail": "test@example.com",
+        "searchImages": "Search images..."
+      },
+      "helpText": {
+        "subjectLength": "{{length}}/200 characters • The main subject line for the email",
+        "preheaderLength": "{{length}}/100 characters • Optional preview text that appears in email inbox",
+        "titleLength": "{{length}}/200 characters • The main heading displayed in the email body",
+        "preTitleLength": "{{length}}/200 characters • Optional subtitle text below the title",
+        "contentLength": "{{length}}/10,000 characters",
+        "readTime": "~{{minutes}} min read",
+        "supportsHTML": "Supports HTML formatting"
+      }
+    },
+    "recipientTypes": {
+      "allTeachers": "All Teachers",
+      "schools": "Filtered Schools",
+      "custom": "Custom Recipients"
+    },
+    "stages": {
+      "stage1": "Stage 1",
+      "stage2": "Stage 2",
+      "stage3": "Stage 3"
+    },
+    "languages": {
+      "english": "English (Original)",
+      "spanish": "Spanish",
+      "french": "French",
+      "german": "German",
+      "italian": "Italian",
+      "portuguese": "Portuguese",
+      "dutch": "Dutch",
+      "russian": "Russian",
+      "chinese": "Chinese",
+      "korean": "Korean",
+      "arabic": "Arabic",
+      "indonesian": "Indonesian",
+      "greek": "Greek",
+      "welsh": "Welsh"
+    },
+    "badges": {
+      "editingTranslation": "Editing Translation"
+    },
+    "toasts": {
+      "emailRequired": {
+        "title": "Email Required",
+        "description": "Please enter a recipient email address.",
+        "testDescription": "Please enter a test email address."
+      },
+      "testEmailSent": {
+        "title": "Test Email Sent",
+        "description": "Email sent successfully to {{email}}",
+        "withLanguage": "Test email sent successfully to {{email}} in {{language}}",
+        "defaultDescription": "Email sent to {{email}}"
+      },
+      "sendEmailFailed": {
+        "title": "Failed to Send Email",
+        "description": "An error occurred while sending the email.",
+        "tryAgain": "Failed to send email. Please try again."
+      },
+      "testEmailFailed": {
+        "title": "Failed to Send Test Email",
+        "description": "There was an error sending the test email.",
+        "customMessage": "{{message}}"
+      },
+      "imageInserted": {
+        "title": "Image Inserted",
+        "description": "{{filename}} has been added to your email content"
+      },
+      "translationFailed": {
+        "title": "Translation Failed",
+        "description": "Failed to generate translations. Please try again."
+      },
+      "error": {
+        "title": "Error",
+        "description": "Failed to send email. Please try again."
+      }
+    },
+    "dialogs": {
+      "preview": {
+        "title": "Email Preview",
+        "subject": "Subject:",
+        "preheader": "Preheader:"
+      },
+      "bulkConfirm": {
+        "title": "Confirm Bulk Email Send",
+        "description": "Are you sure you want to send this email to:",
+        "subject": "Subject: {{subject}}",
+        "warning": "This action cannot be undone. Make sure you've tested the email first.",
+        "recipientCount": "{{count}} Custom Recipients"
+      },
+      "imagePicker": {
+        "title": "Insert Image from Media Library"
+      }
+    },
+    "resultMessages": {
+      "success": "✅ Success",
+      "error": "❌ Error"
+    },
+    "defaultValues": {
+      "testSchool": "Test School",
+      "johnDoe": "John Doe",
+      "janeSmith": "Jane Smith",
+      "janeEmail": "jane@example.com",
+      "recyclingProgram": "Recycling Program",
+      "teacherEvidence": "I am a teacher at this school.",
+      "participationFeedback": "Please add more details about student participation.",
+      "headTeacher": "Head Teacher"
+    }
+  },
+  "evidence": {
+    "title": "Evidence Review",
+    "subtitle": "Review and moderate evidence submissions",
+    "pending_review": "Pending Review",
+    "approved": "Approved",
+    "needs_revision": "Needs Revision",
+    "filter_by_stage": "Filter by Stage",
+    "filter_by_status": "Filter by Status",
+    "sort_by": "Sort by",
+    "newest_first": "Newest First",
+    "oldest_first": "Oldest First",
+    "school_name": "School Name",
+    "stage": "Stage",
+    "submitted_date": "Submitted Date",
+    "review_evidence": "Review Evidence",
+    "approve_evidence": "Approve Evidence",
+    "request_revision": "Request Revision",
+    "add_feedback": "Add Feedback",
+    "feedback_placeholder": "Provide feedback for the school...",
+    "approve_button": "Approve",
+    "revision_button": "Request Revision",
+    "evidence_approved": "Evidence approved successfully",
+    "evidence_revision_requested": "Revision requested successfully",
+    "bulk_actions": "Bulk Actions",
+    "select_all": "Select All",
+    "bulk_approve": "Bulk Approve",
+    "bulk_request_revision": "Bulk Request Revision"
   },
   "schools": {
     "title": "School Management",
@@ -240,5 +923,1027 @@
     "section_content_placeholder": "Describe what happened during this phase...",
     "section_image_url": "Image URL",
     "section_image_placeholder": "https://..."
+  },
+  "evidenceGallery": {
+    "title": "Evidence Gallery",
+    "subtitle": "Browse and manage all evidence submissions",
+    "submissionCount": {
+      "single": "{{count}} submission",
+      "plural": "{{count}} submissions"
+    },
+    "filters": {
+      "labels": {
+        "stage": "Stage",
+        "country": "Country",
+        "status": "Status",
+        "visibility": "Visibility"
+      },
+      "options": {
+        "allStages": "All Stages",
+        "allCountries": "All Countries",
+        "allStatuses": "All Statuses",
+        "allVisibility": "All Visibility",
+        "public": "Public",
+        "private": "Private"
+      },
+      "stages": {
+        "inspire": "Inspire",
+        "investigate": "Investigate",
+        "act": "Act"
+      },
+      "statuses": {
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected"
+      }
+    },
+    "buttons": {
+      "clearFilters": "Clear Filters",
+      "view": "View",
+      "schoolHistory": "View School History"
+    },
+    "badges": {
+      "permissionPending": "Permission Pending",
+      "noPermission": "No Permission",
+      "permissionApproved": "Permission Approved",
+      "permissionRejected": "Permission Rejected",
+      "public": "Public",
+      "registeredOnly": "Registered Only"
+    },
+    "dialogs": {
+      "evidenceDetails": {
+        "title": "Evidence Details"
+      },
+      "schoolHistory": {
+        "title": "{{schoolName}} - All Submissions ({{count}})"
+      }
+    },
+    "form": {
+      "labels": {
+        "title": "Title",
+        "description": "Description",
+        "school": "School",
+        "country": "Country",
+        "stage": "Stage",
+        "status": "Status",
+        "visibilitySetting": "Visibility Setting",
+        "photoPermission": "Photo Permission",
+        "files": "Files ({{count}})",
+        "videoLinks": "Video Links"
+      },
+      "values": {
+        "noDescription": "No description",
+        "unknownSchool": "Unknown School",
+        "unknown": "Unknown"
+      }
+    },
+    "warnings": {
+      "permissionRequired": "Permission Required:",
+      "photoConsentPending": "This school has a pending photo consent document. This evidence should not be used in public case studies until permission is approved.",
+      "photoConsentMissing": "This school has not uploaded a photo consent document. This evidence should not be used in public case studies until permission is approved."
+    },
+    "emptyStates": {
+      "noEvidence": {
+        "title": "No evidence submissions yet",
+        "description": "Evidence submissions will appear here once schools start uploading"
+      },
+      "noSchoolSubmissions": {
+        "title": "No submissions yet",
+        "description": "This school hasn't submitted any evidence yet"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "Success",
+        "description": "Evidence status updated"
+      },
+      "updateFailed": {
+        "title": "Error",
+        "description": "Failed to update evidence status"
+      }
+    }
+  },
+  "printableForms": {
+    "title": "Printable Forms Review",
+    "subtitle": "Review and manage printable form submissions from schools",
+    "filters": {
+      "labels": {
+        "status": "Status",
+        "formType": "Form Type",
+        "schoolSearch": "School Search"
+      },
+      "statusOptions": {
+        "all": "All statuses",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "revisionRequested": "Revision Requested"
+      },
+      "formTypeOptions": {
+        "all": "All types",
+        "audit": "Audit",
+        "actionPlan": "Action Plan"
+      },
+      "placeholders": {
+        "searchSchool": "Search by school name..."
+      }
+    },
+    "table": {
+      "headers": {
+        "school": "School",
+        "formType": "Form Type",
+        "status": "Status",
+        "submittedBy": "Submitted By",
+        "uploadDate": "Upload Date",
+        "actions": "Actions"
+      }
+    },
+    "buttons": {
+      "download": "Download",
+      "review": "Review",
+      "submitReview": "Submit Review",
+      "cancel": "Cancel"
+    },
+    "dialogs": {
+      "reviewSubmission": {
+        "title": "Review Submission",
+        "labels": {
+          "school": "School:",
+          "formType": "Form Type:",
+          "submittedBy": "Submitted by:",
+          "status": "Status",
+          "adminNotes": "Admin Notes (Optional)"
+        },
+        "statusOptions": {
+          "approved": "Approved",
+          "rejected": "Rejected",
+          "revisionRequested": "Revision Requested"
+        },
+        "placeholders": {
+          "reviewNotes": "Add any notes about this review..."
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingSubmissions": "Loading submissions..."
+    },
+    "emptyStates": {
+      "noSubmissions": {
+        "title": "No Submissions Found",
+        "description": "No printable form submissions match your filters"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "Success",
+        "description": "Submission status updated successfully"
+      },
+      "updateFailed": {
+        "title": "Error",
+        "description": "Failed to update submission status",
+        "customMessage": "{{message}}"
+      },
+      "downloadFailed": {
+        "title": "Error",
+        "description": "Failed to download submission"
+      }
+    },
+    "updating": "Updating..."
+  },
+  "caseStudies": {
+    "title": "Case Studies Management",
+    "filters": {
+      "placeholders": {
+        "search": "Search case studies..."
+      },
+      "labels": {
+        "stage": "Stage",
+        "featuredStatus": "Featured Status"
+      },
+      "options": {
+        "allStages": "All Stages",
+        "all": "All",
+        "featured": "Featured",
+        "notFeatured": "Not Featured"
+      },
+      "stages": {
+        "inspire": "Inspire",
+        "investigate": "Investigate",
+        "act": "Act"
+      }
+    },
+    "buttons": {
+      "createCaseStudy": "Create Case Study",
+      "preview": "Preview",
+      "edit": "Edit",
+      "feature": "Feature",
+      "unfeature": "Unfeature",
+      "delete": "Delete",
+      "cancel": "Cancel"
+    },
+    "badges": {
+      "featured": "Featured"
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Delete Case Study",
+        "description": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone."
+      },
+      "editor": {
+        "title": "Case Study Editor"
+      }
+    },
+    "emptyStates": {
+      "noCaseStudies": "No case studies found. Create one from approved evidence submissions."
+    },
+    "toasts": {
+      "created": {
+        "title": "Case Study Created",
+        "description": "Case study has been successfully created."
+      },
+      "createFailed": {
+        "title": "Creation Failed",
+        "description": "Failed to create case study. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "updated": {
+        "title": "Case Study Updated",
+        "description": "Case study has been successfully updated."
+      },
+      "updateFailed": {
+        "title": "Update Failed",
+        "description": "Failed to update case study. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "deleted": {
+        "title": "Case Study Deleted",
+        "description": "Case study has been successfully deleted."
+      },
+      "deleteFailed": {
+        "title": "Delete Failed",
+        "description": "Failed to delete case study. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "featuredUpdated": {
+        "title": "Case Study Updated",
+        "description": "Case study featured status has been updated."
+      },
+      "featuredUpdateFailed": {
+        "title": "Update Failed",
+        "description": "Failed to update case study. Please try again."
+      },
+      "locked": {
+        "title": "Case Study Locked",
+        "description": "This case study is currently being edited by {{lockedBy}}."
+      },
+      "cannotSave": {
+        "title": "Cannot Save",
+        "description": "This case study is locked by another user."
+      },
+      "lockAcquired": {
+        "title": "Lock Acquired",
+        "description": "You can now edit this case study."
+      }
+    }
+  },
+  "dataImport": {
+    "title": "Import Data from WordPress",
+    "subtitle": "Import schools, users, and their relationships from CSV or Excel files exported from your WordPress database",
+    "alerts": {
+      "important": {
+        "title": "Important:",
+        "description": "Prepare three separate files (CSV or Excel format):",
+        "schools": "Schools - Contains school information (name, country, type, etc.)",
+        "users": "Users - Contains teacher/user information (email, name, etc.)",
+        "relationships": "Relationships - Links users to schools with their roles",
+        "templateNote": "Download the templates below to see the required column format."
+      }
+    },
+    "tabs": {
+      "schools": "Schools",
+      "users": "Users",
+      "relationships": "Relationships"
+    },
+    "fileUpload": {
+      "titles": {
+        "schools": "Schools File",
+        "users": "Users File",
+        "relationships": "School-User Relationships File"
+      },
+      "descriptions": {
+        "schools": "Upload a CSV or Excel file containing school data",
+        "users": "Upload a CSV or Excel file containing user/teacher data",
+        "relationships": "Upload a CSV or Excel file linking users to schools"
+      },
+      "labels": {
+        "clickToUpload": "Click to upload file",
+        "formatNote": "CSV or Excel format"
+      },
+      "validation": {
+        "success": "File validated successfully",
+        "failed": "Validation failed",
+        "rowsFound": "Found {{rowCount}} rows with {{headerCount}} columns",
+        "errorsTitle": "Validation Errors ({{count}}):",
+        "moreErrors": "... and {{count}} more errors",
+        "previewTitle": "Preview (first 5 rows):"
+      }
+    },
+    "buttons": {
+      "downloadTemplate": "Download Template",
+      "startImport": "Start Import",
+      "importAnother": "Import Another File",
+      "viewData": "View Imported Data"
+    },
+    "status": {
+      "readyToImport": "Ready to import?",
+      "allFilesUploaded": "All files uploaded and validated",
+      "filesUploaded": "{{count}}/3 files uploaded",
+      "fixErrors": "Please fix validation errors before importing"
+    },
+    "importing": {
+      "title": "Importing Data...",
+      "description": "This may take a few minutes. Please don't close this page."
+    },
+    "results": {
+      "successTitle": "Import Completed Successfully",
+      "errorTitle": "Import Completed with Errors",
+      "categories": {
+        "schools": "Schools",
+        "users": "Users",
+        "relationships": "Relationships"
+      },
+      "metrics": {
+        "processed": "Processed",
+        "succeeded": "Succeeded",
+        "failed": "Failed",
+        "newUsers": "{{count}} new users created"
+      },
+      "errors": {
+        "title": "Errors ({{count}})",
+        "tableHeaders": {
+          "row": "Row",
+          "field": "Field",
+          "error": "Error"
+        }
+      }
+    },
+    "toasts": {
+      "fileValidated": {
+        "title": "File Validated",
+        "description": "{{rowCount}} rows validated successfully"
+      },
+      "validationErrors": {
+        "title": "Validation Errors Found",
+        "description": "Found {{errorCount}} validation error{{plural}} in {{filename}}. Please review and fix before importing."
+      },
+      "validationFailed": {
+        "title": "Validation Failed",
+        "description": "Failed to parse file",
+        "customMessage": "{{message}}"
+      },
+      "noFiles": {
+        "title": "No Files Selected",
+        "description": "Please upload at least one file to import"
+      },
+      "importSuccess": {
+        "title": "Import Completed Successfully",
+        "description": "Imported {{count}} records"
+      },
+      "importErrors": {
+        "title": "Import Completed with Errors",
+        "description": "{{count}} errors occurred during import"
+      },
+      "importFailed": {
+        "title": "Import Failed",
+        "description": "Failed to execute import",
+        "customMessage": "{{message}}"
+      },
+      "templateDownloaded": {
+        "title": "Template Downloaded",
+        "description": "{{type}} template has been downloaded"
+      },
+      "downloadFailed": {
+        "title": "Download Failed",
+        "description": "Failed to download template"
+      }
+    }
+  },
+  "resourcePacks": {
+    "title": "Resource Pack Management",
+    "subtitle": "Create and manage curated collections of resources",
+    "filters": {
+      "placeholders": {
+        "search": "Search packs..."
+      },
+      "options": {
+        "allStages": "All Stages",
+        "allThemes": "All Themes",
+        "allVisibility": "All Visibility"
+      }
+    },
+    "buttons": {
+      "createPack": "Create Pack",
+      "preview": "Preview",
+      "edit": "Edit",
+      "delete": "Delete",
+      "activate": "Activate",
+      "deactivate": "Deactivate",
+      "cancel": "Cancel",
+      "updatePack": "Update Pack",
+      "createNewPack": "Create Pack",
+      "addResource": "Add"
+    },
+    "badges": {
+      "active": "Active",
+      "inactive": "Inactive",
+      "resourceCount": "{{count}} resources"
+    },
+    "editor": {
+      "titles": {
+        "edit": "Edit Resource Pack",
+        "create": "Create New Resource Pack"
+      },
+      "tabs": {
+        "details": "Pack Details",
+        "resources": "Resources ({{count}})"
+      },
+      "form": {
+        "labels": {
+          "title": "Pack Title *",
+          "description": "Description",
+          "stage": "Program Stage *",
+          "theme": "Theme",
+          "visibility": "Visibility *",
+          "active": "Active (visible to users)",
+          "resourcesInPack": "Resources in Pack ({{count}})",
+          "addResources": "Add Resources"
+        },
+        "placeholders": {
+          "title": "Enter pack title",
+          "description": "Enter pack description",
+          "theme": "Select theme (optional)",
+          "searchResources": "Search resources..."
+        },
+        "stages": {
+          "inspire": "Inspire",
+          "investigate": "Investigate",
+          "act": "Act"
+        },
+        "themes": {
+          "none": "No theme",
+          "oceanLiteracy": "Ocean Literacy",
+          "climateChange": "Climate Change",
+          "plasticPollution": "Plastic Pollution",
+          "science": "Science",
+          "designTechnology": "Design & Technology",
+          "geography": "Geography",
+          "crossCurricular": "Cross-Curricular",
+          "enrichment": "Enrichment"
+        },
+        "visibility": {
+          "public": "Public (visible to everyone)",
+          "registered": "Registered Only (requires login)"
+        }
+      },
+      "emptyStates": {
+        "noResources": {
+          "title": "No resources added yet",
+          "description": "Add resources from the list below"
+        },
+        "noAvailableResources": "No resources found matching your search",
+        "allResourcesAdded": "All resources have been added"
+      }
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Delete Resource Pack",
+        "description": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone."
+      }
+    },
+    "emptyStates": {
+      "noPacks": {
+        "title": "No resource packs found",
+        "description": "Create your first resource pack to organize resources into themed collections"
+      }
+    },
+    "loadingStates": {
+      "loadingPacks": "Loading packs..."
+    },
+    "toasts": {
+      "resourceAlreadyAdded": {
+        "title": "Resource Already Added",
+        "description": "This resource is already in the pack."
+      },
+      "resourceAdded": {
+        "title": "Resource Added",
+        "description": "Resource has been added to the pack."
+      },
+      "addResourceFailed": {
+        "title": "Failed to Add Resource",
+        "description": "Could not add resource to pack.",
+        "customMessage": "{{message}}"
+      },
+      "resourceRemoved": {
+        "title": "Resource Removed",
+        "description": "Resource has been removed from the pack."
+      },
+      "removeResourceFailed": {
+        "title": "Failed to Remove Resource",
+        "description": "Could not remove resource from pack.",
+        "customMessage": "{{message}}"
+      },
+      "packCreated": {
+        "title": "Pack Created",
+        "description": "The resource pack has been successfully created."
+      },
+      "packUpdated": {
+        "title": "Pack Updated",
+        "description": "The resource pack has been successfully updated."
+      },
+      "saveFailed": {
+        "title": "Save Failed",
+        "description": "Failed to save resource pack. Please try again.",
+        "customMessage": "{{message}}"
+      },
+      "packDeleted": {
+        "title": "Pack Deleted",
+        "description": "The resource pack has been successfully deleted."
+      },
+      "deleteFailed": {
+        "title": "Delete Failed",
+        "description": "Failed to delete resource pack. Please try again.",
+        "customMessage": "{{message}}"
+      }
+    },
+    "saving": "Saving..."
+  },
+  "events": {
+    "title": "Events Management",
+    "subtitle": "Manage events and registrations for the Plastic Clever Schools community",
+    "tabs": {
+      "manageEvents": "Manage Events",
+      "eventStatistics": "Event Statistics",
+      "details": "Event Details",
+      "pageBuilder": "Page Builder"
+    },
+    "buttons": {
+      "createEvent": "Create Event",
+      "createBanner": "Create Banner",
+      "editEvent": "Edit Event",
+      "updateEvent": "Update Event",
+      "deleteEvent": "Delete Event",
+      "duplicateEvent": "Duplicate event",
+      "viewEvent": "View event:",
+      "viewRegistrations": "View Registrations",
+      "sendNewsletter": "Send Newsletter",
+      "exportCSV": "Export CSV",
+      "markAttended": "Mark Attended",
+      "autoTranslate": "Auto-Translate",
+      "saveChanges": "Save Changes",
+      "cancel": "Cancel",
+      "confirmDelete": "Yes, Delete Event",
+      "sendAnnouncement": "Send Announcement",
+      "sending": "Sending...",
+      "uploadEventImage": "Click to upload event image",
+      "changeImage": "Change",
+      "removeImage": "Remove",
+      "uploadPDF": "Upload PDF File",
+      "addYouTubeVideo": "Add YouTube Video",
+      "addEventPackFile": "Add Event Pack File",
+      "addTestimonial": "Add Testimonial",
+      "uploadBanner": "Click to upload banner image",
+      "addFirstVideo": "Add your first video",
+      "addFirstResource": "Add your first resource file",
+      "addFirstTestimonial": "Add your first testimonial"
+    },
+    "badges": {
+      "active": "Active",
+      "important": "Important",
+      "languageLabel": "For {{language}} users"
+    },
+    "banners": {
+      "title": "Event Banners",
+      "emptyTitle": "No banners yet",
+      "emptyDescription": "Create a banner to promote events on the landing page",
+      "background": "Background:",
+      "text": "Text:",
+      "deleteBanner": "Delete Banner",
+      "deleteBannerConfirm": "Are you sure you want to delete this banner?",
+      "loadingBanners": "Loading banners..."
+    },
+    "form": {
+      "labels": {
+        "title": "Title",
+        "titleRequired": "Title *",
+        "description": "Description",
+        "descriptionRequired": "Description *",
+        "eventType": "Event Type",
+        "eventTypeRequired": "Event Type *",
+        "status": "Status",
+        "statusRequired": "Status *",
+        "startDateTime": "Start Date & Time",
+        "startDateTimeRequired": "Start Date & Time *",
+        "endDateTime": "End Date & Time",
+        "endDateTimeRequired": "End Date & Time *",
+        "location": "Location",
+        "isVirtual": "Is Virtual Event",
+        "meetingLink": "Meeting Link",
+        "eventImage": "Event Image",
+        "capacity": "Capacity (optional)",
+        "waitlistEnabled": "Enable Waitlist",
+        "registrationDeadline": "Registration Deadline (optional)",
+        "tags": "Tags (comma-separated)",
+        "pagePublishedStatus": "Page Published Status",
+        "accessType": "Access Type",
+        "isPreRecorded": "Is Pre-Recorded Event",
+        "recordingAvailableFrom": "Recording Available From",
+        "publicURL": "Public URL",
+        "liveStreamURL": "Live Stream URL (optional)",
+        "recordedVideoURL": "Recorded Video URL (optional)",
+        "videoTitle": "Video Title",
+        "youtubeURL": "YouTube URL",
+        "videoDescription": "Video Description (optional)",
+        "fileTitle": "File Title",
+        "pdfDescription": "PDF Description (optional)",
+        "teacherQuote": "Teacher Quote",
+        "teacherName": "Teacher Name",
+        "teacherRole": "Teacher Role/School",
+        "featuredVideo": "Featured Video",
+        "eventPackBanner": "Event Pack Banner",
+        "evidenceSubmission": "Evidence Submission",
+        "evidenceSubmissionInstructions": "Submission Instructions",
+        "multiLanguageTitle": "Title ({{language}})",
+        "multiLanguageDescription": "Description ({{language}})",
+        "evidenceSubmissionText": "Evidence Submission Text ({{language}})",
+        "quote": "Quote *",
+        "authorName": "Author Name *",
+        "rolePosition": "Role/Position (optional)"
+      },
+      "placeholders": {
+        "meetingLink": "https://...",
+        "tags": "e.g. plastic-free, sustainability, workshop",
+        "capacity": "Leave empty for unlimited",
+        "titleInLanguage": "Title in {{language}}",
+        "descriptionInLanguage": "Description in {{language}}",
+        "evidenceInstructions": "Enter instructions for evidence submission...",
+        "roleExample": "e.g. Teacher, School Name"
+      },
+      "helpText": {
+        "virtualEventNotice": "This is a virtual event!",
+        "configurePageReminder": "Don't forget to configure your Event Page with live stream links after saving.",
+        "contentLanguage": "Create content in different languages for your event page",
+        "multiLanguageInfo": "Leave blank to use the default title/description from the Details tab",
+        "imageFormat": "JPG, PNG, WEBP (max 10MB)",
+        "uploading": "Uploading...",
+        "eventImage": "Event image",
+        "noFileSelected": "No file selected",
+        "noBannerImage": "No banner image"
+      }
+    },
+    "eventTypes": {
+      "workshop": "Workshop",
+      "webinar": "Webinar",
+      "communityEvent": "Community Event",
+      "training": "Training",
+      "celebration": "Celebration",
+      "assembly": "Assembly",
+      "other": "Other"
+    },
+    "status": {
+      "draft": "Draft",
+      "published": "Published",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "pagePublishedStatus": {
+      "draft": "Draft (not visible)",
+      "comingSoon": "Coming Soon (teaser page)",
+      "published": "Published (full page)"
+    },
+    "accessType": {
+      "open": "Open (anyone can view)",
+      "closed": "Closed (requires login)"
+    },
+    "filters": {
+      "labels": {
+        "status": "Status",
+        "eventType": "Event Type",
+        "fromDate": "From Date",
+        "toDate": "To Date"
+      },
+      "options": {
+        "allStatuses": "All Statuses",
+        "allTypes": "All Types"
+      }
+    },
+    "table": {
+      "headers": {
+        "title": "Title",
+        "type": "Type",
+        "date": "Date",
+        "status": "Status",
+        "registrations": "Registrations",
+        "actions": "Actions"
+      }
+    },
+    "registrations": {
+      "title": "Registrations for {{eventTitle}}",
+      "filterByStatus": "Filter by Status:",
+      "table": {
+        "headers": {
+          "name": "Name",
+          "email": "Email",
+          "school": "School",
+          "country": "Country",
+          "status": "Status",
+          "registered": "Registered",
+          "registeredDate": "Registered Date",
+          "actions": "Actions"
+        }
+      },
+      "status": {
+        "all": "All",
+        "registered": "Registered",
+        "attended": "Attended",
+        "cancelled": "Cancelled",
+        "waitlisted": "Waitlisted"
+      },
+      "csvHeaders": {
+        "name": "Name",
+        "email": "Email",
+        "school": "School",
+        "country": "Country",
+        "status": "Status",
+        "registeredDate": "Registered Date"
+      },
+      "values": {
+        "unknown": "Unknown",
+        "notAvailable": "N/A"
+      },
+      "emptyState": {
+        "title": "No registrations yet",
+        "description": "This event has no registrations"
+      }
+    },
+    "newsletter": {
+      "title": "Send Event Announcement",
+      "description": "Send an announcement about this event via email (SendGrid)",
+      "recipients": "Recipients:",
+      "allTeachers": "All Teachers",
+      "customEmailList": "Custom Email List",
+      "customEmailsLabel": "Custom Emails (comma-separated):",
+      "customEmailsPlaceholder": "email1@example.com, email2@example.com",
+      "teachersCount": "{{count}} teachers will receive this announcement"
+    },
+    "pageBuilder": {
+      "sections": {
+        "contentLanguage": {
+          "title": "Content Language",
+          "description": "Create content in different languages for your event page"
+        },
+        "multiLanguage": {
+          "title": "Multi-Language Content",
+          "description": "Leave blank to use the default title/description from the Details tab"
+        },
+        "basicSettings": {
+          "title": "Basic Settings"
+        },
+        "youtubeVideos": {
+          "title": "YouTube Videos",
+          "description": "Add engaging video content to your event page"
+        },
+        "eventPacks": {
+          "title": "Event Packs (PDFs)",
+          "description": "Provide downloadable resources for attendees"
+        },
+        "testimonials": {
+          "title": "Teacher Testimonials",
+          "description": "Share success stories from previous events"
+        },
+        "eventPageComponents": {
+          "title": "Event Page Components",
+          "description": "Add dynamic content to your event page"
+        },
+        "advancedConfig": {
+          "title": "Advanced Configuration",
+          "description": "Fine-tune your event page appearance"
+        },
+        "evidenceSubmissionConfig": {
+          "title": "Evidence Submission Configuration"
+        }
+      },
+      "languages": {
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "de": "German",
+        "it": "Italian",
+        "pt": "Portuguese",
+        "nl": "Dutch",
+        "sv": "Swedish",
+        "no": "Norwegian",
+        "da": "Danish",
+        "fi": "Finnish",
+        "el": "Greek",
+        "ar": "Arabic",
+        "zh": "Chinese"
+      },
+      "emptyStates": {
+        "noVideosYet": "No videos added yet",
+        "noResourcesYet": "No resources added yet. Click \"Add Event Pack File\" to get started.",
+        "noTestimonialsYet": "No testimonials added yet. Click \"Add Testimonial\" to get started.",
+        "selectFeaturedVideo": "Select which video appears first on the event page",
+        "noVideosAdded": "No videos added yet"
+      },
+      "labels": {
+        "testimonialNumber": "Testimonial {{number}}",
+        "enableEvidenceSubmission": "Enable Evidence Submission"
+      }
+    },
+    "dialogs": {
+      "deleteEvent": {
+        "title": "Delete Event",
+        "description": "Are you sure you want to delete this event?",
+        "warning": "This action cannot be undone."
+      },
+      "deleteBanner": {
+        "title": "Delete Banner",
+        "description": "Are you sure you want to delete this banner?",
+        "warning": "This action cannot be undone."
+      }
+    },
+    "emptyStates": {
+      "noEvents": {
+        "title": "No events yet",
+        "description": "Create your first event to get started"
+      },
+      "noBanners": {
+        "title": "No banners yet",
+        "description": "Create a banner to promote events on the landing page"
+      },
+      "noRegistrations": {
+        "title": "No registrations yet",
+        "description": "This event has no registrations"
+      }
+    },
+    "toasts": {
+      "eventCreated": {
+        "title": "Event Created Successfully! 🎉",
+        "description": "Your event has been created.",
+        "descriptionSimple": "Event created successfully."
+      },
+      "eventUpdated": {
+        "title": "Success",
+        "description": "Event updated successfully."
+      },
+      "eventDeleted": {
+        "title": "Success",
+        "description": "Event deleted successfully."
+      },
+      "eventDuplicated": {
+        "title": "Event Duplicated",
+        "description": "\"{{title}}\" has been created as a draft."
+      },
+      "duplicationFailed": {
+        "title": "Duplication Failed",
+        "description": "Failed to duplicate event",
+        "customMessage": "{{message}}"
+      },
+      "createFailed": {
+        "title": "Error",
+        "description": "Failed to create event.",
+        "customMessage": "{{message}}"
+      },
+      "updateFailed": {
+        "title": "Error",
+        "description": "Failed to update event.",
+        "customMessage": "{{message}}"
+      },
+      "deleteFailed": {
+        "title": "Error",
+        "description": "Failed to delete event.",
+        "customMessage": "{{message}}"
+      },
+      "attendanceUpdated": {
+        "title": "Attendance Updated",
+        "description": "Registration marked as {{status}}."
+      },
+      "attendanceUpdateFailed": {
+        "title": "Update Failed",
+        "description": "Failed to update attendance. Changes have been reverted."
+      },
+      "announcementSent": {
+        "title": "Announcement Sent! 📧",
+        "description": "Event announcement has been sent successfully."
+      },
+      "announcementFailed": {
+        "title": "Send Failed",
+        "description": "Failed to send announcement.",
+        "customMessage": "{{message}}"
+      },
+      "bannerCreated": {
+        "title": "Success",
+        "description": "Banner created successfully."
+      },
+      "bannerUpdated": {
+        "title": "Success",
+        "description": "Banner updated successfully."
+      },
+      "bannerDeleted": {
+        "title": "Success",
+        "description": "Banner deleted successfully."
+      },
+      "bannerCreateFailed": {
+        "title": "Error",
+        "description": "Failed to create banner.",
+        "customMessage": "{{message}}"
+      },
+      "bannerUpdateFailed": {
+        "title": "Error",
+        "description": "Failed to update banner.",
+        "customMessage": "{{message}}"
+      },
+      "bannerDeleteFailed": {
+        "title": "Error",
+        "description": "Failed to delete banner.",
+        "customMessage": "{{message}}"
+      },
+      "resourceAttached": {
+        "title": "Resource Attached",
+        "description": "Resource has been successfully attached to the event."
+      },
+      "resourceDetached": {
+        "title": "Resource Detached",
+        "description": "Resource has been successfully detached from the event."
+      },
+      "resourceAttachFailed": {
+        "title": "Attachment Failed",
+        "description": "Failed to attach resource. Please try again."
+      },
+      "resourceDetachFailed": {
+        "title": "Detachment Failed",
+        "description": "Failed to detach resource. Please try again."
+      },
+      "validationError": {
+        "title": "Validation Error",
+        "description": "Please fill in all required fields."
+      },
+      "imageUploadSuccess": {
+        "title": "Success",
+        "description": "Image uploaded successfully."
+      },
+      "imageUploadFailed": {
+        "title": "Upload Failed",
+        "description": "Failed to upload image.",
+        "customMessage": "{{message}}"
+      },
+      "pdfUploadSuccess": {
+        "title": "Success",
+        "description": "PDF uploaded successfully."
+      },
+      "pdfUploadFailed": {
+        "title": "Upload Failed",
+        "description": "Failed to upload PDF.",
+        "customMessage": "{{message}}"
+      },
+      "invalidFileType": {
+        "title": "Invalid file type",
+        "imageDescription": "Please upload a JPG, PNG, or WEBP image.",
+        "pdfDescription": "Please upload a PDF file."
+      },
+      "fileTooLarge": {
+        "title": "File too large",
+        "imageDescription": "Image must be less than 10MB.",
+        "pdfDescription": "PDF must be less than 50MB."
+      },
+      "translationComplete": {
+        "title": "Translation complete! 🎉",
+        "description": "Successfully translated to {{language}}. Remember to click \"Save Changes\" below to persist!"
+      },
+      "translationFailed": {
+        "title": "Translation failed",
+        "description": "Failed to auto-translate. Please try again or translate manually."
+      },
+      "cannotTranslateEnglish": {
+        "title": "Cannot translate English",
+        "description": "English is the source language. Switch to another language tab to auto-translate."
+      },
+      "alreadyTranslated": {
+        "title": "Already translated",
+        "description": "{{language}} content already exists. Edit the fields below or clear them first to re-translate."
+      },
+      "translating": {
+        "title": "Translating...",
+        "description": "Translating to {{language}}. This may take a moment."
+      }
+    },
+    "validation": {
+      "titleRequired": "Title is required",
+      "youtubeUrlInvalid": "Must be a valid URL",
+      "youtubeUrlFormat": "Must be a valid YouTube URL",
+      "fileRequired": "File is required",
+      "quoteRequired": "Quote is required",
+      "authorRequired": "Author name is required"
+    }
   }
 }
