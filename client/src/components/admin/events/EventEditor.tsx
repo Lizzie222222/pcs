@@ -2,6 +2,9 @@ import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useCollaboration } from "@/hooks/useCollaboration";
+import type { DocumentLock } from "@/hooks/useCollaboration";
+import DocumentLockWarning from "../DocumentLockWarning";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -60,6 +63,9 @@ export default function EventEditor({
   isVirtualEventCreationInProgress,
 }: EventEditorProps) {
   const { toast } = useToast();
+  const collaboration = useCollaboration();
+  const [documentLock, setDocumentLock] = useState<DocumentLock | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
 
   // Form state
   const [eventFormData, setEventFormData] = useState<EventFormData>({
@@ -214,6 +220,59 @@ export default function EventEditor({
     
     return () => clearTimeout(timer);
   }, [eventDialogTab]);
+
+  // Request document lock when editing existing event
+  useEffect(() => {
+    const requestLock = async () => {
+      if (editingEvent?.id && isOpen && collaboration.connectionState === 'connected') {
+        try {
+          const result = await collaboration.requestDocumentLock(editingEvent.id, 'event');
+          
+          if (result.success && result.lock) {
+            setDocumentLock(result.lock);
+            setIsLocked(false);
+          } else if (result.locked && result.lockedBy) {
+            // Document is locked by another user
+            const lock = collaboration.getDocumentLock(editingEvent.id, 'event');
+            if (lock) {
+              setDocumentLock(lock);
+              setIsLocked(true);
+              toast({
+                title: "Event Locked",
+                description: `This event is being edited by ${lock.lockedByName}. You can view but not edit.`,
+                variant: "destructive",
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to request document lock:', error);
+        }
+      }
+    };
+
+    requestLock();
+
+    // Release lock when dialog closes
+    return () => {
+      if (editingEvent?.id) {
+        collaboration.releaseDocumentLock(editingEvent.id, 'event');
+      }
+    };
+  }, [editingEvent?.id, isOpen, collaboration.connectionState, collaboration]);
+
+  // Monitor lock status changes
+  useEffect(() => {
+    if (editingEvent?.id) {
+      const lock = collaboration.getDocumentLock(editingEvent.id, 'event');
+      if (lock) {
+        setDocumentLock(lock);
+        setIsLocked(true);
+      } else {
+        setDocumentLock(null);
+        setIsLocked(false);
+      }
+    }
+  }, [editingEvent?.id, collaboration.documentLocks]);
 
   // Initialize form when editing event
   useEffect(() => {
@@ -590,6 +649,15 @@ export default function EventEditor({
             {editingEvent ? 'Edit Event' : 'Create Event'}
           </DialogTitle>
         </DialogHeader>
+
+        {/* Document Lock Warning */}
+        {isLocked && documentLock && (
+          <DocumentLockWarning
+            lock={documentLock}
+            documentType="event"
+            className="mb-4"
+          />
+        )}
         
         <Tabs value={eventDialogTab} onValueChange={(value) => setEventDialogTab(value as 'details' | 'page-builder')} className="w-full">
           <TabsList className="grid w-full grid-cols-2 mb-4">
@@ -949,6 +1017,7 @@ export default function EventEditor({
           </Button>
           <Button
             onClick={handleSave}
+            disabled={isLocked}
             className="bg-pcs_blue hover:bg-pcs_blue/90"
             data-testid="button-save-event-details"
           >
@@ -1744,6 +1813,7 @@ export default function EventEditor({
             <Button
               type="button"
               onClick={handleSave}
+              disabled={isLocked}
               className="bg-pcs_blue hover:bg-pcs_blue/90"
               data-testid="button-save-page-builder"
             >

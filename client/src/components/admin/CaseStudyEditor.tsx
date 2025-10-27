@@ -7,6 +7,9 @@ import { Form } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useCollaboration } from "@/hooks/useCollaboration";
+import type { DocumentLock } from "@/hooks/useCollaboration";
+import DocumentLockWarning from "./DocumentLockWarning";
 import { X, Clock } from "lucide-react";
 import type { 
   CaseStudy, 
@@ -135,10 +138,13 @@ const WIZARD_STEPS = [
 export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditorProps) {
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const collaboration = useCollaboration();
   const [isSaving, setIsSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
   const [versionHistoryOpen, setVersionHistoryOpen] = useState(false);
+  const [documentLock, setDocumentLock] = useState<DocumentLock | null>(null);
+  const [isLocked, setIsLocked] = useState(false);
   const [stepValidation, setStepValidation] = useState<Record<number, { valid: boolean; warnings: string[]; errors: string[] }>>({
     1: { valid: false, warnings: [], errors: [] },
     2: { valid: false, warnings: [], errors: [] },
@@ -524,6 +530,59 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
     updateValidation();
   }, [currentStep, schoolId, title, stage, templateType, description, impact, images, beforeImage, afterImage, quotes, metrics, timeline]);
 
+  // Request document lock when editing existing case study
+  useEffect(() => {
+    const requestLock = async () => {
+      if (caseStudy?.id && collaboration.connectionState === 'connected') {
+        try {
+          const result = await collaboration.requestDocumentLock(caseStudy.id, 'case_study');
+          
+          if (result.success && result.lock) {
+            setDocumentLock(result.lock);
+            setIsLocked(false);
+          } else if (result.locked && result.lockedBy) {
+            // Document is locked by another user
+            const lock = collaboration.getDocumentLock(caseStudy.id, 'case_study');
+            if (lock) {
+              setDocumentLock(lock);
+              setIsLocked(true);
+              toast({
+                title: "Document Locked",
+                description: `This case study is being edited by ${lock.lockedByName}. You can view but not edit.`,
+                variant: "destructive",
+              });
+            }
+          }
+        } catch (error) {
+          console.error('Failed to request document lock:', error);
+        }
+      }
+    };
+
+    requestLock();
+
+    // Release lock when component unmounts
+    return () => {
+      if (caseStudy?.id) {
+        collaboration.releaseDocumentLock(caseStudy.id, 'case_study');
+      }
+    };
+  }, [caseStudy?.id, collaboration.connectionState, collaboration]);
+
+  // Monitor lock status changes
+  useEffect(() => {
+    if (caseStudy?.id) {
+      const lock = collaboration.getDocumentLock(caseStudy.id, 'case_study');
+      if (lock) {
+        setDocumentLock(lock);
+        setIsLocked(true);
+      } else {
+        setDocumentLock(null);
+        setIsLocked(false);
+      }
+    }
+  }, [caseStudy?.id, collaboration.documentLocks]);
+
   // Apply wizard-sidebar-visible class to body to prevent scrolling
   useEffect(() => {
     document.body.classList.add('wizard-sidebar-visible');
@@ -545,6 +604,15 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
       }
     >
       <div className="h-[95vh] bg-background flex flex-col">
+        {/* Document Lock Warning */}
+        {isLocked && documentLock && (
+          <DocumentLockWarning
+            lock={documentLock}
+            documentType="case_study"
+            className="mx-4 mt-4"
+          />
+        )}
+
         {/* Fixed Header */}
         <div className="flex-shrink-0 z-50 bg-background border-b shadow-sm">
           <div className="container mx-auto px-4 py-4">
@@ -641,8 +709,8 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
                         onPublish={handlePublish}
                         isFirstStep={currentStep === 1}
                         isLastStep={currentStep === WIZARD_STEPS.length}
-                        isSaving={isSaving}
-                        canProceed={canProceedState}
+                        isSaving={isSaving || isLocked}
+                        canProceed={canProceedState && !isLocked}
                       />
                     </div>
                   </div>
