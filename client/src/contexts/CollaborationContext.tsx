@@ -75,6 +75,8 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
   const reconnectTimeoutRef = useRef<number | null>(null);
   const reconnectAttemptsRef = useRef(0);
   const isConnectingRef = useRef(false);
+  const messageHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
+  const hasInitiatedConnectionRef = useRef(false);
   
   const maxReconnectAttempts = 5;
   const baseReconnectDelay = 1000;
@@ -255,6 +257,11 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     }
   }, [handlePresenceUpdate, handleDocumentLock, handleDocumentUnlock, handleChatMessage, handleConflictWarning, handleTypingStart, handleTypingStop, handleViewersUpdated]);
 
+  // Update the message handler ref whenever handleMessage changes
+  useEffect(() => {
+    messageHandlerRef.current = handleMessage;
+  }, [handleMessage]);
+
   // Stable sendMessage using socketRef
   const sendMessage = useCallback((message: WebSocketMessage) => {
     const socket = socketRef.current;
@@ -265,27 +272,30 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     }
   }, []);
 
-  // Connect function without ws dependency
+  // Connect function - stable, only depends on auth state
   const connect = useCallback(() => {
-    if (!isAuthenticated || !user) {
+    if (!isAuthenticated) {
       console.log('[Collaboration] Not authenticated, skipping connection');
       return;
     }
 
-    // Prevent multiple simultaneous connection attempts
+    // Prevent multiple simultaneous connection attempts - set flag immediately to prevent race conditions
     if (isConnectingRef.current) {
       console.log('[Collaboration] Connection already in progress');
       return;
     }
+    isConnectingRef.current = true;
 
     const socket = socketRef.current;
     if (socket?.readyState === WebSocket.OPEN) {
       console.log('[Collaboration] Already connected');
+      isConnectingRef.current = false;
       return;
     }
     
     if (socket?.readyState === WebSocket.CONNECTING) {
       console.log('[Collaboration] Connection in progress');
+      isConnectingRef.current = false;
       return;
     }
 
@@ -293,10 +303,9 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     if (socket) {
       console.log('[Collaboration] Closing existing socket before reconnect');
       socket.close();
-      socketRef.current = null;
+      // Don't set to null yet - keep the old socket reference to prevent race conditions
     }
 
-    isConnectingRef.current = true;
     setConnectionState('connecting');
 
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
@@ -306,6 +315,9 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
 
     try {
       const newSocket = new WebSocket(wsUrl);
+      
+      // Set the socket ref immediately to prevent race conditions
+      socketRef.current = newSocket;
 
       newSocket.onopen = () => {
         console.log('[Collaboration] Connected to WebSocket');
@@ -317,7 +329,7 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
       newSocket.onmessage = (event) => {
         try {
           const message: WebSocketMessage = JSON.parse(event.data);
-          handleMessage(message);
+          messageHandlerRef.current?.(message);
         } catch (error) {
           console.error('[Collaboration] Error parsing message:', error);
         }
@@ -347,8 +359,15 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
           return;
         }
 
+        // Only attempt to reconnect if still authenticated
+        // This prevents infinite reconnection loops when user is not logged in
+        if (!isAuthenticated) {
+          console.log('[Collaboration] Not reconnecting - user not authenticated');
+          return;
+        }
+
         // Attempt to reconnect with exponential backoff
-        if (reconnectAttemptsRef.current < maxReconnectAttempts && isAuthenticated) {
+        if (reconnectAttemptsRef.current < maxReconnectAttempts) {
           const delay = baseReconnectDelay * Math.pow(2, reconnectAttemptsRef.current);
           console.log(`[Collaboration] Reconnecting in ${delay}ms (attempt ${reconnectAttemptsRef.current + 1}/${maxReconnectAttempts})`);
           
@@ -360,14 +379,12 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
           console.log('[Collaboration] Max reconnect attempts reached');
         }
       };
-
-      socketRef.current = newSocket;
     } catch (error) {
       console.error('[Collaboration] Error creating WebSocket:', error);
       setConnectionState('disconnected');
       isConnectingRef.current = false;
     }
-  }, [isAuthenticated, user, handleMessage]);
+  }, [isAuthenticated]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
@@ -501,13 +518,21 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
   // Use userId to prevent reconnections when user object identity changes
   const userId = user?.id;
   useEffect(() => {
-    if (isAuthenticated && userId) {
+    // Comprehensive check: only connect if all conditions are met
+    const socket = socketRef.current;
+    const isConnectedOrConnecting = socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING);
+    const shouldConnect = isAuthenticated && userId && !hasInitiatedConnectionRef.current && !isConnectedOrConnecting;
+    
+    if (shouldConnect) {
+      hasInitiatedConnectionRef.current = true;
+      console.log('[Collaboration] Initiating connection for user:', userId);
       connect();
     }
 
-    // Only disconnect on unmount or when user logs out
+    // Cleanup: disconnect when component unmounts or user logs out
     return () => {
-      if (!isAuthenticated) {
+      if (!isAuthenticated || !userId) {
+        hasInitiatedConnectionRef.current = false;
         disconnect();
       }
     };

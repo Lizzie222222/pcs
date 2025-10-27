@@ -2,7 +2,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
-import { CollaborationProvider, useCollaboration } from "@/hooks/useCollaboration";
+import { useCollaboration } from "@/hooks/useCollaboration";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
@@ -1087,11 +1087,5 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
 }
 
 export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' } = {}) {
-  const { user, isAuthenticated } = useAuth();
-  
-  return (
-    <CollaborationProvider user={user} isAuthenticated={isAuthenticated}>
-      <AdminContent initialTab={initialTab} />
-    </CollaborationProvider>
-  );
+  return <AdminContent initialTab={initialTab} />;
 }
