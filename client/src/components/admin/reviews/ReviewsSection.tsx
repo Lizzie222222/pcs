@@ -41,9 +41,16 @@ import type { AdminStats, PendingEvidence, PendingAudit } from "@/components/adm
 interface ReviewsSectionProps {
   activeTab: string;
   stats: AdminStats | undefined;
+  approvePhotoConsentMutation: any;
+  rejectPhotoConsentMutation: any;
 }
 
-export default function ReviewsSection({ activeTab, stats }: ReviewsSectionProps) {
+export default function ReviewsSection({ 
+  activeTab, 
+  stats,
+  approvePhotoConsentMutation,
+  rejectPhotoConsentMutation 
+}: ReviewsSectionProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -161,48 +168,6 @@ export default function ReviewsSection({ activeTab, stats }: ReviewsSectionProps
       toast({
         title: "Error",
         description: error.message || "Failed to submit audit review.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Approve photo consent mutation
-  const approvePhotoConsentMutation = useMutation({
-    mutationFn: async ({ schoolId, notes }: { schoolId: string; notes: string }) => {
-      return await apiRequest('PATCH', `/api/schools/${schoolId}/photo-consent/approve`, { notes });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
-      toast({
-        title: "Success",
-        description: "Photo consent approved successfully.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to approve photo consent.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Reject photo consent mutation
-  const rejectPhotoConsentMutation = useMutation({
-    mutationFn: async ({ schoolId, notes }: { schoolId: string; notes: string }) => {
-      return await apiRequest('PATCH', `/api/schools/${schoolId}/photo-consent/reject`, { notes });
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
-      toast({
-        title: "Success",
-        description: "Photo consent rejected successfully.",
-      });
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to reject photo consent.",
         variant: "destructive",
       });
     },

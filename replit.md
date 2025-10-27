@@ -57,3 +57,33 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 -   **AI Integration**: OpenAI GPT-4o-mini
 -   **PDF Generation**: Puppeteer
 -   **Image Processing**: Sharp library (for compression)
+
+## Recent Changes
+
+### Admin Interface Refactoring (October 2025)
+**Goal**: Refactor the monolithic 8,572-line admin.tsx file into maintainable components to enable efficient multi-admin collaboration and prepare for future real-time features.
+
+**Completed**:
+- Created shared infrastructure in `client/src/components/admin/shared/`:
+  - `types.ts`: Shared TypeScript types (AdminStats, PendingEvidence, PendingAudit, etc.)
+  - `hooks.ts`: Reusable React hooks
+  - `constants.ts`: Shared constants
+- Extracted Reviews section (625 lines) into `ReviewsSection` component at `client/src/components/admin/reviews/ReviewsSection.tsx`
+  - Three sub-tabs: Evidence Review, Audit Review, Photo Consent Review
+  - Photo consent mutations centralized in admin.tsx and passed as props to avoid endpoint drift
+  - Badge queries (pendingAudits, pendingPhotoConsent) remain in admin.tsx for navigation
+- Reduced admin.tsx from 8,572 lines to ~7,400 lines
+- Maintained tab-based navigation without page reloads for fast switching
+
+**Architecture Pattern**:
+- Shared mutations passed as props from admin.tsx to section components
+- Queries remain in TanStack Query cache for data consistency
+- May evolve to shared context/provider as more sections are extracted
+
+**Next Steps**:
+- Extract Schools/Teams section
+- Extract Evidence Requirements section
+- Extract Events section
+- Extract Activity Logs section
+- Extract Email section
+- Final shell refactor

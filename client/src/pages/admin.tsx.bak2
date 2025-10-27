@@ -2774,59 +2774,6 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     enabled: !!viewingSchool?.id,
   });
 
-  // Photo consent mutations
-  const approvePhotoConsentMutation = useMutation({
-    mutationFn: async ({ schoolId, notes }: { schoolId: string; notes: string }) => {
-      return await apiRequest('POST', `/api/admin/schools/${schoolId}/photo-consent/approve`, { notes });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Photo Consent Approved",
-        description: "The photo consent document has been approved successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
-      if (viewingSchool) {
-        queryClient.invalidateQueries({ queryKey: ['/api/schools', viewingSchool.id, 'photo-consent'] });
-      }
-      refetchPhotoConsent();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Approval Failed",
-        description: error.message || "Failed to approve photo consent document.",
-        variant: "destructive",
-      });
-    },
-  });
-
-  const rejectPhotoConsentMutation = useMutation({
-    mutationFn: async ({ schoolId, notes }: { schoolId: string; notes: string }) => {
-      return await apiRequest('POST', `/api/admin/schools/${schoolId}/photo-consent/reject`, { notes });
-    },
-    onSuccess: () => {
-      toast({
-        title: "Photo Consent Rejected",
-        description: "The photo consent document has been rejected.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
-      if (viewingSchool) {
-        queryClient.invalidateQueries({ queryKey: ['/api/schools', viewingSchool.id, 'photo-consent'] });
-      }
-      setPhotoConsentRejectDialogOpen(false);
-      setPhotoConsentRejectNotes('');
-      refetchPhotoConsent();
-    },
-    onError: (error: any) => {
-      toast({
-        title: "Rejection Failed",
-        description: error.message || "Failed to reject photo consent document.",
-        variant: "destructive",
-      });
-    },
-  });
-
   const toggleSchoolSelection = (schoolId: string) => {
     setSelectedSchools(prev => 
       prev.includes(schoolId) 
@@ -3325,14 +3272,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
 
         {/* Review Queue Tab */}
-        {activeTab === 'reviews' && (
-          <ReviewsSection 
-            activeTab={activeTab} 
-            stats={stats}
-            approvePhotoConsentMutation={approvePhotoConsentMutation}
-            rejectPhotoConsentMutation={rejectPhotoConsentMutation}
-          />
-        )}
+        {activeTab === 'reviews' && <ReviewsSection activeTab={activeTab} stats={stats} />}
 
         {/* Schools Tab */}
         {activeTab === 'schools' && (
@@ -6438,6 +6378,261 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         </DialogContent>
       </Dialog>
 
+      {/* Review Modal */}
+      {reviewData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-navy mb-4">
+              {reviewData.action === 'approved' ? 'Approve Evidence' : 'Reject Evidence'}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Review Notes {reviewData.action === 'rejected' && <span className="text-red-500">*</span>}
+                </label>
+                <Textarea
+                  value={reviewData.notes}
+                  onChange={(e) => setReviewData(prev => prev ? { ...prev, notes: e.target.value } : null)}
+                  placeholder={
+                    reviewData.action === 'approved' 
+                      ? 'Optional feedback for the school...'
+                      : 'Please provide feedback on why this evidence was rejected...'
+                  }
+                  rows={4}
+                  data-testid="textarea-review-notes"
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setReviewData(null)}
+                  className="flex-1"
+                  data-testid="button-cancel-review"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className={`flex-1 ${reviewData.action === 'approved' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}`}
+                  onClick={() => {
+                    if (reviewData.action === 'rejected' && !reviewData.notes.trim()) {
+                      toast({
+                        title: "Review Notes Required",
+                        description: "Please provide feedback when rejecting evidence.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    reviewEvidenceMutation.mutate({
+                      evidenceId: reviewData.evidenceId,
+                      status: reviewData.action,
+                      reviewNotes: reviewData.notes,
+                    });
+                  }}
+                  disabled={reviewEvidenceMutation.isPending}
+                  data-testid="button-confirm-review"
+                >
+                  {reviewEvidenceMutation.isPending ? 'Processing...' : 'Confirm'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Photo Consent Warning Dialog */}
+      <AlertDialog open={consentWarningDialogOpen} onOpenChange={setConsentWarningDialogOpen}>
+        <AlertDialogContent data-testid="dialog-consent-warning">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-yellow-600" />
+              Approve Without Photo Consent? 📸
+            </AlertDialogTitle>
+            <AlertDialogDescription className="space-y-3 pt-2">
+              <p className="text-base">
+                This school has <strong>not provided approved photo consent</strong>.
+              </p>
+              <p className="text-sm text-gray-600">
+                {pendingApprovalEvidence?.school?.photoConsentStatus === 'pending' 
+                  ? 'Their photo consent document is currently under review.'
+                  : pendingApprovalEvidence?.school?.photoConsentStatus === 'rejected'
+                  ? 'Their photo consent document was rejected.'
+                  : 'No photo consent document has been uploaded.'}
+              </p>
+              <p className="text-sm text-gray-600">
+                Approving this evidence means it <strong>will not be eligible</strong> for use in public case studies or promotional materials unless photo consent is later approved.
+              </p>
+              <p className="font-medium text-gray-900">
+                Are you sure you want to approve this submission?
+              </p>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-consent-warning">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={confirmApprovalWithoutConsent}
+              className="!bg-yellow-600 hover:!bg-yellow-700 !text-white"
+              data-testid="button-confirm-consent-warning"
+            >
+              Yes, Approve Anyway
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Audit Review Modal */}
+      {auditReviewData && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-navy mb-4">
+              {auditReviewData.action === 'approved' ? 'Approve Audit' : 'Reject Audit'}
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Review Notes {auditReviewData.action === 'rejected' && <span className="text-red-500">*</span>}
+                </label>
+                <Textarea
+                  value={auditReviewData.notes}
+                  onChange={(e) => setAuditReviewData(prev => prev ? { ...prev, notes: e.target.value } : null)}
+                  placeholder={
+                    auditReviewData.action === 'approved' 
+                      ? 'Optional feedback for the school...'
+                      : 'Please provide feedback on why this audit was rejected...'
+                  }
+                  rows={4}
+                  data-testid="textarea-audit-review-notes"
+                />
+              </div>
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setAuditReviewData(null)}
+                  className="flex-1"
+                  data-testid="button-cancel-audit-review"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className={`flex-1 ${auditReviewData.action === 'approved' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}`}
+                  onClick={() => {
+                    if (auditReviewData.action === 'rejected' && !auditReviewData.notes.trim()) {
+                      toast({
+                        title: "Review Notes Required",
+                        description: "Please provide feedback when rejecting audit.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+                    reviewAuditMutation.mutate({
+                      auditId: auditReviewData.auditId,
+                      approved: auditReviewData.action === 'approved',
+                      reviewNotes: auditReviewData.notes,
+                    });
+                  }}
+                  disabled={reviewAuditMutation.isPending}
+                  data-testid="button-confirm-audit-review"
+                >
+                  {reviewAuditMutation.isPending ? 'Processing...' : 'Confirm'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Bulk Evidence Operations Dialog */}
+      {bulkEvidenceDialogOpen && bulkAction && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-navy mb-4">
+              {bulkAction.type === 'approve' ? 'Bulk Approve Evidence' : 
+               bulkAction.type === 'reject' ? 'Bulk Reject Evidence' : 
+               'Bulk Delete Evidence'}
+            </h3>
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-3 rounded-lg">
+                <p className="text-sm text-gray-600">
+                  This action will affect <strong>{selectedEvidence.length}</strong> evidence submissions.
+                </p>
+              </div>
+              
+              {(bulkAction.type === 'approve' || bulkAction.type === 'reject') && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Review Notes {bulkAction.type === 'reject' && <span className="text-red-500">*</span>}
+                  </label>
+                  <Textarea
+                    value={bulkAction.notes || ''}
+                    onChange={(e) => setBulkAction(prev => prev ? { ...prev, notes: e.target.value } : null)}
+                    placeholder={
+                      bulkAction.type === 'approve' 
+                        ? 'Optional feedback for all schools...'
+                        : 'Please provide feedback on why these evidence submissions were rejected...'
+                    }
+                    rows={4}
+                    data-testid="textarea-bulk-review-notes"
+                  />
+                </div>
+              )}
+
+              {bulkAction.type === 'delete' && (
+                <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
+                  <p className="text-sm text-red-700">
+                    <strong>Warning:</strong> This action cannot be undone. All selected evidence submissions will be permanently deleted.
+                  </p>
+                </div>
+              )}
+              
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setBulkEvidenceDialogOpen(false);
+                    setBulkAction(null);
+                  }}
+                  className="flex-1"
+                  data-testid="button-cancel-bulk-operation"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className={`flex-1 ${
+                    bulkAction.type === 'approve' ? 'bg-green-500 hover:bg-green-600' : 
+                    bulkAction.type === 'reject' ? 'bg-red-500 hover:bg-red-600' :
+                    'bg-red-600 hover:bg-red-700'
+                  }`}
+                  onClick={() => {
+                    if (bulkAction.type === 'reject' && !bulkAction.notes?.trim()) {
+                      toast({
+                        title: "Review Notes Required",
+                        description: "Please provide feedback when rejecting evidence submissions.",
+                        variant: "destructive",
+                      });
+                      return;
+                    }
+
+                    if (bulkAction.type === 'delete') {
+                      bulkEvidenceDeleteMutation.mutate(selectedEvidence);
+                    } else {
+                      bulkEvidenceReviewMutation.mutate({
+                        evidenceIds: selectedEvidence,
+                        status: bulkAction.type as 'approved' | 'rejected',
+                        reviewNotes: bulkAction.notes || '',
+                      });
+                    }
+                  }}
+                  disabled={bulkEvidenceReviewMutation.isPending || bulkEvidenceDeleteMutation.isPending}
+                  data-testid="button-confirm-bulk-operation"
+                >
+                  {(bulkEvidenceReviewMutation.isPending || bulkEvidenceDeleteMutation.isPending) ? 'Processing...' : 'Confirm'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bulk School Operations Dialog */}
       {bulkSchoolDialogOpen && bulkAction && (
