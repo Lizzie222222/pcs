@@ -220,9 +220,21 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     }
 
     const socket = socketRef.current;
-    if (socket?.readyState === WebSocket.OPEN || socket?.readyState === WebSocket.CONNECTING) {
-      console.log('[Collaboration] Already connected or connecting');
+    if (socket?.readyState === WebSocket.OPEN) {
+      console.log('[Collaboration] Already connected');
       return;
+    }
+    
+    if (socket?.readyState === WebSocket.CONNECTING) {
+      console.log('[Collaboration] Connection in progress');
+      return;
+    }
+
+    // Close any existing socket before creating a new one
+    if (socket) {
+      console.log('[Collaboration] Closing existing socket before reconnect');
+      socket.close();
+      socketRef.current = null;
     }
 
     isConnectingRef.current = true;
@@ -404,15 +416,18 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
   }, [documentViewers]);
 
   // Connect on mount if authenticated
+  // Use userId to prevent reconnections when user object identity changes
+  const userId = user?.id;
   useEffect(() => {
-    if (isAuthenticated && user) {
+    if (isAuthenticated && userId) {
       connect();
     }
 
     return () => {
       disconnect();
     };
-  }, [isAuthenticated, user, connect, disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, userId]);
 
   // Send ping every 25 seconds to keep connection alive
   useEffect(() => {
