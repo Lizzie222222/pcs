@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { useCollaboration } from "@/hooks/useCollaboration";
 import { apiRequest } from "@/lib/queryClient";
@@ -41,6 +42,7 @@ interface CaseStudyManagementProps {
 }
 
 export default function CaseStudyManagement({ user, schools, countryOptions, isActive }: CaseStudyManagementProps) {
+  const { t } = useTranslation('admin');
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { requestDocumentLock, releaseDocumentLock, getDocumentLock } = useCollaboration();
@@ -98,8 +100,8 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
     },
     onSuccess: () => {
       toast({
-        title: "Case Study Created",
-        description: "Case study has been successfully created.",
+        title: t('caseStudies.toasts.created.title'),
+        description: t('caseStudies.toasts.created.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
@@ -108,8 +110,8 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
     },
     onError: (error: any) => {
       toast({
-        title: "Creation Failed",
-        description: error.message || "Failed to create case study. Please try again.",
+        title: t('caseStudies.toasts.createFailed.title'),
+        description: error.message || t('caseStudies.toasts.createFailed.description'),
         variant: "destructive",
       });
     },
@@ -123,8 +125,8 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
     },
     onSuccess: () => {
       toast({
-        title: "Case Study Updated",
-        description: "Case study has been successfully updated.",
+        title: t('caseStudies.toasts.updated.title'),
+        description: t('caseStudies.toasts.updated.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
@@ -133,8 +135,8 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
     },
     onError: (error: any) => {
       toast({
-        title: "Update Failed",
-        description: error.message || "Failed to update case study. Please try again.",
+        title: t('caseStudies.toasts.updateFailed.title'),
+        description: error.message || t('caseStudies.toasts.updateFailed.description'),
         variant: "destructive",
       });
     },
@@ -146,8 +148,8 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
     },
     onSuccess: () => {
       toast({
-        title: "Case Study Deleted",
-        description: "Case study has been successfully deleted.",
+        title: t('caseStudies.toasts.deleted.title'),
+        description: t('caseStudies.toasts.deleted.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
@@ -155,8 +157,8 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
     },
     onError: (error: any) => {
       toast({
-        title: "Delete Failed",
-        description: error.message || "Failed to delete case study. Please try again.",
+        title: t('caseStudies.toasts.deleteFailed.title'),
+        description: error.message || t('caseStudies.toasts.deleteFailed.description'),
         variant: "destructive",
       });
     },
@@ -168,16 +170,16 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
     },
     onSuccess: () => {
       toast({
-        title: "Case Study Updated",
-        description: "Case study featured status has been updated.",
+        title: t('caseStudies.toasts.featuredUpdated.title'),
+        description: t('caseStudies.toasts.featuredUpdated.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
     },
     onError: (error) => {
       toast({
-        title: "Update Failed",
-        description: "Failed to update case study. Please try again.",
+        title: t('caseStudies.toasts.featuredUpdateFailed.title'),
+        description: t('caseStudies.toasts.featuredUpdateFailed.description'),
         variant: "destructive",
       });
     },
@@ -191,8 +193,8 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
           if (response.locked) {
             setDocumentLocked(true);
             toast({
-              title: "Case Study Locked",
-              description: `This case study is currently being edited by ${response.lockedBy || 'another user'}.`,
+              title: t('caseStudies.toasts.locked.title'),
+              description: t('caseStudies.toasts.locked.description', { lockedBy: response.lockedBy || 'another user' }),
               variant: "destructive",
             });
           }
@@ -231,8 +233,8 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
       if (response.success) {
         setDocumentLocked(false);
         toast({
-          title: "Lock Acquired",
-          description: "You can now edit this case study.",
+          title: t('caseStudies.toasts.lockAcquired.title'),
+          description: t('caseStudies.toasts.lockAcquired.description'),
         });
       }
     }
@@ -246,14 +248,14 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Star className="h-5 w-5" />
-            Case Studies Management
+            {t('caseStudies.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {/* Filters */}
           <div className="flex gap-4 mb-6">
             <Input
-              placeholder="Search case studies..."
+              placeholder={t('caseStudies.filters.placeholders.search')}
               value={caseStudyFilters.search}
               onChange={(e) => setCaseStudyFilters(prev => ({ ...prev, search: e.target.value }))}
               className="max-w-sm"
@@ -264,13 +266,13 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
               onValueChange={(value) => setCaseStudyFilters(prev => ({ ...prev, stage: value }))}
             >
               <SelectTrigger className="w-[180px]" data-testid="select-case-study-stage">
-                <SelectValue placeholder="Stage" />
+                <SelectValue placeholder={t('caseStudies.filters.labels.stage')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Stages</SelectItem>
-                <SelectItem value="inspire">Inspire</SelectItem>
-                <SelectItem value="investigate">Investigate</SelectItem>
-                <SelectItem value="act">Act</SelectItem>
+                <SelectItem value="all">{t('caseStudies.filters.options.allStages')}</SelectItem>
+                <SelectItem value="inspire">{t('caseStudies.filters.stages.inspire')}</SelectItem>
+                <SelectItem value="investigate">{t('caseStudies.filters.stages.investigate')}</SelectItem>
+                <SelectItem value="act">{t('caseStudies.filters.stages.act')}</SelectItem>
               </SelectContent>
             </Select>
             <Select
@@ -278,12 +280,12 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
               onValueChange={(value) => setCaseStudyFilters(prev => ({ ...prev, featured: value }))}
             >
               <SelectTrigger className="w-[180px]" data-testid="select-case-study-featured">
-                <SelectValue placeholder="Featured Status" />
+                <SelectValue placeholder={t('caseStudies.filters.labels.featuredStatus')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All</SelectItem>
-                <SelectItem value="true">Featured</SelectItem>
-                <SelectItem value="false">Not Featured</SelectItem>
+                <SelectItem value="all">{t('caseStudies.filters.options.all')}</SelectItem>
+                <SelectItem value="true">{t('caseStudies.filters.options.featured')}</SelectItem>
+                <SelectItem value="false">{t('caseStudies.filters.options.notFeatured')}</SelectItem>
               </SelectContent>
             </Select>
             <Button
@@ -295,7 +297,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
               data-testid="button-create-case-study"
             >
               <Plus className="h-4 w-4 mr-2" />
-              Create Case Study
+              {t('caseStudies.buttons.createCaseStudy')}
             </Button>
           </div>
 
@@ -321,7 +323,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
                         {caseStudy.featured && (
                           <Badge className="bg-yellow-500 text-white" data-testid={`case-study-featured-${caseStudy.id}`}>
                             <Star className="h-3 w-3 mr-1" />
-                            Featured
+                            {t('caseStudies.badges.featured')}
                           </Badge>
                         )}
                       </div>
@@ -353,7 +355,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
                         >
                           <a href={`/case-study/${caseStudy.id}`} target="_blank" rel="noopener noreferrer">
                             <Eye className="h-4 w-4 mr-1" />
-                            Preview
+                            {t('caseStudies.buttons.preview')}
                           </a>
                         </Button>
                         <Button
@@ -366,7 +368,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
                           data-testid={`button-edit-${caseStudy.id}`}
                         >
                           <Edit className="h-4 w-4 mr-1" />
-                          Edit
+                          {t('caseStudies.buttons.edit')}
                         </Button>
                       </div>
                       <div className="flex gap-2">
@@ -382,7 +384,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
                           className="flex-1"
                         >
                           <Star className="h-4 w-4 mr-1" />
-                          {caseStudy.featured ? 'Unfeature' : 'Feature'}
+                          {caseStudy.featured ? t('caseStudies.buttons.unfeature') : t('caseStudies.buttons.feature')}
                         </Button>
                         <Button
                           size="sm"
@@ -401,7 +403,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
 
             {caseStudies?.length === 0 && (
               <div className="text-center py-8 text-gray-500" data-testid="no-case-studies">
-                No case studies found. Create one from approved evidence submissions.
+                {t('caseStudies.emptyStates.noCaseStudies')}
               </div>
             )}
           </div>
@@ -424,8 +426,8 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
               onSave={(data) => {
                 if (documentLocked) {
                   toast({
-                    title: "Cannot Save",
-                    description: "This case study is locked by another user.",
+                    title: t('caseStudies.toasts.cannotSave.title'),
+                    description: t('caseStudies.toasts.cannotSave.description'),
                     variant: "destructive",
                   });
                   return;
@@ -446,19 +448,19 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
       <AlertDialog open={!!deletingCaseStudy} onOpenChange={() => setDeletingCaseStudy(null)}>
         <AlertDialogContent data-testid="dialog-delete-case-study">
           <AlertDialogHeader>
-            <AlertDialogTitle>Delete Case Study</AlertDialogTitle>
+            <AlertDialogTitle>{t('caseStudies.dialogs.delete.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete "{deletingCaseStudy?.title}"? This action cannot be undone.
+              {t('caseStudies.dialogs.delete.description', { title: deletingCaseStudy?.title })}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel data-testid="button-cancel-delete">Cancel</AlertDialogCancel>
+            <AlertDialogCancel data-testid="button-cancel-delete">{t('caseStudies.buttons.cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deletingCaseStudy && deleteCaseStudyMutation.mutate(deletingCaseStudy.id)}
               className="bg-red-600 hover:bg-red-700"
               data-testid="button-confirm-delete"
             >
-              Delete
+              {t('caseStudies.buttons.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

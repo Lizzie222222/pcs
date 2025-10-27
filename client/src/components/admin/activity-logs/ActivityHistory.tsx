@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { format } from "date-fns";
+import { useTranslation } from "react-i18next";
 import { LoadingSpinner } from "@/components/ui/states/LoadingSpinner";
 
 interface AuditLog {
@@ -27,6 +28,8 @@ export function ActivityHistory({
   targetId,
   limit = 100
 }: ActivityHistoryProps) {
+  const { t } = useTranslation('admin');
+  
   const { data: logs, isLoading, error } = useQuery<AuditLog[]>({
     queryKey: ['/api/admin/audit-logs', { targetType, targetId, limit }],
     queryFn: async () => {
@@ -54,7 +57,7 @@ export function ActivityHistory({
   if (error) {
     return (
       <div className="text-destructive p-4" data-testid="activity-history-error">
-        Failed to load activity history
+        {t('activityHistory.error')}
       </div>
     );
   }
@@ -62,7 +65,7 @@ export function ActivityHistory({
   if (!logs || logs.length === 0) {
     return (
       <div className="text-muted-foreground p-4 text-center" data-testid="activity-history-empty">
-        No activity history available
+        {t('activityHistory.empty')}
       </div>
     );
   }
@@ -92,7 +95,7 @@ export function ActivityHistory({
     }
     if (user.firstName) return user.firstName;
     if (user.lastName) return user.lastName;
-    return 'Unknown User';
+    return t('activityHistory.unknownUser');
   };
 
   const formatDetails = (details: any) => {
@@ -100,10 +103,10 @@ export function ActivityHistory({
     
     // Format specific detail types
     if (details.reason) {
-      return <span className="italic">Reason: {details.reason}</span>;
+      return <span className="italic">{t('activityHistory.reason')}: {details.reason}</span>;
     }
     if (details.stage) {
-      return <span>Stage: {details.stage}</span>;
+      return <span>{t('activityHistory.stage')}: {details.stage}</span>;
     }
     
     // Generic JSON display for other details
@@ -116,7 +119,7 @@ export function ActivityHistory({
 
   return (
     <div className="space-y-4" data-testid="activity-history">
-      <h3 className="text-lg font-semibold">Activity History</h3>
+      <h3 className="text-lg font-semibold">{t('activityHistory.title')}</h3>
       <div className="space-y-2">
         {logs.map((log) => (
           <div 

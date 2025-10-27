@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -34,6 +35,7 @@ interface ImportResult {
 }
 
 export default function DataImport() {
+  const { t } = useTranslation('admin');
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<ImportStep>('upload');
   const [activeTab, setActiveTab] = useState('schools');
@@ -81,21 +83,21 @@ export default function DataImport() {
       
       if (result.success) {
         toast({
-          title: 'File Validated',
-          description: `${result.rowCount} rows validated successfully`,
+          title: t('dataImport.toasts.fileValidated.title'),
+          description: t('dataImport.toasts.fileValidated.description', { rowCount: result.rowCount }),
         });
       } else {
         const errorCount = result.validation?.errorCount || 0;
         toast({
-          title: 'Validation Errors Found',
-          description: `Found ${errorCount} validation error${errorCount !== 1 ? 's' : ''} in ${file.name}. Please review and fix before importing.`,
+          title: t('dataImport.toasts.validationErrors.title'),
+          description: t('dataImport.toasts.validationErrors.description', { count: errorCount, plural: errorCount !== 1 ? 's' : '', filename: file.name }),
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Validation Failed',
-        description: error instanceof Error ? error.message : 'Failed to parse file',
+        title: t('dataImport.toasts.validationFailed.title'),
+        description: error instanceof Error ? error.message : t('dataImport.toasts.validationFailed.description'),
         variant: 'destructive',
       });
       
@@ -109,8 +111,8 @@ export default function DataImport() {
   const handleImport = async () => {
     if (!schoolsFile && !usersFile && !relationshipsFile) {
       toast({
-        title: 'No Files Selected',
-        description: 'Please upload at least one file to import',
+        title: t('dataImport.toasts.noFilesSelected.title'),
+        description: t('dataImport.toasts.noFilesSelected.description'),
         variant: 'destructive',
       });
       return;
@@ -138,20 +140,20 @@ export default function DataImport() {
       
       if (result.success) {
         toast({
-          title: 'Import Completed Successfully',
-          description: `Imported ${result.results.schools.succeeded + result.results.users.succeeded + result.results.relationships.succeeded} records`,
+          title: t('dataImport.toasts.importSuccess.title'),
+          description: t('dataImport.toasts.importSuccess.description', { count: result.results.schools.succeeded + result.results.users.succeeded + result.results.relationships.succeeded }),
         });
       } else {
         toast({
-          title: 'Import Completed with Errors',
-          description: `${result.errors.length} errors occurred during import`,
+          title: t('dataImport.toasts.importWithErrors.title'),
+          description: t('dataImport.toasts.importWithErrors.description', { count: result.errors.length }),
           variant: 'destructive',
         });
       }
     } catch (error) {
       toast({
-        title: 'Import Failed',
-        description: error instanceof Error ? error.message : 'Failed to execute import',
+        title: t('dataImport.toasts.importFailed.title'),
+        description: error instanceof Error ? error.message : t('dataImport.toasts.importFailed.description'),
         variant: 'destructive',
       });
       setCurrentStep('upload');
@@ -177,13 +179,13 @@ export default function DataImport() {
       window.URL.revokeObjectURL(url);
       
       toast({
-        title: 'Template Downloaded',
-        description: `${type} template has been downloaded`,
+        title: t('dataImport.toasts.templateDownloaded.title'),
+        description: t('dataImport.toasts.templateDownloaded.description', { type }),
       });
     } catch (error) {
       toast({
-        title: 'Download Failed',
-        description: 'Failed to download template',
+        title: t('dataImport.toasts.downloadFailed.title'),
+        description: t('dataImport.toasts.downloadFailed.description'),
         variant: 'destructive',
       });
     }
@@ -204,9 +206,9 @@ export default function DataImport() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="text-3xl font-bold text-navy">Import Data from WordPress</CardTitle>
+          <CardTitle className="text-3xl font-bold text-navy">{t('dataImport.title')}</CardTitle>
           <p className="text-gray-600 mt-2">
-            Import schools, users, and their relationships from CSV or Excel files exported from your WordPress database
+            {t('dataImport.subtitle')}
           </p>
         </CardHeader>
       </Card>
@@ -216,13 +218,13 @@ export default function DataImport() {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <strong>Important:</strong> Prepare three separate files (CSV or Excel format):
+              <strong>{t('dataImport.alerts.important.title')}</strong> {t('dataImport.alerts.important.description')}
               <ul className="list-disc list-inside mt-2 ml-2">
-                <li>Schools - Contains school information (name, country, type, etc.)</li>
-                <li>Users - Contains teacher/user information (email, name, etc.)</li>
-                <li>Relationships - Links users to schools with their roles</li>
+                <li>{t('dataImport.alerts.important.schools')}</li>
+                <li>{t('dataImport.alerts.important.users')}</li>
+                <li>{t('dataImport.alerts.important.relationships')}</li>
               </ul>
-              <p className="mt-2">Download the templates below to see the required column format.</p>
+              <p className="mt-2">{t('dataImport.alerts.important.note')}</p>
             </AlertDescription>
           </Alert>
 
@@ -230,22 +232,23 @@ export default function DataImport() {
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="schools" data-testid="tab-import-schools">
                 <Building className="h-4 w-4 mr-2" />
-                Schools {schoolsFile && <CheckCircle className="h-4 w-4 ml-2 text-green-500" />}
+                {t('dataImport.tabs.schools')} {schoolsFile && <CheckCircle className="h-4 w-4 ml-2 text-green-500" />}
               </TabsTrigger>
               <TabsTrigger value="users" data-testid="tab-import-users">
                 <Users className="h-4 w-4 mr-2" />
-                Users {usersFile && <CheckCircle className="h-4 w-4 ml-2 text-green-500" />}
+                {t('dataImport.tabs.users')} {usersFile && <CheckCircle className="h-4 w-4 ml-2 text-green-500" />}
               </TabsTrigger>
               <TabsTrigger value="relationships" data-testid="tab-import-relationships">
                 <LinkIcon className="h-4 w-4 mr-2" />
-                Relationships {relationshipsFile && <CheckCircle className="h-4 w-4 ml-2 text-green-500" />}
+                {t('dataImport.tabs.relationships')} {relationshipsFile && <CheckCircle className="h-4 w-4 ml-2 text-green-500" />}
               </TabsTrigger>
             </TabsList>
 
             <TabsContent value="schools" className="space-y-4">
               <FileUploadSection
-                title="Schools File"
-                description="Upload a CSV or Excel file containing school data"
+                t={t}
+                title={t('dataImport.fileUpload.titles.schools')}
+                description={t('dataImport.fileUpload.descriptions.schools')}
                 file={schoolsFile}
                 validation={schoolsValidation}
                 onFileSelect={(file) => handleFileSelect('schools', file)}
@@ -255,8 +258,9 @@ export default function DataImport() {
 
             <TabsContent value="users" className="space-y-4">
               <FileUploadSection
-                title="Users File"
-                description="Upload a CSV or Excel file containing user/teacher data"
+                t={t}
+                title={t('dataImport.fileUpload.titles.users')}
+                description={t('dataImport.fileUpload.descriptions.users')}
                 file={usersFile}
                 validation={usersValidation}
                 onFileSelect={(file) => handleFileSelect('users', file)}
@@ -266,8 +270,9 @@ export default function DataImport() {
 
             <TabsContent value="relationships" className="space-y-4">
               <FileUploadSection
-                title="School-User Relationships File"
-                description="Upload a CSV or Excel file linking users to schools"
+                t={t}
+                title={t('dataImport.fileUpload.titles.relationships')}
+                description={t('dataImport.fileUpload.descriptions.relationships')}
                 file={relationshipsFile}
                 validation={relationshipsValidation}
                 onFileSelect={(file) => handleFileSelect('relationships', file)}
@@ -280,7 +285,7 @@ export default function DataImport() {
             <CardContent className="pt-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium text-gray-700">Ready to import?</p>
+                  <p className="font-medium text-gray-700">{t('dataImport.status.readyToImport')}</p>
                   <p className="text-sm text-gray-500">
                     {(() => {
                       const filesUploaded = [schoolsFile, usersFile, relationshipsFile].filter(Boolean).length;
@@ -290,11 +295,11 @@ export default function DataImport() {
                         (relationshipsValidation && !relationshipsValidation.success);
                       
                       if (hasValidationErrors) {
-                        return 'Please fix validation errors before importing';
+                        return t('dataImport.status.fixErrors');
                       } else if (schoolsFile && usersFile && relationshipsFile) {
-                        return 'All files uploaded and validated';
+                        return t('dataImport.status.allFilesUploaded');
                       } else {
-                        return `${filesUploaded}/3 files uploaded`;
+                        return t('dataImport.status.filesUploaded', { count: filesUploaded });
                       }
                     })()}
                   </p>
@@ -311,7 +316,7 @@ export default function DataImport() {
                   data-testid="button-start-import"
                 >
                   <Upload className="h-4 w-4 mr-2" />
-                  Start Import
+                  {t('dataImport.buttons.startImport')}
                 </Button>
               </div>
             </CardContent>
@@ -324,8 +329,8 @@ export default function DataImport() {
           <CardContent className="pt-6">
             <div className="flex flex-col items-center justify-center py-12">
               <Loader2 className="h-16 w-16 animate-spin text-pcs_blue mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">Importing Data...</h3>
-              <p className="text-gray-500">This may take a few minutes. Please don't close this page.</p>
+              <h3 className="text-xl font-semibold text-gray-700 mb-2">{t('dataImport.importing.title')}</h3>
+              <p className="text-gray-500">{t('dataImport.importing.description')}</p>
             </div>
           </CardContent>
         </Card>
@@ -339,12 +344,12 @@ export default function DataImport() {
                 {importResult.success ? (
                   <>
                     <CheckCircle className="h-6 w-6 text-green-500" />
-                    Import Completed Successfully
+                    {t('dataImport.results.successTitle')}
                   </>
                 ) : (
                   <>
                     <AlertTriangle className="h-6 w-6 text-yellow-500" />
-                    Import Completed with Errors
+                    {t('dataImport.results.errorTitle')}
                   </>
                 )}
               </CardTitle>
@@ -352,14 +357,16 @@ export default function DataImport() {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <ResultCard
-                  title="Schools"
+                  t={t}
+                  title={t('dataImport.results.sections.schools')}
                   icon={<Building className="h-5 w-5" />}
                   processed={importResult.results.schools.processed}
                   succeeded={importResult.results.schools.succeeded}
                   failed={importResult.results.schools.failed}
                 />
                 <ResultCard
-                  title="Users"
+                  t={t}
+                  title={t('dataImport.results.sections.users')}
                   icon={<Users className="h-5 w-5" />}
                   processed={importResult.results.users.processed}
                   succeeded={importResult.results.users.succeeded}
@@ -367,13 +374,14 @@ export default function DataImport() {
                   extra={
                     importResult.results.users.newUsers > 0 ? (
                       <p className="text-sm text-blue-600 mt-2">
-                        {importResult.results.users.newUsers} new users created
+                        {t('dataImport.results.newUsersCreated', { count: importResult.results.users.newUsers })}
                       </p>
                     ) : undefined
                   }
                 />
                 <ResultCard
-                  title="Relationships"
+                  t={t}
+                  title={t('dataImport.results.sections.relationships')}
                   icon={<LinkIcon className="h-5 w-5" />}
                   processed={importResult.results.relationships.processed}
                   succeeded={importResult.results.relationships.succeeded}
@@ -383,14 +391,14 @@ export default function DataImport() {
 
               {importResult.errors.length > 0 && (
                 <div className="mt-6">
-                  <h4 className="font-semibold text-gray-700 mb-3">Errors ({importResult.errors.length})</h4>
+                  <h4 className="font-semibold text-gray-700 mb-3">{t('dataImport.results.errorsCount', { count: importResult.errors.length })}</h4>
                   <div className="max-h-96 overflow-y-auto border rounded-lg">
                     <table className="w-full text-sm">
                       <thead className="bg-gray-50 sticky top-0">
                         <tr>
-                          <th className="text-left p-3 font-semibold">Row</th>
-                          <th className="text-left p-3 font-semibold">Field</th>
-                          <th className="text-left p-3 font-semibold">Error</th>
+                          <th className="text-left p-3 font-semibold">{t('dataImport.results.tableHeaders.row')}</th>
+                          <th className="text-left p-3 font-semibold">{t('dataImport.results.tableHeaders.field')}</th>
+                          <th className="text-left p-3 font-semibold">{t('dataImport.results.tableHeaders.error')}</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -413,14 +421,14 @@ export default function DataImport() {
                   variant="outline"
                   data-testid="button-import-another"
                 >
-                  Import Another File
+                  {t('dataImport.buttons.importAnother')}
                 </Button>
                 <Button
                   onClick={() => window.location.reload()}
                   className="bg-pcs_blue hover:bg-pcs_blue/90"
                   data-testid="button-view-data"
                 >
-                  View Imported Data
+                  {t('dataImport.buttons.viewData')}
                 </Button>
               </div>
             </CardContent>
@@ -432,6 +440,7 @@ export default function DataImport() {
 }
 
 interface FileUploadSectionProps {
+  t: any;
   title: string;
   description: string;
   file: File | null;
@@ -440,7 +449,7 @@ interface FileUploadSectionProps {
   onDownloadTemplate: () => void;
 }
 
-function FileUploadSection({ title, description, file, validation, onFileSelect, onDownloadTemplate }: FileUploadSectionProps) {
+function FileUploadSection({ t, title, description, file, validation, onFileSelect, onDownloadTemplate }: FileUploadSectionProps) {
   return (
     <Card>
       <CardHeader>
@@ -456,7 +465,7 @@ function FileUploadSection({ title, description, file, validation, onFileSelect,
             data-testid="button-download-template"
           >
             <Download className="h-4 w-4 mr-2" />
-            Download Template
+            {t('dataImport.buttons.downloadTemplate')}
           </Button>
         </div>
       </CardHeader>
@@ -479,8 +488,8 @@ function FileUploadSection({ title, description, file, validation, onFileSelect,
                 </div>
               ) : (
                 <div>
-                  <p className="font-medium text-gray-700">Click to upload file</p>
-                  <p className="text-sm text-gray-500">CSV or Excel format</p>
+                  <p className="font-medium text-gray-700">{t('dataImport.fileUpload.labels.clickToUpload')}</p>
+                  <p className="text-sm text-gray-500">{t('dataImport.fileUpload.labels.formatNote')}</p>
                 </div>
               )}
             </div>
@@ -497,23 +506,23 @@ function FileUploadSection({ title, description, file, validation, onFileSelect,
               )}
               <div className="flex-1">
                 <p className={validation.success ? "font-medium text-green-900" : "font-medium text-red-900"}>
-                  {validation.success ? 'File validated successfully' : 'Validation failed'}
+                  {validation.success ? t('dataImport.fileUpload.validation.success') : t('dataImport.fileUpload.validation.failed')}
                 </p>
                 <p className={validation.success ? "text-sm text-green-700 mt-1" : "text-sm text-red-700 mt-1"}>
-                  Found {validation.rowCount} rows with {validation.headers.length} columns
+                  {t('dataImport.fileUpload.validation.rowsFound', { rowCount: validation.rowCount, headerCount: validation.headers.length })}
                 </p>
                 
                 {validation.validation && validation.validation.errorCount > 0 && (
                   <div className="mt-3 bg-white rounded border border-red-200 p-3">
                     <p className="text-xs font-semibold text-red-900 mb-2">
-                      Validation Errors ({validation.validation.errorCount}):
+                      {t('dataImport.fileUpload.validation.errorsTitle', { count: validation.validation.errorCount })}
                     </p>
                     <ul className="text-xs text-red-700 space-y-1 list-disc list-inside max-h-40 overflow-y-auto">
                       {validation.validation.errors.slice(0, 20).map((error, idx) => (
                         <li key={idx}>{error}</li>
                       ))}
                       {validation.validation.errors.length > 20 && (
-                        <li className="font-semibold">... and {validation.validation.errors.length - 20} more errors</li>
+                        <li className="font-semibold">{t('dataImport.fileUpload.validation.moreErrors', { count: validation.validation.errors.length - 20 })}</li>
                       )}
                     </ul>
                   </div>
@@ -521,7 +530,7 @@ function FileUploadSection({ title, description, file, validation, onFileSelect,
                 
                 {validation.success && (
                   <div className="mt-3">
-                    <p className="text-xs font-semibold text-green-900 mb-2">Preview (first 5 rows):</p>
+                    <p className="text-xs font-semibold text-green-900 mb-2">{t('dataImport.fileUpload.validation.previewTitle')}</p>
                     <div className="bg-white rounded border border-green-200 overflow-x-auto">
                       <table className="w-full text-xs">
                         <thead>
@@ -558,6 +567,7 @@ function FileUploadSection({ title, description, file, validation, onFileSelect,
 }
 
 interface ResultCardProps {
+  t: any;
   title: string;
   icon: React.ReactNode;
   processed: number;
@@ -566,7 +576,7 @@ interface ResultCardProps {
   extra?: React.ReactNode;
 }
 
-function ResultCard({ title, icon, processed, succeeded, failed, extra }: ResultCardProps) {
+function ResultCard({ t, title, icon, processed, succeeded, failed, extra }: ResultCardProps) {
   return (
     <Card>
       <CardContent className="pt-6">
@@ -576,16 +586,16 @@ function ResultCard({ title, icon, processed, succeeded, failed, extra }: Result
         </div>
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-gray-600">Processed:</span>
+            <span className="text-gray-600">{t('dataImport.results.stats.processed')}</span>
             <span className="font-medium">{processed}</span>
           </div>
           <div className="flex justify-between text-sm">
-            <span className="text-green-600">Succeeded:</span>
+            <span className="text-green-600">{t('dataImport.results.stats.succeeded')}</span>
             <Badge className="bg-green-500">{succeeded}</Badge>
           </div>
           {failed > 0 && (
             <div className="flex justify-between text-sm">
-              <span className="text-red-600">Failed:</span>
+              <span className="text-red-600">{t('dataImport.results.stats.failed')}</span>
               <Badge className="bg-red-500">{failed}</Badge>
             </div>
           )}

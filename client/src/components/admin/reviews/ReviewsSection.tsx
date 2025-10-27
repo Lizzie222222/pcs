@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
+import { useTranslation } from 'react-i18next';
 import ReviewsFilters from "./ReviewsFilters";
 import EvidenceReviewQueue from "./EvidenceReviewQueue";
 import AuditReviewQueue from "./AuditReviewQueue";
@@ -23,6 +24,7 @@ export default function ReviewsSection({
 }: ReviewsSectionProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { t } = useTranslation('admin');
 
   // Review state
   const [reviewType, setReviewType] = useState<'evidence' | 'audits' | 'photo-consent'>('evidence');
@@ -128,8 +130,8 @@ export default function ReviewsSection({
     onSuccess: () => {
       setReviewData(null);
       toast({
-        title: "Success",
-        description: "Evidence review submitted successfully.",
+        title: t('reviews.toasts.success'),
+        description: t('reviews.toasts.evidenceReviewSuccess'),
       });
     },
     onError: (error: any, variables, context) => {
@@ -138,8 +140,8 @@ export default function ReviewsSection({
         queryClient.setQueryData(['/api/admin/evidence', evidenceStatusFilter], context.previousEvidence);
       }
       toast({
-        title: "Review Failed",
-        description: error.message || "Failed to update evidence. Changes have been reverted.",
+        title: t('reviews.toasts.reviewFailed'),
+        description: error.message || t('reviews.toasts.evidenceReviewFailed'),
         variant: "destructive",
       });
     },
@@ -180,8 +182,8 @@ export default function ReviewsSection({
     onSuccess: (_, variables) => {
       setAuditReviewData(null);
       toast({
-        title: "Audit Reviewed",
-        description: `Audit has been ${variables.approved ? 'approved' : 'rejected'}.`,
+        title: t('reviews.toasts.auditReviewed'),
+        description: variables.approved ? t('reviews.toasts.auditApproved') : t('reviews.toasts.auditRejected'),
       });
     },
     onError: (error: any, variables, context) => {
@@ -190,8 +192,8 @@ export default function ReviewsSection({
         queryClient.setQueryData(['/api/admin/audits/pending'], context.previousAudits);
       }
       toast({
-        title: "Review Failed",
-        description: error.message || "Failed to review audit. Changes have been reverted.",
+        title: t('reviews.toasts.reviewFailed'),
+        description: error.message || t('reviews.toasts.auditReviewFailed'),
         variant: "destructive",
       });
     },
@@ -235,8 +237,8 @@ export default function ReviewsSection({
       setBulkAction(null);
       setSelectedEvidence([]);
       toast({
-        title: "Success",
-        description: "Bulk evidence review completed successfully.",
+        title: t('reviews.toasts.success'),
+        description: t('reviews.toasts.bulkReviewSuccess'),
       });
     },
     onError: (error: any, variables, context) => {
@@ -245,8 +247,8 @@ export default function ReviewsSection({
         queryClient.setQueryData(['/api/admin/evidence', evidenceStatusFilter], context.previousEvidence);
       }
       toast({
-        title: "Review Failed",
-        description: error.message || "Failed to complete bulk evidence review. Changes have been reverted.",
+        title: t('reviews.toasts.reviewFailed'),
+        description: error.message || t('reviews.toasts.bulkReviewFailed'),
         variant: "destructive",
       });
     },
@@ -284,8 +286,8 @@ export default function ReviewsSection({
       setBulkAction(null);
       setSelectedEvidence([]);
       toast({
-        title: "Success",
-        description: "Selected evidence deleted successfully.",
+        title: t('reviews.toasts.success'),
+        description: t('reviews.toasts.bulkDeleteSuccess'),
       });
     },
     onError: (error: any, evidenceIds, context) => {
@@ -294,8 +296,8 @@ export default function ReviewsSection({
         queryClient.setQueryData(['/api/admin/evidence', evidenceStatusFilter], context.previousEvidence);
       }
       toast({
-        title: "Delete Failed",
-        description: error.message || "Failed to delete evidence. Changes have been reverted.",
+        title: t('reviews.toasts.reviewFailed'),
+        description: error.message || t('reviews.toasts.bulkDeleteFailed'),
         variant: "destructive",
       });
     },

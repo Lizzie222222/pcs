@@ -3,6 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { School, Search, Edit, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from 'react-i18next';
 
 interface SchoolsFiltersProps {
   schoolFilters: {
@@ -30,17 +31,19 @@ export default function SchoolsFilters({
   onBulkUpdate,
   onBulkDelete,
 }: SchoolsFiltersProps) {
+  const { t } = useTranslation('admin');
+  
   return (
     <CardHeader>
       <div className="flex items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <School className="h-5 w-5" />
-          School Management
+          {t('admin.schools.title')}
         </CardTitle>
         {selectedSchools.length > 0 && (
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-600">
-              {selectedSchools.length} selected
+              {t('admin.schools.filters.selected', { count: selectedSchools.length })}
             </span>
             <div className="flex gap-2">
               <Button
@@ -50,7 +53,7 @@ export default function SchoolsFilters({
                 data-testid="button-bulk-update-schools"
               >
                 <Edit className="h-4 w-4 mr-1" />
-                Bulk Update
+                {t('admin.schools.buttons.bulkUpdate')}
               </Button>
               <Button
                 size="sm"
@@ -59,7 +62,7 @@ export default function SchoolsFilters({
                 data-testid="button-bulk-delete-schools"
               >
                 <Trash2 className="h-4 w-4 mr-1" />
-                Delete Schools
+                {t('admin.schools.buttons.deleteSchools')}
               </Button>
             </div>
           </div>
@@ -68,7 +71,7 @@ export default function SchoolsFilters({
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              placeholder="Search schools..."
+              placeholder={t('admin.schools.filters.searchPlaceholder')}
               value={schoolFilters.search}
               onChange={(e) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, search: e.target.value }))}
               className="pl-10 w-64"
@@ -80,7 +83,7 @@ export default function SchoolsFilters({
             onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, country: value }))}
           >
             <SelectTrigger className="w-48">
-              <SelectValue placeholder="All Countries" />
+              <SelectValue placeholder={t('admin.schools.filters.allCountries')} />
             </SelectTrigger>
             <SelectContent>
               {countryOptions.map((option) => (
@@ -102,7 +105,7 @@ export default function SchoolsFilters({
             data-testid="checkbox-select-all-schools"
           />
           <label className="text-sm text-gray-600">
-            Select All ({schoolsCount} schools)
+            {t('admin.schools.filters.selectAll', { count: schoolsCount })}
           </label>
         </div>
       )}

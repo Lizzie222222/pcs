@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
@@ -75,6 +76,7 @@ interface DeletionPreview {
 }
 
 export default function UserManagementTab() {
+  const { t } = useTranslation('admin');
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -122,8 +124,8 @@ export default function UserManagementTab() {
     },
     onSuccess: () => {
       toast({
-        title: "Invitation Sent",
-        description: "Admin invitation has been sent successfully.",
+        title: t('admin.userManagement.toasts.invitationSent.title'),
+        description: t('admin.userManagement.toasts.invitationSent.adminDescription'),
       });
       setInviteAdminDialogOpen(false);
       setInviteAdminEmail('');
@@ -132,8 +134,8 @@ export default function UserManagementTab() {
     },
     onError: (error: any) => {
       toast({
-        title: "Invitation Failed",
-        description: error.message || "Failed to send admin invitation. Please try again.",
+        title: t('admin.userManagement.toasts.invitationFailed.title'),
+        description: error.message || t('admin.userManagement.toasts.invitationFailed.adminDescription'),
         variant: "destructive",
       });
     },
@@ -145,8 +147,8 @@ export default function UserManagementTab() {
     },
     onSuccess: () => {
       toast({
-        title: "Invitation Sent",
-        description: "Partner invitation has been sent successfully.",
+        title: t('admin.userManagement.toasts.invitationSent.title'),
+        description: t('admin.userManagement.toasts.invitationSent.partnerDescription'),
       });
       setInvitePartnerDialogOpen(false);
       setInvitePartnerEmail('');
@@ -154,8 +156,8 @@ export default function UserManagementTab() {
     },
     onError: (error: any) => {
       toast({
-        title: "Invitation Failed",
-        description: error.message || "Failed to send partner invitation. Please try again.",
+        title: t('admin.userManagement.toasts.invitationFailed.title'),
+        description: error.message || t('admin.userManagement.toasts.invitationFailed.partnerDescription'),
         variant: "destructive",
       });
     },
@@ -167,15 +169,15 @@ export default function UserManagementTab() {
     },
     onSuccess: () => {
       toast({
-        title: "Invitation Deleted",
-        description: "The admin invitation has been successfully deleted.",
+        title: t('admin.userManagement.toasts.invitationDeleted.title'),
+        description: t('admin.userManagement.toasts.invitationDeleted.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/invitations'] });
     },
     onError: (error: any) => {
       toast({
-        title: "Delete Failed",
-        description: error.message || "Failed to delete invitation. Please try again.",
+        title: t('admin.userManagement.toasts.deleteFailed.title'),
+        description: error.message || t('admin.userManagement.toasts.deleteFailed.description'),
         variant: "destructive",
       });
     },
@@ -187,13 +189,13 @@ export default function UserManagementTab() {
     },
     onSuccess: (_, variables) => {
       const modeLabels = {
-        soft: 'soft deleted',
-        transfer: 'deleted (content transferred)',
-        hard: 'permanently deleted'
+        soft: t('admin.userManagement.toasts.userDeleted.softDeleted'),
+        transfer: t('admin.userManagement.toasts.userDeleted.transferred'),
+        hard: t('admin.userManagement.toasts.userDeleted.hardDeleted')
       };
       toast({
-        title: "User Deleted",
-        description: `The user has been successfully ${modeLabels[variables.mode]}.`,
+        title: t('admin.userManagement.toasts.userDeleted.title'),
+        description: modeLabels[variables.mode],
       });
       setDeleteDialogOpen(false);
       setSelectedUserToDelete(null);
@@ -201,9 +203,9 @@ export default function UserManagementTab() {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
     },
     onError: (error: any) => {
-      const errorMessage = error.message || "Failed to delete user. Please try again.";
+      const errorMessage = error.message || t('admin.userManagement.toasts.deleteFailed.userDescription');
       toast({
-        title: "Delete Failed",
+        title: t('admin.userManagement.toasts.deleteFailed.title'),
         description: errorMessage,
         variant: "destructive",
       });
@@ -223,47 +225,69 @@ export default function UserManagementTab() {
       
       if (failedCount === 0) {
         // All successful
-        description = `Successfully deleted ${successCount} user${successCount > 1 ? 's' : ''}`;
+        const plural = successCount > 1 ? 's' : '';
+        description = t('admin.userManagement.toasts.bulkDeleteSuccessful.description', { count: successCount, plural });
         
         if (totalEvidenceDeleted > 0) {
-          description += ` (${totalEvidenceDeleted} evidence item${totalEvidenceDeleted > 1 ? 's' : ''} deleted)`;
+          const evidencePlural = totalEvidenceDeleted > 1 ? 's' : '';
+          description = t('admin.userManagement.toasts.bulkDeleteSuccessful.withEvidence', { 
+            count: successCount, 
+            plural,
+            evidenceCount: totalEvidenceDeleted, 
+            evidencePlural 
+          });
         }
         
         if (affectedCaseStudies && affectedCaseStudies.length > 0) {
-          description += `. Warning: ${affectedCaseStudies.length} case ${affectedCaseStudies.length > 1 ? 'studies were' : 'study was'} affected`;
+          const caseStudyPlural = affectedCaseStudies.length > 1 ? 'studies were' : 'study was';
+          description += `. ${t('admin.userManagement.toasts.bulkDeleteSuccessful.withCaseStudies', { 
+            caseStudyCount: affectedCaseStudies.length, 
+            caseStudyPlural 
+          })}`;
           
           if (affectedCaseStudies.length <= 3) {
             const titles = affectedCaseStudies.map((cs: any) => cs.title).join(', ');
             description += ` (${titles})`;
           }
           
-          description += ' and their creators have been removed.';
+          description += ` ${t('admin.userManagement.toasts.bulkDeleteSuccessful.creatorsRemoved')}`;
         } else {
           description += '.';
         }
         
         toast({
-          title: "Bulk Delete Successful",
+          title: t('admin.userManagement.toasts.bulkDeleteSuccessful.title'),
           description,
         });
       } else if (successCount === 0) {
         // All failed
         const failureDetails = failures.map((f: any) => `${f.email}: ${f.reason}`).join('\n');
         toast({
-          title: "Bulk Delete Failed",
-          description: `Failed to delete all selected users:\n${failureDetails}`,
+          title: t('admin.userManagement.toasts.bulkDeleteFailed.title'),
+          description: `${t('admin.userManagement.toasts.bulkDeleteFailed.allFailed')}\n${failureDetails}`,
           variant: "destructive",
         });
       } else {
         // Partial success
-        description = `Successfully deleted ${successCount} user${successCount > 1 ? 's' : ''}`;
+        const plural = successCount > 1 ? 's' : '';
+        description = t('admin.userManagement.toasts.bulkDeleteSuccessful.description', { count: successCount, plural });
         
         if (totalEvidenceDeleted > 0) {
-          description += ` (${totalEvidenceDeleted} evidence item${totalEvidenceDeleted > 1 ? 's' : ''} deleted)`;
+          const evidencePlural = totalEvidenceDeleted > 1 ? 's' : '';
+          description = t('admin.userManagement.toasts.bulkDeleteSuccessful.withEvidence', { 
+            count: successCount, 
+            plural,
+            evidenceCount: totalEvidenceDeleted, 
+            evidencePlural 
+          });
         }
         
         if (affectedCaseStudies && affectedCaseStudies.length > 0) {
-          description += `. Warning: ${affectedCaseStudies.length} case ${affectedCaseStudies.length > 1 ? 'studies were' : 'study was'} affected`;
+          const caseStudyPlural = affectedCaseStudies.length > 1 ? 'studies were' : 'study was';
+          description += `. ${t('admin.userManagement.toasts.bulkDeleteSuccessful.withCaseStudies', { 
+            caseStudyCount: affectedCaseStudies.length, 
+            caseStudyPlural 
+          })}`;
           
           if (affectedCaseStudies.length <= 3) {
             const titles = affectedCaseStudies.map((cs: any) => cs.title).join(', ');
@@ -271,13 +295,11 @@ export default function UserManagementTab() {
           }
         }
         
-        description += `. Failed to delete ${failedCount}`;
-        
         const failureDetails = failures.map((f: any) => `${f.email}: ${f.reason}`).join('\n');
-        description += `:\n${failureDetails}`;
+        description += `. ${t('admin.userManagement.toasts.bulkDeletePartial.description', { successCount, plural, failedCount })}:\n${failureDetails}`;
         
         toast({
-          title: "Bulk Delete Partially Successful",
+          title: t('admin.userManagement.toasts.bulkDeletePartial.title'),
           description,
           variant: "destructive",
         });
@@ -289,8 +311,8 @@ export default function UserManagementTab() {
     },
     onError: (error: any) => {
       toast({
-        title: "Bulk Delete Failed",
-        description: error.message || "Failed to delete users. Please try again.",
+        title: t('admin.userManagement.toasts.bulkDeleteFailed.title'),
+        description: error.message || t('admin.userManagement.toasts.bulkDeleteFailed.description'),
         variant: "destructive",
       });
     },
@@ -302,8 +324,8 @@ export default function UserManagementTab() {
     },
     onSuccess: () => {
       toast({
-        title: "User Updated",
-        description: "User role has been successfully updated.",
+        title: t('admin.userManagement.toasts.userUpdated.title'),
+        description: t('admin.userManagement.toasts.userUpdated.description'),
       });
       setRoleDialogOpen(false);
       setSelectedUserForRole(null);
@@ -311,8 +333,8 @@ export default function UserManagementTab() {
     },
     onError: (error: any) => {
       toast({
-        title: "Update Failed",
-        description: error.message || "Failed to update user role. Please try again.",
+        title: t('admin.userManagement.toasts.updateFailed.title'),
+        description: error.message || t('admin.userManagement.toasts.updateFailed.description'),
         variant: "destructive",
       });
     },
@@ -374,15 +396,15 @@ export default function UserManagementTab() {
   };
 
   if (isLoading) {
-    return <LoadingSpinner message="Loading users..." />;
+    return <LoadingSpinner message={t('admin.loading.dashboard')} />;
   }
 
   const handleInviteAdmin = (e: React.FormEvent) => {
     e.preventDefault();
     if (!inviteAdminEmail.trim()) {
       toast({
-        title: "Email Required",
-        description: "Please enter an email address.",
+        title: t('admin.userManagement.toasts.emailRequired.title'),
+        description: t('admin.userManagement.toasts.emailRequired.description'),
         variant: "destructive",
       });
       return;
@@ -394,8 +416,8 @@ export default function UserManagementTab() {
     e.preventDefault();
     if (!invitePartnerEmail.trim()) {
       toast({
-        title: "Email Required",
-        description: "Please enter an email address.",
+        title: t('admin.userManagement.toasts.emailRequired.title'),
+        description: t('admin.userManagement.toasts.emailRequired.description'),
         variant: "destructive",
       });
       return;
@@ -409,7 +431,7 @@ export default function UserManagementTab() {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            User Management
+            {t('admin.userManagement.title')}
           </CardTitle>
           <div className="flex gap-2">
             {!isPartner && (
@@ -418,28 +440,28 @@ export default function UserManagementTab() {
                   <DialogTrigger asChild>
                     <Button variant="outline" data-testid="button-invite-partner">
                       <UserPlus className="h-4 w-4 mr-2" />
-                      Invite Partner
+                      {t('admin.userManagement.buttons.invitePartner')}
                     </Button>
                   </DialogTrigger>
                   <DialogContent data-testid="dialog-invite-partner">
                     <DialogHeader>
-                      <DialogTitle>Invite New Partner</DialogTitle>
+                      <DialogTitle>{t('admin.userManagement.dialogs.invitePartner.title')}</DialogTitle>
                     </DialogHeader>
                     <form onSubmit={handleInvitePartner} className="space-y-4">
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-2">
-                          Email Address *
+                          {t('admin.userManagement.form.labels.emailAddress')}
                         </label>
                         <Input
                           type="email"
                           value={invitePartnerEmail}
                           onChange={(e) => setInvitePartnerEmail(e.target.value)}
-                          placeholder="partner@example.com"
+                          placeholder={t('admin.userManagement.form.placeholders.partnerEmail')}
                           data-testid="input-partner-email"
                           required
                         />
                         <p className="text-xs text-gray-500 mt-2">
-                          Partners have admin-like access but cannot assign roles or download school data.
+                          {t('admin.userManagement.dialogs.invitePartner.description')}
                         </p>
                       </div>
                       <div className="flex justify-end gap-2">
@@ -452,7 +474,7 @@ export default function UserManagementTab() {
                           }}
                           data-testid="button-cancel-partner-invite"
                         >
-                          Cancel
+                          {t('admin.userManagement.buttons.cancel')}
                         </Button>
                         <Button
                           type="submit"
@@ -460,7 +482,7 @@ export default function UserManagementTab() {
                           className="bg-blue-500 hover:bg-blue-600"
                           data-testid="button-send-partner-invite"
                         >
-                          {invitePartnerMutation.isPending ? 'Sending...' : 'Send Invitation'}
+                          {invitePartnerMutation.isPending ? t('admin.userManagement.buttons.sending') : t('admin.userManagement.buttons.sendInvitation')}
                         </Button>
                       </div>
                     </form>
@@ -470,23 +492,23 @@ export default function UserManagementTab() {
                   <DialogTrigger asChild>
                     <Button variant="default" className="bg-pcs_blue hover:bg-pcs_blue/90" data-testid="button-invite-admin">
                       <UserPlus className="h-4 w-4 mr-2" />
-                      Invite Admin
+                      {t('admin.userManagement.buttons.inviteAdmin')}
                     </Button>
                   </DialogTrigger>
             <DialogContent data-testid="dialog-invite-admin">
               <DialogHeader>
-                <DialogTitle>Invite New Administrator</DialogTitle>
+                <DialogTitle>{t('admin.userManagement.dialogs.inviteAdmin.title')}</DialogTitle>
               </DialogHeader>
               <form onSubmit={handleInviteAdmin} className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Email Address *
+                    {t('admin.userManagement.form.labels.emailAddress')}
                   </label>
                   <Input
                     type="email"
                     value={inviteAdminEmail}
                     onChange={(e) => setInviteAdminEmail(e.target.value)}
-                    placeholder="admin@example.com"
+                    placeholder={t('admin.userManagement.form.placeholders.adminEmail')}
                     data-testid="input-admin-email"
                     required
                   />
@@ -501,7 +523,7 @@ export default function UserManagementTab() {
                     }}
                     data-testid="button-cancel-invite"
                   >
-                    Cancel
+                    {t('admin.userManagement.buttons.cancel')}
                   </Button>
                   <Button
                     type="submit"
@@ -509,7 +531,7 @@ export default function UserManagementTab() {
                     className="bg-pcs_blue hover:bg-pcs_blue/90"
                     data-testid="button-send-admin-invite"
                   >
-                    {inviteAdminMutation.isPending ? 'Sending...' : 'Send Invitation'}
+                    {inviteAdminMutation.isPending ? t('admin.userManagement.buttons.sending') : t('admin.userManagement.buttons.sendInvitation')}
                   </Button>
                 </div>
               </form>
@@ -525,7 +547,7 @@ export default function UserManagementTab() {
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">
               <Input
-                placeholder="Search by name or email..."
+                placeholder={t('admin.userManagement.form.placeholders.searchUsers')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="w-full"
@@ -539,7 +561,7 @@ export default function UserManagementTab() {
                 className={filterStatus === 'all' ? 'bg-pcs_blue hover:bg-pcs_blue/90' : ''}
                 data-testid="button-filter-all"
               >
-                All Users
+                {t('admin.userManagement.buttons.filterAll')}
               </Button>
               <Button
                 variant={filterStatus === 'with-schools' ? 'default' : 'outline'}
@@ -547,7 +569,7 @@ export default function UserManagementTab() {
                 className={filterStatus === 'with-schools' ? 'bg-pcs_blue hover:bg-pcs_blue/90' : ''}
                 data-testid="button-filter-with-schools"
               >
-                With Schools
+                {t('admin.userManagement.buttons.filterWithSchools')}
               </Button>
               <Button
                 variant={filterStatus === 'without-schools' ? 'default' : 'outline'}
@@ -555,14 +577,14 @@ export default function UserManagementTab() {
                 className={filterStatus === 'without-schools' ? 'bg-pcs_blue hover:bg-pcs_blue/90' : ''}
                 data-testid="button-filter-without-schools"
               >
-                Without Schools
+                {t('admin.userManagement.buttons.filterWithoutSchools')}
               </Button>
             </div>
           </div>
 
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              Showing <strong>{filteredUsers.length}</strong> of <strong>{usersWithSchools.length}</strong> users
+              {t('admin.userManagement.table.showingCount', { filtered: filteredUsers.length, total: usersWithSchools.length })}
             </div>
             {selectedUserIds.size > 0 && (
               <Button
@@ -571,7 +593,7 @@ export default function UserManagementTab() {
                 data-testid="button-bulk-delete"
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                Delete Selected Users ({selectedUserIds.size})
+                {t('admin.userManagement.buttons.bulkDelete', { count: selectedUserIds.size })}
               </Button>
             )}
           </div>
@@ -579,13 +601,13 @@ export default function UserManagementTab() {
           {filteredUsers.length === 0 ? (
             <EmptyState
               icon={Users}
-              title="No Users Found"
+              title={t('admin.userManagement.emptyStates.noUsers.title')}
               description={
                 searchQuery
-                  ? "No users match your search criteria."
+                  ? t('admin.userManagement.emptyStates.noUsers.noMatch')
                   : filterStatus === 'without-schools'
-                  ? "All users are assigned to at least one school."
-                  : "No users found in the system."
+                  ? t('admin.userManagement.emptyStates.noUsers.allAssigned')
+                  : t('admin.userManagement.emptyStates.noUsers.noneInSystem')
               }
             />
           ) : (
@@ -604,166 +626,113 @@ export default function UserManagementTab() {
                         data-testid="checkbox-select-all"
                       />
                     </th>
-                    <th className="text-left p-3 text-sm font-semibold text-gray-700">Name</th>
-                    <th className="text-left p-3 text-sm font-semibold text-gray-700">Email</th>
-                    <th className="text-left p-3 text-sm font-semibold text-gray-700">Role</th>
-                    <th className="text-left p-3 text-sm font-semibold text-gray-700">School Status</th>
-                    <th className="text-left p-3 text-sm font-semibold text-gray-700">Actions</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.table.headers.name')}</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.table.headers.email')}</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.table.headers.role')}</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.table.headers.schools')}</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.table.headers.status')}</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.table.headers.actions')}</th>
                   </tr>
                 </thead>
                 <tbody>
                   {filteredUsers.map((item) => {
-                    const userItem = item.user;
-                    const schoolCount = item.schools.length;
-                    const isCurrentUser = userItem.id === user?.id;
-                    const isChecked = selectedUserIds.has(userItem.id);
+                    const currentUser = item.user;
+                    const fullName = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
+                    const canDelete = currentUser.id !== user?.id;
+
                     return (
-                      <tr 
-                        key={userItem.id} 
-                        className="border-b border-gray-200 hover:bg-gray-50"
-                        data-testid={`user-row-${userItem.id}`}
-                      >
+                      <tr key={currentUser.id} className="border-b hover:bg-gray-50">
                         <td className="p-3">
                           <Checkbox
-                            checked={isChecked}
-                            onCheckedChange={(checked) => handleSelectUser(userItem.id, checked as boolean)}
-                            disabled={isCurrentUser}
-                            data-testid={`checkbox-user-${userItem.id}`}
+                            checked={selectedUserIds.has(currentUser.id)}
+                            onCheckedChange={(checked) => handleSelectUser(currentUser.id, checked as boolean)}
+                            disabled={!canDelete}
+                            data-testid={`checkbox-user-${currentUser.id}`}
                           />
                         </td>
-                        <td className="p-3 text-sm" data-testid={`text-user-name-${userItem.id}`}>
-                          <div className="font-medium text-gray-900">
-                            {userItem.firstName} {userItem.lastName}
-                          </div>
-                          {userItem.isAdmin && userItem.role === 'admin' && (
-                            <Badge className="mt-1 bg-purple-500 text-white text-xs">Admin</Badge>
-                          )}
-                          {userItem.role === 'partner' && (
-                            <Badge className="mt-1 bg-blue-500 text-white text-xs">Partner</Badge>
-                          )}
-                          {userItem.role === 'school' && (
-                            <Badge className="mt-1 bg-green-500 text-white text-xs">School</Badge>
-                          )}
+                        <td className="p-3 font-medium text-gray-900" data-testid={`text-user-name-${currentUser.id}`}>
+                          {fullName || '-'}
                         </td>
-                        <td className="p-3 text-sm text-gray-600" data-testid={`text-user-email-${userItem.id}`}>
-                          {userItem.email}
+                        <td className="p-3 text-gray-600" data-testid={`text-user-email-${currentUser.id}`}>
+                          {currentUser.email}
                         </td>
-                        <td className="p-3 text-sm">
-                          <Badge variant="outline" data-testid={`text-user-role-${userItem.id}`}>
-                            {userItem.role === 'admin' && userItem.isAdmin ? 'Admin' : 
-                             userItem.role === 'partner' ? 'Partner' : 
-                             userItem.role === 'school' ? 'School' :
-                             userItem.role === 'teacher' ? 'Teacher' : userItem.role}
-                          </Badge>
-                        </td>
-                        <td className="p-3 text-sm" data-testid={`text-user-school-status-${userItem.id}`}>
-                          {schoolCount === 0 ? (
-                            <Badge variant="outline" className="text-red-600 border-red-300">
-                              No School
+                        <td className="p-3">
+                          {currentUser.isAdmin && currentUser.role === 'admin' ? (
+                            <Badge className="bg-red-600 text-white">
+                              {t('admin.userManagement.badges.admin')}
                             </Badge>
-                          ) : schoolCount === 1 ? (
-                            <Badge className="bg-green-500 text-white">
-                              1 School
+                          ) : currentUser.role === 'partner' ? (
+                            <Badge className="bg-purple-600 text-white">
+                              {t('admin.userManagement.badges.partner')}
                             </Badge>
                           ) : (
-                            <Badge className="bg-blue-500 text-white">
-                              {schoolCount} Schools
+                            <Badge variant="secondary">
+                              {currentUser.role}
                             </Badge>
                           )}
                         </td>
-                        <td className="p-3 text-sm">
-                          <div className="flex gap-2">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  data-testid={`button-user-actions-${userItem.id}`}
-                                >
-                                  <MoreVertical className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() => handleAssignToSchool(userItem.email || '')}
-                                  data-testid={`menu-assign-school-${userItem.id}`}
-                                >
-                                  <Plus className="h-4 w-4 mr-2" />
-                                  {schoolCount === 0 ? 'Assign to School' : 'Assign to Another School'}
-                                </DropdownMenuItem>
-                                {schoolCount > 0 && (
-                                  <Dialog>
-                                    <DialogTrigger asChild>
-                                      <DropdownMenuItem
-                                        onSelect={(e) => e.preventDefault()}
-                                        data-testid={`menu-view-schools-${userItem.id}`}
-                                      >
-                                        <Eye className="h-4 w-4 mr-2" />
-                                        View Schools
-                                      </DropdownMenuItem>
-                                    </DialogTrigger>
-                                    <DialogContent data-testid={`dialog-user-schools-${userItem.id}`}>
-                                      <DialogHeader>
-                                        <DialogTitle>
-                                          Schools for {userItem.firstName} {userItem.lastName}
-                                        </DialogTitle>
-                                      </DialogHeader>
-                                      <div className="space-y-3">
-                                        {item.schools.map((school) => (
-                                          <div 
-                                            key={school.id} 
-                                            className="p-3 border rounded-lg flex items-center justify-between"
-                                            data-testid={`school-item-${school.id}`}
-                                          >
-                                            <div>
-                                              <div className="font-medium">{school.name}</div>
-                                              <div className="text-sm text-gray-600">
-                                                Role: {school.role === 'head_teacher' ? 'Head Teacher' : 'Teacher'}
-                                              </div>
-                                            </div>
-                                            <School className="h-5 w-5 text-gray-400" />
-                                          </div>
-                                        ))}
-                                      </div>
-                                    </DialogContent>
-                                  </Dialog>
-                                )}
-                                {!isPartner && (
-                                  <DropdownMenuItem
-                                    onClick={() => {
-                                      setSelectedUserForRole({
-                                        id: userItem.id,
-                                        name: `${userItem.firstName} ${userItem.lastName}`,
-                                        isAdmin: userItem.isAdmin,
-                                        role: userItem.role,
-                                      });
-                                      setRoleDialogOpen(true);
-                                    }}
-                                    data-testid={`menu-change-role-${userItem.id}`}
-                                  >
-                                    <Shield className="h-4 w-4 mr-2" />
-                                    Change Role
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem
-                                  onClick={() => {
-                                    setSelectedUserToDelete({
-                                      id: userItem.id,
-                                      name: `${userItem.firstName} ${userItem.lastName}`,
+                        <td className="p-3">
+                          {item.schools.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {item.schools.map((school, idx) => (
+                                <div key={idx} className="flex items-center gap-1 text-sm">
+                                  <School className="h-3 w-3 text-gray-400" />
+                                  <span className="text-gray-700">{school.name}</span>
+                                  <Badge variant="outline" className="text-xs">{school.role}</Badge>
+                                </div>
+                              ))}
+                            </div>
+                          ) : (
+                            <span className="text-gray-400 text-sm">-</span>
+                          )}
+                        </td>
+                        <td className="p-3">
+                          <Badge variant="outline" className="text-green-600 border-green-600">
+                            {t('admin.userManagement.badges.active')}
+                          </Badge>
+                        </td>
+                        <td className="p-3">
+                          <div className="flex items-center gap-2">
+                            {!isPartner && (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" data-testid={`button-actions-${currentUser.id}`}>
+                                    <MoreVertical className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuLabel>{t('admin.userManagement.table.headers.actions')}</DropdownMenuLabel>
+                                  <DropdownMenuSeparator />
+                                  <DropdownMenuItem onClick={() => {
+                                    setSelectedUserForRole({
+                                      id: currentUser.id,
+                                      name: fullName,
+                                      isAdmin: currentUser.isAdmin,
+                                      role: currentUser.role
                                     });
-                                    setDeleteDialogOpen(true);
-                                  }}
-                                  className="text-red-600 focus:text-red-600"
-                                  data-testid={`menu-delete-user-${userItem.id}`}
-                                >
-                                  <Trash2 className="h-4 w-4 mr-2" />
-                                  Delete User
-                                </DropdownMenuItem>
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                                    setRoleDialogOpen(true);
+                                  }}>
+                                    <Shield className="h-4 w-4 mr-2" />
+                                    {t('admin.userManagement.form.labels.platformRole')}
+                                  </DropdownMenuItem>
+                                  {canDelete && (
+                                    <DropdownMenuItem 
+                                      className="text-red-600"
+                                      onClick={() => {
+                                        setSelectedUserToDelete({
+                                          id: currentUser.id,
+                                          name: fullName
+                                        });
+                                        setDeleteDialogOpen(true);
+                                      }}
+                                    >
+                                      <Trash2 className="h-4 w-4 mr-2" />
+                                      {t('admin.userManagement.buttons.confirmDelete', { mode: 'Delete' })}
+                                    </DropdownMenuItem>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -775,166 +744,83 @@ export default function UserManagementTab() {
           )}
         </div>
 
-        {/* Admin Invitations Section */}
-        {!isPartner && (
+        {/* Admin Invitations Table */}
+        {!isPartner && !isLoadingInvitations && adminInvitations.length > 0 && (
           <div className="mt-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <UserPlus className="h-5 w-5" />
-                  Pending Admin Invitations
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                {isLoadingInvitations ? (
-                  <LoadingSpinner message="Loading invitations..." />
-                ) : adminInvitations.length === 0 ? (
-                  <EmptyState
-                    icon={UserPlus}
-                    title="No Pending Invitations"
-                    description="There are no pending admin invitations at this time."
-                  />
-                ) : (
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-50 dark:bg-gray-800">
-                        <tr>
-                          <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Email
-                          </th>
-                          <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                          </th>
-                          <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Sent Date
-                          </th>
-                          <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Expires
-                          </th>
-                          <th className="p-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody className="bg-white dark:bg-gray-900 divide-y divide-gray-200 dark:divide-gray-700">
-                        {adminInvitations.map((invitation) => {
-                          const isExpired = new Date(invitation.expiresAt) < new Date();
-                          return (
-                            <tr key={invitation.id} data-testid={`invitation-row-${invitation.id}`}>
-                              <td className="p-3 text-sm" data-testid={`text-invitation-email-${invitation.id}`}>
-                                {invitation.email}
-                              </td>
-                              <td className="p-3 text-sm">
-                                <Badge
-                                  variant={
-                                    invitation.status === 'accepted'
-                                      ? 'default'
-                                      : isExpired
-                                      ? 'destructive'
-                                      : 'outline'
-                                  }
-                                  data-testid={`badge-invitation-status-${invitation.id}`}
-                                >
-                                  {isExpired && invitation.status === 'pending' ? 'Expired' : invitation.status}
-                                </Badge>
-                              </td>
-                              <td className="p-3 text-sm text-gray-600" data-testid={`text-invitation-sent-${invitation.id}`}>
-                                {new Date(invitation.createdAt).toLocaleDateString()}
-                              </td>
-                              <td className="p-3 text-sm text-gray-600" data-testid={`text-invitation-expires-${invitation.id}`}>
-                                {new Date(invitation.expiresAt).toLocaleDateString()}
-                              </td>
-                              <td className="p-3">
-                                <Button
-                                  size="sm"
-                                  variant="destructive"
-                                  onClick={() => {
-                                    if (confirm(`Are you sure you want to delete the invitation for ${invitation.email}?`)) {
-                                      deleteInvitationMutation.mutate(invitation.id);
-                                    }
-                                  }}
-                                  disabled={deleteInvitationMutation.isPending}
-                                  data-testid={`button-delete-invitation-${invitation.id}`}
-                                >
-                                  <Trash2 className="h-4 w-4" />
-                                </Button>
-                              </td>
-                            </tr>
-                          );
-                        })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <h3 className="text-lg font-semibold mb-4">{t('admin.userManagement.adminInvitations.title')}</h3>
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse">
+                <thead>
+                  <tr className="border-b-2 border-gray-200 bg-gray-50">
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.adminInvitations.table.email')}</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.adminInvitations.table.status')}</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.adminInvitations.table.createdAt')}</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.adminInvitations.table.expiresAt')}</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('admin.userManagement.adminInvitations.table.actions')}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {adminInvitations.map((invitation) => (
+                    <tr key={invitation.id} className="border-b hover:bg-gray-50">
+                      <td className="p-3 text-gray-900">{invitation.email}</td>
+                      <td className="p-3">
+                        <Badge variant={invitation.status === 'pending' ? 'secondary' : 'default'}>
+                          {invitation.status === 'pending' ? t('admin.userManagement.badges.pendingInvite') : invitation.status}
+                        </Badge>
+                      </td>
+                      <td className="p-3 text-gray-600">{new Date(invitation.createdAt).toLocaleDateString()}</td>
+                      <td className="p-3 text-gray-600">{new Date(invitation.expiresAt).toLocaleDateString()}</td>
+                      <td className="p-3">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => deleteInvitationMutation.mutate(invitation.id)}
+                          disabled={deleteInvitationMutation.isPending}
+                        >
+                          <Trash2 className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
 
-        <Dialog open={assignDialogOpen} onOpenChange={setAssignDialogOpen}>
-          <DialogContent className="max-w-2xl" data-testid="dialog-assign-teacher">
-            <DialogHeader>
-              <DialogTitle>Assign User to School</DialogTitle>
-            </DialogHeader>
-            <div className="mt-4">
-              <AssignTeacherForm />
-              {selectedUserEmail && (
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                  <p className="text-sm text-blue-800">
-                    <strong>Pre-filled email:</strong> {selectedUserEmail}
-                  </p>
-                  <p className="text-xs text-blue-600 mt-1">
-                    Enter this email in the form above to assign this user to a school.
-                  </p>
-                </div>
-              )}
-            </div>
-          </DialogContent>
-        </Dialog>
-
+        {/* Delete User Dialog */}
         <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
           <DialogContent className="max-w-2xl" data-testid="dialog-delete-user">
             <DialogHeader>
-              <DialogTitle>Delete User: {selectedUserToDelete?.name}</DialogTitle>
+              <DialogTitle>{t('admin.userManagement.dialogs.deleteUser.title')}</DialogTitle>
               <DialogDescription>
-                Choose how to handle this user's content and data
+                {t('admin.userManagement.dialogs.deleteUser.description')}
               </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-6">
               {isLoadingPreview ? (
-                <div className="flex items-center justify-center py-8">
-                  <LoadingSpinner message="Loading deletion preview..." />
+                <div className="flex items-center justify-center p-4">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue"></div>
                 </div>
               ) : deletionPreview && (
-                <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-                  <h4 className="font-semibold text-sm mb-3">Affected Content:</h4>
-                  <div className="grid grid-cols-2 gap-3 text-sm">
-                    {deletionPreview.evidence > 0 && (
-                      <div>Evidence Submissions: <strong>{deletionPreview.evidence}</strong></div>
-                    )}
-                    {deletionPreview.caseStudies > 0 && (
-                      <div>Case Studies: <strong>{deletionPreview.caseStudies}</strong></div>
-                    )}
-                    {deletionPreview.mediaAssets > 0 && (
-                      <div>Media Assets: <strong>{deletionPreview.mediaAssets}</strong></div>
-                    )}
-                    {deletionPreview.certificates > 0 && (
-                      <div>Certificates: <strong>{deletionPreview.certificates}</strong></div>
-                    )}
-                    {deletionPreview.importBatches > 0 && (
-                      <div>Import Batches: <strong>{deletionPreview.importBatches}</strong></div>
-                    )}
-                    {deletionPreview.teacherInvitations > 0 && (
-                      <div>Teacher Invitations: <strong>{deletionPreview.teacherInvitations}</strong></div>
-                    )}
-                    {deletionPreview.adminInvitations > 0 && (
-                      <div>Admin Invitations: <strong>{deletionPreview.adminInvitations}</strong></div>
-                    )}
-                    {deletionPreview.reductionPromises > 0 && (
-                      <div>Reduction Promises: <strong>{deletionPreview.reductionPromises}</strong></div>
-                    )}
-                  </div>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <h4 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                    {t('admin.userManagement.dialogs.deletionPreview.title')}
+                  </h4>
+                  <p className="text-sm text-blue-800 dark:text-blue-200 mb-2">
+                    {t('admin.userManagement.dialogs.deletionPreview.description')}
+                  </p>
+                  <ul className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
+                    <li>{t('admin.userManagement.dialogs.deletionPreview.evidence', { count: deletionPreview.evidence })}</li>
+                    <li>{t('admin.userManagement.dialogs.deletionPreview.caseStudies', { count: deletionPreview.caseStudies })}</li>
+                    <li>{t('admin.userManagement.dialogs.deletionPreview.reductionPromises', { count: deletionPreview.reductionPromises })}</li>
+                    <li>{t('admin.userManagement.dialogs.deletionPreview.mediaAssets', { count: deletionPreview.mediaAssets })}</li>
+                    <li>{t('admin.userManagement.dialogs.deletionPreview.certificates', { count: deletionPreview.certificates })}</li>
+                    <li>{t('admin.userManagement.dialogs.deletionPreview.importBatches', { count: deletionPreview.importBatches })}</li>
+                    <li>{t('admin.userManagement.dialogs.deletionPreview.teacherInvitations', { count: deletionPreview.teacherInvitations })}</li>
+                    <li>{t('admin.userManagement.dialogs.deletionPreview.adminInvitations', { count: deletionPreview.adminInvitations })}</li>
+                  </ul>
                 </div>
               )}
               
@@ -945,10 +831,10 @@ export default function UserManagementTab() {
                     <Label htmlFor="soft" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-2">
                         <Archive className="h-5 w-5 text-blue-500" />
-                        <span className="font-semibold">Soft Delete (Recommended)</span>
+                        <span className="font-semibold">{t('admin.userManagement.deletionModes.soft.label')}</span>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        User will be hidden from the system but all data is preserved. Can be restored later.
+                        {t('admin.userManagement.deletionModes.soft.description')}
                       </p>
                     </Label>
                   </div>
@@ -958,10 +844,10 @@ export default function UserManagementTab() {
                     <Label htmlFor="transfer" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-2">
                         <Users className="h-5 w-5 text-orange-500" />
-                        <span className="font-semibold">Transfer Ownership</span>
+                        <span className="font-semibold">{t('admin.userManagement.deletionModes.transfer.label')}</span>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        Transfer all content to "Archived User" system account, then delete the user. Historical data is preserved.
+                        {t('admin.userManagement.deletionModes.transfer.description')}
                       </p>
                     </Label>
                   </div>
@@ -971,10 +857,10 @@ export default function UserManagementTab() {
                     <Label htmlFor="hard" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-2">
                         <Trash className="h-5 w-5 text-red-500" />
-                        <span className="font-semibold text-red-600 dark:text-red-400">Hard Delete (Permanent)</span>
+                        <span className="font-semibold text-red-600 dark:text-red-400">{t('admin.userManagement.deletionModes.hard.label')}</span>
                       </div>
                       <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                        <strong>WARNING:</strong> Permanently delete user AND all their content. This cannot be undone!
+                        <strong>WARNING:</strong> {t('admin.userManagement.deletionModes.hard.description')}
                       </p>
                     </Label>
                   </div>
@@ -991,7 +877,7 @@ export default function UserManagementTab() {
                 }}
                 data-testid="button-cancel-delete"
               >
-                Cancel
+                {t('admin.userManagement.buttons.cancel')}
               </Button>
               <Button
                 onClick={confirmDelete}
@@ -999,7 +885,11 @@ export default function UserManagementTab() {
                 className={deletionMode === 'hard' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
                 data-testid="button-confirm-delete"
               >
-                {deleteUserMutation.isPending ? 'Deleting...' : `Confirm ${deletionMode === 'soft' ? 'Soft Delete' : deletionMode === 'transfer' ? 'Transfer' : 'Hard Delete'}`}
+                {deleteUserMutation.isPending ? t('admin.userManagement.buttons.deleting') : t('admin.userManagement.buttons.confirmDelete', { 
+                  mode: deletionMode === 'soft' ? t('admin.userManagement.buttons.confirmSoftDelete').replace('Confirm ', '') : 
+                        deletionMode === 'transfer' ? t('admin.userManagement.buttons.confirmTransfer').replace('Confirm ', '') : 
+                        t('admin.userManagement.buttons.confirmHardDelete').replace('Confirm ', '')
+                })}
               </Button>
             </DialogFooter>
           </DialogContent>
@@ -1008,17 +898,17 @@ export default function UserManagementTab() {
         <Dialog open={roleDialogOpen} onOpenChange={setRoleDialogOpen}>
           <DialogContent data-testid="dialog-change-role">
             <DialogHeader>
-              <DialogTitle>Change User Role</DialogTitle>
+              <DialogTitle>{t('admin.userManagement.dialogs.changeRole.title')}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
               <p className="text-sm text-gray-600">
-                Update the role and permissions for <strong>{selectedUserForRole?.name}</strong>
+                {t('admin.userManagement.dialogs.changeRole.description', { name: selectedUserForRole?.name })}
               </p>
               
               <div className="space-y-3">
                 <div className="p-3 border rounded-lg">
-                  <label className="block text-sm font-medium mb-2">Platform Role</label>
-                  <p className="text-xs text-gray-500 mb-3">Select the user's role and permissions</p>
+                  <label className="block text-sm font-medium mb-2">{t('admin.userManagement.form.labels.platformRole')}</label>
+                  <p className="text-xs text-gray-500 mb-3">{t('admin.userManagement.form.labels.roleDescription')}</p>
                   <Select
                     value={
                       selectedUserForRole?.isAdmin && selectedUserForRole?.role === 'admin' 
@@ -1060,21 +950,21 @@ export default function UserManagementTab() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="teacher">Teacher</SelectItem>
-                      <SelectItem value="school">School (Head Teacher)</SelectItem>
-                      <SelectItem value="partner">Partner</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
+                      <SelectItem value="teacher">{t('admin.userManagement.roles.teacher.label')}</SelectItem>
+                      <SelectItem value="school">{t('admin.userManagement.roles.school.label')}</SelectItem>
+                      <SelectItem value="partner">{t('admin.userManagement.roles.partner.label')}</SelectItem>
+                      <SelectItem value="admin">{t('admin.userManagement.roles.admin.label')}</SelectItem>
                     </SelectContent>
                   </Select>
                   <div className="mt-3 p-2 bg-gray-50 rounded text-xs">
                     {selectedUserForRole?.isAdmin && selectedUserForRole?.role === 'admin' ? (
-                      <p className="text-gray-600"><strong>Admin:</strong> Full platform access including role assignment and data downloads</p>
+                      <p className="text-gray-600"><strong>{t('admin.userManagement.roles.admin.label')}:</strong> {t('admin.userManagement.roles.admin.description')}</p>
                     ) : selectedUserForRole?.role === 'partner' ? (
-                      <p className="text-gray-600"><strong>Partner:</strong> Admin-like access but cannot assign roles or download school data</p>
+                      <p className="text-gray-600"><strong>{t('admin.userManagement.roles.partner.label')}:</strong> {t('admin.userManagement.roles.partner.description')}</p>
                     ) : selectedUserForRole?.role === 'school' ? (
-                      <p className="text-gray-600"><strong>School:</strong> Head teacher role with school management permissions</p>
+                      <p className="text-gray-600"><strong>{t('admin.userManagement.roles.school.label')}:</strong> {t('admin.userManagement.roles.school.description')}</p>
                     ) : (
-                      <p className="text-gray-600"><strong>Teacher:</strong> Standard user with school-level permissions</p>
+                      <p className="text-gray-600"><strong>{t('admin.userManagement.roles.teacher.label')}:</strong> {t('admin.userManagement.roles.teacher.description')}</p>
                     )}
                   </div>
                 </div>
@@ -1086,16 +976,16 @@ export default function UserManagementTab() {
         <Dialog open={bulkDeleteDialogOpen} onOpenChange={setBulkDeleteDialogOpen}>
           <DialogContent className="max-w-2xl" data-testid="dialog-bulk-delete">
             <DialogHeader>
-              <DialogTitle>Bulk Delete {selectedUserIds.size} User{selectedUserIds.size > 1 ? 's' : ''}</DialogTitle>
+              <DialogTitle>{t('admin.userManagement.dialogs.bulkDelete.title', { count: selectedUserIds.size, plural: selectedUserIds.size > 1 ? 's' : '' })}</DialogTitle>
               <DialogDescription>
-                Choose how to handle the selected users' content and data
+                {t('admin.userManagement.dialogs.bulkDelete.description')}
               </DialogDescription>
             </DialogHeader>
             
             <div className="space-y-6">
               <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                 <p className="text-sm text-blue-800 dark:text-blue-200">
-                  <strong>Selected Users:</strong> {selectedUserIds.size} user{selectedUserIds.size > 1 ? 's' : ''}
+                  {t('admin.userManagement.dialogs.bulkDelete.selectedUsers', { count: selectedUserIds.size, plural: selectedUserIds.size > 1 ? 's' : '' })}
                 </p>
               </div>
               
@@ -1106,10 +996,10 @@ export default function UserManagementTab() {
                     <Label htmlFor="bulk-soft" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-2">
                         <Archive className="h-5 w-5 text-blue-500" />
-                        <span className="font-semibold">Soft Delete (Recommended)</span>
+                        <span className="font-semibold">{t('admin.userManagement.deletionModes.soft.label')}</span>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        Users will be hidden from the system but all data is preserved. Can be restored later.
+                        {t('admin.userManagement.deletionModes.soft.description')}
                       </p>
                     </Label>
                   </div>
@@ -1119,10 +1009,10 @@ export default function UserManagementTab() {
                     <Label htmlFor="bulk-transfer" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-2">
                         <Users className="h-5 w-5 text-orange-500" />
-                        <span className="font-semibold">Transfer Ownership</span>
+                        <span className="font-semibold">{t('admin.userManagement.deletionModes.transfer.label')}</span>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                        Transfer all content to "Archived User" system account, then delete the users. Historical data is preserved.
+                        {t('admin.userManagement.deletionModes.transfer.bulkDescription')}
                       </p>
                     </Label>
                   </div>
@@ -1132,10 +1022,10 @@ export default function UserManagementTab() {
                     <Label htmlFor="bulk-hard" className="flex-1 cursor-pointer">
                       <div className="flex items-center gap-2">
                         <Trash className="h-5 w-5 text-red-500" />
-                        <span className="font-semibold text-red-600 dark:text-red-400">Hard Delete (Permanent)</span>
+                        <span className="font-semibold text-red-600 dark:text-red-400">{t('admin.userManagement.deletionModes.hard.label')}</span>
                       </div>
                       <p className="text-sm text-red-600 dark:text-red-400 mt-1">
-                        <strong>WARNING:</strong> Permanently delete users AND all their content. This cannot be undone!
+                        <strong>WARNING:</strong> {t('admin.userManagement.deletionModes.hard.bulkDescription')}
                       </p>
                     </Label>
                   </div>
@@ -1152,7 +1042,7 @@ export default function UserManagementTab() {
                 }}
                 data-testid="button-cancel-bulk-delete"
               >
-                Cancel
+                {t('admin.userManagement.buttons.cancel')}
               </Button>
               <Button
                 onClick={confirmBulkDelete}
@@ -1160,7 +1050,11 @@ export default function UserManagementTab() {
                 className={bulkDeletionMode === 'hard' ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'}
                 data-testid="button-confirm-bulk-delete"
               >
-                {bulkDeleteMutation.isPending ? 'Deleting...' : `Confirm ${bulkDeletionMode === 'soft' ? 'Soft Delete' : bulkDeletionMode === 'transfer' ? 'Transfer' : 'Hard Delete'}`}
+                {bulkDeleteMutation.isPending ? t('admin.userManagement.buttons.deleting') : t('admin.userManagement.buttons.confirmDelete', { 
+                  mode: bulkDeletionMode === 'soft' ? t('admin.userManagement.buttons.confirmSoftDelete').replace('Confirm ', '') : 
+                        bulkDeletionMode === 'transfer' ? t('admin.userManagement.buttons.confirmTransfer').replace('Confirm ', '') : 
+                        t('admin.userManagement.buttons.confirmHardDelete').replace('Confirm ', '')
+                })}
               </Button>
             </DialogFooter>
           </DialogContent>

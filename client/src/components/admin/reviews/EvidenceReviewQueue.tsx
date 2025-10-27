@@ -40,6 +40,7 @@ import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
 import { EvidenceAssignment } from "./EvidenceAssignment";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { useTranslation } from 'react-i18next';
 import type { PendingEvidence } from "@/components/admin/shared/types";
 import type { User } from "@shared/schema";
 
@@ -101,6 +102,7 @@ export default function EvidenceReviewQueue({
   currentUserId,
 }: EvidenceReviewQueueProps) {
   const { toast } = useToast();
+  const { t } = useTranslation('admin');
   const [consentWarningDialogOpen, setConsentWarningDialogOpen] = useState(false);
   const [pendingApprovalEvidence, setPendingApprovalEvidence] = useState<PendingEvidence | null>(null);
 
@@ -171,12 +173,12 @@ export default function EvidenceReviewQueue({
           <div className="flex items-center justify-between">
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5" />
-              Evidence Review Queue
+              {t('reviews.evidence.title')}
             </CardTitle>
             {selectedEvidence.length > 0 && (
               <div className="flex items-center gap-3">
                 <span className="text-sm text-gray-600">
-                  {selectedEvidence.length} selected
+                  {t('reviews.evidence.selectedCount', { count: selectedEvidence.length })}
                 </span>
                 <div className="flex gap-2">
                   <Button
@@ -189,7 +191,7 @@ export default function EvidenceReviewQueue({
                     data-testid="button-bulk-approve"
                   >
                     <CheckCircle className="h-4 w-4 mr-1" />
-                    Bulk Approve
+                    {t('reviews.evidence.buttons.bulkApprove')}
                   </Button>
                   <Button
                     size="sm"
@@ -201,7 +203,7 @@ export default function EvidenceReviewQueue({
                     data-testid="button-bulk-reject"
                   >
                     <XCircle className="h-4 w-4 mr-1" />
-                    Bulk Reject
+                    {t('reviews.evidence.buttons.bulkReject')}
                   </Button>
                   <Button
                     size="sm"
@@ -213,7 +215,7 @@ export default function EvidenceReviewQueue({
                     data-testid="button-bulk-delete"
                   >
                     <Trash2 className="h-4 w-4 mr-1" />
-                    Delete
+                    {t('reviews.evidence.buttons.delete')}
                   </Button>
                 </div>
               </div>
@@ -232,7 +234,7 @@ export default function EvidenceReviewQueue({
                 onClick={() => setEvidenceStatusFilter('all')}
                 data-testid="filter-evidence-all"
               >
-                All
+                {t('reviews.evidence.filters.all')}
               </button>
               <button
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
@@ -243,7 +245,7 @@ export default function EvidenceReviewQueue({
                 onClick={() => setEvidenceStatusFilter('pending')}
                 data-testid="filter-evidence-pending"
               >
-                Pending
+                {t('reviews.evidence.filters.pending')}
               </button>
               <button
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
@@ -254,7 +256,7 @@ export default function EvidenceReviewQueue({
                 onClick={() => setEvidenceStatusFilter('approved')}
                 data-testid="filter-evidence-approved"
               >
-                Approved
+                {t('reviews.evidence.filters.approved')}
               </button>
               <button
                 className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
@@ -265,7 +267,7 @@ export default function EvidenceReviewQueue({
                 onClick={() => setEvidenceStatusFilter('rejected')}
                 data-testid="filter-evidence-rejected"
               >
-                Rejected
+                {t('reviews.evidence.filters.rejected')}
               </button>
             </div>
 
@@ -278,13 +280,13 @@ export default function EvidenceReviewQueue({
                 data-testid="filter-assignee"
               >
                 <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Filter by assignee" />
+                  <SelectValue placeholder={t('reviews.evidence.filters.filterByAssignee')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Evidence</SelectItem>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  <SelectItem value="all">{t('reviews.evidence.filters.allEvidence')}</SelectItem>
+                  <SelectItem value="unassigned">{t('reviews.evidence.filters.unassigned')}</SelectItem>
                   {currentUserId && (
-                    <SelectItem value="me">Assigned to Me</SelectItem>
+                    <SelectItem value="me">{t('reviews.evidence.filters.assignedToMe')}</SelectItem>
                   )}
                   {admins?.map((admin) => (
                     <SelectItem key={admin.id} value={admin.id}>
@@ -306,7 +308,7 @@ export default function EvidenceReviewQueue({
                 data-testid="checkbox-select-all-evidence"
               />
               <label className="text-sm text-gray-600">
-                Select All ({evidencePending.length} items)
+                {t('reviews.evidence.selectAll', { count: evidencePending.length })}
               </label>
             </div>
           )}
@@ -347,8 +349,8 @@ export default function EvidenceReviewQueue({
           ) : evidencePending && evidencePending.length === 0 ? (
             <div className="text-center py-8">
               <Trophy className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-              <h3 className="text-lg font-semibold text-gray-600 mb-2">All Caught Up!</h3>
-              <p className="text-gray-500">No pending evidence submissions to review.</p>
+              <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('reviews.evidence.emptyState.title')}</h3>
+              <p className="text-gray-500">{t('reviews.evidence.emptyState.description')}</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -384,25 +386,25 @@ export default function EvidenceReviewQueue({
                         {evidence.visibility === 'public' && (
                           <Badge variant="outline">
                             <Eye className="h-3 w-3 mr-1" />
-                            Public
+                            {t('reviews.evidence.badges.public')}
                           </Badge>
                         )}
                         {evidence.school?.photoConsentStatus === 'approved' && (
                           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
                             <ShieldCheck className="h-3 w-3 mr-1" />
-                            Photo Approved
+                            {t('reviews.evidence.badges.photoApproved')}
                           </Badge>
                         )}
                         {evidence.school?.photoConsentStatus === 'pending' && (
                           <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
                             <ShieldAlert className="h-3 w-3 mr-1" />
-                            Photo Pending
+                            {t('reviews.evidence.badges.photoPending')}
                           </Badge>
                         )}
                         {(!evidence.school?.photoConsentStatus || evidence.school?.photoConsentStatus === 'rejected') && (
                           <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">
                             <Shield className="h-3 w-3 mr-1" />
-                            No Photo Consent
+                            {t('reviews.evidence.badges.noPhotoConsent')}
                           </Badge>
                         )}
                         {(() => {
@@ -411,7 +413,7 @@ export default function EvidenceReviewQueue({
                           const hoursSinceSubmission = (now.getTime() - submittedDate.getTime()) / (1000 * 60 * 60);
                           return hoursSinceSubmission < 48 ? (
                             <Badge className="bg-pcs_coral text-white animate-pulse" data-testid={`badge-new-evidence-${evidence.id}`}>
-                              NEW
+                              {t('reviews.evidence.badges.new')}
                             </Badge>
                           ) : null;
                         })()}
@@ -425,15 +427,15 @@ export default function EvidenceReviewQueue({
                             {evidence.school.name}
                           </span>
                         )}
-                        <span>School ID: {evidence.schoolId}</span>
-                        <span>Submitted: {new Date(evidence.submittedAt).toLocaleDateString()}</span>
-                        <span>Files: {evidence.files?.length || 0}</span>
+                        <span>{t('reviews.evidence.labels.schoolId', { id: evidence.schoolId })}</span>
+                        <span>{t('reviews.evidence.labels.submitted', { date: new Date(evidence.submittedAt).toLocaleDateString() })}</span>
+                        <span>{t('reviews.evidence.labels.files', { count: evidence.files?.length || 0 })}</span>
                       </div>
 
                       {/* Assignment Dropdown */}
                       <div className="mb-3">
                         <label className="text-xs font-medium text-gray-600 mb-1 block">
-                          Assigned To:
+                          {t('reviews.evidence.labels.assignedTo')}
                         </label>
                         <EvidenceAssignment
                           evidenceId={evidence.id}
@@ -457,7 +459,7 @@ export default function EvidenceReviewQueue({
                         data-testid={`button-approve-${evidence.id}`}
                       >
                         <CheckCircle className="h-4 w-4 mr-1" />
-                        Approve
+                        {t('reviews.evidence.buttons.approve')}
                       </Button>
                       <Button
                         size="sm"
@@ -470,7 +472,7 @@ export default function EvidenceReviewQueue({
                         data-testid={`button-reject-${evidence.id}`}
                       >
                         <XCircle className="h-4 w-4 mr-1" />
-                        Reject
+                        {t('reviews.evidence.buttons.reject')}
                       </Button>
                     </div>
                   </div>
@@ -486,20 +488,20 @@ export default function EvidenceReviewQueue({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-navy mb-4">
-              {reviewData.action === 'approved' ? 'Approve Evidence' : 'Reject Evidence'}
+              {reviewData.action === 'approved' ? t('reviews.evidence.modal.approveTitle') : t('reviews.evidence.modal.rejectTitle')}
             </h3>
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Review Notes {reviewData.action === 'rejected' && <span className="text-red-500">*</span>}
+                  {t('reviews.evidence.modal.reviewNotes')} {reviewData.action === 'rejected' && <span className="text-red-500">{t('reviews.evidence.modal.required')}</span>}
                 </label>
                 <Textarea
                   value={reviewData.notes}
                   onChange={(e) => setReviewData(reviewData ? { ...reviewData, notes: e.target.value } : null)}
                   placeholder={
                     reviewData.action === 'approved'
-                      ? 'Optional feedback for the school...'
-                      : 'Please provide feedback on why this evidence was rejected...'
+                      ? t('reviews.evidence.modal.feedbackOptional')
+                      : t('reviews.evidence.modal.feedbackRequired')
                   }
                   rows={4}
                   data-testid="textarea-review-notes"
@@ -512,15 +514,15 @@ export default function EvidenceReviewQueue({
                   className="flex-1"
                   data-testid="button-cancel-review"
                 >
-                  Cancel
+                  {t('reviews.evidence.modal.cancel')}
                 </Button>
                 <Button
                   className={`flex-1 ${reviewData.action === 'approved' ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}`}
                   onClick={() => {
                     if (reviewData.action === 'rejected' && !reviewData.notes.trim()) {
                       toast({
-                        title: "Review Notes Required",
-                        description: "Please provide feedback when rejecting evidence.",
+                        title: t('reviews.evidence.toasts.reviewNotesRequired'),
+                        description: t('reviews.evidence.toasts.feedbackRequired'),
                         variant: "destructive",
                       });
                       return;
@@ -535,7 +537,7 @@ export default function EvidenceReviewQueue({
                   data-testid="button-confirm-review"
                 >
                   {reviewEvidenceMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
-                  {reviewEvidenceMutation.isPending ? 'Processing...' : 'Confirm'}
+                  {reviewEvidenceMutation.isPending ? t('reviews.evidence.modal.processing') : t('reviews.evidence.modal.confirm')}
                 </Button>
               </div>
             </div>
@@ -549,37 +551,37 @@ export default function EvidenceReviewQueue({
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
               <AlertTriangle className="h-5 w-5 text-yellow-600" />
-              Approve Without Photo Consent? 📸
+              {t('reviews.evidence.consentWarning.title')}
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3 pt-2">
               <p className="text-base">
-                This school has <strong>not provided approved photo consent</strong>.
+                {t('reviews.evidence.consentWarning.noConsent')}
               </p>
               <p className="text-sm text-gray-600">
                 {pendingApprovalEvidence?.school?.photoConsentStatus === 'pending'
-                  ? 'Their photo consent document is currently under review.'
+                  ? t('reviews.evidence.consentWarning.statusPending')
                   : pendingApprovalEvidence?.school?.photoConsentStatus === 'rejected'
-                  ? 'Their photo consent document was rejected.'
-                  : 'No photo consent document has been uploaded.'}
+                  ? t('reviews.evidence.consentWarning.statusRejected')
+                  : t('reviews.evidence.consentWarning.statusNone')}
               </p>
               <p className="text-sm text-gray-600">
-                Approving this evidence means it <strong>will not be eligible</strong> for use in public case studies or promotional materials unless photo consent is later approved.
+                {t('reviews.evidence.consentWarning.disclaimer')}
               </p>
               <p className="font-medium text-gray-900">
-                Are you sure you want to approve this submission?
+                {t('reviews.evidence.consentWarning.confirmQuestion')}
               </p>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-consent-warning">
-              Cancel
+              {t('reviews.evidence.consentWarning.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmApprovalWithoutConsent}
               className="!bg-yellow-600 hover:!bg-yellow-700 !text-white"
               data-testid="button-confirm-consent-warning"
             >
-              Yes, Approve Anyway
+              {t('reviews.evidence.consentWarning.approveAnyway')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -590,29 +592,29 @@ export default function EvidenceReviewQueue({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-navy mb-4">
-              {bulkAction.type === 'approve' ? 'Bulk Approve Evidence' :
-               bulkAction.type === 'reject' ? 'Bulk Reject Evidence' :
-               'Bulk Delete Evidence'}
+              {bulkAction.type === 'approve' ? t('reviews.evidence.bulkDialog.approveTitle') :
+               bulkAction.type === 'reject' ? t('reviews.evidence.bulkDialog.rejectTitle') :
+               t('reviews.evidence.bulkDialog.deleteTitle')}
             </h3>
             <div className="space-y-4">
               <div className="bg-gray-50 p-3 rounded-lg">
                 <p className="text-sm text-gray-600">
-                  This action will affect <strong>{selectedEvidence.length}</strong> evidence submissions.
+                  {t('reviews.evidence.bulkDialog.affectedCount', { count: selectedEvidence.length })}
                 </p>
               </div>
 
               {(bulkAction.type === 'approve' || bulkAction.type === 'reject') && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Review Notes {bulkAction.type === 'reject' && <span className="text-red-500">*</span>}
+                    {t('reviews.evidence.bulkDialog.reviewNotes')} {bulkAction.type === 'reject' && <span className="text-red-500">{t('reviews.evidence.bulkDialog.required')}</span>}
                   </label>
                   <Textarea
                     value={bulkAction.notes || ''}
                     onChange={(e) => setBulkAction(bulkAction ? { ...bulkAction, notes: e.target.value } : null)}
                     placeholder={
                       bulkAction.type === 'approve'
-                        ? 'Optional feedback for all schools...'
-                        : 'Please provide feedback on why these evidence submissions were rejected...'
+                        ? t('reviews.evidence.bulkDialog.feedbackOptional')
+                        : t('reviews.evidence.bulkDialog.feedbackRequired')
                     }
                     rows={4}
                     data-testid="textarea-bulk-review-notes"
@@ -623,7 +625,7 @@ export default function EvidenceReviewQueue({
               {bulkAction.type === 'delete' && (
                 <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
                   <p className="text-sm text-red-700">
-                    <strong>Warning:</strong> This action cannot be undone. All selected evidence submissions will be permanently deleted.
+                    {t('reviews.evidence.bulkDialog.deleteWarning')}
                   </p>
                 </div>
               )}
@@ -638,7 +640,7 @@ export default function EvidenceReviewQueue({
                   className="flex-1"
                   data-testid="button-cancel-bulk-operation"
                 >
-                  Cancel
+                  {t('reviews.evidence.bulkDialog.cancel')}
                 </Button>
                 <Button
                   className={`flex-1 ${
@@ -649,8 +651,8 @@ export default function EvidenceReviewQueue({
                   onClick={() => {
                     if (bulkAction.type === 'reject' && !bulkAction.notes?.trim()) {
                       toast({
-                        title: "Review Notes Required",
-                        description: "Please provide feedback when rejecting evidence submissions.",
+                        title: t('reviews.evidence.bulkDialog.toasts.reviewNotesRequired'),
+                        description: t('reviews.evidence.bulkDialog.toasts.feedbackRequired'),
                         variant: "destructive",
                       });
                       return;
@@ -672,7 +674,7 @@ export default function EvidenceReviewQueue({
                   {(bulkEvidenceReviewMutation.isPending || bulkEvidenceDeleteMutation.isPending) && (
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   )}
-                  {(bulkEvidenceReviewMutation.isPending || bulkEvidenceDeleteMutation.isPending) ? 'Processing...' : 'Confirm'}
+                  {(bulkEvidenceReviewMutation.isPending || bulkEvidenceDeleteMutation.isPending) ? t('reviews.evidence.bulkDialog.processing') : t('reviews.evidence.bulkDialog.confirm')}
                 </Button>
               </div>
             </div>

@@ -10,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { useTranslation } from 'react-i18next';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -68,6 +69,7 @@ export default function SchoolDetailsDialog({
   evidenceFormSchoolId,
   setEvidenceFormSchoolId,
 }: SchoolDetailsDialogProps) {
+  const { t } = useTranslation('admin');
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [editingSchoolLanguage, setEditingSchoolLanguage] = useState(false);
@@ -166,15 +168,15 @@ export default function SchoolDetailsDialog({
         setViewingSchool(context.previousViewingSchool);
       }
       toast({
-        title: "Update Failed",
-        description: "Failed to update school language. Changes have been reverted.",
+        title: t('admin.schools.toasts.updateFailed.title'),
+        description: t('admin.schools.toasts.updateFailed.description'),
         variant: "destructive",
       });
     },
     onSuccess: () => {
       toast({
-        title: "Language Updated",
-        description: "School preferred language has been updated successfully.",
+        title: t('admin.schools.toasts.languageUpdated.title'),
+        description: t('admin.schools.toasts.languageUpdated.description'),
       });
       setEditingSchoolLanguage(false);
     },
@@ -235,15 +237,15 @@ export default function SchoolDetailsDialog({
         setViewingSchool(context.previousViewingSchool);
       }
       toast({
-        title: "Update Failed",
-        description: "Failed to update school progression. Changes have been reverted.",
+        title: t('admin.schools.toasts.updateFailed.title'),
+        description: t('admin.schools.toasts.progressionUpdateFailed.description'),
         variant: "destructive",
       });
     },
     onSuccess: () => {
       toast({
-        title: "Progression Updated",
-        description: "School progression has been updated successfully.",
+        title: t('admin.schools.toasts.progressionUpdated.title'),
+        description: t('admin.schools.toasts.progressionUpdated.description'),
       });
       setEditingProgression(false);
     },
@@ -271,20 +273,20 @@ export default function SchoolDetailsDialog({
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-gray-600">Country</label>
+                <label className="text-sm font-medium text-gray-600">{t('admin.schools.school_details.labels.country')}</label>
                 <p className="text-base" data-testid={`text-country-${viewingSchool.id}`}>
                   {viewingSchool.country}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">School Type</label>
+                <label className="text-sm font-medium text-gray-600">{t('admin.schools.school_details.labels.schoolType')}</label>
                 <p className="text-base capitalize" data-testid={`text-type-${viewingSchool.id}`}>
                   {viewingSchool.type}
                 </p>
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                  Preferred Language
+                  {t('admin.schools.school_details.labels.preferredLanguage')}
                   {!editingSchoolLanguage && (
                     <Button 
                       size="sm" 
@@ -340,7 +342,7 @@ export default function SchoolDetailsDialog({
                       {updateSchoolLanguageMutation.isPending && (
                         <Loader2 className="h-3 w-3 mr-2 animate-spin" />
                       )}
-                      {updateSchoolLanguageMutation.isPending ? 'Saving...' : 'Save'}
+                      {updateSchoolLanguageMutation.isPending ? t('admin.schools.buttons.saving') : t('admin.schools.buttons.save')}
                     </Button>
                     <Button
                       size="sm"
@@ -348,7 +350,7 @@ export default function SchoolDetailsDialog({
                       onClick={() => setEditingSchoolLanguage(false)}
                       data-testid={`button-cancel-language-${viewingSchool.id}`}
                     >
-                      Cancel
+                      {t('admin.schools.buttons.cancel')}
                     </Button>
                   </div>
                 ) : (
@@ -358,31 +360,31 @@ export default function SchoolDetailsDialog({
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">Number of Students</label>
+                <label className="text-sm font-medium text-gray-600">{t('admin.schools.school_details.labels.numberOfStudents')}</label>
                 <p className="text-base" data-testid={`text-student-count-${viewingSchool.id}`}>
                   {viewingSchool.studentCount}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">Current Stage</label>
+                <label className="text-sm font-medium text-gray-600">{t('admin.schools.school_details.labels.currentStage')}</label>
                 <p className="text-base capitalize" data-testid={`text-stage-${viewingSchool.id}`}>
                   {viewingSchool.currentStage}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">Progress</label>
+                <label className="text-sm font-medium text-gray-600">{t('admin.schools.school_details.labels.progress')}</label>
                 <p className="text-base" data-testid={`text-progress-${viewingSchool.id}`}>
                   {viewingSchool.progressPercentage}%
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">Primary Contact Email</label>
+                <label className="text-sm font-medium text-gray-600">{t('admin.schools.school_details.labels.primaryContactEmail')}</label>
                 <p className="text-base" data-testid={`text-email-${viewingSchool.id}`}>
-                  {viewingSchool.primaryContactEmail || 'N/A'}
+                  {viewingSchool.primaryContactEmail || t('admin.schools.school_table.notAvailable')}
                 </p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">Joined</label>
+                <label className="text-sm font-medium text-gray-600">{t('admin.schools.school_details.labels.joined')}</label>
                 <p className="text-base" data-testid={`text-joined-${viewingSchool.id}`}>
                   {new Date(viewingSchool.createdAt).toLocaleDateString()}
                 </p>
@@ -391,7 +393,7 @@ export default function SchoolDetailsDialog({
 
             {viewingSchool.address && (
               <div>
-                <label className="text-sm font-medium text-gray-600">Address</label>
+                <label className="text-sm font-medium text-gray-600">{t('admin.schools.school_details.labels.address')}</label>
                 <p className="text-base" data-testid={`text-address-${viewingSchool.id}`}>
                   {viewingSchool.address}
                 </p>
@@ -404,7 +406,7 @@ export default function SchoolDetailsDialog({
                 <CardTitle className="flex items-center justify-between text-lg">
                   <div className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-pcs_blue" />
-                    Manage Progression
+                    {t('admin.schools.school_details.manageProgression.title')}
                   </div>
                   {!editingProgression && (
                     <Button 
@@ -423,7 +425,7 @@ export default function SchoolDetailsDialog({
                       data-testid={`button-edit-progression-${viewingSchool.id}`}
                     >
                       <Edit className="h-4 w-4 mr-2" />
-                      Edit Progression
+                      {t('admin.schools.school_details.manageProgression.editButton')}
                     </Button>
                   )}
                 </CardTitle>
@@ -433,7 +435,7 @@ export default function SchoolDetailsDialog({
                   <div className="space-y-4">
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label className="text-sm font-medium text-gray-700">Current Stage</label>
+                        <label className="text-sm font-medium text-gray-700">{t('admin.schools.school_details.labels.currentStage')}</label>
                         <Select
                           value={progressionFormData.currentStage}
                           onValueChange={(value) => 
@@ -447,14 +449,14 @@ export default function SchoolDetailsDialog({
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="inspire">Inspire</SelectItem>
-                            <SelectItem value="investigate">Investigate</SelectItem>
-                            <SelectItem value="act">Act</SelectItem>
+                            <SelectItem value="inspire">{t('admin.schools.school_details.stages.inspire')}</SelectItem>
+                            <SelectItem value="investigate">{t('admin.schools.school_details.stages.investigate')}</SelectItem>
+                            <SelectItem value="act">{t('admin.schools.school_details.stages.act')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-700">Current Round</label>
+                        <label className="text-sm font-medium text-gray-700">{t('admin.schools.school_details.manageProgression.currentRound')}</label>
                         <Input
                           type="number"
                           min="1"
@@ -470,7 +472,7 @@ export default function SchoolDetailsDialog({
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">Stage Completion</label>
+                      <label className="text-sm font-medium text-gray-700">{t('admin.schools.school_details.manageProgression.stageCompletion')}</label>
                       <div className="flex items-center gap-4">
                         <label className="flex items-center gap-2">
                           <Checkbox
@@ -483,7 +485,7 @@ export default function SchoolDetailsDialog({
                             }
                             data-testid={`checkbox-inspire-${viewingSchool.id}`}
                           />
-                          <span className="text-sm">Inspire Completed</span>
+                          <span className="text-sm">{t('admin.schools.school_details.manageProgression.inspireCompleted')}</span>
                         </label>
                         <label className="flex items-center gap-2">
                           <Checkbox
@@ -496,7 +498,7 @@ export default function SchoolDetailsDialog({
                             }
                             data-testid={`checkbox-investigate-${viewingSchool.id}`}
                           />
-                          <span className="text-sm">Investigate Completed</span>
+                          <span className="text-sm">{t('admin.schools.school_details.manageProgression.investigateCompleted')}</span>
                         </label>
                         <label className="flex items-center gap-2">
                           <Checkbox
@@ -509,7 +511,7 @@ export default function SchoolDetailsDialog({
                             }
                             data-testid={`checkbox-act-${viewingSchool.id}`}
                           />
-                          <span className="text-sm">Act Completed</span>
+                          <span className="text-sm">{t('admin.schools.school_details.manageProgression.actCompleted')}</span>
                         </label>
                       </div>
                     </div>
@@ -519,7 +521,7 @@ export default function SchoolDetailsDialog({
                         onClick={() => setEditingProgression(false)}
                         data-testid={`button-cancel-progression-${viewingSchool.id}`}
                       >
-                        Cancel
+                        {t('admin.schools.buttons.cancel')}
                       </Button>
                       <Button 
                         onClick={() => {
@@ -535,21 +537,21 @@ export default function SchoolDetailsDialog({
                         {updateSchoolProgressionMutation.isPending && (
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                         )}
-                        {updateSchoolProgressionMutation.isPending ? 'Saving...' : 'Save Changes'}
+                        {updateSchoolProgressionMutation.isPending ? t('admin.schools.buttons.saving') : t('admin.schools.buttons.saveChanges')}
                       </Button>
                     </div>
                   </div>
                 ) : (
                   <div className="text-sm text-gray-600">
-                    <p>Use this section to manually set the school's progression stage, round, and completion status. This allows you to override the automatic progression based on evidence submission.</p>
+                    <p>{t('admin.schools.school_details.manageProgression.description')}</p>
                     <div className="mt-3 space-y-1">
-                      <p><strong>Current Stage:</strong> {viewingSchool.currentStage}</p>
-                      <p><strong>Current Round:</strong> {viewingSchool.currentRound || 1}</p>
-                      <p><strong>Stage Completion:</strong></p>
+                      <p><strong>{t('admin.schools.school_details.labels.currentStage')}:</strong> {viewingSchool.currentStage}</p>
+                      <p><strong>{t('admin.schools.school_details.manageProgression.currentRound')}:</strong> {viewingSchool.currentRound || 1}</p>
+                      <p><strong>{t('admin.schools.school_details.manageProgression.stageCompletion')}:</strong></p>
                       <ul className="ml-4 list-disc">
-                        <li>Inspire: {viewingSchool.inspireCompleted ? '✓ Completed' : '○ Not completed'}</li>
-                        <li>Investigate: {viewingSchool.investigateCompleted ? '✓ Completed' : '○ Not completed'}</li>
-                        <li>Act: {viewingSchool.actCompleted ? '✓ Completed' : '○ Not completed'}</li>
+                        <li>{t('admin.schools.school_details.stages.inspire')}: {viewingSchool.inspireCompleted ? t('admin.schools.school_details.manageProgression.completed') : t('admin.schools.school_details.manageProgression.notCompleted')}</li>
+                        <li>{t('admin.schools.school_details.stages.investigate')}: {viewingSchool.investigateCompleted ? t('admin.schools.school_details.manageProgression.completed') : t('admin.schools.school_details.manageProgression.notCompleted')}</li>
+                        <li>{t('admin.schools.school_details.stages.act')}: {viewingSchool.actCompleted ? t('admin.schools.school_details.manageProgression.completed') : t('admin.schools.school_details.manageProgression.notCompleted')}</li>
                       </ul>
                     </div>
                   </div>
@@ -562,41 +564,41 @@ export default function SchoolDetailsDialog({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <Target className="h-5 w-5 text-pcs_blue" />
-                  Action Plan
+                  {t('admin.schools.school_details.actionPlan.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {schoolPromisesQuery.isLoading ? (
                   <div className="flex items-center justify-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue mr-3"></div>
-                    <span className="text-gray-600">Loading promises data...</span>
+                    <span className="text-gray-600">{t('admin.schools.school_details.actionPlan.loading')}</span>
                   </div>
                 ) : schoolPromisesQuery.error ? (
                   <div className="text-center py-8 text-red-600">
-                    Failed to load promises data. Please try again.
+                    {t('admin.schools.school_details.actionPlan.loadingError')}
                   </div>
                 ) : totalPromises === 0 ? (
                   <div className="text-center py-8 text-gray-500">
-                    This school hasn't made any reduction promises yet.
+                    {t('admin.schools.school_details.actionPlan.noPromises')}
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {/* Summary Metrics */}
                     <div className="grid grid-cols-3 gap-4">
                       <div>
-                        <label className="text-xs font-medium text-gray-600">Total Promises</label>
+                        <label className="text-xs font-medium text-gray-600">{t('admin.schools.school_details.actionPlan.metrics.totalPromises')}</label>
                         <p className="text-2xl font-bold text-pcs_blue" data-testid="metric-promises-total">
                           {totalPromises}
                         </p>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-gray-600">Items Reduced (annual)</label>
+                        <label className="text-xs font-medium text-gray-600">{t('admin.schools.school_details.actionPlan.metrics.itemsReduced')}</label>
                         <p className="text-2xl font-bold text-pcs_blue" data-testid="metric-items-reduced">
                           {totalAnnualReduction.toLocaleString()}
                         </p>
                       </div>
                       <div>
-                        <label className="text-xs font-medium text-gray-600">Weight Reduced (kg/year)</label>
+                        <label className="text-xs font-medium text-gray-600">{t('admin.schools.school_details.actionPlan.metrics.weightReduced')}</label>
                         <p className="text-2xl font-bold text-pcs_blue" data-testid="metric-weight-reduced">
                           {totalAnnualWeightKg.toFixed(2)}
                         </p>
@@ -607,25 +609,25 @@ export default function SchoolDetailsDialog({
                     <div className="border-t pt-4">
                       <h4 className="font-semibold text-navy mb-3 flex items-center gap-2">
                         <Droplets className="h-4 w-4 text-teal" />
-                        Ocean Impact
+                        {t('admin.schools.school_details.actionPlan.oceanImpact')}
                       </h4>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="text-xs font-medium text-gray-600">Ocean Bottles Prevented</label>
+                          <label className="text-xs font-medium text-gray-600">{t('admin.schools.school_details.actionPlan.metrics.oceanBottles')}</label>
                           <p className="text-lg font-semibold text-teal flex items-center gap-1" data-testid="metric-ocean-bottles">
                             <TrendingDown className="h-4 w-4" />
                             {promiseMetrics?.funMetrics.oceanPlasticBottles.toFixed(0)}
                           </p>
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-600">Fish Saved</label>
+                          <label className="text-xs font-medium text-gray-600">{t('admin.schools.school_details.actionPlan.metrics.fishSaved')}</label>
                           <p className="text-lg font-semibold text-teal flex items-center gap-1" data-testid="metric-fish-saved">
                             <Fish className="h-4 w-4" />
                             {promiseMetrics?.funMetrics.fishSaved.toFixed(0)}
                           </p>
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-600">Sea Turtles Saved</label>
+                          <label className="text-xs font-medium text-gray-600">{t('admin.schools.school_details.actionPlan.metrics.seaTurtles')}</label>
                           <p className="text-lg font-semibold text-teal flex items-center gap-1" data-testid="metric-sea-turtles">
                             <Heart className="h-4 w-4" />
                             {promiseMetrics?.funMetrics.seaTurtles.toFixed(2)}
@@ -638,25 +640,25 @@ export default function SchoolDetailsDialog({
                     <div className="border-t pt-4">
                       <h4 className="font-semibold text-navy mb-3 flex items-center gap-2">
                         <Leaf className="h-4 w-4 text-green-600" />
-                        Environmental Impact
+                        {t('admin.schools.school_details.actionPlan.environmentalImpact')}
                       </h4>
                       <div className="grid grid-cols-3 gap-4">
                         <div>
-                          <label className="text-xs font-medium text-gray-600">CO₂ Prevented (kg)</label>
+                          <label className="text-xs font-medium text-gray-600">{t('admin.schools.school_details.actionPlan.metrics.co2Prevented')}</label>
                           <p className="text-lg font-semibold text-green-600 flex items-center gap-1" data-testid="metric-co2-prevented">
                             <Factory className="h-4 w-4" />
                             {promiseMetrics?.seriousMetrics.co2Prevented.toFixed(2)}
                           </p>
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-600">Oil Saved (liters)</label>
+                          <label className="text-xs font-medium text-gray-600">{t('admin.schools.school_details.actionPlan.metrics.oilSaved')}</label>
                           <p className="text-lg font-semibold text-green-600 flex items-center gap-1" data-testid="metric-oil-saved">
                             <Droplets className="h-4 w-4" />
                             {promiseMetrics?.seriousMetrics.oilSaved.toFixed(2)}
                           </p>
                         </div>
                         <div>
-                          <label className="text-xs font-medium text-gray-600">Waste Prevented (tons)</label>
+                          <label className="text-xs font-medium text-gray-600">{t('admin.schools.school_details.actionPlan.metrics.wastePrevented')}</label>
                           <p className="text-lg font-semibold text-green-600 flex items-center gap-1" data-testid="metric-waste-prevented">
                             <Trash className="h-4 w-4" />
                             {promiseMetrics?.seriousMetrics.tons.toFixed(4)}
@@ -674,14 +676,14 @@ export default function SchoolDetailsDialog({
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
                   <ImageIcon className="h-5 w-5 text-pcs_blue" />
-                  Photo Consent Status
+                  {t('admin.schools.school_details.photoConsent.title')}
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 {!photoConsentStatus || !photoConsentStatus.status ? (
                   <div className="text-center py-8 text-gray-500" data-testid="photo-consent-not-uploaded">
                     <ImageIcon className="h-12 w-12 mx-auto mb-2 text-gray-300" />
-                    <p>No photo consent document uploaded yet.</p>
+                    <p>{t('admin.schools.school_details.photoConsent.noDocument')}</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
@@ -689,7 +691,7 @@ export default function SchoolDetailsDialog({
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
-                          <label className="text-sm font-medium text-gray-600">Status:</label>
+                          <label className="text-sm font-medium text-gray-600">{t('admin.schools.school_details.photoConsent.status')}:</label>
                           <Badge
                             className={
                               photoConsentStatus.status === 'approved' ? 'bg-green-500 text-white' :
@@ -708,7 +710,7 @@ export default function SchoolDetailsDialog({
                         
                         {photoConsentStatus.uploadedAt && (
                           <p className="text-sm text-gray-600" data-testid="text-photo-consent-upload-date">
-                            <strong>Uploaded:</strong> {new Date(photoConsentStatus.uploadedAt).toLocaleDateString()}
+                            <strong>{t('admin.schools.school_details.photoConsent.uploaded')}:</strong> {new Date(photoConsentStatus.uploadedAt).toLocaleDateString()}
                           </p>
                         )}
 
@@ -721,7 +723,7 @@ export default function SchoolDetailsDialog({
                             data-testid="link-view-photo-consent-document"
                           >
                             <ExternalLink className="h-3 w-3" />
-                            View Document
+                            {t('admin.schools.school_details.photoConsent.viewDocument')}
                           </a>
                         )}
                       </div>
@@ -741,7 +743,7 @@ export default function SchoolDetailsDialog({
                             data-testid="button-approve-photo-consent"
                           >
                             <CheckCircle className="h-3 w-3 mr-1" />
-                            {approvePhotoConsentMutation.isPending ? 'Approving...' : 'Approve'}
+                            {approvePhotoConsentMutation.isPending ? t('admin.schools.school_details.photoConsent.approving') : t('admin.schools.school_details.photoConsent.approve')}
                           </Button>
                           <Button
                             size="sm"
@@ -751,7 +753,7 @@ export default function SchoolDetailsDialog({
                             data-testid="button-reject-photo-consent"
                           >
                             <XCircle className="h-3 w-3 mr-1" />
-                            Reject
+                            {t('admin.schools.school_details.photoConsent.reject')}
                           </Button>
                         </div>
                       )}
@@ -761,11 +763,11 @@ export default function SchoolDetailsDialog({
                     {photoConsentStatus.status === 'approved' && photoConsentStatus.approvedAt && (
                       <div className="border-t pt-3 text-sm text-gray-600" data-testid="info-photo-consent-approval">
                         <p>
-                          <strong>Approved:</strong> {new Date(photoConsentStatus.approvedAt).toLocaleDateString()}
+                          <strong>{t('admin.schools.school_details.photoConsent.approved')}:</strong> {new Date(photoConsentStatus.approvedAt).toLocaleDateString()}
                         </p>
                         {photoConsentStatus.approvedBy && (
                           <p>
-                            <strong>Approved by:</strong> {photoConsentStatus.approvedBy}
+                            <strong>{t('admin.schools.school_details.photoConsent.approvedBy')}:</strong> {photoConsentStatus.approvedBy}
                           </p>
                         )}
                       </div>
@@ -775,13 +777,13 @@ export default function SchoolDetailsDialog({
                     {photoConsentStatus.status === 'rejected' && (
                       <div className="border-t pt-3" data-testid="info-photo-consent-rejection">
                         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                          <p className="text-sm font-semibold text-red-900 mb-1">Rejection Notes:</p>
+                          <p className="text-sm font-semibold text-red-900 mb-1">{t('admin.schools.school_details.photoConsent.rejectionNotes')}:</p>
                           <p className="text-sm text-red-800" data-testid="text-photo-consent-reject-notes">
-                            {photoConsentStatus.reviewNotes || 'No notes provided'}
+                            {photoConsentStatus.reviewNotes || t('admin.schools.school_details.photoConsent.noNotes')}
                           </p>
                           {photoConsentStatus.reviewedBy && (
                             <p className="text-xs text-red-700 mt-2">
-                              Reviewed by: {photoConsentStatus.reviewedBy}
+                              {t('admin.schools.school_details.photoConsent.reviewedBy')}: {photoConsentStatus.reviewedBy}
                             </p>
                           )}
                         </div>
@@ -806,14 +808,14 @@ export default function SchoolDetailsDialog({
                 data-testid="button-submit-evidence-for-school"
               >
                 <Upload className="h-4 w-4 mr-2" />
-                Submit Evidence for This School
+                {t('admin.schools.school_details.submitEvidence')}
               </Button>
               <Button 
                 variant="outline" 
                 onClick={() => setViewingSchool(null)}
                 data-testid="button-close-school-detail"
               >
-                Close
+                {t('admin.schools.buttons.close')}
               </Button>
             </div>
           </div>
@@ -841,33 +843,33 @@ export default function SchoolDetailsDialog({
       }}>
         <AlertDialogContent data-testid="dialog-reject-photo-consent">
           <AlertDialogHeader>
-            <AlertDialogTitle>Reject Photo Consent</AlertDialogTitle>
+            <AlertDialogTitle>{t('admin.schools.school_details.photoConsent.rejectDialog.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              Please provide feedback explaining why the photo consent document is being rejected. This will help the school understand what needs to be corrected.
+              {t('admin.schools.school_details.photoConsent.rejectDialog.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="my-4">
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              Rejection Notes <span className="text-red-500">*</span>
+              {t('admin.schools.school_details.photoConsent.rejectDialog.label')} <span className="text-red-500">*</span>
             </label>
             <Textarea
               value={photoConsentRejectNotes}
               onChange={(e) => setPhotoConsentRejectNotes(e.target.value)}
-              placeholder="Explain why the document is being rejected and what needs to be corrected..."
+              placeholder={t('admin.schools.school_details.photoConsent.rejectDialog.placeholder')}
               rows={4}
               data-testid="textarea-photo-consent-reject-notes"
             />
           </div>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-reject-photo-consent">
-              Cancel
+              {t('admin.schools.buttons.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => {
                 if (!photoConsentRejectNotes.trim()) {
                   toast({
-                    title: "Notes Required",
-                    description: "Please provide rejection notes explaining why the document was rejected.",
+                    title: t('admin.schools.toasts.notesRequired.title'),
+                    description: t('admin.schools.toasts.notesRequired.description'),
                     variant: "destructive",
                   });
                   return;
@@ -880,7 +882,7 @@ export default function SchoolDetailsDialog({
               disabled={!photoConsentRejectNotes.trim() || rejectPhotoConsentMutation.isPending}
               data-testid="button-confirm-reject-photo-consent"
             >
-              {rejectPhotoConsentMutation.isPending ? "Rejecting..." : "Reject Document"}
+              {rejectPhotoConsentMutation.isPending ? t('admin.schools.school_details.photoConsent.rejecting') : t('admin.schools.school_details.photoConsent.rejectDocument')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

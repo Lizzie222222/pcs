@@ -1,4 +1,5 @@
 import { Badge } from "@/components/ui/badge";
+import { useTranslation } from 'react-i18next';
 
 interface ReviewsFiltersProps {
   reviewTab: 'evidence' | 'audits' | 'photo-consent';
@@ -15,6 +16,8 @@ export default function ReviewsFilters({
   auditsCount,
   photoConsentCount
 }: ReviewsFiltersProps) {
+  const { t } = useTranslation('admin');
+
   return (
     <div className="flex space-x-2 bg-gray-100 p-1 rounded-lg w-fit">
       <button
@@ -26,7 +29,7 @@ export default function ReviewsFilters({
         onClick={() => setReviewTab('evidence')}
         data-testid="subtab-evidence"
       >
-        Evidence Review
+        {t('reviews.filters.evidenceReview')}
         {evidenceCount > 0 && (
           <Badge className="ml-2 bg-red-500 text-white" data-testid="badge-evidence-count">
             {evidenceCount}
@@ -42,7 +45,7 @@ export default function ReviewsFilters({
         onClick={() => setReviewTab('audits')}
         data-testid="subtab-audits"
       >
-        Audit Review
+        {t('reviews.filters.auditReview')}
         {auditsCount > 0 && (
           <Badge className="ml-2 bg-red-500 text-white" data-testid="badge-audits-count">
             {auditsCount}
@@ -58,7 +61,7 @@ export default function ReviewsFilters({
         onClick={() => setReviewTab('photo-consent')}
         data-testid="tab-review-photo-consent"
       >
-        Photo Consent
+        {t('reviews.filters.photoConsent')}
         {photoConsentCount > 0 && (
           <Badge className="ml-2 bg-red-500 text-white">
             {photoConsentCount}

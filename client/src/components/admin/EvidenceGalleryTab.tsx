@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from 'react-i18next';
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,6 +26,7 @@ import { PDFThumbnail } from "@/components/PDFThumbnail";
 import type { EvidenceWithSchool } from "@shared/schema";
 
 export default function EvidenceGalleryTab() {
+  const { t } = useTranslation('admin');
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
@@ -86,10 +88,10 @@ export default function EvidenceGalleryTab() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
-      toast({ title: "Success", description: "Evidence status updated" });
+      toast({ title: t('evidenceGallery.toasts.statusUpdated.title'), description: t('evidenceGallery.toasts.statusUpdated.description') });
     },
     onError: () => {
-      toast({ title: "Error", description: "Failed to update evidence status", variant: "destructive" });
+      toast({ title: t('evidenceGallery.toasts.updateFailed.title'), description: t('evidenceGallery.toasts.updateFailed.description'), variant: "destructive" });
     },
   });
 
@@ -99,27 +101,27 @@ export default function EvidenceGalleryTab() {
       return {
         icon: ShieldAlert,
         color: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200',
-        text: photoConsentStatus === 'pending' ? 'Permission Pending' : 'No Permission',
+        text: photoConsentStatus === 'pending' ? t('evidenceGallery.badges.permissionPending') : t('evidenceGallery.badges.noPermission'),
       };
     }
     if (photoConsentStatus === 'approved') {
       return {
         icon: ShieldCheck,
         color: 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200',
-        text: 'Permission Approved',
+        text: t('evidenceGallery.badges.permissionApproved'),
       };
     }
     if (photoConsentStatus === 'rejected') {
       return {
         icon: Shield,
         color: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
-        text: 'Permission Rejected',
+        text: t('evidenceGallery.badges.permissionRejected'),
       };
     }
     return {
       icon: ShieldAlert,
       color: 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200',
-      text: 'No Permission',
+      text: t('evidenceGallery.badges.noPermission'),
     };
   };
 
@@ -167,11 +169,11 @@ export default function EvidenceGalleryTab() {
       {/* Header */}
       <div className="flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-navy">Evidence Gallery</h2>
-          <p className="text-gray-600 text-sm mt-1">Browse and manage all evidence submissions</p>
+          <h2 className="text-2xl font-bold text-navy">{t('evidenceGallery.title')}</h2>
+          <p className="text-gray-600 text-sm mt-1">{t('evidenceGallery.subtitle')}</p>
         </div>
         <div className="text-sm text-gray-600">
-          {evidenceList.length} {evidenceList.length === 1 ? 'submission' : 'submissions'}
+          {evidenceList.length === 1 ? t('evidenceGallery.submissionCount.single', { count: evidenceList.length }) : t('evidenceGallery.submissionCount.plural', { count: evidenceList.length })}
         </div>
       </div>
       
@@ -180,34 +182,34 @@ export default function EvidenceGalleryTab() {
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Stage</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.stage')}</label>
               <Select 
                 value={filters.stage || 'all'} 
                 onValueChange={(value) => setFilters(prev => ({ ...prev, stage: value === 'all' ? '' : value }))}
               >
                 <SelectTrigger data-testid="select-stage-filter">
-                  <SelectValue placeholder="All Stages" />
+                  <SelectValue placeholder={t('evidenceGallery.filters.options.allStages')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Stages</SelectItem>
-                  <SelectItem value="inspire">Inspire</SelectItem>
-                  <SelectItem value="investigate">Investigate</SelectItem>
-                  <SelectItem value="act">Act</SelectItem>
+                  <SelectItem value="all">{t('evidenceGallery.filters.options.allStages')}</SelectItem>
+                  <SelectItem value="inspire">{t('evidenceGallery.filters.stages.inspire')}</SelectItem>
+                  <SelectItem value="investigate">{t('evidenceGallery.filters.stages.investigate')}</SelectItem>
+                  <SelectItem value="act">{t('evidenceGallery.filters.stages.act')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Country</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.country')}</label>
               <Select 
                 value={filters.country || 'all'} 
                 onValueChange={(value) => setFilters(prev => ({ ...prev, country: value === 'all' ? '' : value }))}
               >
                 <SelectTrigger data-testid="select-country-filter">
-                  <SelectValue placeholder="All Countries" />
+                  <SelectValue placeholder={t('evidenceGallery.filters.options.allCountries')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Countries</SelectItem>
+                  <SelectItem value="all">{t('evidenceGallery.filters.options.allCountries')}</SelectItem>
                   {countries.map((country: string) => (
                     <SelectItem key={country} value={country}>{country}</SelectItem>
                   ))}
@@ -216,36 +218,36 @@ export default function EvidenceGalleryTab() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.status')}</label>
               <Select 
                 value={filters.status || 'all'} 
                 onValueChange={(value) => setFilters(prev => ({ ...prev, status: value === 'all' ? '' : value }))}
               >
                 <SelectTrigger data-testid="select-status-filter">
-                  <SelectValue placeholder="All Statuses" />
+                  <SelectValue placeholder={t('evidenceGallery.filters.options.allStatuses')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  <SelectItem value="pending">Pending</SelectItem>
-                  <SelectItem value="approved">Approved</SelectItem>
-                  <SelectItem value="rejected">Rejected</SelectItem>
+                  <SelectItem value="all">{t('evidenceGallery.filters.options.allStatuses')}</SelectItem>
+                  <SelectItem value="pending">{t('evidenceGallery.filters.statuses.pending')}</SelectItem>
+                  <SelectItem value="approved">{t('evidenceGallery.filters.statuses.approved')}</SelectItem>
+                  <SelectItem value="rejected">{t('evidenceGallery.filters.statuses.rejected')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">{t('evidenceGallery.filters.labels.visibility')}</label>
               <Select 
                 value={filters.visibility || 'all'} 
                 onValueChange={(value) => setFilters(prev => ({ ...prev, visibility: value === 'all' ? '' : value }))}
               >
                 <SelectTrigger data-testid="select-visibility-filter">
-                  <SelectValue placeholder="All Visibility" />
+                  <SelectValue placeholder={t('evidenceGallery.filters.options.allVisibility')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Visibility</SelectItem>
-                  <SelectItem value="public">Public</SelectItem>
-                  <SelectItem value="private">Private</SelectItem>
+                  <SelectItem value="all">{t('evidenceGallery.filters.options.allVisibility')}</SelectItem>
+                  <SelectItem value="public">{t('evidenceGallery.filters.options.public')}</SelectItem>
+                  <SelectItem value="private">{t('evidenceGallery.filters.options.private')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -256,7 +258,7 @@ export default function EvidenceGalleryTab() {
                 onClick={() => setFilters({ status: '', stage: '', country: '', visibility: '' })}
                 data-testid="button-clear-filters"
               >
-                Clear Filters
+                {t('evidenceGallery.buttons.clearFilters')}
               </Button>
             </div>
           </div>
@@ -280,8 +282,8 @@ export default function EvidenceGalleryTab() {
       ) : evidenceList.length === 0 ? (
         <EmptyState 
           icon={FileText}
-          title="No evidence submissions yet"
-          description="Evidence submissions will appear here once schools start uploading"
+          title={t('evidenceGallery.emptyStates.noEvidence.title')}
+          description={t('evidenceGallery.emptyStates.noEvidence.description')}
         />
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -330,14 +332,14 @@ export default function EvidenceGalleryTab() {
                       className="hover:underline truncate"
                       data-testid={`button-school-history-${evidence.id}`}
                     >
-                      {evidence.school?.name || 'Unknown School'}
+                      {evidence.school?.name || t('evidenceGallery.form.values.unknownSchool')}
                     </button>
                   </div>
                   
                   {/* Country */}
                   <div className="flex items-center gap-2 text-xs text-gray-600">
                     <Globe className="h-3 w-3" />
-                    <span>{evidence.school?.country || 'Unknown'}</span>
+                    <span>{evidence.school?.country || t('evidenceGallery.form.values.unknown')}</span>
                   </div>
                   
                   {/* Badges */}
@@ -351,7 +353,7 @@ export default function EvidenceGalleryTab() {
                     {evidence.visibility === 'public' && (
                       <Badge variant="outline" className="text-xs">
                         <Eye className="h-3 w-3 mr-1" />
-                        Public
+                        {t('evidenceGallery.badges.public')}
                       </Badge>
                     )}
                   </div>
@@ -383,7 +385,7 @@ export default function EvidenceGalleryTab() {
                       data-testid={`button-view-evidence-${evidence.id}`}
                     >
                       <Eye className="h-3 w-3 mr-1" />
-                      View
+                      {t('evidenceGallery.buttons.view')}
                     </Button>
                     {evidence.status === 'pending' && (
                       <>
@@ -417,35 +419,35 @@ export default function EvidenceGalleryTab() {
       <Dialog open={detailsDialogOpen} onOpenChange={setDetailsDialogOpen}>
         <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="dialog-evidence-details">
           <DialogHeader>
-            <DialogTitle>Evidence Details</DialogTitle>
+            <DialogTitle>{t('evidenceGallery.dialogs.evidenceDetails.title')}</DialogTitle>
           </DialogHeader>
           {selectedEvidence && (
             <div className="space-y-4">
               <div>
-                <label className="text-sm font-medium text-gray-700">Title</label>
+                <label className="text-sm font-medium text-gray-700">{t('evidenceGallery.form.labels.title')}</label>
                 <p className="text-sm mt-1">{selectedEvidence.title}</p>
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-700">Description</label>
-                <p className="text-sm mt-1">{selectedEvidence.description || 'No description'}</p>
+                <label className="text-sm font-medium text-gray-700">{t('evidenceGallery.form.labels.description')}</label>
+                <p className="text-sm mt-1">{selectedEvidence.description || t('evidenceGallery.form.values.noDescription')}</p>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="text-sm font-medium text-gray-700">School</label>
+                  <label className="text-sm font-medium text-gray-700">{t('evidenceGallery.form.labels.school')}</label>
                   <p className="text-sm mt-1">{selectedEvidence.school?.name}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Country</label>
+                  <label className="text-sm font-medium text-gray-700">{t('evidenceGallery.form.labels.country')}</label>
                   <p className="text-sm mt-1">{selectedEvidence.school?.country}</p>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Stage</label>
+                  <label className="text-sm font-medium text-gray-700">{t('evidenceGallery.form.labels.stage')}</label>
                   <Badge className={getStageBadgeColor(selectedEvidence.stage)}>
                     {selectedEvidence.stage}
                   </Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700">Status</label>
+                  <label className="text-sm font-medium text-gray-700">{t('evidenceGallery.form.labels.status')}</label>
                   <Badge className={getStatusBadgeColor(selectedEvidence.status || 'pending')}>
                     {selectedEvidence.status || 'pending'}
                   </Badge>
@@ -455,14 +457,14 @@ export default function EvidenceGalleryTab() {
               {/* Visibility and Permission Status */}
               <div className="grid grid-cols-2 gap-4 p-4 bg-gray-50 dark:bg-gray-900 rounded-lg border">
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">Visibility Setting</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">{t('evidenceGallery.form.labels.visibilitySetting')}</label>
                   <Badge variant="outline" className={selectedEvidence.visibility === 'public' ? 'bg-blue-50 text-blue-800 dark:bg-blue-900 dark:text-blue-200' : 'bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-200'}>
                     <Eye className="h-3 w-3 mr-1" />
-                    {selectedEvidence.visibility === 'public' ? 'Public' : 'Registered Only'}
+                    {selectedEvidence.visibility === 'public' ? t('evidenceGallery.badges.public') : t('evidenceGallery.badges.registeredOnly')}
                   </Badge>
                 </div>
                 <div>
-                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">Photo Permission</label>
+                  <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">{t('evidenceGallery.form.labels.photoPermission')}</label>
                   {(() => {
                     const permissionBadge = getPermissionBadge(selectedEvidence.school?.photoConsentStatus);
                     const PermissionIcon = permissionBadge.icon;
@@ -481,19 +483,19 @@ export default function EvidenceGalleryTab() {
                 <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
                   <p className="text-sm text-yellow-800 dark:text-yellow-200">
                     <ShieldAlert className="h-4 w-4 inline mr-1" />
-                    <strong>Permission Required:</strong> This school {selectedEvidence.school?.photoConsentStatus === 'pending' ? 'has a pending' : 'has not uploaded a'} photo consent document. This evidence should not be used in public case studies until permission is approved.
+                    <strong>{t('evidenceGallery.warnings.permissionRequired')}</strong> {selectedEvidence.school?.photoConsentStatus === 'pending' ? t('evidenceGallery.warnings.photoConsentPending') : t('evidenceGallery.warnings.photoConsentMissing')}
                   </p>
                 </div>
               )}
               {selectedEvidence.files && Array.isArray(selectedEvidence.files) && selectedEvidence.files.length > 0 ? (
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Files ({selectedEvidence.files.length})</label>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">{t('evidenceGallery.form.labels.files', { count: selectedEvidence.files.length })}</label>
                   <EvidenceFilesGallery files={selectedEvidence.files} />
                 </div>
               ) : null}
               {selectedEvidence.videoLinks && (
                 <div>
-                  <label className="text-sm font-medium text-gray-700 mb-2 block">Video Links</label>
+                  <label className="text-sm font-medium text-gray-700 mb-2 block">{t('evidenceGallery.form.labels.videoLinks')}</label>
                   <EvidenceVideoLinks videoLinks={selectedEvidence.videoLinks as string} />
                 </div>
               )}
@@ -507,7 +509,7 @@ export default function EvidenceGalleryTab() {
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" data-testid="dialog-school-history">
           <DialogHeader>
             <DialogTitle>
-              {selectedSchool?.name} - All Submissions ({schoolHistory.length})
+              {t('evidenceGallery.dialogs.schoolHistory.title', { schoolName: selectedSchool?.name, count: schoolHistory.length })}
             </DialogTitle>
           </DialogHeader>
           {schoolHistoryLoading ? (
@@ -517,8 +519,8 @@ export default function EvidenceGalleryTab() {
           ) : schoolHistory.length === 0 ? (
             <EmptyState 
               icon={FileText}
-              title="No submissions yet"
-              description="This school hasn't submitted any evidence yet"
+              title={t('evidenceGallery.emptyStates.noSchoolSubmissions.title')}
+              description={t('evidenceGallery.emptyStates.noSchoolSubmissions.description')}
             />
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

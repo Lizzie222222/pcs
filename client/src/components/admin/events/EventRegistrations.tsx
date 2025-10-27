@@ -1,3 +1,4 @@
+import { useTranslation } from 'react-i18next';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/states";
@@ -28,6 +29,8 @@ export default function EventRegistrations({
   setRegistrationStatusFilter,
   updateRegistrationMutation,
 }: EventRegistrationsProps) {
+  const { t } = useTranslation('admin');
+
   const handleExportCSV = () => {
     if (!viewingEvent) return;
     
@@ -35,10 +38,10 @@ export default function EventRegistrations({
     const rows = registrations.map(reg => [
       `${reg.user.firstName} ${reg.user.lastName}`,
       reg.user.email,
-      reg.school?.name || 'N/A',
-      reg.school?.country || 'N/A',
+      reg.school?.name || t('admin.events.registrations.notAvailable'),
+      reg.school?.country || t('admin.events.registrations.notAvailable'),
       reg.status,
-      reg.registeredAt ? format(new Date(reg.registeredAt), 'd MMM yyyy HH:mm') : 'N/A'
+      reg.registeredAt ? format(new Date(reg.registeredAt), 'd MMM yyyy HH:mm') : t('admin.events.registrations.notAvailable')
     ]);
     
     const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
@@ -56,14 +59,14 @@ export default function EventRegistrations({
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle data-testid="text-registrations-title">
-            Registrations for {viewingEvent?.title}
+            {t('admin.events.registrations.title', { title: viewingEvent?.title })}
           </DialogTitle>
         </DialogHeader>
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <label className="text-sm font-medium text-gray-700">
-                Filter by Status:
+                {t('admin.events.registrations.filterByStatus')}
               </label>
               <select
                 value={registrationStatusFilter}
@@ -71,11 +74,11 @@ export default function EventRegistrations({
                 className="px-3 py-2 border border-gray-300 rounded-md"
                 data-testid="select-registration-status-filter"
               >
-                <option value="all">All</option>
-                <option value="registered">Registered</option>
-                <option value="attended">Attended</option>
-                <option value="cancelled">Cancelled</option>
-                <option value="waitlisted">Waitlisted</option>
+                <option value="all">{t('admin.events.registrationStatuses.all')}</option>
+                <option value="registered">{t('admin.events.registrationStatuses.registered')}</option>
+                <option value="attended">{t('admin.events.registrationStatuses.attended')}</option>
+                <option value="cancelled">{t('admin.events.registrationStatuses.cancelled')}</option>
+                <option value="waitlisted">{t('admin.events.registrationStatuses.waitlisted')}</option>
               </select>
             </div>
             <Button
@@ -84,7 +87,7 @@ export default function EventRegistrations({
               data-testid="button-export-csv"
             >
               <Download className="h-4 w-4 mr-2" />
-              Export CSV
+              {t('admin.events.registrations.exportCSV')}
             </Button>
           </div>
           
@@ -129,8 +132,8 @@ export default function EventRegistrations({
             </div>
           ) : registrations.length === 0 ? (
             <EmptyState
-              title="No registrations yet"
-              description="This event has no registrations"
+              title={t('admin.events.registrations.noRegistrations')}
+              description={t('admin.events.registrations.noRegistrationsDescription')}
               icon={Users}
             />
           ) : (
@@ -156,7 +159,7 @@ export default function EventRegistrations({
                         {registration.user.email}
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-school-${registration.id}`}>
-                        {registration.school?.name || 'N/A'}
+                        {registration.school?.name || t('admin.events.registrations.notAvailable')}
                       </td>
                       <td className="px-4 py-3 text-sm" data-testid={`text-status-${registration.id}`}>
                         <span className={`inline-flex px-2 py-1 rounded-full text-xs font-medium ${
@@ -169,7 +172,7 @@ export default function EventRegistrations({
                         </span>
                       </td>
                       <td className="px-4 py-3 text-sm text-gray-600" data-testid={`text-date-${registration.id}`}>
-                        {registration.registeredAt ? format(new Date(registration.registeredAt), 'd MMM yyyy') : 'N/A'}
+                        {registration.registeredAt ? format(new Date(registration.registeredAt), 'd MMM yyyy') : t('admin.events.registrations.notAvailable')}
                       </td>
                       <td className="px-4 py-3 text-sm">
                         {registration.status === 'registered' && (
@@ -187,7 +190,7 @@ export default function EventRegistrations({
                             ) : (
                               <CheckCircle className="h-4 w-4 mr-1" />
                             )}
-                            Mark Attended
+                            {t('admin.events.registrations.markAttended')}
                           </Button>
                         )}
                       </td>

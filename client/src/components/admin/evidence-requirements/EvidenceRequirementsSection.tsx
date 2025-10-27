@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,6 +44,7 @@ export default function EvidenceRequirementsSection({
   allResources, 
   resourcesLoading 
 }: EvidenceRequirementsSectionProps) {
+  const { t } = useTranslation('admin');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -71,8 +73,8 @@ export default function EvidenceRequirementsSection({
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Evidence requirement created successfully.",
+        title: t('toasts.success'),
+        description: t('evidenceRequirements.toasts.created'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
       setRequirementDialogOpen(false);
@@ -80,8 +82,8 @@ export default function EvidenceRequirementsSection({
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create evidence requirement.",
+        title: t('toasts.error'),
+        description: error.message || t('evidenceRequirements.toasts.created'),
         variant: "destructive",
       });
     },
@@ -93,8 +95,8 @@ export default function EvidenceRequirementsSection({
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Evidence requirement updated successfully.",
+        title: t('toasts.success'),
+        description: t('evidenceRequirements.toasts.updated'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
       setRequirementDialogOpen(false);
@@ -103,8 +105,8 @@ export default function EvidenceRequirementsSection({
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update evidence requirement.",
+        title: t('toasts.error'),
+        description: error.message || t('evidenceRequirements.toasts.updated'),
         variant: "destructive",
       });
     },
@@ -116,8 +118,8 @@ export default function EvidenceRequirementsSection({
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Evidence requirement deleted successfully.",
+        title: t('toasts.success'),
+        description: t('evidenceRequirements.toasts.deleted'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
       setRequirementDeleteDialogOpen(false);
@@ -125,8 +127,8 @@ export default function EvidenceRequirementsSection({
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete evidence requirement. It may be linked to existing evidence.",
+        title: t('toasts.error'),
+        description: error.message || t('evidenceRequirements.toasts.deleteFailed'),
         variant: "destructive",
       });
     },
@@ -141,8 +143,8 @@ export default function EvidenceRequirementsSection({
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: "Failed to reorder requirements.",
+        title: t('toasts.error'),
+        description: t('evidenceRequirements.toasts.reorderFailed'),
         variant: "destructive",
       });
     },
@@ -153,10 +155,10 @@ export default function EvidenceRequirementsSection({
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-navy" data-testid="text-page-title">
-            Evidence Requirements Management
+            {t('evidenceRequirements.title')}
           </CardTitle>
           <p className="text-gray-600 mt-2" data-testid="text-page-description">
-            Configure required evidence for each program stage
+            {t('evidenceRequirements.subtitle')}
           </p>
         </CardHeader>
       </Card>
@@ -172,7 +174,7 @@ export default function EvidenceRequirementsSection({
             onClick={() => setActiveEvidenceStage('inspire')}
             data-testid="tab-inspire"
           >
-            Inspire
+            {t('evidenceRequirements.stages.inspire')}
           </button>
           <button
             className={`px-4 py-2 rounded-md font-medium transition-colors ${
@@ -183,7 +185,7 @@ export default function EvidenceRequirementsSection({
             onClick={() => setActiveEvidenceStage('investigate')}
             data-testid="tab-investigate"
           >
-            Investigate
+            {t('evidenceRequirements.stages.investigate')}
           </button>
           <button
             className={`px-4 py-2 rounded-md font-medium transition-colors ${
@@ -194,7 +196,7 @@ export default function EvidenceRequirementsSection({
             onClick={() => setActiveEvidenceStage('act')}
             data-testid="tab-act"
           >
-            Act
+            {t('evidenceRequirements.stages.act')}
           </button>
         </div>
 
@@ -202,7 +204,7 @@ export default function EvidenceRequirementsSection({
           <CardHeader>
             <div className="flex items-center justify-between">
               <CardTitle>
-                {activeEvidenceStage.charAt(0).toUpperCase() + activeEvidenceStage.slice(1)} Stage Requirements
+                {t('evidenceRequirements.stageRequirements', { stage: activeEvidenceStage.charAt(0).toUpperCase() + activeEvidenceStage.slice(1) })}
               </CardTitle>
               <Button
                 onClick={() => {
@@ -214,19 +216,19 @@ export default function EvidenceRequirementsSection({
                 data-testid={`button-add-${activeEvidenceStage}`}
               >
                 <Plus className="h-4 w-4 mr-2" />
-                Add Requirement
+                {t('evidenceRequirements.buttons.addRequirement')}
               </Button>
             </div>
           </CardHeader>
           <CardContent>
             {requirementsLoading ? (
               <div className="py-8">
-                <LoadingSpinner message="Loading requirements..." />
+                <LoadingSpinner message={t('evidenceRequirements.loading')} />
               </div>
             ) : evidenceRequirements.filter(req => req.stage === activeEvidenceStage).length === 0 ? (
               <EmptyState
-                title="No requirements yet"
-                description="Add your first evidence requirement for this stage"
+                title={t('evidenceRequirements.emptyState.title')}
+                description={t('evidenceRequirements.emptyState.description')}
                 icon={Plus}
               />
             ) : (
@@ -298,7 +300,7 @@ export default function EvidenceRequirementsSection({
                                         data-testid={`link-resource-${requirement.id}`}
                                       >
                                         <BookOpen className="h-3 w-3" />
-                                        Helpful Resource Link
+                                        {t('evidenceRequirements.resource.link')}
                                       </a>
                                     );
                                   }
@@ -327,7 +329,7 @@ export default function EvidenceRequirementsSection({
                                   
                                   return (
                                     <div className="mt-3 space-y-2">
-                                      <p className="text-xs font-semibold text-gray-700">Helpful Resource:</p>
+                                      <p className="text-xs font-semibold text-gray-700">{t('evidenceRequirements.resource.helpful')}</p>
                                       {isPdf && pdfProxyUrl && (
                                         <div className="relative aspect-video max-w-xs bg-gray-100 rounded-md overflow-hidden border border-gray-200">
                                           <PDFThumbnail
@@ -398,49 +400,49 @@ export default function EvidenceRequirementsSection({
         <DialogContent data-testid="dialog-edit-requirement">
           <DialogHeader>
             <DialogTitle data-testid="text-dialog-title">
-              {editingRequirement ? 'Edit Requirement' : 'Add New Requirement'}
+              {editingRequirement ? t('evidenceRequirements.dialogs.edit.title') : t('evidenceRequirements.dialogs.add.title')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Title *
+                {t('evidenceRequirements.dialogs.labels.title')}
               </label>
               <Input
                 value={requirementFormData.title}
                 onChange={(e) => setRequirementFormData(prev => ({ ...prev, title: e.target.value }))}
-                placeholder="Enter requirement title"
+                placeholder={t('evidenceRequirements.dialogs.placeholders.title')}
                 data-testid="input-title"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description *
+                {t('evidenceRequirements.dialogs.labels.description')}
               </label>
               <Textarea
                 value={requirementFormData.description}
                 onChange={(e) => setRequirementFormData(prev => ({ ...prev, description: e.target.value }))}
-                placeholder="Enter requirement description"
+                placeholder={t('evidenceRequirements.dialogs.placeholders.description')}
                 rows={4}
                 data-testid="input-description"
               />
             </div>
             <div className="space-y-3">
               <div>
-                <h3 className="text-sm font-medium text-gray-700">Helpful Resource (Optional)</h3>
+                <h3 className="text-sm font-medium text-gray-700">{t('evidenceRequirements.dialogs.labels.helpfulResource')}</h3>
                 <p className="text-xs text-gray-600 mt-1">
-                  Select a resource from your library to attach to this requirement
+                  {t('evidenceRequirements.dialogs.labels.selectResourceDescription')}
                 </p>
               </div>
               
               {resourcesLoading ? (
                 <div className="flex items-center justify-center py-8">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue mr-3"></div>
-                  <span className="text-gray-600">Loading resources...</span>
+                  <span className="text-gray-600">{t('evidenceRequirements.resource.loadingResources')}</span>
                 </div>
               ) : allResources.length === 0 ? (
                 <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
-                  No resources available. Add resources from the Resources tab first.
+                  {t('evidenceRequirements.resource.noResources')}
                 </div>
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto p-1">

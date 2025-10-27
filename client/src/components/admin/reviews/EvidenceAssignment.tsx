@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { queryClient } from "@/lib/queryClient";
+import { useTranslation } from 'react-i18next';
 import type { User } from "@shared/schema";
 
 interface EvidenceAssignmentProps {
@@ -22,6 +23,7 @@ export function EvidenceAssignment({
   onAssigned 
 }: EvidenceAssignmentProps) {
   const { toast } = useToast();
+  const { t } = useTranslation('admin');
 
   const { data: admins } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
@@ -45,12 +47,12 @@ export function EvidenceAssignment({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
-      toast({ title: 'Evidence assigned successfully' });
+      toast({ title: t('reviews.assignment.toasts.success') });
       onAssigned?.();
     },
     onError: () => {
       toast({ 
-        title: 'Failed to assign evidence',
+        title: t('reviews.assignment.toasts.failed'),
         variant: 'destructive'
       });
     }
@@ -66,10 +68,10 @@ export function EvidenceAssignment({
       data-testid="select-evidence-assignment"
     >
       <SelectTrigger className="w-[200px]">
-        <SelectValue placeholder="Assign to..." />
+        <SelectValue placeholder={t('reviews.assignment.assignTo')} />
       </SelectTrigger>
       <SelectContent>
-        <SelectItem value="unassigned">Unassigned</SelectItem>
+        <SelectItem value="unassigned">{t('reviews.assignment.unassigned')}</SelectItem>
         {admins?.map((admin) => (
           <SelectItem key={admin.id} value={admin.id}>
             {admin.firstName} {admin.lastName}

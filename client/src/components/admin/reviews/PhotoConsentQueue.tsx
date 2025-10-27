@@ -10,6 +10,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/states";
+import { useTranslation } from 'react-i18next';
 
 interface PhotoConsentQueueProps {
   activeTab: string;
@@ -33,13 +34,15 @@ export default function PhotoConsentQueue({
   approvePhotoConsentMutation,
   rejectPhotoConsentMutation,
 }: PhotoConsentQueueProps) {
+  const { t } = useTranslation('admin');
+
   return (
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Photo Consent Review Queue
+            {t('reviews.photoConsent.title')}
           </CardTitle>
         </div>
       </CardHeader>
@@ -47,8 +50,8 @@ export default function PhotoConsentQueue({
         {photoConsentPending.length === 0 ? (
           <EmptyState
             icon={Shield}
-            title="No Pending Photo Consent"
-            description="All photo consent submissions have been reviewed!"
+            title={t('reviews.photoConsent.noPending')}
+            description={t('reviews.photoConsent.allReviewed')}
           />
         ) : (
           <div className="space-y-4">
@@ -79,7 +82,7 @@ export default function PhotoConsentQueue({
                           data-testid={`link-view-consent-${school.id}`}
                         >
                           <Eye className="h-4 w-4" />
-                          View Document
+                          {t('reviews.photoConsent.viewDocument')}
                         </a>
                       </div>
                     )}
@@ -89,7 +92,7 @@ export default function PhotoConsentQueue({
                       size="sm"
                       className="bg-green-500 hover:bg-green-600"
                       onClick={() => {
-                        if (confirm(`Approve photo consent for ${school.name}?`)) {
+                        if (confirm(t('reviews.photoConsent.confirmApprove', { name: school.name }))) {
                           approvePhotoConsentMutation.mutate({ schoolId: school.id, notes: '' });
                         }
                       }}
@@ -101,17 +104,17 @@ export default function PhotoConsentQueue({
                       ) : (
                         <CheckCircle className="h-4 w-4 mr-1" />
                       )}
-                      Approve
+                      {t('reviews.photoConsent.buttons.approve')}
                     </Button>
                     <Button
                       size="sm"
                       variant="destructive"
                       onClick={() => {
-                        const notes = prompt(`Rejection notes for ${school.name}:`);
+                        const notes = prompt(t('reviews.photoConsent.rejectionNotes', { name: school.name }));
                         if (notes && notes.trim()) {
                           rejectPhotoConsentMutation.mutate({ schoolId: school.id, notes });
                         } else if (notes !== null) {
-                          alert('Rejection notes are required');
+                          alert(t('reviews.photoConsent.rejectionRequired'));
                         }
                       }}
                       disabled={approvePhotoConsentMutation.isPending || rejectPhotoConsentMutation.isPending}
@@ -122,7 +125,7 @@ export default function PhotoConsentQueue({
                       ) : (
                         <XCircle className="h-4 w-4 mr-1" />
                       )}
-                      Reject
+                      {t('reviews.photoConsent.buttons.reject')}
                     </Button>
                   </div>
                 </div>

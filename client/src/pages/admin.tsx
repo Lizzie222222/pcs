@@ -1,5 +1,6 @@
 import { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from 'react-i18next';
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
 import { useCollaboration } from "@/hooks/useCollaboration";
@@ -132,6 +133,7 @@ import type {
  * @related server/routes.ts (registerRoutes), shared/schema.ts (users, schools, evidence, caseStudies, events), server/auth.ts (isAuthenticated)
  */
 function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' }) {
+  const { t } = useTranslation('admin');
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -298,8 +300,8 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
     if (!isAuthenticated || !(user?.role === 'admin' || user?.isAdmin)) {
       console.log('Admin page: Access denied, redirecting to /');
       toast({
-        title: "Access Denied",
-        description: "Admin access required",
+        title: t('toasts.access_denied'),
+        description: t('toasts.access_denied_desc'),
         variant: "destructive",
       });
       setTimeout(() => {
@@ -346,15 +348,15 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
   useEffect(() => {
     if (dashboardError && isUnauthorizedError(dashboardError as Error)) {
       toast({
-        title: "Unauthorized",
-        description: "Admin session expired. Please log in again.",
+        title: t('toasts.session_expired'),
+        description: t('toasts.session_expired_desc'),
         variant: "destructive",
       });
       setTimeout(() => {
         window.location.href = "/api/auth/google";
       }, 500);
     }
-  }, [dashboardError, toast]);
+  }, [dashboardError, toast, t]);
 
   // Resources queries (used by EvidenceRequirementsSection and EventsSection)
   // Only load when these tabs are active to improve initial dashboard load time
@@ -384,8 +386,8 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
     },
     onSuccess: () => {
       toast({
-        title: "Photo Consent Approved",
-        description: "Photo consent has been approved successfully.",
+        title: t('toasts.photoConsentApproved.title'),
+        description: t('toasts.photoConsentApproved.description'),
       });
     },
     onError: (error: any, variables, context) => {
@@ -394,8 +396,8 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
         queryClient.setQueryData(['/api/admin/photo-consent/pending'], context.previousPending);
       }
       toast({
-        title: "Approval Failed",
-        description: error.message || "Failed to approve photo consent. Changes have been reverted.",
+        title: t('toasts.photoConsentApprovalFailed.title'),
+        description: error.message || t('toasts.photoConsentApprovalFailed.description'),
         variant: "destructive",
       });
     },
@@ -430,8 +432,8 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
       setPhotoConsentRejectDialogOpen(false);
       setPhotoConsentRejectNotes('');
       toast({
-        title: "Photo Consent Rejected",
-        description: "The photo consent document has been rejected.",
+        title: t('toasts.photoConsentRejected.title'),
+        description: t('toasts.photoConsentRejected.description'),
       });
     },
     onError: (error: any, variables, context) => {
@@ -440,8 +442,8 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
         queryClient.setQueryData(['/api/admin/photo-consent/pending'], context.previousPending);
       }
       toast({
-        title: "Rejection Failed",
-        description: error.message || "Failed to reject photo consent. Changes have been reverted.",
+        title: t('toasts.photoConsentRejectionFailed.title'),
+        description: error.message || t('toasts.photoConsentRejectionFailed.description'),
         variant: "destructive",
       });
     },
@@ -479,13 +481,13 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
       
       setExportDialogOpen(false);
       toast({
-        title: "Export Successful",
-        description: `${type} data has been exported as ${exportFormat.toUpperCase()}.`,
+        title: t('export.toasts.success.title'),
+        description: t('export.toasts.success.description', { type, format: exportFormat.toUpperCase() }),
       });
     } catch (error) {
       toast({
-        title: "Export Failed",
-        description: "Failed to export data. Please try again.",
+        title: t('export.toasts.failed.title'),
+        description: t('export.toasts.failed.description'),
         variant: "destructive",
       });
     }
@@ -541,15 +543,18 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
       setCurrentViewingLanguage('en');
       
       toast({
-        title: "Emails Sent Successfully",
-        description: `${result.results.sent} emails sent successfully${result.results.failed > 0 ? `, ${result.results.failed} failed` : ''}.`,
+        title: t('email.toasts.emailsSent.title'),
+        description: t('email.toasts.emailsSent.description', { 
+          sent: result.results.sent, 
+          failedText: result.results.failed > 0 ? `, ${result.results.failed} failed` : ''
+        }),
       });
       
       return result;
     } catch (error) {
       toast({
-        title: "Failed to Send Emails",
-        description: "There was an error sending the bulk emails. Please try again.",
+        title: t('email.toasts.bulkEmailFailed.title'),
+        description: t('email.toasts.bulkEmailFailed.description'),
         variant: "destructive",
       });
       throw error;
@@ -570,7 +575,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <div className="text-center">
           <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading admin dashboard...</p>
+          <p className="mt-4 text-gray-600">{t('loading.dashboard')}</p>
         </div>
       </div>
     );
@@ -605,7 +610,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                     <div className="flex items-center gap-2">
                       <Sparkles className="h-5 w-5 text-yellow-300 animate-pulse" />
                       <span className="text-2xl font-bold" data-testid="text-admin-welcome-title">
-                        Lucky You!
+                        {t('welcomeBanner.title')}
                       </span>
                       <Sparkles className="h-5 w-5 text-yellow-300 animate-pulse" />
                     </div>
@@ -626,10 +631,10 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                   <CheckCircle className="h-6 w-6 mt-1 flex-shrink-0" />
                   <div>
                     <p className="font-semibold mb-1">
-                      Welcome to the Plastic Clever Schools admin team!
+                      {t('welcomeBanner.greeting')}
                     </p>
                     <p className="text-white/90">
-                      You now have full access to manage the program, review evidence submissions, publish case studies, and help schools on their journey to reduce plastic waste.
+                      {t('welcomeBanner.description')}
                     </p>
                   </div>
                 </div>
@@ -644,10 +649,10 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
             <div className="flex items-center justify-between">
               <div>
                 <h1 className="text-3xl font-bold text-navy" data-testid="text-admin-title">
-                  Admin Dashboard
+                  {t('header.title')}
                 </h1>
                 <p className="text-gray-600 mt-1">
-                  Manage schools, review evidence, and monitor program progress
+                  {t('header.subtitle')}
                 </p>
               </div>
               <div className="flex gap-4">
@@ -656,23 +661,23 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                     <DialogTrigger asChild>
                       <Button variant="outline" data-testid="button-export-data">
                         <Download className="h-4 w-4 mr-2" />
-                        Export Data
+                        {t('export.buttonLabel')}
                       </Button>
                     </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
-                      <DialogTitle>Export Data</DialogTitle>
+                      <DialogTitle>{t('export.title')}</DialogTitle>
                     </DialogHeader>
                     <div className="space-y-4">
                       <div>
-                        <p className="text-gray-600 mb-3">Choose format and data to export:</p>
+                        <p className="text-gray-600 mb-3">{t('export.description')}</p>
                         <Select value={exportFormat} onValueChange={(value: 'csv' | 'excel') => setExportFormat(value)}>
                           <SelectTrigger className="w-full">
-                            <SelectValue placeholder="Select format" />
+                            <SelectValue placeholder={t('export.selectFormatPlaceholder')} />
                           </SelectTrigger>
                           <SelectContent>
-                            <SelectItem value="csv">CSV Format</SelectItem>
-                            <SelectItem value="excel">Excel Format (.xlsx)</SelectItem>
+                            <SelectItem value="csv">{t('export.formats.csv')}</SelectItem>
+                            <SelectItem value="excel">{t('export.formats.excel')}</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -683,8 +688,8 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                           data-testid="button-export-schools"
                         >
                           <School className="h-4 w-4 mr-2" />
-                          Export Schools Data
-                          {activeTab === 'schools' && <span className="text-xs ml-2">(with current filters)</span>}
+                          {t('export.buttons.exportSchools')}
+                          {activeTab === 'schools' && <span className="text-xs ml-2">{t('export.buttons.withCurrentFilters')}</span>}
                         </Button>
                         <Button 
                           onClick={() => handleExport('evidence')} 
@@ -692,7 +697,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                           data-testid="button-export-evidence"
                         >
                           <Trophy className="h-4 w-4 mr-2" />
-                          Export Evidence Data
+                          {t('export.buttons.exportEvidence')}
                         </Button>
                         <Button 
                           onClick={() => handleExport('users')} 
@@ -700,7 +705,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                           data-testid="button-export-users"
                         >
                           <Users className="h-4 w-4 mr-2" />
-                          Export Users Data
+                          {t('export.buttons.exportUsers')}
                         </Button>
                       </div>
                     </div>
@@ -724,7 +729,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
             onClick={() => setActiveTab('overview')}
             data-testid="tab-dashboard"
           >
-            Dashboard
+            {t('tabs.dashboard')}
           </button>
 
           {/* Schools - Dropdown */}
@@ -738,7 +743,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 }`}
                 data-testid="tab-schools"
               >
-                Schools
+                {t('tabs.schools')}
                 <ChevronDown className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
@@ -748,28 +753,28 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 className={activeTab === 'schools' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-schools-schools"
               >
-                Manage Schools
+                {t('navigation.manageSchools')}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('teams')}
                 className={activeTab === 'teams' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-schools-teams"
               >
-                Manage Teams
+                {t('navigation.manageTeams')}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('users')}
                 className={activeTab === 'users' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-schools-users"
               >
-                User Management
+                {t('navigation.userManagement')}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('activity')}
                 className={activeTab === 'activity' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-schools-activity"
               >
-                User Activity
+                {t('navigation.userActivity')}
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem 
@@ -777,7 +782,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 className={activeTab === 'data-import' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-data-import"
               >
-                Import Data
+                {t('navigation.importData')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -793,7 +798,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 }`}
                 data-testid="tab-content"
               >
-                Content
+                {t('tabs.content')}
                 <ChevronDown className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
@@ -803,35 +808,35 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 className={activeTab === 'resources' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-content-resources"
               >
-                Manage Resources
+                {t('navigation.manageResources')}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('resource-packs')}
                 className={activeTab === 'resource-packs' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-content-resource-packs"
               >
-                Manage Resource Packs
+                {t('navigation.manageResourcePacks')}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('case-studies')}
                 className={activeTab === 'case-studies' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-content-case-studies"
               >
-                Create Case Studies
+                {t('navigation.createCaseStudies')}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('events')}
                 className={activeTab === 'events' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-content-events"
               >
-                Manage Events
+                {t('navigation.manageEvents')}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('media-library')}
                 className={activeTab === 'media-library' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-content-evidence-gallery"
               >
-                Evidence Gallery
+                {t('navigation.evidenceGallery')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -846,7 +851,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
             }`}
             data-testid="tab-reviews"
           >
-            Review Queue
+            {t('tabs.reviewQueue')}
             {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0 || pendingPhotoConsent.length > 0) && (
               <span 
                 className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
@@ -868,7 +873,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 }`}
                 data-testid="tab-program"
               >
-                Program
+                {t('tabs.program')}
                 <ChevronDown className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
@@ -878,14 +883,14 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 className={activeTab === 'evidence-requirements' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-program-evidence-requirements"
               >
-                Set Evidence Requirements
+                {t('navigation.setEvidenceRequirements')}
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('printable-forms')}
                 className={activeTab === 'printable-forms' ? 'bg-gray-100 font-medium' : ''}
                 data-testid="tab-program-printable-forms"
               >
-                Review Printable Forms
+                {t('navigation.reviewPrintableForms')}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -900,7 +905,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
             onClick={() => setActiveTab('email-test')}
             data-testid="tab-communications"
           >
-            Communications
+            {t('tabs.communications')}
           </button>
         </div>
 
@@ -1015,7 +1020,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
 
         {/* Case Studies Tab */}
         {activeTab === 'case-studies' && (
-          <Suspense fallback={<LoadingSpinner message="Loading case studies..." />}>
+          <Suspense fallback={<LoadingSpinner message={t('loading.caseStudies')} />}>
             <CaseStudyManagement
               user={user}
               schools={schools || []}

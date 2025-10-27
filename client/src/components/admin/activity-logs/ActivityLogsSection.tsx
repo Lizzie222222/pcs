@@ -1,4 +1,5 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,6 +29,7 @@ export default function ActivityLogsSection({
   activityFilters, 
   setActivityFilters 
 }: ActivityLogsSectionProps) {
+  const { t } = useTranslation('admin');
   const queryClient = useQueryClient();
 
   const queryParams = new URLSearchParams({
@@ -89,10 +91,10 @@ export default function ActivityLogsSection({
           <div>
             <CardTitle className="flex items-center gap-2">
               <FileText className="h-5 w-5" />
-              User Activity Logs
+              {t('activityLogs.title')}
             </CardTitle>
             <p className="text-gray-600 mt-2">
-              Track and monitor user activities across the platform
+              {t('activityLogs.subtitle')}
             </p>
           </div>
         </div>
@@ -104,17 +106,17 @@ export default function ActivityLogsSection({
             {/* Action Type Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Action Type
+                {t('activityLogs.filters.labels.actionType')}
               </label>
               <Select
                 value={activityFilters.actionType}
                 onValueChange={(value) => setActivityFilters((prev: { actionType: string; userEmail: string; startDate: string; endDate: string }) => ({ ...prev, actionType: value }))}
               >
                 <SelectTrigger data-testid="select-action-type">
-                  <SelectValue placeholder="All Actions" />
+                  <SelectValue placeholder={t('activityLogs.filters.options.allActions')} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Actions</SelectItem>
+                  <SelectItem value="all">{t('activityLogs.filters.options.allActions')}</SelectItem>
                   <SelectItem value="login">Login</SelectItem>
                   <SelectItem value="logout">Logout</SelectItem>
                   <SelectItem value="evidence_submit">Evidence Submit</SelectItem>
@@ -131,10 +133,10 @@ export default function ActivityLogsSection({
             {/* User Email Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                User Email
+                {t('activityLogs.filters.labels.userEmail')}
               </label>
               <Input
-                placeholder="Search by email..."
+                placeholder={t('activityLogs.filters.placeholders.searchByEmail')}
                 value={activityFilters.userEmail}
                 onChange={(e) => setActivityFilters((prev: { actionType: string; userEmail: string; startDate: string; endDate: string }) => ({ ...prev, userEmail: e.target.value }))}
                 data-testid="input-user-email"
@@ -144,7 +146,7 @@ export default function ActivityLogsSection({
             {/* Start Date Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Start Date
+                {t('activityLogs.filters.labels.startDate')}
               </label>
               <Input
                 type="date"
@@ -157,7 +159,7 @@ export default function ActivityLogsSection({
             {/* End Date Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                End Date
+                {t('activityLogs.filters.labels.endDate')}
               </label>
               <Input
                 type="date"
@@ -179,7 +181,7 @@ export default function ActivityLogsSection({
               data-testid="button-apply-filters"
             >
               <Filter className="h-4 w-4 mr-2" />
-              Apply Filters
+              {t('activityLogs.buttons.applyFilters')}
             </Button>
             <Button
               variant="outline"
@@ -195,7 +197,7 @@ export default function ActivityLogsSection({
               data-testid="button-clear-filters"
             >
               <X className="h-4 w-4 mr-2" />
-              Clear Filters
+              {t('activityLogs.buttons.clearFilters')}
             </Button>
           </div>
         </div>
@@ -204,13 +206,13 @@ export default function ActivityLogsSection({
         {isLoadingLogs ? (
           <div className="flex items-center justify-center py-12" data-testid="loading-activity-logs">
             <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full mr-3" />
-            <span className="text-gray-600">Loading activity logs...</span>
+            <span className="text-gray-600">{t('activityLogs.loadingStates.loadingLogs')}</span>
           </div>
         ) : !activityLogsData || activityLogsData.logs.length === 0 ? (
           <EmptyState
             icon={FileText}
-            title="No Activity Logs"
-            description="No user activity logs found matching your filters."
+            title={t('activityLogs.emptyStates.noLogs.title')}
+            description={t('activityLogs.emptyStates.noLogs.description')}
             data-testid="empty-activity-logs"
           />
         ) : (
@@ -221,19 +223,19 @@ export default function ActivityLogsSection({
                 <thead className="bg-gray-50 border-b">
                   <tr>
                     <th className="text-left p-3 font-medium text-gray-700" data-testid="header-datetime">
-                      Date/Time
+                      {t('activityLogs.table.headers.dateTime')}
                     </th>
                     <th className="text-left p-3 font-medium text-gray-700" data-testid="header-user">
-                      User
+                      {t('activityLogs.table.headers.user')}
                     </th>
                     <th className="text-left p-3 font-medium text-gray-700" data-testid="header-action">
-                      Action Type
+                      {t('activityLogs.table.headers.actionType')}
                     </th>
                     <th className="text-left p-3 font-medium text-gray-700" data-testid="header-details">
-                      Details
+                      {t('activityLogs.table.headers.details')}
                     </th>
                     <th className="text-left p-3 font-medium text-gray-700" data-testid="header-ip">
-                      IP Address
+                      {t('activityLogs.table.headers.ipAddress')}
                     </th>
                   </tr>
                 </thead>
@@ -279,9 +281,11 @@ export default function ActivityLogsSection({
             {/* Pagination */}
             <div className="flex items-center justify-between py-4">
               <div className="text-sm text-gray-600" data-testid="text-pagination-info">
-                Showing {((activityLogsData.page - 1) * activityLogsData.limit) + 1} to{' '}
-                {Math.min(activityLogsData.page * activityLogsData.limit, activityLogsData.total)} of{' '}
-                {activityLogsData.total} results
+                {t('activityLogs.pagination.showingRange', {
+                  start: ((activityLogsData.page - 1) * activityLogsData.limit) + 1,
+                  end: Math.min(activityLogsData.page * activityLogsData.limit, activityLogsData.total),
+                  total: activityLogsData.total
+                })}
               </div>
               <div className="flex gap-2">
                 <Button
@@ -290,10 +294,13 @@ export default function ActivityLogsSection({
                   disabled={activityLogsData.page === 1}
                   data-testid="button-previous-page"
                 >
-                  Previous
+                  {t('activityLogs.pagination.previous')}
                 </Button>
                 <div className="flex items-center px-4 text-sm text-gray-700" data-testid="text-page-number">
-                  Page {activityLogsData.page} of {activityLogsData.totalPages}
+                  {t('activityLogs.pagination.pageOf', {
+                    page: activityLogsData.page,
+                    totalPages: activityLogsData.totalPages
+                  })}
                 </div>
                 <Button
                   variant="outline"
@@ -301,7 +308,7 @@ export default function ActivityLogsSection({
                   disabled={activityLogsData.page >= activityLogsData.totalPages}
                   data-testid="button-next-page"
                 >
-                  Next
+                  {t('activityLogs.pagination.next')}
                 </Button>
               </div>
             </div>

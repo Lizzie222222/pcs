@@ -6,6 +6,7 @@ import SchoolsTable from "./SchoolsTable";
 import SchoolDetailsDialog from "./SchoolDetailsDialog";
 import BulkSchoolActions from "./BulkSchoolActions";
 import type { AdminStats, SchoolData } from "@/components/admin/shared/types";
+import { useTranslation } from 'react-i18next';
 
 interface SchoolsSectionProps {
   activeTab: string;

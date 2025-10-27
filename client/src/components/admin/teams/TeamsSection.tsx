@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, School, CheckCircle } from "lucide-react";
 import AssignTeacherForm from "@/components/admin/AssignTeacherForm";
@@ -9,6 +10,8 @@ interface TeamsSectionProps {
 }
 
 export default function TeamsSection({ activeTab }: TeamsSectionProps) {
+  const { t } = useTranslation('admin');
+  
   if (activeTab !== 'teams') {
     return null;
   }
@@ -19,7 +22,7 @@ export default function TeamsSection({ activeTab }: TeamsSectionProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Users className="h-5 w-5" />
-            Assign Teacher to School
+            {t('teams.assignTeacher.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -31,7 +34,7 @@ export default function TeamsSection({ activeTab }: TeamsSectionProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <School className="h-5 w-5" />
-            School Teachers
+            {t('teams.schoolTeachers.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -43,7 +46,7 @@ export default function TeamsSection({ activeTab }: TeamsSectionProps) {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <CheckCircle className="h-5 w-5" />
-            Verification Requests
+            {t('teams.verificationRequests.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>

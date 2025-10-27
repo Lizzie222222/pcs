@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from 'react-i18next';
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -49,6 +50,7 @@ interface EventsSectionProps {
 }
 
 export default function EventsSection({ allResources, resourcesLoading, activeTab }: EventsSectionProps) {
+  const { t } = useTranslation('admin');
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -161,17 +163,17 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
         : null;
       
       toast({
-        title: "Event Created Successfully! 🎉",
+        title: t('admin.events.toasts.eventCreated.title'),
         description: eventUrl 
           ? (
               <div className="space-y-2">
-                <p>Your event has been created.</p>
+                <p>{t('admin.events.toasts.eventCreated.description')}</p>
                 <div className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded text-sm">
                   <span className="font-mono text-xs break-all">{eventUrl}</span>
                 </div>
               </div>
             )
-          : "Event created successfully.",
+          : t('admin.events.toasts.eventCreated.descriptionSimple'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
       
@@ -180,8 +182,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create event.",
+        title: t('admin.events.toasts.createFailed.title'),
+        description: error.message || t('admin.events.toasts.createFailed.description'),
         variant: "destructive",
       });
     },
@@ -193,8 +195,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Event updated successfully.",
+        title: t('admin.events.toasts.eventUpdated.title'),
+        description: t('admin.events.toasts.eventUpdated.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
       setEventDialogOpen(false);
@@ -202,8 +204,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update event.",
+        title: t('admin.events.toasts.updateFailed.title'),
+        description: error.message || t('admin.events.toasts.updateFailed.description'),
         variant: "destructive",
       });
     },
@@ -215,8 +217,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Event deleted successfully.",
+        title: t('admin.events.toasts.eventDeleted.title'),
+        description: t('admin.events.toasts.eventDeleted.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
       setEventDeleteDialogOpen(false);
@@ -224,8 +226,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete event.",
+        title: t('admin.events.toasts.deleteFailed.title'),
+        description: error.message || t('admin.events.toasts.deleteFailed.description'),
         variant: "destructive",
       });
     },
@@ -243,16 +245,16 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     onSuccess: (duplicatedEvent) => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/events'] });
       toast({
-        title: "Event Duplicated",
-        description: `"${duplicatedEvent.title}" has been created as a draft.`,
+        title: t('admin.events.toasts.eventDuplicated.title'),
+        description: t('admin.events.toasts.eventDuplicated.description', { title: duplicatedEvent.title }),
       });
       setEditingEvent(duplicatedEvent);
       setEventDialogOpen(true);
     },
     onError: (error: any) => {
       toast({
-        title: "Duplication Failed",
-        description: error.message || "Failed to duplicate event",
+        title: t('admin.events.toasts.duplicationFailed.title'),
+        description: error.message || t('admin.events.toasts.duplicationFailed.description'),
         variant: "destructive",
       });
     },
@@ -284,15 +286,15 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
         queryClient.setQueryData(context.queryKey, context.previousRegistrations);
       }
       toast({
-        title: "Update Failed",
-        description: "Failed to update attendance. Changes have been reverted.",
+        title: t('admin.events.toasts.attendanceUpdateFailed.title'),
+        description: t('admin.events.toasts.attendanceUpdateFailed.description'),
         variant: "destructive",
       });
     },
     onSuccess: (_, variables) => {
       toast({
-        title: "Attendance Updated",
-        description: `Registration marked as ${variables.status}.`,
+        title: t('admin.events.toasts.attendanceUpdated.title'),
+        description: t('admin.events.toasts.attendanceUpdated.description', { status: variables.status }),
       });
     },
     onSettled: (_, __, variables, context) => {
@@ -312,8 +314,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onSuccess: () => {
       toast({
-        title: "Announcement Sent! 📧",
-        description: "Event announcement has been sent successfully.",
+        title: t('admin.events.toasts.announcementSent.title'),
+        description: t('admin.events.toasts.announcementSent.description'),
       });
       setNewsletterDialogOpen(false);
       setAnnouncingEvent(null);
@@ -322,8 +324,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onError: (error: any) => {
       toast({
-        title: "Send Failed",
-        description: error.message || "Failed to send announcement.",
+        title: t('admin.events.toasts.announcementFailed.title'),
+        description: error.message || t('admin.events.toasts.announcementFailed.description'),
         variant: "destructive",
       });
     },
@@ -350,8 +352,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Banner created successfully.",
+        title: t('admin.events.toasts.bannerCreated.title'),
+        description: t('admin.events.toasts.bannerCreated.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
       setBannerDialogOpen(false);
@@ -359,8 +361,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to create banner.",
+        title: t('admin.events.toasts.bannerCreateFailed.title'),
+        description: error.message || t('admin.events.toasts.bannerCreateFailed.description'),
         variant: "destructive",
       });
     },
@@ -372,8 +374,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Banner updated successfully.",
+        title: t('admin.events.toasts.bannerUpdated.title'),
+        description: t('admin.events.toasts.bannerUpdated.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
       setBannerDialogOpen(false);
@@ -381,8 +383,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update banner.",
+        title: t('admin.events.toasts.bannerUpdateFailed.title'),
+        description: error.message || t('admin.events.toasts.bannerUpdateFailed.description'),
         variant: "destructive",
       });
     },
@@ -394,8 +396,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "Banner deleted successfully.",
+        title: t('admin.events.toasts.bannerDeleted.title'),
+        description: t('admin.events.toasts.bannerDeleted.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/banners'] });
       setBannerDeleteDialogOpen(false);
@@ -403,8 +405,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete banner.",
+        title: t('admin.events.toasts.bannerDeleteFailed.title'),
+        description: error.message || t('admin.events.toasts.bannerDeleteFailed.description'),
         variant: "destructive",
       });
     },
@@ -417,15 +419,15 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onSuccess: (_, variables) => {
       toast({
-        title: "Resource Attached",
-        description: "Resource has been successfully attached to the event.",
+        title: t('admin.events.toasts.resourceAttached.title'),
+        description: t('admin.events.toasts.resourceAttached.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/events', variables.eventId, 'resources'] });
     },
     onError: () => {
       toast({
-        title: "Attachment Failed",
-        description: "Failed to attach resource. Please try again.",
+        title: t('admin.events.toasts.resourceAttachFailed.title'),
+        description: t('admin.events.toasts.resourceAttachFailed.description'),
         variant: "destructive",
       });
     },
@@ -437,15 +439,15 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     },
     onSuccess: (_, variables) => {
       toast({
-        title: "Resource Detached",
-        description: "Resource has been successfully detached from the event.",
+        title: t('admin.events.toasts.resourceDetached.title'),
+        description: t('admin.events.toasts.resourceDetached.description'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/events', variables.eventId, 'resources'] });
     },
     onError: () => {
       toast({
-        title: "Detachment Failed",
-        description: "Failed to detach resource. Please try again.",
+        title: t('admin.events.toasts.resourceDetachFailed.title'),
+        description: t('admin.events.toasts.resourceDetachFailed.description'),
         variant: "destructive",
       });
     },
@@ -465,10 +467,10 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
       <Card className="mb-6">
         <CardHeader>
           <CardTitle className="text-3xl font-bold text-navy" data-testid="text-page-title">
-            Events Management
+            {t('admin.events.title')}
           </CardTitle>
           <p className="text-gray-600 mt-2" data-testid="text-page-description">
-            Manage events and registrations for the Plastic Clever Schools community
+            {t('admin.events.subtitle')}
           </p>
         </CardHeader>
       </Card>
@@ -476,10 +478,10 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
       <Tabs defaultValue="manage" className="w-full">
         <TabsList className="grid w-full grid-cols-2 mb-6">
           <TabsTrigger value="manage" className="text-lg" data-testid="tab-trigger-manage-events">
-            Manage Events
+            {t('admin.events.tabs.manage')}
           </TabsTrigger>
           <TabsTrigger value="statistics" className="text-lg" data-testid="tab-trigger-event-statistics">
-            Event Statistics
+            {t('admin.events.tabs.statistics')}
           </TabsTrigger>
         </TabsList>
 
@@ -489,7 +491,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
           <Card className="mb-6">
             <CardHeader>
               <div className="flex items-center justify-between">
-                <CardTitle>Event Banners</CardTitle>
+                <CardTitle>{t('admin.events.banners.title')}</CardTitle>
                 <Button
                   onClick={() => {
                     setEditingBanner(null);
@@ -507,19 +509,19 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
                   data-testid="button-create-banner"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Create Banner
+                  {t('admin.events.banners.createBanner')}
                 </Button>
               </div>
             </CardHeader>
             <CardContent>
               {bannersLoading ? (
                 <div className="py-4">
-                  <LoadingSpinner message="Loading banners..." />
+                  <LoadingSpinner message={t('admin.events.banners.loadingBanners')} />
                 </div>
               ) : banners.length === 0 ? (
                 <EmptyState
-                  title="No banners yet"
-                  description="Create a banner to promote events on the landing page"
+                  title={t('admin.events.banners.noBanners')}
+                  description={t('admin.events.banners.noBannersDescription')}
                   icon={Bell}
                 />
               ) : (
@@ -546,7 +548,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
                             </h3>
                             {banner.isActive && (
                               <span className="inline-flex px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700">
-                                Active
+                                {t('admin.events.banners.active')}
                               </span>
                             )}
                           </div>
@@ -554,8 +556,8 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
                             {banner.text}
                           </p>
                           <div className="flex items-center gap-4 text-xs text-gray-500">
-                            <span>Background: {banner.backgroundColor}</span>
-                            <span>Text: {banner.textColor}</span>
+                            <span>{t('admin.events.banners.background')} {banner.backgroundColor}</span>
+                            <span>{t('admin.events.banners.text')} {banner.textColor}</span>
                           </div>
                         </div>
                         <div className="flex items-center gap-2 ml-4">
@@ -773,10 +775,10 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
       <Dialog open={eventDeleteDialogOpen} onOpenChange={setEventDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle data-testid="text-delete-event-title">Delete Event</DialogTitle>
+            <DialogTitle data-testid="text-delete-event-title">{t('admin.events.dialogs.deleteEvent.title')}</DialogTitle>
           </DialogHeader>
           <p className="text-gray-600">
-            Are you sure you want to delete "{deletingEvent?.title}"? This action cannot be undone.
+            {t('admin.events.dialogs.deleteEvent.description', { title: deletingEvent?.title })}
           </p>
           <DialogFooter>
             <Button
@@ -784,7 +786,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
               onClick={() => setEventDeleteDialogOpen(false)}
               data-testid="button-cancel-delete"
             >
-              Cancel
+              {t('admin.events.buttons.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -796,7 +798,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
               className="bg-red-600 hover:bg-red-700"
               data-testid="button-confirm-delete"
             >
-              {deleteEventMutation.isPending ? 'Deleting...' : 'Delete'}
+              {deleteEventMutation.isPending ? t('admin.events.buttons.deleting') : t('admin.events.buttons.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -807,13 +809,13 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
         <DialogContent>
           <DialogHeader>
             <DialogTitle data-testid="text-banner-dialog-title">
-              {editingBanner ? 'Edit Banner' : 'Create Banner'}
+              {editingBanner ? t('admin.events.dialogs.bannerEditor.titleEdit') : t('admin.events.dialogs.bannerEditor.titleCreate')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Banner Text <span className="text-red-500">*</span>
+                {t('admin.events.dialogs.bannerEditor.labels.bannerText')} <span className="text-red-500">{t('admin.events.dialogs.bannerEditor.labels.required')}</span>
               </label>
               <input
                 type="text"
@@ -825,7 +827,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Event <span className="text-red-500">*</span>
+                {t('admin.events.dialogs.bannerEditor.labels.event')} <span className="text-red-500">{t('admin.events.dialogs.bannerEditor.labels.required')}</span>
               </label>
               <select
                 value={bannerFormData.eventId}
@@ -833,7 +835,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 data-testid="select-banner-event"
               >
-                <option value="">Select an event</option>
+                <option value="">{t('admin.events.dialogs.bannerEditor.placeholders.selectEvent')}</option>
                 {events.map((event) => (
                   <option key={event.id} value={event.id}>{event.title}</option>
                 ))}
@@ -841,7 +843,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Gradient
+                {t('admin.events.dialogs.bannerEditor.labels.gradient')}
               </label>
               <select
                 value={bannerFormData.gradient}
@@ -871,7 +873,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
                 data-testid="checkbox-banner-active"
               />
               <label className="text-sm font-medium text-gray-700">
-                Active
+                {t('admin.events.dialogs.bannerEditor.labels.active')}
               </label>
             </div>
           </div>
@@ -881,7 +883,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
               onClick={() => setBannerDialogOpen(false)}
               data-testid="button-cancel-banner"
             >
-              Cancel
+              {t('admin.events.buttons.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -895,7 +897,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
               className="bg-pcs_blue hover:bg-pcs_blue/90"
               data-testid="button-save-banner"
             >
-              {createBannerMutation.isPending || updateBannerMutation.isPending ? 'Saving...' : 'Save'}
+              {createBannerMutation.isPending || updateBannerMutation.isPending ? t('admin.events.buttons.saving') : t('admin.events.buttons.save')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -905,10 +907,10 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
       <Dialog open={bannerDeleteDialogOpen} onOpenChange={setBannerDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle data-testid="text-delete-banner-title">Delete Banner</DialogTitle>
+            <DialogTitle data-testid="text-delete-banner-title">{t('admin.events.dialogs.deleteBanner.title')}</DialogTitle>
           </DialogHeader>
           <p className="text-gray-600">
-            Are you sure you want to delete this banner? This action cannot be undone.
+            {t('admin.events.dialogs.deleteBanner.description')}
           </p>
           <DialogFooter>
             <Button
@@ -916,7 +918,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
               onClick={() => setBannerDeleteDialogOpen(false)}
               data-testid="button-cancel-delete-banner"
             >
-              Cancel
+              {t('admin.events.buttons.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -928,7 +930,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
               className="bg-red-600 hover:bg-red-700"
               data-testid="button-confirm-delete-banner"
             >
-              {deleteBannerMutation.isPending ? 'Deleting...' : 'Delete'}
+              {deleteBannerMutation.isPending ? t('admin.events.buttons.deleting') : t('admin.events.buttons.delete')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -939,17 +941,17 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle data-testid="text-newsletter-title">
-              Send Event Announcement
+              {t('admin.events.dialogs.newsletter.title')}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <p className="text-gray-600">
-              Send "{announcingEvent?.title}" via email to teachers.
+              {t('admin.events.dialogs.newsletter.description', { title: announcingEvent?.title })}
             </p>
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Recipient Type
+                {t('admin.events.dialogs.newsletter.labels.recipientType')}
               </label>
               <select
                 value={recipientType}
@@ -957,22 +959,22 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
                 data-testid="select-recipient-type"
               >
-                <option value="all_teachers">All Teachers ({teacherEmailsData?.count || 0} teachers)</option>
-                <option value="custom">Custom Email List</option>
+                <option value="all_teachers">{t('admin.events.dialogs.newsletter.options.allTeachers', { count: teacherEmailsData?.count || 0 })}</option>
+                <option value="custom">{t('admin.events.dialogs.newsletter.options.customEmailList')}</option>
               </select>
             </div>
 
             {recipientType === 'custom' && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Email Addresses
-                  <span className="text-xs text-gray-500 ml-2">(comma-separated)</span>
+                  {t('admin.events.dialogs.newsletter.labels.emailAddresses')}
+                  <span className="text-xs text-gray-500 ml-2">{t('admin.events.dialogs.newsletter.labels.commaSeparated')}</span>
                 </label>
                 <textarea
                   value={customEmails}
                   onChange={(e) => setCustomEmails(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md min-h-[100px]"
-                  placeholder="email1@example.com, email2@example.com"
+                  placeholder={t('admin.events.dialogs.newsletter.placeholders.emailList')}
                   data-testid="input-custom-emails"
                 />
               </div>
@@ -989,7 +991,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
               }}
               data-testid="button-cancel-newsletter"
             >
-              Cancel
+              {t('admin.events.buttons.cancel')}
             </Button>
             <Button
               onClick={() => {
@@ -1012,7 +1014,7 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
               className="bg-pcs_blue hover:bg-pcs_blue/90"
               data-testid="button-confirm-newsletter"
             >
-              {sendAnnouncementMutation.isPending ? 'Sending...' : 'Send Announcement'}
+              {sendAnnouncementMutation.isPending ? t('admin.events.buttons.sending') : t('admin.events.buttons.sendAnnouncement')}
             </Button>
           </DialogFooter>
         </DialogContent>

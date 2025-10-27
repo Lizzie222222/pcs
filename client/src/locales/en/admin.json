@@ -864,14 +864,63 @@
     "active_schools": "Active Schools",
     "pending_approval": "Pending Approval",
     "search_schools": "Search schools...",
+    "filters": {
+      "allCountries": "All Countries",
+      "selectAll": "Select All ({count} schools)",
+      "selected": "{count} selected",
+      "searchPlaceholder": "Search schools..."
+    },
+    "buttons": {
+      "bulkUpdate": "Bulk Update",
+      "deleteSchools": "Delete Schools",
+      "view": "View",
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "saving": "Saving...",
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "processing": "Processing...",
+      "deleting": "Deleting...",
+      "editLanguage": "Edit Language",
+      "editProgression": "Edit Progression",
+      "saveChanges": "Save Changes"
+    },
     "school_table": {
-      "school_name": "School Name",
-      "country": "Country",
-      "contact": "Primary Contact",
-      "stage": "Current Stage",
-      "registered_date": "Registered",
-      "status": "Status",
-      "actions": "Actions"
+      "headers": {
+        "select": "Select",
+        "school_name": "School Name",
+        "country": "Country",
+        "stage": "Stage",
+        "progress": "Progress",
+        "students": "Students",
+        "contact": "Primary Contact",
+        "joined": "Joined",
+        "actions": "Actions",
+        "expand": "Expand",
+        "collapse": "Collapse"
+      },
+      "teachers": {
+        "loading": "Loading teachers...",
+        "loadingError": "Failed to load teachers. Please try again.",
+        "noTeachers": "No teachers assigned to this school yet.",
+        "headers": {
+          "name": "Name",
+          "email": "Email",
+          "role": "Role",
+          "verification": "Verification",
+          "joined": "Joined"
+        },
+        "roles": {
+          "headTeacher": "Head Teacher",
+          "teacher": "Teacher"
+        },
+        "status": {
+          "verified": "Verified",
+          "notVerified": "Not Verified"
+        }
+      },
+      "notAvailable": "N/A"
     },
     "school_actions": {
       "view_details": "View Details",
@@ -887,11 +936,162 @@
       "suspended": "Suspended"
     },
     "school_details": {
+      "title": "{name}",
       "basic_info": "Basic Information",
       "contact_info": "Contact Information",
       "progress": "Program Progress",
       "evidence_history": "Evidence History",
-      "last_activity": "Last Activity"
+      "last_activity": "Last Activity",
+      "labels": {
+        "country": "Country",
+        "schoolType": "School Type",
+        "preferredLanguage": "Preferred Language",
+        "studentCount": "Number of Students",
+        "currentStage": "Current Stage",
+        "progress": "Progress",
+        "primaryContactEmail": "Primary Contact Email",
+        "joined": "Joined",
+        "address": "Address",
+        "currentRound": "Current Round",
+        "stageCompletion": "Stage Completion"
+      },
+      "progression": {
+        "title": "Manage Progression",
+        "description": "Use this section to manually set the school's progression stage, round, and completion status. This allows you to override the automatic progression based on evidence submission.",
+        "currentStage": "Current Stage:",
+        "currentRound": "Current Round:",
+        "stageCompletion": "Stage Completion:",
+        "inspireCompleted": "Inspire Completed",
+        "investigateCompleted": "Investigate Completed",
+        "actCompleted": "Act Completed",
+        "notCompleted": "○ Not completed",
+        "completed": "✓ Completed"
+      },
+      "stages": {
+        "inspire": "Inspire",
+        "investigate": "Investigate",
+        "act": "Act"
+      },
+      "languages": {
+        "en": "English",
+        "es": "Spanish",
+        "fr": "French",
+        "de": "German",
+        "it": "Italian",
+        "pt": "Portuguese",
+        "nl": "Dutch",
+        "el": "Greek",
+        "ar": "Arabic",
+        "zh": "Chinese",
+        "ko": "Korean",
+        "ru": "Russian",
+        "id": "Indonesian",
+        "cy": "Welsh"
+      },
+      "actionPlan": {
+        "title": "Action Plan Metrics",
+        "totalPromises": "Total Promises",
+        "annualReduction": "Items Reduced Annually",
+        "annualWeight": "Weight Reduced",
+        "perYear": "per year",
+        "oceanImpact": "Ocean Impact",
+        "oceanBottles": "Ocean Bottles Prevented",
+        "fishSaved": "Fish Saved",
+        "seaTurtles": "Sea Turtles Protected",
+        "environmentalImpact": "Environmental Impact",
+        "co2Prevented": "CO₂ Prevented",
+        "oilSaved": "Oil Saved",
+        "wastePrevented": "Waste Prevented",
+        "loading": "Loading reduction metrics...",
+        "noPromises": "No reduction promises have been created yet for this school."
+      },
+      "photoConsent": {
+        "title": "Photo Consent Status",
+        "status": "Status:",
+        "uploadedAt": "Uploaded:",
+        "approvedAt": "Approved:",
+        "approvedBy": "Approved by:",
+        "reviewNotes": "Review Notes:",
+        "viewDocument": "View Document",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "notUploaded": "Not uploaded",
+        "approve": "Approve",
+        "reject": "Reject",
+        "rejectionNotes": "Rejection Notes",
+        "rejectionNotesPlaceholder": "Explain why the photo consent is being rejected...",
+        "submitRejection": "Submit Rejection"
+      }
+    },
+    "bulkActions": {
+      "dialogs": {
+        "update": {
+          "title": "Bulk Update Schools",
+          "description": "This action will affect <strong>{count}</strong> schools.",
+          "updateStageLabel": "Update Current Stage",
+          "updateStageHelpText": "All selected schools will be moved to this program stage."
+        },
+        "delete": {
+          "title": "Bulk Delete Schools",
+          "description": "This action will affect <strong>{count}</strong> schools.",
+          "warningTitle": "Warning:",
+          "warningDescription": "This action cannot be undone. All selected schools and their associated data will be permanently deleted."
+        },
+        "deleteSchool": {
+          "title": "Delete School",
+          "description": "Are you sure you want to delete <strong>{name}</strong>? This action cannot be undone and will permanently remove the school and all associated data.",
+          "loadingUsers": "Loading school users...",
+          "warningUsers": "Warning: This school has {count} associated user{plural}.",
+          "associatedUsers": "Associated Users:",
+          "deleteUsersLabel": "Also delete all associated user accounts",
+          "deleteUsersDescription": "If unchecked, the user accounts will remain in the system and can be reassigned to other schools. If checked, the users will be permanently deleted and won't be able to register again with the same email addresses.",
+          "noUsers": "This school has no associated users."
+        }
+      }
+    },
+    "toasts": {
+      "languageUpdated": {
+        "title": "Language Updated",
+        "description": "School preferred language has been updated successfully."
+      },
+      "languageUpdateFailed": {
+        "title": "Update Failed",
+        "description": "Failed to update school language. Changes have been reverted."
+      },
+      "progressionUpdated": {
+        "title": "Progression Updated",
+        "description": "School progression has been updated successfully."
+      },
+      "progressionUpdateFailed": {
+        "title": "Update Failed",
+        "description": "Failed to update school progression. Changes have been reverted."
+      },
+      "bulkUpdateComplete": {
+        "title": "Bulk Update Complete",
+        "description": "{count} schools have been updated successfully."
+      },
+      "bulkUpdateFailed": {
+        "title": "Bulk Update Failed",
+        "description": "Failed to update schools. Please try again."
+      },
+      "bulkDeleteComplete": {
+        "title": "Bulk Delete Complete",
+        "description": "{count} schools have been deleted successfully."
+      },
+      "bulkDeleteFailed": {
+        "title": "Bulk Delete Failed",
+        "description": "Failed to delete schools. Please try again."
+      },
+      "schoolDeleted": {
+        "title": "School Deleted",
+        "descriptionWithUsers": "The school and all associated users have been successfully deleted.",
+        "descriptionWithoutUsers": "The school has been successfully deleted."
+      },
+      "schoolDeleteFailed": {
+        "title": "Delete Failed",
+        "description": "Failed to delete school. Please try again."
+      }
     }
   },
   "permissions": {
@@ -1301,7 +1501,8 @@
         "schools": "Schools - Contains school information (name, country, type, etc.)",
         "users": "Users - Contains teacher/user information (email, name, etc.)",
         "relationships": "Relationships - Links users to schools with their roles",
-        "templateNote": "Download the templates below to see the required column format."
+        "templateNote": "Download the templates below to see the required column format.",
+        "note": "Download the templates below to see the required column format."
       }
     },
     "tabs": {
@@ -1357,27 +1558,144 @@
       "usersImported": "Users imported: {{count}}",
       "relationshipsCreated": "Relationships created: {{count}}",
       "errors": "Errors:",
-      "viewDetails": "View detailed logs"
+      "errorsCount": "Errors ({{count}})",
+      "viewDetails": "View detailed logs",
+      "newUsersCreated": "{{count}} new users created",
+      "sections": {
+        "schools": "Schools",
+        "users": "Users",
+        "relationships": "Relationships"
+      },
+      "tableHeaders": {
+        "row": "Row",
+        "field": "Field",
+        "error": "Error"
+      },
+      "stats": {
+        "processed": "Processed:",
+        "succeeded": "Succeeded:",
+        "failed": "Failed:"
+      }
     },
     "toasts": {
+      "fileValidated": {
+        "title": "File Validated",
+        "description": "{{rowCount}} rows validated successfully"
+      },
+      "validationErrors": {
+        "title": "Validation Errors Found",
+        "description": "Found {{count}} validation error{{plural}} in {{filename}}. Please review and fix before importing."
+      },
+      "validationFailed": {
+        "title": "Validation Failed",
+        "description": "Failed to parse file",
+        "customMessage": "{{message}}"
+      },
+      "noFilesSelected": {
+        "title": "No Files Selected",
+        "description": "Please upload at least one file to import"
+      },
       "importSuccess": {
-        "title": "Import Successful",
-        "description": "Data has been imported successfully"
+        "title": "Import Completed Successfully",
+        "description": "Imported {{count}} records"
+      },
+      "importWithErrors": {
+        "title": "Import Completed with Errors",
+        "description": "{{count}} errors occurred during import"
       },
       "importFailed": {
         "title": "Import Failed",
-        "description": "Failed to import data. Please check your files and try again.",
+        "description": "Failed to execute import",
         "customMessage": "{{message}}"
+      },
+      "templateDownloaded": {
+        "title": "Template Downloaded",
+        "description": "{{type}} template has been downloaded"
+      },
+      "downloadFailed": {
+        "title": "Download Failed",
+        "description": "Failed to download template"
       }
+    }
+  },
+  "activityHistory": {
+    "title": "Activity History",
+    "loading": "Loading activity history...",
+    "error": "Failed to load activity history",
+    "empty": "No activity history available",
+    "reason": "Reason",
+    "stage": "Stage",
+    "unknownUser": "Unknown User"
+  },
+  "teams": {
+    "assignTeacher": {
+      "title": "Assign Teacher to School"
+    },
+    "schoolTeachers": {
+      "title": "School Teachers"
+    },
+    "verificationRequests": {
+      "title": "Verification Requests"
+    }
+  },
+  "evidenceRequirements": {
+    "title": "Evidence Requirements Management",
+    "subtitle": "Configure required evidence for each program stage",
+    "stages": {
+      "inspire": "Inspire",
+      "investigate": "Investigate",
+      "act": "Act"
+    },
+    "stageRequirements": "{stage} Stage Requirements",
+    "buttons": {
+      "addRequirement": "Add Requirement"
+    },
+    "loading": "Loading requirements...",
+    "emptyState": {
+      "title": "No requirements yet",
+      "description": "Add your first evidence requirement for this stage"
+    },
+    "dialogs": {
+      "add": {
+        "title": "Add New Requirement"
+      },
+      "edit": {
+        "title": "Edit Requirement"
+      },
+      "labels": {
+        "title": "Title *",
+        "description": "Description *",
+        "helpfulResource": "Helpful Resource (Optional)",
+        "selectResourceDescription": "Select a resource from your library to attach to this requirement"
+      },
+      "placeholders": {
+        "title": "Enter requirement title",
+        "description": "Enter requirement description"
+      }
+    },
+    "resource": {
+      "helpful": "Helpful Resource:",
+      "link": "Helpful Resource Link",
+      "loadingResources": "Loading resources...",
+      "noResources": "No resources available. Add resources from the Resources tab first."
+    },
+    "toasts": {
+      "created": "Evidence requirement created successfully.",
+      "updated": "Evidence requirement updated successfully.",
+      "deleted": "Evidence requirement deleted successfully.",
+      "deleteFailed": "Failed to delete evidence requirement. It may be linked to existing evidence.",
+      "reorderFailed": "Failed to reorder requirements."
     }
   },
   "activityLogs": {
     "title": "User Activity Logs",
-    "subtitle": "Monitor and audit user actions across the platform",
+    "subtitle": "Track and monitor user activities across the platform",
     "filters": {
       "labels": {
         "actionType": "Action Type",
         "userEmail": "User Email",
+        "startDate": "Start Date",
+        "endDate": "End Date",
         "dateRange": "Date Range",
         "fromDate": "From Date",
         "toDate": "To Date"
@@ -1401,14 +1719,17 @@
     "table": {
       "headers": {
         "timestamp": "Timestamp",
+        "dateTime": "Date/Time",
         "user": "User",
         "action": "Action",
+        "actionType": "Action Type",
         "target": "Target",
         "ipAddress": "IP Address",
         "details": "Details"
       }
     },
     "buttons": {
+      "applyFilters": "Apply Filters",
       "clearFilters": "Clear Filters",
       "exportLogs": "Export Logs",
       "refresh": "Refresh"
@@ -1424,8 +1745,454 @@
     },
     "pagination": {
       "showing": "Showing {{start}} - {{end}} of {{total}}",
+      "showingRange": "Showing {{start}} to {{end}} of {{total}} results",
+      "pageOf": "Page {{page}} of {{totalPages}}",
       "previous": "Previous",
       "next": "Next"
+    }
+  },
+  "events": {
+    "title": "Events Management",
+    "subtitle": "Manage events and registrations for the Plastic Clever Schools community",
+    "tabs": {
+      "manage": "Manage Events",
+      "statistics": "Event Statistics"
+    },
+    "banners": {
+      "title": "Event Banners",
+      "createBanner": "Create Banner",
+      "loadingBanners": "Loading banners...",
+      "noBanners": "No banners yet",
+      "noBannersDescription": "Create a banner to promote events on the landing page",
+      "active": "Active",
+      "background": "Background:",
+      "text": "Text:"
+    },
+    "list": {
+      "title": "Events",
+      "createEvent": "Create Event",
+      "noEvents": "No events yet",
+      "noEventsDescription": "Create your first event to get started",
+      "duplicateEvent": "Duplicate event",
+      "viewEvent": "View event:"
+    },
+    "filters": {
+      "status": "Status",
+      "allStatuses": "All Statuses",
+      "eventType": "Event Type",
+      "allTypes": "All Types",
+      "fromDate": "From Date",
+      "toDate": "To Date"
+    },
+    "statuses": {
+      "draft": "Draft",
+      "published": "Published",
+      "cancelled": "Cancelled",
+      "completed": "Completed"
+    },
+    "types": {
+      "workshop": "Workshop",
+      "webinar": "Webinar",
+      "communityEvent": "Community Event",
+      "training": "Training",
+      "celebration": "Celebration",
+      "assembly": "Assembly",
+      "other": "Other"
+    },
+    "table": {
+      "headers": {
+        "title": "Title",
+        "type": "Type",
+        "date": "Date",
+        "status": "Status",
+        "registrations": "Registrations",
+        "actions": "Actions"
+      }
+    },
+    "registrations": {
+      "title": "Registrations for {title}",
+      "filterByStatus": "Filter by Status:",
+      "exportCSV": "Export CSV",
+      "noRegistrations": "No registrations yet",
+      "noRegistrationsDescription": "This event has no registrations",
+      "markAttended": "Mark Attended",
+      "notAvailable": "N/A"
+    },
+    "registrationStatuses": {
+      "all": "All",
+      "registered": "Registered",
+      "attended": "Attended",
+      "cancelled": "Cancelled",
+      "waitlisted": "Waitlisted"
+    },
+    "toasts": {
+      "eventCreated": {
+        "title": "Event Created Successfully! 🎉",
+        "description": "Your event has been created.",
+        "descriptionSimple": "Event created successfully."
+      },
+      "eventUpdated": {
+        "title": "Success",
+        "description": "Event updated successfully."
+      },
+      "eventDeleted": {
+        "title": "Success",
+        "description": "Event deleted successfully."
+      },
+      "eventDuplicated": {
+        "title": "Event Duplicated",
+        "description": "\"{title}\" has been created as a draft."
+      },
+      "duplicationFailed": {
+        "title": "Duplication Failed",
+        "description": "Failed to duplicate event",
+        "customMessage": "{message}"
+      },
+      "createFailed": {
+        "title": "Error",
+        "description": "Failed to create event.",
+        "customMessage": "{message}"
+      },
+      "updateFailed": {
+        "title": "Error",
+        "description": "Failed to update event.",
+        "customMessage": "{message}"
+      },
+      "deleteFailed": {
+        "title": "Error",
+        "description": "Failed to delete event.",
+        "customMessage": "{message}"
+      },
+      "attendanceUpdated": {
+        "title": "Attendance Updated",
+        "description": "Registration marked as {status}."
+      },
+      "attendanceUpdateFailed": {
+        "title": "Update Failed",
+        "description": "Failed to update attendance. Changes have been reverted."
+      },
+      "announcementSent": {
+        "title": "Announcement Sent! 📧",
+        "description": "Event announcement has been sent successfully."
+      },
+      "announcementFailed": {
+        "title": "Send Failed",
+        "description": "Failed to send announcement.",
+        "customMessage": "{message}"
+      },
+      "resourceAttached": {
+        "title": "Resource Attached",
+        "description": "Resource has been successfully attached to the event."
+      },
+      "resourceAttachFailed": {
+        "title": "Attachment Failed",
+        "description": "Failed to attach resource. Please try again."
+      },
+      "resourceDetached": {
+        "title": "Resource Detached",
+        "description": "Resource has been successfully detached from the event."
+      },
+      "resourceDetachFailed": {
+        "title": "Detachment Failed",
+        "description": "Failed to detach resource. Please try again."
+      },
+      "bannerCreated": {
+        "title": "Success",
+        "description": "Banner created successfully."
+      },
+      "bannerUpdated": {
+        "title": "Success",
+        "description": "Banner updated successfully."
+      },
+      "bannerDeleted": {
+        "title": "Success",
+        "description": "Banner deleted successfully."
+      },
+      "bannerCreateFailed": {
+        "title": "Error",
+        "description": "Failed to create banner.",
+        "customMessage": "{message}"
+      },
+      "bannerUpdateFailed": {
+        "title": "Error",
+        "description": "Failed to update banner.",
+        "customMessage": "{message}"
+      },
+      "bannerDeleteFailed": {
+        "title": "Error",
+        "description": "Failed to delete banner.",
+        "customMessage": "{message}"
+      },
+      "eventLocked": {
+        "title": "Event Locked",
+        "description": "This event is being edited by {lockedBy}. You can view but not edit."
+      },
+      "uploadSuccess": {
+        "title": "Success",
+        "description": "Image uploaded successfully.",
+        "pdfDescription": "PDF uploaded successfully."
+      },
+      "uploadFailed": {
+        "title": "Upload Failed",
+        "description": "Failed to upload image.",
+        "pdfDescription": "Failed to upload PDF.",
+        "customMessage": "{message}"
+      },
+      "invalidFileType": {
+        "title": "Invalid file type",
+        "imageDescription": "Please upload a JPG, PNG, or WEBP image.",
+        "pdfDescription": "Please upload a PDF file."
+      },
+      "fileTooLarge": {
+        "title": "File too large",
+        "imageDescription": "Image must be less than 10MB.",
+        "pdfDescription": "PDF must be less than 50MB."
+      },
+      "validationError": {
+        "title": "Validation Error",
+        "description": "Please fill in all required fields."
+      }
+    },
+    "dialogs": {
+      "deleteEvent": {
+        "title": "Delete Event",
+        "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone."
+      },
+      "deleteBanner": {
+        "title": "Delete Banner",
+        "description": "Are you sure you want to delete this banner? This action cannot be undone."
+      },
+      "bannerEditor": {
+        "titleCreate": "Create Banner",
+        "titleEdit": "Edit Banner",
+        "labels": {
+          "bannerText": "Banner Text",
+          "required": "*",
+          "event": "Event",
+          "gradient": "Gradient",
+          "active": "Active"
+        },
+        "placeholders": {
+          "selectEvent": "Select an event"
+        }
+      },
+      "newsletter": {
+        "title": "Send Event Announcement",
+        "description": "Send \"{title}\" via email to teachers.",
+        "labels": {
+          "recipientType": "Recipient Type",
+          "emailAddresses": "Email Addresses",
+          "commaSeparated": "(comma-separated)"
+        },
+        "options": {
+          "allTeachers": "All Teachers ({count} teachers)",
+          "customEmailList": "Custom Email List"
+        },
+        "placeholders": {
+          "emailList": "email1@example.com, email2@example.com"
+        }
+      }
+    },
+    "buttons": {
+      "cancel": "Cancel",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "save": "Save",
+      "saving": "Saving...",
+      "sendAnnouncement": "Send Announcement",
+      "sending": "Sending..."
+    }
+  },
+  "reviews": {
+    "filters": {
+      "evidenceReview": "Evidence Review",
+      "auditReview": "Audit Review",
+      "photoConsent": "Photo Consent"
+    },
+    "evidence": {
+      "title": "Evidence Review Queue",
+      "selected": "{count} selected",
+      "bulkApprove": "Bulk Approve",
+      "bulkReject": "Bulk Reject",
+      "delete": "Delete",
+      "filterAll": "All",
+      "filterPending": "Pending",
+      "filterApproved": "Approved",
+      "filterRejected": "Rejected",
+      "filterByAssignee": "Filter by assignee",
+      "allEvidence": "All Evidence",
+      "unassigned": "Unassigned",
+      "assignedToMe": "Assigned to Me",
+      "selectAll": "Select All ({count} items)",
+      "allCaughtUp": "All Caught Up!",
+      "noPendingEvidence": "No pending evidence submissions to review.",
+      "badges": {
+        "public": "Public",
+        "photoApproved": "Photo Approved",
+        "photoPending": "Photo Pending",
+        "noPhotoConsent": "No Photo Consent",
+        "new": "NEW"
+      },
+      "labels": {
+        "schoolId": "School ID:",
+        "submitted": "Submitted:",
+        "files": "Files:",
+        "assignedTo": "Assigned To:"
+      },
+      "buttons": {
+        "approve": "Approve",
+        "reject": "Reject",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "processing": "Processing..."
+      },
+      "modal": {
+        "approveTitle": "Approve Evidence",
+        "rejectTitle": "Reject Evidence",
+        "reviewNotes": "Review Notes",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "Optional feedback for the school...",
+        "feedbackRequired": "Please provide feedback on why this evidence was rejected..."
+      },
+      "consentWarning": {
+        "title": "Approve Without Photo Consent? 📸",
+        "noConsentProvided": "This school has <strong>not provided approved photo consent</strong>.",
+        "statusPending": "Their photo consent document is currently under review.",
+        "statusRejected": "Their photo consent document was rejected.",
+        "statusMissing": "No photo consent document has been uploaded.",
+        "warningMessage": "Approving this evidence means it <strong>will not be eligible</strong> for use in public case studies or promotional materials unless photo consent is later approved.",
+        "confirmQuestion": "Do you want to proceed with approval anyway?",
+        "proceedAnyway": "Yes, Proceed Anyway",
+        "goBack": "Go Back"
+      },
+      "bulkDialog": {
+        "reviewTitle": "Bulk Evidence Review",
+        "deleteTitle": "Bulk Delete Evidence",
+        "approveDescription": "You are about to approve {count} evidence submissions. This will make them visible according to their visibility settings.",
+        "rejectDescription": "You are about to reject {count} evidence submissions. The schools will be notified and can resubmit.",
+        "deleteDescription": "You are about to permanently delete {count} evidence submissions. This action cannot be undone.",
+        "notes": "Notes (optional for approval, required for rejection)",
+        "notesPlaceholder": "Enter notes for schools...",
+        "confirm": "Confirm",
+        "cancel": "Cancel",
+        "processing": "Processing..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "Review Notes Required",
+        "feedbackRequired": "Please provide feedback when rejecting evidence."
+      }
+    },
+    "assignment": {
+      "assignTo": "Assign to...",
+      "unassigned": "Unassigned",
+      "toasts": {
+        "success": "Evidence assigned successfully",
+        "failed": "Failed to assign evidence"
+      }
+    },
+    "photoConsent": {
+      "title": "Photo Consent Review Queue",
+      "noPending": "No Pending Photo Consent",
+      "allReviewed": "All photo consent submissions have been reviewed!",
+      "viewDocument": "View Document",
+      "buttons": {
+        "approve": "Approve",
+        "reject": "Reject"
+      },
+      "confirmApprove": "Approve photo consent for {name}?",
+      "rejectionNotes": "Rejection notes for {name}:",
+      "rejectionRequired": "Rejection notes are required"
+    },
+    "audit": {
+      "title": "Audit Review Queue",
+      "noPending": "No Pending Audits",
+      "allReviewed": "All audits have been reviewed. Great work!",
+      "labels": {
+        "submittedBy": "Submitted by:",
+        "totalPlasticItems": "Total Plastic Items:"
+      },
+      "parts": {
+        "part1": "Part 1: School Information",
+        "part2": "Part 2: Lunchroom & Staffroom",
+        "part3": "Part 3: Classrooms & Bathrooms",
+        "part4": "Part 4: Waste Management"
+      },
+      "part1": {
+        "schoolName": "School Name:",
+        "studentCount": "Number of Students:",
+        "staffCount": "Number of Staff:",
+        "auditDate": "Audit Date:",
+        "auditTeam": "Audit Team Members:",
+        "noData": "No data available"
+      },
+      "part2": {
+        "lunchroom": "Lunchroom",
+        "staffroom": "Staffroom",
+        "plasticBottles": "Plastic Bottles:",
+        "plasticCups": "Plastic Cups:",
+        "plasticCutlery": "Plastic Cutlery:",
+        "plasticStraws": "Plastic Straws:",
+        "foodPackaging": "Food Packaging:",
+        "clingFilm": "Cling Film:",
+        "additionalNotes": "Additional Notes:",
+        "noData": "No data available"
+      },
+      "part3": {
+        "classrooms": "Classrooms",
+        "bathrooms": "Bathrooms",
+        "pensPencils": "Pens & Pencils:",
+        "stationeryItems": "Stationery Items:",
+        "bottlesCups": "Bottles & Cups:",
+        "otherItems": "Other Items:",
+        "soapDispensers": "Soap Dispensers:",
+        "additionalNotes": "Additional Notes:",
+        "noData": "No data available"
+      },
+      "part4": {
+        "hasRecyclingSystem": "Has Recycling System:",
+        "recyclingBinLocations": "Recycling Bin Locations:",
+        "plasticWasteDestination": "Plastic Waste Destination:",
+        "compostsOrganicWaste": "Composts Organic Waste:",
+        "hasPlasticReductionPolicy": "Has Plastic Reduction Policy:",
+        "policyDetails": "Policy Details:",
+        "additionalNotes": "Additional Notes:",
+        "yes": "Yes",
+        "no": "No",
+        "noData": "No data available"
+      },
+      "buttons": {
+        "approve": "Approve",
+        "reject": "Reject"
+      },
+      "modal": {
+        "approveTitle": "Approve Audit",
+        "rejectTitle": "Reject Audit",
+        "reviewNotes": "Review Notes",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "Optional feedback for the school...",
+        "feedbackRequired": "Please provide feedback on why this audit was rejected...",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "processing": "Processing..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "Review Notes Required",
+        "feedbackRequired": "Please provide feedback when rejecting audit."
+      }
+    },
+    "toasts": {
+      "success": "Success",
+      "evidenceReviewSuccess": "Evidence review submitted successfully.",
+      "reviewFailed": "Review Failed",
+      "evidenceReviewFailed": "Failed to update evidence. Changes have been reverted.",
+      "auditReviewed": "Audit Reviewed",
+      "auditApproved": "Audit has been approved.",
+      "auditRejected": "Audit has been rejected.",
+      "auditReviewFailed": "Failed to review audit. Changes have been reverted.",
+      "bulkReviewSuccess": "Bulk evidence review completed successfully.",
+      "bulkReviewFailed": "Failed to complete bulk evidence review. Changes have been reverted.",
+      "bulkDeleteSuccess": "Selected evidence deleted successfully.",
+      "bulkDeleteFailed": "Failed to delete evidence. Changes have been reverted."
     }
   }
 }
