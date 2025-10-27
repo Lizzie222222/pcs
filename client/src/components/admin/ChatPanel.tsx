@@ -7,9 +7,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Card } from '@/components/ui/card';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import Avatar from '@/components/Avatar';
-import { MessageSquare, Send, X } from 'lucide-react';
+import { MessageSquare, Send, X, Lock } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
 
 interface ChatPanelProps {
@@ -68,6 +69,7 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
   const inputRef = useRef<HTMLInputElement>(null);
   const [allMessages, setAllMessages] = useState<CollabChatMessage[]>([]);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [selectedRecipient, setSelectedRecipient] = useState<string | null>(null);
 
   const [mentionState, setMentionState] = useState<MentionState>({
     isOpen: false,
@@ -257,7 +259,13 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
       }
       sendTypingIndicator(false);
       
-      sendChatMessage(message.trim());
+      // Pass selectedRecipient to sendChatMessage if it's set
+      if (selectedRecipient) {
+        sendChatMessage(message.trim(), selectedRecipient);
+      } else {
+        sendChatMessage(message.trim());
+      }
+      
       setMessage('');
       setMentionState({ isOpen: false, searchQuery: '', selectedIndex: 0, cursorPosition: 0 });
     }
@@ -277,7 +285,12 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
   // Format typing indicator text
   const getTypingIndicatorText = () => {
     // Filter out current user
-    const otherTypingUsers = typingUsers.filter(u => u.userId !== user?.id);
+    let otherTypingUsers = typingUsers.filter(u => u.userId !== user?.id);
+    
+    // If in DM mode, only show typing from the selected recipient
+    if (selectedRecipient) {
+      otherTypingUsers = otherTypingUsers.filter(u => u.userId === selectedRecipient);
+    }
     
     if (otherTypingUsers.length === 0) {
       return null;
@@ -297,6 +310,32 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
   };
   
   const typingIndicatorText = getTypingIndicatorText();
+
+  // Filter messages based on selected recipient
+  const filteredMessages = selectedRecipient
+    ? allMessages.filter(msg => {
+        // Show messages sent TO the selected recipient by current user
+        if (msg.fromUserId === user?.id && msg.toUserId === selectedRecipient) {
+          return true;
+        }
+        // Show messages sent BY the selected recipient to current user
+        if (msg.fromUserId === selectedRecipient && msg.toUserId === user?.id) {
+          return true;
+        }
+        return false;
+      })
+    : allMessages;
+
+  // Get the selected recipient's name for display
+  const selectedRecipientName = selectedRecipient
+    ? (() => {
+        const recipient = onlineUsers.find(u => u.userId === selectedRecipient);
+        if (recipient) {
+          return `${recipient.firstName || ''} ${recipient.lastName || ''}`.trim() || recipient.email || '';
+        }
+        return 'Unknown User';
+      })()
+    : null;
 
   const renderMessageWithMentions = (message: string) => {
     const segments = parseMentions(message);
@@ -323,7 +362,7 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:w-[400px] sm:max-w-[400px] p-0 flex flex-col">
-        <SheetHeader className="p-4 border-b border-gray-200 dark:border-gray-700">
+        <SheetHeader className="p-4 border-b border-gray-200 dark:border-gray-700 space-y-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-5 w-5 text-gray-600 dark:text-gray-400" />
@@ -338,17 +377,56 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
               <X className="h-4 w-4" />
             </Button>
           </div>
+          
+          <div className="space-y-2">
+            <label className="text-xs text-gray-600 dark:text-gray-400 font-medium">
+              Send to:
+            </label>
+            <Select 
+              value={selectedRecipient || "everyone"} 
+              onValueChange={(value) => setSelectedRecipient(value === "everyone" ? null : value)}
+            >
+              <SelectTrigger data-testid="select-recipient" className="w-full">
+                <SelectValue placeholder="Select recipient" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="everyone">Everyone</SelectItem>
+                {onlineUsers
+                  .filter(u => u.userId !== user?.id)
+                  .map(u => {
+                    const userName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || 'Unknown';
+                    return (
+                      <SelectItem key={u.userId} value={u.userId}>
+                        {userName}
+                      </SelectItem>
+                    );
+                  })}
+              </SelectContent>
+            </Select>
+            
+            {selectedRecipientName && (
+              <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                <Lock className="h-3 w-3" />
+                <span data-testid="text-dm-partner">
+                  Conversation with {selectedRecipientName}
+                </span>
+              </div>
+            )}
+          </div>
         </SheetHeader>
 
         <div className="flex-1 overflow-y-auto p-4 space-y-4" data-testid="chat-messages-container">
-          {allMessages.length === 0 && (
+          {filteredMessages.length === 0 && (
             <div className="text-center py-8 text-sm text-gray-500 dark:text-gray-400">
-              No messages yet. Start a conversation!
+              {selectedRecipient
+                ? `No messages with ${selectedRecipientName}. Start the conversation!`
+                : 'No messages yet. Start a conversation!'}
             </div>
           )}
 
-          {allMessages.map((msg) => {
+          {filteredMessages.map((msg) => {
             const isOwnMessage = msg.fromUserId === user?.id;
+            const isPrivateMessage = Boolean(msg.toUserId);
             
             return (
               <div
@@ -380,6 +458,18 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
                     <p className="text-sm whitespace-pre-wrap break-words" data-testid={`message-content-${msg.id}`}>
                       {renderMessageWithMentions(msg.message)}
                     </p>
+                    {isPrivateMessage && !selectedRecipient && (
+                      <div className="mt-1">
+                        <Badge 
+                          variant="secondary" 
+                          className="text-xs bg-gray-700 dark:bg-gray-600 text-white"
+                          data-testid="badge-private-message"
+                        >
+                          <Lock className="h-2.5 w-2.5 mr-1" />
+                          Private
+                        </Badge>
+                      </div>
+                    )}
                   </div>
                   <span className="text-xs text-gray-400 dark:text-gray-500 mt-1" data-testid={`message-time-${msg.id}`}>
                     {formatMessageTime(msg.timestamp)}
