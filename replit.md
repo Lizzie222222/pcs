@@ -93,7 +93,13 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
   - allResources and resourcesLoading passed as props (shared with Evidence Requirements)
   - Fixed JSX syntax error (missing closing div tag)
   - Comprehensive testing: dialog opening, tab switching, analytics display, event creation workflows
-- Reduced admin.tsx from 8,572 lines to 1,567 lines (total reduction: 7,005 lines, 82%)
+- Extracted Activity Logs section (302 lines) into `ActivityLogsSection` component at `client/src/components/admin/activity-logs/ActivityLogsSection.tsx`
+  - All activity log state, queries, and mutations co-located in component
+  - Navigation: Schools dropdown → User Activity menu item
+  - Fixed critical null reference bug: Added null-safe user handling with optional chaining and "Unknown User" fallback for deleted users
+  - Fixed pagination NaN bug: Changed to use API response values (page, limit, totalPages) instead of props for accurate display
+  - Architect approved: Production-ready with robust error handling
+- Reduced admin.tsx from 8,572 lines to 1,277 lines (total reduction: 7,295 lines, 85%)
 - Maintained tab-based navigation without page reloads for fast switching
 - Fixed regressions: duplicate ActivityLogsTab, orphaned schoolsError references, broken dialog blocks, JSX syntax error in EventsSection
 - All sections tested and passing with zero LSP errors
@@ -104,8 +110,10 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 - Queries remain in TanStack Query cache for data consistency
 - Prop drilling acceptable short-term; may evolve to shared context only if multiple tabs need same controls
 
-**Next Steps**:
-- Extract Activity Logs section
-- Extract Email section
-- Final shell refactor
-- Consider consolidating shared admin utilities/types as more sections are extracted
+**Status**:
+All major admin sections successfully extracted. The monolithic admin.tsx has been reduced by 85%, with all extracted components tested, architect-approved, and production-ready. Tab-based navigation preserved throughout for fast switching without page reloads.
+
+**Remaining Work**:
+- Email section (already in separate component, no extraction needed)
+- Final shell review and optimization
+- Consider consolidating shared admin utilities/types as sections mature
