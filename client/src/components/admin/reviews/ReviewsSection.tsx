@@ -128,7 +128,7 @@ export default function ReviewsSection({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setReviewData(null);
       toast({
         title: "Success",
@@ -157,7 +157,7 @@ export default function ReviewsSection({
       });
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/audits/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setAuditReviewData(null);
       toast({
         title: "Success",
@@ -188,7 +188,7 @@ export default function ReviewsSection({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setBulkEvidenceDialogOpen(false);
       setBulkAction(null);
       setSelectedEvidence([]);
@@ -215,7 +215,7 @@ export default function ReviewsSection({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setBulkEvidenceDialogOpen(false);
       setBulkAction(null);
       setSelectedEvidence([]);

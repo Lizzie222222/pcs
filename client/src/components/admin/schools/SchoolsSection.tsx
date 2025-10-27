@@ -315,7 +315,7 @@ export default function SchoolsSection({
         description: `${variables.schoolIds.length} schools have been updated successfully.`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setSelectedSchools([]);
       setBulkSchoolDialogOpen(false);
       setBulkAction(null);
@@ -342,7 +342,7 @@ export default function SchoolsSection({
         description: `${schoolIds.length} schools have been deleted successfully.`,
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setSelectedSchools([]);
       setBulkSchoolDialogOpen(false);
       setBulkAction(null);
@@ -369,7 +369,7 @@ export default function SchoolsSection({
           : "The school has been successfully deleted.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/overview'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/school-progress'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });

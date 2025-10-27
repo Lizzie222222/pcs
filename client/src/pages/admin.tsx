@@ -291,7 +291,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         title: "Photo Consent Approved",
         description: "The photo consent document has been approved successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
     },
     onError: (error: any) => {
@@ -312,7 +312,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         title: "Photo Consent Rejected",
         description: "The photo consent document has been rejected.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       setPhotoConsentRejectDialogOpen(false);
       setPhotoConsentRejectNotes('');

@@ -98,7 +98,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
         description: "Case study has been successfully created.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setEditorOpen(false);
       setEditingCaseStudy(null);
     },
@@ -123,7 +123,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
         description: "Case study has been successfully updated.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setEditorOpen(false);
       setEditingCaseStudy(null);
     },
@@ -146,7 +146,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
         description: "Case study has been successfully deleted.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setDeletingCaseStudy(null);
     },
     onError: (error: any) => {
@@ -168,7 +168,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
         description: "Case study featured status has been updated.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/case-studies'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/stats'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
     },
     onError: (error) => {
       toast({
