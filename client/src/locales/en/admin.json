@@ -1,11 +1,70 @@
 {
+  "tabs": {
+    "dashboard": "Dashboard",
+    "schools": "Schools",
+    "content": "Content",
+    "reviewQueue": "Review Queue",
+    "program": "Program",
+    "communications": "Communications"
+  },
   "navigation": {
     "overview": "Overview",
     "analytics": "Analytics",
     "evidence": "Evidence Review",
     "resources": "Resource Management",
     "schools": "School Management",
-    "admin_panel": "Admin Panel"
+    "admin_panel": "Admin Panel",
+    "manageSchools": "Manage Schools",
+    "manageTeams": "Manage Teams",
+    "userManagement": "User Management",
+    "userActivity": "User Activity",
+    "importData": "Import Data",
+    "manageResources": "Manage Resources",
+    "manageResourcePacks": "Manage Resource Packs",
+    "createCaseStudies": "Create Case Studies",
+    "manageEvents": "Manage Events",
+    "evidenceGallery": "Evidence Gallery",
+    "setEvidenceRequirements": "Set Evidence Requirements",
+    "reviewPrintableForms": "Review Printable Forms"
+  },
+  "header": {
+    "title": "Admin Dashboard",
+    "subtitle": "Manage schools, review evidence, and monitor program progress"
+  },
+  "welcomeBanner": {
+    "title": "Lucky You!",
+    "greeting": "Welcome to the Plastic Clever Schools admin team!",
+    "description": "You now have full access to manage the program, review evidence submissions, publish case studies, and help schools on their journey to reduce plastic waste."
+  },
+  "export": {
+    "title": "Export Data",
+    "buttonLabel": "Export Data",
+    "description": "Choose format and data to export:",
+    "selectFormatPlaceholder": "Select format",
+    "formats": {
+      "csv": "CSV Format",
+      "excel": "Excel Format (.xlsx)"
+    },
+    "buttons": {
+      "exportSchools": "Export Schools Data",
+      "exportEvidence": "Export Evidence Data",
+      "exportUsers": "Export Users Data",
+      "withCurrentFilters": "(with current filters)"
+    },
+    "toasts": {
+      "success": {
+        "title": "Export Successful",
+        "description": "{{type}} data has been exported as {{format}}."
+      },
+      "failed": {
+        "title": "Export Failed",
+        "description": "Failed to export data. Please try again."
+      }
+    }
+  },
+  "loading": {
+    "dashboard": "Loading admin dashboard...",
+    "caseStudies": "Loading case studies..."
   },
   "overview": {
     "title": "Admin Overview",
@@ -729,6 +788,14 @@
       "error": {
         "title": "Error",
         "description": "Failed to send email. Please try again."
+      },
+      "emailsSent": {
+        "title": "Emails Sent Successfully",
+        "description": "{{sent}} emails sent successfully{{failedText}}."
+      },
+      "bulkEmailFailed": {
+        "title": "Failed to Send Emails",
+        "description": "There was an error sending the bulk emails. Please try again."
       }
     },
     "dialogs": {
@@ -844,6 +911,8 @@
     "action_failed_desc": "Failed to process verification request. Please try again.",
     "access_denied": "Access Denied",
     "access_denied_desc": "Admin access required",
+    "session_expired": "Unauthorized",
+    "session_expired_desc": "Admin session expired. Please log in again.",
     "success": "Success",
     "error": "Error",
     "requirement_created": "Evidence requirement created successfully.",
@@ -863,7 +932,23 @@
     "duplication_failed_desc": "Failed to duplicate event",
     "page_content_update_failed": "Failed to update event page content.",
     "status_update_failed": "Failed to update event status.",
-    "same_language_selected": "Same language selected"
+    "same_language_selected": "Same language selected",
+    "photoConsentApproved": {
+      "title": "Photo Consent Approved",
+      "description": "Photo consent has been approved successfully."
+    },
+    "photoConsentApprovalFailed": {
+      "title": "Approval Failed",
+      "description": "Failed to approve photo consent. Changes have been reverted."
+    },
+    "photoConsentRejected": {
+      "title": "Photo Consent Rejected",
+      "description": "The photo consent document has been rejected."
+    },
+    "photoConsentRejectionFailed": {
+      "title": "Rejection Failed",
+      "description": "Failed to reject photo consent. Changes have been reverted."
+    }
   },
   "case_study": {
     "categories": "Categories",
@@ -1267,1147 +1352,50 @@
     "results": {
       "successTitle": "Import Completed Successfully",
       "errorTitle": "Import Completed with Errors",
-      "categories": {
-        "schools": "Schools",
-        "users": "Users",
-        "relationships": "Relationships"
-      },
-      "metrics": {
-        "processed": "Processed",
-        "succeeded": "Succeeded",
-        "failed": "Failed",
-        "newUsers": "{{count}} new users created"
-      },
-      "errors": {
-        "title": "Errors ({{count}})",
-        "tableHeaders": {
-          "row": "Row",
-          "field": "Field",
-          "error": "Error"
-        }
-      }
+      "summary": "Summary:",
+      "schoolsImported": "Schools imported: {{count}}",
+      "usersImported": "Users imported: {{count}}",
+      "relationshipsCreated": "Relationships created: {{count}}",
+      "errors": "Errors:",
+      "viewDetails": "View detailed logs"
     },
     "toasts": {
-      "fileValidated": {
-        "title": "File Validated",
-        "description": "{{rowCount}} rows validated successfully"
-      },
-      "validationErrors": {
-        "title": "Validation Errors Found",
-        "description": "Found {{errorCount}} validation error{{plural}} in {{filename}}. Please review and fix before importing."
-      },
-      "validationFailed": {
-        "title": "Validation Failed",
-        "description": "Failed to parse file",
-        "customMessage": "{{message}}"
-      },
-      "noFiles": {
-        "title": "No Files Selected",
-        "description": "Please upload at least one file to import"
-      },
       "importSuccess": {
-        "title": "Import Completed Successfully",
-        "description": "Imported {{count}} records"
-      },
-      "importErrors": {
-        "title": "Import Completed with Errors",
-        "description": "{{count}} errors occurred during import"
+        "title": "Import Successful",
+        "description": "Data has been imported successfully"
       },
       "importFailed": {
         "title": "Import Failed",
-        "description": "Failed to execute import",
+        "description": "Failed to import data. Please check your files and try again.",
         "customMessage": "{{message}}"
-      },
-      "templateDownloaded": {
-        "title": "Template Downloaded",
-        "description": "{{type}} template has been downloaded"
-      },
-      "downloadFailed": {
-        "title": "Download Failed",
-        "description": "Failed to download template"
       }
     }
   },
-  "resourcePacks": {
-    "title": "Resource Pack Management",
-    "subtitle": "Create and manage curated collections of resources",
-    "filters": {
-      "placeholders": {
-        "search": "Search packs..."
-      },
-      "options": {
-        "allStages": "All Stages",
-        "allThemes": "All Themes",
-        "allVisibility": "All Visibility"
-      }
-    },
-    "buttons": {
-      "createPack": "Create Pack",
-      "preview": "Preview",
-      "edit": "Edit",
-      "delete": "Delete",
-      "activate": "Activate",
-      "deactivate": "Deactivate",
-      "cancel": "Cancel",
-      "updatePack": "Update Pack",
-      "createNewPack": "Create Pack",
-      "addResource": "Add"
-    },
-    "badges": {
-      "active": "Active",
-      "inactive": "Inactive",
-      "resourceCount": "{{count}} resources"
-    },
-    "editor": {
-      "titles": {
-        "edit": "Edit Resource Pack",
-        "create": "Create New Resource Pack"
-      },
-      "tabs": {
-        "details": "Pack Details",
-        "resources": "Resources ({{count}})"
-      },
-      "form": {
-        "labels": {
-          "title": "Pack Title *",
-          "description": "Description",
-          "stage": "Program Stage *",
-          "theme": "Theme",
-          "visibility": "Visibility *",
-          "active": "Active (visible to users)",
-          "resourcesInPack": "Resources in Pack ({{count}})",
-          "addResources": "Add Resources"
-        },
-        "placeholders": {
-          "title": "Enter pack title",
-          "description": "Enter pack description",
-          "theme": "Select theme (optional)",
-          "searchResources": "Search resources..."
-        },
-        "stages": {
-          "inspire": "Inspire",
-          "investigate": "Investigate",
-          "act": "Act"
-        },
-        "themes": {
-          "none": "No theme",
-          "oceanLiteracy": "Ocean Literacy",
-          "climateChange": "Climate Change",
-          "plasticPollution": "Plastic Pollution",
-          "science": "Science",
-          "designTechnology": "Design & Technology",
-          "geography": "Geography",
-          "crossCurricular": "Cross-Curricular",
-          "enrichment": "Enrichment"
-        },
-        "visibility": {
-          "public": "Public (visible to everyone)",
-          "registered": "Registered Only (requires login)"
-        }
-      },
-      "emptyStates": {
-        "noResources": {
-          "title": "No resources added yet",
-          "description": "Add resources from the list below"
-        },
-        "noAvailableResources": "No resources found matching your search",
-        "allResourcesAdded": "All resources have been added"
-      }
-    },
-    "dialogs": {
-      "delete": {
-        "title": "Delete Resource Pack",
-        "description": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone."
-      }
-    },
-    "emptyStates": {
-      "noPacks": {
-        "title": "No resource packs found",
-        "description": "Create your first resource pack to organize resources into themed collections"
-      }
-    },
-    "loadingStates": {
-      "loadingPacks": "Loading packs..."
-    },
-    "toasts": {
-      "resourceAlreadyAdded": {
-        "title": "Resource Already Added",
-        "description": "This resource is already in the pack."
-      },
-      "resourceAdded": {
-        "title": "Resource Added",
-        "description": "Resource has been added to the pack."
-      },
-      "addResourceFailed": {
-        "title": "Failed to Add Resource",
-        "description": "Could not add resource to pack.",
-        "customMessage": "{{message}}"
-      },
-      "resourceRemoved": {
-        "title": "Resource Removed",
-        "description": "Resource has been removed from the pack."
-      },
-      "removeResourceFailed": {
-        "title": "Failed to Remove Resource",
-        "description": "Could not remove resource from pack.",
-        "customMessage": "{{message}}"
-      },
-      "packCreated": {
-        "title": "Pack Created",
-        "description": "The resource pack has been successfully created."
-      },
-      "packUpdated": {
-        "title": "Pack Updated",
-        "description": "The resource pack has been successfully updated."
-      },
-      "saveFailed": {
-        "title": "Save Failed",
-        "description": "Failed to save resource pack. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "packDeleted": {
-        "title": "Pack Deleted",
-        "description": "The resource pack has been successfully deleted."
-      },
-      "deleteFailed": {
-        "title": "Delete Failed",
-        "description": "Failed to delete resource pack. Please try again.",
-        "customMessage": "{{message}}"
-      }
-    },
-    "saving": "Saving..."
-  },
-  "events": {
-    "title": "Events Management",
-    "subtitle": "Manage events and registrations for the Plastic Clever Schools community",
-    "tabs": {
-      "manageEvents": "Manage Events",
-      "eventStatistics": "Event Statistics",
-      "details": "Event Details",
-      "pageBuilder": "Page Builder"
-    },
-    "buttons": {
-      "createEvent": "Create Event",
-      "createBanner": "Create Banner",
-      "editEvent": "Edit Event",
-      "updateEvent": "Update Event",
-      "deleteEvent": "Delete Event",
-      "duplicateEvent": "Duplicate event",
-      "viewEvent": "View event:",
-      "viewRegistrations": "View Registrations",
-      "sendNewsletter": "Send Newsletter",
-      "exportCSV": "Export CSV",
-      "markAttended": "Mark Attended",
-      "autoTranslate": "Auto-Translate",
-      "saveChanges": "Save Changes",
-      "cancel": "Cancel",
-      "confirmDelete": "Yes, Delete Event",
-      "sendAnnouncement": "Send Announcement",
-      "sending": "Sending...",
-      "uploadEventImage": "Click to upload event image",
-      "changeImage": "Change",
-      "removeImage": "Remove",
-      "uploadPDF": "Upload PDF File",
-      "addYouTubeVideo": "Add YouTube Video",
-      "addEventPackFile": "Add Event Pack File",
-      "addTestimonial": "Add Testimonial",
-      "uploadBanner": "Click to upload banner image",
-      "addFirstVideo": "Add your first video",
-      "addFirstResource": "Add your first resource file",
-      "addFirstTestimonial": "Add your first testimonial"
-    },
-    "badges": {
-      "active": "Active",
-      "important": "Important",
-      "languageLabel": "For {{language}} users"
-    },
-    "banners": {
-      "title": "Event Banners",
-      "emptyTitle": "No banners yet",
-      "emptyDescription": "Create a banner to promote events on the landing page",
-      "background": "Background:",
-      "text": "Text:",
-      "deleteBanner": "Delete Banner",
-      "deleteBannerConfirm": "Are you sure you want to delete this banner?",
-      "loadingBanners": "Loading banners..."
-    },
-    "form": {
-      "labels": {
-        "title": "Title",
-        "titleRequired": "Title *",
-        "description": "Description",
-        "descriptionRequired": "Description *",
-        "eventType": "Event Type",
-        "eventTypeRequired": "Event Type *",
-        "status": "Status",
-        "statusRequired": "Status *",
-        "startDateTime": "Start Date & Time",
-        "startDateTimeRequired": "Start Date & Time *",
-        "endDateTime": "End Date & Time",
-        "endDateTimeRequired": "End Date & Time *",
-        "location": "Location",
-        "isVirtual": "Is Virtual Event",
-        "meetingLink": "Meeting Link",
-        "eventImage": "Event Image",
-        "capacity": "Capacity (optional)",
-        "waitlistEnabled": "Enable Waitlist",
-        "registrationDeadline": "Registration Deadline (optional)",
-        "tags": "Tags (comma-separated)",
-        "pagePublishedStatus": "Page Published Status",
-        "accessType": "Access Type",
-        "isPreRecorded": "Is Pre-Recorded Event",
-        "recordingAvailableFrom": "Recording Available From",
-        "publicURL": "Public URL",
-        "liveStreamURL": "Live Stream URL (optional)",
-        "recordedVideoURL": "Recorded Video URL (optional)",
-        "videoTitle": "Video Title",
-        "youtubeURL": "YouTube URL",
-        "videoDescription": "Video Description (optional)",
-        "fileTitle": "File Title",
-        "pdfDescription": "PDF Description (optional)",
-        "teacherQuote": "Teacher Quote",
-        "teacherName": "Teacher Name",
-        "teacherRole": "Teacher Role/School",
-        "featuredVideo": "Featured Video",
-        "eventPackBanner": "Event Pack Banner",
-        "evidenceSubmission": "Evidence Submission",
-        "evidenceSubmissionInstructions": "Submission Instructions",
-        "multiLanguageTitle": "Title ({{language}})",
-        "multiLanguageDescription": "Description ({{language}})",
-        "evidenceSubmissionText": "Evidence Submission Text ({{language}})",
-        "quote": "Quote *",
-        "authorName": "Author Name *",
-        "rolePosition": "Role/Position (optional)"
-      },
-      "placeholders": {
-        "meetingLink": "https://...",
-        "tags": "e.g. plastic-free, sustainability, workshop",
-        "capacity": "Leave empty for unlimited",
-        "titleInLanguage": "Title in {{language}}",
-        "descriptionInLanguage": "Description in {{language}}",
-        "evidenceInstructions": "Enter instructions for evidence submission...",
-        "roleExample": "e.g. Teacher, School Name"
-      },
-      "helpText": {
-        "virtualEventNotice": "This is a virtual event!",
-        "configurePageReminder": "Don't forget to configure your Event Page with live stream links after saving.",
-        "contentLanguage": "Create content in different languages for your event page",
-        "multiLanguageInfo": "Leave blank to use the default title/description from the Details tab",
-        "imageFormat": "JPG, PNG, WEBP (max 10MB)",
-        "uploading": "Uploading...",
-        "eventImage": "Event image",
-        "noFileSelected": "No file selected",
-        "noBannerImage": "No banner image"
-      }
-    },
-    "eventTypes": {
-      "workshop": "Workshop",
-      "webinar": "Webinar",
-      "communityEvent": "Community Event",
-      "training": "Training",
-      "celebration": "Celebration",
-      "assembly": "Assembly",
-      "other": "Other"
-    },
-    "status": {
-      "draft": "Draft",
-      "published": "Published",
-      "cancelled": "Cancelled",
-      "completed": "Completed"
-    },
-    "pagePublishedStatus": {
-      "draft": "Draft (not visible)",
-      "comingSoon": "Coming Soon (teaser page)",
-      "published": "Published (full page)"
-    },
-    "accessType": {
-      "open": "Open (anyone can view)",
-      "closed": "Closed (requires login)"
-    },
+  "activityLogs": {
+    "title": "User Activity Logs",
+    "subtitle": "Monitor and audit user actions across the platform",
     "filters": {
       "labels": {
-        "status": "Status",
-        "eventType": "Event Type",
+        "actionType": "Action Type",
+        "userEmail": "User Email",
+        "dateRange": "Date Range",
         "fromDate": "From Date",
         "toDate": "To Date"
       },
       "options": {
-        "allStatuses": "All Statuses",
-        "allTypes": "All Types"
-      }
-    },
-    "table": {
-      "headers": {
-        "title": "Title",
-        "type": "Type",
-        "date": "Date",
-        "status": "Status",
-        "registrations": "Registrations",
-        "actions": "Actions"
-      }
-    },
-    "registrations": {
-      "title": "Registrations for {{eventTitle}}",
-      "filterByStatus": "Filter by Status:",
-      "table": {
-        "headers": {
-          "name": "Name",
-          "email": "Email",
-          "school": "School",
-          "country": "Country",
-          "status": "Status",
-          "registered": "Registered",
-          "registeredDate": "Registered Date",
-          "actions": "Actions"
-        }
-      },
-      "status": {
-        "all": "All",
-        "registered": "Registered",
-        "attended": "Attended",
-        "cancelled": "Cancelled",
-        "waitlisted": "Waitlisted"
-      },
-      "csvHeaders": {
-        "name": "Name",
-        "email": "Email",
-        "school": "School",
-        "country": "Country",
-        "status": "Status",
-        "registeredDate": "Registered Date"
-      },
-      "values": {
-        "unknown": "Unknown",
-        "notAvailable": "N/A"
-      },
-      "emptyState": {
-        "title": "No registrations yet",
-        "description": "This event has no registrations"
-      }
-    },
-    "newsletter": {
-      "title": "Send Event Announcement",
-      "description": "Send an announcement about this event via email (SendGrid)",
-      "recipients": "Recipients:",
-      "allTeachers": "All Teachers",
-      "customEmailList": "Custom Email List",
-      "customEmailsLabel": "Custom Emails (comma-separated):",
-      "customEmailsPlaceholder": "email1@example.com, email2@example.com",
-      "teachersCount": "{{count}} teachers will receive this announcement"
-    },
-    "pageBuilder": {
-      "sections": {
-        "contentLanguage": {
-          "title": "Content Language",
-          "description": "Create content in different languages for your event page"
-        },
-        "multiLanguage": {
-          "title": "Multi-Language Content",
-          "description": "Leave blank to use the default title/description from the Details tab"
-        },
-        "basicSettings": {
-          "title": "Basic Settings"
-        },
-        "youtubeVideos": {
-          "title": "YouTube Videos",
-          "description": "Add engaging video content to your event page"
-        },
-        "eventPacks": {
-          "title": "Event Packs (PDFs)",
-          "description": "Provide downloadable resources for attendees"
-        },
-        "testimonials": {
-          "title": "Teacher Testimonials",
-          "description": "Share success stories from previous events"
-        },
-        "eventPageComponents": {
-          "title": "Event Page Components",
-          "description": "Add dynamic content to your event page"
-        },
-        "advancedConfig": {
-          "title": "Advanced Configuration",
-          "description": "Fine-tune your event page appearance"
-        },
-        "evidenceSubmissionConfig": {
-          "title": "Evidence Submission Configuration"
-        }
-      },
-      "languages": {
-        "en": "English",
-        "es": "Spanish",
-        "fr": "French",
-        "de": "German",
-        "it": "Italian",
-        "pt": "Portuguese",
-        "nl": "Dutch",
-        "sv": "Swedish",
-        "no": "Norwegian",
-        "da": "Danish",
-        "fi": "Finnish",
-        "el": "Greek",
-        "ar": "Arabic",
-        "zh": "Chinese"
-      },
-      "emptyStates": {
-        "noVideosYet": "No videos added yet",
-        "noResourcesYet": "No resources added yet. Click \"Add Event Pack File\" to get started.",
-        "noTestimonialsYet": "No testimonials added yet. Click \"Add Testimonial\" to get started.",
-        "selectFeaturedVideo": "Select which video appears first on the event page",
-        "noVideosAdded": "No videos added yet"
-      },
-      "labels": {
-        "testimonialNumber": "Testimonial {{number}}",
-        "enableEvidenceSubmission": "Enable Evidence Submission"
-      }
-    },
-    "dialogs": {
-      "deleteEvent": {
-        "title": "Delete Event",
-        "description": "Are you sure you want to delete this event?",
-        "warning": "This action cannot be undone."
-      },
-      "deleteBanner": {
-        "title": "Delete Banner",
-        "description": "Are you sure you want to delete this banner?",
-        "warning": "This action cannot be undone."
-      }
-    },
-    "emptyStates": {
-      "noEvents": {
-        "title": "No events yet",
-        "description": "Create your first event to get started"
-      },
-      "noBanners": {
-        "title": "No banners yet",
-        "description": "Create a banner to promote events on the landing page"
-      },
-      "noRegistrations": {
-        "title": "No registrations yet",
-        "description": "This event has no registrations"
-      }
-    },
-    "toasts": {
-      "eventCreated": {
-        "title": "Event Created Successfully! 🎉",
-        "description": "Your event has been created.",
-        "descriptionSimple": "Event created successfully."
-      },
-      "eventUpdated": {
-        "title": "Success",
-        "description": "Event updated successfully."
-      },
-      "eventDeleted": {
-        "title": "Success",
-        "description": "Event deleted successfully."
-      },
-      "eventDuplicated": {
-        "title": "Event Duplicated",
-        "description": "\"{{title}}\" has been created as a draft."
-      },
-      "duplicationFailed": {
-        "title": "Duplication Failed",
-        "description": "Failed to duplicate event",
-        "customMessage": "{{message}}"
-      },
-      "createFailed": {
-        "title": "Error",
-        "description": "Failed to create event.",
-        "customMessage": "{{message}}"
-      },
-      "updateFailed": {
-        "title": "Error",
-        "description": "Failed to update event.",
-        "customMessage": "{{message}}"
-      },
-      "deleteFailed": {
-        "title": "Error",
-        "description": "Failed to delete event.",
-        "customMessage": "{{message}}"
-      },
-      "attendanceUpdated": {
-        "title": "Attendance Updated",
-        "description": "Registration marked as {{status}}."
-      },
-      "attendanceUpdateFailed": {
-        "title": "Update Failed",
-        "description": "Failed to update attendance. Changes have been reverted."
-      },
-      "announcementSent": {
-        "title": "Announcement Sent! 📧",
-        "description": "Event announcement has been sent successfully."
-      },
-      "announcementFailed": {
-        "title": "Send Failed",
-        "description": "Failed to send announcement.",
-        "customMessage": "{{message}}"
-      },
-      "bannerCreated": {
-        "title": "Success",
-        "description": "Banner created successfully."
-      },
-      "bannerUpdated": {
-        "title": "Success",
-        "description": "Banner updated successfully."
-      },
-      "bannerDeleted": {
-        "title": "Success",
-        "description": "Banner deleted successfully."
-      },
-      "bannerCreateFailed": {
-        "title": "Error",
-        "description": "Failed to create banner.",
-        "customMessage": "{{message}}"
-      },
-      "bannerUpdateFailed": {
-        "title": "Error",
-        "description": "Failed to update banner.",
-        "customMessage": "{{message}}"
-      },
-      "bannerDeleteFailed": {
-        "title": "Error",
-        "description": "Failed to delete banner.",
-        "customMessage": "{{message}}"
-      },
-      "resourceAttached": {
-        "title": "Resource Attached",
-        "description": "Resource has been successfully attached to the event."
-      },
-      "resourceDetached": {
-        "title": "Resource Detached",
-        "description": "Resource has been successfully detached from the event."
-      },
-      "resourceAttachFailed": {
-        "title": "Attachment Failed",
-        "description": "Failed to attach resource. Please try again."
-      },
-      "resourceDetachFailed": {
-        "title": "Detachment Failed",
-        "description": "Failed to detach resource. Please try again."
-      },
-      "validationError": {
-        "title": "Validation Error",
-        "description": "Please fill in all required fields."
-      },
-      "imageUploadSuccess": {
-        "title": "Success",
-        "description": "Image uploaded successfully."
-      },
-      "imageUploadFailed": {
-        "title": "Upload Failed",
-        "description": "Failed to upload image.",
-        "customMessage": "{{message}}"
-      },
-      "pdfUploadSuccess": {
-        "title": "Success",
-        "description": "PDF uploaded successfully."
-      },
-      "pdfUploadFailed": {
-        "title": "Upload Failed",
-        "description": "Failed to upload PDF.",
-        "customMessage": "{{message}}"
-      },
-      "invalidFileType": {
-        "title": "Invalid file type",
-        "imageDescription": "Please upload a JPG, PNG, or WEBP image.",
-        "pdfDescription": "Please upload a PDF file."
-      },
-      "fileTooLarge": {
-        "title": "File too large",
-        "imageDescription": "Image must be less than 10MB.",
-        "pdfDescription": "PDF must be less than 50MB."
-      },
-      "translationComplete": {
-        "title": "Translation complete! 🎉",
-        "description": "Successfully translated to {{language}}. Remember to click \"Save Changes\" below to persist!"
-      },
-      "translationFailed": {
-        "title": "Translation failed",
-        "description": "Failed to auto-translate. Please try again or translate manually."
-      },
-      "cannotTranslateEnglish": {
-        "title": "Cannot translate English",
-        "description": "English is the source language. Switch to another language tab to auto-translate."
-      },
-      "alreadyTranslated": {
-        "title": "Already translated",
-        "description": "{{language}} content already exists. Edit the fields below or clear them first to re-translate."
-      },
-      "translating": {
-        "title": "Translating...",
-        "description": "Translating to {{language}}. This may take a moment."
-      }
-    },
-    "validation": {
-      "titleRequired": "Title is required",
-      "youtubeUrlInvalid": "Must be a valid URL",
-      "youtubeUrlFormat": "Must be a valid YouTube URL",
-      "fileRequired": "File is required",
-      "quoteRequired": "Quote is required",
-      "authorRequired": "Author name is required"
-    }
-  },
-  "schools": {
-    "title": "School Management",
-    "subtitle": "Manage schools, view progress, and handle verifications",
-    "tabs": {
-      "allSchools": "All Schools",
-      "verificationRequests": "Verification Requests"
-    },
-    "buttons": {
-      "viewDetails": "View Details",
-      "editSchool": "Edit School",
-      "deleteSchool": "Delete School",
-      "approveVerification": "Approve",
-      "rejectVerification": "Reject",
-      "bulkDelete": "Bulk Delete ({{count}})",
-      "updateStage": "Update Stage",
-      "cancel": "Cancel",
-      "confirmDelete": "Confirm Delete",
-      "deleting": "Deleting...",
-      "exportCSV": "Export CSV"
-    },
-    "filters": {
-      "labels": {
-        "search": "Search Schools",
-        "country": "Country",
-        "stage": "Stage",
-        "language": "Language"
-      },
-      "placeholders": {
-        "searchSchools": "Search by school name..."
-      },
-      "options": {
-        "allCountries": "All Countries",
-        "allStages": "All Stages",
-        "allLanguages": "All Languages"
-      }
-    },
-    "table": {
-      "headers": {
-        "school": "School",
-        "country": "Country",
-        "teachers": "Teachers",
-        "stage": "Stage",
-        "language": "Language",
-        "actions": "Actions"
-      },
-      "values": {
-        "noTeachers": "No teachers",
-        "teacherCount": "{{count}} teacher{{plural}}"
-      },
-      "teacherExpansion": {
-        "title": "Teachers ({{count}})",
-        "headers": {
-          "name": "Name",
-          "email": "Email",
-          "role": "Role",
-          "actions": "Actions"
-        },
-        "removeTeacher": "Remove from school"
-      }
-    },
-    "stages": {
-      "notStarted": "Not Started",
-      "inspire": "Inspire",
-      "investigate": "Investigate",
-      "act": "Act",
-      "completed": "Completed"
-    },
-    "dialogs": {
-      "schoolDetails": {
-        "title": "School Details",
-        "tabs": {
-          "overview": "Overview",
-          "teachers": "Teachers",
-          "photoConsent": "Photo Consent"
-        },
-        "overview": {
-          "schoolName": "School Name:",
-          "country": "Country:",
-          "city": "City:",
-          "type": "Type:",
-          "language": "Language:",
-          "stage": "Current Stage:",
-          "progression": "Progression",
-          "currentRound": "Current Round:",
-          "completionPercentage": "Completion Percentage:"
-        },
-        "teachers": {
-          "title": "School Teachers",
-          "noTeachers": "No teachers assigned to this school yet"
-        },
-        "photoConsent": {
-          "title": "Photo Consent Document",
-          "status": "Status:",
-          "uploadDate": "Upload Date:",
-          "downloadDocument": "Download Document",
-          "noDocument": "No photo consent document uploaded"
-        }
-      },
-      "deleteSchool": {
-        "title": "Delete School",
-        "description": "Are you sure you want to delete this school?",
-        "userPreview": {
-          "title": "The following users will also be affected:",
-          "userItem": "{{name}} ({{email}})"
-        },
-        "cannotUndo": "This action cannot be undone."
-      },
-      "bulkDelete": {
-        "title": "Bulk Delete Schools",
-        "description": "Are you sure you want to delete {{count}} school{{plural}}?",
-        "userWarning": "This will affect {{userCount}} user{{userPlural}}.",
-        "cannotUndo": "This action cannot be undone."
-      },
-      "updateStage": {
-        "title": "Update School Stage",
-        "description": "Select the new stage for the selected schools ({{count}})",
-        "label": "New Stage",
-        "placeholder": "Select stage..."
-      }
-    },
-    "badges": {
-      "pending": "Pending",
-      "approved": "Approved",
-      "rejected": "Rejected"
-    },
-    "verificationRequests": {
-      "title": "Verification Requests",
-      "table": {
-        "headers": {
-          "school": "School",
-          "requestedBy": "Requested By",
-          "requestDate": "Request Date",
-          "status": "Status",
-          "actions": "Actions"
-        }
-      },
-      "emptyState": {
-        "title": "No Verification Requests",
-        "description": "There are no pending verification requests at this time."
-      }
-    },
-    "warnings": {
-      "photoConsentPending": {
-        "title": "Photo Consent Pending",
-        "description": "This school has a pending photo consent document that needs review."
-      },
-      "photoConsentMissing": {
-        "title": "Photo Consent Missing",
-        "description": "This school has not uploaded a photo consent document."
-      }
-    },
-    "toasts": {
-      "schoolDeleted": {
-        "title": "School Deleted",
-        "description": "The school has been successfully deleted."
-      },
-      "deleteFailed": {
-        "title": "Delete Failed",
-        "description": "Failed to delete school. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "bulkDeleteSuccessful": {
-        "title": "Bulk Delete Successful",
-        "description": "Successfully deleted {{count}} school{{plural}}."
-      },
-      "bulkDeleteFailed": {
-        "title": "Bulk Delete Failed",
-        "description": "Failed to delete schools. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "stageUpdated": {
-        "title": "Stage Updated",
-        "description": "Successfully updated stage for {{count}} school{{plural}}."
-      },
-      "stageUpdateFailed": {
-        "title": "Update Failed",
-        "description": "Failed to update school stage. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "verificationApproved": {
-        "title": "Verification Approved",
-        "description": "School verification has been approved."
-      },
-      "verificationRejected": {
-        "title": "Verification Rejected",
-        "description": "School verification has been rejected."
-      },
-      "verificationFailed": {
-        "title": "Verification Failed",
-        "description": "Failed to process verification request.",
-        "customMessage": "{{message}}"
-      }
-    },
-    "emptyStates": {
-      "noSchools": {
-        "title": "No Schools Found",
-        "description": "No schools match your search criteria."
-      }
-    },
-    "loadingStates": {
-      "loadingSchools": "Loading schools..."
-    }
-  },
-  "reviews": {
-    "title": "Review Management",
-    "subtitle": "Review and approve evidence submissions, photo consents, and audits",
-    "tabs": {
-      "evidenceReview": "Evidence Review",
-      "photoConsent": "Photo Consent",
-      "auditReview": "Audit Review"
-    },
-    "buttons": {
-      "approve": "Approve",
-      "reject": "Reject",
-      "requestRevision": "Request Revision",
-      "submitReview": "Submit Review",
-      "cancel": "Cancel",
-      "viewEvidence": "View Evidence",
-      "downloadDocument": "Download Document",
-      "bulkApprove": "Bulk Approve ({{count}})",
-      "bulkReject": "Bulk Reject ({{count}})"
-    },
-    "filters": {
-      "labels": {
-        "status": "Status",
-        "assignedTo": "Assigned To",
-        "searchSchool": "Search School"
-      },
-      "statusOptions": {
-        "all": "All",
-        "pending": "Pending",
-        "approved": "Approved",
-        "rejected": "Rejected",
-        "revisionRequested": "Needs Revision"
-      },
-      "assigneeOptions": {
-        "all": "All",
-        "unassigned": "Unassigned",
-        "me": "Assigned to Me",
-        "admin": "{{adminName}}"
-      },
-      "placeholders": {
-        "searchSchool": "Search by school name..."
-      }
-    },
-    "evidenceReview": {
-      "title": "Evidence Review Queue",
-      "assignment": {
-        "label": "Assign to",
-        "unassigned": "Unassigned",
-        "assignToMe": "Assign to Me",
-        "adminOption": "{{adminName}}"
-      },
-      "table": {
-        "headers": {
-          "school": "School",
-          "title": "Title",
-          "stage": "Stage",
-          "submittedBy": "Submitted By",
-          "submittedDate": "Submitted",
-          "assignedTo": "Assigned To",
-          "status": "Status",
-          "actions": "Actions"
-        }
-      },
-      "dialogs": {
-        "reviewEvidence": {
-          "title": "Review Evidence",
-          "labels": {
-            "school": "School:",
-            "title": "Title:",
-            "stage": "Stage:",
-            "submittedBy": "Submitted By:",
-            "description": "Description:",
-            "status": "Status",
-            "reviewNotes": "Review Notes"
-          },
-          "statusOptions": {
-            "approved": "Approved",
-            "rejected": "Rejected",
-            "revisionRequested": "Request Revision"
-          },
-          "placeholders": {
-            "reviewNotes": "Add notes for the teacher (required for rejection or revision request)..."
-          },
-          "helpText": {
-            "notesRequired": "Notes are required when rejecting or requesting revision"
-          }
-        }
-      },
-      "badges": {
-        "new": "NEW",
-        "pending": "Pending",
-        "approved": "Approved",
-        "rejected": "Rejected",
-        "revisionRequested": "Needs Revision"
-      }
-    },
-    "photoConsent": {
-      "title": "Photo Consent Queue",
-      "table": {
-        "headers": {
-          "school": "School",
-          "uploadDate": "Upload Date",
-          "uploadedBy": "Uploaded By",
-          "status": "Status",
-          "actions": "Actions"
-        }
-      },
-      "dialogs": {
-        "reviewConsent": {
-          "title": "Review Photo Consent",
-          "labels": {
-            "school": "School:",
-            "uploadDate": "Upload Date:",
-            "uploadedBy": "Uploaded By:",
-            "status": "Status",
-            "adminNotes": "Admin Notes (Optional)"
-          },
-          "statusOptions": {
-            "approved": "Approved",
-            "rejected": "Rejected"
-          },
-          "placeholders": {
-            "adminNotes": "Add any notes about this consent document..."
-          },
-          "previewDocument": "Preview Document"
-        }
-      },
-      "warnings": {
-        "consentRequired": {
-          "title": "Photo Consent Required",
-          "description": "Please ensure proper photo consent is obtained before approving evidence with student photos."
-        }
-      }
-    },
-    "auditReview": {
-      "title": "Audit Review Queue",
-      "table": {
-        "headers": {
-          "school": "School",
-          "auditType": "Audit Type",
-          "submittedBy": "Submitted By",
-          "submittedDate": "Submitted",
-          "status": "Status",
-          "actions": "Actions"
-        }
-      },
-      "dialogs": {
-        "reviewAudit": {
-          "title": "Review Audit",
-          "labels": {
-            "school": "School:",
-            "auditType": "Audit Type:",
-            "submittedBy": "Submitted By:",
-            "submittedDate": "Submitted Date:",
-            "status": "Status",
-            "reviewNotes": "Review Notes (Optional)"
-          },
-          "statusOptions": {
-            "approved": "Approved",
-            "rejected": "Rejected",
-            "revisionRequested": "Request Revision"
-          },
-          "placeholders": {
-            "reviewNotes": "Add any notes about this audit..."
-          }
-        }
-      },
-      "auditTypes": {
-        "plasticWaste": "Plastic Waste Audit",
-        "baseline": "Baseline Audit",
-        "followUp": "Follow-up Audit"
-      }
-    },
-    "toasts": {
-      "reviewSubmitted": {
-        "title": "Review Submitted",
-        "description": "The review has been successfully submitted."
-      },
-      "reviewFailed": {
-        "title": "Review Failed",
-        "description": "Failed to submit review. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "assignmentUpdated": {
-        "title": "Assignment Updated",
-        "description": "Evidence has been assigned to {{assignedTo}}."
-      },
-      "assignmentFailed": {
-        "title": "Assignment Failed",
-        "description": "Failed to update assignment. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "bulkApproveSuccessful": {
-        "title": "Bulk Approve Successful",
-        "description": "Successfully approved {{count}} item{{plural}}."
-      },
-      "bulkRejectSuccessful": {
-        "title": "Bulk Reject Successful",
-        "description": "Successfully rejected {{count}} item{{plural}}."
-      },
-      "bulkActionFailed": {
-        "title": "Bulk Action Failed",
-        "description": "Failed to process bulk action. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "notesRequired": {
-        "title": "Notes Required",
-        "description": "Please provide notes when rejecting or requesting revision."
-      }
-    },
-    "emptyStates": {
-      "noEvidence": {
-        "title": "No Evidence to Review",
-        "description": "All evidence submissions have been reviewed!"
-      },
-      "noConsent": {
-        "title": "No Photo Consent to Review",
-        "description": "All photo consent documents have been reviewed!"
-      },
-      "noAudits": {
-        "title": "No Audits to Review",
-        "description": "All audit submissions have been reviewed!"
-      }
-    },
-    "loadingStates": {
-      "loadingEvidence": "Loading evidence...",
-      "loadingConsent": "Loading photo consent documents...",
-      "loadingAudits": "Loading audits..."
-    }
-  },
-  "activityLogs": {
-    "title": "Activity Logs",
-    "subtitle": "Monitor user activity and system events",
-    "filters": {
-      "labels": {
-        "actionType": "Action Type",
-        "userSearch": "User Search",
-        "dateRange": "Date Range"
-      },
-      "actionTypes": {
-        "all": "All Actions",
-        "login": "Login",
-        "logout": "Logout",
-        "evidenceCreated": "Evidence Created",
-        "evidenceUpdated": "Evidence Updated",
-        "evidenceDeleted": "Evidence Deleted",
-        "evidenceApproved": "Evidence Approved",
-        "evidenceRejected": "Evidence Rejected",
+        "allActions": "All Actions",
+        "userLogin": "User Login",
         "schoolCreated": "School Created",
         "schoolUpdated": "School Updated",
-        "schoolDeleted": "School Deleted",
-        "userCreated": "User Created",
-        "userUpdated": "User Updated",
-        "userDeleted": "User Deleted",
-        "roleChanged": "Role Changed"
+        "evidenceSubmitted": "Evidence Submitted",
+        "evidenceApproved": "Evidence Approved",
+        "evidenceRejected": "Evidence Rejected",
+        "caseStudyCreated": "Case Study Created",
+        "caseStudyUpdated": "Case Study Updated",
+        "resourceUploaded": "Resource Uploaded"
       },
       "placeholders": {
-        "searchUser": "Search by user email...",
-        "startDate": "Start date",
-        "endDate": "End date"
+        "searchByEmail": "Search by email..."
       }
     },
     "table": {
@@ -2415,268 +1403,29 @@
         "timestamp": "Timestamp",
         "user": "User",
         "action": "Action",
-        "details": "Details",
-        "ipAddress": "IP Address"
-      },
-      "values": {
-        "systemAction": "System",
-        "noDetails": "No additional details"
+        "target": "Target",
+        "ipAddress": "IP Address",
+        "details": "Details"
       }
     },
-    "badges": {
-      "login": "Login",
-      "logout": "Logout",
-      "create": "Create",
-      "update": "Update",
-      "delete": "Delete",
-      "approve": "Approve",
-      "reject": "Reject"
-    },
-    "pagination": {
-      "showing": "Showing {{start}}-{{end}} of {{total}} activities",
-      "previous": "Previous",
-      "next": "Next"
-    },
-    "emptyStates": {
-      "noActivity": {
-        "title": "No Activity Logs",
-        "description": "No activity logs match your search criteria."
-      }
+    "buttons": {
+      "clearFilters": "Clear Filters",
+      "exportLogs": "Export Logs",
+      "refresh": "Refresh"
     },
     "loadingStates": {
       "loadingLogs": "Loading activity logs..."
     },
-    "export": {
-      "button": "Export Logs",
-      "csv": "Export as CSV",
-      "excel": "Export as Excel"
-    }
-  },
-  "teams": {
-    "title": "Team Management",
-    "subtitle": "Manage teacher assignments and school teams",
-    "sections": {
-      "schoolTeachers": {
-        "title": "School Teachers",
-        "description": "View and manage teachers assigned to schools"
-      },
-      "verificationRequests": {
-        "title": "Verification Requests",
-        "description": "Review and approve teacher verification requests"
-      }
-    },
-    "buttons": {
-      "assignTeacher": "Assign Teacher",
-      "removeTeacher": "Remove Teacher",
-      "approveRequest": "Approve",
-      "rejectRequest": "Reject",
-      "cancel": "Cancel",
-      "saveChanges": "Save Changes"
-    },
-    "dialogs": {
-      "assignTeacher": {
-        "title": "Assign Teacher to School",
-        "labels": {
-          "selectSchool": "Select School",
-          "selectTeacher": "Select Teacher"
-        },
-        "placeholders": {
-          "searchSchool": "Search for a school...",
-          "searchTeacher": "Search for a teacher..."
-        }
-      },
-      "removeTeacher": {
-        "title": "Remove Teacher",
-        "description": "Are you sure you want to remove {{teacherName}} from {{schoolName}}?",
-        "cannotUndo": "This action cannot be undone."
-      }
-    },
-    "table": {
-      "headers": {
-        "school": "School",
-        "teacher": "Teacher",
-        "role": "Role",
-        "assignedDate": "Assigned Date",
-        "actions": "Actions"
-      }
-    },
-    "toasts": {
-      "teacherAssigned": {
-        "title": "Teacher Assigned",
-        "description": "Teacher has been successfully assigned to the school."
-      },
-      "assignmentFailed": {
-        "title": "Assignment Failed",
-        "description": "Failed to assign teacher. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "teacherRemoved": {
-        "title": "Teacher Removed",
-        "description": "Teacher has been successfully removed from the school."
-      },
-      "removeFailed": {
-        "title": "Remove Failed",
-        "description": "Failed to remove teacher. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "requestApproved": {
-        "title": "Request Approved",
-        "description": "Verification request has been approved."
-      },
-      "requestRejected": {
-        "title": "Request Rejected",
-        "description": "Verification request has been rejected."
-      },
-      "requestFailed": {
-        "title": "Request Failed",
-        "description": "Failed to process verification request.",
-        "customMessage": "{{message}}"
-      }
-    },
     "emptyStates": {
-      "noTeachers": {
-        "title": "No Teachers Found",
-        "description": "No teachers are assigned to schools yet."
-      },
-      "noRequests": {
-        "title": "No Verification Requests",
-        "description": "There are no pending verification requests."
+      "noLogs": {
+        "title": "No Activity Logs",
+        "description": "No activity logs match your current filters"
       }
     },
-    "loadingStates": {
-      "loadingTeachers": "Loading teachers...",
-      "loadingRequests": "Loading verification requests..."
-    }
-  },
-  "evidenceRequirements": {
-    "title": "Evidence Requirements",
-    "subtitle": "Manage evidence requirements for each program stage",
-    "tabs": {
-      "inspire": "Inspire",
-      "investigate": "Investigate",
-      "act": "Act"
-    },
-    "buttons": {
-      "addRequirement": "Add Requirement",
-      "editRequirement": "Edit Requirement",
-      "deleteRequirement": "Delete Requirement",
-      "moveUp": "Move Up",
-      "moveDown": "Move Down",
-      "saveChanges": "Save Changes",
-      "cancel": "Cancel",
-      "attachResource": "Attach Resource"
-    },
-    "dialogs": {
-      "addRequirement": {
-        "title": "Add Evidence Requirement",
-        "labels": {
-          "title": "Title *",
-          "description": "Description",
-          "stage": "Stage",
-          "order": "Display Order",
-          "helpfulResources": "Helpful Resources"
-        },
-        "placeholders": {
-          "title": "Enter requirement title",
-          "description": "Enter detailed description...",
-          "order": "e.g., 1"
-        },
-        "helpText": {
-          "orderInfo": "Lower numbers appear first. Leave blank to add at the end.",
-          "resourceInfo": "Attach resources from the resource library to help schools complete this requirement."
-        }
-      },
-      "editRequirement": {
-        "title": "Edit Evidence Requirement",
-        "labels": {
-          "title": "Title *",
-          "description": "Description",
-          "order": "Display Order",
-          "helpfulResources": "Helpful Resources"
-        }
-      },
-      "deleteRequirement": {
-        "title": "Delete Requirement",
-        "description": "Are you sure you want to delete this requirement?",
-        "warningNote": "This will not delete existing evidence submissions, but the requirement will no longer be visible to schools.",
-        "cannotUndo": "This action cannot be undone."
-      },
-      "attachResource": {
-        "title": "Attach Helpful Resources",
-        "description": "Select resources from the library to help schools complete this requirement",
-        "searchPlaceholder": "Search resources...",
-        "noResources": "No resources found",
-        "selectedResources": "Selected Resources ({{count}})"
-      }
-    },
-    "table": {
-      "headers": {
-        "order": "Order",
-        "title": "Title",
-        "description": "Description",
-        "resources": "Resources",
-        "actions": "Actions"
-      },
-      "values": {
-        "noDescription": "No description",
-        "noResources": "No resources attached",
-        "resourceCount": "{{count}} resource{{plural}}"
-      }
-    },
-    "toasts": {
-      "requirementAdded": {
-        "title": "Requirement Added",
-        "description": "Evidence requirement has been successfully added."
-      },
-      "requirementUpdated": {
-        "title": "Requirement Updated",
-        "description": "Evidence requirement has been successfully updated."
-      },
-      "requirementDeleted": {
-        "title": "Requirement Deleted",
-        "description": "Evidence requirement has been successfully deleted."
-      },
-      "saveFailed": {
-        "title": "Save Failed",
-        "description": "Failed to save requirement. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "deleteFailed": {
-        "title": "Delete Failed",
-        "description": "Failed to delete requirement. Please try again.",
-        "customMessage": "{{message}}"
-      },
-      "orderUpdated": {
-        "title": "Order Updated",
-        "description": "Requirement order has been updated."
-      },
-      "orderUpdateFailed": {
-        "title": "Update Failed",
-        "description": "Failed to update requirement order.",
-        "customMessage": "{{message}}"
-      },
-      "resourceAttached": {
-        "title": "Resource Attached",
-        "description": "Resource has been attached to the requirement."
-      },
-      "resourceRemoved": {
-        "title": "Resource Removed",
-        "description": "Resource has been removed from the requirement."
-      },
-      "resourceActionFailed": {
-        "title": "Action Failed",
-        "description": "Failed to update resource attachment.",
-        "customMessage": "{{message}}"
-      }
-    },
-    "emptyStates": {
-      "noRequirements": {
-        "title": "No Requirements Yet",
-        "description": "Add your first evidence requirement for this stage."
-      }
-    },
-    "loadingStates": {
-      "loadingRequirements": "Loading requirements..."
+    "pagination": {
+      "showing": "Showing {{start}} - {{end}} of {{total}}",
+      "previous": "Previous",
+      "next": "Next"
     }
   }
 }
