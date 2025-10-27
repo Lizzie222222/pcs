@@ -78,8 +78,8 @@ export function OptimizedImage({
     (responsive && connectionSpeed.shouldLoadHighQuality) : responsive;
   // Disable lazy loading for small images (logos) or priority images
   const shouldUseLazyLoading = respectConnectionSpeed ? 
-    (!priority && (connectionSpeed.connectionInfo.isSlowConnection || connectionSpeed.connectionInfo.saveData) && (width && width > 200)) : 
-    (!priority && (width && width > 200));
+    (!priority && (connectionSpeed.connectionInfo.isSlowConnection || connectionSpeed.connectionInfo.saveData) && (!width || width > 200)) : 
+    (!priority && (!width || width > 200));
   const effectiveBreakpoints = respectConnectionSpeed && connectionSpeed.connectionInfo.isSlowConnection ? 
     { mobile: Math.min(480, breakpoints.mobile), tablet: Math.min(768, breakpoints.tablet), desktop: Math.min(1280, breakpoints.desktop) } : 
     breakpoints;

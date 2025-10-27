@@ -74,6 +74,8 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
                 src={file.url}
                 alt={file.name}
                 className="w-full h-full object-cover"
+                loading="lazy"
+                decoding="async"
               />
             ) : isVideo(file.type) ? (
               <video
