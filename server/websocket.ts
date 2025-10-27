@@ -6,7 +6,7 @@ import { storage } from './storage';
 
 // Type definitions for WebSocket messages
 export interface WebSocketMessage {
-  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong' | 'idle_unlock';
+  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong' | 'idle_unlock' | 'start_viewing' | 'stop_viewing' | 'viewers_updated';
   payload?: any;
 }
 
@@ -44,6 +44,7 @@ const connectedClients = new Map<WebSocket, ConnectedUser>();
 const userSocketMap = new Map<string, WebSocket>(); // userId -> WebSocket
 const documentLocks = new Map<string, DocumentLock>(); // ${documentType}:${documentId} -> DocumentLock
 const typingUsers = new Map<string, { name: string; timestamp: Date }>(); // userId -> typing info
+const documentViewers = new Map<string, Set<string>>(); // ${documentType}:${documentId} -> Set<userId>
 
 // Heartbeat interval (30 seconds)
 const HEARTBEAT_INTERVAL = 30000;
@@ -264,6 +265,14 @@ function handleMessage(ws: WebSocket, data: Buffer) {
       
       case 'idle_unlock':
         handleIdleUnlock(ws, client, message.payload);
+        break;
+      
+      case 'start_viewing':
+        handleStartViewing(ws, client, message.payload);
+        break;
+      
+      case 'stop_viewing':
+        handleStopViewing(ws, client, message.payload);
         break;
       
       default:
@@ -532,6 +541,98 @@ function handleIdleUnlock(ws: WebSocket, client: ConnectedUser, payload: any) {
 }
 
 /**
+ * Handle start viewing - user opens a document to view
+ */
+function handleStartViewing(ws: WebSocket, client: ConnectedUser, payload: any) {
+  const { documentId, documentType } = payload;
+
+  if (!documentId || !documentType) {
+    console.warn('[WebSocket] Invalid start_viewing payload:', payload);
+    return;
+  }
+
+  const viewKey = `${documentType}:${documentId}`;
+
+  // Add user to viewers set
+  if (!documentViewers.has(viewKey)) {
+    documentViewers.set(viewKey, new Set());
+  }
+  documentViewers.get(viewKey)!.add(client.userId);
+
+  console.log(`[WebSocket] User ${client.email} started viewing ${documentType}:${documentId}`);
+
+  // Broadcast updated viewer list
+  broadcastViewers(documentId, documentType);
+}
+
+/**
+ * Handle stop viewing - user closes the document
+ */
+function handleStopViewing(ws: WebSocket, client: ConnectedUser, payload: any) {
+  const { documentId, documentType } = payload;
+
+  if (!documentId || !documentType) {
+    console.warn('[WebSocket] Invalid stop_viewing payload:', payload);
+    return;
+  }
+
+  const viewKey = `${documentType}:${documentId}`;
+
+  // Remove user from viewers set
+  documentViewers.get(viewKey)?.delete(client.userId);
+
+  // Clean up empty sets
+  if (documentViewers.get(viewKey)?.size === 0) {
+    documentViewers.delete(viewKey);
+  }
+
+  console.log(`[WebSocket] User ${client.email} stopped viewing ${documentType}:${documentId}`);
+
+  // Broadcast updated viewer list
+  broadcastViewers(documentId, documentType);
+}
+
+/**
+ * Broadcast updated viewer list for a document
+ */
+function broadcastViewers(documentId: string, documentType: string) {
+  const viewKey = `${documentType}:${documentId}`;
+  const viewers = documentViewers.get(viewKey);
+
+  if (!viewers || viewers.size === 0) {
+    // Send empty viewer list
+    broadcastToAll({
+      type: 'viewers_updated',
+      payload: {
+        documentId,
+        documentType,
+        viewers: [],
+      },
+    });
+    return;
+  }
+
+  // Get user details for each viewer
+  const viewerDetails = Array.from(viewers).map(userId => {
+    const ws = userSocketMap.get(userId);
+    const user = ws ? connectedClients.get(ws) : null;
+    return {
+      userId,
+      name: user ? `${user.firstName} ${user.lastName}` : 'Unknown User',
+    };
+  });
+
+  broadcastToAll({
+    type: 'viewers_updated',
+    payload: {
+      documentId,
+      documentType,
+      viewers: viewerDetails,
+    },
+  });
+}
+
+/**
  * Handle client disconnect
  */
 function handleDisconnect(ws: WebSocket) {
@@ -573,6 +674,28 @@ function handleDisconnect(ws: WebSocket) {
         },
       });
     }
+  }
+
+  // Remove user from all document viewers
+  const affectedDocuments: Array<{ documentId: string; documentType: string }> = [];
+  for (const [viewKey, viewers] of Array.from(documentViewers.entries())) {
+    if (viewers.has(client.userId)) {
+      viewers.delete(client.userId);
+      
+      // Parse document type and id from key
+      const [documentType, documentId] = viewKey.split(':');
+      affectedDocuments.push({ documentId, documentType });
+      
+      // Clean up empty sets
+      if (viewers.size === 0) {
+        documentViewers.delete(viewKey);
+      }
+    }
+  }
+
+  // Broadcast updated viewer lists for affected documents
+  for (const { documentId, documentType } of affectedDocuments) {
+    broadcastViewers(documentId, documentType);
   }
 
   // Broadcast presence update to remaining clients

@@ -29,11 +29,16 @@ export interface ChatMessage {
 }
 
 interface WebSocketMessage {
-  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong' | 'idle_unlock';
+  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong' | 'idle_unlock' | 'start_viewing' | 'stop_viewing' | 'viewers_updated';
   payload?: any;
 }
 
 export interface TypingUser {
+  userId: string;
+  name: string;
+}
+
+export interface DocumentViewer {
   userId: string;
   name: string;
 }
@@ -47,6 +52,7 @@ export function useCollaboration() {
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [conflictWarnings, setConflictWarnings] = useState<any[]>([]);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [documentViewers, setDocumentViewers] = useState<Map<string, DocumentViewer[]>>(new Map());
   
   const reconnectTimeoutRef = useRef<number | null>(null);
   const reconnectAttemptsRef = useRef(0);
@@ -163,6 +169,10 @@ export function useCollaboration() {
       
       case 'typing_stop':
         handleTypingStop(message.payload);
+        break;
+      
+      case 'viewers_updated':
+        handleViewersUpdated(message.payload);
         break;
       
       case 'pong':
@@ -306,6 +316,21 @@ export function useCollaboration() {
     setTypingUsers(prev => prev.filter(u => u.userId !== payload.userId));
   }, []);
 
+  const handleViewersUpdated = useCallback((payload: { documentId: string; documentType: string; viewers: DocumentViewer[] }) => {
+    const { documentId, documentType, viewers } = payload;
+    const viewKey = `${documentType}:${documentId}`;
+    
+    setDocumentViewers(prev => {
+      const next = new Map(prev);
+      if (viewers.length === 0) {
+        next.delete(viewKey);
+      } else {
+        next.set(viewKey, viewers);
+      }
+      return next;
+    });
+  }, []);
+
   const sendMessage = useCallback((message: WebSocketMessage) => {
     if (ws?.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
@@ -377,6 +402,35 @@ export function useCollaboration() {
   const getDocumentLock = useCallback((documentId: string, documentType: 'case_study' | 'event') => {
     return documentLocks.find(l => l.documentType === documentType && l.documentId === documentId);
   }, [documentLocks]);
+
+  const startViewing = useCallback((documentId: string, documentType: 'case_study' | 'event' | 'evidence') => {
+    if (!ws || connectionState !== 'connected') {
+      console.warn('[Collaboration] Cannot start viewing - not connected');
+      return;
+    }
+    
+    sendMessage({
+      type: 'start_viewing',
+      payload: { documentId, documentType },
+    });
+  }, [ws, connectionState, sendMessage]);
+
+  const stopViewing = useCallback((documentId: string, documentType: 'case_study' | 'event' | 'evidence') => {
+    if (!ws || connectionState !== 'connected') {
+      console.warn('[Collaboration] Cannot stop viewing - not connected');
+      return;
+    }
+    
+    sendMessage({
+      type: 'stop_viewing',
+      payload: { documentId, documentType },
+    });
+  }, [ws, connectionState, sendMessage]);
+
+  const getViewersForDocument = useCallback((documentId: string, documentType: string) => {
+    const viewKey = `${documentType}:${documentId}`;
+    return documentViewers.get(viewKey) || [];
+  }, [documentViewers]);
 
   // Connect on mount if authenticated
   useEffect(() => {
@@ -468,12 +522,16 @@ export function useCollaboration() {
     chatMessages,
     conflictWarnings,
     typingUsers,
+    documentViewers,
     sendPresenceUpdate,
     requestDocumentLock,
     releaseDocumentLock,
     sendChatMessage,
     sendTypingIndicator,
     getDocumentLock,
+    startViewing,
+    stopViewing,
+    getViewersForDocument,
     connect,
     disconnect,
   };

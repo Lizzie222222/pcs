@@ -10,6 +10,8 @@ import { useDebounce } from "@/hooks/useDebounce";
 import { useCollaboration } from "@/hooks/useCollaboration";
 import type { DocumentLock } from "@/hooks/useCollaboration";
 import DocumentLockWarning from "./DocumentLockWarning";
+import { ViewingIndicator } from "./ViewingIndicator";
+import { useAuth } from "@/hooks/useAuth";
 import { X, Clock } from "lucide-react";
 import type { 
   CaseStudy, 
@@ -139,6 +141,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
   const { toast } = useToast();
   const isMobile = useIsMobile();
   const collaboration = useCollaboration();
+  const { user } = useAuth();
   const [isSaving, setIsSaving] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [completedSteps, setCompletedSteps] = useState<number[]>([]);
@@ -530,7 +533,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
     updateValidation();
   }, [currentStep, schoolId, title, stage, templateType, description, impact, images, beforeImage, afterImage, quotes, metrics, timeline]);
 
-  // Request document lock when editing existing case study
+  // Request document lock and start viewing when editing existing case study
   useEffect(() => {
     const requestLock = async () => {
       if (caseStudy?.id && collaboration.connectionState === 'connected') {
@@ -556,15 +559,19 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         } catch (error) {
           console.error('Failed to request document lock:', error);
         }
+        
+        // Start viewing the document
+        collaboration.startViewing(caseStudy.id, 'case_study');
       }
     };
 
     requestLock();
 
-    // Release lock when component unmounts
+    // Release lock and stop viewing when component unmounts
     return () => {
       if (caseStudy?.id) {
         collaboration.releaseDocumentLock(caseStudy.id, 'case_study');
+        collaboration.stopViewing(caseStudy.id, 'case_study');
       }
     };
   }, [caseStudy?.id, collaboration.connectionState, collaboration]);
@@ -611,6 +618,16 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
             documentType="case_study"
             className="mx-4 mt-4"
           />
+        )}
+
+        {/* Viewing Indicator */}
+        {caseStudy?.id && (
+          <div className="mx-4 mt-4">
+            <ViewingIndicator
+              viewers={collaboration.getViewersForDocument(caseStudy.id, 'case_study')}
+              currentUserId={user?.id}
+            />
+          </div>
         )}
 
         {/* Fixed Header */}

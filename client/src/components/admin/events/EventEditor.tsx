@@ -5,6 +5,8 @@ import { apiRequest } from "@/lib/queryClient";
 import { useCollaboration } from "@/hooks/useCollaboration";
 import type { DocumentLock } from "@/hooks/useCollaboration";
 import DocumentLockWarning from "../DocumentLockWarning";
+import { ViewingIndicator } from "../ViewingIndicator";
+import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -64,6 +66,7 @@ export default function EventEditor({
 }: EventEditorProps) {
   const { toast } = useToast();
   const collaboration = useCollaboration();
+  const { user } = useAuth();
   const [documentLock, setDocumentLock] = useState<DocumentLock | null>(null);
   const [isLocked, setIsLocked] = useState(false);
 
@@ -221,7 +224,7 @@ export default function EventEditor({
     return () => clearTimeout(timer);
   }, [eventDialogTab]);
 
-  // Request document lock when editing existing event
+  // Request document lock and start viewing when editing existing event
   useEffect(() => {
     const requestLock = async () => {
       if (editingEvent?.id && isOpen && collaboration.connectionState === 'connected') {
@@ -247,15 +250,19 @@ export default function EventEditor({
         } catch (error) {
           console.error('Failed to request document lock:', error);
         }
+        
+        // Start viewing the document
+        collaboration.startViewing(editingEvent.id, 'event');
       }
     };
 
     requestLock();
 
-    // Release lock when dialog closes
+    // Release lock and stop viewing when dialog closes
     return () => {
       if (editingEvent?.id) {
         collaboration.releaseDocumentLock(editingEvent.id, 'event');
+        collaboration.stopViewing(editingEvent.id, 'event');
       }
     };
   }, [editingEvent?.id, isOpen, collaboration.connectionState, collaboration]);
@@ -657,6 +664,16 @@ export default function EventEditor({
             documentType="event"
             className="mb-4"
           />
+        )}
+
+        {/* Viewing Indicator */}
+        {editingEvent?.id && (
+          <div className="mb-4">
+            <ViewingIndicator
+              viewers={collaboration.getViewersForDocument(editingEvent.id, 'event')}
+              currentUserId={user?.id}
+            />
+          </div>
         )}
         
         <Tabs value={eventDialogTab} onValueChange={(value) => setEventDialogTab(value as 'details' | 'page-builder')} className="w-full">
