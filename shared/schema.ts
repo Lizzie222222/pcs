@@ -511,6 +511,39 @@ export const notifications = pgTable("notifications", {
   index("idx_notifications_created").on(table.createdAt),
 ]);
 
+export const activityStatusEnum = pgEnum('activity_status', [
+  'idle',
+  'viewing_dashboard',
+  'reviewing_evidence',
+  'editing_case_study',
+  'editing_event',
+  'managing_schools',
+  'managing_users',
+  'managing_resources'
+]);
+
+export const chatMessages = pgTable("chat_messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  message: text("message").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_chat_messages_created").on(table.createdAt),
+]);
+
+export const documentLocks = pgTable("document_locks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  documentType: varchar("document_type").notNull(),
+  documentId: varchar("document_id").notNull(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: 'cascade' }),
+  acquiredAt: timestamp("acquired_at").defaultNow(),
+  expiresAt: timestamp("expires_at").notNull(),
+}, (table) => [
+  index("idx_document_locks_doc").on(table.documentType, table.documentId),
+  index("idx_document_locks_user").on(table.userId),
+  index("idx_document_locks_expires").on(table.expiresAt),
+]);
+
 export const certificates = pgTable("certificates", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
@@ -1633,6 +1666,16 @@ export const insertImportBatchSchema = createInsertSchema(importBatches).omit({
   completedAt: true,
 });
 
+export const insertChatMessageSchema = createInsertSchema(chatMessages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertDocumentLockSchema = createInsertSchema(documentLocks).omit({
+  id: true,
+  acquiredAt: true,
+});
+
 // Types
 export type UpsertUser = z.infer<typeof upsertUserSchema>;
 export type User = typeof users.$inferSelect;
@@ -1730,6 +1773,10 @@ export type ImportBatch = typeof importBatches.$inferSelect;
 export type InsertImportBatch = z.infer<typeof insertImportBatchSchema>;
 export type Notification = typeof notifications.$inferSelect;
 export type InsertNotification = z.infer<typeof insertNotificationSchema>;
+export type ChatMessage = typeof chatMessages.$inferSelect;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type DocumentLock = typeof documentLocks.$inferSelect;
+export type InsertDocumentLock = z.infer<typeof insertDocumentLockSchema>;
 
 // Event Analytics Types
 export interface EventAnalytics {
