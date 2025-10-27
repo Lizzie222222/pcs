@@ -108,7 +108,15 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
     }).filter(Boolean) as CollabChatMessage[];
 
     merged.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
-    setAllMessages(merged);
+    
+    // Only update if the message IDs or count changed
+    setAllMessages(prev => {
+      if (prev.length !== merged.length) return merged;
+      const prevIds = prev.map(m => m.id).join(',');
+      const mergedIds = merged.map(m => m.id).join(',');
+      if (prevIds !== mergedIds) return merged;
+      return prev;
+    });
   }, [historicalMessages, realtimeMessages]);
 
   // Auto-scroll to bottom on new messages

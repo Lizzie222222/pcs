@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback, useRef, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, useRef, useMemo, ReactNode } from 'react';
 
 export interface ConnectedUser {
   userId: string;
@@ -489,7 +489,7 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     };
   }, [connectionState, user]);
 
-  const value: CollaborationContextType = {
+  const value: CollaborationContextType = useMemo(() => ({
     connectionState,
     onlineUsers,
     documentLocks,
@@ -506,7 +506,24 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     startViewing,
     stopViewing,
     getViewersForDocument,
-  };
+  }), [
+    connectionState,
+    onlineUsers,
+    documentLocks,
+    chatMessages,
+    conflictWarnings,
+    typingUsers,
+    documentViewers,
+    sendPresenceUpdate,
+    requestDocumentLock,
+    releaseDocumentLock,
+    sendChatMessage,
+    sendTypingIndicator,
+    getDocumentLock,
+    startViewing,
+    stopViewing,
+    getViewersForDocument,
+  ]);
 
   return (
     <CollaborationContext.Provider value={value}>
