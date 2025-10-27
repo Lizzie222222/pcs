@@ -146,20 +146,43 @@ export default function ReviewsSection({
         reviewNotes,
       });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches to avoid race conditions
+      await queryClient.cancelQueries({ queryKey: ['/api/admin/audits/pending'] });
+      
+      // Snapshot the previous value for rollback
+      const previousAudits = queryClient.getQueryData<PendingAudit[]>(['/api/admin/audits/pending']);
+      
+      // Optimistically remove reviewed audit from pending list
+      queryClient.setQueryData<PendingAudit[]>(['/api/admin/audits/pending'], (old = []) => {
+        return old.filter(a => a.id !== variables.auditId);
+      });
+      
+      // Return context with snapshot for potential rollback
+      return { previousAudits };
+    },
+    onSuccess: (_, variables) => {
       setAuditReviewData(null);
       toast({
-        title: "Success",
-        description: "Audit review submitted successfully.",
+        title: "Audit Reviewed",
+        description: `Audit has been ${variables.approved ? 'approved' : 'rejected'}.`,
       });
     },
-    onError: (error: any) => {
+    onError: (error: any, variables, context) => {
+      // Rollback on error
+      if (context?.previousAudits) {
+        queryClient.setQueryData(['/api/admin/audits/pending'], context.previousAudits);
+      }
       toast({
-        title: "Error",
-        description: error.message || "Failed to submit audit review.",
+        title: "Review Failed",
+        description: error.message || "Failed to review audit. Changes have been reverted.",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency (surgical invalidation)
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/audits/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
     },
   });
 

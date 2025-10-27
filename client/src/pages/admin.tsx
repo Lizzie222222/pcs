@@ -286,20 +286,43 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     mutationFn: async ({ schoolId, notes }: { schoolId: string; notes: string }) => {
       return await apiRequest('POST', `/api/admin/schools/${schoolId}/photo-consent/approve`, { notes });
     },
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches to avoid race conditions
+      await queryClient.cancelQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
+      
+      // Snapshot the previous value for rollback
+      const previousPending = queryClient.getQueryData(['/api/admin/photo-consent/pending']);
+      
+      // Optimistically remove school from pending photo consent list
+      queryClient.setQueryData(['/api/admin/photo-consent/pending'], (old: any[] = []) => {
+        return old.filter(school => school.id !== variables.schoolId);
+      });
+      
+      // Return context with snapshot for potential rollback
+      return { previousPending };
+    },
     onSuccess: () => {
       toast({
         title: "Photo Consent Approved",
-        description: "The photo consent document has been approved successfully.",
+        description: "Photo consent has been approved successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
     },
-    onError: (error: any) => {
+    onError: (error: any, variables, context) => {
+      // Rollback on error
+      if (context?.previousPending) {
+        queryClient.setQueryData(['/api/admin/photo-consent/pending'], context.previousPending);
+      }
       toast({
         title: "Approval Failed",
-        description: error.message || "Failed to approve photo consent document.",
+        description: error.message || "Failed to approve photo consent. Changes have been reverted.",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency (surgical invalidation)
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
     },
   });
 
@@ -307,22 +330,45 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     mutationFn: async ({ schoolId, notes }: { schoolId: string; notes: string }) => {
       return await apiRequest('POST', `/api/admin/schools/${schoolId}/photo-consent/reject`, { notes });
     },
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches to avoid race conditions
+      await queryClient.cancelQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
+      
+      // Snapshot the previous value for rollback
+      const previousPending = queryClient.getQueryData(['/api/admin/photo-consent/pending']);
+      
+      // Optimistically remove school from pending photo consent list
+      queryClient.setQueryData(['/api/admin/photo-consent/pending'], (old: any[] = []) => {
+        return old.filter(school => school.id !== variables.schoolId);
+      });
+      
+      // Return context with snapshot for potential rollback
+      return { previousPending };
+    },
     onSuccess: () => {
+      setPhotoConsentRejectDialogOpen(false);
+      setPhotoConsentRejectNotes('');
       toast({
         title: "Photo Consent Rejected",
         description: "The photo consent document has been rejected.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
-      setPhotoConsentRejectDialogOpen(false);
-      setPhotoConsentRejectNotes('');
     },
-    onError: (error: any) => {
+    onError: (error: any, variables, context) => {
+      // Rollback on error
+      if (context?.previousPending) {
+        queryClient.setQueryData(['/api/admin/photo-consent/pending'], context.previousPending);
+      }
       toast({
         title: "Rejection Failed",
-        description: error.message || "Failed to reject photo consent document.",
+        description: error.message || "Failed to reject photo consent. Changes have been reverted.",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency (surgical invalidation)
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
     },
   });
 

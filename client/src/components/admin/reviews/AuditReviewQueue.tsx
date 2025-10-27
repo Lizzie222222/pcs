@@ -8,6 +8,7 @@ import {
   XCircle,
   MapPin,
   Calendar,
+  Loader2,
 } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { EmptyState } from "@/components/ui/states";
@@ -270,9 +271,14 @@ export default function AuditReviewQueue({
                           action: 'approved',
                           notes: ''
                         })}
+                        disabled={reviewAuditMutation.isPending}
                         data-testid={`button-approve-audit-${audit.id}`}
                       >
-                        <CheckCircle className="h-4 w-4 mr-1" />
+                        {reviewAuditMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        ) : (
+                          <CheckCircle className="h-4 w-4 mr-1" />
+                        )}
                         Approve
                       </Button>
                       <Button
@@ -283,9 +289,14 @@ export default function AuditReviewQueue({
                           action: 'rejected',
                           notes: ''
                         })}
+                        disabled={reviewAuditMutation.isPending}
                         data-testid={`button-reject-audit-${audit.id}`}
                       >
-                        <XCircle className="h-4 w-4 mr-1" />
+                        {reviewAuditMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                        ) : (
+                          <XCircle className="h-4 w-4 mr-1" />
+                        )}
                         Reject
                       </Button>
                     </div>

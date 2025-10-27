@@ -7,6 +7,7 @@ import {
   MapPin,
   Clock,
   Eye,
+  Loader2,
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/states";
 
@@ -92,9 +93,14 @@ export default function PhotoConsentQueue({
                           approvePhotoConsentMutation.mutate({ schoolId: school.id, notes: '' });
                         }
                       }}
+                      disabled={approvePhotoConsentMutation.isPending || rejectPhotoConsentMutation.isPending}
                       data-testid={`button-approve-consent-${school.id}`}
                     >
-                      <CheckCircle className="h-4 w-4 mr-1" />
+                      {approvePhotoConsentMutation.isPending || rejectPhotoConsentMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <CheckCircle className="h-4 w-4 mr-1" />
+                      )}
                       Approve
                     </Button>
                     <Button
@@ -108,9 +114,14 @@ export default function PhotoConsentQueue({
                           alert('Rejection notes are required');
                         }
                       }}
+                      disabled={approvePhotoConsentMutation.isPending || rejectPhotoConsentMutation.isPending}
                       data-testid={`button-reject-consent-${school.id}`}
                     >
-                      <XCircle className="h-4 w-4 mr-1" />
+                      {approvePhotoConsentMutation.isPending || rejectPhotoConsentMutation.isPending ? (
+                        <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                      ) : (
+                        <XCircle className="h-4 w-4 mr-1" />
+                      )}
                       Reject
                     </Button>
                   </div>
