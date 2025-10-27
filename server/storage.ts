@@ -294,10 +294,13 @@ export interface IStorage {
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
   getSchoolNotifications(schoolId: string, unreadOnly?: boolean): Promise<Notification[]>;
+  getUserNotifications(userId: string, unreadOnly?: boolean): Promise<Notification[]>;
   markNotificationAsRead(id: string): Promise<Notification | undefined>;
   markAllNotificationsAsRead(schoolId: string): Promise<void>;
+  markAllNotificationsAsReadForUser(userId: string): Promise<void>;
   deleteNotification(id: string): Promise<boolean>;
   getUnreadNotificationCount(schoolId: string): Promise<number>;
+  getUnreadNotificationCountForUser(userId: string): Promise<number>;
   
   // Evidence operations
   createEvidence(evidence: InsertEvidence): Promise<Evidence>;
@@ -311,6 +314,7 @@ export interface IStorage {
     schoolId?: string;
     country?: string;
     visibility?: 'public' | 'registered';
+    assignedTo?: string;
   }): Promise<EvidenceWithSchool[]>;
   getApprovedPublicEvidence(): Promise<Evidence[]>;
   updateEvidenceStatus(
@@ -319,6 +323,7 @@ export interface IStorage {
     reviewedBy: string,
     reviewNotes?: string
   ): Promise<Evidence | undefined>;
+  assignEvidence(evidenceId: string, assignedToUserId: string | null): Promise<void>;
   updateEvidenceFiles(id: string, files: any[]): Promise<Evidence | undefined>;
   deleteEvidence(id: string): Promise<boolean>;
   deleteSchool(id: string): Promise<boolean>;
@@ -2168,6 +2173,21 @@ export class DatabaseStorage implements IStorage {
       .limit(50);
   }
 
+  async getUserNotifications(userId: string, unreadOnly: boolean = false): Promise<Notification[]> {
+    const conditions = [eq(notifications.userId, userId)];
+    
+    if (unreadOnly) {
+      conditions.push(eq(notifications.isRead, false));
+    }
+    
+    return await db
+      .select()
+      .from(notifications)
+      .where(and(...conditions))
+      .orderBy(desc(notifications.createdAt))
+      .limit(50);
+  }
+
   async markNotificationAsRead(id: string): Promise<Notification | undefined> {
     const [notification] = await db
       .update(notifications)
@@ -2187,6 +2207,16 @@ export class DatabaseStorage implements IStorage {
       ));
   }
 
+  async markAllNotificationsAsReadForUser(userId: string): Promise<void> {
+    await db
+      .update(notifications)
+      .set({ isRead: true })
+      .where(and(
+        eq(notifications.userId, userId),
+        eq(notifications.isRead, false)
+      ));
+  }
+
   async deleteNotification(id: string): Promise<boolean> {
     const result = await db
       .delete(notifications)
@@ -2201,6 +2231,17 @@ export class DatabaseStorage implements IStorage {
       .from(notifications)
       .where(and(
         eq(notifications.schoolId, schoolId),
+        eq(notifications.isRead, false)
+      ));
+    return result[0]?.count || 0;
+  }
+
+  async getUnreadNotificationCountForUser(userId: string): Promise<number> {
+    const result = await db
+      .select({ count: count() })
+      .from(notifications)
+      .where(and(
+        eq(notifications.userId, userId),
         eq(notifications.isRead, false)
       ));
     return result[0]?.count || 0;
@@ -2334,6 +2375,7 @@ export class DatabaseStorage implements IStorage {
     schoolId?: string;
     country?: string;
     visibility?: 'public' | 'registered';
+    assignedTo?: string;
   }): Promise<EvidenceWithSchool[]> {
     // Build WHERE conditions
     const conditions = [];
@@ -2353,6 +2395,9 @@ export class DatabaseStorage implements IStorage {
     if (filters?.country) {
       conditions.push(eq(schools.country, filters.country));
     }
+    if (filters?.assignedTo) {
+      conditions.push(eq(evidence.assignedTo, filters.assignedTo));
+    }
 
     // Query with JOIN to include school data and reviewer info
     const query = db
@@ -2371,6 +2416,7 @@ export class DatabaseStorage implements IStorage {
         reviewedBy: evidence.reviewedBy,
         reviewedAt: evidence.reviewedAt,
         reviewNotes: evidence.reviewNotes,
+        assignedTo: evidence.assignedTo,
         isFeatured: evidence.isFeatured,
         isAuditQuiz: evidence.isAuditQuiz,
         roundNumber: evidence.roundNumber,
@@ -2534,6 +2580,16 @@ export class DatabaseStorage implements IStorage {
       .where(eq(evidence.id, id))
       .returning();
     return evidenceRecord;
+  }
+
+  async assignEvidence(evidenceId: string, assignedToUserId: string | null): Promise<void> {
+    await db
+      .update(evidence)
+      .set({ 
+        assignedTo: assignedToUserId,
+        updatedAt: new Date(),
+      })
+      .where(eq(evidence.id, evidenceId));
   }
 
   async updateEvidenceFiles(id: string, files: any[]): Promise<Evidence | undefined> {

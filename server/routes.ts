@@ -4036,6 +4036,7 @@ Return JSON with:
         schoolId: req.query.schoolId as string | undefined,
         country: req.query.country as string | undefined,
         visibility: req.query.visibility as 'public' | 'private' | undefined,
+        assignedTo: req.query.assignedTo as string | undefined,
       };
       
       // Remove undefined values
@@ -4334,6 +4335,42 @@ Return JSON with:
     } catch (error) {
       console.error("Error in bulk evidence delete:", error);
       res.status(500).json({ message: "Failed to perform bulk delete" });
+    }
+  });
+
+  // Assign evidence to admin
+  app.patch('/api/admin/evidence/:id/assign', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { assignedTo } = req.body;
+      const userId = req.user.id;
+      
+      await storage.assignEvidence(id, assignedTo);
+      
+      // Log the assignment
+      await logAuditAction(
+        userId,
+        assignedTo ? 'assigned' : 'unassigned',
+        'evidence',
+        id,
+        { assignedTo }
+      );
+      
+      // Send notification to assigned user
+      if (assignedTo) {
+        await storage.createNotification({
+          userId: assignedTo,
+          type: 'evidence_assigned' as any,
+          title: 'Evidence Assigned to You',
+          message: 'You have been assigned new evidence to review',
+          linkUrl: `/admin/evidence/${id}`,
+        });
+      }
+      
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error assigning evidence:", error);
+      res.status(500).json({ message: "Failed to assign evidence" });
     }
   });
 

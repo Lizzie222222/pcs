@@ -17,6 +17,7 @@ export interface PendingEvidence {
   submittedAt: string;
   schoolId: string;
   submittedBy: string;
+  assignedTo: string | null;
   files: any[];
   videoLinks: string | null;
   school?: {

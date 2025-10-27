@@ -4,6 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
@@ -26,11 +33,15 @@ import {
   Trash2,
   AlertTriangle,
   Loader2,
+  UserCog,
 } from "lucide-react";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
+import { EvidenceAssignment } from "./EvidenceAssignment";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 import type { PendingEvidence } from "@/components/admin/shared/types";
+import type { User } from "@shared/schema";
 
 interface EvidenceReviewQueueProps {
   activeTab: string;
@@ -63,6 +74,9 @@ interface EvidenceReviewQueueProps {
   setSelectedEvidence: (ids: string[]) => void;
   evidenceStatusFilter: 'all' | 'pending' | 'approved' | 'rejected';
   setEvidenceStatusFilter: (filter: 'all' | 'pending' | 'approved' | 'rejected') => void;
+  evidenceAssigneeFilter: string;
+  setEvidenceAssigneeFilter: (filter: string) => void;
+  currentUserId?: string;
 }
 
 export default function EvidenceReviewQueue({
@@ -82,10 +96,22 @@ export default function EvidenceReviewQueue({
   setSelectedEvidence,
   evidenceStatusFilter,
   setEvidenceStatusFilter,
+  evidenceAssigneeFilter,
+  setEvidenceAssigneeFilter,
+  currentUserId,
 }: EvidenceReviewQueueProps) {
   const { toast } = useToast();
   const [consentWarningDialogOpen, setConsentWarningDialogOpen] = useState(false);
   const [pendingApprovalEvidence, setPendingApprovalEvidence] = useState<PendingEvidence | null>(null);
+
+  const { data: admins } = useQuery<User[]>({
+    queryKey: ['/api/admin/users'],
+    queryFn: async () => {
+      const res = await fetch('/api/admin/users?role=admin', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch admins');
+      return res.json();
+    }
+  });
 
   // Helper functions
   const toggleEvidenceSelection = (evidenceId: string) => {
@@ -195,51 +221,79 @@ export default function EvidenceReviewQueue({
           </div>
 
           {/* Status Filter Tabs */}
-          <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg mt-4">
-            <button
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                evidenceStatusFilter === 'all'
-                  ? 'bg-white text-navy shadow-sm'
-                  : 'text-gray-600 hover:text-navy'
-              }`}
-              onClick={() => setEvidenceStatusFilter('all')}
-              data-testid="filter-evidence-all"
-            >
-              All
-            </button>
-            <button
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                evidenceStatusFilter === 'pending'
-                  ? 'bg-white text-navy shadow-sm'
-                  : 'text-gray-600 hover:text-navy'
-              }`}
-              onClick={() => setEvidenceStatusFilter('pending')}
-              data-testid="filter-evidence-pending"
-            >
-              Pending
-            </button>
-            <button
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                evidenceStatusFilter === 'approved'
-                  ? 'bg-white text-navy shadow-sm'
-                  : 'text-gray-600 hover:text-navy'
-              }`}
-              onClick={() => setEvidenceStatusFilter('approved')}
-              data-testid="filter-evidence-approved"
-            >
-              Approved
-            </button>
-            <button
-              className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                evidenceStatusFilter === 'rejected'
-                  ? 'bg-white text-navy shadow-sm'
-                  : 'text-gray-600 hover:text-navy'
-              }`}
-              onClick={() => setEvidenceStatusFilter('rejected')}
-              data-testid="filter-evidence-rejected"
-            >
-              Rejected
-            </button>
+          <div className="flex items-center gap-4 mt-4">
+            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg flex-1">
+              <button
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  evidenceStatusFilter === 'all'
+                    ? 'bg-white text-navy shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                onClick={() => setEvidenceStatusFilter('all')}
+                data-testid="filter-evidence-all"
+              >
+                All
+              </button>
+              <button
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  evidenceStatusFilter === 'pending'
+                    ? 'bg-white text-navy shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                onClick={() => setEvidenceStatusFilter('pending')}
+                data-testid="filter-evidence-pending"
+              >
+                Pending
+              </button>
+              <button
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  evidenceStatusFilter === 'approved'
+                    ? 'bg-white text-navy shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                onClick={() => setEvidenceStatusFilter('approved')}
+                data-testid="filter-evidence-approved"
+              >
+                Approved
+              </button>
+              <button
+                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  evidenceStatusFilter === 'rejected'
+                    ? 'bg-white text-navy shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                onClick={() => setEvidenceStatusFilter('rejected')}
+                data-testid="filter-evidence-rejected"
+              >
+                Rejected
+              </button>
+            </div>
+
+            {/* Assignee Filter */}
+            <div className="flex items-center gap-2">
+              <UserCog className="h-4 w-4 text-gray-500" />
+              <Select
+                value={evidenceAssigneeFilter}
+                onValueChange={setEvidenceAssigneeFilter}
+                data-testid="filter-assignee"
+              >
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Filter by assignee" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Evidence</SelectItem>
+                  <SelectItem value="unassigned">Unassigned</SelectItem>
+                  {currentUserId && (
+                    <SelectItem value="me">Assigned to Me</SelectItem>
+                  )}
+                  {admins?.map((admin) => (
+                    <SelectItem key={admin.id} value={admin.id}>
+                      {admin.firstName} {admin.lastName}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           {evidencePending && evidencePending.length > 0 && (
@@ -375,6 +429,18 @@ export default function EvidenceReviewQueue({
                         <span>Submitted: {new Date(evidence.submittedAt).toLocaleDateString()}</span>
                         <span>Files: {evidence.files?.length || 0}</span>
                       </div>
+
+                      {/* Assignment Dropdown */}
+                      <div className="mb-3">
+                        <label className="text-xs font-medium text-gray-600 mb-1 block">
+                          Assigned To:
+                        </label>
+                        <EvidenceAssignment
+                          evidenceId={evidence.id}
+                          currentAssignedTo={evidence.assignedTo}
+                        />
+                      </div>
+
                       {evidence.files && evidence.files.length > 0 && (
                         <EvidenceFilesGallery
                           files={evidence.files}

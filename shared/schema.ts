@@ -334,6 +334,7 @@ export const evidence = pgTable("evidence", {
   reviewedBy: varchar("reviewed_by").references(() => users.id),
   reviewedAt: timestamp("reviewed_at"),
   reviewNotes: text("review_notes"),
+  assignedTo: varchar("assigned_to").references(() => users.id),
   isFeatured: boolean("is_featured").default(false),
   isAuditQuiz: boolean("is_audit_quiz").default(false),
   roundNumber: integer("round_number").default(1),
@@ -492,22 +493,26 @@ export const notificationTypeEnum = pgEnum('notification_type', [
   'new_resource',
   'resource_updated',
   'evidence_reviewed',
+  'evidence_assigned',
   'stage_completed',
   'general'
 ]);
 
 export const notifications = pgTable("notifications", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
+  schoolId: varchar("school_id").references(() => schools.id, { onDelete: 'cascade' }),
+  userId: varchar("user_id").references(() => users.id, { onDelete: 'cascade' }),
   type: notificationTypeEnum("type").notNull(),
   title: varchar("title").notNull(),
   message: text("message").notNull(),
   actionUrl: varchar("action_url"),
+  linkUrl: varchar("link_url"),
   resourceId: varchar("resource_id").references(() => resources.id, { onDelete: 'cascade' }),
   isRead: boolean("is_read").default(false),
   createdAt: timestamp("created_at").defaultNow(),
 }, (table) => [
   index("idx_notifications_school_read").on(table.schoolId, table.isRead),
+  index("idx_notifications_user_read").on(table.userId, table.isRead),
   index("idx_notifications_created").on(table.createdAt),
 ]);
 
@@ -1437,6 +1442,7 @@ export const insertEvidenceSchema = createInsertSchema(evidence).omit({
   reviewedAt: true,
   reviewedBy: true,
   reviewNotes: true,
+  assignedTo: true,
   isFeatured: true,
 });
 

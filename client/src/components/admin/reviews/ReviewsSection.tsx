@@ -27,6 +27,7 @@ export default function ReviewsSection({
   // Review state
   const [reviewType, setReviewType] = useState<'evidence' | 'audits' | 'photo-consent'>('evidence');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
+  const [evidenceAssigneeFilter, setEvidenceAssigneeFilter] = useState<string>('all');
   const [selectedEvidence, setSelectedEvidence] = useState<string[]>([]);
   const [reviewData, setReviewData] = useState<{
     evidenceId: string;
@@ -44,13 +45,28 @@ export default function ReviewsSection({
     notes?: string;
   } | null>(null);
 
-  // Evidence query with status filter
+  // Get current user
+  const { data: currentUser } = useQuery({
+    queryKey: ['/api/user'],
+    retry: false,
+  });
+
+  // Evidence query with status and assignee filter
   const { data: pendingEvidence, isLoading: evidenceLoading } = useQuery<PendingEvidence[]>({
-    queryKey: ['/api/admin/evidence', evidenceStatusFilter],
+    queryKey: ['/api/admin/evidence', evidenceStatusFilter, evidenceAssigneeFilter, currentUser?.id],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (evidenceStatusFilter && evidenceStatusFilter !== 'all') {
         params.append('status', evidenceStatusFilter);
+      }
+      if (evidenceAssigneeFilter && evidenceAssigneeFilter !== 'all') {
+        if (evidenceAssigneeFilter === 'me' && currentUser?.id) {
+          params.append('assignedTo', currentUser.id);
+        } else if (evidenceAssigneeFilter === 'unassigned') {
+          params.append('assignedTo', 'null');
+        } else {
+          params.append('assignedTo', evidenceAssigneeFilter);
+        }
       }
       const url = `/api/admin/evidence${params.toString() ? `?${params.toString()}` : ''}`;
       const res = await fetch(url, { credentials: 'include' });
@@ -320,6 +336,9 @@ export default function ReviewsSection({
           setSelectedEvidence={setSelectedEvidence}
           evidenceStatusFilter={evidenceStatusFilter}
           setEvidenceStatusFilter={setEvidenceStatusFilter}
+          evidenceAssigneeFilter={evidenceAssigneeFilter}
+          setEvidenceAssigneeFilter={setEvidenceAssigneeFilter}
+          currentUserId={currentUser?.id}
         />
       )}
 
