@@ -80,7 +80,13 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
   - Cleanly composes three sub-components: AssignTeacherForm, SchoolTeachersList, VerificationRequestsList
   - Sub-components extracted to `client/src/components/admin/teams/components/`
   - All teacher assignment and verification workflows preserved
-- Reduced admin.tsx from 8,572 lines to ~5,890 lines (total reduction: ~2,700 lines, ~31%)
+- Extracted Evidence Requirements section (~600 lines) into `EvidenceRequirementsSection` component at `client/src/components/admin/evidence-requirements/EvidenceRequirementsSection.tsx`
+  - All evidence requirements state, queries, and mutations co-located in component (641 lines)
+  - 6 state variables, 1 query, 4 mutations (create, update, delete, reorder)
+  - Preserves stage filtering (Inspire/Investigate/Act), drag-and-drop reordering, resource linking
+  - allResources query passed as prop (shared with Events section)
+  - Comprehensive testing: CRUD operations, stage filtering, resource selector all verified
+- Reduced admin.tsx from 8,572 lines to ~5,291 lines (total reduction: ~3,281 lines, ~38%)
 - Maintained tab-based navigation without page reloads for fast switching
 - Fixed regressions: duplicate ActivityLogsTab, orphaned schoolsError references, broken dialog blocks
 - All sections tested and passing with zero LSP errors
@@ -92,7 +98,6 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 - Prop drilling acceptable short-term; may evolve to shared context only if multiple tabs need same controls
 
 **Next Steps**:
-- Extract Evidence Requirements section
 - Extract Events section
 - Extract Activity Logs section
 - Extract Email section
