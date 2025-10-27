@@ -262,19 +262,43 @@ export default function EventsSection({ allResources, resourcesLoading, activeTa
     mutationFn: async ({ id, status }: { id: string; status: string }) => {
       return await apiRequest('PUT', `/api/admin/event-registrations/${id}`, { status });
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/events', viewingEventRegistrations?.id, 'registrations'] });
-      toast({
-        title: "Success",
-        description: "Registration status updated.",
+    onMutate: async (variables) => {
+      const queryKey = ['/api/admin/events', viewingEventRegistrations?.id, 'registrations', registrationStatusFilter];
+      
+      await queryClient.cancelQueries({ queryKey });
+      
+      const previousRegistrations = queryClient.getQueryData(queryKey);
+      
+      queryClient.setQueryData(queryKey, (old: EventRegistrationWithDetails[] = []) => {
+        return old.map(reg => 
+          reg.id === variables.id
+            ? { ...reg, status: variables.status as any }
+            : reg
+        );
       });
+      
+      return { previousRegistrations, queryKey };
     },
-    onError: () => {
+    onError: (err, variables, context) => {
+      if (context?.previousRegistrations && context?.queryKey) {
+        queryClient.setQueryData(context.queryKey, context.previousRegistrations);
+      }
       toast({
-        title: "Error",
-        description: "Failed to update registration.",
+        title: "Update Failed",
+        description: "Failed to update attendance. Changes have been reverted.",
         variant: "destructive",
       });
+    },
+    onSuccess: (_, variables) => {
+      toast({
+        title: "Attendance Updated",
+        description: `Registration marked as ${variables.status}.`,
+      });
+    },
+    onSettled: (_, __, variables, context) => {
+      if (context?.queryKey) {
+        queryClient.invalidateQueries({ queryKey: context.queryKey });
+      }
     },
   });
 

@@ -1,7 +1,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/states";
-import { Download, Users, CheckCircle } from "lucide-react";
+import { Download, Users, CheckCircle, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import type { Event } from "@shared/schema";
 import type { EventRegistrationWithDetails } from "./types";
@@ -182,7 +182,11 @@ export default function EventRegistrations({
                             disabled={updateRegistrationMutation.isPending}
                             data-testid={`button-mark-attended-${registration.id}`}
                           >
-                            <CheckCircle className="h-4 w-4 mr-1" />
+                            {updateRegistrationMutation.isPending ? (
+                              <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                            ) : (
+                              <CheckCircle className="h-4 w-4 mr-1" />
+                            )}
                             Mark Attended
                           </Button>
                         )}

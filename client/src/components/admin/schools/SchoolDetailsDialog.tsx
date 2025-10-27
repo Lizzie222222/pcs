@@ -36,6 +36,7 @@ import {
   Trash,
   Image as ImageIcon,
   ExternalLink,
+  Loader2,
 } from "lucide-react";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import type { SchoolData } from "@/components/admin/shared/types";
@@ -125,26 +126,61 @@ export default function SchoolDetailsDialog({
     mutationFn: async ({ schoolId, primaryLanguage }: { schoolId: string; primaryLanguage: string }) => {
       return await apiRequest('PUT', `/api/admin/schools/${schoolId}`, { primaryLanguage });
     },
-    onSuccess: (_, variables) => {
-      toast({
-        title: "Language Updated",
-        description: "School preferred language has been updated successfully.",
-      });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches
+      await queryClient.cancelQueries({ queryKey: ['/api/admin/schools'] });
+      
+      // Snapshot previous values
+      const previousSchools = queryClient.getQueryData(['/api/admin/schools']);
+      const previousViewingSchool = viewingSchool;
+      
+      // Optimistically update the viewing school
       if (viewingSchool) {
         setViewingSchool({
           ...viewingSchool,
           primaryLanguage: variables.primaryLanguage
         });
       }
-      setEditingSchoolLanguage(false);
+      
+      // Optimistically update schools query cache
+      queryClient.setQueryData(['/api/admin/schools'], (old: any) => {
+        if (!old) return old;
+        if (Array.isArray(old)) {
+          return old.map(school => 
+            school.id === variables.schoolId 
+              ? { ...school, primaryLanguage: variables.primaryLanguage }
+              : school
+          );
+        }
+        return old;
+      });
+      
+      return { previousSchools, previousViewingSchool };
     },
-    onError: (error: any) => {
+    onError: (err, variables, context) => {
+      // Rollback on error
+      if (context?.previousSchools) {
+        queryClient.setQueryData(['/api/admin/schools'], context.previousSchools);
+      }
+      if (context?.previousViewingSchool) {
+        setViewingSchool(context.previousViewingSchool);
+      }
       toast({
         title: "Update Failed",
-        description: error.message || "Failed to update school language. Please try again.",
+        description: "Failed to update school language. Changes have been reverted.",
         variant: "destructive",
       });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Language Updated",
+        description: "School preferred language has been updated successfully.",
+      });
+      setEditingSchoolLanguage(false);
+    },
+    onSettled: () => {
+      // Surgical invalidation
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
     },
   });
 
@@ -162,28 +198,58 @@ export default function SchoolDetailsDialog({
     }) => {
       return await apiRequest('PUT', `/api/admin/schools/${schoolId}/progression`, updates);
     },
-    onSuccess: (data, variables) => {
+    onMutate: async (variables) => {
+      await queryClient.cancelQueries({ queryKey: ['/api/admin/schools'] });
+      
+      const previousSchools = queryClient.getQueryData(['/api/admin/schools']);
+      const previousViewingSchool = viewingSchool;
+      
+      // Optimistically update viewing school
+      if (viewingSchool) {
+        setViewingSchool({
+          ...viewingSchool,
+          ...variables.updates
+        });
+      }
+      
+      // Optimistically update schools query cache
+      queryClient.setQueryData(['/api/admin/schools'], (old: any) => {
+        if (!old) return old;
+        if (Array.isArray(old)) {
+          return old.map(school => 
+            school.id === variables.schoolId 
+              ? { ...school, ...variables.updates }
+              : school
+          );
+        }
+        return old;
+      });
+      
+      return { previousSchools, previousViewingSchool };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousSchools) {
+        queryClient.setQueryData(['/api/admin/schools'], context.previousSchools);
+      }
+      if (context?.previousViewingSchool) {
+        setViewingSchool(context.previousViewingSchool);
+      }
+      toast({
+        title: "Update Failed",
+        description: "Failed to update school progression. Changes have been reverted.",
+        variant: "destructive",
+      });
+    },
+    onSuccess: () => {
       toast({
         title: "Progression Updated",
         description: "School progression has been updated successfully.",
       });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/school-progress'] });
-      const responseData = data as any;
-      if (viewingSchool && responseData.school) {
-        setViewingSchool({
-          ...viewingSchool,
-          ...responseData.school
-        });
-      }
       setEditingProgression(false);
     },
-    onError: (error: any) => {
-      toast({
-        title: "Update Failed",
-        description: error.message || "Failed to update school progression. Please try again.",
-        variant: "destructive",
-      });
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/school-progress'] });
     },
   });
 
@@ -271,6 +337,9 @@ export default function SchoolDetailsDialog({
                       disabled={updateSchoolLanguageMutation.isPending}
                       data-testid={`button-save-language-${viewingSchool.id}`}
                     >
+                      {updateSchoolLanguageMutation.isPending && (
+                        <Loader2 className="h-3 w-3 mr-2 animate-spin" />
+                      )}
                       {updateSchoolLanguageMutation.isPending ? 'Saving...' : 'Save'}
                     </Button>
                     <Button
@@ -463,6 +532,9 @@ export default function SchoolDetailsDialog({
                         className="bg-pcs_blue hover:bg-pcs_blue/90"
                         data-testid={`button-save-progression-${viewingSchool.id}`}
                       >
+                        {updateSchoolProgressionMutation.isPending && (
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        )}
                         {updateSchoolProgressionMutation.isPending ? 'Saving...' : 'Save Changes'}
                       </Button>
                     </div>
