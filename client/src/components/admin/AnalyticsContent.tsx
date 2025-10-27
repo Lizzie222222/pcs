@@ -125,7 +125,11 @@ interface AdminPromiseMetrics {
 // Color palette for charts
 const ANALYTICS_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280', '#10B981', '#8B5CF6'];
 
-export default function AnalyticsContent() {
+interface AnalyticsContentProps {
+  activeTab: string;
+}
+
+export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   const { toast } = useToast();
   
   // Date range state - default to Last 30 days
@@ -134,52 +138,60 @@ export default function AnalyticsContent() {
     to: new Date(),
   }));
 
-  // Analytics queries - all enabled
+  // Analytics queries - only load when analytics tab is active
   const overviewQuery = useQuery<AnalyticsOverview>({
     queryKey: ['/api/admin/analytics/overview', { 
       startDate: dateRange?.from?.toISOString(), 
       endDate: dateRange?.to?.toISOString() 
-    }]
+    }],
+    enabled: activeTab === 'analytics'
   });
 
   const schoolProgressQuery = useQuery<SchoolProgressAnalytics>({
     queryKey: ['/api/admin/analytics/school-progress', { 
       startDate: dateRange?.from?.toISOString(), 
       endDate: dateRange?.to?.toISOString() 
-    }]
+    }],
+    enabled: activeTab === 'analytics'
   });
 
   const evidenceQuery = useQuery<EvidenceAnalytics>({
     queryKey: ['/api/admin/analytics/evidence', { 
       startDate: dateRange?.from?.toISOString(), 
       endDate: dateRange?.to?.toISOString() 
-    }]
+    }],
+    enabled: activeTab === 'analytics'
   });
 
   const userEngagementQuery = useQuery<UserEngagementAnalytics>({
     queryKey: ['/api/admin/analytics/user-engagement', { 
       startDate: dateRange?.from?.toISOString(), 
       endDate: dateRange?.to?.toISOString() 
-    }]
+    }],
+    enabled: activeTab === 'analytics'
   });
 
   const auditOverviewQuery = useQuery<AuditOverviewAnalytics>({
-    queryKey: ['/api/admin/analytics/audit-overview']
+    queryKey: ['/api/admin/analytics/audit-overview'],
+    enabled: activeTab === 'analytics'
   });
 
   const auditBySchoolQuery = useQuery<AuditBySchoolAnalytics[]>({
-    queryKey: ['/api/admin/analytics/audit-by-school']
+    queryKey: ['/api/admin/analytics/audit-by-school'],
+    enabled: activeTab === 'analytics'
   });
 
   const wasteTrendsQuery = useQuery<WasteTrendsAnalytics>({
-    queryKey: ['/api/admin/analytics/waste-trends']
+    queryKey: ['/api/admin/analytics/waste-trends'],
+    enabled: activeTab === 'analytics'
   });
 
   const adminPromiseMetricsQuery = useQuery<AdminPromiseMetrics>({
-    queryKey: ['/api/admin/reduction-promises/metrics']
+    queryKey: ['/api/admin/reduction-promises/metrics'],
+    enabled: activeTab === 'analytics'
   });
 
-  const [activeTab, setActiveTab] = useState("overview");
+  const [analyticsSubTab, setAnalyticsSubTab] = useState("overview");
   const [includeAIInsights, setIncludeAIInsights] = useState(true);
   const [showExportDialog, setShowExportDialog] = useState(false);
   
@@ -442,7 +454,7 @@ export default function AnalyticsContent() {
       </div>
 
       {/* Nested Tabs for Analytics Sections */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={analyticsSubTab} onValueChange={setAnalyticsSubTab} className="w-full">
         <TabsList className="grid w-full grid-cols-4" data-testid="analytics-tabs">
           <TabsTrigger value="overview" data-testid="tab-overview">
             <BarChart3 className="w-4 h-4 mr-2" />
@@ -484,7 +496,7 @@ export default function AnalyticsContent() {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card 
                 className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
-                onClick={() => setActiveTab("schools-evidence")}
+                onClick={() => setAnalyticsSubTab("schools-evidence")}
                 data-testid="card-total-schools"
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -501,7 +513,7 @@ export default function AnalyticsContent() {
 
               <Card 
                 className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
-                onClick={() => setActiveTab("engagement")}
+                onClick={() => setAnalyticsSubTab("engagement")}
                 data-testid="card-active-users"
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -518,7 +530,7 @@ export default function AnalyticsContent() {
 
               <Card 
                 className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
-                onClick={() => setActiveTab("schools-evidence")}
+                onClick={() => setAnalyticsSubTab("schools-evidence")}
                 data-testid="card-evidence-submissions"
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -537,7 +549,7 @@ export default function AnalyticsContent() {
 
               <Card 
                 className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"
-                onClick={() => setActiveTab("schools-evidence")}
+                onClick={() => setAnalyticsSubTab("schools-evidence")}
                 data-testid="card-global-reach"
               >
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

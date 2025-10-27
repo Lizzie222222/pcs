@@ -75,9 +75,10 @@ import { BANNER_GRADIENTS, getGradientById } from "@shared/gradients";
 interface EventsSectionProps {
   allResources: any[];
   resourcesLoading: boolean;
+  activeTab: string;
 }
 
-export default function EventsSection({ allResources, resourcesLoading }: EventsSectionProps) {
+export default function EventsSection({ allResources, resourcesLoading, activeTab }: EventsSectionProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -410,6 +411,7 @@ export default function EventsSection({ allResources, resourcesLoading }: Events
       if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
       return res.json();
     },
+    enabled: activeTab === 'events',
     retry: false,
   });
 
@@ -958,6 +960,7 @@ export default function EventsSection({ allResources, resourcesLoading }: Events
   // Event analytics query
   const { data: analytics, isLoading: analyticsLoading } = useQuery<EventAnalytics>({
     queryKey: ['/api/admin/events/analytics'],
+    enabled: activeTab === 'events',
   });
 
   // Send event announcement mutation (SendGrid)
@@ -1046,6 +1049,7 @@ export default function EventsSection({ allResources, resourcesLoading }: Events
   // Event Banners queries
   const { data: banners = [], isLoading: bannersLoading } = useQuery<Banner[]>({
     queryKey: ['/api/admin/banners'],
+    enabled: activeTab === 'events',
     retry: false,
   });
 

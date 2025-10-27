@@ -230,19 +230,29 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     console.log('Admin page: Access granted');
   }, [isAuthenticated, isLoading, user, toast]);
 
-  // Admin stats query
-  const { data: stats, error: statsError } = useQuery<AdminStats>({
-    queryKey: ['/api/admin/stats'],
+  // Combined dashboard data query - fetches stats, audits, and photo consent in one call
+  const { data: dashboardData, error: dashboardError } = useQuery<{
+    stats: AdminStats;
+    pendingAudits: PendingAudit[];
+    pendingPhotoConsent: Array<{
+      id: string;
+      name: string;
+      country: string;
+      photoConsentDocumentUrl: string | null;
+      photoConsentUploadedAt: Date | null;
+      photoConsentStatus: string | null;
+    }>;
+  }>({
+    queryKey: ['/api/admin/dashboard-data'],
     enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin)),
     retry: false,
   });
 
-  // Pending audits query - needed for navigation badge
-  const { data: pendingAudits = [] } = useQuery<PendingAudit[]>({
-    queryKey: ['/api/admin/audits/pending'],
-    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin)),
-    retry: false,
-  });
+  // Destructure for backwards compatibility
+  const stats = dashboardData?.stats;
+  const statsError = dashboardError;
+  const pendingAudits = dashboardData?.pendingAudits || [];
+  const pendingPhotoConsent = dashboardData?.pendingPhotoConsent || [];
 
   // Fetch schools list for CaseStudyManagement
   const { data: schools = [] } = useQuery<any[]>({
@@ -251,23 +261,9 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     retry: false,
   });
 
-  // Fetch pending photo consent - needed for navigation badge
-  const { data: pendingPhotoConsent = [] } = useQuery<Array<{
-    id: string;
-    name: string;
-    country: string;
-    photoConsentDocumentUrl: string | null;
-    photoConsentUploadedAt: Date | null;
-    photoConsentStatus: string | null;
-  }>>({
-    queryKey: ['/api/admin/photo-consent/pending'],
-    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin)),
-    retry: false,
-  });
-
   // Handle unauthorized errors
   useEffect(() => {
-    if (statsError && isUnauthorizedError(statsError as Error)) {
+    if (dashboardError && isUnauthorizedError(dashboardError as Error)) {
       toast({
         title: "Unauthorized",
         description: "Admin session expired. Please log in again.",
@@ -277,7 +273,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         window.location.href = "/api/auth/google";
       }, 500);
     }
-  }, [statsError, toast]);
+  }, [dashboardError, toast]);
 
   // Resources queries (used by EvidenceRequirementsSection and EventsSection)
   // Only load when these tabs are active to improve initial dashboard load time
@@ -789,7 +785,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
                 <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full" />
               </div>
             }>
-              <AnalyticsContent />
+              <AnalyticsContent activeTab={activeTab} />
             </Suspense>
           </div>
         )}
@@ -903,6 +899,7 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
           <EventsSection 
             allResources={allResources}
             resourcesLoading={resourcesLoading}
+            activeTab={activeTab}
           />
         )}
 
