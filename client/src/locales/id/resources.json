@@ -45,10 +45,12 @@
     "chinese": "Chinese (中文)"
   },
   "age_ranges": {
-    "5_7": "5-7 tahun",
-    "8_11": "8-11 tahun",
-    "12_16": "12-16 tahun",
-    "17_plus": "17+ tahun"
+    "under_5": "Di bawah 5",
+    "5_7": "5-7",
+    "7_11": "7-11",
+    "11_14": "11-14",
+    "14_16": "14-16",
+    "16_plus": "16+"
   },
   "file_types": {
     "pdf": "Dokumen PDF",

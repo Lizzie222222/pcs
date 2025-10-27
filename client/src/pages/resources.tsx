@@ -198,10 +198,12 @@ export default function Resources() {
 
   const getAgeRangeLabel = (ageRange: string) => {
     const ageRangeMap: { [key: string]: string } = {
-      '5-7 years': t('age_ranges.5_7'),
-      '8-11 years': t('age_ranges.8_11'),
-      '12-16 years': t('age_ranges.12_16'),
-      '17+ years': t('age_ranges.17_plus'),
+      'under 5s': t('age_ranges.under_5'),
+      '5-7': t('age_ranges.5_7'),
+      '7-11': t('age_ranges.7_11'),
+      '11-14': t('age_ranges.11_14'),
+      '14-16': t('age_ranges.14_16'),
+      '16+': t('age_ranges.16_plus'),
     };
     return ageRangeMap[ageRange] || ageRange;
   };
@@ -759,10 +761,12 @@ export default function Resources() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">{t('search.all_ages')}</SelectItem>
-                      <SelectItem value="5-7 years">{t('age_ranges.5_7')}</SelectItem>
-                      <SelectItem value="8-11 years">{t('age_ranges.8_11')}</SelectItem>
-                      <SelectItem value="12-16 years">{t('age_ranges.12_16')}</SelectItem>
-                      <SelectItem value="17+ years">{t('age_ranges.17_plus')}</SelectItem>
+                      <SelectItem value="under 5s">{t('age_ranges.under_5')}</SelectItem>
+                      <SelectItem value="5-7">{t('age_ranges.5_7')}</SelectItem>
+                      <SelectItem value="7-11">{t('age_ranges.7_11')}</SelectItem>
+                      <SelectItem value="11-14">{t('age_ranges.11_14')}</SelectItem>
+                      <SelectItem value="14-16">{t('age_ranges.14_16')}</SelectItem>
+                      <SelectItem value="16+">{t('age_ranges.16_plus')}</SelectItem>
                     </SelectContent>
                   </Select>
 
