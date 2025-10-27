@@ -25,6 +25,7 @@ import {
   ShieldAlert,
   Trash2,
   AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
@@ -467,6 +468,7 @@ export default function EvidenceReviewQueue({
                   disabled={reviewEvidenceMutation.isPending}
                   data-testid="button-confirm-review"
                 >
+                  {reviewEvidenceMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
                   {reviewEvidenceMutation.isPending ? 'Processing...' : 'Confirm'}
                 </Button>
               </div>
@@ -601,6 +603,9 @@ export default function EvidenceReviewQueue({
                   disabled={bulkEvidenceReviewMutation.isPending || bulkEvidenceDeleteMutation.isPending}
                   data-testid="button-confirm-bulk-operation"
                 >
+                  {(bulkEvidenceReviewMutation.isPending || bulkEvidenceDeleteMutation.isPending) && (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  )}
                   {(bulkEvidenceReviewMutation.isPending || bulkEvidenceDeleteMutation.isPending) ? 'Processing...' : 'Confirm'}
                 </Button>
               </div>

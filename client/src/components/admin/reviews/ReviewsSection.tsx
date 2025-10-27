@@ -94,21 +94,43 @@ export default function ReviewsSection({
         reviewNotes,
       });
     },
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches to avoid race conditions
+      await queryClient.cancelQueries({ queryKey: ['/api/admin/evidence'] });
+      
+      // Snapshot the previous value for rollback
+      const previousEvidence = queryClient.getQueryData<PendingEvidence[]>(['/api/admin/evidence', evidenceStatusFilter]);
+      
+      // Optimistically update cache - remove approved/rejected evidence from pending list
+      queryClient.setQueryData<PendingEvidence[]>(['/api/admin/evidence', evidenceStatusFilter], (old = []) => {
+        return old.filter(e => e.id !== variables.evidenceId);
+      });
+      
+      // Return context with snapshot for potential rollback
+      return { previousEvidence };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setReviewData(null);
       toast({
         title: "Success",
         description: "Evidence review submitted successfully.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: any, variables, context) => {
+      // Rollback on error
+      if (context?.previousEvidence) {
+        queryClient.setQueryData(['/api/admin/evidence', evidenceStatusFilter], context.previousEvidence);
+      }
       toast({
-        title: "Error",
-        description: error.message || "Failed to submit evidence review.",
+        title: "Review Failed",
+        description: error.message || "Failed to update evidence. Changes have been reverted.",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency (surgical invalidation)
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
     },
   });
 
@@ -154,9 +176,22 @@ export default function ReviewsSection({
         reviewNotes,
       });
     },
+    onMutate: async (variables) => {
+      // Cancel outgoing refetches to avoid race conditions
+      await queryClient.cancelQueries({ queryKey: ['/api/admin/evidence'] });
+      
+      // Snapshot the previous value for rollback
+      const previousEvidence = queryClient.getQueryData<PendingEvidence[]>(['/api/admin/evidence', evidenceStatusFilter]);
+      
+      // Optimistically update cache - remove all selected evidence from pending list
+      queryClient.setQueryData<PendingEvidence[]>(['/api/admin/evidence', evidenceStatusFilter], (old = []) => {
+        return old.filter(e => !variables.evidenceIds.includes(e.id));
+      });
+      
+      // Return context with snapshot for potential rollback
+      return { previousEvidence };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setBulkEvidenceDialogOpen(false);
       setBulkAction(null);
       setSelectedEvidence([]);
@@ -165,12 +200,21 @@ export default function ReviewsSection({
         description: "Bulk evidence review completed successfully.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: any, variables, context) => {
+      // Rollback on error
+      if (context?.previousEvidence) {
+        queryClient.setQueryData(['/api/admin/evidence', evidenceStatusFilter], context.previousEvidence);
+      }
       toast({
-        title: "Error",
-        description: error.message || "Failed to complete bulk evidence review.",
+        title: "Review Failed",
+        description: error.message || "Failed to complete bulk evidence review. Changes have been reverted.",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency (surgical invalidation)
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
     },
   });
 
@@ -181,9 +225,22 @@ export default function ReviewsSection({
         evidenceIds,
       });
     },
+    onMutate: async (evidenceIds) => {
+      // Cancel outgoing refetches to avoid race conditions
+      await queryClient.cancelQueries({ queryKey: ['/api/admin/evidence'] });
+      
+      // Snapshot the previous value for rollback
+      const previousEvidence = queryClient.getQueryData<PendingEvidence[]>(['/api/admin/evidence', evidenceStatusFilter]);
+      
+      // Optimistically update cache - remove all deleted evidence from list
+      queryClient.setQueryData<PendingEvidence[]>(['/api/admin/evidence', evidenceStatusFilter], (old = []) => {
+        return old.filter(e => !evidenceIds.includes(e.id));
+      });
+      
+      // Return context with snapshot for potential rollback
+      return { previousEvidence };
+    },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       setBulkEvidenceDialogOpen(false);
       setBulkAction(null);
       setSelectedEvidence([]);
@@ -192,12 +249,21 @@ export default function ReviewsSection({
         description: "Selected evidence deleted successfully.",
       });
     },
-    onError: (error: any) => {
+    onError: (error: any, evidenceIds, context) => {
+      // Rollback on error
+      if (context?.previousEvidence) {
+        queryClient.setQueryData(['/api/admin/evidence', evidenceStatusFilter], context.previousEvidence);
+      }
       toast({
-        title: "Error",
-        description: error.message || "Failed to delete evidence.",
+        title: "Delete Failed",
+        description: error.message || "Failed to delete evidence. Changes have been reverted.",
         variant: "destructive",
       });
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency (surgical invalidation)
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
     },
   });
 
