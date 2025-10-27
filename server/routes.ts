@@ -32,7 +32,7 @@ import { uploadToObjectStorage } from './routes/utils/objectStorage';
 import { requireAdmin, requireAdminOrPartner } from './routes/utils/middleware';
 
 // Import WebSocket collaboration functions
-import { getOnlineUsers, broadcastChatMessage, notifyDocumentLock } from './websocket';
+import { getOnlineUsers, broadcastChatMessage, notifyDocumentLock, broadcastDocumentUnlock } from './websocket';
 
 /**
  * @description Main route registration function setting up all API endpoints including auth, schools, evidence, case studies, events, email, and file uploads. Applies authentication middleware and ACL policies.
@@ -9594,6 +9594,34 @@ Return JSON with:
     } catch (error) {
       console.error('Error fetching active locks:', error);
       res.status(500).json({ message: 'Failed to fetch active locks' });
+    }
+  });
+
+  // Document Locking - Force unlock (admin only)
+  app.post('/api/collaboration/locks/force-unlock', isAuthenticated, async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user || user.role !== 'admin') {
+        return res.status(403).json({ error: 'Unauthorized' });
+      }
+
+      const { documentId, documentType, reason } = req.body;
+
+      // Validate inputs
+      if (!documentId || !documentType) {
+        return res.status(400).json({ error: 'Missing documentId or documentType' });
+      }
+
+      // Delete the lock from database
+      await storage.forceUnlockDocument(documentId, documentType);
+
+      // Broadcast unlock via WebSocket
+      broadcastDocumentUnlock(documentId, documentType, reason);
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error force unlocking document:', error);
+      res.status(500).json({ message: 'Failed to force unlock document' });
     }
   });
 

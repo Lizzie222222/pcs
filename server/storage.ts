@@ -694,6 +694,7 @@ export interface IStorage {
   createDocumentLock(lock: InsertDocumentLock): Promise<DocumentLock>;
   getDocumentLock(documentType: string, documentId: string): Promise<DocumentLock | null>;
   deleteDocumentLock(documentType: string, documentId: string): Promise<boolean>;
+  forceUnlockDocument(documentId: string, documentType: string): Promise<void>;
   getActiveDocumentLocks(): Promise<Array<DocumentLock & { user: User | null }>>;
   cleanupExpiredLocks(): Promise<void>;
 }
@@ -6388,6 +6389,17 @@ export class DatabaseStorage implements IStorage {
         )
       );
     return true;
+  }
+
+  async forceUnlockDocument(documentId: string, documentType: string): Promise<void> {
+    await db
+      .delete(documentLocks)
+      .where(
+        and(
+          eq(documentLocks.documentId, documentId),
+          eq(documentLocks.documentType, documentType)
+        )
+      );
   }
 
   async getActiveDocumentLocks(): Promise<Array<DocumentLock & { user: User | null }>> {

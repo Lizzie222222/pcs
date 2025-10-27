@@ -690,3 +690,18 @@ export function notifyDocumentLock(lockInfo: { documentId: string; documentType:
     payload: lockInfo,
   });
 }
+
+/**
+ * Broadcast document unlock to all connected clients
+ * Used by API routes to notify about forced unlock
+ */
+export function broadcastDocumentUnlock(documentId: string, documentType: string, reason?: string) {
+  broadcastToAll({
+    type: 'document_unlock',
+    payload: {
+      documentId,
+      documentType,
+      reason: reason || 'force_unlock',
+    },
+  });
+}
