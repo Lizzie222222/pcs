@@ -126,21 +126,18 @@ export default function Login() {
                 <Button
                   type="submit"
                   size="lg"
-                  className="w-full btn-primary"
+                  className="w-full btn-primary min-h-[44px]"
                   disabled={isLoggingIn}
                   data-testid="button-login-submit"
                 >
-                  {isLoggingIn ? (
-                    <>
-                      <LoadingSpinner size="sm" className="mr-2" />
-                      {t('auth:login.signing_in')}
-                    </>
-                  ) : (
-                    <>
-                      <Mail className="h-5 w-5 mr-2" />
-                      {t('auth:login.sign_in_button')}
-                    </>
-                  )}
+                  <span className="inline-flex items-center justify-center gap-2">
+                    {isLoggingIn ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      <Mail className="h-5 w-5" />
+                    )}
+                    <span>{isLoggingIn ? t('auth:login.signing_in') : t('auth:login.sign_in_button')}</span>
+                  </span>
                 </Button>
               </form>
             </Form>

@@ -328,21 +328,18 @@ export default function Register() {
                         </Button>
                         <Button
                           type="submit"
-                          className="btn-primary flex-1"
+                          className="btn-primary flex-1 min-h-[44px]"
                           disabled={isRegistering}
                           data-testid="button-submit-registration"
                         >
-                          {isRegistering ? (
-                            <>
-                              <LoadingSpinner size="sm" className="mr-2" />
-                              {t('auth:register.creating_account')}
-                            </>
-                          ) : (
-                            <>
-                              <UserPlus className="h-4 w-4 mr-2" />
-                              {t('auth:register.create_account_button')}
-                            </>
-                          )}
+                          <span className="inline-flex items-center justify-center gap-2">
+                            {isRegistering ? (
+                              <LoadingSpinner size="sm" />
+                            ) : (
+                              <UserPlus className="h-5 w-5" />
+                            )}
+                            <span>{isRegistering ? t('auth:register.creating_account') : t('auth:register.create_account_button')}</span>
+                          </span>
                         </Button>
                       </div>
                     </form>
