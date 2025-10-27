@@ -4,6 +4,7 @@ import { AlertTriangle, Lock } from 'lucide-react';
 import { formatDistanceToNow } from 'date-fns';
 import { useAuth } from '@/hooks/useAuth';
 import type { DocumentLock } from '@/hooks/useCollaboration';
+import { LockCountdown } from './LockCountdown';
 
 interface DocumentLockWarningProps {
   lock: DocumentLock;
@@ -39,6 +40,7 @@ export default function DocumentLockWarning({ lock, documentType, onTakeOver, cl
             Locked {lockAge}
           </p>
         )}
+        <LockCountdown expiresAt={lock.expiresAt} className="mt-2" />
         {isAdmin && onTakeOver && (
           <div className="mt-3">
             <Button
