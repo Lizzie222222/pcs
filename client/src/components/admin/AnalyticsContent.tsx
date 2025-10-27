@@ -465,7 +465,22 @@ export default function AnalyticsContent() {
         {/* Overview Tab */}
         <TabsContent value="overview" className="space-y-6" data-testid="content-overview">
           {/* Overview Cards */}
-          {overviewQuery.data && (
+          {overviewQuery.isLoading ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[1, 2, 3, 4].map(i => (
+                <Card key={i} className="animate-pulse">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <div className="h-4 bg-gray-200 rounded w-24"></div>
+                    <div className="h-4 w-4 bg-gray-200 rounded"></div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="h-8 bg-gray-200 rounded w-16 mb-2"></div>
+                    <div className="h-3 bg-gray-200 rounded w-32"></div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : overviewQuery.data && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
               <Card 
                 className="cursor-pointer transition-all hover:shadow-lg hover:scale-[1.02]"

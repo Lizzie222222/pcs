@@ -232,7 +232,7 @@ export default function SchoolsSection({
   };
 
   // Schools query
-  const { data: schools } = useQuery<SchoolData[]>({
+  const { data: schools, isLoading: schoolsLoading } = useQuery<SchoolData[]>({
     queryKey: ['/api/admin/schools', cleanFilters(schoolFilters)],
     queryFn: async () => {
       const filters = cleanFilters(schoolFilters);
@@ -600,7 +600,47 @@ export default function SchoolsSection({
                 </tr>
               </thead>
               <tbody>
-                {schools?.map((school) => (
+                {schoolsLoading ? (
+                  // Skeleton rows
+                  [1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                    <tr key={i} className="border-b animate-pulse">
+                      <td className="p-3">
+                        <div className="h-4 w-4 bg-gray-200 rounded"></div>
+                      </td>
+                      <td className="p-3">
+                        <div className="h-4 w-4 bg-gray-200 rounded"></div>
+                      </td>
+                      <td className="p-3">
+                        <div className="h-4 bg-gray-200 rounded w-32"></div>
+                      </td>
+                      <td className="p-3">
+                        <div className="h-4 bg-gray-200 rounded w-24"></div>
+                      </td>
+                      <td className="p-3">
+                        <div className="h-6 bg-gray-200 rounded w-20"></div>
+                      </td>
+                      <td className="p-3">
+                        <div className="h-2 bg-gray-200 rounded w-20"></div>
+                      </td>
+                      <td className="p-3">
+                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                      </td>
+                      <td className="p-3">
+                        <div className="h-4 bg-gray-200 rounded w-32"></div>
+                      </td>
+                      <td className="p-3">
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      </td>
+                      <td className="p-3">
+                        <div className="flex gap-1">
+                          <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                          <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  schools?.map((school) => (
                   <>
                     <tr 
                       key={school.id} 
@@ -688,7 +728,8 @@ export default function SchoolsSection({
                       isExpanded={expandedSchools.has(school.id)} 
                     />
                   </>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>

@@ -928,10 +928,6 @@ export default function ResourcesManagement() {
     );
   };
 
-  if (isLoading) {
-    return <LoadingSpinner message="Loading resources..." />;
-  }
-
   return (
     <div className="space-y-6" data-refactor-source="ResourcesManagement">
       <Card>
@@ -1083,7 +1079,52 @@ export default function ResourcesManagement() {
                 </tr>
               </thead>
               <tbody>
-                {resources.map((resource) => (
+                {isLoading ? (
+                  [1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+                    <tr key={i} className="border-b animate-pulse">
+                      <td className="px-2 py-3">
+                        <div className="h-4 w-4 bg-gray-200 rounded"></div>
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="h-10 w-10 bg-gray-200 rounded"></div>
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="h-4 bg-gray-200 rounded w-40"></div>
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="h-6 bg-gray-200 rounded w-20"></div>
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="h-6 bg-gray-200 rounded w-24"></div>
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="h-4 bg-gray-200 rounded w-20"></div>
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="flex gap-1">
+                          <div className="h-6 w-6 bg-gray-200 rounded-full"></div>
+                          <div className="h-6 w-6 bg-gray-200 rounded-full"></div>
+                        </div>
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="h-4 bg-gray-200 rounded w-16"></div>
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="h-4 bg-gray-200 rounded w-12"></div>
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="h-6 bg-gray-200 rounded w-16"></div>
+                      </td>
+                      <td className="px-2 py-3">
+                        <div className="flex gap-1">
+                          <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                          <div className="h-8 w-8 bg-gray-200 rounded"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  resources.map((resource) => (
                   <tr key={resource.id} className="border-b hover:bg-gray-50">
                     <td className="px-2 py-3">
                       <Checkbox
@@ -1170,11 +1211,12 @@ export default function ResourcesManagement() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
             
-            {resources.length === 0 && (
+            {!isLoading && resources.length === 0 && (
               <div className="text-center py-8 text-gray-500">
                 No resources found. Add your first resource to get started.
               </div>

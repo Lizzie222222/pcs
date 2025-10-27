@@ -77,7 +77,7 @@ export default function ReviewsSection({
   const [pendingApprovalEvidence, setPendingApprovalEvidence] = useState<PendingEvidence | null>(null);
 
   // Evidence query with status filter
-  const { data: pendingEvidence } = useQuery<PendingEvidence[]>({
+  const { data: pendingEvidence, isLoading: evidenceLoading } = useQuery<PendingEvidence[]>({
     queryKey: ['/api/admin/evidence', evidenceStatusFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
@@ -94,7 +94,7 @@ export default function ReviewsSection({
   });
 
   // Pending audits query
-  const { data: pendingAudits = [] } = useQuery<PendingAudit[]>({
+  const { data: pendingAudits = [], isLoading: auditsLoading } = useQuery<PendingAudit[]>({
     queryKey: ['/api/admin/audits/pending'],
     enabled: true,
     retry: false,
@@ -464,7 +464,39 @@ export default function ReviewsSection({
               )}
             </CardHeader>
             <CardContent>
-              {pendingEvidence && pendingEvidence.length === 0 ? (
+              {evidenceLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4, 5, 6].map(i => (
+                    <div key={i} className="border rounded-lg p-4 animate-pulse">
+                      <div className="flex items-start gap-4">
+                        <div className="h-4 w-4 bg-gray-200 rounded"></div>
+                        <div className="flex-1 space-y-3">
+                          <div className="flex items-center gap-2">
+                            <div className="h-5 bg-gray-200 rounded w-48"></div>
+                            <div className="h-6 bg-gray-200 rounded w-20"></div>
+                            <div className="h-6 bg-gray-200 rounded w-20"></div>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <div className="h-4 bg-gray-200 rounded w-24"></div>
+                              <div className="h-4 bg-gray-200 rounded w-32"></div>
+                            </div>
+                            <div className="space-y-2">
+                              <div className="h-4 bg-gray-200 rounded w-24"></div>
+                              <div className="h-4 bg-gray-200 rounded w-28"></div>
+                            </div>
+                            <div className="h-32 bg-gray-200 rounded"></div>
+                          </div>
+                          <div className="flex gap-2 pt-2">
+                            <div className="h-9 bg-gray-200 rounded w-24"></div>
+                            <div className="h-9 bg-gray-200 rounded w-24"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : pendingEvidence && pendingEvidence.length === 0 ? (
                 <div className="text-center py-8">
                   <Trophy className="h-16 w-16 mx-auto text-gray-400 mb-4" />
                   <h3 className="text-lg font-semibold text-gray-600 mb-2">All Caught Up!</h3>
@@ -603,7 +635,32 @@ export default function ReviewsSection({
               </div>
             </CardHeader>
             <CardContent>
-              {pendingAudits.length === 0 ? (
+              {auditsLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4].map(i => (
+                    <div key={i} className="border rounded-lg p-4 animate-pulse">
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 space-y-4">
+                          <div className="flex items-center gap-3">
+                            <div className="h-6 bg-gray-200 rounded w-48"></div>
+                            <div className="h-6 bg-gray-200 rounded w-20"></div>
+                            <div className="h-6 bg-gray-200 rounded w-20"></div>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <div className="h-4 bg-gray-200 rounded w-32"></div>
+                            <div className="h-4 bg-gray-200 rounded w-28"></div>
+                          </div>
+                          <div className="h-24 bg-gray-200 rounded"></div>
+                          <div className="flex gap-2">
+                            <div className="h-9 bg-gray-200 rounded w-24"></div>
+                            <div className="h-9 bg-gray-200 rounded w-24"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : pendingAudits.length === 0 ? (
                 <EmptyState
                   icon={FileText}
                   title="No Pending Audits"
