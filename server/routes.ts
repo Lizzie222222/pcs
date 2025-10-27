@@ -9,7 +9,6 @@ import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, caseStudies, importBatches, userActivityLogs } from "@shared/schema";
 import { nanoid } from 'nanoid';
 import { z } from "zod";
-import * as XLSX from 'xlsx';
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
 import { eq, and, sql, desc, gte, lte, count } from "drizzle-orm";
@@ -19,282 +18,18 @@ import { promises as fs } from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
 import { apiCache, CACHE_TTL } from "./cache";
-import multer from 'multer';
 import { parseImportFile, sanitizeForPreview, generateSchoolTemplate, generateUserTemplate, generateRelationshipTemplate } from './lib/importUtils.js';
 import { importSchools, importUsers, importRelationships, updateImportBatch } from './lib/importProcessor.js';
 import { logUserActivity } from "./auditLog";
 import { compressImage, shouldCompressFile } from "./imageCompression";
 import OpenAI from 'openai';
 
-/**
- * @description Generates CSV formatted string from array of objects with proper escaping for special characters (quotes, commas, newlines). Used for analytics and data exports.
- * @param {any[]} data - Array of objects to convert to CSV
- * @param {string} type - Type of export ('schools', 'evidence', 'users', 'analytics')
- * @returns {string} CSV formatted string with headers and escaped values
- * @location server/routes.ts#L24
- * @related getCSVHeaders, generateExcel, client/src/pages/admin.tsx (export handlers)
- */
-function generateCSV(data: any[], type: string): string {
-  if (data.length === 0) return '';
-
-  const headers = getCSVHeaders(type);
-  const csvRows = [headers.join(',')];
-  
-  data.forEach(item => {
-    const row = headers.map(header => {
-      const value = item[header];
-      if (value === null || value === undefined) return '';
-      
-      let stringValue = String(value);
-      if (typeof value === 'object') {
-        stringValue = JSON.stringify(value);
-      }
-      
-      // Escape CSV special characters: quotes, commas, newlines
-      if (stringValue.includes('"') || stringValue.includes(',') || 
-          stringValue.includes('\n') || stringValue.includes('\r')) {
-        stringValue = `"${stringValue.replace(/"/g, '""')}"`;
-      }
-      
-      return stringValue;
-    });
-    csvRows.push(row.join(','));
-  });
-
-  return csvRows.join('\n');
-}
-
-/**
- * @description Returns appropriate CSV headers based on export type. Maps entity types to their relevant column names.
- * @param {string} type - Export type ('schools', 'evidence', 'users', 'analytics')
- * @returns {string[]} Array of header column names
- * @location server/routes.ts#L54
- * @related generateCSV, generateExcel
- */
-function getCSVHeaders(type: string): string[] {
-  switch (type) {
-    case 'schools':
-      return ['id', 'name', 'type', 'country', 'address', 'studentCount', 'currentStage', 'progressPercentage', 'createdAt'];
-    case 'evidence':
-      return ['id', 'title', 'description', 'stage', 'status', 'schoolId', 'submittedBy', 'submittedAt', 'reviewedBy', 'reviewedAt'];
-    case 'users':
-      return ['id', 'email', 'firstName', 'lastName', 'role', 'isAdmin', 'createdAt'];
-    case 'analytics':
-      return ['category', 'metric', 'value'];
-    default:
-      return [];
-  }
-}
-
-/**
- * @description Generates Excel (.xlsx) file buffer from data using XLSX library. Creates workbook with single sheet containing data.
- * @param {any[]} data - Array of objects to convert to Excel
- * @param {string} type - Type of export for sheet naming
- * @returns {Buffer} Excel file buffer ready for download
- * @location server/routes.ts#L70
- * @related generateCSV, getCSVHeaders, client/src/pages/admin.tsx (export handlers)
- */
-function generateExcel(data: any[], type: string): Buffer {
-  const headers = getCSVHeaders(type);
-  const worksheet = XLSX.utils.json_to_sheet(data, { header: headers });
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, type.charAt(0).toUpperCase() + type.slice(1));
-  return XLSX.write(workbook, { type: 'buffer', bookType: 'xlsx' });
-}
-
-/**
- * @description Generates user-friendly title from filename by removing extension, replacing special characters with spaces, and capitalizing words.
- * @param {string} filename - Original filename to convert
- * @returns {string} Formatted title suitable for display
- * @location server/routes.ts#L105
- * @related /api/resources/bulk-upload endpoint
- */
-function generateTitleFromFilename(filename: string): string {
-  const nameWithoutExt = filename.replace(/\.[^/.]+$/, '');
-  return nameWithoutExt
-    .replace(/[-_]/g, ' ')
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
-}
-
-/**
- * @description Removes all HTML tags from text and normalizes whitespace. Used for meta descriptions and plain text exports.
- * @param {string | null | undefined} html - HTML string to strip
- * @returns {string} Plain text with HTML removed
- * @location server/routes.ts#L78
- * @related escapeHtml, generatePdfHtml
- */
-function stripHtml(html: string | null | undefined): string {
-  if (!html) return '';
-  return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
-}
-
-/**
- * @description Escapes HTML special characters for safe inclusion in meta tags and attributes. Prevents XSS in PDF generation and meta tags.
- * @param {string | null | undefined} text - Text to escape
- * @returns {string} HTML-escaped text
- * @location server/routes.ts#L85
- * @related stripHtml, generatePdfHtml
- */
-function escapeHtml(text: string | null | undefined): string {
-  if (!text) return '';
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
-}
-
-/**
- * @description Sanitizes filename for safe downloads by removing special characters and limiting length. Prevents path traversal and filesystem issues.
- * @param {string} filename - Original filename to sanitize
- * @returns {string} Sanitized filename safe for downloads
- * @location server/routes.ts#L96
- * @related generatePdfHtml
- */
-function sanitizeFilename(filename: string): string {
-  return filename
-    .replace(/[^a-z0-9]/gi, '_')
-    .replace(/_{2,}/g, '_')
-    .replace(/^_|_$/g, '')
-    .substring(0, 100) || 'case_study';
-}
-
-/**
- * @description Generates beautifully formatted HTML for case study PDF export with embedded styles. Includes images, quotes, timeline, and metrics sections.
- * @param {any} caseStudy - Case study data object with all fields
- * @returns {string} Complete HTML document ready for PDF conversion
- * @location server/routes.ts#L105
- * @related escapeHtml, shared/schema.ts (caseStudies table), client/src/pages/admin.tsx (CaseStudyEditor)
- */
-function generatePdfHtml(caseStudy: any): string {
-  return `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-          font-family: 'Arial', sans-serif; 
-          line-height: 1.6; 
-          color: #333;
-          padding: 20px;
-        }
-        h1 { 
-          color: #0066cc; 
-          font-size: 32px; 
-          margin-bottom: 20px; 
-          border-bottom: 3px solid #0066cc;
-          padding-bottom: 10px;
-        }
-        h2 { 
-          color: #0066cc; 
-          font-size: 24px; 
-          margin-top: 30px; 
-          margin-bottom: 15px; 
-        }
-        .meta { 
-          font-size: 14px; 
-          color: #666; 
-          margin-bottom: 20px; 
-        }
-        .section { margin-bottom: 30px; }
-        img { max-width: 100%; height: auto; margin: 20px 0; }
-        .quote { 
-          border-left: 4px solid #0066cc; 
-          padding-left: 20px; 
-          margin: 20px 0; 
-          font-style: italic; 
-        }
-        .metric { 
-          display: inline-block; 
-          margin: 10px 20px 10px 0; 
-          padding: 10px; 
-          background: #f0f0f0; 
-        }
-        .timeline-item { 
-          margin-bottom: 15px; 
-          padding-left: 20px; 
-          border-left: 2px solid #0066cc; 
-        }
-        @page { margin: 20mm; }
-      </style>
-    </head>
-    <body>
-      <h1>${escapeHtml(caseStudy.title)}</h1>
-      <div class="meta">
-        ${caseStudy.schoolName ? `<strong>School:</strong> ${escapeHtml(caseStudy.schoolName)} | ` : ''}
-        ${caseStudy.schoolCountry ? `<strong>Country:</strong> ${escapeHtml(caseStudy.schoolCountry)} | ` : ''}
-        ${caseStudy.stage ? `<strong>Stage:</strong> ${escapeHtml(caseStudy.stage.charAt(0).toUpperCase() + caseStudy.stage.slice(1))}` : ''}
-      </div>
-      
-      <!-- Main image -->
-      ${caseStudy.imageUrl ? `<img src="${caseStudy.imageUrl}" alt="Hero image" />` : ''}
-      
-      <!-- Description -->
-      <div class="section">
-        ${caseStudy.description || ''}
-      </div>
-      
-      <!-- Impact -->
-      ${caseStudy.impact ? `
-        <h2>Impact Achieved</h2>
-        <div class="section">
-          ${escapeHtml(caseStudy.impact)}
-        </div>
-      ` : ''}
-      
-      <!-- Impact Metrics -->
-      ${caseStudy.impactMetrics?.length ? `
-        <h2>Impact Metrics</h2>
-        <div class="section">
-          ${caseStudy.impactMetrics.map((m: any) => `
-            <div class="metric">
-              <strong>${escapeHtml(m.label)}</strong><br/>
-              ${escapeHtml(m.value)}
-            </div>
-          `).join('')}
-        </div>
-      ` : ''}
-      
-      <!-- Student Quotes -->
-      ${caseStudy.studentQuotes?.length ? `
-        <h2>Student Testimonials</h2>
-        ${caseStudy.studentQuotes.map((q: any) => `
-          <div class="quote section">
-            "${escapeHtml(q.text || q.quote || '')}"<br/>
-            <strong>— ${escapeHtml(q.name)}${q.age ? `, Age ${q.age}` : ''}</strong>
-          </div>
-        `).join('')}
-      ` : ''}
-      
-      <!-- Timeline -->
-      ${caseStudy.timelineSections?.length ? `
-        <h2>Timeline</h2>
-        <div class="section">
-          ${caseStudy.timelineSections.map((t: any) => `
-            <div class="timeline-item">
-              <strong>${escapeHtml(t.title)}</strong>${t.date ? ` - ${escapeHtml(t.date)}` : ''}<br/>
-              ${escapeHtml(t.description || '')}
-            </div>
-          `).join('')}
-        </div>
-      ` : ''}
-      
-      <!-- Categories/Tags -->
-      ${caseStudy.categories?.length || caseStudy.tags?.length ? `
-        <div class="section">
-          ${caseStudy.categories?.length ? `<strong>Categories:</strong> ${caseStudy.categories.map(escapeHtml).join(', ')}` : ''}
-          ${caseStudy.tags?.length ? `<br/><strong>Tags:</strong> ${caseStudy.tags.map(escapeHtml).join(', ')}` : ''}
-        </div>
-      ` : ''}
-    </body>
-    </html>
-  `;
-}
+// Import extracted utilities
+import { generateCSV, getCSVHeaders, generateExcel, generateTitleFromFilename } from './routes/utils/exports';
+import { stripHtml, escapeHtml, sanitizeFilename, generatePdfHtml } from './routes/utils/pdf';
+import { bulkResourceUpload, photoConsentUpload, uploadCompression, importUpload } from './routes/utils/uploads';
+import { uploadToObjectStorage } from './routes/utils/objectStorage';
+import { requireAdmin, requireAdminOrPartner } from './routes/utils/middleware';
 
 /**
  * @description Main route registration function setting up all API endpoints including auth, schools, evidence, case studies, events, email, and file uploads. Applies authentication middleware and ACL policies.
@@ -837,13 +572,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Configure multer for bulk resource uploads
-  const bulkResourceUpload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 157286400 } // 150MB max per file
-  });
-
   // Bulk upload resources (admin only)
+  // (using bulkResourceUpload from utils/uploads.ts)
   app.post('/api/resources/bulk-upload', isAuthenticated, bulkResourceUpload.array('files', 50), async (req: any, res) => {
     try {
       if (!req.user?.isAdmin) {
@@ -3212,27 +2942,8 @@ Return JSON with:
   });
 
   // Photo Consent routes
+  // (using photoConsentUpload from utils/uploads.ts)
   
-  // Configure multer for photo consent uploads
-  const photoConsentUpload = multer({
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 10485760 }, // 10MB max
-    fileFilter: (req, file, cb) => {
-      const allowedMimes = [
-        'application/pdf', 
-        'image/jpeg', 
-        'image/jpg', 
-        'image/png',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document' // .docx
-      ];
-      if (allowedMimes.includes(file.mimetype)) {
-        cb(null, true);
-      } else {
-        cb(new Error('Invalid file type. Only PDF, JPG, PNG, and DOCX files are allowed.'));
-      }
-    },
-  });
-
   // POST /api/schools/:schoolId/photo-consent/upload - Teacher uploads consent document
   app.post('/api/schools/:schoolId/photo-consent/upload', isAuthenticated, photoConsentUpload.single('file'), async (req: any, res) => {
     try {
@@ -3581,13 +3292,8 @@ Return JSON with:
     }
   });
 
-  // Configure multer for memory storage (for compression)
-  const uploadCompression = multer({ 
-    storage: multer.memoryStorage(),
-    limits: { fileSize: 157286400 } // 150MB max
-  });
-
   // Upload and compress evidence files
+  // (using uploadCompression from utils/uploads.ts)
   app.post("/api/evidence-files/upload-compressed", isAuthenticated, uploadCompression.single('file'), async (req: any, res) => {
     try {
       if (!req.file) {
@@ -3755,25 +3461,6 @@ Return JSON with:
   });
 
   // Admin routes (require admin privileges)
-  
-  const requireAdmin = async (req: any, res: any, next: any) => {
-    try {
-      const userId = req.user?.id;
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user || !user.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
-      }
-
-      next();
-    } catch (error) {
-      console.error("Error checking admin status:", error);
-      res.status(500).json({ message: "Failed to verify admin status" });
-    }
-  };
 
   // GET /api/admin/photo-consent/pending - Get all schools with pending photo consent
   app.get('/api/admin/photo-consent/pending', isAuthenticated, requireAdmin, async (req, res) => {
@@ -3786,27 +3473,8 @@ Return JSON with:
     }
   });
 
-  // Middleware to allow both admin and partner roles
-  const requireAdminOrPartner = async (req: any, res: any, next: any) => {
-    try {
-      const userId = req.user?.id;
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user || (!user.isAdmin && user.role !== 'partner')) {
-        return res.status(403).json({ message: "Admin or Partner access required" });
-      }
-
-      // Attach user to request for later checks
-      req.adminUser = user;
-      next();
-    } catch (error) {
-      console.error("Error checking admin/partner status:", error);
-      res.status(500).json({ message: "Failed to verify access status" });
-    }
-  };
+  // Routes for admin and partner roles
+  // (using requireAdminOrPartner middleware from utils/middleware.ts)
 
   // Middleware to block partners from specific actions (role assignment, data downloads)
   const requireFullAdmin = async (req: any, res: any, next: any) => {
@@ -7020,15 +6688,21 @@ Return JSON with:
       let user = allUsers.find(u => u.email === email);
       
       if (!user) {
-        // Create new user account with OAuth (minimal data)
-        user = await storage.createUserWithOAuth({
+        // Create new user account using upsertUser
+        user = await storage.upsertUser({
           email,
-          firstName: email.split('@')[0],
+          firstName: email.split('@')[0] || 'Teacher',
           lastName: '',
-          googleId: `admin-created-${Date.now()}`, // Placeholder Google ID
           emailVerified: true,
+          isAdmin: false,
+          role: 'teacher',
         });
         console.log(`[Admin Assign Teacher] Created new user ${user.id} for ${email}`);
+      }
+      
+      // Ensure user exists before proceeding
+      if (!user) {
+        return res.status(500).json({ message: "Failed to create user account" });
       }
 
       // Check if already assigned to this school
@@ -8244,7 +7918,7 @@ Return JSON with:
         title: duplicatedTitle,
         description: originalEvent.description,
         eventType: originalEvent.eventType,
-        status: 'draft', // Always create as draft
+        status: 'draft' as const, // Always create as draft
         startDateTime: originalEvent.startDateTime,
         endDateTime: originalEvent.endDateTime,
         location: originalEvent.location,
@@ -8262,7 +7936,6 @@ Return JSON with:
         pagePublishedStatus: originalEvent.pagePublishedStatus || 'draft',
         accessType: originalEvent.accessType,
         publicSlug: publicSlug,
-        status: 'draft' as const,
         createdBy: req.user.id, // Set to current user
         
         // Copy multi-language fields
@@ -8273,9 +7946,9 @@ Return JSON with:
         testimonialTranslations: originalEvent.testimonialTranslations,
         
         // Copy page builder content
-        youtubeVideos: originalEvent.youtubeVideos,
-        eventPackFiles: originalEvent.eventPackFiles,
-        testimonials: originalEvent.testimonials,
+        youtubeVideos: originalEvent.youtubeVideos as any,
+        eventPackFiles: originalEvent.eventPackFiles as any,
+        testimonials: originalEvent.testimonials as any,
       };
       
       // Create the duplicated event
@@ -9313,10 +8986,10 @@ Return JSON with:
   });
 
   // Import Data Routes (Admin only)
-  const upload = multer({ storage: multer.memoryStorage() });
+  // (using importUpload from utils/uploads.ts)
 
   // Parse and validate import file
-  app.post('/api/admin/import/validate', isAuthenticated, requireAdmin, upload.single('file'), async (req: any, res) => {
+  app.post('/api/admin/import/validate', isAuthenticated, requireAdmin, importUpload.single('file'), async (req: any, res) => {
     try {
       if (!req.file) {
         return res.status(400).json({ message: 'No file uploaded' });
@@ -9381,7 +9054,7 @@ Return JSON with:
   });
 
   // Execute import
-  app.post('/api/admin/import/execute', isAuthenticated, requireAdmin, upload.fields([
+  app.post('/api/admin/import/execute', isAuthenticated, requireAdmin, importUpload.fields([
     { name: 'schoolsFile', maxCount: 1 },
     { name: 'usersFile', maxCount: 1 },
     { name: 'relationshipsFile', maxCount: 1 }

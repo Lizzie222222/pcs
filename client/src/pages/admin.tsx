@@ -280,8 +280,10 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
   }, [statsError, toast]);
 
   // Resources queries (used by EvidenceRequirementsSection and EventsSection)
+  // Only load when these tabs are active to improve initial dashboard load time
   const { data: allResources = [], isLoading: resourcesLoading } = useQuery<any[]>({
     queryKey: ['/api/resources'],
+    enabled: activeTab === 'evidence-requirements' || activeTab === 'events',
   });
   // Photo consent mutations (shared with Reviews and Schools)
   const approvePhotoConsentMutation = useMutation({
