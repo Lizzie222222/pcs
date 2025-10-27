@@ -76,6 +76,18 @@ export function initializeWebSocket(httpServer: Server): WebSocketServer {
       // Generate socket ID
       const socketId = generateSocketId();
 
+      // Check if user already has an active connection
+      const existingSocket = userSocketMap.get(user.id);
+      if (existingSocket && existingSocket !== ws) {
+        console.log(`[WebSocket] Closing existing connection for user: ${user.email}`);
+        try {
+          existingSocket.close(1000, 'New connection established');
+          connectedClients.delete(existingSocket);
+        } catch (error) {
+          console.error('[WebSocket] Error closing existing socket:', error);
+        }
+      }
+
       // Create connected user object
       const connectedUser: ConnectedUser = {
         userId: user.id,
