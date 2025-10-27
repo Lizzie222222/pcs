@@ -501,16 +501,15 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
   // Use userId to prevent reconnections when user object identity changes
   const userId = user?.id;
   useEffect(() => {
-    // Only connect if authenticated, have userId, and not already connected/connecting
-    const socket = socketRef.current;
-    const isConnectedOrConnecting = socket?.readyState === WebSocket.OPEN || socket?.readyState === WebSocket.CONNECTING;
-    
-    if (isAuthenticated && userId && !isConnectedOrConnecting) {
+    if (isAuthenticated && userId) {
       connect();
     }
 
+    // Only disconnect on unmount or when user logs out
     return () => {
-      disconnect();
+      if (!isAuthenticated) {
+        disconnect();
+      }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isAuthenticated, userId]);
