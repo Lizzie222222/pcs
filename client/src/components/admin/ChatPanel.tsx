@@ -19,10 +19,11 @@ interface ChatPanelProps {
 
 export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesRead }: ChatPanelProps) {
   const { user } = useAuth();
-  const { chatMessages: realtimeMessages, sendChatMessage } = useCollaboration();
+  const { chatMessages: realtimeMessages, sendChatMessage, typingUsers, sendTypingIndicator } = useCollaboration();
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [allMessages, setAllMessages] = useState<CollabChatMessage[]>([]);
+  const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch initial chat messages
   const { data: historicalMessages = [] } = useQuery<any[]>({
@@ -71,8 +72,47 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
     }
   }, [open, unreadCount, onMessagesRead]);
 
+  // Handle typing with debounce
+  const handleTyping = (value: string) => {
+    setMessage(value);
+    
+    // Clear existing timeout
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    
+    if (value.trim()) {
+      // Send typing_start
+      sendTypingIndicator(true);
+      
+      // Set timeout to send typing_stop after 2 seconds
+      typingTimeoutRef.current = setTimeout(() => {
+        sendTypingIndicator(false);
+      }, 2000);
+    } else {
+      // If input is empty, stop typing immediately
+      sendTypingIndicator(false);
+    }
+  };
+  
+  // Cleanup typing timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+        sendTypingIndicator(false);
+      }
+    };
+  }, [sendTypingIndicator]);
+
   const handleSend = () => {
     if (message.trim()) {
+      // Clear typing timeout and send typing_stop
+      if (typingTimeoutRef.current) {
+        clearTimeout(typingTimeoutRef.current);
+      }
+      sendTypingIndicator(false);
+      
       sendChatMessage(message.trim());
       setMessage('');
     }
@@ -95,6 +135,30 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
       return format(date, 'MMM d, h:mm a');
     }
   };
+  
+  // Format typing indicator text
+  const getTypingIndicatorText = () => {
+    // Filter out current user
+    const otherTypingUsers = typingUsers.filter(u => u.userId !== user?.id);
+    
+    if (otherTypingUsers.length === 0) {
+      return null;
+    }
+    
+    if (otherTypingUsers.length === 1) {
+      return `${otherTypingUsers[0].name} is typing...`;
+    }
+    
+    if (otherTypingUsers.length === 2) {
+      return `${otherTypingUsers[0].name} and ${otherTypingUsers[1].name} are typing...`;
+    }
+    
+    // 3 or more users
+    const othersCount = otherTypingUsers.length - 2;
+    return `${otherTypingUsers[0].name}, ${otherTypingUsers[1].name}, and ${othersCount} ${othersCount === 1 ? 'other' : 'others'} are typing...`;
+  };
+  
+  const typingIndicatorText = getTypingIndicatorText();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -168,25 +232,35 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
           <div ref={messagesEndRef} />
         </div>
 
-        <div className="p-4 border-t border-gray-200 dark:border-gray-700">
-          <div className="flex gap-2">
-            <Input
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Type a message..."
-              className="flex-1"
-              data-testid="input-chat-message"
-            />
-            <Button
-              onClick={handleSend}
-              disabled={!message.trim()}
-              size="icon"
-              className="bg-pcs_blue hover:bg-pcs_blue/90"
-              data-testid="button-send-message"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+        <div className="border-t border-gray-200 dark:border-gray-700">
+          {typingIndicatorText && (
+            <div className="px-4 pt-3 pb-2" data-testid="typing-indicator">
+              <p className="text-xs text-gray-500 dark:text-gray-400 italic animate-pulse">
+                {typingIndicatorText}
+              </p>
+            </div>
+          )}
+          
+          <div className="p-4">
+            <div className="flex gap-2">
+              <Input
+                value={message}
+                onChange={(e) => handleTyping(e.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Type a message..."
+                className="flex-1"
+                data-testid="input-chat-message"
+              />
+              <Button
+                onClick={handleSend}
+                disabled={!message.trim()}
+                size="icon"
+                className="bg-pcs_blue hover:bg-pcs_blue/90"
+                data-testid="button-send-message"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
           </div>
         </div>
       </SheetContent>

@@ -29,8 +29,13 @@ export interface ChatMessage {
 }
 
 interface WebSocketMessage {
-  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'ping' | 'pong';
+  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong';
   payload?: any;
+}
+
+export interface TypingUser {
+  userId: string;
+  name: string;
 }
 
 export function useCollaboration() {
@@ -41,6 +46,7 @@ export function useCollaboration() {
   const [documentLocks, setDocumentLocks] = useState<DocumentLock[]>([]);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
   const [conflictWarnings, setConflictWarnings] = useState<any[]>([]);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   
   const reconnectTimeoutRef = useRef<number | null>(null);
   const reconnectAttemptsRef = useRef(0);
@@ -149,6 +155,14 @@ export function useCollaboration() {
       
       case 'conflict_warning':
         handleConflictWarning(message.payload);
+        break;
+      
+      case 'typing_start':
+        handleTypingStart(message.payload);
+        break;
+      
+      case 'typing_stop':
+        handleTypingStop(message.payload);
         break;
       
       case 'pong':
@@ -277,6 +291,21 @@ export function useCollaboration() {
     }, 5000);
   }, []);
 
+  const handleTypingStart = useCallback((payload: { userId: string; name: string }) => {
+    setTypingUsers(prev => {
+      // Check if user is already in the list
+      const exists = prev.some(u => u.userId === payload.userId);
+      if (exists) {
+        return prev;
+      }
+      return [...prev, { userId: payload.userId, name: payload.name }];
+    });
+  }, []);
+
+  const handleTypingStop = useCallback((payload: { userId: string }) => {
+    setTypingUsers(prev => prev.filter(u => u.userId !== payload.userId));
+  }, []);
+
   const sendMessage = useCallback((message: WebSocketMessage) => {
     if (ws?.readyState === WebSocket.OPEN) {
       ws.send(JSON.stringify(message));
@@ -338,6 +367,13 @@ export function useCollaboration() {
     });
   }, [sendMessage]);
 
+  const sendTypingIndicator = useCallback((isTyping: boolean) => {
+    sendMessage({
+      type: isTyping ? 'typing_start' : 'typing_stop',
+      payload: {},
+    });
+  }, [sendMessage]);
+
   const getDocumentLock = useCallback((documentId: string, documentType: 'case_study' | 'event') => {
     return documentLocks.find(l => l.documentType === documentType && l.documentId === documentId);
   }, [documentLocks]);
@@ -370,10 +406,12 @@ export function useCollaboration() {
     documentLocks,
     chatMessages,
     conflictWarnings,
+    typingUsers,
     sendPresenceUpdate,
     requestDocumentLock,
     releaseDocumentLock,
     sendChatMessage,
+    sendTypingIndicator,
     getDocumentLock,
     connect,
     disconnect,

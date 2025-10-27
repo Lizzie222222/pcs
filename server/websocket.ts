@@ -6,7 +6,7 @@ import { storage } from './storage';
 
 // Type definitions for WebSocket messages
 export interface WebSocketMessage {
-  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'ping' | 'pong';
+  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong';
   payload?: any;
 }
 
@@ -43,6 +43,7 @@ export interface ChatMessage {
 const connectedClients = new Map<WebSocket, ConnectedUser>();
 const userSocketMap = new Map<string, WebSocket>(); // userId -> WebSocket
 const documentLocks = new Map<string, DocumentLock>(); // ${documentType}:${documentId} -> DocumentLock
+const typingUsers = new Map<string, { name: string; timestamp: Date }>(); // userId -> typing info
 
 // Heartbeat interval (30 seconds)
 const HEARTBEAT_INTERVAL = 30000;
@@ -249,6 +250,14 @@ function handleMessage(ws: WebSocket, data: Buffer) {
         handleChatMessage(ws, client, message.payload);
         break;
       
+      case 'typing_start':
+        handleTypingStart(ws, client);
+        break;
+      
+      case 'typing_stop':
+        handleTypingStop(ws, client);
+        break;
+      
       case 'ping':
         sendToClient(ws, { type: 'pong' });
         break;
@@ -442,6 +451,44 @@ function handleChatMessage(ws: WebSocket, client: ConnectedUser, payload: any) {
 }
 
 /**
+ * Handle typing start
+ */
+function handleTypingStart(ws: WebSocket, client: ConnectedUser) {
+  const userName = `${client.firstName || ''} ${client.lastName || ''}`.trim() || client.email || 'Unknown';
+  
+  // Add or update typing user
+  typingUsers.set(client.userId, {
+    name: userName,
+    timestamp: new Date(),
+  });
+
+  // Broadcast to all other users
+  broadcastToOthers(ws, {
+    type: 'typing_start',
+    payload: {
+      userId: client.userId,
+      name: userName,
+    },
+  });
+}
+
+/**
+ * Handle typing stop
+ */
+function handleTypingStop(ws: WebSocket, client: ConnectedUser) {
+  // Remove user from typing users
+  typingUsers.delete(client.userId);
+
+  // Broadcast to all other users
+  broadcastToOthers(ws, {
+    type: 'typing_stop',
+    payload: {
+      userId: client.userId,
+    },
+  });
+}
+
+/**
  * Handle client disconnect
  */
 function handleDisconnect(ws: WebSocket) {
@@ -456,6 +503,17 @@ function handleDisconnect(ws: WebSocket) {
   // Remove from maps
   connectedClients.delete(ws);
   userSocketMap.delete(client.userId);
+
+  // Stop typing indicator if user was typing
+  if (typingUsers.has(client.userId)) {
+    typingUsers.delete(client.userId);
+    broadcastToAll({
+      type: 'typing_stop',
+      payload: {
+        userId: client.userId,
+      },
+    });
+  }
 
   // Release all locks held by this user
   for (const [lockKey, lock] of Array.from(documentLocks.entries())) {
