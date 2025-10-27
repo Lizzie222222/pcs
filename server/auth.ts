@@ -3,6 +3,7 @@ import { Strategy as LocalStrategy } from "passport-local";
 import session from "express-session";
 import type { Express, RequestHandler } from "express";
 import connectPg from "connect-pg-simple";
+import createMemoryStore from "memorystore";
 import { storage } from "./storage";
 import type { User, CreatePasswordUser } from "@shared/schema";
 import { z } from "zod";
@@ -69,7 +70,7 @@ export function getSession() {
       });
     } else {
       // Create explicit MemoryStore for development so WebSocket can access it
-      const MemoryStore = require('memorystore')(session);
+      const MemoryStore = createMemoryStore(session);
       sessionStore = new MemoryStore({
         checkPeriod: 86400000, // prune expired entries every 24h
         ttl: sessionTtl,

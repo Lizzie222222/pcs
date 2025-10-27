@@ -165,20 +165,34 @@ export function useCollaboration() {
 
     switch (action) {
       case 'connected':
-        // Initial connection, set full online users list
+        // Initial connection, set full online users list with deduplication
         if (newOnlineUsers) {
-          setOnlineUsers(newOnlineUsers.map((u: any) => ({
-            ...u,
-            connectedAt: new Date(u.connectedAt),
-          })));
+          // Deduplicate by userId to prevent duplicates
+          const uniqueUsers = new Map();
+          newOnlineUsers.forEach((u: any) => {
+            uniqueUsers.set(u.userId, {
+              ...u,
+              connectedAt: new Date(u.connectedAt),
+            });
+          });
+          setOnlineUsers(Array.from(uniqueUsers.values()));
         }
         break;
       
       case 'user_joined':
         if (updatedUser) {
           setOnlineUsers(prev => {
+            // Check if user already exists
             const exists = prev.some(u => u.userId === updatedUser.userId);
-            if (exists) return prev;
+            if (exists) {
+              // Update existing user instead of adding duplicate
+              return prev.map(u => 
+                u.userId === updatedUser.userId 
+                  ? { ...updatedUser, connectedAt: new Date(updatedUser.connectedAt || new Date()) }
+                  : u
+              );
+            }
+            // Add new user
             return [...prev, { ...updatedUser, connectedAt: new Date(updatedUser.connectedAt || new Date()) }];
           });
         }
@@ -337,7 +351,7 @@ export function useCollaboration() {
     return () => {
       disconnect();
     };
-  }, [isAuthenticated, user]);
+  }, [isAuthenticated, user, connect, disconnect]);
 
   // Send ping every 25 seconds to keep connection alive
   useEffect(() => {
