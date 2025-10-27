@@ -95,16 +95,16 @@ import ResourcesManagement from "@/components/admin/ResourcesManagement";
 import ResourcePackManagement from "@/components/admin/ResourcePackManagement";
 const AnalyticsContent = lazy(() => import("@/components/admin/AnalyticsContent"));
 const CaseStudyManagement = lazy(() => import("@/components/admin/CaseStudyManagement"));
+const ReviewsSection = lazy(() => import("@/components/admin/reviews/ReviewsSection"));
+const SchoolsSection = lazy(() => import('@/components/admin/schools/SchoolsSection'));
+const EventsSection = lazy(() => import('@/components/admin/events/EventsSection'));
 import EmailManagementSection from "@/components/admin/EmailManagementSection";
 import ActivityLogsSection from "@/components/admin/activity-logs/ActivityLogsSection";
 import EvidenceGalleryTab from "@/components/admin/EvidenceGalleryTab";
 import PrintableFormsTab from "@/components/admin/PrintableFormsTab";
 import DataImport from "@/components/admin/DataImport";
-import ReviewsSection from "@/components/admin/reviews/ReviewsSection";
-import SchoolsSection from '@/components/admin/schools/SchoolsSection';
 import TeamsSection from '@/components/admin/teams/TeamsSection';
 import EvidenceRequirementsSection from '@/components/admin/evidence-requirements/EvidenceRequirementsSection';
-import EventsSection from '@/components/admin/events/EventsSection';
 import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
 import type { 
   AdminStats, 
@@ -793,29 +793,41 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
         {/* Review Queue Tab */}
         {activeTab === 'reviews' && (
-          <ReviewsSection 
-            activeTab={activeTab} 
-            stats={stats}
-            approvePhotoConsentMutation={approvePhotoConsentMutation}
-            rejectPhotoConsentMutation={rejectPhotoConsentMutation}
-          />
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full" />
+            </div>
+          }>
+            <ReviewsSection 
+              activeTab={activeTab} 
+              stats={stats}
+              approvePhotoConsentMutation={approvePhotoConsentMutation}
+              rejectPhotoConsentMutation={rejectPhotoConsentMutation}
+            />
+          </Suspense>
         )}
 
         {/* Schools Tab */}
         {activeTab === 'schools' && (
-          <SchoolsSection
-            activeTab={activeTab}
-            stats={stats}
-            approvePhotoConsentMutation={approvePhotoConsentMutation}
-            rejectPhotoConsentMutation={rejectPhotoConsentMutation}
-            photoConsentRejectDialogOpen={photoConsentRejectDialogOpen}
-            setPhotoConsentRejectDialogOpen={setPhotoConsentRejectDialogOpen}
-            photoConsentRejectNotes={photoConsentRejectNotes}
-            setPhotoConsentRejectNotes={setPhotoConsentRejectNotes}
-            schoolFilters={schoolFilters}
-            setSchoolFilters={setSchoolFilters}
-            countryOptions={countryOptions}
-          />
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full" />
+            </div>
+          }>
+            <SchoolsSection
+              activeTab={activeTab}
+              stats={stats}
+              approvePhotoConsentMutation={approvePhotoConsentMutation}
+              rejectPhotoConsentMutation={rejectPhotoConsentMutation}
+              photoConsentRejectDialogOpen={photoConsentRejectDialogOpen}
+              setPhotoConsentRejectDialogOpen={setPhotoConsentRejectDialogOpen}
+              photoConsentRejectNotes={photoConsentRejectNotes}
+              setPhotoConsentRejectNotes={setPhotoConsentRejectNotes}
+              schoolFilters={schoolFilters}
+              setSchoolFilters={setSchoolFilters}
+              countryOptions={countryOptions}
+            />
+          </Suspense>
         )}
 
         {/* Teams Tab */}
@@ -896,11 +908,17 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
 
         {/* Events Tab */}
         {activeTab === 'events' && (
-          <EventsSection 
-            allResources={allResources}
-            resourcesLoading={resourcesLoading}
-            activeTab={activeTab}
-          />
+          <Suspense fallback={
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin h-8 w-8 border-4 border-pcs_blue border-t-transparent rounded-full" />
+            </div>
+          }>
+            <EventsSection 
+              allResources={allResources}
+              resourcesLoading={resourcesLoading}
+              activeTab={activeTab}
+            />
+          </Suspense>
         )}
 
         {/* Printable Forms Tab */}
