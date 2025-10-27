@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
+import { useCollaboration } from "@/hooks/useCollaboration";
 import { apiRequest } from "@/lib/queryClient";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -29,6 +30,7 @@ import {
   Eye,
 } from "lucide-react";
 import { CaseStudyEditor } from "@/components/admin/CaseStudyEditor";
+import DocumentLockWarning from "@/components/admin/DocumentLockWarning";
 import type { CaseStudy } from "@shared/schema";
 
 interface CaseStudyManagementProps {
@@ -41,6 +43,7 @@ interface CaseStudyManagementProps {
 export default function CaseStudyManagement({ user, schools, countryOptions, isActive }: CaseStudyManagementProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { requestDocumentLock, releaseDocumentLock, getDocumentLock } = useCollaboration();
   
   // State
   const [caseStudyFilters, setCaseStudyFilters] = useState({
@@ -53,6 +56,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
   const [editorOpen, setEditorOpen] = useState(false);
   const [editingCaseStudy, setEditingCaseStudy] = useState<CaseStudy | null>(null);
   const [deletingCaseStudy, setDeletingCaseStudy] = useState<CaseStudy | null>(null);
+  const [documentLocked, setDocumentLocked] = useState(false);
 
   // Clean filters for API (convert "all" values to empty strings)
   const cleanFilters = (filters: typeof caseStudyFilters) => {
@@ -178,6 +182,63 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
       });
     },
   });
+
+  // Request document lock when opening editor for existing case study
+  useEffect(() => {
+    if (editorOpen && editingCaseStudy?.id) {
+      requestDocumentLock(editingCaseStudy.id, 'case_study').then((response) => {
+        if (!response.success) {
+          if (response.locked) {
+            setDocumentLocked(true);
+            toast({
+              title: "Case Study Locked",
+              description: `This case study is currently being edited by ${response.lockedBy || 'another user'}.`,
+              variant: "destructive",
+            });
+          }
+        } else {
+          setDocumentLocked(false);
+        }
+      });
+    }
+  }, [editorOpen, editingCaseStudy?.id, requestDocumentLock, toast]);
+
+  // Release lock when closing editor or component unmounts
+  useEffect(() => {
+    return () => {
+      if (editingCaseStudy?.id) {
+        releaseDocumentLock(editingCaseStudy.id, 'case_study');
+      }
+    };
+  }, [editingCaseStudy?.id, releaseDocumentLock]);
+
+  // Handle editor close
+  const handleEditorClose = () => {
+    if (editingCaseStudy?.id) {
+      releaseDocumentLock(editingCaseStudy.id, 'case_study');
+    }
+    setEditorOpen(false);
+    setEditingCaseStudy(null);
+    setDocumentLocked(false);
+  };
+
+  // Handle take over lock
+  const handleTakeOver = async () => {
+    if (editingCaseStudy?.id) {
+      // Release the current lock (if any) and request a new one
+      await releaseDocumentLock(editingCaseStudy.id, 'case_study');
+      const response = await requestDocumentLock(editingCaseStudy.id, 'case_study');
+      if (response.success) {
+        setDocumentLocked(false);
+        toast({
+          title: "Lock Acquired",
+          description: "You can now edit this case study.",
+        });
+      }
+    }
+  };
+
+  const currentLock = editingCaseStudy?.id ? getDocumentLock(editingCaseStudy.id, 'case_study') : undefined;
 
   return (
     <div className="space-y-6">
@@ -348,22 +409,36 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
       </Card>
 
       {/* Case Study Editor Dialog */}
-      <Dialog open={editorOpen} onOpenChange={setEditorOpen}>
+      <Dialog open={editorOpen} onOpenChange={handleEditorClose}>
         <DialogContent className="max-w-7xl max-h-[95vh] overflow-hidden p-0" data-testid="dialog-case-study-editor">
-          <CaseStudyEditor
-            caseStudy={editingCaseStudy || undefined}
-            onSave={(data) => {
-              if (editingCaseStudy) {
-                updateCaseStudyMutation.mutate({ ...data, id: editingCaseStudy.id });
-              } else {
-                createCaseStudyMutation.mutate({ ...data, createdBy: user?.id || '' });
-              }
-            }}
-            onCancel={() => {
-              setEditorOpen(false);
-              setEditingCaseStudy(null);
-            }}
-          />
+          <div className="p-6 space-y-4">
+            {currentLock && documentLocked && (
+              <DocumentLockWarning
+                lock={currentLock}
+                documentType="case_study"
+                onTakeOver={handleTakeOver}
+              />
+            )}
+            <CaseStudyEditor
+              caseStudy={editingCaseStudy || undefined}
+              onSave={(data) => {
+                if (documentLocked) {
+                  toast({
+                    title: "Cannot Save",
+                    description: "This case study is locked by another user.",
+                    variant: "destructive",
+                  });
+                  return;
+                }
+                if (editingCaseStudy) {
+                  updateCaseStudyMutation.mutate({ ...data, id: editingCaseStudy.id });
+                } else {
+                  createCaseStudyMutation.mutate({ ...data, createdBy: user?.id || '' });
+                }
+              }}
+              onCancel={handleEditorClose}
+            />
+          </div>
         </DialogContent>
       </Dialog>
 

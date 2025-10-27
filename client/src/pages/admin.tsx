@@ -2,6 +2,7 @@ import { useState, useEffect, lazy, Suspense } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/hooks/use-toast";
+import { useCollaboration } from "@/hooks/useCollaboration";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import { apiRequest } from "@/lib/queryClient";
 import { Link, useLocation } from "wouter";
@@ -85,7 +86,8 @@ import {
   ExternalLink,
   Languages,
   Sparkles,
-  AlertTriangle
+  AlertTriangle,
+  MessageSquare
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -105,6 +107,8 @@ import PrintableFormsTab from "@/components/admin/PrintableFormsTab";
 import DataImport from "@/components/admin/DataImport";
 import TeamsSection from '@/components/admin/teams/TeamsSection';
 import EvidenceRequirementsSection from '@/components/admin/evidence-requirements/EvidenceRequirementsSection';
+import CollaborationSidebar from '@/components/admin/CollaborationSidebar';
+import ChatPanel from '@/components/admin/ChatPanel';
 import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
 import type { 
   AdminStats, 
@@ -150,6 +154,12 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
     autoTranslate: false
   });
   
+  // Collaboration state
+  const collaboration = useCollaboration();
+  const [chatPanelOpen, setChatPanelOpen] = useState(false);
+  const [unreadChatCount, setUnreadChatCount] = useState(0);
+  const [lastReadChatCount, setLastReadChatCount] = useState(0);
+  
   // Translation preview state
   const [translations, setTranslations] = useState<Record<string, {
     subject: string;
@@ -191,6 +201,61 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
       setShowWelcomeBanner(true);
     }
   }, [location]);
+
+  // Send presence updates when activeTab changes
+  useEffect(() => {
+    if (collaboration.connectionState === 'connected') {
+      let activity: 'idle' | 'viewing_dashboard' | 'reviewing_evidence' | 'editing_case_study' | 'editing_event' | 'managing_schools' | 'managing_users' | 'managing_resources' = 'idle';
+      
+      switch (activeTab) {
+        case 'overview':
+          activity = 'viewing_dashboard';
+          break;
+        case 'reviews':
+          activity = 'reviewing_evidence';
+          break;
+        case 'case-studies':
+          activity = 'editing_case_study';
+          break;
+        case 'events':
+          activity = 'editing_event';
+          break;
+        case 'schools':
+        case 'teams':
+          activity = 'managing_schools';
+          break;
+        case 'users':
+        case 'activity':
+          activity = 'managing_users';
+          break;
+        case 'resources':
+        case 'resource-packs':
+          activity = 'managing_resources';
+          break;
+        default:
+          activity = 'idle';
+      }
+      
+      collaboration.sendPresenceUpdate(activity);
+    }
+  }, [activeTab, collaboration.connectionState, collaboration]);
+
+  // Track unread chat messages
+  useEffect(() => {
+    const newMessages = collaboration.chatMessages.length - lastReadChatCount;
+    if (newMessages > 0 && !chatPanelOpen) {
+      setUnreadChatCount(prev => prev + newMessages);
+    }
+    setLastReadChatCount(collaboration.chatMessages.length);
+  }, [collaboration.chatMessages.length, chatPanelOpen, lastReadChatCount]);
+
+  // Reset unread count when chat panel opens
+  const handleChatPanelOpen = (open: boolean) => {
+    setChatPanelOpen(open);
+    if (open) {
+      setUnreadChatCount(0);
+    }
+  };
 
   // Redirect if not authenticated or not admin (but only after loading completes)
   useEffect(() => {
@@ -974,6 +1039,33 @@ export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overv
         {activeTab === 'media-library' && <EvidenceGalleryTab />}
       </div>
 
+      {/* Collaboration Components */}
+      {(user?.role === 'admin' || user?.isAdmin) && (
+        <>
+          <CollaborationSidebar />
+          
+          <ChatPanel 
+            open={chatPanelOpen}
+            onOpenChange={handleChatPanelOpen}
+            unreadCount={unreadChatCount}
+            onMessagesRead={() => setUnreadChatCount(0)}
+          />
+
+          {/* Floating Chat Button */}
+          <Button
+            onClick={() => setChatPanelOpen(true)}
+            className="fixed bottom-6 right-6 z-30 w-14 h-14 rounded-full shadow-lg bg-pcs_blue hover:bg-pcs_blue/90"
+            data-testid="button-open-chat"
+          >
+            <MessageSquare className="h-6 w-6" />
+            {unreadChatCount > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                {unreadChatCount > 9 ? '9+' : unreadChatCount}
+              </span>
+            )}
+          </Button>
+        </>
+      )}
     </div>
   );
 }
