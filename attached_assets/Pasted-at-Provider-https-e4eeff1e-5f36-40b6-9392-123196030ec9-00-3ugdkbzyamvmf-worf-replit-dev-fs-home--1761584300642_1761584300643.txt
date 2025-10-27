@@ -1,0 +1,58 @@
+at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=41cafe96:38:15)
+    at TooltipProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=41cafe96:62:5)
+    at QueryClientProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=41cafe96:2805:3)
+    at App
+    at Suspense
+printWarning @ chunk-RPCDYKBN.js?v=41cafe96:521
+error @ chunk-RPCDYKBN.js?v=41cafe96:505
+checkForNestedUpdates @ chunk-RPCDYKBN.js?v=41cafe96:19665
+scheduleUpdateOnFiber @ chunk-RPCDYKBN.js?v=41cafe96:18533
+dispatchSetState @ chunk-RPCDYKBN.js?v=41cafe96:12403
+(anonymous) @ ChatPanel.tsx:58
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=41cafe96:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=41cafe96:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=41cafe96:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=41cafe96:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=41cafe96:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=41cafe96:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=41cafe96:19447
+(anonymous) @ chunk-RPCDYKBN.js?v=41cafe96:19328
+workLoop @ chunk-RPCDYKBN.js?v=41cafe96:197
+flushWork @ chunk-RPCDYKBN.js?v=41cafe96:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=41cafe96:384Understand this error
+useCollaboration.ts:79 [Collaboration] Connected to WebSocket
+useCollaboration.ts:313 [Collaboration] WebSocket not connected, cannot send message
+(anonymous) @ useCollaboration.ts:313
+(anonymous) @ useCollaboration.ts:318
+(anonymous) @ admin.tsx:239
+commitHookEffectListMount @ chunk-RPCDYKBN.js?v=41cafe96:16915
+commitPassiveMountOnFiber @ chunk-RPCDYKBN.js?v=41cafe96:18156
+commitPassiveMountEffects_complete @ chunk-RPCDYKBN.js?v=41cafe96:18129
+commitPassiveMountEffects_begin @ chunk-RPCDYKBN.js?v=41cafe96:18119
+commitPassiveMountEffects @ chunk-RPCDYKBN.js?v=41cafe96:18109
+flushPassiveEffectsImpl @ chunk-RPCDYKBN.js?v=41cafe96:19490
+flushPassiveEffects @ chunk-RPCDYKBN.js?v=41cafe96:19447
+performSyncWorkOnRoot @ chunk-RPCDYKBN.js?v=41cafe96:18868
+flushSyncCallbacks @ chunk-RPCDYKBN.js?v=41cafe96:9119
+commitRootImpl @ chunk-RPCDYKBN.js?v=41cafe96:19432
+commitRoot @ chunk-RPCDYKBN.js?v=41cafe96:19277
+finishConcurrentRender @ chunk-RPCDYKBN.js?v=41cafe96:18805
+performConcurrentWorkOnRoot @ chunk-RPCDYKBN.js?v=41cafe96:18718
+workLoop @ chunk-RPCDYKBN.js?v=41cafe96:197
+flushWork @ chunk-RPCDYKBN.js?v=41cafe96:176
+performWorkUntilDeadline @ chunk-RPCDYKBN.js?v=41cafe96:384Understand this warning
+4ChatPanel.tsx:58 Warning: Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.
+    at ChatPanel (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/admin/ChatPanel.tsx?t=1761584034996:28:37)
+    at div
+    at Admin (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/pages/admin.tsx:76:48)
+    at Route (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=41cafe96:191:16)
+    at Switch (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=41cafe96:247:17)
+    at Suspense
+    at ErrorBoundary (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ErrorBoundary.tsx:9:5)
+    at main
+    at div
+    at Router (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/App.tsx?v=oowgFBaADtaCDazhL2v3O:96:17)
+    at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=41cafe96:38:15)
+    at TooltipProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=41cafe96:62:5)
+    at QueryClientProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=41cafe96:2805:3)
+    at App

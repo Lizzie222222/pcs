@@ -387,7 +387,8 @@ export function useCollaboration() {
     return () => {
       disconnect();
     };
-  }, [isAuthenticated, user, connect, disconnect]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, user]);
 
   // Send ping every 25 seconds to keep connection alive
   useEffect(() => {

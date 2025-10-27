@@ -6,6 +6,8 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sh
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { Card } from '@/components/ui/card';
+import { Command, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import Avatar from '@/components/Avatar';
 import { MessageSquare, Send, X } from 'lucide-react';
 import { format, isToday, isYesterday } from 'date-fns';
@@ -17,13 +19,62 @@ interface ChatPanelProps {
   onMessagesRead: () => void;
 }
 
+interface MentionState {
+  isOpen: boolean;
+  searchQuery: string;
+  selectedIndex: number;
+  cursorPosition: number;
+}
+
+function parseMentions(message: string): Array<{ text: string; isMention: boolean; userId?: string }> {
+  const mentionRegex = /@"([^"]+)"|@(\S+)/g;
+  const segments: Array<{ text: string; isMention: boolean; userId?: string }> = [];
+  let lastIndex = 0;
+  let match;
+
+  while ((match = mentionRegex.exec(message)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({
+        text: message.substring(lastIndex, match.index),
+        isMention: false,
+      });
+    }
+
+    const mentionText = match[1] || match[2];
+    segments.push({
+      text: `@${mentionText}`,
+      isMention: true,
+      userId: mentionText,
+    });
+
+    lastIndex = match.index + match[0].length;
+  }
+
+  if (lastIndex < message.length) {
+    segments.push({
+      text: message.substring(lastIndex),
+      isMention: false,
+    });
+  }
+
+  return segments.length > 0 ? segments : [{ text: message, isMention: false }];
+}
+
 export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesRead }: ChatPanelProps) {
   const { user } = useAuth();
-  const { chatMessages: realtimeMessages, sendChatMessage, typingUsers, sendTypingIndicator } = useCollaboration();
+  const { chatMessages: realtimeMessages, sendChatMessage, typingUsers, sendTypingIndicator, onlineUsers } = useCollaboration();
   const [message, setMessage] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const [allMessages, setAllMessages] = useState<CollabChatMessage[]>([]);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const [mentionState, setMentionState] = useState<MentionState>({
+    isOpen: false,
+    searchQuery: '',
+    selectedIndex: 0,
+    cursorPosition: 0,
+  });
 
   // Fetch initial chat messages
   const { data: historicalMessages = [] } = useQuery<any[]>({
@@ -72,26 +123,120 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
     }
   }, [open, unreadCount, onMessagesRead]);
 
-  // Handle typing with debounce
-  const handleTyping = (value: string) => {
+  const getFilteredUsers = () => {
+    const query = mentionState.searchQuery.toLowerCase();
+    return onlineUsers.filter(u => {
+      if (u.userId === user?.id) return false;
+      const fullName = `${u.firstName || ''} ${u.lastName || ''}`.trim() || u.email || '';
+      return fullName.toLowerCase().includes(query);
+    });
+  };
+
+  const filteredUsers = mentionState.isOpen ? getFilteredUsers() : [];
+
+  const handleInputChange = (value: string) => {
     setMessage(value);
     
-    // Clear existing timeout
     if (typingTimeoutRef.current) {
       clearTimeout(typingTimeoutRef.current);
     }
     
     if (value.trim()) {
-      // Send typing_start
       sendTypingIndicator(true);
-      
-      // Set timeout to send typing_stop after 2 seconds
       typingTimeoutRef.current = setTimeout(() => {
         sendTypingIndicator(false);
       }, 2000);
     } else {
-      // If input is empty, stop typing immediately
       sendTypingIndicator(false);
+    }
+
+    const cursorPos = inputRef.current?.selectionStart || value.length;
+    const textBeforeCursor = value.substring(0, cursorPos);
+    const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+    
+    if (lastAtIndex !== -1) {
+      const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+      
+      if (/^[\w\s]*$/.test(textAfterAt) && !textAfterAt.includes(' ')) {
+        setMentionState({
+          isOpen: true,
+          searchQuery: textAfterAt,
+          selectedIndex: 0,
+          cursorPosition: lastAtIndex,
+        });
+      } else {
+        setMentionState(prev => ({ ...prev, isOpen: false }));
+      }
+    } else {
+      setMentionState(prev => ({ ...prev, isOpen: false }));
+    }
+  };
+
+  const insertMention = (userName: string) => {
+    const beforeMention = message.substring(0, mentionState.cursorPosition);
+    const afterMention = message.substring(inputRef.current?.selectionStart || message.length);
+    
+    const mentionText = userName.includes(' ') ? `@"${userName}" ` : `@${userName} `;
+    const newMessage = beforeMention + mentionText + afterMention;
+    
+    setMessage(newMessage);
+    setMentionState({ isOpen: false, searchQuery: '', selectedIndex: 0, cursorPosition: 0 });
+    
+    setTimeout(() => {
+      inputRef.current?.focus();
+      const newCursorPos = beforeMention.length + mentionText.length;
+      inputRef.current?.setSelectionRange(newCursorPos, newCursorPos);
+    }, 0);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!mentionState.isOpen) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        handleSend();
+      }
+      return;
+    }
+
+    switch (e.key) {
+      case 'ArrowDown':
+        e.preventDefault();
+        setMentionState(prev => ({
+          ...prev,
+          selectedIndex: Math.min(prev.selectedIndex + 1, filteredUsers.length - 1),
+        }));
+        break;
+      
+      case 'ArrowUp':
+        e.preventDefault();
+        setMentionState(prev => ({
+          ...prev,
+          selectedIndex: Math.max(prev.selectedIndex - 1, 0),
+        }));
+        break;
+      
+      case 'Enter':
+        e.preventDefault();
+        if (filteredUsers[mentionState.selectedIndex]) {
+          const selectedUser = filteredUsers[mentionState.selectedIndex];
+          const userName = `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.email || '';
+          insertMention(userName);
+        }
+        break;
+      
+      case 'Escape':
+        e.preventDefault();
+        setMentionState(prev => ({ ...prev, isOpen: false }));
+        break;
+      
+      case 'Tab':
+        if (filteredUsers[mentionState.selectedIndex]) {
+          e.preventDefault();
+          const selectedUser = filteredUsers[mentionState.selectedIndex];
+          const userName = `${selectedUser.firstName || ''} ${selectedUser.lastName || ''}`.trim() || selectedUser.email || '';
+          insertMention(userName);
+        }
+        break;
     }
   };
   
@@ -107,7 +252,6 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
 
   const handleSend = () => {
     if (message.trim()) {
-      // Clear typing timeout and send typing_stop
       if (typingTimeoutRef.current) {
         clearTimeout(typingTimeoutRef.current);
       }
@@ -115,13 +259,7 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
       
       sendChatMessage(message.trim());
       setMessage('');
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      handleSend();
+      setMentionState({ isOpen: false, searchQuery: '', selectedIndex: 0, cursorPosition: 0 });
     }
   };
 
@@ -159,6 +297,28 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
   };
   
   const typingIndicatorText = getTypingIndicatorText();
+
+  const renderMessageWithMentions = (message: string) => {
+    const segments = parseMentions(message);
+    return (
+      <>
+        {segments.map((segment, index) => {
+          if (segment.isMention) {
+            return (
+              <span
+                key={index}
+                className="bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 font-medium px-1 py-0.5 rounded"
+                data-testid={`mention-${segment.text}`}
+              >
+                {segment.text}
+              </span>
+            );
+          }
+          return <span key={index}>{segment.text}</span>;
+        })}
+      </>
+    );
+  };
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -218,7 +378,7 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
                       </p>
                     )}
                     <p className="text-sm whitespace-pre-wrap break-words" data-testid={`message-content-${msg.id}`}>
-                      {msg.message}
+                      {renderMessageWithMentions(msg.message)}
                     </p>
                   </div>
                   <span className="text-xs text-gray-400 dark:text-gray-500 mt-1" data-testid={`message-time-${msg.id}`}>
@@ -241,13 +401,47 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
             </div>
           )}
           
-          <div className="p-4">
+          <div className="p-4 relative">
+            {mentionState.isOpen && (
+              <div className="absolute bottom-full left-0 mb-2 w-full max-h-60 overflow-y-auto z-10" data-testid="mention-dropdown">
+                <Card className="border shadow-lg">
+                  {filteredUsers.length === 0 ? (
+                    <div className="p-3 text-sm text-gray-500 dark:text-gray-400">
+                      No users found
+                    </div>
+                  ) : (
+                    <div>
+                      {filteredUsers.map((user, index) => {
+                        const userName = `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || '';
+                        return (
+                          <div
+                            key={user.userId}
+                            data-testid={`mention-user-${user.userId}`}
+                            className={`flex items-center gap-2 p-2 cursor-pointer ${
+                              index === mentionState.selectedIndex
+                                ? 'bg-gray-100 dark:bg-gray-700'
+                                : 'hover:bg-gray-50 dark:hover:bg-gray-800'
+                            }`}
+                            onClick={() => insertMention(userName)}
+                          >
+                            <Avatar seed={user.userId} size={24} alt={userName} />
+                            <span className="text-sm">{userName}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </Card>
+              </div>
+            )}
+            
             <div className="flex gap-2">
               <Input
+                ref={inputRef}
                 value={message}
-                onChange={(e) => handleTyping(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type a message..."
+                onChange={(e) => handleInputChange(e.target.value)}
+                onKeyDown={handleKeyDown}
+                placeholder="Type a message... (@mention to tag someone)"
                 className="flex-1"
                 data-testid="input-chat-message"
               />
