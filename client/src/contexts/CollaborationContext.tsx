@@ -340,6 +340,13 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
           reconnectTimeoutRef.current = null;
         }
 
+        // Don't reconnect if server intentionally closed the connection (code 1000)
+        // This happens when a new connection replaces this one
+        if (event.code === 1000 && event.reason === 'New connection established') {
+          console.log('[Collaboration] Connection replaced by new one, not reconnecting');
+          return;
+        }
+
         // Attempt to reconnect with exponential backoff
         if (reconnectAttemptsRef.current < maxReconnectAttempts && isAuthenticated) {
           const delay = baseReconnectDelay * Math.pow(2, reconnectAttemptsRef.current);
