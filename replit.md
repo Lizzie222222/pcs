@@ -30,7 +30,7 @@ The application employs a modern web architecture with distinct frontend and bac
 -   **User Management**: Hierarchical school team management and token-based admin invitation system.
 
 ### Key Data Models
-Core entities include Users, Schools, Evidence (with approval workflows), Audit data, Reduction Promises (Action Plans), Resources, Case Studies, Events, Event Banners, Media Assets, Printable Form Submissions, Import Batches, and Notifications.
+Core entities include Users, Schools, Evidence (with approval workflows and assignment), Audit Logs (activity history tracking), Reduction Promises (Action Plans), Resources, Case Studies, Events, Event Banners, Media Assets, Printable Form Submissions, Import Batches, Notifications, Document Locks (real-time collaboration), and Chat Messages.
 
 ### UI/UX Decisions
 -   **Design System**: PCS brand colors, specific fonts (Gilroy Bold, Century Gothic Regular), and a component-based design using Radix UI and shadcn/ui. Custom favicon using the official PCS logo.
@@ -46,6 +46,17 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 -   **SEO Optimization**: Server-side meta tag injection for case study pages, JSON-LD structured data, proper heading hierarchy, and descriptive image alt text.
 -   **User Profile Management**: Comprehensive user profile page for editing details, language preferences, password changes, and account deletion.
 -   **Legal Pages**: Fully internationalized Privacy Policy and Terms & Conditions pages with comprehensive translations.
+-   **Real-Time Collaboration System**: Comprehensive collaboration features for admin dashboard enabling multiple admins to work simultaneously:
+    - **Online Presence Tracking**: Real-time display of connected admins with activity status
+    - **Document Locking**: Automatic lock acquisition when editing case studies, events, and evidence to prevent conflicts
+    - **Lock Countdown Timers**: Visual countdown showing time remaining on document locks with color-coded progress bars (green/orange/red)
+    - **Force Unlock**: Platform admin capability to break document locks in emergencies with confirmation dialog and optional reason tracking
+    - **Idle Detection & Auto-Unlock**: Automatic release of locks after 10 minutes of user inactivity
+    - **Viewing Indicators**: Non-blocking awareness badges showing which admins are viewing documents without locks
+    - **Admin Chat System**: Real-time chat with typing indicators (2-second debounce), @mentions with autocomplete, and 1-on-1 direct messaging
+    - **Browser Notifications**: Desktop notifications for new chat messages and tab title updates showing unread counts
+    - **Activity History System**: Comprehensive audit logging of all admin actions (approvals, edits, deletions, force unlocks) with filterable UI
+    - **Evidence Assignment**: Workload distribution system allowing admins to assign evidence submissions to specific reviewers with notification support
 
 ## External Dependencies
 -   **Database**: Neon PostgreSQL
