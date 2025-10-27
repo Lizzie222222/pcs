@@ -34,6 +34,8 @@ import {
   mediaAssetUsage,
   notifications,
   importBatches,
+  chatMessages,
+  documentLocks,
   type User,
   type UpsertUser,
   type School,
@@ -102,6 +104,10 @@ import {
   type Notification,
   type InsertNotification,
   type CreatePasswordUser,
+  type ChatMessage,
+  type InsertChatMessage,
+  type DocumentLock,
+  type InsertDocumentLock,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne } from "drizzle-orm";
@@ -679,6 +685,17 @@ export interface IStorage {
   // Media Asset Usage tracking
   recordMediaAssetUsage(assetId: string, usageType: string, referenceId?: string): Promise<void>;
   listMediaAssetUsage(assetId: string): Promise<any[]>;
+
+  // Collaboration - Chat operations
+  createChatMessage(message: InsertChatMessage): Promise<ChatMessage>;
+  getChatMessages(limit?: number, offset?: number): Promise<Array<ChatMessage & { user: User | null }>>;
+
+  // Collaboration - Document Lock operations
+  createDocumentLock(lock: InsertDocumentLock): Promise<DocumentLock>;
+  getDocumentLock(documentType: string, documentId: string): Promise<DocumentLock | null>;
+  deleteDocumentLock(documentType: string, documentId: string): Promise<boolean>;
+  getActiveDocumentLocks(): Promise<Array<DocumentLock & { user: User | null }>>;
+  cleanupExpiredLocks(): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -6310,6 +6327,92 @@ export class DatabaseStorage implements IStorage {
       .where(eq(mediaAssetUsage.assetId, assetId))
       .orderBy(desc(mediaAssetUsage.createdAt));
     return usage;
+  }
+
+  // Collaboration - Chat operations
+  async createChatMessage(message: InsertChatMessage): Promise<ChatMessage> {
+    const [chatMessage] = await db
+      .insert(chatMessages)
+      .values(message)
+      .returning();
+    return chatMessage;
+  }
+
+  async getChatMessages(limit: number = 100, offset: number = 0): Promise<Array<ChatMessage & { user: User | null }>> {
+    const messages = await db
+      .select({
+        id: chatMessages.id,
+        userId: chatMessages.userId,
+        message: chatMessages.message,
+        createdAt: chatMessages.createdAt,
+        user: users,
+      })
+      .from(chatMessages)
+      .leftJoin(users, eq(chatMessages.userId, users.id))
+      .orderBy(desc(chatMessages.createdAt))
+      .limit(limit)
+      .offset(offset);
+    
+    return messages;
+  }
+
+  // Collaboration - Document Lock operations
+  async createDocumentLock(lock: InsertDocumentLock): Promise<DocumentLock> {
+    const [documentLock] = await db
+      .insert(documentLocks)
+      .values(lock)
+      .returning();
+    return documentLock;
+  }
+
+  async getDocumentLock(documentType: string, documentId: string): Promise<DocumentLock | null> {
+    const [lock] = await db
+      .select()
+      .from(documentLocks)
+      .where(
+        and(
+          eq(documentLocks.documentType, documentType),
+          eq(documentLocks.documentId, documentId)
+        )
+      );
+    return lock || null;
+  }
+
+  async deleteDocumentLock(documentType: string, documentId: string): Promise<boolean> {
+    const result = await db
+      .delete(documentLocks)
+      .where(
+        and(
+          eq(documentLocks.documentType, documentType),
+          eq(documentLocks.documentId, documentId)
+        )
+      );
+    return true;
+  }
+
+  async getActiveDocumentLocks(): Promise<Array<DocumentLock & { user: User | null }>> {
+    const locks = await db
+      .select({
+        id: documentLocks.id,
+        documentType: documentLocks.documentType,
+        documentId: documentLocks.documentId,
+        userId: documentLocks.userId,
+        acquiredAt: documentLocks.acquiredAt,
+        expiresAt: documentLocks.expiresAt,
+        user: users,
+      })
+      .from(documentLocks)
+      .leftJoin(users, eq(documentLocks.userId, users.id))
+      .where(sql`${documentLocks.expiresAt} > NOW()`)
+      .orderBy(desc(documentLocks.acquiredAt));
+    
+    return locks;
+  }
+
+  async cleanupExpiredLocks(): Promise<void> {
+    await db
+      .delete(documentLocks)
+      .where(sql`${documentLocks.expiresAt} <= NOW()`);
   }
 }
 

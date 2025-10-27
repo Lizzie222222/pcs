@@ -31,6 +31,9 @@ import { bulkResourceUpload, photoConsentUpload, uploadCompression, importUpload
 import { uploadToObjectStorage } from './routes/utils/objectStorage';
 import { requireAdmin, requireAdminOrPartner } from './routes/utils/middleware';
 
+// Import WebSocket collaboration functions
+import { getOnlineUsers, broadcastChatMessage, notifyDocumentLock } from './websocket';
+
 /**
  * @description Main route registration function setting up all API endpoints including auth, schools, evidence, case studies, events, email, and file uploads. Applies authentication middleware and ACL policies.
  * @param {Express} app - Express application instance
@@ -9360,6 +9363,315 @@ Return JSON with:
       console.error('[Meta Tags] Error injecting meta tags:', error);
       // Fallback to normal SPA serving on error
       next();
+    }
+  });
+
+  // ==========================================
+  // COLLABORATION FEATURES
+  // ==========================================
+
+  // Presence Tracking - Get all online users
+  app.get('/api/collaboration/presence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const onlineUsers = getOnlineUsers();
+      res.json({ users: onlineUsers });
+    } catch (error) {
+      console.error('Error fetching online users:', error);
+      res.status(500).json({ message: 'Failed to fetch online users' });
+    }
+  });
+
+  // Document Locking - Request to lock a document
+  app.post('/api/collaboration/locks', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+
+      const lockSchema = z.object({
+        documentType: z.enum(['case_study', 'event']),
+        documentId: z.string().min(1),
+      });
+
+      const { documentType, documentId } = lockSchema.parse(req.body);
+
+      // Check if document is already locked
+      const existingLock = await storage.getDocumentLock(documentType, documentId);
+      
+      if (existingLock) {
+        // Check if lock has expired
+        if (new Date() > new Date(existingLock.expiresAt)) {
+          // Lock expired, delete it
+          await storage.deleteDocumentLock(documentType, documentId);
+        } else if (existingLock.userId !== user.id) {
+          // Document is locked by someone else
+          const lockUser = await storage.getUser(existingLock.userId);
+          return res.status(409).json({
+            locked: true,
+            lockedBy: {
+              userId: existingLock.userId,
+              name: lockUser ? `${lockUser.firstName || ''} ${lockUser.lastName || ''}`.trim() : 'Unknown',
+              email: lockUser?.email,
+            },
+            lockedAt: existingLock.acquiredAt,
+            expiresAt: existingLock.expiresAt,
+          });
+        } else {
+          // User already has the lock, extend it
+          await storage.deleteDocumentLock(documentType, documentId);
+        }
+      }
+
+      // Create new lock (expires in 5 minutes)
+      const expiresAt = new Date(Date.now() + 5 * 60 * 1000);
+      
+      try {
+        const lock = await storage.createDocumentLock({
+          documentType,
+          documentId,
+          userId: user.id,
+          expiresAt,
+        });
+
+        // Notify other users via WebSocket
+        notifyDocumentLock({
+          documentId,
+          documentType,
+          userId: user.id,
+          userName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Unknown',
+          action: 'acquired',
+        });
+
+        res.status(201).json({
+          success: true,
+          lock: {
+            documentId: lock.documentId,
+            documentType: lock.documentType,
+            lockedBy: {
+              userId: user.id,
+              name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
+              email: user.email,
+            },
+            lockedAt: lock.acquiredAt,
+            expiresAt: lock.expiresAt,
+          },
+        });
+      } catch (lockError: any) {
+        // Handle unique constraint violation - race condition detected
+        if (lockError.code === '23505' || lockError.constraint === 'idx_document_locks_unique' || lockError.message?.includes('unique constraint')) {
+          // Another user acquired the lock between our check and insert
+          // Fetch the existing lock and return 409
+          const raceLock = await storage.getDocumentLock(documentType, documentId);
+          if (raceLock) {
+            const lockUser = await storage.getUser(raceLock.userId);
+            return res.status(409).json({
+              locked: true,
+              lockedBy: {
+                userId: raceLock.userId,
+                name: lockUser ? `${lockUser.firstName || ''} ${lockUser.lastName || ''}`.trim() : 'Unknown',
+                email: lockUser?.email,
+              },
+              lockedAt: raceLock.acquiredAt,
+              expiresAt: raceLock.expiresAt,
+            });
+          }
+        }
+        // Re-throw if it's not a unique constraint error
+        throw lockError;
+      }
+    } catch (error: any) {
+      console.error('Error creating document lock:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: 'Invalid request data', errors: error.errors });
+      }
+      res.status(500).json({ message: 'Failed to create document lock' });
+    }
+  });
+
+  // Document Locking - Release a lock
+  app.delete('/api/collaboration/locks/:documentType/:documentId', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+
+      const { documentType, documentId } = req.params;
+
+      if (!['case_study', 'event'].includes(documentType)) {
+        return res.status(400).json({ message: 'Invalid document type' });
+      }
+
+      // Check if lock exists
+      const existingLock = await storage.getDocumentLock(documentType, documentId);
+      
+      if (!existingLock) {
+        return res.status(404).json({ message: 'Lock not found' });
+      }
+
+      // Check if user owns the lock (admins can release any lock)
+      if (existingLock.userId !== user.id && !user.isAdmin) {
+        return res.status(403).json({ message: 'You do not own this lock' });
+      }
+
+      // Delete the lock
+      await storage.deleteDocumentLock(documentType, documentId);
+
+      // Notify other users via WebSocket
+      notifyDocumentLock({
+        documentId,
+        documentType,
+        action: 'released',
+      });
+
+      res.json({ success: true, message: 'Lock released successfully' });
+    } catch (error) {
+      console.error('Error releasing document lock:', error);
+      res.status(500).json({ message: 'Failed to release document lock' });
+    }
+  });
+
+  // Document Locking - Check if document is locked
+  app.get('/api/collaboration/locks/:documentType/:documentId', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const { documentType, documentId } = req.params;
+
+      if (!['case_study', 'event'].includes(documentType)) {
+        return res.status(400).json({ message: 'Invalid document type' });
+      }
+
+      const lock = await storage.getDocumentLock(documentType, documentId);
+      
+      if (!lock) {
+        return res.json({ locked: false });
+      }
+
+      // Check if lock has expired
+      if (new Date() > new Date(lock.expiresAt)) {
+        // Lock expired, delete it
+        await storage.deleteDocumentLock(documentType, documentId);
+        return res.json({ locked: false });
+      }
+
+      // Get lock owner details
+      const lockUser = await storage.getUser(lock.userId);
+      
+      res.json({
+        locked: true,
+        lockedBy: {
+          userId: lock.userId,
+          name: lockUser ? `${lockUser.firstName || ''} ${lockUser.lastName || ''}`.trim() : 'Unknown',
+          email: lockUser?.email,
+        },
+        lockedAt: lock.acquiredAt,
+        expiresAt: lock.expiresAt,
+      });
+    } catch (error) {
+      console.error('Error checking document lock:', error);
+      res.status(500).json({ message: 'Failed to check document lock' });
+    }
+  });
+
+  // Document Locking - Get all active locks
+  app.get('/api/collaboration/locks', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const locks = await storage.getActiveDocumentLocks();
+      
+      const formattedLocks = locks.map(lock => ({
+        documentId: lock.documentId,
+        documentType: lock.documentType,
+        lockedBy: {
+          userId: lock.userId,
+          name: lock.user ? `${lock.user.firstName || ''} ${lock.user.lastName || ''}`.trim() : 'Unknown',
+          email: lock.user?.email,
+        },
+        lockedAt: lock.acquiredAt,
+        expiresAt: lock.expiresAt,
+      }));
+
+      res.json({ locks: formattedLocks });
+    } catch (error) {
+      console.error('Error fetching active locks:', error);
+      res.status(500).json({ message: 'Failed to fetch active locks' });
+    }
+  });
+
+  // Chat - Get recent chat messages
+  app.get('/api/collaboration/chat/messages', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const { limit = '100', offset = '0' } = req.query;
+      
+      const messages = await storage.getChatMessages(
+        parseInt(limit as string),
+        parseInt(offset as string)
+      );
+
+      const formattedMessages = messages.map(msg => ({
+        id: msg.id,
+        userId: msg.userId,
+        userName: msg.user ? `${msg.user.firstName || ''} ${msg.user.lastName || ''}`.trim() || msg.user.email : 'Unknown',
+        userEmail: msg.user?.email,
+        message: msg.message,
+        createdAt: msg.createdAt,
+      }));
+
+      res.json({ messages: formattedMessages });
+    } catch (error) {
+      console.error('Error fetching chat messages:', error);
+      res.status(500).json({ message: 'Failed to fetch chat messages' });
+    }
+  });
+
+  // Chat - Send chat message
+  app.post('/api/collaboration/chat/messages', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const user = req.user;
+      if (!user) {
+        return res.status(401).json({ message: 'Not authenticated' });
+      }
+
+      const messageSchema = z.object({
+        message: z.string().min(1).max(1000),
+      });
+
+      const { message } = messageSchema.parse(req.body);
+
+      // Store message in database
+      const chatMessage = await storage.createChatMessage({
+        userId: user.id,
+        message,
+      });
+
+      // Broadcast to all connected users via WebSocket
+      broadcastChatMessage({
+        id: chatMessage.id,
+        userId: chatMessage.userId,
+        message: chatMessage.message,
+        createdAt: chatMessage.createdAt,
+        user: {
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+        },
+      });
+
+      res.status(201).json({
+        success: true,
+        message: {
+          id: chatMessage.id,
+          userId: chatMessage.userId,
+          userName: `${user.firstName || ''} ${user.lastName || ''}`.trim() || user.email || 'Unknown',
+          message: chatMessage.message,
+          createdAt: chatMessage.createdAt,
+        },
+      });
+    } catch (error: any) {
+      console.error('Error sending chat message:', error);
+      if (error.name === 'ZodError') {
+        return res.status(400).json({ message: 'Invalid request data', errors: error.errors });
+      }
+      res.status(500).json({ message: 'Failed to send chat message' });
     }
   });
 

@@ -542,6 +542,7 @@ export const documentLocks = pgTable("document_locks", {
   index("idx_document_locks_doc").on(table.documentType, table.documentId),
   index("idx_document_locks_user").on(table.userId),
   index("idx_document_locks_expires").on(table.expiresAt),
+  uniqueIndex("idx_document_locks_unique").on(table.documentType, table.documentId),
 ]);
 
 export const certificates = pgTable("certificates", {
