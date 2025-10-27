@@ -236,9 +236,10 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
           activity = 'idle';
       }
       
-      collaboration.sendPresenceUpdate(activity);
+      console.log(`[Admin] Sending presence update: ${activity} (tab: ${activeTab})`);
+      collaboration.sendPresenceUpdate(activity, user?.id);
     }
-  }, [activeTab, collaboration.connectionState, collaboration]);
+  }, [activeTab, collaboration.connectionState, collaboration.sendPresenceUpdate, user?.id]);
 
   // Track unread chat messages
   useEffect(() => {

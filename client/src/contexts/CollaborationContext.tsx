@@ -50,7 +50,7 @@ interface CollaborationContextType {
   conflictWarnings: any[];
   typingUsers: TypingUser[];
   documentViewers: Map<string, DocumentViewer[]>;
-  sendPresenceUpdate: (currentActivity: ConnectedUser['currentActivity']) => void;
+  sendPresenceUpdate: (currentActivity: ConnectedUser['currentActivity'], userId?: string) => void;
   requestDocumentLock: (documentId: string, documentType: 'case_study' | 'event') => Promise<{ success: boolean; lock?: DocumentLock; locked?: boolean; lockedBy?: string; error?: string }>;
   releaseDocumentLock: (documentId: string, documentType: 'case_study' | 'event') => void;
   sendChatMessage: (message: string, toUserId?: string) => void;
@@ -129,6 +129,15 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     // Handle user left
     else if (payload.action === 'user_left' && payload.userId) {
       setOnlineUsers(prev => prev.filter(u => u.userId !== payload.userId));
+    }
+    // Handle activity changed
+    else if (payload.action === 'activity_changed' && payload.userId && payload.currentActivity) {
+      console.log('[Collaboration] Activity changed:', payload.userId, payload.currentActivity);
+      setOnlineUsers(prev => prev.map(u => 
+        u.userId === payload.userId 
+          ? { ...u, currentActivity: payload.currentActivity }
+          : u
+      ));
     }
   }, []);
 
@@ -354,7 +363,23 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
   }, []);
 
   // API methods using stable sendMessage
-  const sendPresenceUpdate = useCallback((currentActivity: ConnectedUser['currentActivity']) => {
+  const sendPresenceUpdate = useCallback((currentActivity: ConnectedUser['currentActivity'], userId?: string) => {
+    console.log('[Collaboration] Sending presence update:', currentActivity, 'userId:', userId);
+    
+    // Update own status immediately for responsive UI
+    if (userId) {
+      setOnlineUsers(prev => {
+        console.log('[Collaboration] Current online users:', prev.map(u => ({ userId: u.userId, activity: u.currentActivity })));
+        const updated = prev.map(u => 
+          u.userId === userId 
+            ? { ...u, currentActivity }
+            : u
+        );
+        console.log('[Collaboration] Updated online users:', updated.map(u => ({ userId: u.userId, activity: u.currentActivity })));
+        return updated;
+      });
+    }
+    
     sendMessage({
       type: 'presence_update',
       payload: { currentActivity },
