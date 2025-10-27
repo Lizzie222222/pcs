@@ -3593,6 +3593,26 @@ Return JSON with:
     }
   });
 
+  // Combined dashboard data endpoint - fetches stats, pending audits, and pending photo consent in one call
+  app.get('/api/admin/dashboard-data', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const [stats, pendingAudits, pendingPhotoConsent] = await Promise.all([
+        storage.getAdminStats(),
+        storage.getPendingAudits(),
+        storage.getSchoolsWithPendingPhotoConsent()
+      ]);
+      
+      res.json({
+        stats,
+        pendingAudits,
+        pendingPhotoConsent
+      });
+    } catch (error) {
+      console.error("Error fetching dashboard data:", error);
+      res.status(500).json({ message: "Failed to fetch dashboard data" });
+    }
+  });
+
   // Analytics endpoints
   app.get('/api/admin/analytics/overview', isAuthenticated, requireAdmin, async (req, res) => {
     try {
