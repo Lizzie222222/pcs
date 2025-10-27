@@ -90,12 +90,45 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
 
   // Stable message handlers using refs
   const handlePresenceUpdate = useCallback((payload: any) => {
-    if (payload.users && Array.isArray(payload.users)) {
-      const formattedUsers = payload.users.map((u: any) => ({
+    // Handle initial connection with full user list
+    if (payload.onlineUsers && Array.isArray(payload.onlineUsers)) {
+      const formattedUsers: ConnectedUser[] = payload.onlineUsers.map((u: any) => ({
         ...u,
         connectedAt: new Date(u.connectedAt),
       }));
-      setOnlineUsers(formattedUsers);
+      // Deduplicate by userId before setting
+      const uniqueUsers: ConnectedUser[] = Array.from(
+        new Map(formattedUsers.map((u: ConnectedUser) => [u.userId, u])).values()
+      );
+      setOnlineUsers(uniqueUsers);
+    }
+    // Handle regular presence updates
+    else if (payload.users && Array.isArray(payload.users)) {
+      const formattedUsers: ConnectedUser[] = payload.users.map((u: any) => ({
+        ...u,
+        connectedAt: new Date(u.connectedAt),
+      }));
+      // Deduplicate by userId before setting
+      const uniqueUsers: ConnectedUser[] = Array.from(
+        new Map(formattedUsers.map((u: ConnectedUser) => [u.userId, u])).values()
+      );
+      setOnlineUsers(uniqueUsers);
+    }
+    // Handle user joined
+    else if (payload.action === 'user_joined' && payload.user) {
+      setOnlineUsers(prev => {
+        // Check if user already exists
+        const exists = prev.some(u => u.userId === payload.user.userId);
+        if (exists) return prev;
+        return [...prev, {
+          ...payload.user,
+          connectedAt: new Date(payload.user.connectedAt || new Date()),
+        }];
+      });
+    }
+    // Handle user left
+    else if (payload.action === 'user_left' && payload.userId) {
+      setOnlineUsers(prev => prev.filter(u => u.userId !== payload.userId));
     }
   }, []);
 
