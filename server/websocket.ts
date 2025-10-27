@@ -6,7 +6,7 @@ import { storage } from './storage';
 
 // Type definitions for WebSocket messages
 export interface WebSocketMessage {
-  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong';
+  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong' | 'idle_unlock';
   payload?: any;
 }
 
@@ -262,6 +262,10 @@ function handleMessage(ws: WebSocket, data: Buffer) {
         sendToClient(ws, { type: 'pong' });
         break;
       
+      case 'idle_unlock':
+        handleIdleUnlock(ws, client, message.payload);
+        break;
+      
       default:
         console.warn('[WebSocket] Unknown message type:', message.type);
     }
@@ -486,6 +490,45 @@ function handleTypingStop(ws: WebSocket, client: ConnectedUser) {
       userId: client.userId,
     },
   });
+}
+
+/**
+ * Handle idle unlock - release all locks held by idle user
+ */
+function handleIdleUnlock(ws: WebSocket, client: ConnectedUser, payload: any) {
+  const userId = payload?.userId || client.userId;
+  
+  // Security: Validate that the requesting user matches the client
+  if (userId !== client.userId) {
+    console.warn(`[WebSocket] User ${client.userId} attempted to unlock locks for user ${userId}`);
+    return;
+  }
+  
+  console.log(`[WebSocket] Handling idle unlock for user: ${client.email} (${client.userId})`);
+  
+  // Find and release all locks held by this user
+  let unlockedCount = 0;
+  for (const [lockKey, lock] of Array.from(documentLocks.entries())) {
+    if (lock.lockedBy === userId) {
+      documentLocks.delete(lockKey);
+      unlockedCount++;
+      
+      // Broadcast unlock to all clients
+      broadcastToAll({
+        type: 'document_unlock',
+        payload: {
+          documentId: lock.documentId,
+          documentType: lock.documentType,
+          reason: 'idle_timeout',
+          unlockedBy: userId,
+        },
+      });
+      
+      console.log(`[WebSocket] Released lock on ${lock.documentType}:${lock.documentId} due to idle timeout`);
+    }
+  }
+  
+  console.log(`[WebSocket] Released ${unlockedCount} lock(s) for idle user ${client.email}`);
 }
 
 /**

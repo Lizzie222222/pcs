@@ -29,7 +29,7 @@ export interface ChatMessage {
 }
 
 interface WebSocketMessage {
-  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong';
+  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong' | 'idle_unlock';
   payload?: any;
 }
 
@@ -400,6 +400,66 @@ export function useCollaboration() {
       return () => clearInterval(pingInterval);
     }
   }, [connectionState, ws, sendMessage]);
+
+  // Idle detection: auto-unlock documents after 10 minutes of inactivity
+  useEffect(() => {
+    if (connectionState !== 'connected' || !ws || !user) {
+      return;
+    }
+
+    let idleTimer: NodeJS.Timeout | null = null;
+    let activityDebounceTimer: NodeJS.Timeout | null = null;
+
+    const resetIdleTimer = () => {
+      // Clear existing debounce timer
+      if (activityDebounceTimer) {
+        clearTimeout(activityDebounceTimer);
+      }
+
+      // Set new debounce timer (5 seconds)
+      activityDebounceTimer = setTimeout(() => {
+        // Clear existing idle timer
+        if (idleTimer) {
+          clearTimeout(idleTimer);
+        }
+
+        // Set new idle timer (10 minutes)
+        idleTimer = setTimeout(() => {
+          console.log('[Collaboration] User idle for 10 minutes, releasing locks...');
+          
+          // Send idle unlock message to server
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(JSON.stringify({
+              type: 'idle_unlock',
+              payload: { userId: user.id }
+            }));
+          }
+        }, 600000); // 10 minutes (600,000 milliseconds)
+      }, 5000); // 5 second debounce
+    };
+
+    // Activity event listeners
+    const events = ['mousemove', 'keydown', 'mousedown', 'scroll'];
+    events.forEach(event => {
+      window.addEventListener(event, resetIdleTimer);
+    });
+
+    // Start the idle timer initially
+    resetIdleTimer();
+
+    // Cleanup
+    return () => {
+      if (idleTimer) {
+        clearTimeout(idleTimer);
+      }
+      if (activityDebounceTimer) {
+        clearTimeout(activityDebounceTimer);
+      }
+      events.forEach(event => {
+        window.removeEventListener(event, resetIdleTimer);
+      });
+    };
+  }, [connectionState, ws, user]);
 
   return {
     connectionState,
