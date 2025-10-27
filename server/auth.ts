@@ -50,23 +50,31 @@ const loginSchema = z.object({
   password: z.string().min(1, "Password is required"),
 });
 
+// Module-level session store instance
+let sessionStore: any = null;
+
 export function getSession() {
   const sessionTtl = 30 * 24 * 60 * 60 * 1000; // 30 days
   const isProduction = process.env.NODE_ENV === 'production';
   
-  // Use PostgreSQL store in production, memory store in development/test
-  let sessionStore;
-  if (isProduction && process.env.DATABASE_URL) {
-    const pgStore = connectPg(session);
-    sessionStore = new pgStore({
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: false,
-      ttl: sessionTtl,
-      tableName: "sessions",
-    });
-  } else {
-    // Fall back to memory store for development/test
-    sessionStore = undefined; // Uses default MemoryStore
+  // Initialize session store if not already created
+  if (!sessionStore) {
+    if (isProduction && process.env.DATABASE_URL) {
+      const pgStore = connectPg(session);
+      sessionStore = new pgStore({
+        conString: process.env.DATABASE_URL,
+        createTableIfMissing: false,
+        ttl: sessionTtl,
+        tableName: "sessions",
+      });
+    } else {
+      // Create explicit MemoryStore for development so WebSocket can access it
+      const MemoryStore = require('memorystore')(session);
+      sessionStore = new MemoryStore({
+        checkPeriod: 86400000, // prune expired entries every 24h
+        ttl: sessionTtl,
+      });
+    }
   }
   
   return session({
@@ -81,6 +89,14 @@ export function getSession() {
       maxAge: sessionTtl,
     },
   });
+}
+
+export function getSessionStore() {
+  // Ensure session store is initialized
+  if (sessionStore === null) {
+    getSession();
+  }
+  return sessionStore;
 }
 
 export async function setupAuth(app: Express) {

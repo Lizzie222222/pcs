@@ -2,8 +2,6 @@ import { WebSocketServer, WebSocket } from 'ws';
 import type { Server } from 'http';
 import type { IncomingMessage } from 'http';
 import { parse as parseCookie } from 'cookie';
-import session from 'express-session';
-import { getSession } from './auth';
 import { storage } from './storage';
 
 // Type definitions for WebSocket messages
@@ -171,49 +169,50 @@ export function initializeWebSocket(httpServer: Server): WebSocketServer {
  * Authenticate WebSocket connection using session cookie
  */
 async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
-  return new Promise((resolve, reject) => {
-    try {
-      // Parse cookies from request
-      const cookies = req.headers.cookie ? parseCookie(req.headers.cookie) : {};
-      const sessionId = cookies['connect.sid'];
+  try {
+    // Parse cookies from request
+    const cookies = req.headers.cookie ? parseCookie(req.headers.cookie) : {};
+    const sessionCookie = cookies['connect.sid'];
 
-      if (!sessionId) {
-        return resolve(null);
-      }
+    if (!sessionCookie) {
+      return null;
+    }
 
-      // Decode session ID (remove 's:' prefix and signature)
-      const decodedSessionId = decodeURIComponent(sessionId).replace(/^s:/, '').split('.')[0];
+    // Decode session ID (remove 's:' prefix and extract ID before signature)
+    const decodedSessionId = decodeURIComponent(sessionCookie).replace(/^s:/, '').split('.')[0];
 
-      // Create a mock request object for session middleware
-      const mockReq: any = {
-        headers: req.headers,
-        cookies,
-        sessionID: decodedSessionId,
-      };
+    // Get session store from auth.ts
+    const { getSessionStore } = await import('./auth');
+    const sessionStore = getSessionStore();
 
-      const mockRes: any = {
-        setHeader: () => {},
-        getHeader: () => {},
-      };
+    // If no session store (using default MemoryStore), we can't access it directly
+    if (!sessionStore) {
+      console.warn('[WebSocket] Session store not available (using MemoryStore)');
+      return null;
+    }
 
-      // Get session middleware
-      const sessionMiddleware = getSession();
+    // Retrieve session from store
+    return new Promise((resolve) => {
+      sessionStore.get(decodedSessionId, async (err: any, session: any) => {
+        if (err || !session) {
+          console.log('[WebSocket] Session not found or error:', err);
+          return resolve(null);
+        }
 
-      // Run session middleware
-      sessionMiddleware(mockReq, mockRes, async () => {
-        if (mockReq.session && mockReq.session.passport && mockReq.session.passport.user) {
-          const userId = mockReq.session.passport.user;
+        // Extract user ID from session
+        if (session.passport && session.passport.user) {
+          const userId = session.passport.user;
           const user = await storage.getUser(userId);
           resolve(user);
         } else {
           resolve(null);
         }
       });
-    } catch (error) {
-      console.error('[WebSocket] Authentication error:', error);
-      resolve(null);
-    }
-  });
+    });
+  } catch (error) {
+    console.error('[WebSocket] Authentication error:', error);
+    return null;
+  }
 }
 
 /**
