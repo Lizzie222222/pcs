@@ -409,19 +409,9 @@ export default function ChatPanel({ open, onOpenChange, unreadCount, onMessagesR
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="w-full sm:w-[400px] sm:max-w-[400px] p-0 flex flex-col">
         <SheetHeader className="p-4 border-b border-gray-200 dark:border-gray-700 space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-              <SheetTitle>Admin Chat</SheetTitle>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => onOpenChange(false)}
-              data-testid="button-close-chat"
-            >
-              <X className="h-4 w-4" />
-            </Button>
+          <div className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-gray-600 dark:text-gray-400" />
+            <SheetTitle>Admin Chat</SheetTitle>
           </div>
           
           <div className="space-y-2">

@@ -78,14 +78,6 @@ export function ResourcePreviewDialog({
                 <Download className="w-4 h-4 mr-2" />
                 Download
               </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onClose}
-                data-testid="button-close-preview"
-              >
-                <X className="w-5 h-5" />
-              </Button>
             </div>
           </div>
 
