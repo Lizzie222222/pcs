@@ -86,9 +86,16 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
   - Preserves stage filtering (Inspire/Investigate/Act), drag-and-drop reordering, resource linking
   - allResources query passed as prop (shared with Events section)
   - Comprehensive testing: CRUD operations, stage filtering, resource selector all verified
-- Reduced admin.tsx from 8,572 lines to ~5,291 lines (total reduction: ~3,281 lines, ~38%)
+- Extracted Events section (3,700 lines) into `EventsSection` component at `client/src/components/admin/events/EventsSection.tsx`
+  - Largest and most complex extraction: 40+ state variables, 7 queries, 14 mutations
+  - Preserves all functionality: multi-language support, page builder, analytics, registrations, announcements, banners
+  - 6 helper functions: generateSlug, copyContentFromLanguage, savePageBuilderWithStatus, handleEventImageUpload, removeEventImage, handlePackFileUpload
+  - allResources and resourcesLoading passed as props (shared with Evidence Requirements)
+  - Fixed JSX syntax error (missing closing div tag)
+  - Comprehensive testing: dialog opening, tab switching, analytics display, event creation workflows
+- Reduced admin.tsx from 8,572 lines to 1,567 lines (total reduction: 7,005 lines, 82%)
 - Maintained tab-based navigation without page reloads for fast switching
-- Fixed regressions: duplicate ActivityLogsTab, orphaned schoolsError references, broken dialog blocks
+- Fixed regressions: duplicate ActivityLogsTab, orphaned schoolsError references, broken dialog blocks, JSX syntax error in EventsSection
 - All sections tested and passing with zero LSP errors
 
 **Architecture Pattern**:
@@ -98,7 +105,6 @@ Core entities include Users, Schools, Evidence (with approval workflows), Audit 
 - Prop drilling acceptable short-term; may evolve to shared context only if multiple tabs need same controls
 
 **Next Steps**:
-- Extract Events section
 - Extract Activity Logs section
 - Extract Email section
 - Final shell refactor
