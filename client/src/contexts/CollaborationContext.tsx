@@ -100,7 +100,24 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
       const uniqueUsers: ConnectedUser[] = Array.from(
         new Map(formattedUsers.map((u: ConnectedUser) => [u.userId, u])).values()
       );
-      setOnlineUsers(uniqueUsers);
+      // Merge with existing state to preserve any local updates that haven't been broadcast yet
+      setOnlineUsers(prev => {
+        if (prev.length === 0) {
+          // First time receiving users, just set them
+          return uniqueUsers;
+        }
+        // Merge: prefer local activity if it was recently updated (within last 2 seconds)
+        const now = Date.now();
+        return uniqueUsers.map(serverUser => {
+          const localUser = prev.find(u => u.userId === serverUser.userId);
+          // If we have a local version and it's different, keep the local one briefly
+          if (localUser && localUser.currentActivity !== serverUser.currentActivity) {
+            console.log('[Collaboration] Preserving local activity for', serverUser.userId, ':', localUser.currentActivity);
+            return localUser;
+          }
+          return serverUser;
+        });
+      });
     }
     // Handle regular presence updates
     else if (payload.users && Array.isArray(payload.users)) {
