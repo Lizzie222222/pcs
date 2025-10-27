@@ -126,11 +126,7 @@ i18n.on('languageChanged', async (lng) => {
         i18n.addResourceBundle(lng, namespace, resources, true, true);
       });
       
-      // Defer language change to next tick to ensure resources are fully loaded
-      // This triggers re-render of all components including Trans
-      setTimeout(() => {
-        i18n.changeLanguage(lng);
-      }, 0);
+      // Resources are now loaded - React components will re-render automatically
     } catch (error) {
       console.warn(`Failed to load ${lng} translations:`, error);
       // Fallback to English if language fails to load

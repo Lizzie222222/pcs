@@ -213,7 +213,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {country === 'United Kingdom' 
+                    {watchCountry === 'United Kingdom' 
                       ? t('forms:school_registration.postcode_label')
                       : t('forms:school_registration.postal_code_label')
                     }
@@ -221,7 +221,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
                   <FormControl>
                     <Input
                       placeholder={
-                        country === 'United Kingdom'
+                        watchCountry === 'United Kingdom'
                           ? t('forms:school_registration.postcode_placeholder')
                           : t('forms:school_registration.postal_code_placeholder')
                       }
@@ -240,7 +240,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>
-                    {country === 'United States' 
+                    {watchCountry === 'United States' 
                       ? t('forms:school_registration.zipcode_label')
                       : t('forms:school_registration.postal_code_label')
                     }
@@ -248,7 +248,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
                   <FormControl>
                     <Input
                       placeholder={
-                        country === 'United States'
+                        watchCountry === 'United States'
                           ? t('forms:school_registration.zipcode_placeholder')
                           : t('forms:school_registration.postal_code_placeholder')
                       }
