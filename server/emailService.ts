@@ -119,6 +119,80 @@ export async function sendWelcomeEmail(userEmail: string, schoolName: string): P
   });
 }
 
+export async function sendMigratedUserWelcomeEmail(
+  userEmail: string,
+  tempPassword: string,
+  schoolName: string,
+  firstName?: string
+): Promise<boolean> {
+  const loginUrl = `${getBaseUrl()}/login`;
+  
+  return await sendEmail({
+    to: userEmail,
+    from: getFromAddress(),
+    subject: 'Welcome Back to Plastic Clever Schools!',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <div style="background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
+          <h1 style="color: white; margin: 0;">Welcome Back${firstName ? `, ${firstName}` : ''}!</h1>
+        </div>
+        
+        <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px;">
+          <p style="font-size: 16px; color: #374151; line-height: 1.6;">
+            We're excited to let you know that we've migrated your account from our old Plastic Clever Schools platform to our new and improved system!
+          </p>
+          
+          <div style="background: white; border-left: 4px solid #02BBB4; padding: 20px; margin: 20px 0; border-radius: 4px;">
+            <h2 style="color: #1f2937; margin-top: 0;">Your Login Details</h2>
+            <p style="color: #4b5563; margin: 10px 0;"><strong>School:</strong> ${schoolName}</p>
+            <p style="color: #4b5563; margin: 10px 0;"><strong>Email:</strong> ${userEmail}</p>
+            <p style="color: #4b5563; margin: 10px 0;"><strong>Temporary Password:</strong> <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 14px;">${tempPassword}</code></p>
+          </div>
+          
+          <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 15px; border-radius: 4px; margin: 20px 0;">
+            <p style="color: #92400e; margin: 0; font-size: 14px;">
+              <strong>⚠️ Important:</strong> This is a temporary password. You'll be asked to create a new password when you first log in.
+            </p>
+          </div>
+          
+          <h3 style="color: #1f2937;">What's Been Migrated?</h3>
+          <ul style="color: #4b5563; line-height: 1.8;">
+            <li>Your school information and details</li>
+            <li>Your program progress (Learn, Plan, Act stages)</li>
+            <li>Your team members and school associations</li>
+          </ul>
+          
+          <h3 style="color: #1f2937;">Next Steps:</h3>
+          <ol style="color: #4b5563; line-height: 1.8;">
+            <li>Click the button below to log in</li>
+            <li>Create a new secure password</li>
+            <li>Confirm your name and details</li>
+            <li>Start exploring the new platform!</li>
+          </ol>
+          
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${loginUrl}" style="background: #02BBB4; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">
+              Log In Now
+            </a>
+          </div>
+          
+          <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin-top: 30px;">
+            If you have any questions or need assistance, please don't hesitate to contact us at 
+            <a href="mailto:admin@plasticcleverschools.org" style="color: #02BBB4;">admin@plasticcleverschools.org</a>
+          </p>
+          
+          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+          
+          <p style="color: #9ca3af; font-size: 12px; text-align: center;">
+            This email was sent to you because your account was migrated to our new platform.<br>
+            Plastic Clever Schools | Making Education Plastic Clever
+          </p>
+        </div>
+      </div>
+    `,
+  });
+}
+
 export async function sendEvidenceApprovalEmail(
   userEmail: string, 
   schoolName: string, 

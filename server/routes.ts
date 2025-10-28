@@ -6323,6 +6323,87 @@ Return JSON with:
     }
   });
 
+  // Send welcome emails to migrated users with temporary passwords
+  app.post('/api/admin/send-migrated-user-emails', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const users = await storage.getAllUsers();
+      const migratedUsers = users.filter(user => user.isMigrated && user.needsPasswordReset);
+
+      if (migratedUsers.length === 0) {
+        return res.status(400).json({ message: "No migrated users awaiting welcome emails" });
+      }
+
+      let sent = 0;
+      let failed = 0;
+      const results: { email: string; status: 'sent' | 'failed'; error?: string }[] = [];
+
+      for (const user of migratedUsers) {
+        try {
+          if (!user.email) {
+            results.push({ email: 'unknown', status: 'failed', error: 'No email address' });
+            failed++;
+            continue;
+          }
+
+          // Generate temporary password (8 chars: uppercase, lowercase, numbers)
+          const tempPassword = randomBytes(6).toString('base64').slice(0, 8);
+          
+          // Hash and store the temporary password
+          const passwordHash = await storage.hashPassword(tempPassword);
+          await db
+            .update(users)
+            .set({ passwordHash, updatedAt: new Date() })
+            .where(eq(users.id, user.id));
+
+          // Get school name for the email
+          const userSchools = await storage.getUserSchools(user.id);
+          const schoolName = userSchools.length > 0 ? userSchools[0].name : 'your school';
+
+          // Import the email function
+          const { sendMigratedUserWelcomeEmail } = await import('./emailService');
+          
+          // Send welcome email with temporary password
+          const emailSent = await sendMigratedUserWelcomeEmail(
+            user.email,
+            tempPassword,
+            schoolName,
+            user.firstName || undefined
+          );
+
+          if (emailSent) {
+            results.push({ email: user.email, status: 'sent' });
+            sent++;
+            console.log(`[Migrated Users] Sent welcome email to ${user.email}`);
+          } else {
+            results.push({ email: user.email, status: 'failed', error: 'Email service failed' });
+            failed++;
+          }
+        } catch (error: any) {
+          console.error(`[Migrated Users] Failed to send email to ${user.email}:`, error);
+          results.push({ 
+            email: user.email || 'unknown', 
+            status: 'failed', 
+            error: error.message 
+          });
+          failed++;
+        }
+      }
+
+      res.json({
+        message: "Migrated user welcome emails processed",
+        results: {
+          totalMigratedUsers: migratedUsers.length,
+          sent,
+          failed,
+          details: results,
+        },
+      });
+    } catch (error) {
+      console.error("[Migrated Users] Error sending welcome emails:", error);
+      res.status(500).json({ message: "Failed to send migrated user welcome emails" });
+    }
+  });
+
   // Mailchimp integration routes (DEPRECATED - Keeping for backwards compatibility)
   // Event announcements now use SendGrid instead of Mailchimp
   
