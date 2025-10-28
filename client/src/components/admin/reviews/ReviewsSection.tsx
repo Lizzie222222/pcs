@@ -308,6 +308,50 @@ export default function ReviewsSection({
     },
   });
 
+  // Individual evidence delete mutation
+  const deleteEvidenceMutation = useMutation({
+    mutationFn: async (evidenceId: string) => {
+      await apiRequest('DELETE', `/api/admin/evidence/${evidenceId}`);
+    },
+    onMutate: async (evidenceId) => {
+      // Cancel outgoing refetches to avoid race conditions
+      await queryClient.cancelQueries({ queryKey: ['/api/admin/evidence'] });
+      
+      // Snapshot the previous value for rollback
+      const previousEvidence = queryClient.getQueryData<PendingEvidence[]>(['/api/admin/evidence', evidenceStatusFilter]);
+      
+      // Optimistically update cache - remove deleted evidence from list
+      queryClient.setQueryData<PendingEvidence[]>(['/api/admin/evidence', evidenceStatusFilter], (old = []) => {
+        return old.filter(e => e.id !== evidenceId);
+      });
+      
+      // Return context with snapshot for potential rollback
+      return { previousEvidence };
+    },
+    onSuccess: () => {
+      toast({
+        title: t('reviews.toasts.success'),
+        description: t('reviews.toasts.evidenceDeleted'),
+      });
+    },
+    onError: (error: any, evidenceId, context) => {
+      // Rollback on error
+      if (context?.previousEvidence) {
+        queryClient.setQueryData(['/api/admin/evidence', evidenceStatusFilter], context.previousEvidence);
+      }
+      toast({
+        title: t('reviews.toasts.deleteFailed'),
+        description: error.message || t('reviews.toasts.evidenceDeleteFailed'),
+        variant: "destructive",
+      });
+    },
+    onSettled: () => {
+      // Refetch to ensure consistency (surgical invalidation)
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
+    },
+  });
+
   return (
     <div className="space-y-4">
       {/* Sub-tabs for Evidence, Audits, and Photo Consent */}
@@ -330,6 +374,7 @@ export default function ReviewsSection({
           reviewEvidenceMutation={reviewEvidenceMutation}
           bulkEvidenceReviewMutation={bulkEvidenceReviewMutation}
           bulkEvidenceDeleteMutation={bulkEvidenceDeleteMutation}
+          deleteEvidenceMutation={deleteEvidenceMutation}
           bulkEvidenceDialogOpen={bulkEvidenceDialogOpen}
           setBulkEvidenceDialogOpen={setBulkEvidenceDialogOpen}
           bulkAction={bulkAction}
