@@ -126,69 +126,189 @@ export async function sendMigratedUserWelcomeEmail(
   firstName?: string
 ): Promise<boolean> {
   const loginUrl = `${getBaseUrl()}/login`;
+  const logoBase64 = `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`;
   
   return await sendEmail({
     to: userEmail,
     from: getFromAddress(),
-    subject: 'Welcome Back to Plastic Clever Schools!',
+    subject: '🎉 You\'re Invited to the NEW Plastic Clever Schools!',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-        <div style="background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%); padding: 30px; text-align: center; border-radius: 8px 8px 0 0;">
-          <h1 style="color: white; margin: 0;">Welcome Back${firstName ? `, ${firstName}` : ''}!</h1>
-        </div>
-        
-        <div style="background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px;">
-          <p style="font-size: 16px; color: #374151; line-height: 1.6;">
-            We're excited to let you know that we've migrated your account from our old Plastic Clever Schools platform to our new and improved system!
-          </p>
-          
-          <div style="background: white; border-left: 4px solid #02BBB4; padding: 20px; margin: 20px 0; border-radius: 4px;">
-            <h2 style="color: #1f2937; margin-top: 0;">Your Login Details</h2>
-            <p style="color: #4b5563; margin: 10px 0;"><strong>School:</strong> ${schoolName}</p>
-            <p style="color: #4b5563; margin: 10px 0;"><strong>Email:</strong> ${userEmail}</p>
-            <p style="color: #4b5563; margin: 10px 0;"><strong>Temporary Password:</strong> <code style="background: #f3f4f6; padding: 4px 8px; border-radius: 4px; font-size: 14px;">${tempPassword}</code></p>
-          </div>
-          
-          <div style="background: #fef3c7; border: 1px solid #fbbf24; padding: 15px; border-radius: 4px; margin: 20px 0;">
-            <p style="color: #92400e; margin: 0; font-size: 14px;">
-              <strong>⚠️ Important:</strong> This is a temporary password. You'll be asked to create a new password when you first log in.
-            </p>
-          </div>
-          
-          <h3 style="color: #1f2937;">What's Been Migrated?</h3>
-          <ul style="color: #4b5563; line-height: 1.8;">
-            <li>Your school information and details</li>
-            <li>Your program progress (Learn, Plan, Act stages)</li>
-            <li>Your team members and school associations</li>
-          </ul>
-          
-          <h3 style="color: #1f2937;">Next Steps:</h3>
-          <ol style="color: #4b5563; line-height: 1.8;">
-            <li>Click the button below to log in</li>
-            <li>Create a new secure password</li>
-            <li>Confirm your name and details</li>
-            <li>Start exploring the new platform!</li>
-          </ol>
-          
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="${loginUrl}" style="background: #02BBB4; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold; font-size: 16px;">
-              Log In Now
-            </a>
-          </div>
-          
-          <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin-top: 30px;">
-            If you have any questions or need assistance, please don't hesitate to contact us at 
-            <a href="mailto:admin@plasticcleverschools.org" style="color: #02BBB4;">admin@plasticcleverschools.org</a>
-          </p>
-          
-          <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
-          
-          <p style="color: #9ca3af; font-size: 12px; text-align: center;">
-            This email was sent to you because your account was migrated to our new platform.<br>
-            Plastic Clever Schools | Making Education Plastic Clever
-          </p>
-        </div>
-      </div>
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome to Plastic Clever Schools</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);">
+        <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);">
+          <tr>
+            <td style="padding: 40px 20px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 40px rgba(2, 187, 180, 0.3); overflow: hidden;">
+                
+                <!-- Logo Section -->
+                <tr>
+                  <td style="padding: 40px 30px 20px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
+                    <img src="data:image/png;base64,${logoBase64}" alt="Plastic Clever Schools" style="max-width: 300px; width: 100%; height: auto; display: block; margin: 0 auto;" />
+                  </td>
+                </tr>
+                
+                <!-- Exciting Header -->
+                <tr>
+                  <td style="padding: 30px 30px 20px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                      🎉 You're Invited${firstName ? `, ${firstName}` : ''}! 🎉
+                    </h1>
+                    <p style="margin: 15px 0 0; color: #e0f7fa; font-size: 18px; font-weight: 500;">
+                      Welcome to our brand NEW platform!
+                    </p>
+                  </td>
+                </tr>
+                
+                <!-- Body Content -->
+                <tr>
+                  <td style="padding: 40px 30px;">
+                    
+                    <!-- Exciting intro -->
+                    <div style="text-align: center; margin-bottom: 30px;">
+                      <p style="font-size: 20px; color: #0B3D5D; font-weight: 600; margin: 0 0 15px 0; line-height: 1.4;">
+                        ✨ Something Amazing is Waiting for You! ✨
+                      </p>
+                      <p style="font-size: 16px; color: #333333; margin: 0; line-height: 1.6;">
+                        We're absolutely thrilled to welcome you to the <strong>all-new Plastic Clever Schools platform</strong>! 🌊 Your ${schoolName} account has been upgraded to our exciting new system, packed with incredible features and improvements!
+                      </p>
+                    </div>
+                    
+                    <!-- What's New Highlights -->
+                    <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 50%, #80deea 100%); padding: 25px; border-radius: 12px; margin: 25px 0;">
+                      <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 22px; font-weight: 700; text-align: center;">
+                        🚀 What's New & Exciting?
+                      </h2>
+                      <ul style="color: #1f2937; line-height: 2; margin: 0; padding-left: 25px; font-size: 15px;">
+                        <li><strong>Modern, intuitive design</strong> - easier than ever to navigate!</li>
+                        <li><strong>Enhanced dashboard</strong> - see your impact at a glance</li>
+                        <li><strong>Powerful new tools</strong> - track your plastic-free journey</li>
+                        <li><strong>Faster performance</strong> - lightning-quick responses</li>
+                        <li><strong>Mobile-friendly</strong> - access anywhere, anytime!</li>
+                      </ul>
+                    </div>
+                    
+                    <!-- Your Login Details -->
+                    <div style="background: #ffffff; border: 3px solid #02BBB4; padding: 25px; margin: 25px 0; border-radius: 12px; box-shadow: 0 4px 12px rgba(2, 187, 180, 0.15);">
+                      <h2 style="color: #02BBB4; margin: 0 0 20px 0; font-size: 20px; font-weight: 700; text-align: center;">
+                        🔑 Your Exclusive Access Details
+                      </h2>
+                      <table style="width: 100%; border-spacing: 0;">
+                        <tr>
+                          <td style="padding: 8px 0; color: #4b5563; font-weight: 600;">🏫 School:</td>
+                          <td style="padding: 8px 0; color: #1f2937; font-weight: 500;">${schoolName}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #4b5563; font-weight: 600;">📧 Email:</td>
+                          <td style="padding: 8px 0; color: #1f2937; font-weight: 500;">${userEmail}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; color: #4b5563; font-weight: 600; vertical-align: top;">🔐 Temp Password:</td>
+                          <td style="padding: 8px 0;">
+                            <code style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 8px 12px; border-radius: 6px; font-size: 15px; font-weight: 600; color: #92400e; display: inline-block; border: 2px solid #fbbf24;">${tempPassword}</code>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                    
+                    <!-- Important Notice -->
+                    <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                      <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.6;">
+                        <strong>⚠️ Important:</strong> This is a <strong>temporary password</strong> for your first login. You'll create your own secure password right after logging in - keeping your account safe and sound! 🛡️
+                      </p>
+                    </div>
+                    
+                    <!-- What We've Brought Over -->
+                    <div style="margin: 30px 0;">
+                      <h3 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 18px; font-weight: 700;">
+                        📦 Everything You Love, All Here!
+                      </h3>
+                      <p style="color: #4b5563; margin: 0 0 10px 0; font-size: 15px;">We've carefully migrated all your valuable data:</p>
+                      <ul style="color: #4b5563; line-height: 1.8; margin: 5px 0; padding-left: 25px; font-size: 15px;">
+                        <li>✅ Your school information and details</li>
+                        <li>✅ Your program progress (Learn, Plan, Act stages)</li>
+                        <li>✅ Your team members and school associations</li>
+                        <li>✅ All your achievements and milestones</li>
+                      </ul>
+                    </div>
+                    
+                    <!-- Quick Start Guide -->
+                    <div style="background: #f9fafb; padding: 25px; border-radius: 12px; margin: 30px 0; border: 2px solid #e5e7eb;">
+                      <h3 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 18px; font-weight: 700;">
+                        🎯 Your Quick Start Guide
+                      </h3>
+                      <ol style="color: #4b5563; line-height: 2; margin: 0; padding-left: 25px; font-size: 15px;">
+                        <li><strong>Click the magic button below</strong> to access your new dashboard</li>
+                        <li><strong>Use your temporary password</strong> to log in</li>
+                        <li><strong>Create your new password</strong> - make it memorable!</li>
+                        <li><strong>Update your profile</strong> - add a photo, confirm your details</li>
+                        <li><strong>Explore the new features</strong> - discover what's possible!</li>
+                        <li><strong>Start making an impact</strong> - continue your plastic-free journey! 🌍</li>
+                      </ol>
+                    </div>
+                    
+                    <!-- CTA Button -->
+                    <div style="text-align: center; margin: 40px 0;">
+                      <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                        <tr>
+                          <td style="border-radius: 50px; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%); box-shadow: 0 8px 20px rgba(2, 187, 180, 0.4);">
+                            <a href="${loginUrl}" style="display: inline-block; padding: 18px 50px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px;">
+                              🚀 Launch My New Dashboard!
+                            </a>
+                          </td>
+                        </tr>
+                      </table>
+                      <p style="color: #6b7280; font-size: 13px; margin: 15px 0 0 0; font-style: italic;">
+                        Your plastic-free adventure awaits!
+                      </p>
+                    </div>
+                    
+                    <!-- Excitement Footer -->
+                    <div style="text-align: center; margin: 30px 0 20px;">
+                      <p style="color: #02BBB4; font-size: 16px; font-weight: 600; margin: 0;">
+                        We can't wait to see what you'll achieve! 🌟
+                      </p>
+                    </div>
+                    
+                    <!-- Support -->
+                    <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0; text-align: center;">
+                        <strong>Need help getting started?</strong><br>
+                        Our friendly team is here for you! Reach out anytime at<br>
+                        <a href="mailto:admin@plasticcleverschools.org" style="color: #02BBB4; font-weight: 600; text-decoration: none;">admin@plasticcleverschools.org</a>
+                      </p>
+                    </div>
+                    
+                  </td>
+                </tr>
+                
+                <!-- Footer -->
+                <tr>
+                  <td style="padding: 30px; background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%); text-align: center; border-top: 3px solid #02BBB4;">
+                    <p style="margin: 0 0 10px 0; color: #4b5563; font-size: 14px; font-weight: 600;">
+                      🌊 Plastic Clever Schools 🌊
+                    </p>
+                    <p style="margin: 0 0 5px 0; color: #6b7280; font-size: 13px; line-height: 1.5;">
+                      Together, we're creating a plastic-free future
+                    </p>
+                    <p style="margin: 5px 0 0 0; color: #9ca3af; font-size: 11px; line-height: 1.4;">
+                      This email was sent because your account was upgraded to our new platform.<br>
+                      © ${new Date().getFullYear()} Plastic Clever Schools. Making Education Plastic Clever.
+                    </p>
+                  </td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+      </html>
     `,
   });
 }

@@ -5766,7 +5766,7 @@ Return JSON with:
         country: country as string,
         stage: stage as string,
         type: type as string,
-        limit: limit ? parseInt(limit as string) : 50,
+        limit: limit ? parseInt(limit as string) : 10000,
         offset: offset ? parseInt(offset as string) : 0,
       });
       res.json(schools);
@@ -6320,6 +6320,52 @@ Return JSON with:
     } catch (error) {
       console.error("Error sending bulk email:", error);
       res.status(500).json({ message: "Failed to send bulk email" });
+    }
+  });
+
+  // Send test welcome email to preview the template (NO DATABASE CHANGES)
+  app.post('/api/admin/send-test-migrated-email', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { testEmail } = req.body;
+
+      if (!testEmail) {
+        return res.status(400).json({ message: "Test email address is required" });
+      }
+
+      // IMPORTANT: This is a PREVIEW ONLY - use example data, DO NOT modify database
+      const tempPassword = "Demo1234";  // Example password for preview
+      const schoolName = "Example School"; // Example school name
+      const firstName = "Sam";  // Example first name
+
+      // Import the email function
+      const { sendMigratedUserWelcomeEmail } = await import('./emailService');
+      
+      // Send test email with example data ONLY - no database writes
+      const emailSent = await sendMigratedUserWelcomeEmail(
+        testEmail,
+        tempPassword,
+        schoolName,
+        firstName
+      );
+
+      if (emailSent) {
+        console.log(`[Test Email] Sent welcome email preview to ${testEmail} (no user data modified)`);
+        res.json({ 
+          message: "Test email sent successfully",
+          note: "This was a preview with example data. No user passwords were modified.",
+          details: {
+            recipient: testEmail,
+            exampleSchoolName: schoolName,
+            exampleFirstName: firstName,
+            examplePassword: tempPassword
+          }
+        });
+      } else {
+        res.status(500).json({ message: "Failed to send test email" });
+      }
+    } catch (error: any) {
+      console.error("[Test Email] Error sending test email:", error);
+      res.status(500).json({ message: error.message || "Failed to send test email" });
     }
   });
 

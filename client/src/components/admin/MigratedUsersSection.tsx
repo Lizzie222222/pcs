@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 import {
   Dialog,
   DialogContent,
@@ -14,7 +15,7 @@ import {
   DialogDescription,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { Mail, Users, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
+import { Mail, Users, CheckCircle2, AlertCircle, Loader2, Send } from "lucide-react";
 
 interface User {
   id: string;
@@ -29,12 +30,34 @@ export default function MigratedUsersSection() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
+  const [testEmail, setTestEmail] = useState("");
 
   const { data: users = [], isLoading } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
     select: (data: any[]) => {
       // Extract users from the usersWithSchools structure
       return data.map(item => item.user).filter((user: User) => user.isMigrated && user.needsPasswordReset);
+    },
+  });
+
+  const sendTestEmailMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const response = await apiRequest('POST', '/api/admin/send-test-migrated-email', { testEmail: email });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Test Email Sent",
+        description: `Check your inbox at ${testEmail} to preview the welcome email.`,
+      });
+      setTestEmail("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Send Test Email",
+        description: error.message || "An error occurred while sending the test email.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -126,7 +149,46 @@ export default function MigratedUsersSection() {
             </ul>
           </div>
 
-          <div className="flex items-center justify-between pt-2">
+          <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 space-y-3 border border-green-200">
+            <h4 className="font-medium text-gray-900 flex items-center gap-2">
+              <Send className="h-4 w-4 text-green-600" />
+              Test Email First
+            </h4>
+            <p className="text-sm text-gray-600">
+              Send a test email to yourself to preview how the welcome email looks before sending to all users.
+            </p>
+            <div className="flex gap-2">
+              <Input
+                type="email"
+                placeholder="your.email@example.com"
+                value={testEmail}
+                onChange={(e) => setTestEmail(e.target.value)}
+                className="flex-1"
+                data-testid="input-test-email"
+              />
+              <Button
+                onClick={() => sendTestEmailMutation.mutate(testEmail)}
+                disabled={!testEmail || sendTestEmailMutation.isPending}
+                variant="outline"
+                className="border-green-300 hover:bg-green-50"
+                data-testid="button-send-test-email"
+              >
+                {sendTestEmailMutation.isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Sending...
+                  </>
+                ) : (
+                  <>
+                    <Send className="mr-2 h-4 w-4" />
+                    Send Test
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+
+          <div className="flex items-center justify-between pt-2 border-t border-gray-200 mt-4 pt-4">
             <p className="text-sm text-gray-600">
               Ready to send welcome emails to all {users.length} migrated {users.length === 1 ? 'user' : 'users'}?
             </p>
