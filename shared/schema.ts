@@ -1483,7 +1483,7 @@ export const insertEvidenceSchema = createInsertSchema(evidence).omit({
 });
 
 // Case Study JSONB schemas for rich content
-// Helper to validate URLs or object storage paths
+// Helper to validate URLs or object storage paths (required)
 const urlOrStoragePath = z.string().refine(
   (val) => {
     if (!val || val.trim() === '') return false;
@@ -1498,6 +1498,31 @@ const urlOrStoragePath = z.string().refine(
     }
   },
   { message: "Must be a valid URL or object storage path" }
+);
+
+// Helper for optional URL/path fields that converts empty strings to undefined
+const optionalUrlOrStoragePath = z.string().optional().transform((val) => {
+  // Convert empty strings to undefined
+  if (!val || val.trim() === '') return undefined;
+  return val;
+}).pipe(
+  z.union([
+    z.undefined(),
+    z.string().refine(
+      (val) => {
+        // Allow object storage paths starting with /objects/
+        if (val.startsWith('/objects/')) return true;
+        // Allow valid http/https URLs
+        try {
+          const url = new URL(val);
+          return url.protocol === 'http:' || url.protocol === 'https:';
+        } catch {
+          return false;
+        }
+      },
+      { message: "Must be a valid URL or object storage path" }
+    )
+  ])
 );
 
 export const caseStudyImageSchema = z.object({
@@ -1517,7 +1542,7 @@ export const studentQuoteSchema = z.object({
   name: z.string(),
   role: z.string().optional(),
   text: z.string(),
-  photo: urlOrStoragePath.optional(),
+  photo: optionalUrlOrStoragePath,
   age: z.number().optional(),
 });
 
@@ -1531,7 +1556,7 @@ export const impactMetricSchema = z.object({
 export const timelineSectionSchema = z.object({
   title: z.string(),
   content: z.string(),
-  imageUrl: urlOrStoragePath.optional(),
+  imageUrl: optionalUrlOrStoragePath,
   order: z.number(),
 });
 

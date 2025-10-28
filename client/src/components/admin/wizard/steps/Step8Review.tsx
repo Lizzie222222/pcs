@@ -603,20 +603,20 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-2">Student Quotes:</p>
                     <div className="space-y-2">
-                      {formValues.studentQuotes?.slice(0, 2).map((quote: any, idx: number) => (
+                      {formValues.studentQuotes?.filter((quote: any) => quote.text && quote.name).slice(0, 2).map((quote: any, idx: number) => (
                         <div 
                           key={idx} 
                           className="p-3 bg-muted/50 rounded-lg text-sm"
                           data-testid={`preview-quote-${idx}`}
                         >
-                          <p className="italic line-clamp-2">"{quote.quote}"</p>
-                          <p className="text-xs text-muted-foreground mt-1">— {quote.studentName || "Anonymous"}</p>
+                          <p className="italic line-clamp-2">"{quote.text}"</p>
+                          <p className="text-xs text-muted-foreground mt-1">— {quote.name}</p>
                         </div>
                       ))}
                     </div>
-                    {(formValues.studentQuotes?.length || 0) > 2 && (
+                    {(formValues.studentQuotes?.filter((quote: any) => quote.text && quote.name).length || 0) > 2 && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        + {formValues.studentQuotes.length - 2} more quote(s)
+                        + {formValues.studentQuotes.filter((quote: any) => quote.text && quote.name).length - 2} more quote(s)
                       </p>
                     )}
                   </div>
