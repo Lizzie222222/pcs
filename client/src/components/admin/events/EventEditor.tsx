@@ -265,7 +265,7 @@ export default function EventEditor({
         collaboration.stopViewing(editingEvent.id, 'event');
       }
     };
-  }, [editingEvent?.id, isOpen, collaboration.connectionState, collaboration]);
+  }, [editingEvent?.id, isOpen, collaboration.connectionState]);
 
   // Monitor lock status changes
   useEffect(() => {
@@ -273,13 +273,14 @@ export default function EventEditor({
       const lock = collaboration.getDocumentLock(editingEvent.id, 'event');
       if (lock) {
         setDocumentLock(lock);
-        setIsLocked(true);
+        // Only set isLocked if the lock belongs to someone else
+        setIsLocked(lock.lockedBy !== user?.id);
       } else {
         setDocumentLock(null);
         setIsLocked(false);
       }
     }
-  }, [editingEvent?.id, collaboration.documentLocks]);
+  }, [editingEvent?.id, collaboration.documentLocks, user?.id]);
 
   // Initialize form when editing event
   useEffect(() => {

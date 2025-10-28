@@ -596,7 +596,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         collaboration.stopViewing(caseStudy.id, 'case_study');
       }
     };
-  }, [caseStudy?.id, collaboration.connectionState, collaboration]);
+  }, [caseStudy?.id, collaboration.connectionState]);
 
   // Monitor lock status changes
   useEffect(() => {
@@ -604,13 +604,14 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
       const lock = collaboration.getDocumentLock(caseStudy.id, 'case_study');
       if (lock) {
         setDocumentLock(lock);
-        setIsLocked(true);
+        // Only set isLocked if the lock belongs to someone else
+        setIsLocked(lock.lockedBy !== user?.id);
       } else {
         setDocumentLock(null);
         setIsLocked(false);
       }
     }
-  }, [caseStudy?.id, collaboration.documentLocks]);
+  }, [caseStudy?.id, collaboration.documentLocks, user?.id]);
 
   // Apply wizard-sidebar-visible class to body to prevent scrolling
   useEffect(() => {
