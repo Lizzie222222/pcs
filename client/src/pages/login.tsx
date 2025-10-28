@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { LoadingSpinner } from "@/components/ui/states";
+import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
 import { Mail, Globe, Shield, ArrowRight, School, Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { createLoginSchema, type LoginForm } from "@shared/schema";
@@ -132,7 +132,7 @@ export default function Login() {
                 >
                   <span className="inline-flex items-center justify-center gap-2">
                     {isLoggingIn ? (
-                      <LoadingSpinner size="sm" />
+                      <ButtonSpinner size="sm" />
                     ) : (
                       <Mail className="h-5 w-5" />
                     )}

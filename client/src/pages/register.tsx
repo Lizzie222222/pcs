@@ -9,6 +9,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/ui/states";
+import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
 import { Mail, Globe, Shield, ArrowRight, School, User, LogOut, Eye, EyeOff, UserPlus, X, Users } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { createRegisterSchema, type RegisterForm } from "@shared/schema";
@@ -334,7 +335,7 @@ export default function Register() {
                         >
                           <span className="inline-flex items-center justify-center gap-2">
                             {isRegistering ? (
-                              <LoadingSpinner size="sm" />
+                              <ButtonSpinner size="sm" />
                             ) : (
                               <UserPlus className="h-5 w-5" />
                             )}

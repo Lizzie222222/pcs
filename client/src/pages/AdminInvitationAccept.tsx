@@ -14,6 +14,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/ui/states";
+import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
 import { 
   CheckCircle, 
   XCircle, 
@@ -603,7 +604,7 @@ export default function AdminInvitationAccept() {
                       >
                         {registrationMutation.isPending ? (
                           <>
-                            <LoadingSpinner size="sm" className="mr-2" />
+                            <ButtonSpinner size="sm" className="mr-2" />
                             Creating account...
                           </>
                         ) : (
@@ -700,7 +701,7 @@ export default function AdminInvitationAccept() {
                       >
                         {loginMutation.isPending ? (
                           <>
-                            <LoadingSpinner size="sm" className="mr-2" />
+                            <ButtonSpinner size="sm" className="mr-2" />
                             Signing in...
                           </>
                         ) : (
@@ -862,7 +863,7 @@ export default function AdminInvitationAccept() {
                   >
                     {profileMutation.isPending ? (
                       <>
-                        <LoadingSpinner size="sm" className="mr-2" />
+                        <ButtonSpinner size="sm" className="mr-2" />
                         Updating Profile...
                       </>
                     ) : (
@@ -892,7 +893,7 @@ export default function AdminInvitationAccept() {
               >
                 {acceptMutation.isPending ? (
                   <>
-                    <LoadingSpinner size="sm" className="mr-2" />
+                    <ButtonSpinner size="sm" className="mr-2" />
                     Accepting...
                   </>
                 ) : (

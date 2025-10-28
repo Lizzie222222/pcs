@@ -29,6 +29,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { LoadingSpinner, ErrorState, EmptyState } from "@/components/ui/states";
+import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
 import { 
   Users, 
   UserPlus, 
@@ -570,7 +571,7 @@ export default function TeamManagement() {
                   >
                     {inviteTeacherMutation.isPending ? (
                       <>
-                        <LoadingSpinner size="sm" className="mr-2" />
+                        <ButtonSpinner size="sm" className="mr-2" />
                         Sending...
                       </>
                     ) : (

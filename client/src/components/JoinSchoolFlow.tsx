@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
+import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
 import { Search, School, Users, ArrowRight, ArrowLeft, X, MapPin, GraduationCap } from "lucide-react";
 import type { School as SchoolType } from "@shared/schema";
 
@@ -240,7 +241,7 @@ export default function JoinSchoolFlow({ onClose, inline = false }: JoinSchoolFl
         >
           {submitRequestMutation.isPending ? (
             <>
-              <LoadingSpinner size="sm" className="mr-2" />
+              <ButtonSpinner size="sm" className="mr-2" />
               {t('common:submitting')}
             </>
           ) : (

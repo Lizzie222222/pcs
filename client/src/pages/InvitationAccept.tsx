@@ -13,6 +13,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { LoadingSpinner } from "@/components/ui/states";
+import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
 import { 
   CheckCircle, 
   XCircle, 
@@ -470,7 +471,7 @@ export default function InvitationAccept() {
                     >
                       {registrationMutation.isPending ? (
                         <>
-                          <LoadingSpinner size="sm" className="mr-2" />
+                          <ButtonSpinner size="sm" className="mr-2" />
                           Creating account...
                         </>
                       ) : (

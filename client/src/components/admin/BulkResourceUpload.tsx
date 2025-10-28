@@ -11,6 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { LoadingSpinner } from "@/components/ui/states";
+import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
 import { Upload, X, FileText, CheckCircle2, XCircle, Edit2, Save, Sparkles, Loader2, Languages } from "lucide-react";
 import { LANGUAGE_FLAG_MAP, LANGUAGE_NAME_MAP } from "@/lib/languageUtils";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -606,7 +607,7 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                       >
                         {isUploading ? (
                           <>
-                            <LoadingSpinner message="" />
+                            <ButtonSpinner message="" />
                             Uploading...
                           </>
                         ) : (

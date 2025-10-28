@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight, Save, Eye } from "lucide-react";
-import { LoadingSpinner } from "@/components/ui/states";
+import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
 
 interface WizardNavigationProps {
   currentStep: number;
@@ -56,7 +56,7 @@ export function WizardNavigation({
             data-testid="button-save-draft"
           >
             {isSaving ? (
-              <LoadingSpinner className="h-4 w-4 mr-2" />
+              <ButtonSpinner className="h-4 w-4 mr-2" />
             ) : (
               <Save className="h-4 w-4 mr-2" />
             )}
@@ -74,7 +74,7 @@ export function WizardNavigation({
               data-testid="button-publish"
             >
               {isSaving ? (
-                <LoadingSpinner className="h-4 w-4 mr-2" />
+                <ButtonSpinner className="h-4 w-4 mr-2" />
               ) : (
                 <Eye className="h-4 w-4 mr-2" />
               )}
