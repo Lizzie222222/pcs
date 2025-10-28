@@ -149,7 +149,7 @@ export async function sendMigratedUserWelcomeEmail(
                 <!-- Logo Section -->
                 <tr>
                   <td style="padding: 40px 30px 20px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
-                    <img src="data:image/png;base64,${logoBase64}" alt="Plastic Clever Schools" style="max-width: 300px; width: 100%; height: auto; display: block; margin: 0 auto;" />
+                    <img src="https://plasticcleverschools.org/wp-content/uploads/2024/01/PCS-Logo-Horizontal-Teal.png" alt="Plastic Clever Schools" style="max-width: 300px; width: 100%; height: auto; display: block; margin: 0 auto;" />
                   </td>
                 </tr>
                 
@@ -180,11 +180,11 @@ export async function sendMigratedUserWelcomeEmail(
                     </div>
                     
                     <!-- What's New Highlights -->
-                    <div style="background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 50%, #80deea 100%); padding: 25px; border-radius: 12px; margin: 25px 0;">
+                    <div style="background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #02BBB4;">
                       <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 22px; font-weight: 700; text-align: center;">
                         🚀 What's New & Exciting?
                       </h2>
-                      <ul style="color: #1f2937; line-height: 2; margin: 0; padding-left: 25px; font-size: 15px;">
+                      <ul style="color: #0B3D5D; line-height: 2; margin: 0; padding-left: 25px; font-size: 15px; font-weight: 500;">
                         <li><strong>Modern, intuitive design</strong> - easier than ever to navigate!</li>
                         <li><strong>Enhanced dashboard</strong> - see your impact at a glance</li>
                         <li><strong>Powerful new tools</strong> - track your plastic-free journey</li>
@@ -280,7 +280,7 @@ export async function sendMigratedUserWelcomeEmail(
                       <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0; text-align: center;">
                         <strong>Need help getting started?</strong><br>
                         Our friendly team is here for you! Reach out anytime at<br>
-                        <a href="mailto:admin@plasticcleverschools.org" style="color: #02BBB4; font-weight: 600; text-decoration: none;">admin@plasticcleverschools.org</a>
+                        <a href="mailto:education@commonseas.com" style="color: #02BBB4; font-weight: 600; text-decoration: none;">education@commonseas.com</a>
                       </p>
                     </div>
                     
