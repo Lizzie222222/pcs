@@ -38,12 +38,12 @@ export default function SchoolsFilters({
       <div className="flex items-center justify-between">
         <CardTitle className="flex items-center gap-2">
           <School className="h-5 w-5" />
-          {t('admin.schools.title')}
+          {t('schools.title')}
         </CardTitle>
         {selectedSchools.length > 0 && (
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-600">
-              {t('admin.schools.filters.selected', { count: selectedSchools.length })}
+              {t('schools.filters.selected', { count: selectedSchools.length })}
             </span>
             <div className="flex gap-2">
               <Button
@@ -53,7 +53,7 @@ export default function SchoolsFilters({
                 data-testid="button-bulk-update-schools"
               >
                 <Edit className="h-4 w-4 mr-1" />
-                {t('admin.schools.buttons.bulkUpdate')}
+                {t('schools.buttons.bulkUpdate')}
               </Button>
               <Button
                 size="sm"
@@ -62,7 +62,7 @@ export default function SchoolsFilters({
                 data-testid="button-bulk-delete-schools"
               >
                 <Trash2 className="h-4 w-4 mr-1" />
-                {t('admin.schools.buttons.deleteSchools')}
+                {t('schools.buttons.deleteSchools')}
               </Button>
             </div>
           </div>
@@ -71,7 +71,7 @@ export default function SchoolsFilters({
           <div className="relative">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
-              placeholder={t('admin.schools.filters.searchPlaceholder')}
+              placeholder={t('schools.filters.searchPlaceholder')}
               value={schoolFilters.search}
               onChange={(e) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, search: e.target.value }))}
               className="pl-10 w-64"
@@ -83,7 +83,7 @@ export default function SchoolsFilters({
             onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, country: value }))}
           >
             <SelectTrigger className="w-48">
-              <SelectValue placeholder={t('admin.schools.filters.allCountries')} />
+              <SelectValue placeholder={t('schools.filters.allCountries')} />
             </SelectTrigger>
             <SelectContent>
               {countryOptions.map((option) => (
@@ -105,7 +105,7 @@ export default function SchoolsFilters({
             data-testid="checkbox-select-all-schools"
           />
           <label className="text-sm text-gray-600">
-            {t('admin.schools.filters.selectAll', { count: schoolsCount })}
+            {t('schools.filters.selectAll', { count: schoolsCount })}
           </label>
         </div>
       )}

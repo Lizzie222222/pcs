@@ -34,7 +34,7 @@ function SchoolTeachersRow({ schoolId, isExpanded }: { schoolId: string; isExpan
           <div className="p-4 border-t">
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue mr-3"></div>
-              <span className="text-gray-600">{t('admin.schools.school_table.teachers.loading')}</span>
+              <span className="text-gray-600">{t('schools.school_table.teachers.loading')}</span>
             </div>
           </div>
         </td>
@@ -48,7 +48,7 @@ function SchoolTeachersRow({ schoolId, isExpanded }: { schoolId: string; isExpan
         <td colSpan={10} className="p-0 bg-gray-50">
           <div className="p-4 border-t">
             <div className="text-center py-8 text-red-600">
-              {t('admin.schools.school_table.teachers.loadingError')}
+              {t('schools.school_table.teachers.loadingError')}
             </div>
           </div>
         </td>
@@ -62,18 +62,18 @@ function SchoolTeachersRow({ schoolId, isExpanded }: { schoolId: string; isExpan
         <div className="p-4 border-t">
           {teachers?.length === 0 ? (
             <div className="text-center py-8 text-gray-500" data-testid={`no-teachers-${schoolId}`}>
-              {t('admin.schools.school_table.teachers.noTeachers')}
+              {t('schools.school_table.teachers.noTeachers')}
             </div>
           ) : (
             <div className="bg-white rounded-lg border overflow-hidden">
               <table className="w-full">
                 <thead>
                   <tr className="bg-gray-100 border-b">
-                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('admin.schools.school_table.teachers.headers.name')}</th>
-                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('admin.schools.school_table.teachers.headers.email')}</th>
-                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('admin.schools.school_table.teachers.headers.role')}</th>
-                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('admin.schools.school_table.teachers.headers.verification')}</th>
-                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('admin.schools.school_table.teachers.headers.joined')}</th>
+                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.name')}</th>
+                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.email')}</th>
+                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.role')}</th>
+                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.verification')}</th>
+                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.joined')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -91,19 +91,19 @@ function SchoolTeachersRow({ schoolId, isExpanded }: { schoolId: string; isExpan
                       </td>
                       <td className="p-3">
                         <Badge variant="outline" className="text-xs" data-testid={`teacher-role-${teacher.userId}`}>
-                          {teacher.role === 'head_teacher' ? t('admin.schools.school_table.teachers.roles.headTeacher') : t('admin.schools.school_table.teachers.roles.teacher')}
+                          {teacher.role === 'head_teacher' ? t('schools.school_table.teachers.roles.headTeacher') : t('schools.school_table.teachers.roles.teacher')}
                         </Badge>
                       </td>
                       <td className="p-3" data-testid={`teacher-verified-${teacher.userId}`}>
                         {teacher.isVerified ? (
                           <Badge className="bg-green-500 text-white text-xs">
                             <CheckCircle className="h-3 w-3 mr-1" />
-                            {t('admin.schools.school_table.teachers.status.verified')}
+                            {t('schools.school_table.teachers.status.verified')}
                           </Badge>
                         ) : (
                           <Badge variant="outline" className="text-xs">
                             <XCircle className="h-3 w-3 mr-1" />
-                            {t('admin.schools.school_table.teachers.status.notVerified')}
+                            {t('schools.school_table.teachers.status.notVerified')}
                           </Badge>
                         )}
                       </td>
@@ -181,15 +181,15 @@ export default function SchoolsTable({
           <thead>
             <tr className="border-b bg-gray-50">
               <th className="text-left p-3 font-semibold text-navy w-12"></th>
-              <th className="text-left p-3 font-semibold text-navy w-12">{t('admin.schools.school_table.headers.select')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('admin.schools.school_table.headers.school_name')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('admin.schools.school_table.headers.country')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('admin.schools.school_table.headers.stage')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('admin.schools.school_table.headers.progress')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('admin.schools.school_table.headers.students')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('admin.schools.school_table.headers.contact')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('admin.schools.school_table.headers.joined')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('admin.schools.school_table.headers.actions')}</th>
+              <th className="text-left p-3 font-semibold text-navy w-12">{t('schools.school_table.headers.select')}</th>
+              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.school_name')}</th>
+              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.country')}</th>
+              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.stage')}</th>
+              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.progress')}</th>
+              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.students')}</th>
+              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.contact')}</th>
+              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.joined')}</th>
+              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -249,7 +249,7 @@ export default function SchoolsTable({
                         onClick={() => toggleSchoolExpansion(school.id)}
                         className="p-1 hover:bg-gray-200 rounded transition-colors"
                         data-testid={`button-expand-${school.id}`}
-                        aria-label={expandedSchools.has(school.id) ? t('admin.schools.school_table.headers.collapse') : t('admin.schools.school_table.headers.expand')}
+                        aria-label={expandedSchools.has(school.id) ? t('schools.school_table.headers.collapse') : t('schools.school_table.headers.expand')}
                       >
                         {expandedSchools.has(school.id) ? (
                           <ChevronUp className="h-4 w-4 text-gray-600" />
@@ -289,7 +289,7 @@ export default function SchoolsTable({
                     </td>
                     <td className="p-3 text-gray-600">{school.studentCount}</td>
                     <td className="p-3 text-gray-600" data-testid={`text-primary-contact-${school.id}`}>
-                      {school.primaryContactEmail || t('admin.schools.school_table.notAvailable')}
+                      {school.primaryContactEmail || t('schools.school_table.notAvailable')}
                     </td>
                     <td className="p-3 text-gray-600">
                       {new Date(school.createdAt).toLocaleDateString()}
@@ -303,7 +303,7 @@ export default function SchoolsTable({
                           data-testid={`button-view-${school.id}`}
                         >
                           <Eye className="h-3 w-3 mr-1" />
-                          {t('admin.schools.buttons.view')}
+                          {t('schools.buttons.view')}
                         </Button>
                         <Button 
                           size="sm" 

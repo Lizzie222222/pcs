@@ -60,8 +60,8 @@ export default function BulkSchoolActions({
     },
     onSuccess: (_, variables) => {
       toast({
-        title: t('admin.schools.toasts.bulkUpdateComplete.title'),
-        description: t('admin.schools.toasts.bulkUpdateComplete.description', { count: variables.schoolIds.length }),
+        title: t('schools.toasts.bulkUpdateComplete.title'),
+        description: t('schools.toasts.bulkUpdateComplete.description', { count: variables.schoolIds.length }),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
@@ -71,8 +71,8 @@ export default function BulkSchoolActions({
     },
     onError: () => {
       toast({
-        title: t('admin.schools.toasts.bulkUpdateFailed.title'),
-        description: t('admin.schools.toasts.bulkUpdateFailed.description'),
+        title: t('schools.toasts.bulkUpdateFailed.title'),
+        description: t('schools.toasts.bulkUpdateFailed.description'),
         variant: "destructive",
       });
     },
@@ -87,8 +87,8 @@ export default function BulkSchoolActions({
     },
     onSuccess: (_, schoolIds) => {
       toast({
-        title: t('admin.schools.toasts.bulkDeleteComplete.title'),
-        description: t('admin.schools.toasts.bulkDeleteComplete.description', { count: schoolIds.length }),
+        title: t('schools.toasts.bulkDeleteComplete.title'),
+        description: t('schools.toasts.bulkDeleteComplete.description', { count: schoolIds.length }),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
@@ -98,8 +98,8 @@ export default function BulkSchoolActions({
     },
     onError: () => {
       toast({
-        title: t('admin.schools.toasts.bulkDeleteFailed.title'),
-        description: t('admin.schools.toasts.bulkDeleteFailed.description'),
+        title: t('schools.toasts.bulkDeleteFailed.title'),
+        description: t('schools.toasts.bulkDeleteFailed.description'),
         variant: "destructive",
       });
     },
@@ -112,10 +112,10 @@ export default function BulkSchoolActions({
     },
     onSuccess: (_, variables) => {
       toast({
-        title: t('admin.schools.toasts.schoolDeleted.title'),
+        title: t('schools.toasts.schoolDeleted.title'),
         description: variables.deleteUsers 
-          ? t('admin.schools.toasts.schoolDeleted.descriptionWithUsers')
-          : t('admin.schools.toasts.schoolDeleted.descriptionWithoutUsers'),
+          ? t('schools.toasts.schoolDeleted.descriptionWithUsers')
+          : t('schools.toasts.schoolDeleted.descriptionWithoutUsers'),
       });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
@@ -127,8 +127,8 @@ export default function BulkSchoolActions({
     },
     onError: (error: any) => {
       toast({
-        title: t('admin.schools.toasts.schoolDeleteFailed.title'),
-        description: error.message || t('admin.schools.toasts.schoolDeleteFailed.description'),
+        title: t('schools.toasts.schoolDeleteFailed.title'),
+        description: error.message || t('schools.toasts.schoolDeleteFailed.description'),
         variant: "destructive",
       });
       setDeletingSchool(null);
@@ -143,21 +143,21 @@ export default function BulkSchoolActions({
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg max-w-md w-full p-6">
             <h3 className="text-lg font-bold text-navy mb-4">
-              {bulkAction.type === 'update' ? t('admin.schools.bulkActions.dialogs.update.title') : t('admin.schools.bulkActions.dialogs.delete.title')}
+              {bulkAction.type === 'update' ? t('schools.bulkActions.dialogs.update.title') : t('schools.bulkActions.dialogs.delete.title')}
             </h3>
             <div className="space-y-4">
               <div className="bg-gray-50 p-3 rounded-lg">
                 <p className="text-sm text-gray-600" dangerouslySetInnerHTML={{
                   __html: bulkAction.type === 'update' 
-                    ? t('admin.schools.bulkActions.dialogs.update.description', { count: selectedSchools.length })
-                    : t('admin.schools.bulkActions.dialogs.delete.description', { count: selectedSchools.length })
+                    ? t('schools.bulkActions.dialogs.update.description', { count: selectedSchools.length })
+                    : t('schools.bulkActions.dialogs.delete.description', { count: selectedSchools.length })
                 }}></p>
               </div>
               
               {bulkAction.type === 'update' && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
-                    {t('admin.schools.bulkActions.dialogs.update.updateStageLabel')}
+                    {t('schools.bulkActions.dialogs.update.updateStageLabel')}
                   </label>
                   <select
                     value={bulkAction.updates?.currentStage || 'inspire'}
@@ -172,12 +172,12 @@ export default function BulkSchoolActions({
                     className="w-full p-2 border border-gray-300 rounded-md"
                     data-testid="select-bulk-stage"
                   >
-                    <option value="inspire">{t('admin.schools.school_details.stages.inspire')}</option>
-                    <option value="investigate">{t('admin.schools.school_details.stages.investigate')}</option>
-                    <option value="act">{t('admin.schools.school_details.stages.act')}</option>
+                    <option value="inspire">{t('schools.school_details.stages.inspire')}</option>
+                    <option value="investigate">{t('schools.school_details.stages.investigate')}</option>
+                    <option value="act">{t('schools.school_details.stages.act')}</option>
                   </select>
                   <p className="text-xs text-gray-500 mt-1">
-                    {t('admin.schools.bulkActions.dialogs.update.updateStageHelpText')}
+                    {t('schools.bulkActions.dialogs.update.updateStageHelpText')}
                   </p>
                 </div>
               )}
@@ -185,7 +185,7 @@ export default function BulkSchoolActions({
               {bulkAction.type === 'delete' && (
                 <div className="bg-red-50 border border-red-200 p-3 rounded-lg">
                   <p className="text-sm text-red-700">
-                    <strong>{t('admin.schools.bulkActions.dialogs.delete.warningTitle')}</strong> {t('admin.schools.bulkActions.dialogs.delete.warningDescription')}
+                    <strong>{t('schools.bulkActions.dialogs.delete.warningTitle')}</strong> {t('schools.bulkActions.dialogs.delete.warningDescription')}
                   </p>
                 </div>
               )}
@@ -200,7 +200,7 @@ export default function BulkSchoolActions({
                   className="flex-1"
                   data-testid="button-cancel-bulk-school-operation"
                 >
-                  {t('admin.schools.buttons.cancel')}
+                  {t('schools.buttons.cancel')}
                 </Button>
                 <Button
                   className={`flex-1 ${
@@ -219,7 +219,7 @@ export default function BulkSchoolActions({
                   disabled={bulkSchoolUpdateMutation.isPending || bulkSchoolDeleteMutation.isPending}
                   data-testid="button-confirm-bulk-school-operation"
                 >
-                  {(bulkSchoolUpdateMutation.isPending || bulkSchoolDeleteMutation.isPending) ? t('admin.schools.buttons.processing') : t('admin.schools.buttons.confirm')}
+                  {(bulkSchoolUpdateMutation.isPending || bulkSchoolDeleteMutation.isPending) ? t('schools.buttons.processing') : t('schools.buttons.confirm')}
                 </Button>
               </div>
             </div>
@@ -236,21 +236,21 @@ export default function BulkSchoolActions({
       }}>
         <AlertDialogContent data-testid="dialog-delete-school-confirmation" className="max-w-2xl">
           <AlertDialogHeader>
-            <AlertDialogTitle>{t('admin.schools.bulkActions.dialogs.deleteSchool.title')}</AlertDialogTitle>
+            <AlertDialogTitle>{t('schools.bulkActions.dialogs.deleteSchool.title')}</AlertDialogTitle>
             <AlertDialogDescription className="space-y-4">
               <div dangerouslySetInnerHTML={{
-                __html: t('admin.schools.bulkActions.dialogs.deleteSchool.description', { name: deletingSchool?.name || '' })
+                __html: t('schools.bulkActions.dialogs.deleteSchool.description', { name: deletingSchool?.name || '' })
               }}></div>
               
               {isLoadingSchoolUsers ? (
-                <div className="text-sm text-gray-500">{t('admin.schools.bulkActions.dialogs.deleteSchool.loadingUsers')}</div>
+                <div className="text-sm text-gray-500">{t('schools.bulkActions.dialogs.deleteSchool.loadingUsers')}</div>
               ) : schoolUsersPreview && schoolUsersPreview.count > 0 ? (
                 <div className="space-y-3">
                   <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
                     <div className="flex items-start gap-2">
                       <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                       <div className="text-sm text-amber-800 dark:text-amber-200">
-                        {t('admin.schools.bulkActions.dialogs.deleteSchool.warningUsers', { 
+                        {t('schools.bulkActions.dialogs.deleteSchool.warningUsers', { 
                           count: schoolUsersPreview.count,
                           plural: schoolUsersPreview.count > 1 ? 's' : ''
                         })}
@@ -259,7 +259,7 @@ export default function BulkSchoolActions({
                   </div>
 
                   <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 max-h-40 overflow-y-auto">
-                    <div className="text-sm font-medium mb-2">{t('admin.schools.bulkActions.dialogs.deleteSchool.associatedUsers')}</div>
+                    <div className="text-sm font-medium mb-2">{t('schools.bulkActions.dialogs.deleteSchool.associatedUsers')}</div>
                     <ul className="space-y-1 text-sm">
                       {schoolUsersPreview.users.map((user) => (
                         <li key={user.id} className="flex items-center gap-2">
@@ -281,24 +281,24 @@ export default function BulkSchoolActions({
                     />
                     <label htmlFor="delete-school-users" className="text-sm cursor-pointer">
                       <div className="font-medium text-gray-900 dark:text-gray-100">
-                        {t('admin.schools.bulkActions.dialogs.deleteSchool.deleteUsersLabel')}
+                        {t('schools.bulkActions.dialogs.deleteSchool.deleteUsersLabel')}
                       </div>
                       <div className="text-gray-600 dark:text-gray-400 mt-1">
-                        {t('admin.schools.bulkActions.dialogs.deleteSchool.deleteUsersDescription')}
+                        {t('schools.bulkActions.dialogs.deleteSchool.deleteUsersDescription')}
                       </div>
                     </label>
                   </div>
                 </div>
               ) : (
                 <div className="text-sm text-gray-500">
-                  {t('admin.schools.bulkActions.dialogs.deleteSchool.noUsers')}
+                  {t('schools.bulkActions.dialogs.deleteSchool.noUsers')}
                 </div>
               )}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-delete-school">
-              {t('admin.schools.buttons.cancel')}
+              {t('schools.buttons.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deletingSchool && deleteSchoolMutation.mutate({ 
@@ -309,7 +309,7 @@ export default function BulkSchoolActions({
               disabled={deleteSchoolMutation.isPending}
               data-testid="button-confirm-delete-school"
             >
-              {deleteSchoolMutation.isPending ? t('admin.schools.buttons.deleting') : t('admin.schools.bulkActions.dialogs.deleteSchool.title')}
+              {deleteSchoolMutation.isPending ? t('schools.buttons.deleting') : t('schools.bulkActions.dialogs.deleteSchool.title')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

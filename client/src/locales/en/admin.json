@@ -2026,6 +2026,10 @@
       "selectAll": "Select All ({count} items)",
       "allCaughtUp": "All Caught Up!",
       "noPendingEvidence": "No pending evidence submissions to review.",
+      "emptyState": {
+        "title": "All Caught Up!",
+        "description": "No pending evidence submissions to review."
+      },
       "badges": {
         "public": "Public",
         "photoApproved": "Photo Approved",
@@ -2056,13 +2060,18 @@
       },
       "consentWarning": {
         "title": "Approve Without Photo Consent? 📸",
+        "noConsent": "This school has <strong>not provided approved photo consent</strong>.",
         "noConsentProvided": "This school has <strong>not provided approved photo consent</strong>.",
         "statusPending": "Their photo consent document is currently under review.",
         "statusRejected": "Their photo consent document was rejected.",
+        "statusNone": "No photo consent document has been uploaded.",
         "statusMissing": "No photo consent document has been uploaded.",
+        "disclaimer": "Approving this evidence means it <strong>will not be eligible</strong> for use in public case studies or promotional materials unless photo consent is later approved.",
         "warningMessage": "Approving this evidence means it <strong>will not be eligible</strong> for use in public case studies or promotional materials unless photo consent is later approved.",
         "confirmQuestion": "Do you want to proceed with approval anyway?",
+        "approveAnyway": "Yes, Proceed Anyway",
         "proceedAnyway": "Yes, Proceed Anyway",
+        "cancel": "Go Back",
         "goBack": "Go Back"
       },
       "bulkDialog": {

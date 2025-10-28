@@ -40,21 +40,21 @@ export default function EventsList({
     <Card>
       <CardHeader>
         <div className="flex items-center justify-between mb-4">
-          <CardTitle>{t('admin.events.list.title')}</CardTitle>
+          <CardTitle>{t('events.list.title')}</CardTitle>
           <Button
             onClick={onCreateEvent}
             className="bg-pcs_blue hover:bg-pcs_blue/90"
             data-testid="button-create-event"
           >
             <Plus className="h-4 w-4 mr-2" />
-            {t('admin.events.list.createEvent')}
+            {t('events.list.createEvent')}
           </Button>
         </div>
         
         <div className="flex flex-wrap gap-4">
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.events.filters.status')}
+              {t('events.filters.status')}
             </label>
             <select
               value={eventFilters.status}
@@ -62,16 +62,16 @@ export default function EventsList({
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               data-testid="select-status-filter"
             >
-              <option value="all">{t('admin.events.filters.allStatuses')}</option>
-              <option value="draft">{t('admin.events.statuses.draft')}</option>
-              <option value="published">{t('admin.events.statuses.published')}</option>
-              <option value="cancelled">{t('admin.events.statuses.cancelled')}</option>
-              <option value="completed">{t('admin.events.statuses.completed')}</option>
+              <option value="all">{t('events.filters.allStatuses')}</option>
+              <option value="draft">{t('events.statuses.draft')}</option>
+              <option value="published">{t('events.statuses.published')}</option>
+              <option value="cancelled">{t('events.statuses.cancelled')}</option>
+              <option value="completed">{t('events.statuses.completed')}</option>
             </select>
           </div>
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.events.filters.eventType')}
+              {t('events.filters.eventType')}
             </label>
             <select
               value={eventFilters.eventType}
@@ -79,19 +79,19 @@ export default function EventsList({
               className="w-full px-3 py-2 border border-gray-300 rounded-md"
               data-testid="select-type-filter"
             >
-              <option value="all">{t('admin.events.filters.allTypes')}</option>
-              <option value="workshop">{t('admin.events.types.workshop')}</option>
-              <option value="webinar">{t('admin.events.types.webinar')}</option>
-              <option value="community_event">{t('admin.events.types.communityEvent')}</option>
-              <option value="training">{t('admin.events.types.training')}</option>
-              <option value="celebration">{t('admin.events.types.celebration')}</option>
-              <option value="assembly">{t('admin.events.types.assembly')}</option>
-              <option value="other">{t('admin.events.types.other')}</option>
+              <option value="all">{t('events.filters.allTypes')}</option>
+              <option value="workshop">{t('events.types.workshop')}</option>
+              <option value="webinar">{t('events.types.webinar')}</option>
+              <option value="community_event">{t('events.types.communityEvent')}</option>
+              <option value="training">{t('events.types.training')}</option>
+              <option value="celebration">{t('events.types.celebration')}</option>
+              <option value="assembly">{t('events.types.assembly')}</option>
+              <option value="other">{t('events.types.other')}</option>
             </select>
           </div>
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.events.filters.fromDate')}
+              {t('events.filters.fromDate')}
             </label>
             <input
               type="date"
@@ -103,7 +103,7 @@ export default function EventsList({
           </div>
           <div className="flex-1 min-w-[200px]">
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              {t('admin.events.filters.toDate')}
+              {t('events.filters.toDate')}
             </label>
             <input
               type="date"
@@ -121,12 +121,12 @@ export default function EventsList({
             <table className="w-full">
               <thead>
                 <tr className="border-b">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.title')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.type')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.date')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.status')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.registrations')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.actions')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.title')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.type')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.date')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.status')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.registrations')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -161,8 +161,8 @@ export default function EventsList({
           </div>
         ) : events.length === 0 ? (
           <EmptyState
-            title={t('admin.events.list.noEvents')}
-            description={t('admin.events.list.noEventsDescription')}
+            title={t('events.list.noEvents')}
+            description={t('events.list.noEventsDescription')}
             icon={Calendar}
           />
         ) : (
@@ -170,12 +170,12 @@ export default function EventsList({
             <table className="w-full" data-testid="table-events">
               <thead>
                 <tr className="border-b">
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.title')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.type')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.date')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.status')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.registrations')}</th>
-                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('admin.events.table.headers.actions')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.title')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.type')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.date')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.status')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.registrations')}</th>
+                  <th className="px-4 py-3 text-left text-sm font-semibold text-gray-900">{t('events.table.headers.actions')}</th>
                 </tr>
               </thead>
               <tbody>
@@ -219,7 +219,7 @@ export default function EventsList({
                           disabled={isDuplicating}
                           className="text-teal-600 hover:text-teal-700 hover:bg-teal-50"
                           data-testid={`button-duplicate-${event.id}`}
-                          title={t('admin.events.list.duplicateEvent')}
+                          title={t('events.list.duplicateEvent')}
                         >
                           <Copy className="h-4 w-4" />
                         </Button>
@@ -240,7 +240,7 @@ export default function EventsList({
                             }}
                             className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
                             data-testid={`button-view-page-${event.id}`}
-                            title={`${t('admin.events.list.viewEvent')} /events/${event.publicSlug}`}
+                            title={`${t('events.list.viewEvent')} /events/${event.publicSlug}`}
                           >
                             <ExternalLink className="h-4 w-4" />
                           </Button>
