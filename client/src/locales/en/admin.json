@@ -2011,18 +2011,28 @@
     },
     "evidence": {
       "title": "Evidence Review Queue",
+      "selectedCount": "{count} selected",
       "selected": "{count} selected",
-      "bulkApprove": "Bulk Approve",
-      "bulkReject": "Bulk Reject",
-      "delete": "Delete",
-      "filterAll": "All",
-      "filterPending": "Pending",
-      "filterApproved": "Approved",
-      "filterRejected": "Rejected",
-      "filterByAssignee": "Filter by assignee",
-      "allEvidence": "All Evidence",
-      "unassigned": "Unassigned",
-      "assignedToMe": "Assigned to Me",
+      "filters": {
+        "all": "All",
+        "pending": "Pending",
+        "approved": "Approved",
+        "rejected": "Rejected",
+        "filterByAssignee": "Filter by assignee",
+        "allEvidence": "All Evidence",
+        "unassigned": "Unassigned",
+        "assignedToMe": "Assigned to Me"
+      },
+      "buttons": {
+        "bulkApprove": "Bulk Approve",
+        "bulkReject": "Bulk Reject",
+        "delete": "Delete",
+        "approve": "Approve",
+        "reject": "Reject",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "processing": "Processing..."
+      },
       "selectAll": "Select All ({count} items)",
       "allCaughtUp": "All Caught Up!",
       "noPendingEvidence": "No pending evidence submissions to review.",
@@ -2038,17 +2048,10 @@
         "new": "NEW"
       },
       "labels": {
-        "schoolId": "School ID:",
-        "submitted": "Submitted:",
-        "files": "Files:",
+        "schoolId": "School ID: {id}",
+        "submitted": "Submitted: {date}",
+        "files": "Files: {count}",
         "assignedTo": "Assigned To:"
-      },
-      "buttons": {
-        "approve": "Approve",
-        "reject": "Reject",
-        "cancel": "Cancel",
-        "confirm": "Confirm",
-        "processing": "Processing..."
       },
       "modal": {
         "approveTitle": "Approve Evidence",
@@ -2075,16 +2078,28 @@
         "goBack": "Go Back"
       },
       "bulkDialog": {
-        "reviewTitle": "Bulk Evidence Review",
+        "approveTitle": "Bulk Approve Evidence",
+        "rejectTitle": "Bulk Reject Evidence",
         "deleteTitle": "Bulk Delete Evidence",
+        "reviewTitle": "Bulk Evidence Review",
+        "affectedCount": "{count} evidence submissions will be affected",
         "approveDescription": "You are about to approve {count} evidence submissions. This will make them visible according to their visibility settings.",
         "rejectDescription": "You are about to reject {count} evidence submissions. The schools will be notified and can resubmit.",
         "deleteDescription": "You are about to permanently delete {count} evidence submissions. This action cannot be undone.",
+        "deleteWarning": "⚠️ This action cannot be undone. All selected evidence will be permanently deleted.",
+        "reviewNotes": "Review Notes",
+        "required": "*",
+        "feedbackOptional": "Optional feedback for schools...",
+        "feedbackRequired": "Please provide feedback when rejecting evidence...",
         "notes": "Notes (optional for approval, required for rejection)",
         "notesPlaceholder": "Enter notes for schools...",
         "confirm": "Confirm",
         "cancel": "Cancel",
-        "processing": "Processing..."
+        "processing": "Processing...",
+        "toasts": {
+          "reviewNotesRequired": "Review Notes Required",
+          "feedbackRequired": "Please provide feedback when rejecting evidence."
+        }
       },
       "toasts": {
         "reviewNotesRequired": "Review Notes Required",
