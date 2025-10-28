@@ -64,9 +64,19 @@ export class MigrationUtils {
       return { isValid: false, reason: 'Invalid email (ends with .invalid)' };
     }
 
-    // Strict mode: Only migrate users with stage_1 data (real users who started the program)
-    if (!row.stage_1 || row.stage_1.trim() === '' || row.stage_1 === 'a:0:{}') {
-      return { isValid: false, reason: 'No stage_1 data' };
+    // Accept users who have ANY engagement markers:
+    const hasStage1 = row.stage_1 && row.stage_1.trim() !== '' && row.stage_1 !== 'a:0:{}';
+    const hasStage2 = row.stage_2 && row.stage_2.trim() !== '' && row.stage_2 !== 'a:0:{}';
+    const hasStage3 = row.stage_3 && row.stage_3.trim() !== '' && row.stage_3 !== 'a:0:{}';
+    const hasStage0 = row.stage_0 && row.stage_0.trim() !== '' && row.stage_0 !== 'a:0:{}';
+    const hasCompletionDate = row.stage_1_completed_date || row.stage_2_completed_date || row.stage_3_completed_date;
+    const hasRound = row.round && row.round.trim() !== '';
+    const hasPhoneNumber = row.phone_number && row.phone_number.trim() !== '';
+    
+    const isRealUser = hasStage1 || hasStage2 || hasStage3 || hasStage0 || hasCompletionDate || hasRound || hasPhoneNumber;
+    
+    if (!isRealUser) {
+      return { isValid: false, reason: 'No engagement markers (no stage data, completion dates, round, or phone)' };
     }
 
     return { isValid: true };
