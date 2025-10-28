@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useLocation } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -25,9 +25,12 @@ import {
   Eye,
   EyeOff,
   ArrowRight,
-  Globe
+  Globe,
+  GraduationCap
 } from "lucide-react";
 import { z } from "zod";
+import { createLoginSchema, type LoginForm } from "@shared/schema";
+import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
 
 interface InvitationDetails {
   email: string;
@@ -77,6 +80,8 @@ export default function InvitationAccept() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
+  
+  const loginSchema = createLoginSchema((key: string) => key);
 
   // Fetch invitation details (public endpoint, no auth required)
   const { data: invitation, isLoading: invitationLoading, error } = useQuery<InvitationDetails>({
@@ -84,6 +89,22 @@ export default function InvitationAccept() {
     enabled: !!token,
     retry: false,
   });
+
+  // Login form for existing users
+  const loginForm = useForm<LoginForm>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+  });
+
+  // Prefill email field when invitation data loads
+  useEffect(() => {
+    if (invitation?.email) {
+      loginForm.setValue('email', invitation.email);
+    }
+  }, [invitation, loginForm]);
 
   // Registration form for new users
   const registrationForm = useForm<RegistrationForm>({
@@ -179,8 +200,57 @@ export default function InvitationAccept() {
     },
   });
 
-  const handleLogin = () => {
-    setLocation("/login");
+  // Login mutation for existing users
+  const loginMutation = useMutation({
+    mutationFn: async (credentials: LoginForm) => {
+      const response = await apiRequest("POST", "/api/auth/login", credentials);
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || "Login failed");
+      }
+      
+      return result.user;
+    },
+    onSuccess: async (loggedInUser: User) => {
+      // Update auth cache
+      queryClient.setQueryData(["/api/auth/user"], loggedInUser);
+      
+      toast({
+        title: "Signed in successfully!",
+        description: "Accepting your invitation...",
+      });
+      
+      // Wait a moment for the auth state to settle
+      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      
+      // Accept the invitation automatically
+      setTimeout(() => {
+        acceptMutation.mutate();
+      }, 500);
+    },
+    onError: (error: Error) => {
+      let errorMessage = "Login failed. Please try again.";
+      
+      if (error.message.includes("400:") || error.message.includes("401:")) {
+        try {
+          const errorData = JSON.parse(error.message.split(": ")[1]);
+          errorMessage = errorData.message || "Invalid email or password";
+        } catch {
+          errorMessage = "Invalid email or password";
+        }
+      }
+      
+      toast({
+        title: "Login failed",
+        description: errorMessage,
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleLogin = (data: LoginForm) => {
+    loginMutation.mutate(data);
   };
 
   const handleAccept = () => {
@@ -266,22 +336,31 @@ export default function InvitationAccept() {
     );
   }
 
-  // Not authenticated - show registration form for new users or login redirect for existing users
+  // Not authenticated - show registration form for new users or login form for existing users
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 flex items-center justify-center pt-20 px-4">
         <Card className="w-full max-w-lg shadow-xl border-0">
           <CardHeader className="text-center pb-4">
-            <div className="w-16 h-16 bg-pcs_blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Mail className="h-8 w-8 text-pcs_blue" />
+            <img 
+              src={pcsLogoUrl} 
+              alt="Plastic Clever Schools" 
+              className="h-20 w-auto mx-auto mb-4"
+              data-testid="img-teacher-pcs-logo"
+            />
+            <div className="w-16 h-16 bg-teal/10 rounded-full flex items-center justify-center mx-auto mb-4">
+              <GraduationCap className="h-8 w-8 text-teal" />
             </div>
             <CardTitle className="text-2xl font-bold text-navy mb-2" data-testid="text-invitation-title">
-              You've Been Invited!
+              You've Been Invited to Join Your School!
             </CardTitle>
+            <p className="text-xl font-semibold bg-gradient-to-r from-teal to-pcs_blue bg-clip-text text-transparent mb-3" data-testid="text-teacher-welcome">
+              Welcome to the Team!
+            </p>
             <CardDescription className="text-base" data-testid="text-invitation-subtitle">
               {invitation.authMethod === 'none' 
                 ? "Create your account to accept this invitation" 
-                : "Please log in to accept this invitation"}
+                : "Log in to accept this invitation"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -485,19 +564,97 @@ export default function InvitationAccept() {
                 </Form>
               </div>
             ) : (
-              // Show login redirect for existing users
-              <div className="text-center">
-                <p className="text-sm text-gray-600 mb-4" data-testid="text-login-message">
-                  Please log in to accept this invitation
-                </p>
-                <Button 
-                  onClick={handleLogin}
-                  className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
-                  data-testid="button-login"
-                >
-                  <LogIn className="h-5 w-5 mr-2" />
-                  Log In
-                </Button>
+              // Show login form for existing users
+              <div>
+                <div className="mb-4">
+                  <p className="text-sm text-gray-600 mb-2 text-center" data-testid="text-login-message">
+                    Log in to accept your invitation
+                  </p>
+                  <p className="text-xs text-gray-500 text-center" data-testid="text-login-email-notice">
+                    Please log in with <strong>{invitation?.email}</strong>
+                  </p>
+                </div>
+                
+                <Form {...loginForm}>
+                  <form onSubmit={loginForm.handleSubmit(handleLogin)} className="space-y-4">
+                    <FormField
+                      control={loginForm.control}
+                      name="email"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Email</FormLabel>
+                          <FormControl>
+                            <Input
+                              type="email"
+                              placeholder="Enter your email"
+                              {...field}
+                              data-testid="input-teacher-login-email"
+                              disabled={loginMutation.isPending}
+                              readOnly
+                            />
+                          </FormControl>
+                          <FormMessage data-testid="error-teacher-login-email" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <FormField
+                      control={loginForm.control}
+                      name="password"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Password</FormLabel>
+                          <FormControl>
+                            <div className="relative">
+                              <Input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Enter your password"
+                                {...field}
+                                data-testid="input-teacher-login-password"
+                                disabled={loginMutation.isPending}
+                              />
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                                onClick={() => setShowPassword(!showPassword)}
+                                data-testid="button-teacher-toggle-login-password"
+                                disabled={loginMutation.isPending}
+                              >
+                                {showPassword ? (
+                                  <EyeOff className="h-4 w-4 text-gray-500" />
+                                ) : (
+                                  <Eye className="h-4 w-4 text-gray-500" />
+                                )}
+                              </Button>
+                            </div>
+                          </FormControl>
+                          <FormMessage data-testid="error-teacher-login-password" />
+                        </FormItem>
+                      )}
+                    />
+                    
+                    <Button 
+                      type="submit"
+                      disabled={loginMutation.isPending}
+                      className="w-full bg-gradient-to-r from-teal to-teal/80 hover:from-teal hover:to-teal/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      data-testid="button-teacher-login-submit"
+                    >
+                      {loginMutation.isPending ? (
+                        <>
+                          <ButtonSpinner size="sm" className="mr-2" />
+                          Signing in...
+                        </>
+                      ) : (
+                        <>
+                          <LogIn className="h-5 w-5 mr-2" />
+                          Sign In & Accept Invitation
+                        </>
+                      )}
+                    </Button>
+                  </form>
+                </Form>
               </div>
             )}
           </CardContent>

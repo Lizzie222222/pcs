@@ -39,6 +39,7 @@ interface InvitationDetails {
   status: string;
   authMethod: 'none' | 'password';
   hasExistingAccount: boolean;
+  role?: 'admin' | 'partner';
 }
 
 const languages = [
@@ -410,6 +411,8 @@ export default function AdminInvitationAccept() {
 
   // Not authenticated - show login prompt
   if (!isAuthenticated) {
+    const isPartner = invitation?.role === 'partner';
+    
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 flex items-center justify-center pt-20 px-4">
         <Card className="w-full max-w-lg shadow-xl border-0">
@@ -420,17 +423,21 @@ export default function AdminInvitationAccept() {
               className="h-20 w-auto mx-auto mb-4"
               data-testid="img-admin-pcs-logo"
             />
-            <div className="w-16 h-16 bg-pcs_blue/10 rounded-full flex items-center justify-center mx-auto mb-4">
-              <Shield className="h-8 w-8 text-pcs_blue" />
+            <div className={`w-16 h-16 ${isPartner ? 'bg-teal/10' : 'bg-pcs_blue/10'} rounded-full flex items-center justify-center mx-auto mb-4`}>
+              <Shield className={`h-8 w-8 ${isPartner ? 'text-teal' : 'text-pcs_blue'}`} />
             </div>
             <CardTitle className="text-2xl font-bold text-navy mb-2" data-testid="text-admin-invitation-title">
-              You've Been Invited to be an Administrator!
+              {isPartner 
+                ? "You've Been Invited to be a Partner!"
+                : "You've Been Invited to be an Administrator!"}
             </CardTitle>
-            <p className="text-xl font-semibold bg-gradient-to-r from-pcs_blue to-teal bg-clip-text text-transparent mb-3" data-testid="text-admin-lucky-you">
-              Lucky You!
+            <p className={`text-xl font-semibold bg-gradient-to-r ${isPartner ? 'from-teal to-pcs_blue' : 'from-pcs_blue to-teal'} bg-clip-text text-transparent mb-3`} data-testid="text-admin-lucky-you">
+              {isPartner ? "You're Making a Difference!" : "Lucky You!"}
             </p>
             <CardDescription className="text-base" data-testid="text-admin-invitation-subtitle">
-              Accept this invitation to gain admin access
+              {isPartner
+                ? "Accept this invitation to join as a partner"
+                : "Accept this invitation to gain admin access"}
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">

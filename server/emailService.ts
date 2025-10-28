@@ -395,17 +395,141 @@ export async function sendTeacherInvitationEmail(
   token: string,
   expiresInDays: number
 ): Promise<boolean> {
+  const baseUrl = getBaseUrl();
+  const acceptUrl = `${baseUrl}/invitations/${token}`;
+  
+  console.log(`[Teacher Invitation Email] Sending to ${recipientEmail} for ${schoolName} with token ${token.substring(0, 8)}...`);
+  
+  const html = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>Teacher Invitation - Plastic Clever Schools</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+        <tr>
+          <td style="padding: 40px 20px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);">
+              <!-- Celebration Header -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #02BBB4 0%, #019ADE 100%); padding: 50px 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                  <div style="font-size: 48px; margin-bottom: 15px;">🎓</div>
+                  <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    You're Invited!
+                  </h1>
+                  <p style="margin: 15px 0 0 0; color: #e0f7fa; font-size: 18px; font-weight: 500;">
+                    Join ${schoolName} on Plastic Clever Schools
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Welcome Banner -->
+              <tr>
+                <td style="padding: 0;">
+                  <div style="background: linear-gradient(90deg, #4caf50 0%, #02BBB4 100%); padding: 20px; text-align: center;">
+                    <p style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
+                      🌟 Welcome to the Team! 🌟
+                    </p>
+                  </div>
+                </td>
+              </tr>
+              
+              <!-- Body -->
+              <tr>
+                <td style="padding: 40px 30px;">
+                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 18px; line-height: 1.6; font-weight: 600;">
+                    Hello! 👋
+                  </p>
+                  
+                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.8;">
+                    <strong style="color: #02BBB4;">${inviterName}</strong> from <strong style="color: #019ADE;">${schoolName}</strong> has invited you to join their team on Plastic Clever Schools!
+                  </p>
+                  
+                  <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.8;">
+                    Join your colleagues in making your school plastic-free and inspire others around the world to do the same. Together, you'll track progress, share evidence, and celebrate achievements! 🌍
+                  </p>
+                  
+                  <!-- Call to Action Button -->
+                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0; width: 100%;">
+                    <tr>
+                      <td style="text-align: center;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                          <tr>
+                            <td style="border-radius: 8px; background: linear-gradient(135deg, #02BBB4 0%, #4caf50 100%); box-shadow: 0 4px 15px rgba(2, 187, 180, 0.3);">
+                              <a href="${acceptUrl}" style="display: inline-block; padding: 18px 50px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px;">
+                                🚀 Join Your School
+                              </a>
+                            </td>
+                          </tr>
+                        </table>
+                      </td>
+                    </tr>
+                  </table>
+                  
+                  <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.6; text-align: center;">
+                    Or copy and paste this link:
+                  </p>
+                  
+                  <p style="margin: 0 0 30px 0; color: #02BBB4; font-size: 14px; line-height: 1.6; word-break: break-all; text-align: center; background: #f0fdf4; padding: 15px; border-radius: 8px;">
+                    ${acceptUrl}
+                  </p>
+                  
+                  <!-- Important Info Box -->
+                  <div style="margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); border-left: 5px solid #ffc107; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);">
+                    <p style="margin: 0 0 10px 0; color: #856404; font-size: 16px; line-height: 1.6; font-weight: 700;">
+                      ⏰ Time-Sensitive Invitation
+                    </p>
+                    <p style="margin: 0; color: #856404; font-size: 15px; line-height: 1.6;">
+                      This invitation expires in <strong>${expiresInDays} day${expiresInDays !== 1 ? 's' : ''}</strong>. Accept it soon to join your school team!
+                    </p>
+                  </div>
+                  
+                  <!-- What You'll Do Section -->
+                  <div style="margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 8px;">
+                    <p style="margin: 0 0 15px 0; color: #0B3D5D; font-size: 18px; font-weight: 700;">
+                      🎯 What You'll Do:
+                    </p>
+                    <ul style="margin: 0; padding-left: 20px; color: #0B3D5D;">
+                      <li style="margin-bottom: 10px; font-size: 15px; line-height: 1.6;">Collaborate with your school team on reducing plastic waste</li>
+                      <li style="margin-bottom: 10px; font-size: 15px; line-height: 1.6;">Upload and share evidence of your school's progress</li>
+                      <li style="margin-bottom: 10px; font-size: 15px; line-height: 1.6;">Track achievements and earn Plastic Clever Awards</li>
+                      <li style="margin-bottom: 0; font-size: 15px; line-height: 1.6;">Inspire students and the global community</li>
+                    </ul>
+                  </div>
+                  
+                  <p style="margin: 30px 0 0 0; color: #333333; font-size: 16px; line-height: 1.8; text-align: center;">
+                    We're excited to have you join <strong style="color: #02BBB4;">${schoolName}</strong> on this journey! 🌊
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Footer -->
+              <tr>
+                <td style="padding: 30px; background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%); text-align: center; border-top: 3px solid #02BBB4; border-radius: 0 0 16px 16px;">
+                  <p style="margin: 0 0 10px 0; color: #4b5563; font-size: 14px; font-weight: 600;">
+                    🌊 Plastic Clever Schools 🌊
+                  </p>
+                  <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.5;">
+                    Together, we're creating a plastic-free future, one school at a time
+                  </p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+  
   return await sendEmail({
     to: recipientEmail,
     from: getFromAddress(),
-    subject: `You've been invited to join ${schoolName} on Plastic Clever Schools`,
-    templateId: 'd-0940098ba7ec4188824e4b14274e668c',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      inviterName: inviterName,
-      invitationUrl: `${getBaseUrl()}/invitations/${token}`,
-      expiresInDays: expiresInDays,
-    },
+    subject: `🎉 You're invited to join ${schoolName} - Plastic Clever Schools!`,
+    html: html,
   });
 }
 
@@ -577,82 +701,112 @@ export async function sendPartnerInvitationEmail(
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Partner Invitation - Plastic Clever Schools</title>
     </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f5f5f5;">
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);">
         <tr>
           <td style="padding: 40px 20px;">
-            <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-              <!-- Header -->
+            <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);">
+              <!-- Celebration Header -->
               <tr>
-                <td style="background-color: #0B3D5D; padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">
-                    Plastic Clever Schools
+                <td style="background: linear-gradient(135deg, #019ADE 0%, #0B3D5D 100%); padding: 50px 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                  <div style="font-size: 48px; margin-bottom: 15px;">🤝</div>
+                  <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    You're Invited!
                   </h1>
+                  <p style="margin: 15px 0 0 0; color: #e0f7fa; font-size: 18px; font-weight: 500;">
+                    Join Plastic Clever Schools as a Partner
+                  </p>
+                </td>
+              </tr>
+              
+              <!-- Lucky You Banner -->
+              <tr>
+                <td style="padding: 0;">
+                  <div style="background: linear-gradient(90deg, #02BBB4 0%, #019ADE 100%); padding: 20px; text-align: center;">
+                    <p style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
+                      ✨ You're Making a Difference! ✨
+                    </p>
+                  </div>
                 </td>
               </tr>
               
               <!-- Body -->
               <tr>
                 <td style="padding: 40px 30px;">
-                  <h2 style="margin: 0 0 20px 0; color: #0B3D5D; font-size: 24px; font-weight: 600;">
-                    You've Been Invited as a Partner
-                  </h2>
-                  
-                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    Hello,
+                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 18px; line-height: 1.6; font-weight: 600;">
+                    Hello! 👋
                   </p>
                   
-                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    <strong>${inviterName}</strong> has invited you to join Plastic Clever Schools as a Partner. As a partner, you'll have access to view schools, review evidence submissions, and help support our mission of reducing plastic waste in schools worldwide.
+                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.8;">
+                    <strong style="color: #019ADE;">${inviterName}</strong> has invited you to join <strong>Plastic Clever Schools</strong> as a <strong style="color: #02BBB4;">Partner</strong>! 
                   </p>
                   
-                  <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    Click the button below to accept your invitation and get started:
+                  <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.8;">
+                    As a partner, you'll have special access to view schools, review evidence submissions, and help support our global mission of eliminating single-use plastics from schools worldwide. 🌍
                   </p>
                   
-                  <!-- Button -->
-                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0;">
+                  <!-- Call to Action Button -->
+                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0; width: 100%;">
                     <tr>
-                      <td style="border-radius: 6px; background-color: #019ADE;">
-                        <a href="${acceptUrl}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
-                          Accept Invitation
-                        </a>
+                      <td style="text-align: center;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                          <tr>
+                            <td style="border-radius: 8px; background: linear-gradient(135deg, #019ADE 0%, #02BBB4 100%); box-shadow: 0 4px 15px rgba(1, 154, 222, 0.3);">
+                              <a href="${acceptUrl}" style="display: inline-block; padding: 18px 50px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px;">
+                                🎯 Accept Your Invitation
+                              </a>
+                            </td>
+                          </tr>
+                        </table>
                       </td>
                     </tr>
                   </table>
                   
-                  <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                    Or copy and paste this link into your browser:
+                  <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.6; text-align: center;">
+                    Or copy and paste this link:
                   </p>
                   
-                  <p style="margin: 0 0 30px 0; color: #019ADE; font-size: 14px; line-height: 1.6; word-break: break-all;">
+                  <p style="margin: 0 0 30px 0; color: #019ADE; font-size: 14px; line-height: 1.6; word-break: break-all; text-align: center; background: #f0f9ff; padding: 15px; border-radius: 8px;">
                     ${acceptUrl}
                   </p>
                   
-                  <div style="margin: 30px 0; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #019ADE; border-radius: 4px;">
-                    <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                      <strong>⏰ Important:</strong> This invitation will expire in <strong>${expiresInDays} day${expiresInDays !== 1 ? 's' : ''}</strong>. Please accept it before then to maintain access.
+                  <!-- Important Info Box -->
+                  <div style="margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); border-left: 5px solid #ffc107; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);">
+                    <p style="margin: 0 0 10px 0; color: #856404; font-size: 16px; line-height: 1.6; font-weight: 700;">
+                      ⏰ Time-Sensitive Invitation
+                    </p>
+                    <p style="margin: 0; color: #856404; font-size: 15px; line-height: 1.6;">
+                      This invitation expires in <strong>${expiresInDays} day${expiresInDays !== 1 ? 's' : ''}</strong>. Accept it soon to start making an impact!
                     </p>
                   </div>
                   
-                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    If you have any questions or didn't expect this invitation, please contact us or the person who invited you.
-                  </p>
+                  <!-- What You'll Do Section -->
+                  <div style="margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 8px;">
+                    <p style="margin: 0 0 15px 0; color: #0B3D5D; font-size: 18px; font-weight: 700;">
+                      🌟 What You Can Do as a Partner:
+                    </p>
+                    <ul style="margin: 0; padding-left: 20px; color: #0B3D5D;">
+                      <li style="margin-bottom: 10px; font-size: 15px; line-height: 1.6;">View and support schools on their plastic-free journey</li>
+                      <li style="margin-bottom: 10px; font-size: 15px; line-height: 1.6;">Review evidence submissions and progress</li>
+                      <li style="margin-bottom: 10px; font-size: 15px; line-height: 1.6;">Help shape the future of plastic-free education</li>
+                      <li style="margin-bottom: 0; font-size: 15px; line-height: 1.6;">Join a global community of changemakers</li>
+                    </ul>
+                  </div>
                   
-                  <p style="margin: 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    Thank you for joining our mission to create a plastic-free future!
+                  <p style="margin: 30px 0 0 0; color: #333333; font-size: 16px; line-height: 1.8; text-align: center;">
+                    Thank you for joining our mission to create a <strong style="color: #02BBB4;">plastic-free future</strong>! 🌊
                   </p>
                 </td>
               </tr>
               
               <!-- Footer -->
               <tr>
-                <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center; border-top: 1px solid #e9ecef;">
-                  <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                    Plastic Clever Schools
+                <td style="padding: 30px; background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%); text-align: center; border-top: 3px solid #02BBB4; border-radius: 0 0 16px 16px;">
+                  <p style="margin: 0 0 10px 0; color: #4b5563; font-size: 14px; font-weight: 600;">
+                    🌊 Plastic Clever Schools 🌊
                   </p>
-                  <p style="margin: 0; color: #999999; font-size: 12px; line-height: 1.6;">
-                    Together, we're making schools plastic clever
+                  <p style="margin: 0; color: #6b7280; font-size: 13px; line-height: 1.5;">
+                    Together, we're creating a plastic-free future, one school at a time
                   </p>
                 </td>
               </tr>
@@ -667,7 +821,7 @@ export async function sendPartnerInvitationEmail(
   return await sendEmail({
     to: recipientEmail,
     from: getFromAddress(),
-    subject: "You've been invited to join Plastic Clever Schools as a Partner",
+    subject: "🎉 You're Invited to Partner with Plastic Clever Schools!",
     html: html,
   });
 }

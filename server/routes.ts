@@ -6960,6 +6960,7 @@ Return JSON with:
         status: invitation.status,
         authMethod: authMethod,
         hasExistingAccount: !!existingUser,
+        role: invitation.role || 'admin',
       });
     } catch (error) {
       console.error("[Get Admin Invitation] Error:", error);
