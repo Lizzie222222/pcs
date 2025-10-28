@@ -2101,6 +2101,12 @@
           "feedbackRequired": "Please provide feedback when rejecting evidence."
         }
       },
+      "deleteDialog": {
+        "title": "Delete Evidence",
+        "description": "Are you sure you want to permanently delete this evidence submission? This action cannot be undone.",
+        "cancel": "Cancel",
+        "confirm": "Delete"
+      },
       "toasts": {
         "reviewNotesRequired": "Review Notes Required",
         "feedbackRequired": "Please provide feedback when rejecting evidence."
@@ -2216,7 +2222,10 @@
       "bulkReviewSuccess": "Bulk evidence review completed successfully.",
       "bulkReviewFailed": "Failed to complete bulk evidence review. Changes have been reverted.",
       "bulkDeleteSuccess": "Selected evidence deleted successfully.",
-      "bulkDeleteFailed": "Failed to delete evidence. Changes have been reverted."
+      "bulkDeleteFailed": "Failed to delete evidence. Changes have been reverted.",
+      "evidenceDeleted": "Evidence deleted successfully.",
+      "evidenceDeleteFailed": "Failed to delete evidence. Changes have been reverted.",
+      "deleteFailed": "Delete Failed"
     }
   }
 }
