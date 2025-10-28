@@ -3774,6 +3774,96 @@ Return JSON with:
     }
   });
 
+  // Migration endpoints
+  app.post('/api/admin/migration/run', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { csvContent, dryRun = true } = req.body;
+      
+      if (!csvContent) {
+        return res.status(400).json({ message: 'CSV content is required' });
+      }
+
+      const { MigrationScript } = await import('./migration-script');
+      
+      const migration = new MigrationScript({
+        csvContent,
+        dryRun,
+        performedBy: req.user.id,
+      });
+
+      const result = await migration.run();
+
+      res.json({
+        message: dryRun ? 'Dry run completed successfully' : 'Migration completed successfully',
+        result,
+      });
+    } catch (error) {
+      console.error('Migration error:', error);
+      res.status(500).json({ 
+        message: 'Migration failed', 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
+  app.get('/api/admin/migration/logs', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const logs = await db.query.migrationLogs.findMany({
+        orderBy: (migrationLogs, { desc }) => [desc(migrationLogs.startedAt)],
+        limit: 50,
+      });
+
+      res.json(logs);
+    } catch (error) {
+      console.error('Error fetching migration logs:', error);
+      res.status(500).json({ message: 'Failed to fetch migration logs' });
+    }
+  });
+
+  app.get('/api/admin/migration/logs/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { id } = req.params;
+      
+      const log = await db.query.migrationLogs.findFirst({
+        where: (migrationLogs, { eq }) => eq(migrationLogs.id, id),
+      });
+
+      if (!log) {
+        return res.status(404).json({ message: 'Migration log not found' });
+      }
+
+      res.json(log);
+    } catch (error) {
+      console.error('Error fetching migration log:', error);
+      res.status(500).json({ message: 'Failed to fetch migration log' });
+    }
+  });
+
+  app.get('/api/admin/migration/users', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { limit = 100, offset = 0 } = req.query;
+      
+      const migratedUsers = await db.query.users.findMany({
+        where: (users, { eq }) => eq(users.isMigrated, true),
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string),
+        orderBy: (users, { desc }) => [desc(users.migratedAt)],
+      });
+
+      const totalCount = await db.select({ count: count() })
+        .from(users)
+        .where(eq(users.isMigrated, true));
+
+      res.json({
+        users: migratedUsers,
+        total: totalCount[0]?.count || 0,
+      });
+    } catch (error) {
+      console.error('Error fetching migrated users:', error);
+      res.status(500).json({ message: 'Failed to fetch migrated users' });
+    }
+  });
+
   // AI-powered analytics insights generation
   app.post('/api/admin/analytics/generate-insights', isAuthenticated, requireAdmin, async (req, res) => {
     try {

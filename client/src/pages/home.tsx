@@ -80,6 +80,7 @@ import {
   Video
 } from "lucide-react";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
+import { MigratedUserNotice } from "@/components/MigratedUserNotice";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -822,6 +823,11 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50/30 pt-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Migrated User Notice */}
+        {user?.isMigrated && (
+          <MigratedUserNotice needsEvidenceResubmission={user?.needsEvidenceResubmission || false} />
+        )}
+        
         {/* Welcome Header */}
         <div className="mb-10">
           <Card className="bg-gradient-to-br from-white via-blue-50/30 to-white shadow-xl border-0 overflow-hidden relative transition-all duration-300 hover:shadow-2xl">

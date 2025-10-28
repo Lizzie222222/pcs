@@ -134,6 +134,10 @@ export const users = pgTable("users", {
   hasSeenOnboarding: boolean("has_seen_onboarding").default(false),
   lastViewedEventsAt: timestamp("last_viewed_events_at"),
   deletedAt: timestamp("deleted_at"),
+  isMigrated: boolean("is_migrated").default(false),
+  legacyUserId: varchar("legacy_user_id"),
+  needsEvidenceResubmission: boolean("needs_evidence_resubmission").default(false),
+  migratedAt: timestamp("migrated_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
@@ -152,6 +156,35 @@ export const verificationStatusEnum = pgEnum('verification_status', [
 
 export const requestTypeEnum = pgEnum('request_type', [
   'join_school'
+]);
+
+export const migrationStatusEnum = pgEnum('migration_status', [
+  'pending',
+  'processing',
+  'completed',
+  'failed'
+]);
+
+export const migrationLogs = pgTable("migration_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  status: migrationStatusEnum("status").default('pending'),
+  totalRows: integer("total_rows").default(0),
+  validRows: integer("valid_rows").default(0),
+  skippedRows: integer("skipped_rows").default(0),
+  processedRows: integer("processed_rows").default(0),
+  failedRows: integer("failed_rows").default(0),
+  usersCreated: integer("users_created").default(0),
+  schoolsCreated: integer("schools_created").default(0),
+  dryRun: boolean("dry_run").default(false),
+  errorLog: jsonb("error_log").default('[]'),
+  reportData: jsonb("report_data"),
+  csvFileName: varchar("csv_file_name"),
+  performedBy: varchar("performed_by").references(() => users.id),
+  startedAt: timestamp("started_at").defaultNow(),
+  completedAt: timestamp("completed_at"),
+}, (table) => [
+  index("idx_migration_logs_status").on(table.status),
+  index("idx_migration_logs_started").on(table.startedAt),
 ]);
 
 /**
@@ -192,6 +225,9 @@ export const schools = pgTable("schools", {
   photoConsentApprovedAt: timestamp("photo_consent_approved_at"),
   photoConsentApprovedBy: varchar("photo_consent_approved_by").references(() => users.id),
   photoConsentReviewNotes: text("photo_consent_review_notes"),
+  isMigrated: boolean("is_migrated").default(false),
+  legacyDistrict: varchar("legacy_district"),
+  migratedAt: timestamp("migrated_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

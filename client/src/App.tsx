@@ -37,6 +37,7 @@ const Events = lazy(() => import("@/pages/events"));
 const EventLive = lazy(() => import("@/pages/event-live"));
 const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
 const Admin = lazy(() => import("@/pages/admin"));
+const Migration = lazy(() => import("@/pages/Migration"));
 const Login = lazy(() => import("@/pages/login"));
 const Register = lazy(() => import("@/pages/register"));
 const Contact = lazy(() => import("@/pages/contact"));
@@ -200,6 +201,26 @@ function Router() {
                   </Route>
                   <Route path="/admin">
                     {() => <Admin />}
+                  </Route>
+                  <Route path="/migration">
+                    {() => {
+                      if (!user?.isAdmin) {
+                        return (
+                          <div className="container mx-auto py-12 px-4">
+                            <div className="max-w-md mx-auto text-center">
+                              <h1 className="text-2xl font-bold text-red-600 mb-4">Unauthorized Access</h1>
+                              <p className="text-gray-600 mb-6">
+                                Only administrators can access the migration tool.
+                              </p>
+                              <Button onClick={() => window.location.href = "/dashboard"}>
+                                Return to Dashboard
+                              </Button>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return <Migration />;
+                    }}
                   </Route>
                 </>
               )}
