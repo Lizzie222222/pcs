@@ -113,7 +113,7 @@ import {
   type InsertAuditLog,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne } from "drizzle-orm";
+import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne, gte } from "drizzle-orm";
 import * as bcrypt from "bcrypt";
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
 import { normalizeCountryName, getAllCountryCodes } from './countryMapping';
@@ -209,6 +209,16 @@ export interface IStorage {
     countries: number;
     studentsImpacted: number;
   }>;
+  getSchoolCountsByCountry(filters?: {
+    country?: string;
+    lastActiveDays?: number;
+  }): Promise<Array<{
+    countryCode: string;
+    countryName: string;
+    totalSchools: number;
+    completedAwards: number;
+    featuredSchools: number;
+  }>>;
   getUniqueCountries(): Promise<string[]>;
   findSchoolsByEmailDomain(domain: string): Promise<Array<School & { userEmails: string[] }>>;
   
@@ -1466,6 +1476,64 @@ export class DatabaseStorage implements IStorage {
       countries: stats.countries,
       studentsImpacted: stats.studentsImpacted,
     };
+  }
+
+  async getSchoolCountsByCountry(filters: {
+    country?: string;
+    lastActiveDays?: number;
+  } = {}): Promise<Array<{
+    countryCode: string;
+    countryName: string;
+    totalSchools: number;
+    completedAwards: number;
+    featuredSchools: number;
+  }>> {
+    const conditions = [];
+    
+    // Only show schools that are on the map
+    conditions.push(eq(schools.showOnMap, true));
+    
+    if (filters.country) {
+      const allCodes = getAllCountryCodes(filters.country);
+      if (allCodes.length > 1) {
+        conditions.push(inArray(schools.country, allCodes));
+      } else {
+        conditions.push(eq(schools.country, allCodes[0]));
+      }
+    }
+    
+    if (filters.lastActiveDays) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - filters.lastActiveDays);
+      conditions.push(gte(schools.lastActiveAt, cutoffDate));
+    }
+    
+    let query = db
+      .select({
+        country: schools.country,
+        totalSchools: count(),
+        completedAwards: sql<number>`count(*) filter (where ${schools.awardCompleted} = true)`,
+        featuredSchools: sql<number>`count(*) filter (where ${schools.featuredSchool} = true)`,
+      })
+      .from(schools);
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    
+    query = query.groupBy(schools.country) as any;
+    query = query.orderBy(desc(sql`count(*)`)) as any;
+    
+    const results = await query;
+    
+    // Normalize country codes to full names
+    return results.map(row => ({
+      countryCode: row.country,
+      countryName: normalizeCountryName(row.country) || row.country,
+      totalSchools: row.totalSchools,
+      completedAwards: row.completedAwards,
+      featuredSchools: row.featuredSchools,
+    }));
   }
 
   async getUniqueCountries(): Promise<string[]> {

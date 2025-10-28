@@ -1242,6 +1242,30 @@ Return JSON with:
     }
   });
 
+  // Get school counts by country for choropleth map (cached for 15 minutes)
+  app.get('/api/schools/map/summary', async (req, res) => {
+    try {
+      const { country, lastActiveDays } = req.query;
+      const cacheKey = `schools-map-summary-${country || 'all'}-${lastActiveDays || 'all'}`;
+      const cached = apiCache.get(cacheKey);
+      
+      if (cached) {
+        return res.json(cached);
+      }
+      
+      const countryCounts = await storage.getSchoolCountsByCountry({
+        country: country as string,
+        lastActiveDays: lastActiveDays ? parseInt(lastActiveDays as string) : undefined,
+      });
+      
+      apiCache.set(cacheKey, countryCounts, CACHE_TTL.MEDIUM);
+      res.json(countryCounts);
+    } catch (error) {
+      console.error("Error fetching school counts by country:", error);
+      res.status(500).json({ message: "Failed to fetch school counts" });
+    }
+  });
+
   /**
    * @description GET /api/schools - Retrieves list of schools with optional filtering by country, type, and search term. Used for join school flow and public directory.
    * @returns {School[]} Array of school objects with pagination

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -6,134 +6,158 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { MapPin, School, Award, Globe, Download } from "lucide-react";
 import { useCountries } from "@/hooks/useCountries";
-import { MapContainer, TileLayer, useMap } from "react-leaflet";
+import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import "leaflet.heat";
 import { Footer } from "@/components/Footer";
 
-// Heat Map Component
-function HeatMapLayer({ schools }: { schools: SchoolMapData[] }) {
-  const map = useMap();
-
-  useEffect(() => {
-    if (!schools || schools.length === 0) return;
-
-    // Convert schools to heat map points with valid coordinates
-    const heatPoints: [number, number, number][] = schools
-      .filter(school => {
-        const lat = parseFloat(school.latitude);
-        const lng = parseFloat(school.longitude);
-        return !isNaN(lat) && !isNaN(lng);
-      })
-      .map(school => {
-        const lat = parseFloat(school.latitude);
-        const lng = parseFloat(school.longitude);
-        // Intensity based on school features (higher for featured/completed schools)
-        const intensity = school.featuredSchool ? 1.5 : school.awardCompleted ? 1.2 : 1.0;
-        return [lat, lng, intensity];
-      });
-
-    if (heatPoints.length === 0) return;
-
-    // Create heat layer with Leaflet Heat - privacy-preserving configuration
-    const heatLayer = (L as any).heatLayer(heatPoints, {
-      radius: 35,
-      blur: 45,
-      maxZoom: 7,
-      max: 1.5,
-      gradient: {
-        0.0: '#3B82F6',  // blue - low density
-        0.4: '#10B981',  // green - medium-low density
-        0.6: '#F59E0B',  // amber/yellow - medium-high density
-        1.0: '#EF4444',  // red - high density
-      }
-    });
-
-    heatLayer.addTo(map);
-
-    // Cleanup
-    return () => {
-      map.removeLayer(heatLayer);
-    };
-  }, [map, schools]);
-
-  return null;
+interface CountryData {
+  countryCode: string;
+  countryName: string;
+  totalSchools: number;
+  completedAwards: number;
+  featuredSchools: number;
 }
 
-interface SchoolMapData {
-  id: string;
+interface CountryProperties {
   name: string;
-  country: string;
-  latitude: string;
-  longitude: string;
-  currentStage: 'inspire' | 'investigate' | 'act';
-  awardCompleted: boolean;
-  featuredSchool: boolean;
+  iso_a2: string;
+  [key: string]: any;
+}
+
+// Color scale function - navy-tinted sequential scale
+function getColorForSchoolCount(count: number, maxCount: number): string {
+  if (count === 0 || maxCount === 0) return '#f0f4f8'; // very light gray for no schools
+  
+  const ratio = count / maxCount;
+  
+  // Navy-tinted sequential scale (light to dark blue/navy)
+  if (ratio < 0.2) return '#DBEAFE'; // very light blue
+  if (ratio < 0.4) return '#93C5FD'; // light blue
+  if (ratio < 0.6) return '#3B82F6'; // medium blue
+  if (ratio < 0.8) return '#1E40AF'; // dark blue
+  return '#1E3A8A'; // navy (darkest)
 }
 
 export default function SchoolsMap() {
   const [selectedCountry, setSelectedCountry] = useState('');
-  const [selectedLastActiveDays, setSelectedLastActiveDays] = useState('');
+  const [geoJsonData, setGeoJsonData] = useState<any>(null);
+  const [countryDataMap, setCountryDataMap] = useState<Map<string, CountryData>>(new Map());
 
   // Handle country selection with "all" conversion
   const handleCountryChange = (value: string) => {
-    // Convert "all" to empty string to show all countries
     const actualValue = value === 'all' ? '' : value;
     setSelectedCountry(actualValue);
   };
 
-  const handleLastActiveChange = (value: string) => {
-    setSelectedLastActiveDays(value === 'all' ? '' : value);
-  };
 
   const { data: countryOptions = [], isLoading: isLoadingCountries } = useCountries();
 
-  const { data: schools, isLoading } = useQuery<SchoolMapData[]>({
-    queryKey: ['/api/schools/map', selectedCountry, selectedLastActiveDays],
+  // Fetch country summary data
+  const { data: countryCounts, isLoading } = useQuery<CountryData[]>({
+    queryKey: ['/api/schools/map/summary', selectedCountry],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCountry) {
         params.set('country', selectedCountry);
       }
-      if (selectedLastActiveDays) {
-        params.set('lastActiveDays', selectedLastActiveDays);
-      }
       
-      const response = await fetch(`/api/schools/map?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch schools');
+      const response = await fetch(`/api/schools/map/summary?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch school counts');
       return response.json();
     },
   });
 
+  // Load GeoJSON country boundaries
+  useEffect(() => {
+    fetch('https://raw.githubusercontent.com/datasets/geo-countries/master/data/countries.geojson')
+      .then(res => res.json())
+      .then(data => {
+        setGeoJsonData(data);
+      })
+      .catch(err => console.error('Failed to load GeoJSON:', err));
+  }, []);
 
-  const getRegionStats = () => {
-    if (!schools) return [];
+  // Build country data map for quick lookup
+  useEffect(() => {
+    if (countryCounts) {
+      const map = new Map<string, CountryData>();
+      countryCounts.forEach(country => {
+        map.set(country.countryCode, country);
+        map.set(country.countryName, country);
+      });
+      setCountryDataMap(map);
+    }
+  }, [countryCounts]);
+
+  // Calculate max count for color scaling
+  const maxCount = countryCounts ? Math.max(...countryCounts.map(c => c.totalSchools), 1) : 1;
+
+  // Style function for GeoJSON countries
+  const styleCountry = (feature: any) => {
+    const countryName = feature.properties.ADMIN || feature.properties.name;
+    const iso_a2 = feature.properties.ISO_A2 || feature.properties.iso_a2;
     
-    const regionStats = schools.reduce((acc, school) => {
-      const region = school.country;
-      if (!acc[region]) {
-        acc[region] = {
-          name: region,
-          total: 0,
-          completed: 0,
-          featured: 0,
-        };
-      }
-      acc[region].total++;
-      if (school.awardCompleted) acc[region].completed++;
-      if (school.featuredSchool) acc[region].featured++;
-      return acc;
-    }, {} as Record<string, any>);
-
-    return Object.values(regionStats);
+    // Try to find country data by ISO code or name
+    const countryData = countryDataMap.get(iso_a2) || countryDataMap.get(countryName);
+    const schoolCount = countryData?.totalSchools || 0;
+    
+    return {
+      fillColor: getColorForSchoolCount(schoolCount, maxCount),
+      weight: 1,
+      opacity: 1,
+      color: '#cbd5e1',
+      fillOpacity: 0.7
+    };
   };
 
-  const totalStats = schools ? {
-    total: schools.length,
-    completed: schools.filter(s => s.awardCompleted).length,
-    countries: new Set(schools.map(s => s.country)).size,
-    featured: schools.filter(s => s.featuredSchool).length,
+  // Highlight country on hover
+  const onEachCountry = (feature: any, layer: L.Layer) => {
+    const countryName = feature.properties.ADMIN || feature.properties.name;
+    const iso_a2 = feature.properties.ISO_A2 || feature.properties.iso_a2;
+    const countryData = countryDataMap.get(iso_a2) || countryDataMap.get(countryName);
+    
+    if (countryData) {
+      const popupContent = `
+        <div style="font-family: sans-serif;">
+          <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${countryData.countryName}</h3>
+          <div style="font-size: 14px; color: #4b5563;">
+            <div style="margin: 4px 0;"><strong>Total Schools:</strong> ${countryData.totalSchools}</div>
+            <div style="margin: 4px 0;"><strong>Awards Completed:</strong> ${countryData.completedAwards}</div>
+            <div style="margin: 4px 0;"><strong>Featured Schools:</strong> ${countryData.featuredSchools}</div>
+          </div>
+        </div>
+      `;
+      
+      layer.bindPopup(popupContent);
+      
+      layer.on({
+        mouseover: (e) => {
+          const layer = e.target;
+          layer.setStyle({
+            weight: 2,
+            color: '#1e3a8a',
+            fillOpacity: 0.9
+          });
+        },
+        mouseout: (e) => {
+          const layer = e.target;
+          layer.setStyle({
+            weight: 1,
+            color: '#cbd5e1',
+            fillOpacity: 0.7
+          });
+        }
+      });
+    }
+  };
+
+  // Calculate total stats
+  const totalStats = countryCounts ? {
+    total: countryCounts.reduce((sum, c) => sum + c.totalSchools, 0),
+    completed: countryCounts.reduce((sum, c) => sum + c.completedAwards, 0),
+    countries: countryCounts.length,
+    featured: countryCounts.reduce((sum, c) => sum + c.featuredSchools, 0),
   } : { total: 0, completed: 0, countries: 0, featured: 0 };
 
   return (
@@ -145,7 +169,7 @@ export default function SchoolsMap() {
             Global School Network
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            View regional activity density of schools participating in the Plastic Clever Schools program
+            Countries colored by number of participating schools in the Plastic Clever Schools program
           </p>
         </div>
 
@@ -154,26 +178,26 @@ export default function SchoolsMap() {
           <CardContent className="p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-6">
-                <div className="text-sm text-gray-600 font-medium">Activity Density:</div>
+                <div className="text-sm text-gray-600 font-medium">School Count:</div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#DBEAFE' }}></div>
                   <span className="text-sm text-gray-600">Low</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-green-500 rounded-full"></div>
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#3B82F6' }}></div>
                   <span className="text-sm text-gray-600">Medium</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#1E40AF' }}></div>
                   <span className="text-sm text-gray-600">High</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+                  <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#1E3A8A' }}></div>
                   <span className="text-sm text-gray-600">Very High</span>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
-                <Select value={selectedCountry} onValueChange={handleCountryChange}>
+                <Select value={selectedCountry || 'all'} onValueChange={handleCountryChange}>
                   <SelectTrigger className="w-48" data-testid="select-country-filter">
                     <SelectValue placeholder="All Countries" />
                   </SelectTrigger>
@@ -183,18 +207,6 @@ export default function SchoolsMap() {
                         {option.label}
                       </SelectItem>
                     ))}
-                  </SelectContent>
-                </Select>
-                <Select value={selectedLastActiveDays || 'all'} onValueChange={handleLastActiveChange}>
-                  <SelectTrigger className="w-48" data-testid="select-last-active-filter">
-                    <SelectValue placeholder="All Time" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Time</SelectItem>
-                    <SelectItem value="30">Last 30 Days</SelectItem>
-                    <SelectItem value="90">Last 90 Days</SelectItem>
-                    <SelectItem value="180">Last 6 Months</SelectItem>
-                    <SelectItem value="365">Last Year</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button variant="outline" data-testid="button-export-data">
@@ -218,9 +230,12 @@ export default function SchoolsMap() {
                   .leaflet-container {
                     background-color: #f5f5f5 !important;
                   }
+                  .leaflet-popup-content-wrapper {
+                    border-radius: 8px;
+                  }
                 `
               }} />
-              {isLoading ? (
+              {isLoading || !geoJsonData ? (
                 <div className="h-full flex items-center justify-center bg-gray-100">
                   <div className="text-center">
                     <Globe className="w-16 h-16 mx-auto mb-4 text-gray-400" />
@@ -229,7 +244,7 @@ export default function SchoolsMap() {
                 </div>
               ) : (
                 <MapContainer
-                  center={[20, 0]} // Center on world view
+                  center={[20, 0]}
                   zoom={2}
                   minZoom={2}
                   maxZoom={7}
@@ -242,8 +257,15 @@ export default function SchoolsMap() {
                     className="map-tiles"
                   />
                   
-                  {/* Heat Map Layer - Privacy-preserving visualization */}
-                  {schools && schools.length > 0 && <HeatMapLayer schools={schools} />}
+                  {/* Choropleth Layer */}
+                  {geoJsonData && (
+                    <GeoJSON
+                      key={[...countryDataMap.values()].map(c => `${c.countryCode}:${c.totalSchools}`).join('|')}
+                      data={geoJsonData}
+                      style={styleCountry}
+                      onEachFeature={onEachCountry}
+                    />
+                  )}
                 </MapContainer>
               )}
             </div>
@@ -289,7 +311,7 @@ export default function SchoolsMap() {
         {/* Regional Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-navy">Regional Breakdown</CardTitle>
+            <CardTitle className="text-navy">Country Breakdown</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
@@ -303,29 +325,40 @@ export default function SchoolsMap() {
               </div>
             ) : (
               <div className="space-y-3">
-                {getRegionStats().map((region: any) => (
-                  <div key={region.name} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 rounded-lg gap-3">
-                    <div className="flex items-center gap-3">
-                      <MapPin className="h-5 w-5 sm:h-4 sm:w-4 text-gray-500 flex-shrink-0" />
-                      <span className="font-medium text-navy">{region.name}</span>
-                    </div>
-                    <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-600 ml-8 sm:ml-0">
-                      <div className="flex items-center gap-1.5">
-                        <School className="h-4 w-4 sm:h-3 sm:w-3 flex-shrink-0" />
-                        <span>{region.total} schools</span>
+                {countryCounts && countryCounts.length > 0 ? (
+                  countryCounts
+                    .sort((a, b) => b.totalSchools - a.totalSchools)
+                    .map((country) => (
+                      <div key={country.countryCode} className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-gray-50 rounded-lg gap-3">
+                        <div className="flex items-center gap-3">
+                          <div 
+                            className="w-4 h-4 rounded-full flex-shrink-0" 
+                            style={{ backgroundColor: getColorForSchoolCount(country.totalSchools, maxCount) }}
+                          />
+                          <span className="font-medium text-navy">{country.countryName}</span>
+                        </div>
+                        <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-600 ml-8 sm:ml-0">
+                          <div className="flex items-center gap-1.5">
+                            <School className="h-4 w-4 sm:h-3 sm:w-3 flex-shrink-0" />
+                            <span>{country.totalSchools} schools</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <Award className="h-4 w-4 sm:h-3 sm:w-3 flex-shrink-0" />
+                            <span>{country.completedAwards} completed</span>
+                          </div>
+                          {country.featuredSchools > 0 && (
+                            <Badge variant="outline" className="text-yellow border-yellow">
+                              {country.featuredSchools} featured
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Award className="h-4 w-4 sm:h-3 sm:w-3 flex-shrink-0" />
-                        <span>{region.completed} completed</span>
-                      </div>
-                      {region.featured > 0 && (
-                        <Badge variant="outline" className="text-yellow border-yellow">
-                          {region.featured} featured
-                        </Badge>
-                      )}
-                    </div>
+                    ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    No schools found for the selected filters
                   </div>
-                ))}
+                )}
               </div>
             )}
           </CardContent>
