@@ -1,12 +1,17 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useToast } from '@/hooks/use-toast';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Upload, Download, AlertTriangle, CheckCircle, FileSpreadsheet, Users, Building, Link as LinkIcon, Loader2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Textarea } from '@/components/ui/textarea';
+import { Upload, Download, AlertTriangle, CheckCircle, FileSpreadsheet, Users, Building, Link as LinkIcon, Loader2, FileText, Info, Database } from 'lucide-react';
+import { queryClient } from '@/lib/queryClient';
 
 type ImportStep = 'upload' | 'importing' | 'results';
 
@@ -39,6 +44,7 @@ export default function DataImport() {
   const { toast } = useToast();
   const [currentStep, setCurrentStep] = useState<ImportStep>('upload');
   const [activeTab, setActiveTab] = useState('schools');
+  const [migrationDialogOpen, setMigrationDialogOpen] = useState(false);
   
   // File states
   const [schoolsFile, setSchoolsFile] = useState<File | null>(null);
@@ -213,6 +219,55 @@ export default function DataImport() {
         </CardHeader>
       </Card>
 
+      {/* User Migration Card */}
+      <Card className="border-2 border-pcs_blue/20 bg-gradient-to-br from-blue-50 to-white">
+        <CardHeader>
+          <div className="flex items-start justify-between">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-pcs_blue/10 rounded-lg">
+                <Database className="h-6 w-6 text-pcs_blue" />
+              </div>
+              <div>
+                <CardTitle className="text-xl text-pcs_blue">Legacy System User Migration</CardTitle>
+                <CardDescription className="mt-1.5">
+                  Import users from the old WordPress system with temporary passwords
+                </CardDescription>
+              </div>
+            </div>
+            <Dialog open={migrationDialogOpen} onOpenChange={setMigrationDialogOpen}>
+              <DialogTrigger asChild>
+                <Button 
+                  className="bg-pcs_blue hover:bg-pcs_blue/90"
+                  data-testid="button-open-migration"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Open Migration Tool
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-7xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle className="text-2xl">User Migration Tool</DialogTitle>
+                  <DialogDescription>
+                    Import users from the legacy WordPress system
+                  </DialogDescription>
+                </DialogHeader>
+                <MigrationDialogContent />
+              </DialogContent>
+            </Dialog>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              <strong>Migration Tool:</strong> This feature allows you to migrate users from the old WordPress system. 
+              It will parse the CSV export, filter valid users (with stage_1 data and valid emails), create schools and users, 
+              and generate temporary passwords for each user.
+            </AlertDescription>
+          </Alert>
+        </CardContent>
+      </Card>
+
       {currentStep === 'upload' && (
         <>
           <Alert>
@@ -308,9 +363,9 @@ export default function DataImport() {
                   onClick={handleImport}
                   disabled={
                     (!schoolsFile && !usersFile && !relationshipsFile) ||
-                    (schoolsValidation && !schoolsValidation.success) ||
-                    (usersValidation && !usersValidation.success) ||
-                    (relationshipsValidation && !relationshipsValidation.success)
+                    !!(schoolsValidation && !schoolsValidation.success) ||
+                    !!(usersValidation && !usersValidation.success) ||
+                    !!(relationshipsValidation && !relationshipsValidation.success)
                   }
                   className="bg-pcs_blue hover:bg-pcs_blue/90"
                   data-testid="button-start-import"
@@ -603,5 +658,324 @@ function ResultCard({ t, title, icon, processed, succeeded, failed, extra }: Res
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+function MigrationDialogContent() {
+  const { toast } = useToast();
+  const [csvContent, setCsvContent] = useState('');
+  const [selectedLog, setSelectedLog] = useState<string | null>(null);
+
+  const { data: migrationLogs, isLoading: logsLoading } = useQuery({
+    queryKey: ['/api/admin/migration/logs'],
+  });
+
+  const { data: migratedUsers } = useQuery({
+    queryKey: ['/api/admin/migration/users'],
+  });
+
+  const { data: selectedLogDetail } = useQuery({
+    queryKey: ['/api/admin/migration/logs', selectedLog],
+    enabled: !!selectedLog,
+  });
+
+  const runMigrationMutation = useMutation({
+    mutationFn: async ({ dryRun }: { dryRun: boolean }) => {
+      const response = await fetch('/api/admin/migration/run', {
+        method: 'POST',
+        body: JSON.stringify({ csvContent, dryRun }),
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Migration failed');
+      }
+      return response.json();
+    },
+    onSuccess: (data: any, variables) => {
+      toast({
+        title: variables.dryRun ? 'Dry Run Complete' : 'Migration Complete',
+        description: `Processed ${data.result.processedRows} rows. Created ${data.result.usersCreated} users and ${data.result.schoolsCreated} schools.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/migration/logs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/migration/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: 'Migration Failed',
+        description: error.message || 'An error occurred during migration',
+        variant: 'destructive',
+      });
+    },
+  });
+
+  const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const text = e.target?.result as string;
+        setCsvContent(text);
+        toast({
+          title: 'CSV Loaded',
+          description: `File "${file.name}" loaded successfully`,
+        });
+      };
+      reader.readAsText(file);
+    }
+  };
+
+  const downloadCredentials = (reportData: any) => {
+    if (!reportData?.userCredentials) return;
+
+    const csvData = [
+      ['Email', 'Temporary Password', 'School Name'],
+      ...reportData.userCredentials.map((u: any) => [u.email, u.temporaryPassword, u.schoolName])
+    ].map(row => row.join(',')).join('\n');
+
+    const blob = new Blob([csvData], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `migration-credentials-${new Date().toISOString()}.csv`;
+    a.click();
+  };
+
+  return (
+    <div className="space-y-6">
+      <Alert>
+        <Info className="h-4 w-4" />
+        <AlertDescription>
+          This tool migrates users from the old WordPress system. It will parse the CSV, filter valid users (with stage_1 data and valid emails), create schools and users, and generate temporary passwords.
+        </AlertDescription>
+      </Alert>
+
+      <Tabs defaultValue="upload" className="w-full">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="upload" data-testid="tab-migration-upload">Upload & Run</TabsTrigger>
+          <TabsTrigger value="logs" data-testid="tab-migration-logs">Migration Logs</TabsTrigger>
+          <TabsTrigger value="users" data-testid="tab-migration-users">Migrated Users</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="upload" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle data-testid="heading-migration-upload">Upload CSV File</CardTitle>
+              <CardDescription>Select the user export CSV file from the old system</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <input
+                  type="file"
+                  accept=".csv"
+                  onChange={handleFileUpload}
+                  className="mb-4"
+                  data-testid="input-migration-csv-file"
+                />
+                
+                {csvContent && (
+                  <div className="space-y-4">
+                    <Alert>
+                      <CheckCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        CSV file loaded successfully. {csvContent.split('\n').length - 1} rows detected.
+                      </AlertDescription>
+                    </Alert>
+
+                    <Textarea
+                      value={csvContent.substring(0, 500) + '...'}
+                      readOnly
+                      className="h-32 font-mono text-xs"
+                      placeholder="CSV preview will appear here..."
+                      data-testid="textarea-migration-csv-preview"
+                    />
+
+                    <div className="flex gap-4">
+                      <Button
+                        onClick={() => runMigrationMutation.mutate({ dryRun: true })}
+                        disabled={runMigrationMutation.isPending}
+                        data-testid="button-migration-dry-run"
+                      >
+                        <Info className="h-4 w-4 mr-2" />
+                        Dry Run (Preview Only)
+                      </Button>
+
+                      <Button
+                        onClick={() => runMigrationMutation.mutate({ dryRun: false })}
+                        disabled={runMigrationMutation.isPending}
+                        variant="destructive"
+                        data-testid="button-migration-run"
+                      >
+                        <Upload className="h-4 w-4 mr-2" />
+                        Run Migration
+                      </Button>
+                    </div>
+
+                    {runMigrationMutation.isPending && (
+                      <Alert>
+                        <Info className="h-4 w-4" />
+                        <AlertDescription>Processing migration... This may take a few minutes.</AlertDescription>
+                      </Alert>
+                    )}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="logs" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle data-testid="heading-migration-logs">Migration History</CardTitle>
+              <CardDescription>View all migration runs and their results</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {logsLoading ? (
+                <p>Loading logs...</p>
+              ) : (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Type</TableHead>
+                      <TableHead>Users Created</TableHead>
+                      <TableHead>Schools Created</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(migrationLogs as any[] || []).map((log: any) => (
+                      <TableRow key={log.id} data-testid={`row-migration-log-${log.id}`}>
+                        <TableCell>{new Date(log.startedAt).toLocaleString()}</TableCell>
+                        <TableCell>
+                          <Badge variant={log.status === 'completed' ? 'default' : log.status === 'failed' ? 'destructive' : 'secondary'}>
+                            {log.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline">{log.dryRun ? 'Dry Run' : 'Live'}</Badge>
+                        </TableCell>
+                        <TableCell data-testid={`text-migration-users-${log.id}`}>{log.usersCreated}</TableCell>
+                        <TableCell data-testid={`text-migration-schools-${log.id}`}>{log.schoolsCreated}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedLog(log.id)}
+                            data-testid={`button-migration-view-${log.id}`}
+                          >
+                            <FileText className="h-4 w-4 mr-2" />
+                            View Details
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
+
+              {selectedLogDetail && (selectedLogDetail as any).totalRows !== undefined ? (
+                <div className="mt-6 p-4 border rounded-lg space-y-4" data-testid="section-migration-log-details">
+                  <h3 className="font-semibold text-lg">Migration Details</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Rows</p>
+                      <p className="text-2xl font-bold" data-testid="text-migration-total-rows">{(selectedLogDetail as any).totalRows}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Valid Rows</p>
+                      <p className="text-2xl font-bold" data-testid="text-migration-valid-rows">{(selectedLogDetail as any).validRows}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Skipped Rows</p>
+                      <p className="text-2xl font-bold" data-testid="text-migration-skipped-rows">{(selectedLogDetail as any).skippedRows}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Failed Rows</p>
+                      <p className="text-2xl font-bold" data-testid="text-migration-failed-rows">{(selectedLogDetail as any).failedRows}</p>
+                    </div>
+                  </div>
+
+                  {(selectedLogDetail as any).reportData && !(selectedLogDetail as any).dryRun && (
+                    <Button
+                      onClick={() => downloadCredentials((selectedLogDetail as any).reportData)}
+                      data-testid="button-migration-download-credentials"
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      Download Credentials CSV
+                    </Button>
+                  )}
+
+                  {(selectedLogDetail as any).errorLog && (selectedLogDetail as any).errorLog.length > 0 && (
+                    <div>
+                      <h4 className="font-semibold mb-2 flex items-center gap-2">
+                        <AlertTriangle className="h-4 w-4 text-destructive" />
+                        Errors ({(selectedLogDetail as any).errorLog.length})
+                      </h4>
+                      <div className="max-h-48 overflow-y-auto space-y-2">
+                        {(selectedLogDetail as any).errorLog.slice(0, 10).map((error: any, idx: number) => (
+                          <div key={idx} className="text-sm p-2 bg-destructive/10 rounded" data-testid={`migration-error-${idx}`}>
+                            <p className="font-mono">Row {error.row}: {error.email}</p>
+                            <p className="text-muted-foreground">{error.reason}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : null}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="users" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle data-testid="heading-migration-migrated-users">Migrated Users</CardTitle>
+              <CardDescription>
+                All users imported from the old system ({(migratedUsers as any)?.total || 0} total)
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Migrated At</TableHead>
+                    <TableHead>Legacy ID</TableHead>
+                    <TableHead>Needs Evidence Resubmission</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {((migratedUsers as any)?.users || []).map((user: any) => (
+                    <TableRow key={user.id} data-testid={`row-migration-user-${user.id}`}>
+                      <TableCell data-testid={`text-migration-email-${user.id}`}>{user.email}</TableCell>
+                      <TableCell>{user.firstName} {user.lastName}</TableCell>
+                      <TableCell>{new Date(user.migratedAt).toLocaleString()}</TableCell>
+                      <TableCell className="font-mono text-sm">{user.legacyUserId}</TableCell>
+                      <TableCell>
+                        {user.needsEvidenceResubmission ? (
+                          <Badge variant="outline" className="bg-yellow-100">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Yes
+                          </Badge>
+                        ) : (
+                          <span className="text-muted-foreground">No</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
   );
 }

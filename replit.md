@@ -30,13 +30,23 @@ The application employs a modern web architecture with distinct frontend and bac
 -   **User Management**: Hierarchical school team management and token-based admin invitation system.
 
 ### Key Data Models
-Core entities include Users, Schools, Evidence (with approval workflows and assignment), Audit Logs (activity history tracking), Reduction Promises (Action Plans), Resources, Case Studies, Events, Event Banners, Media Assets, Printable Form Submissions, Import Batches, Notifications, Document Locks (real-time collaboration), and Chat Messages.
+Core entities include Users, Schools, Evidence (with approval workflows and assignment), Audit Logs (activity history tracking), Reduction Promises (Action Plans), Resources, Case Studies, Events, Event Banners, Media Assets, Printable Form Submissions, Import Batches, Migration Logs (legacy user migration tracking), Notifications, Document Locks (real-time collaboration), and Chat Messages.
 
 ### UI/UX Decisions
 -   **Design System**: PCS brand colors, specific fonts (Gilroy Bold, Century Gothic Regular), and a component-based design using Radix UI and shadcn/ui. Custom favicon using the official PCS logo.
 -   **Navigation**: Public and authenticated routes, including a tab-based dashboard and enhanced admin navigation.
 -   **Features**: Comprehensive analytics with visualizations and PDF export, dynamic evidence requirements, student-led action plans, multi-step school registration (country-adaptive with complete i18n support), and multi-language support (14 languages, RTL support). Includes an AI-powered live chat widget.
--   **Admin UI**: Integrated evidence requirements, school detail management, manual school progression, an 8-step Case Study Wizard, Resource Management with file replacement and visibility controls, and a Data Import System. PDF export allows section selection. Multi-language event creator, bulk resource upload with AI-powered auto-fill for metadata, and a comprehensive Review Queue (Evidence, Audits, Photo Consent) with real-time badge counts and streamlined workflows. Permission and Visibility Indicators for evidence and case studies.
+-   **Admin UI**: Integrated evidence requirements, school detail management, manual school progression, an 8-step Case Study Wizard, Resource Management with file replacement and visibility controls, and a Data Import System with Legacy User Migration tool. PDF export allows section selection. Multi-language event creator, bulk resource upload with AI-powered auto-fill for metadata, and a comprehensive Review Queue (Evidence, Audits, Photo Consent) with real-time badge counts and streamlined workflows. Permission and Visibility Indicators for evidence and case studies.
+-   **Legacy User Migration System**: Comprehensive data migration tool for importing users from the old WordPress system (accessible via Data Import page):
+    - **CSV Import**: Parses legacy user data from 35,863-row CSV file with validation
+    - **Dry-Run Mode**: Safe testing mode to preview migration without making changes
+    - **Smart School Deduplication**: Matches schools by name + district + country to prevent data corruption
+    - **User Creation**: Generates secure random passwords and assigns appropriate roles (head_teacher for solo users, teacher for teams)
+    - **Stage Mapping**: Converts old stage_1/2/3 data to new inspire/investigate/act progression
+    - **Tracking & Logging**: All migrated users flagged with isMigrated, legacyUserId, and needsEvidenceResubmission for onboarding notices
+    - **Credential Export**: Downloadable CSV report with login credentials for distribution
+    - **Security**: Temporary passwords only stored in report (not database), admin-only access
+    - **User Onboarding**: Homepage notice for migrated users about evidence resubmission requirement
 -   **Events System**: Full event lifecycle management, event landing pages with multi-language support, YouTube embedding, downloadable resources, testimonials, automated email reminders, capacity tracking, access links, real-time status badges, dashboard notifications, and calendar integration. Admin can attach existing resources.
 -   **Inspiration Page**: Unified gallery displaying curated case studies and approved school evidence submissions with smart sorting and filtering.
 -   **Resources System**: Enhanced resources page with language tabs, gradient-styled cards, NEW and RECOMMENDED badges, smart resource ordering, and locked resource visibility for non-registered users. Automatic notification system alerts schools when new resources match their current stage. Admin can replace resource files.
