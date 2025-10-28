@@ -209,7 +209,7 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
       afterImage: null,
       metaDescription: "",
       metaKeywords: "",
-      createdBy: "",
+      createdBy: user?.id || "",
     },
   });
 

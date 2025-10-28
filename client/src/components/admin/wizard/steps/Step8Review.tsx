@@ -529,15 +529,15 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
                 <div>
                   <p className="text-sm font-medium text-muted-foreground mb-2">Image Gallery Preview:</p>
                   <div className="grid grid-cols-4 gap-2">
-                    {formValues.images?.slice(0, 8).map((image: string, idx: number) => (
+                    {formValues.images?.slice(0, 8).map((image: any, idx: number) => (
                       <div 
                         key={idx} 
                         className="aspect-square rounded overflow-hidden bg-muted"
                         data-testid={`thumbnail-image-${idx}`}
                       >
                         <img 
-                          src={image} 
-                          alt={`Preview ${idx + 1}`} 
+                          src={typeof image === 'string' ? image : image.url} 
+                          alt={typeof image === 'string' ? `Preview ${idx + 1}` : (image.altText || `Preview ${idx + 1}`)} 
                           className="w-full h-full object-cover"
                         />
                       </div>
@@ -705,31 +705,89 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
         </Card>
       )}
 
-      {/* Categories & Tags */}
-      <Card data-testid="card-categories-tags">
-        <CardHeader>
-          <h3 className="text-2xl font-semibold leading-none tracking-tight">Categories & Tags</h3>
-          <CardDescription>
-            Help others discover your case study
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <CategorisationSection form={form} />
-        </CardContent>
-      </Card>
+      {/* Categories & Tags Summary - Read Only */}
+      {(formValues.categories?.length > 0 || formValues.tags?.length > 0) && (
+        <Card data-testid="card-categories-tags-summary">
+          <CardHeader>
+            <CardTitle className="text-lg">Categories & Tags</CardTitle>
+            <CardDescription>
+              Classification and discoverability
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {formValues.categories && formValues.categories.length > 0 && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Categories:</p>
+                <div className="flex flex-wrap gap-2">
+                  {formValues.categories.map((category: string, idx: number) => (
+                    <Badge key={idx} variant="secondary">{category}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {formValues.tags && formValues.tags.length > 0 && (
+              <div>
+                <p className="text-sm font-medium text-muted-foreground mb-2">Tags:</p>
+                <div className="flex flex-wrap gap-2">
+                  {formValues.tags.map((tag: string, idx: number) => (
+                    <Badge key={idx} variant="outline">{tag}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            {onStepChange && (
+              <Button
+                variant="link"
+                size="sm"
+                className="h-auto p-0 mt-2"
+                onClick={() => onStepChange(6)}
+                data-testid="button-edit-categories"
+              >
+                Edit Categories & Tags <ArrowRight className="h-3 w-3 ml-1" />
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
-      {/* Publication Settings */}
-      <Card data-testid="card-publication-settings">
-        <CardHeader>
-          <h3 className="text-2xl font-semibold leading-none tracking-tight">Publication Settings</h3>
-          <CardDescription>
-            Control visibility and SEO
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <TemplateStatusSection form={form} />
-        </CardContent>
-      </Card>
+      {/* SEO Settings Summary - Read Only */}
+      {(formValues.metaDescription || formValues.metaKeywords) && (
+        <Card data-testid="card-seo-summary">
+          <CardHeader>
+            <CardTitle className="text-lg">SEO Settings</CardTitle>
+            <CardDescription>
+              Search engine optimization
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {formValues.metaDescription && (
+              <SummaryItem 
+                label="Meta Description" 
+                value={formValues.metaDescription} 
+                testId="summary-meta-description"
+              />
+            )}
+            {formValues.metaKeywords && (
+              <SummaryItem 
+                label="Meta Keywords" 
+                value={formValues.metaKeywords} 
+                testId="summary-meta-keywords"
+              />
+            )}
+            {onStepChange && (
+              <Button
+                variant="link"
+                size="sm"
+                className="h-auto p-0 mt-2"
+                onClick={() => onStepChange(7)}
+                data-testid="button-edit-seo"
+              >
+                Edit SEO Settings <ArrowRight className="h-3 w-3 ml-1" />
+              </Button>
+            )}
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
