@@ -4458,6 +4458,44 @@ Return JSON with:
     }
   });
 
+  // Delete individual evidence (admin only)
+  app.delete('/api/admin/evidence/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const userId = req.user.id;
+
+      // Get evidence before deletion for logging
+      const evidence = await storage.getEvidence(id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+
+      // Delete the evidence
+      const deleted = await storage.deleteEvidence(id);
+      if (!deleted) {
+        return res.status(500).json({ message: "Failed to delete evidence" });
+      }
+
+      // Log the deletion
+      await logAuditAction(
+        userId,
+        'deleted',
+        'evidence',
+        id,
+        {
+          title: evidence.title,
+          stage: evidence.stage,
+          schoolId: evidence.schoolId,
+        }
+      );
+
+      res.json({ success: true, message: "Evidence deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting evidence:", error);
+      res.status(500).json({ message: "Failed to delete evidence" });
+    }
+  });
+
   // Assign evidence to admin
   app.patch('/api/admin/evidence/:id/assign', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
