@@ -131,9 +131,9 @@ const WIZARD_STEPS = [
   { id: 2, label: "Basic Info", description: "School & title" },
   { id: 3, label: "Content", description: "Write your story" },
   { id: 4, label: "Media", description: "Add images" },
-  { id: 5, label: "Enhancements", description: "Quotes & metrics" },
-  { id: 6, label: "Categories & Tags", description: "Organize" },
-  { id: 7, label: "Publication Settings", description: "SEO & visibility" },
+  { id: 5, label: "Enhancements", description: "Quotes & metrics (Optional)" },
+  { id: 6, label: "Categories & Tags", description: "Organize (Optional)" },
+  { id: 7, label: "Publication Settings", description: "SEO & visibility (Optional)" },
   { id: 8, label: "Review & Publish", description: "Final check" },
 ];
 
@@ -367,19 +367,18 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
     const isValid = await validateStep(currentStep);
     
     if (!isValid) {
+      const validation = getStepValidationDetails(currentStep);
       toast({
         title: "Incomplete Step",
-        description: "Please complete all required fields before proceeding",
+        description: validation.errors.length > 0 
+          ? validation.errors[0] 
+          : "Please complete all required fields before proceeding",
         variant: "destructive",
       });
       return;
     }
 
-    // Mark current step as completed
-    if (!completedSteps.includes(currentStep)) {
-      setCompletedSteps([...completedSteps, currentStep]);
-    }
-
+    // Steps are auto-marked as completed by the validation useEffect
     setCurrentStep(Math.min(currentStep + 1, WIZARD_STEPS.length));
   };
 
@@ -395,29 +394,24 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
     }
 
     // For forward navigation, validate all steps between current and target
-    const validSteps: number[] = [];
     for (let i = currentStep; i < targetStep; i++) {
-      const isValid = await validateStep(i);
-      if (!isValid) {
-        const validation = getStepValidationDetails(i);
+      const validation = getStepValidationDetails(i);
+      // Only block if the step has actual errors AND it's not optional
+      const isOptionalStep = i === 5 || i === 6 || i === 7;
+      if (!validation.valid && !isOptionalStep) {
         toast({
           title: "Cannot Skip Steps",
-          description: `Step ${i} has ${validation.errors.length} error(s) that must be resolved first.`,
+          description: validation.errors.length > 0 
+            ? validation.errors[0]
+            : `Step ${i} must be completed first.`,
           variant: "destructive",
         });
         return;
       }
-      validSteps.push(i);
     }
 
-    // Mark all validated steps as completed in a single update
-    setCompletedSteps(prev => {
-      const newCompleted = new Set(prev);
-      validSteps.forEach(step => newCompleted.add(step));
-      return Array.from(newCompleted);
-    });
-
-    // All intermediate steps are valid, navigate to target
+    // Steps are auto-marked as completed by the validation useEffect
+    // All intermediate steps are valid or optional, navigate to target
     setCurrentStep(targetStep);
   };
 
@@ -521,10 +515,21 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
   useEffect(() => {
     const updateValidation = () => {
       const newValidation: Record<number, { valid: boolean; warnings: string[]; errors: string[] }> = {};
+      const newCompletedSteps: number[] = [];
+      
       for (let i = 1; i <= WIZARD_STEPS.length; i++) {
         newValidation[i] = getStepValidationDetails(i);
+        
+        // Auto-mark step as completed if it's valid
+        // OR if it's an optional step (5, 6, 7) that has been visited
+        const isOptionalStep = i === 5 || i === 6 || i === 7;
+        if (newValidation[i].valid || (isOptionalStep && i < currentStep)) {
+          newCompletedSteps.push(i);
+        }
       }
+      
       setStepValidation(newValidation);
+      setCompletedSteps(newCompletedSteps);
       
       // Update canProceed for current step
       setCanProceedState(newValidation[currentStep].valid);
