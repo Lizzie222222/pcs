@@ -36,11 +36,11 @@ function HeatMapLayer({ schools }: { schools: SchoolMapData[] }) {
 
     if (heatPoints.length === 0) return;
 
-    // Create heat layer with Leaflet Heat - enhanced for better visibility
+    // Create heat layer with Leaflet Heat - privacy-preserving configuration
     const heatLayer = (L as any).heatLayer(heatPoints, {
-      radius: 30,
-      blur: 40,
-      maxZoom: 12,
+      radius: 35,
+      blur: 45,
+      maxZoom: 7,
       max: 1.5,
       gradient: {
         0.0: '#3B82F6',  // blue - low density
@@ -137,7 +137,7 @@ export default function SchoolsMap() {
             Global School Network
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Explore the worldwide community of schools participating in the Plastic Clever Schools program
+            View regional activity density of schools participating in the Plastic Clever Schools program
           </p>
         </div>
 
@@ -146,17 +146,22 @@ export default function SchoolsMap() {
           <CardContent className="p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-6">
+                <div className="text-sm text-gray-600 font-medium">Activity Density:</div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-pcs_blue rounded-full"></div>
-                  <span className="text-sm text-gray-600">In Progress</span>
+                  <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
+                  <span className="text-sm text-gray-600">Low</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-                  <span className="text-sm text-gray-600">Award Completed</span>
+                  <span className="text-sm text-gray-600">Medium</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="w-4 h-4 bg-yellow rounded-full"></div>
-                  <span className="text-sm text-gray-600">Featured Schools</span>
+                  <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
+                  <span className="text-sm text-gray-600">High</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-4 h-4 bg-red-500 rounded-full"></div>
+                  <span className="text-sm text-gray-600">Very High</span>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
@@ -193,12 +198,6 @@ export default function SchoolsMap() {
                   .leaflet-container {
                     background-color: #f5f5f5 !important;
                   }
-                  .custom-div-icon div {
-                    box-shadow: 0 3px 8px rgba(0,0,0,0.4) !important;
-                    border: 3px solid white !important;
-                    width: 14px !important;
-                    height: 14px !important;
-                  }
                 `
               }} />
               {isLoading ? (
@@ -212,6 +211,8 @@ export default function SchoolsMap() {
                 <MapContainer
                   center={[20, 0]} // Center on world view
                   zoom={2}
+                  minZoom={2}
+                  maxZoom={7}
                   style={{ height: '100%', width: '100%' }}
                   data-testid="leaflet-map"
                 >
@@ -221,63 +222,8 @@ export default function SchoolsMap() {
                     className="map-tiles"
                   />
                   
-                  {/* Heat Map Layer */}
+                  {/* Heat Map Layer - Privacy-preserving visualization */}
                   {schools && schools.length > 0 && <HeatMapLayer schools={schools} />}
-                  
-                  {/* Individual Markers for detailed information */}
-                  {schools && schools.map((school) => {
-                    const lat = parseFloat(school.latitude);
-                    const lng = parseFloat(school.longitude);
-                    
-                    // Skip invalid coordinates
-                    if (isNaN(lat) || isNaN(lng)) return null;
-                    
-                    const markerColor = school.featuredSchool 
-                      ? '#f59e0b' // bright amber/yellow
-                      : school.awardCompleted 
-                      ? '#059669' // vibrant green
-                      : school.currentStage === 'inspire' 
-                      ? '#1d4ed8' // bright blue
-                      : school.currentStage === 'investigate'
-                      ? '#0891b2' // bright cyan
-                      : '#dc2626'; // bright red for act
-                    
-                    return (
-                      <Marker
-                        key={school.id}
-                        position={[lat, lng]}
-                        icon={createCustomIcon(markerColor)}
-                        data-testid={`map-marker-${school.id}`}
-                      >
-                        <Popup>
-                          <div className="min-w-48">
-                            <div className="font-semibold text-navy mb-1">{school.name}</div>
-                            <div className="text-sm text-gray-600 mb-2">{school.country}</div>
-                            <div className="flex items-center gap-2">
-                              <Badge 
-                                className={`text-xs ${
-                                  school.awardCompleted 
-                                    ? 'bg-green-100 text-green-800' 
-                                    : school.currentStage === 'inspire'
-                                    ? 'bg-blue-100 text-blue-800'
-                                    : school.currentStage === 'investigate'
-                                    ? 'bg-teal-100 text-teal-800'
-                                    : 'bg-red-100 text-red-800'
-                                }`}
-                              >
-                                {school.awardCompleted ? 'Completed' : school.currentStage}
-                              </Badge>
-                              {school.featuredSchool && (
-                                <Badge className="text-xs bg-yellow-100 text-yellow-800">
-                                  Featured
-                                </Badge>
-                              )}
-                            </div>
-                          </div>
-                        </Popup>
-                      </Marker>
-                    );
-                  })}
                 </MapContainer>
               )}
             </div>
