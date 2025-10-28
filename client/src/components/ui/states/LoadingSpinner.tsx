@@ -49,6 +49,11 @@ export function LoadingSpinner({
   // Use provided message if available, otherwise use fun random message
   const displayMessage = message || funMessage;
   
+  // Extract emoji from start of message (including multi-codepoint emojis with ZWJ and variation selectors)
+  const emojiMatch = displayMessage.match(/^[\p{Emoji}\p{Emoji_Modifier}\p{Emoji_Component}\p{Emoji_Modifier_Base}\p{Emoji_Presentation}\u200D\uFE0F]+/u);
+  const emoji = emojiMatch?.[0] || '';
+  const textOnly = displayMessage.replace(/^[\p{Emoji}\p{Emoji_Modifier}\p{Emoji_Component}\p{Emoji_Modifier_Base}\p{Emoji_Presentation}\u200D\uFE0F]+\s*/u, '').trim();
+  
   const content = (
     <div 
       className={cn(
@@ -90,8 +95,25 @@ export function LoadingSpinner({
         />
       </div>
       {displayMessage && (
-        <p className="mt-4 text-sm font-medium bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
-          {displayMessage}
+        <p className={cn("mt-4 text-sm font-medium", emoji ? "flex items-center gap-2" : "")}>
+          {/* Render emoji with natural colors only if present */}
+          {emoji && (
+            <span className="text-2xl" style={{ color: 'initial' }}>
+              {emoji}
+            </span>
+          )}
+          {/* Apply gradient to text only if text exists */}
+          {textOnly && (
+            <span className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+              {textOnly}
+            </span>
+          )}
+          {/* If no emoji or text was extracted, show the full message with gradient */}
+          {!emoji && !textOnly && (
+            <span className="bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent">
+              {displayMessage}
+            </span>
+          )}
         </p>
       )}
       <span className="sr-only">{displayMessage}</span>
