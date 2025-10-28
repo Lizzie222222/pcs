@@ -1484,13 +1484,13 @@ export const insertEvidenceSchema = createInsertSchema(evidence).omit({
 
 // Case Study JSONB schemas for rich content
 export const caseStudyImageSchema = z.object({
-  url: z.string().url(),
+  url: z.string().min(1, "Image URL is required"),
   caption: z.string().optional(),
   altText: z.string().optional(),
 });
 
 export const caseStudyVideoSchema = z.object({
-  url: z.string().url(),
+  url: z.string().min(1, "Video URL is required"),
   title: z.string().optional(),
   platform: z.enum(['youtube', 'vimeo', 'other']).optional(),
   embedId: z.string().optional(),
@@ -1500,7 +1500,7 @@ export const studentQuoteSchema = z.object({
   name: z.string(),
   role: z.string().optional(),
   text: z.string(),
-  photo: z.string().url().optional(),
+  photo: z.string().optional(),
   age: z.number().optional(),
 });
 
@@ -1514,7 +1514,7 @@ export const impactMetricSchema = z.object({
 export const timelineSectionSchema = z.object({
   title: z.string(),
   content: z.string(),
-  imageUrl: z.string().url().optional(),
+  imageUrl: z.string().optional(),
   order: z.number(),
 });
 
