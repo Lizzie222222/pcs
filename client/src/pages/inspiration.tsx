@@ -703,7 +703,7 @@ export default function Inspiration() {
         {/* Masonry Layout */}
         {isLoading ? (
           <MasonrySkeleton />
-        ) : regularStories.length > 0 ? (
+        ) : regularStories.length > 0 && (
           <>
             <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
               {regularStories.map((caseStudy) => (
@@ -728,23 +728,6 @@ export default function Inspiration() {
               </div>
             )}
           </>
-        ) : (
-          <div className="text-center py-16">
-            <Award className="h-20 w-20 mx-auto text-gray-300 mb-4" />
-            <h3 className="text-2xl font-semibold text-gray-600 mb-2">{t('empty.title')}</h3>
-            <p className="text-gray-500 mb-6">
-              {t('empty.description')}
-            </p>
-            <Button
-              variant="outline"
-              onClick={clearFilters}
-              data-testid="button-clear-filters-empty"
-              className="hover:bg-pcs_blue hover:text-white"
-            >
-              <X className="mr-2 h-4 w-4" />
-              {t('empty.clear_filters')}
-            </Button>
-          </div>
         )}
       </div>
 
