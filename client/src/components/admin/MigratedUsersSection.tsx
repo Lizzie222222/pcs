@@ -41,10 +41,10 @@ export default function MigratedUsersSection() {
   const sendEmailsMutation = useMutation({
     mutationFn: async () => {
       const response = await apiRequest('POST', '/api/admin/send-migrated-user-emails', {});
-      return response;
+      return response.json();
     },
     onSuccess: (data: any) => {
-      const { sent, failed, totalMigratedUsers } = data.results;
+      const { sent, failed, totalMigratedUsers } = data.results || {};
       toast({
         title: "Welcome Emails Sent",
         description: `Successfully sent ${sent} out of ${totalMigratedUsers} emails. ${failed > 0 ? `${failed} failed.` : ''}`,
