@@ -64,8 +64,11 @@ export class MigrationUtils {
       return { isValid: false, reason: 'Invalid email (ends with .invalid)' };
     }
 
-    // Lenient mode: Accept all users even without stage_1 data
-    // They'll be set to "inspire" stage if they have no progression
+    // Strict mode: Only migrate users with stage_1 data (real users who started the program)
+    if (!row.stage_1 || row.stage_1.trim() === '' || row.stage_1 === 'a:0:{}') {
+      return { isValid: false, reason: 'No stage_1 data' };
+    }
+
     return { isValid: true };
   }
 
