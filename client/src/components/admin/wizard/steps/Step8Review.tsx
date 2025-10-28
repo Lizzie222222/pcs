@@ -131,7 +131,7 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
       ? !!(formValues.beforeImage && formValues.afterImage)
       : true,
     hasMinQuotes: config.requiredFields.requiresQuotes
-      ? (formValues.studentQuotes?.length || 0) >= (config.requiredFields.minQuotes || 0)
+      ? validQuotes.length >= (config.requiredFields.minQuotes || 0)
       : true,
     hasMinMetrics: config.requiredFields.requiresMetrics
       ? (formValues.impactMetrics?.length || 0) >= (config.requiredFields.minMetrics || 0)
@@ -217,11 +217,10 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
   }
   
   if (!validationChecks.hasMinQuotes) {
-    const currentQuotes = formValues.studentQuotes?.length || 0;
-    const needed = (config.requiredFields.minQuotes || 0) - currentQuotes;
+    const needed = (config.requiredFields.minQuotes || 0) - validQuotes.length;
     validationErrors.push({
       field: "Student Quotes",
-      message: `Need ${needed} more student quote(s) - currently have ${currentQuotes}, need ${config.requiredFields.minQuotes} minimum`,
+      message: `Need ${needed} more valid student quote(s) - currently have ${validQuotes.length}, need ${config.requiredFields.minQuotes} minimum`,
       stepLink: 5,
       stepName: "Enhancements"
     });
