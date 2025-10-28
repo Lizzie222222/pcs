@@ -866,8 +866,8 @@
     "search_schools": "Search schools...",
     "filters": {
       "allCountries": "All Countries",
-      "selectAll": "Select All ({count} schools)",
-      "selected": "{count} selected",
+      "selectAll": "Select All ({{count}} schools)",
+      "selected": "{{count}} selected",
       "searchPlaceholder": "Search schools..."
     },
     "buttons": {

@@ -289,8 +289,8 @@ export default function SchoolsTable({
                     </td>
                     <td className="p-3 text-gray-600">{school.studentCount}</td>
                     <td className="p-3 text-gray-600" data-testid={`text-primary-contact-${school.id}`}>
-                      {school.primaryContactFirstName && school.primaryContactLastName
-                        ? `${school.primaryContactFirstName} ${school.primaryContactLastName}`
+                      {school.primaryContactFirstName?.trim() && school.primaryContactLastName?.trim()
+                        ? `${school.primaryContactFirstName.trim()} ${school.primaryContactLastName.trim()}`
                         : school.primaryContactEmail || t('schools.school_table.notAvailable')}
                     </td>
                     <td className="p-3 text-gray-600">
