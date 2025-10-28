@@ -13,20 +13,51 @@ if (process.env.SENDGRID_API_KEY) {
 export function getBaseUrl(): string {
   let baseUrl: string;
   
-  if (process.env.REPLIT_DEV_DOMAIN) {
-    baseUrl = `https://${process.env.REPLIT_DEV_DOMAIN}`;
-    console.log(`[Email Service] Using REPLIT_DEV_DOMAIN: ${baseUrl}`);
-  } else if (process.env.FRONTEND_URL) {
-    const url = process.env.FRONTEND_URL;
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      baseUrl = url;
+  // Check if we're in production deployment
+  const isProduction = process.env.REPLIT_DEPLOYMENT === '1' || process.env.NODE_ENV === 'production';
+  
+  if (isProduction) {
+    // Production: Use REPLIT_DOMAINS or FRONTEND_URL
+    if (process.env.REPLIT_DOMAINS) {
+      // REPLIT_DOMAINS is comma-separated, use the first non-empty one
+      const domains = process.env.REPLIT_DOMAINS.split(',').map(d => d.trim()).filter(d => d.length > 0);
+      if (domains.length > 0) {
+        baseUrl = `https://${domains[0]}`;
+        console.log(`[Email Service] Production - Using REPLIT_DOMAINS: ${baseUrl}`);
+      } else {
+        console.warn(`[Email Service] Production - REPLIT_DOMAINS is empty, falling back...`);
+        baseUrl = 'https://plasticcleverschools.org';
+        console.log(`[Email Service] Production - Using fallback: ${baseUrl}`);
+      }
+    } else if (process.env.FRONTEND_URL) {
+      const url = process.env.FRONTEND_URL;
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        baseUrl = url;
+      } else {
+        baseUrl = `https://${url}`;
+      }
+      console.log(`[Email Service] Production - Using FRONTEND_URL: ${baseUrl}`);
     } else {
-      baseUrl = `https://${url}`;
+      baseUrl = 'https://plasticcleverschools.org';
+      console.log(`[Email Service] Production - Using fallback: ${baseUrl}`);
     }
-    console.log(`[Email Service] Using FRONTEND_URL: ${baseUrl}`);
   } else {
-    baseUrl = 'https://plasticcleverschools.org';
-    console.warn(`[Email Service] WARNING: No REPLIT_DEV_DOMAIN or FRONTEND_URL set, using fallback: ${baseUrl}`);
+    // Development: Use REPLIT_DEV_DOMAIN
+    if (process.env.REPLIT_DEV_DOMAIN) {
+      baseUrl = `https://${process.env.REPLIT_DEV_DOMAIN}`;
+      console.log(`[Email Service] Development - Using REPLIT_DEV_DOMAIN: ${baseUrl}`);
+    } else if (process.env.FRONTEND_URL) {
+      const url = process.env.FRONTEND_URL;
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        baseUrl = url;
+      } else {
+        baseUrl = `https://${url}`;
+      }
+      console.log(`[Email Service] Development - Using FRONTEND_URL: ${baseUrl}`);
+    } else {
+      baseUrl = 'http://localhost:5000';
+      console.warn(`[Email Service] Development - No domain set, using fallback: ${baseUrl}`);
+    }
   }
   
   return baseUrl;
