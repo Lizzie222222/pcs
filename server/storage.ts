@@ -116,7 +116,7 @@ import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne, gte } from "drizzle-orm";
 import * as bcrypt from "bcrypt";
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
-import { normalizeCountryName, getAllCountryCodes } from './countryMapping';
+import { normalizeCountryName, getAllCountryCodes, getCountryCode } from './countryMapping';
 
 /**
  * Custom error class for database constraint violations
@@ -1526,14 +1526,19 @@ export class DatabaseStorage implements IStorage {
     
     const results = await query;
     
-    // Normalize country codes to full names
-    return results.map(row => ({
-      countryCode: row.country,
-      countryName: normalizeCountryName(row.country) || row.country,
-      totalSchools: row.totalSchools,
-      completedAwards: row.completedAwards,
-      featuredSchools: row.featuredSchools,
-    }));
+    // Normalize country codes to full names and get ISO codes
+    return results.map(row => {
+      const normalizedName = normalizeCountryName(row.country) || row.country;
+      const isoCode = getCountryCode(normalizedName) || row.country;
+      
+      return {
+        countryCode: isoCode,
+        countryName: normalizedName,
+        totalSchools: row.totalSchools,
+        completedAwards: row.completedAwards,
+        featuredSchools: row.featuredSchools,
+      };
+    });
   }
 
   async getUniqueCountries(): Promise<string[]> {
