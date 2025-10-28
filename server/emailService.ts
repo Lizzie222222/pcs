@@ -148,8 +148,10 @@ export async function sendMigratedUserWelcomeEmail(
                 
                 <!-- Logo Section -->
                 <tr>
-                  <td style="padding: 40px 30px 20px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
-                    <img src="https://plasticcleverschools.org/wp-content/uploads/2024/01/PCS-Logo-Horizontal-Teal.png" alt="Plastic Clever Schools" style="max-width: 300px; width: 100%; height: auto; display: block; margin: 0 auto;" />
+                  <td style="padding: 40px 30px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
+                    <h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1); letter-spacing: -0.5px;">
+                      Plastic Clever Schools
+                    </h1>
                   </td>
                 </tr>
                 
@@ -180,16 +182,16 @@ export async function sendMigratedUserWelcomeEmail(
                     </div>
                     
                     <!-- What's New Highlights -->
-                    <div style="background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #02BBB4;">
+                    <div style="background: #ffffff; padding: 25px; border-radius: 12px; margin: 25px 0; border: 3px solid #02BBB4; box-shadow: 0 4px 12px rgba(2, 187, 180, 0.15);">
                       <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 22px; font-weight: 700; text-align: center;">
                         🚀 What's New & Exciting?
                       </h2>
-                      <ul style="color: #0B3D5D; line-height: 2; margin: 0; padding-left: 25px; font-size: 15px; font-weight: 500;">
-                        <li><strong>Modern, intuitive design</strong> - easier than ever to navigate!</li>
-                        <li><strong>Enhanced dashboard</strong> - see your impact at a glance</li>
-                        <li><strong>Powerful new tools</strong> - track your plastic-free journey</li>
-                        <li><strong>Faster performance</strong> - lightning-quick responses</li>
-                        <li><strong>Mobile-friendly</strong> - access anywhere, anytime!</li>
+                      <ul style="color: #1f2937; line-height: 2; margin: 0; padding-left: 25px; font-size: 15px; font-weight: 500;">
+                        <li><strong style="color: #0B3D5D;">Modern, intuitive design</strong> - easier than ever to navigate!</li>
+                        <li><strong style="color: #0B3D5D;">Enhanced dashboard</strong> - see your impact at a glance</li>
+                        <li><strong style="color: #0B3D5D;">Powerful new tools</strong> - track your plastic-free journey</li>
+                        <li><strong style="color: #0B3D5D;">Faster performance</strong> - lightning-quick responses</li>
+                        <li><strong style="color: #0B3D5D;">Mobile-friendly</strong> - access anywhere, anytime!</li>
                       </ul>
                     </div>
                     
@@ -402,20 +404,16 @@ export async function sendAdminInvitationEmail(
           <td style="padding: 40px 20px;">
             <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 40px rgba(2, 187, 180, 0.3); overflow: hidden;">
               
-              <!-- Logo Section -->
+              <!-- Header Section -->
               <tr>
-                <td style="padding: 40px 30px 20px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
-                  <img src="https://plasticcleverschools.org/wp-content/uploads/2024/01/PCS-Logo-Horizontal-Teal.png" alt="Plastic Clever Schools" style="max-width: 300px; width: 100%; height: auto; display: block; margin: 0 auto;" />
-                </td>
-              </tr>
-              
-              <!-- Exciting Header -->
-              <tr>
-                <td style="padding: 30px 30px 20px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    🎉 You're Invited to Lead! 🎉
+                <td style="padding: 40px 30px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
+                  <h1 style="margin: 0 0 20px 0; color: #ffffff; font-size: 36px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1); letter-spacing: -0.5px;">
+                    Plastic Clever Schools
                   </h1>
-                  <p style="margin: 15px 0 0; color: #e0f7fa; font-size: 18px; font-weight: 500;">
+                  <h2 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    🎉 You're Invited to Lead! 🎉
+                  </h2>
+                  <p style="margin: 15px 0 0; color: #ffffff; font-size: 18px; font-weight: 500;">
                     Join our team as an Administrator
                   </p>
                 </td>
@@ -436,16 +434,16 @@ export async function sendAdminInvitationEmail(
                   </div>
                   
                   <!-- What You'll Do Highlights -->
-                  <div style="background: linear-gradient(135deg, #ffffff 0%, #f0f9ff 100%); padding: 25px; border-radius: 12px; margin: 25px 0; border: 2px solid #02BBB4;">
+                  <div style="background: #ffffff; padding: 25px; border-radius: 12px; margin: 25px 0; border: 3px solid #02BBB4; box-shadow: 0 4px 12px rgba(2, 187, 180, 0.15);">
                     <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 22px; font-weight: 700; text-align: center;">
                       🚀 Your Superpowers as Admin
                     </h2>
-                    <ul style="color: #0B3D5D; line-height: 2; margin: 0; padding-left: 25px; font-size: 15px; font-weight: 500;">
-                      <li><strong>Inspire change</strong> - Oversee schools on their plastic-free journey</li>
-                      <li><strong>Review evidence</strong> - Celebrate progress and provide guidance</li>
-                      <li><strong>Manage the platform</strong> - Help shape our global movement</li>
-                      <li><strong>Make an impact</strong> - Support educators creating change</li>
-                      <li><strong>Build community</strong> - Connect schools worldwide!</li>
+                    <ul style="color: #1f2937; line-height: 2; margin: 0; padding-left: 25px; font-size: 15px; font-weight: 500;">
+                      <li><strong style="color: #0B3D5D;">Inspire change</strong> - Oversee schools on their plastic-free journey</li>
+                      <li><strong style="color: #0B3D5D;">Review evidence</strong> - Celebrate progress and provide guidance</li>
+                      <li><strong style="color: #0B3D5D;">Manage the platform</strong> - Help shape our global movement</li>
+                      <li><strong style="color: #0B3D5D;">Make an impact</strong> - Support educators creating change</li>
+                      <li><strong style="color: #0B3D5D;">Build community</strong> - Connect schools worldwide!</li>
                     </ul>
                   </div>
                   
