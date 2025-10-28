@@ -2502,7 +2502,10 @@ export class DatabaseStorage implements IStorage {
     schoolCountry: string;
     schoolLanguage: string | null;
   }>> {
-    const conditions = [eq(evidence.status, 'approved')];
+    const conditions = [
+      eq(evidence.status, 'approved'),
+      eq(schools.photoConsentStatus, 'approved')
+    ];
     
     // Visibility filter logic:
     // - If 'public': show only public evidence

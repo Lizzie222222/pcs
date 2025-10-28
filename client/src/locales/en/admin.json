@@ -1268,7 +1268,10 @@
     "buttons": {
       "clearFilters": "Clear Filters",
       "view": "View",
-      "schoolHistory": "View School History"
+      "schoolHistory": "View School History",
+      "delete": "Delete",
+      "deleting": "Deleting...",
+      "cancel": "Cancel"
     },
     "badges": {
       "permissionPending": "Permission Pending",
@@ -1284,6 +1287,10 @@
       },
       "schoolHistory": {
         "title": "{{schoolName}} - All Submissions ({{count}})"
+      },
+      "deleteConfirmation": {
+        "title": "Delete Evidence",
+        "description": "Are you sure you want to permanently delete this evidence submission? This action cannot be undone."
       }
     },
     "form": {
@@ -1328,6 +1335,14 @@
       "updateFailed": {
         "title": "Error",
         "description": "Failed to update evidence status"
+      },
+      "evidenceDeleted": {
+        "title": "Evidence Deleted",
+        "description": "The evidence submission has been permanently deleted"
+      },
+      "evidenceDeleteFailed": {
+        "title": "Delete Failed",
+        "description": "Failed to delete the evidence submission"
       }
     }
   },

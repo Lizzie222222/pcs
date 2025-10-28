@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { 
   Eye,
   Globe,
@@ -17,7 +18,8 @@ import {
   X,
   Shield,
   ShieldAlert,
-  ShieldCheck
+  ShieldCheck,
+  Trash2
 } from "lucide-react";
 import { EmptyState } from "@/components/ui/states";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
@@ -41,6 +43,8 @@ export default function EvidenceGalleryTab() {
   const [detailsDialogOpen, setDetailsDialogOpen] = useState(false);
   const [schoolHistoryDialogOpen, setSchoolHistoryDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<EvidenceWithSchool['school'] | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [evidenceToDelete, setEvidenceToDelete] = useState<string | null>(null);
   
   // Fetch all evidence with filters
   const { data: evidenceList = [], isLoading } = useQuery<EvidenceWithSchool[]>({
@@ -92,6 +96,29 @@ export default function EvidenceGalleryTab() {
     },
     onError: () => {
       toast({ title: t('evidenceGallery.toasts.updateFailed.title'), description: t('evidenceGallery.toasts.updateFailed.description'), variant: "destructive" });
+    },
+  });
+
+  // Delete evidence mutation
+  const deleteMutation = useMutation({
+    mutationFn: async (evidenceId: string) => {
+      return await apiRequest('DELETE', `/api/admin/evidence/${evidenceId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
+      toast({ 
+        title: t('evidenceGallery.toasts.evidenceDeleted.title'), 
+        description: t('evidenceGallery.toasts.evidenceDeleted.description') 
+      });
+      setDeleteDialogOpen(false);
+      setEvidenceToDelete(null);
+    },
+    onError: () => {
+      toast({ 
+        title: t('evidenceGallery.toasts.evidenceDeleteFailed.title'), 
+        description: t('evidenceGallery.toasts.evidenceDeleteFailed.description'), 
+        variant: "destructive" 
+      });
     },
   });
 
@@ -407,6 +434,17 @@ export default function EvidenceGalleryTab() {
                         </Button>
                       </>
                     )}
+                    <Button 
+                      size="sm" 
+                      variant="destructive"
+                      onClick={() => {
+                        setEvidenceToDelete(evidence.id);
+                        setDeleteDialogOpen(true);
+                      }}
+                      data-testid={`button-delete-evidence-${evidence.id}`}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
                   </div>
                 </div>
               </CardContent>
@@ -569,6 +607,35 @@ export default function EvidenceGalleryTab() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Evidence Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent data-testid="dialog-delete-evidence">
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('evidenceGallery.dialogs.deleteConfirmation.title')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('evidenceGallery.dialogs.deleteConfirmation.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">
+              {t('evidenceGallery.buttons.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (evidenceToDelete) {
+                  deleteMutation.mutate(evidenceToDelete);
+                }
+              }}
+              className="bg-red-500 hover:bg-red-600"
+              disabled={deleteMutation.isPending}
+              data-testid="button-confirm-delete"
+            >
+              {deleteMutation.isPending ? t('evidenceGallery.buttons.deleting') : t('evidenceGallery.buttons.delete')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
