@@ -1946,6 +1946,102 @@ Return JSON with:
     }
   });
 
+  // POST /api/auth/reset-migrated-password - Reset password for migrated users
+  app.post('/api/auth/reset-migrated-password', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Only allow migrated users with needsPasswordReset flag
+      if (!user.isMigrated || !user.needsPasswordReset) {
+        return res.status(403).json({ 
+          message: "This endpoint is only for migrated users who need to reset their password" 
+        });
+      }
+      
+      // Validate request body
+      const passwordSchema = z.object({
+        password: z.string().min(8, "Password must be at least 8 characters"),
+      });
+      
+      const { password } = passwordSchema.parse(req.body);
+      
+      // Hash new password
+      const passwordHash = await storage.hashPassword(password);
+      
+      // Update password and clear needsPasswordReset flag
+      await db
+        .update(users)
+        .set({ 
+          passwordHash, 
+          needsPasswordReset: false, 
+          updatedAt: new Date() 
+        })
+        .where(eq(users.id, userId));
+      
+      console.log(`[Migrated User] User ${userId} reset their password`);
+      
+      res.json({ 
+        success: true,
+        message: "Password updated successfully"
+      });
+    } catch (error) {
+      console.error("[Migrated User Password Reset] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ success: false, message: "Failed to update password" });
+    }
+  });
+
+  // POST /api/auth/complete-migrated-onboarding - Complete onboarding for migrated users
+  app.post('/api/auth/complete-migrated-onboarding', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      // Validate request body
+      const profileSchema = z.object({
+        firstName: z.string().min(1, "First name is required"),
+        lastName: z.string().optional(),
+      });
+      
+      const { firstName, lastName } = profileSchema.parse(req.body);
+      
+      // Update user profile and mark onboarding as complete
+      await db
+        .update(users)
+        .set({ 
+          firstName, 
+          lastName: lastName || user.lastName,
+          hasSeenOnboarding: true,
+          updatedAt: new Date() 
+        })
+        .where(eq(users.id, userId));
+      
+      console.log(`[Migrated User] User ${userId} completed onboarding`);
+      
+      res.json({ 
+        success: true,
+        message: "Onboarding completed successfully"
+      });
+    } catch (error) {
+      console.error("[Migrated User Onboarding] Error:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ success: false, message: "Failed to complete onboarding" });
+    }
+  });
+
   // DELETE /api/user/account - Delete user account (GDPR compliant)
   app.delete('/api/user/account', isAuthenticated, async (req: any, res) => {
     try {

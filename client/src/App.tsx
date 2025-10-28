@@ -47,15 +47,23 @@ const Profile = lazy(() => import("@/pages/profile"));
 const InvitationAccept = lazy(() => import("@/pages/InvitationAccept"));
 const AdminInvitationAccept = lazy(() => import("@/pages/AdminInvitationAccept"));
 const MigrateAccount = lazy(() => import("@/pages/MigrateAccount"));
+const MigratedUserOnboarding = lazy(() => import("@/pages/MigratedUserOnboarding"));
 const TestLogin = lazy(() => import("@/pages/TestLogin"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
   const { t } = useTranslation();
   const { isAuthenticated, isLoading, user } = useAuth();
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const mainRef = useRef<HTMLElement>(null);
   const skipLinkRef = useRef<HTMLAnchorElement>(null);
+
+  // Redirect migrated users who need password reset
+  useEffect(() => {
+    if (isAuthenticated && user?.isMigrated && user?.needsPasswordReset && location !== '/migrated-onboarding') {
+      setLocation('/migrated-onboarding');
+    }
+  }, [isAuthenticated, user, location, setLocation]);
 
   // Fetch active event banner - MUST be before any conditional returns
   const { data: activeBanner } = useQuery<any>({
@@ -185,6 +193,7 @@ function Router() {
                 <>
                   <Route path="/profile" component={Profile} />
                   <Route path="/migrate-account" component={MigrateAccount} />
+                  <Route path="/migrated-onboarding" component={MigratedUserOnboarding} />
                   <Route path="/dashboard">
                     {() => {
                       if (user?.isAdmin) {

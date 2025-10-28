@@ -154,17 +154,29 @@ export class MigrationScript {
 
     const hasEvidence = stage1Complete || stage2Complete || stage3Complete;
 
+    // Extract name from email if first_name/last_name not provided
+    let firstName = row.first_name;
+    let lastName = row.last_name;
+    
+    if (!firstName || !lastName) {
+      const extractedName = MigrationUtils.extractNameFromEmail(row.user_email);
+      firstName = firstName || extractedName.firstName;
+      lastName = lastName || extractedName.lastName;
+    }
+
     await db.insert(users).values({
       id: userId,
       email: row.user_email,
       emailVerified: false,
       passwordHash,
-      firstName: row.first_name || 'Team',
-      lastName: row.last_name || schoolInfo.name,
+      firstName: firstName || 'Team',
+      lastName: lastName || schoolInfo.name,
+      phoneNumber: row.phone_number || null,
       role: 'teacher',
       isMigrated: true,
       legacyUserId: row.source_user_id,
       needsEvidenceResubmission: hasEvidence,
+      needsPasswordReset: true,
       migratedAt: new Date(),
       hasSeenOnboarding: false,
     });
@@ -174,13 +186,16 @@ export class MigrationScript {
     const schoolKey = this.getSchoolKey(schoolInfo);
     this.schoolsMap[schoolKey].userCount++;
 
-    const isHeadTeacher = this.schoolsMap[schoolKey].userCount === 1;
+    // Use role field from CSV if available, otherwise determine by user count
+    const userRole = row.role 
+      ? MigrationUtils.mapUserRole(row.role) 
+      : (this.schoolsMap[schoolKey].userCount === 1 ? 'head_teacher' : 'teacher');
 
     await db.insert(schoolUsers).values({
       id: nanoid(),
       schoolId,
       userId,
-      role: isHeadTeacher ? 'head_teacher' : 'teacher',
+      role: userRole,
       isVerified: true,
       verifiedAt: new Date(),
       verificationMethod: 'migration',
@@ -226,19 +241,22 @@ export class MigrationScript {
     }
 
     const schoolId = nanoid();
+    const schoolType = MigrationUtils.mapSchoolType(schoolInfo.type);
     
     await db.insert(schools).values({
       id: schoolId,
       name: schoolInfo.name,
+      type: schoolType,
       country: schoolInfo.country,
       address: '',
+      website: schoolInfo.website || null,
       latitude: schoolInfo.latitude || null,
       longitude: schoolInfo.longitude || null,
       legacyDistrict: schoolInfo.district,
       isMigrated: true,
       migratedAt: new Date(),
       registrationCompleted: true,
-      showOnMap: true,
+      showOnMap: !!schoolInfo.latitude && !!schoolInfo.longitude,
     });
 
     this.schoolsMap[schoolKey] = { id: schoolId, userCount: 0 };

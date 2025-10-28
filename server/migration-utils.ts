@@ -2,23 +2,28 @@ import { parse } from 'csv-parse/sync';
 import crypto from 'crypto';
 
 export interface CSVUserRow {
-  user_login: string;
   user_email: string;
-  source_user_id: string;
-  user_registered: string;
-  display_name: string;
-  first_name: string;
-  last_name: string;
-  district: string;
-  la_name: string;
-  country: string;
-  latitude: string;
-  longitude: string;
-  phone_number: string;
-  stage_0?: string;
+  user_url?: string;
+  user_registered?: string;
+  role?: string;
+  school_name?: string;
+  district?: string;
+  phone_number?: string;
   stage_1?: string;
   stage_2?: string;
   stage_3?: string;
+  country?: string;
+  school_type?: string;
+  // Legacy fields for backward compatibility
+  user_login?: string;
+  source_user_id?: string;
+  display_name?: string;
+  first_name?: string;
+  last_name?: string;
+  la_name?: string;
+  latitude?: string;
+  longitude?: string;
+  stage_0?: string;
   stage_1_completed_date?: string;
   stage_2_completed_date?: string;
   stage_3_completed_date?: string;
@@ -30,6 +35,9 @@ export interface SchoolInfo {
   name: string;
   district: string;
   country: string;
+  type?: string;
+  website?: string;
+  phoneNumber?: string;
   latitude?: string;
   longitude?: string;
 }
@@ -64,7 +72,12 @@ export class MigrationUtils {
       return { isValid: false, reason: 'Invalid email (ends with .invalid)' };
     }
 
-    // Accept users who have ANY engagement markers:
+    // New CSV format check: Accept users who have school_name (confirmed users)
+    if (row.school_name && row.school_name.trim() !== '') {
+      return { isValid: true };
+    }
+
+    // Legacy check: Accept users who have ANY engagement markers
     const hasStage1 = row.stage_1 && row.stage_1.trim() !== '' && row.stage_1 !== 'a:0:{}';
     const hasStage2 = row.stage_2 && row.stage_2.trim() !== '' && row.stage_2 !== 'a:0:{}';
     const hasStage3 = row.stage_3 && row.stage_3.trim() !== '' && row.stage_3 !== 'a:0:{}';
@@ -76,7 +89,7 @@ export class MigrationUtils {
     const isRealUser = hasStage1 || hasStage2 || hasStage3 || hasStage0 || hasCompletionDate || hasRound || hasPhoneNumber;
     
     if (!isRealUser) {
-      return { isValid: false, reason: 'No engagement markers (no stage data, completion dates, round, or phone)' };
+      return { isValid: false, reason: 'No engagement markers (no school_name, stage data, completion dates, round, or phone)' };
     }
 
     return { isValid: true };
@@ -84,6 +97,24 @@ export class MigrationUtils {
 
   static extractSchoolInfo(row: CSVUserRow): SchoolInfo | null {
     try {
+      // New CSV format: school_name field directly available
+      if (row.school_name && row.school_name.trim() !== '') {
+        const district = row.district || '';
+        const country = this.extractCountry(row);
+        
+        return {
+          name: row.school_name.trim(),
+          district: district.trim(),
+          country,
+          type: row.school_type,
+          website: row.user_url,
+          phoneNumber: row.phone_number,
+          latitude: row.latitude,
+          longitude: row.longitude,
+        };
+      }
+
+      // Legacy format: extract from display_name
       const displayName = row.display_name || '';
       const parts = displayName.split(',').map(p => p.trim());
 
@@ -125,6 +156,30 @@ export class MigrationUtils {
     return 'United Kingdom';
   }
 
+  static extractNameFromEmail(email: string): { firstName: string; lastName: string } {
+    const localPart = email.split('@')[0];
+    
+    // Handle common patterns: firstname.lastname, firstname_lastname, firstnamelastname
+    const parts = localPart.split(/[._-]/);
+    
+    if (parts.length >= 2) {
+      const firstName = this.capitalize(parts[0]);
+      const lastName = this.capitalize(parts[parts.length - 1]);
+      return { firstName, lastName };
+    }
+    
+    // Single word: use as first name, leave last name empty
+    return { 
+      firstName: this.capitalize(localPart), 
+      lastName: '' 
+    };
+  }
+
+  static capitalize(str: string): string {
+    if (!str) return '';
+    return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+  }
+
   static generateRandomPassword(length: number = 12): string {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%';
     const randomBytes = crypto.randomBytes(length);
@@ -150,7 +205,18 @@ export class MigrationUtils {
     if (stageValue === 'a:0:{}') return false;
     
     const trimmed = stageValue.trim();
-    if (trimmed.length > 10) return true;
+    
+    // Handle numeric format (e.g., "1", "2", "3")
+    if (/^\d+$/.test(trimmed)) {
+      const num = parseInt(trimmed, 10);
+      return num > 0;
+    }
+    
+    // Handle PHP serialized format (e.g., "a:1:{i:0;s:1:\"1\";}")
+    if (trimmed.startsWith('a:') && trimmed.includes('{')) {
+      // Check if it contains any actual data (not empty)
+      return trimmed !== 'a:0:{}' && trimmed.length > 10;
+    }
     
     return false;
   }
@@ -188,5 +254,31 @@ export class MigrationUtils {
       }
     }
     return 1;
+  }
+
+  static mapSchoolType(type: string | undefined): 'primary' | 'secondary' | 'high_school' | 'international' | 'other' | null {
+    if (!type) return null;
+    
+    const normalized = type.toLowerCase().trim();
+    
+    if (normalized === 'primary' || normalized === 'nursery') return 'primary';
+    if (normalized === 'secondary' || normalized === 'middle') return 'secondary';
+    if (normalized === 'high_school' || normalized === 'high') return 'high_school';
+    if (normalized === 'international') return 'international';
+    if (normalized === 'all-through') return 'other';
+    
+    return 'other';
+  }
+
+  static mapUserRole(role: string | undefined): 'head_teacher' | 'teacher' {
+    if (!role) return 'teacher';
+    
+    const normalized = role.toLowerCase().trim();
+    
+    if (normalized.includes('head') || normalized === 'head teacher' || normalized === 'headteacher') {
+      return 'head_teacher';
+    }
+    
+    return 'teacher';
   }
 }
