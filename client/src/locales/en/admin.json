@@ -1669,7 +1669,7 @@
       "investigate": "Investigate",
       "act": "Act"
     },
-    "stageRequirements": "{stage} Stage Requirements",
+    "stageRequirements": "{{stage}} Stage Requirements",
     "buttons": {
       "addRequirement": "Add Requirement"
     },
