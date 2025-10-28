@@ -1,23 +1,642 @@
 {
+  "tabs": {
+    "dashboard": "대시보드",
+    "schools": "학교",
+    "content": "콘텐츠",
+    "reviewQueue": "검토 대기열",
+    "program": "프로그램",
+    "communications": "커뮤니케이션"
+  },
   "navigation": {
     "overview": "개요",
     "analytics": "분석",
     "evidence": "증거 검토",
     "resources": "리소스 관리",
     "schools": "학교 관리",
-    "admin_panel": "관리자 패널"
+    "admin_panel": "관리자 패널",
+    "manageSchools": "학교 관리",
+    "manageTeams": "팀 관리",
+    "userManagement": "사용자 관리",
+    "userActivity": "사용자 활동",
+    "importData": "데이터 가져오기",
+    "manageResources": "리소스 관리",
+    "manageResourcePacks": "리소스 팩 관리",
+    "createCaseStudies": "사례 연구 생성",
+    "manageEvents": "이벤트 관리",
+    "evidenceGallery": "증거 갤러리",
+    "setEvidenceRequirements": "증거 요구사항 설정",
+    "reviewPrintableForms": "인쇄 가능한 양식 검토"
+  },
+  "header": {
+    "title": "관리자 대시보드",
+    "subtitle": "학교 관리, 증거 검토 및 프로그램 진행 모니터링"
+  },
+  "welcomeBanner": {
+    "title": "행운이에요!",
+    "greeting": "Plastic Clever Schools 관리 팀에 오신 것을 환영합니다!",
+    "description": "이제 프로그램 관리, 증거 제출 검토, 사례 연구 게시 및 플라스틱 폐기물 감소 여정에 있는 학교 지원에 대한 전체 액세스 권한이 있습니다."
+  },
+  "export": {
+    "title": "데이터 내보내기",
+    "buttonLabel": "데이터 내보내기",
+    "description": "내보낼 형식 및 데이터 선택:",
+    "selectFormatPlaceholder": "형식 선택",
+    "formats": {
+      "csv": "CSV 형식",
+      "excel": "Excel 형식 (.xlsx)"
+    },
+    "buttons": {
+      "exportSchools": "학교 데이터 내보내기",
+      "exportEvidence": "증거 데이터 내보내기",
+      "exportUsers": "사용자 데이터 내보내기",
+      "withCurrentFilters": "(현재 필터 포함)"
+    },
+    "toasts": {
+      "success": {
+        "title": "내보내기 성공",
+        "description": "{{type}} 데이터가 {{format}}(으)로 내보내기되었습니다."
+      },
+      "failed": {
+        "title": "내보내기 실패",
+        "description": "데이터를 내보내지 못했습니다. 다시 시도해 주세요."
+      }
+    }
+  },
+  "loading": {
+    "dashboard": "관리자 대시보드 로딩 중...",
+    "caseStudies": "사례 연구 로딩 중..."
   },
   "overview": {
     "title": "관리자 개요",
     "subtitle": "플랫폼 활동 및 성능 모니터링",
-    "total_schools": "전체 학교 수",
-    "total_students": "전체 학생 수",
+    "total_schools": "전체 학교",
+    "total_students": "전체 학생",
     "pending_evidence": "대기 중인 증거",
     "resources_uploaded": "업로드된 리소스"
+  },
+  "userManagement": {
+    "title": "사용자 관리",
+    "buttons": {
+      "inviteAdmin": "관리자 초대",
+      "invitePartner": "파트너 초대",
+      "sendInvitation": "초대장 보내기",
+      "sending": "전송 중...",
+      "cancel": "취소",
+      "filterAll": "모든 사용자",
+      "filterWithSchools": "학교 있음",
+      "filterWithoutSchools": "학교 없음",
+      "bulkDelete": "선택한 사용자 삭제 ({{count}})",
+      "confirmDelete": "{{mode}} 확인",
+      "deleting": "삭제 중...",
+      "confirmSoftDelete": "소프트 삭제 확인",
+      "confirmTransfer": "이전 확인",
+      "confirmHardDelete": "영구 삭제 확인"
+    },
+    "dialogs": {
+      "invitePartner": {
+        "title": "새 파트너 초대",
+        "description": "파트너는 관리자와 유사한 액세스 권한을 가지지만 역할을 할당하거나 학교 데이터를 다운로드할 수 없습니다."
+      },
+      "inviteAdmin": {
+        "title": "새 관리자 초대"
+      },
+      "deleteUser": {
+        "title": "사용자 삭제",
+        "description": "사용자의 콘텐츠 및 데이터 처리 방법 선택"
+      },
+      "bulkDelete": {
+        "title": "{{count}}명의 사용자{{plural}} 일괄 삭제",
+        "description": "선택한 사용자의 콘텐츠 및 데이터 처리 방법 선택",
+        "selectedUsers": "선택한 사용자: {{count}}명{{plural}}"
+      },
+      "changeRole": {
+        "title": "사용자 역할 변경",
+        "description": "{{name}}의 역할 및 권한 업데이트"
+      },
+      "deletionPreview": {
+        "title": "삭제 미리보기",
+        "description": "이 사용자는 다음 데이터를 보유하고 있습니다:",
+        "evidence": "증거: {{count}}",
+        "caseStudies": "사례 연구: {{count}}",
+        "reductionPromises": "감소 약속: {{count}}",
+        "mediaAssets": "미디어 자산: {{count}}",
+        "certificates": "인증서: {{count}}",
+        "importBatches": "가져오기 배치: {{count}}",
+        "teacherInvitations": "교사 초대: {{count}}",
+        "adminInvitations": "관리자 초대: {{count}}"
+      }
+    },
+    "form": {
+      "labels": {
+        "emailAddress": "이메일 주소 *",
+        "platformRole": "플랫폼 역할",
+        "roleDescription": "사용자의 역할 및 권한 선택"
+      },
+      "placeholders": {
+        "partnerEmail": "partner@example.com",
+        "adminEmail": "admin@example.com",
+        "searchUsers": "이름 또는 이메일로 검색..."
+      }
+    },
+    "table": {
+      "headers": {
+        "name": "이름",
+        "email": "이메일",
+        "role": "역할",
+        "schools": "학교",
+        "status": "상태",
+        "actions": "작업"
+      },
+      "showingCount": "전체 {{total}}명 중 {{filtered}}명 표시"
+    },
+    "deletionModes": {
+      "soft": {
+        "label": "소프트 삭제 (권장)",
+        "description": "사용자는 시스템에서 숨겨지지만 모든 데이터는 보존됩니다. 나중에 복원할 수 있습니다."
+      },
+      "transfer": {
+        "label": "소유권 이전",
+        "description": "모든 콘텐츠를 \"보관된 사용자\" 시스템 계정으로 이전한 다음 사용자를 삭제합니다. 기록 데이터는 보존됩니다.",
+        "bulkDescription": "모든 콘텐츠를 \"보관된 사용자\" 시스템 계정으로 이전한 다음 사용자를 삭제합니다. 기록 데이터는 보존됩니다."
+      },
+      "hard": {
+        "label": "영구 삭제 (영구적)",
+        "description": "경고: 사용자 및 모든 콘텐츠를 영구적으로 삭제합니다. 이 작업은 취소할 수 없습니다!",
+        "bulkDescription": "경고: 사용자 및 모든 콘텐츠를 영구적으로 삭제합니다. 이 작업은 취소할 수 없습니다!"
+      }
+    },
+    "roles": {
+      "teacher": {
+        "label": "교사",
+        "description": "학교 수준 권한이 있는 표준 사용자"
+      },
+      "school": {
+        "label": "학교 (교장)",
+        "description": "학교 관리 권한이 있는 교장 역할"
+      },
+      "partner": {
+        "label": "파트너",
+        "description": "관리자와 유사한 액세스 권한이 있지만 역할을 할당하거나 학교 데이터를 다운로드할 수 없음"
+      },
+      "admin": {
+        "label": "관리자",
+        "description": "역할 할당 및 데이터 다운로드를 포함한 전체 플랫폼 액세스"
+      }
+    },
+    "badges": {
+      "pending": "대기 중",
+      "pendingInvite": "초대 대기 중",
+      "active": "활성",
+      "admin": "관리자",
+      "partner": "파트너"
+    },
+    "toasts": {
+      "invitationSent": {
+        "title": "초대장 전송됨",
+        "adminDescription": "관리자 초대장이 성공적으로 전송되었습니다.",
+        "partnerDescription": "파트너 초대장이 성공적으로 전송되었습니다."
+      },
+      "invitationFailed": {
+        "title": "초대 실패",
+        "adminDescription": "관리자 초대장을 보내지 못했습니다. 다시 시도해 주세요.",
+        "partnerDescription": "파트너 초대장을 보내지 못했습니다. 다시 시도해 주세요.",
+        "defaultDescription": "{{message}}"
+      },
+      "invitationDeleted": {
+        "title": "초대 삭제됨",
+        "description": "관리자 초대가 성공적으로 삭제되었습니다."
+      },
+      "deleteFailed": {
+        "title": "삭제 실패",
+        "description": "초대를 삭제하지 못했습니다. 다시 시도해 주세요.",
+        "userDescription": "사용자를 삭제하지 못했습니다. 다시 시도해 주세요.",
+        "customMessage": "{{message}}"
+      },
+      "userDeleted": {
+        "title": "사용자 삭제됨",
+        "softDeleted": "사용자가 성공적으로 소프트 삭제되었습니다.",
+        "transferred": "사용자가 성공적으로 삭제되었습니다 (콘텐츠 이전됨).",
+        "hardDeleted": "사용자가 성공적으로 영구 삭제되었습니다."
+      },
+      "userUpdated": {
+        "title": "사용자 업데이트됨",
+        "description": "사용자 역할이 성공적으로 업데이트되었습니다."
+      },
+      "updateFailed": {
+        "title": "업데이트 실패",
+        "description": "사용자 역할을 업데이트하지 못했습니다. 다시 시도해 주세요.",
+        "customMessage": "{{message}}"
+      },
+      "emailRequired": {
+        "title": "이메일 필수",
+        "description": "이메일 주소를 입력해 주세요."
+      },
+      "bulkDeleteSuccessful": {
+        "title": "일괄 삭제 성공",
+        "description": "{{count}}명의 사용자{{plural}}가 성공적으로 삭제되었습니다",
+        "withEvidence": "{{count}}명의 사용자{{plural}}가 성공적으로 삭제되었습니다 ({{evidenceCount}}개의 증거 항목{{evidencePlural}} 삭제됨)",
+        "withCaseStudies": "경고: {{caseStudyCount}}개의 사례{{caseStudyPlural}}가 영향을 받았습니다",
+        "creatorsRemoved": "및 작성자가 제거되었습니다."
+      },
+      "bulkDeleteFailed": {
+        "title": "일괄 삭제 실패",
+        "description": "사용자를 삭제하지 못했습니다. 다시 시도해 주세요.",
+        "allFailed": "선택한 모든 사용자를 삭제하지 못했습니다:",
+        "customMessage": "{{message}}"
+      },
+      "bulkDeletePartial": {
+        "title": "일괄 삭제 부분 성공",
+        "description": "{{successCount}}명의 사용자{{plural}}를 성공적으로 삭제했습니다. {{failedCount}}명 삭제에 실패했습니다."
+      }
+    },
+    "emptyStates": {
+      "noUsers": {
+        "title": "사용자를 찾을 수 없음",
+        "noMatch": "검색 조건과 일치하는 사용자가 없습니다.",
+        "allAssigned": "모든 사용자가 최소 하나의 학교에 할당되어 있습니다.",
+        "noneInSystem": "시스템에서 사용자를 찾을 수 없습니다."
+      }
+    },
+    "adminInvitations": {
+      "title": "관리자 초대",
+      "table": {
+        "email": "이메일",
+        "status": "상태",
+        "createdAt": "생성됨",
+        "expiresAt": "만료",
+        "actions": "작업"
+      }
+    }
+  },
+  "resources": {
+    "title": "리소스 관리",
+    "subtitle": "교육 리소스 업로드 및 관리",
+    "upload_resource": "새 리소스 업로드",
+    "resource_library": "리소스 라이브러리",
+    "featured_resources": "추천 리소스",
+    "buttons": {
+      "addResource": "리소스 추가",
+      "bulkUpload": "리소스 일괄 업로드",
+      "uploadFile": "파일 업로드",
+      "uploading": "업로드 중...",
+      "replaceFile": "파일 교체",
+      "removeFile": "파일 제거",
+      "autoFillAI": "AI로 자동 입력",
+      "generating": "생성 중...",
+      "saveResource": "리소스 저장",
+      "cancel": "취소",
+      "preview": "미리보기",
+      "edit": "편집",
+      "delete": "삭제",
+      "deleteResources": "리소스 삭제",
+      "deleting": "삭제 중...",
+      "bulkDelete": "일괄 삭제 ({{count}})",
+      "insertImage": "이미지 삽입"
+    },
+    "form": {
+      "titles": {
+        "addNew": "새 리소스 추가",
+        "edit": "리소스 편집"
+      },
+      "labels": {
+        "title": "제목 *",
+        "description": "설명",
+        "stage": "프로그램 단계 *",
+        "ageRange": "연령대",
+        "languages": "사용 가능한 언어 *",
+        "country": "대상 국가",
+        "visibility": "가시성 *",
+        "resourceFile": "리소스 파일",
+        "resourceType": "리소스 유형",
+        "theme": "주제"
+      },
+      "placeholders": {
+        "title": "리소스 제목 입력",
+        "description": "리소스 설명 입력",
+        "ageRange": "예: 8-12세",
+        "country": "글로벌 (모든 국가)",
+        "searchResources": "리소스 검색..."
+      },
+      "helpText": {
+        "languageSelection": "이 리소스가 제공되는 모든 언어 선택",
+        "visibilityPublic": "이 리소스는 모든 웹사이트 방문자에게 표시됩니다",
+        "visibilityRegistered": "이 리소스는 등록된 학교에만 표시됩니다",
+        "uploadInstructions": "리소스 파일 업로드 (PDF, DOC, PPT, XLS 등)",
+        "maxFileSize": "최대 파일 크기: 150MB",
+        "replaceInstructions": "동일한 리소스를 유지하면서 파일을 교체하거나 완전히 제거할 수 있습니다.",
+        "aiAutoFillTooltip": "AI가 업로드된 파일을 분석하고 파일 내용 및 이름을 기반으로 제목, 설명, 단계, 주제, 연령대 및 리소스 유형을 자동으로 제안합니다.",
+        "aiAutoFillDescription": "AI가 파일을 분석하고 메타데이터를 제안하도록 하여 시간을 절약하세요. 저장하기 전에 제안 사항을 검토하고 조정할 수 있습니다."
+      }
+    },
+    "filters": {
+      "allStages": "모든 단계",
+      "allCountries": "모든 국가",
+      "allLanguages": "모든 언어",
+      "allVisibility": "모든 가시성",
+      "allStatus": "모든 상태"
+    },
+    "stages": {
+      "inspire": "영감",
+      "investigate": "조사",
+      "act": "행동"
+    },
+    "visibility": {
+      "public": "공개 (모두에게 표시)",
+      "publicShort": "공개",
+      "registered": "등록된 사용자만 (로그인 필요)",
+      "registeredShort": "등록된 사용자만"
+    },
+    "resourceTypes": {
+      "lessonPlan": "수업 계획",
+      "assembly": "집회",
+      "teacherToolkit": "교사 도구 키트",
+      "studentWorkbook": "학생 워크북",
+      "printableActivities": "인쇄 가능한 활동",
+      "none": "없음"
+    },
+    "themes": {
+      "oceanLiteracy": "해양 문해력",
+      "climateChange": "기후 변화",
+      "plasticPollution": "플라스틱 오염",
+      "science": "과학",
+      "designTechnology": "디자인 기술",
+      "geography": "지리",
+      "crossCurricular": "교과 통합",
+      "enrichment": "심화",
+      "none": "없음"
+    },
+    "table": {
+      "headers": {
+        "preview": "미리보기",
+        "title": "제목",
+        "stage": "단계",
+        "visibility": "가시성",
+        "country": "국가",
+        "languages": "언어",
+        "fileSize": "파일 크기",
+        "downloads": "다운로드",
+        "status": "상태",
+        "actions": "작업"
+      },
+      "values": {
+        "global": "글로벌",
+        "active": "활성",
+        "inactive": "비활성",
+        "notAvailable": "N/A"
+      }
+    },
+    "toasts": {
+      "fileUploaded": {
+        "title": "파일 업로드됨",
+        "description": "{{filename}}이(가) 성공적으로 업로드되었습니다."
+      },
+      "uploadError": {
+        "title": "업로드 오류",
+        "failedToGetUrl": "업로드 URL을 가져오지 못했습니다",
+        "failedToUpload": "파일을 업로드하지 못했습니다",
+        "customMessage": "{{message}}"
+      },
+      "aiAutoFillComplete": {
+        "title": "AI 자동 입력 완료",
+        "description": "리소스 메타데이터가 AI 제안으로 채워졌습니다. 필요에 따라 검토하고 조정하세요."
+      },
+      "aiAutoFillFailed": {
+        "title": "AI 자동 입력 실패",
+        "noSuggestions": "AI가 이 리소스에 대한 제안을 생성할 수 없었습니다.",
+        "description": "AI 제안 생성에 실패했습니다. 다시 시도해 주세요.",
+        "customMessage": "{{message}}"
+      },
+      "cannotAutoFill": {
+        "title": "자동 입력 불가",
+        "description": "AI 자동 입력을 사용하려면 먼저 파일을 업로드해 주세요."
+      },
+      "resourceCreated": {
+        "title": "리소스 생성됨",
+        "description": "리소스가 성공적으로 생성되었습니다."
+      },
+      "resourceUpdated": {
+        "title": "리소스 업데이트됨",
+        "description": "리소스가 성공적으로 업데이트되었습니다."
+      },
+      "saveFailed": {
+        "title": "저장 실패",
+        "description": "리소스를 저장하지 못했습니다. 다시 시도해 주세요.",
+        "customMessage": "{{message}}"
+      },
+      "resourceDeleted": {
+        "title": "리소스 삭제됨",
+        "description": "리소스가 성공적으로 삭제되었습니다.",
+        "bulkDescription": "{{count}}개의 리소스{{plural}}가 성공적으로 삭제되었습니다."
+      },
+      "deleteFailed": {
+        "title": "삭제 실패",
+        "description": "리소스를 삭제하지 못했습니다. 다시 시도해 주세요."
+      },
+      "bulkDeleteFailed": {
+        "title": "일괄 삭제 실패",
+        "description": "일부 리소스를 삭제하지 못했습니다."
+      },
+      "validationError": {
+        "title": "검증 오류",
+        "selectLanguage": "최소 하나의 언어를 선택해 주세요."
+      }
+    },
+    "dialogs": {
+      "deleteConfirmation": {
+        "title": "리소스 삭제",
+        "description": "이 리소스를 삭제하시겠습니까?",
+        "cannotUndo": "이 작업은 취소할 수 없습니다."
+      },
+      "bulkDelete": {
+        "title": "리소스 삭제",
+        "description": "{{count}}개의 리소스{{plural}}를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+        "listTitle": "삭제할 리소스:"
+      }
+    },
+    "emptyStates": {
+      "noResources": "리소스를 찾을 수 없습니다. 시작하려면 첫 번째 리소스를 추가하세요."
+    },
+    "ai": {
+      "sectionTitle": "AI 자동 입력"
+    },
+    "upload_form": {
+      "title": "새 리소스 업로드",
+      "resource_title": "리소스 제목",
+      "description": "설명",
+      "stage": "대상 단계",
+      "language": "언어",
+      "age_range": "연령대",
+      "file_type": "파일 유형",
+      "visibility": "가시성",
+      "featured": "추천 리소스",
+      "featured_description": "이 리소스를 강조 표시하려면 추천으로 표시",
+      "upload_file": "파일 업로드",
+      "save_resource": "리소스 저장",
+      "cancel": "취소"
+    },
+    "resource_table": {
+      "title": "제목",
+      "type": "유형",
+      "stage": "단계",
+      "downloads": "다운로드",
+      "status": "상태",
+      "actions": "작업",
+      "edit": "편집",
+      "delete": "삭제",
+      "feature": "추천",
+      "unfeature": "추천 해제"
+    },
+    "delete_confirmation": {
+      "title": "리소스 삭제",
+      "message": "이 리소스를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
+      "delete": "삭제",
+      "cancel": "취소"
+    },
+    "resource_uploaded": "리소스가 성공적으로 업로드되었습니다",
+    "resource_updated": "리소스가 성공적으로 업데이트되었습니다",
+    "resource_deleted": "리소스가 성공적으로 삭제되었습니다"
   },
   "analytics": {
     "title": "플랫폼 분석",
     "subtitle": "프로그램 효과에 대한 종합적인 통찰",
+    "dashboard": {
+      "title": "분석 대시보드",
+      "description": "Plastic Clever Schools에 대한 종합적인 통찰 및 지표"
+    },
+    "buttons": {
+      "exportCSV": "CSV 내보내기",
+      "exportExcel": "Excel 내보내기",
+      "exportPDF": "PDF 보고서 내보내기",
+      "cancel": "취소",
+      "exportReport": "보고서 내보내기",
+      "generating": "생성 중...",
+      "confirmExport": "보고서 내보내기"
+    },
+    "tabs": {
+      "overview": "개요",
+      "schoolsEvidence": "학교 및 증거",
+      "plasticWasteAudits": "플라스틱 폐기물 감사",
+      "userEngagement": "사용자 참여"
+    },
+    "metrics": {
+      "totalSchools": {
+        "label": "전체 학교",
+        "description": "참여 학교"
+      },
+      "activeUsers": {
+        "label": "활성 사용자"
+      },
+      "evidenceSubmissions": {
+        "label": "증거 제출"
+      },
+      "globalReach": {
+        "label": "글로벌 도달 범위"
+      },
+      "totalEvidence": {
+        "label": "전체 증거",
+        "description": "접수된 제출물"
+      },
+      "clickToView": "세부 정보 보기 →"
+    },
+    "dialogs": {
+      "exportPDF": {
+        "title": "PDF 보고서 내보내기",
+        "description": "분석 보고서에 포함할 섹션을 선택하세요. 보고서에는 {{startDate}} - {{endDate}}의 데이터가 포함됩니다",
+        "sections": {
+          "overview": "개요",
+          "scoresEvidence": "학교 및 증거",
+          "plasticWasteAudits": "플라스틱 폐기물 감사",
+          "userEngagement": "사용자 참여",
+          "aiInsights": "AI 통찰 포함"
+        }
+      }
+    },
+    "charts": {
+      "userRegistrationTrends": "사용자 등록 추세",
+      "userRoleDistribution": "사용자 역할 분포",
+      "teachers": "교사",
+      "admins": "관리자",
+      "schools_by_country": "국가별 학교",
+      "completion_by_stage": "단계별 완료율",
+      "monthly_registrations": "월별 학교 등록",
+      "evidence_status": "증거 검토 상태"
+    },
+    "actionPlan": {
+      "title": "글로벌 실행 계획 영향",
+      "description": "모든 학교의 실행 계획의 집단적 영향 추적",
+      "metrics": {
+        "totalActionItems": {
+          "label": "전체 실행 항목",
+          "description": "이행된 약속"
+        },
+        "schoolsParticipating": {
+          "label": "참여 학교",
+          "description": "변화를 만들고 있음"
+        },
+        "itemsReduced": {
+          "label": "연간 감소된 항목",
+          "description": "연간 항목"
+        },
+        "weightReduced": {
+          "label": "감소된 무게",
+          "description": "연간 kg"
+        }
+      },
+      "oceanImpact": {
+        "title": "해양 영향",
+        "oceanBottles": {
+          "label": "방지된 해양 병",
+          "description": "해양에서 구한 플라스틱 병"
+        },
+        "fishSaved": {
+          "label": "구한 물고기",
+          "description": "플라스틱으로부터 구한 잠재적 물고기"
+        },
+        "seaTurtles": {
+          "label": "구한 바다거북",
+          "description": "보호된 바다거북 상당량"
+        }
+      },
+      "environmentalImpact": {
+        "title": "환경 영향",
+        "co2Prevented": {
+          "label": "방지된 CO₂",
+          "description": "방지된 CO₂ 배출량 kg"
+        },
+        "oilSaved": {
+          "label": "절약된 석유",
+          "description": "보존된 석유 리터"
+        },
+        "wastePrevented": {
+          "label": "방지된 폐기물",
+          "description": "방지된 플라스틱 폐기물 톤"
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingMetrics": "감소 지표 로딩 중..."
+    },
+    "errorStates": {
+      "failedToLoad": "실행 계획 지표를 로드하지 못했습니다",
+      "refreshPage": "페이지를 새로 고침해 주세요"
+    },
+    "emptyStates": {
+      "noActionPlans": {
+        "title": "아직 실행 계획이 생성되지 않았습니다.",
+        "description": "학교가 첫 번째 실행 계획을 만들도록 권장하세요!"
+      }
+    },
+    "toasts": {
+      "reportDownloaded": {
+        "title": "보고서가 성공적으로 다운로드되었습니다",
+        "description": "PDF 분석 보고서가 다운로드되었습니다."
+      },
+      "exportFailed": {
+        "title": "내보내기 실패",
+        "description": "PDF 보고서를 내보내지 못했습니다",
+        "customMessage": "{{message}}"
+      }
+    },
     "global_metrics": "글로벌 지표",
     "enrollment_over_time": "시간에 따른 학교 등록",
     "evidence_submissions": "단계별 증거 제출",
@@ -29,12 +648,186 @@
     "last_90_days": "최근 90일",
     "last_year": "지난 해",
     "all_time": "전체 기간",
-    "export_report": "보고서 내보내기",
-    "charts": {
-      "schools_by_country": "국가별 학교",
-      "completion_by_stage": "단계별 완료율",
-      "monthly_registrations": "월별 학교 등록",
-      "evidence_status": "증거 검토 상태"
+    "export_report": "보고서 내보내기"
+  },
+  "email": {
+    "testTemplates": {
+      "title": "이메일 템플릿 테스트",
+      "selectType": "이메일 유형 선택",
+      "types": {
+        "welcome": "환영 이메일",
+        "invitation": "교사 초대",
+        "joinRequest": "가입 요청",
+        "joinApproved": "가입 요청 승인됨",
+        "evidenceSubmitted": "증거 제출됨",
+        "evidenceApproved": "증거 승인됨",
+        "evidenceRevision": "증거 수정 필요",
+        "newEvidence": "관리자를 위한 새 증거"
+      }
+    },
+    "bulkComposer": {
+      "title": "대량 이메일 작성",
+      "previewTest": "미리보기 및 테스트"
+    },
+    "buttons": {
+      "sendTest": "테스트 전송",
+      "sending": "전송 중...",
+      "previewEmail": "이메일 미리보기",
+      "insertImage": "이미지 삽입",
+      "sendBulkEmail": "{{recipientType}}에게 대량 이메일 보내기",
+      "sendBulk": "대량 이메일 보내기",
+      "cancel": "취소",
+      "previewTranslations": "번역 미리보기",
+      "generating": "생성 중..."
+    },
+    "form": {
+      "labels": {
+        "recipientEmail": "수신자 이메일 *",
+        "schoolName": "학교 이름 *",
+        "inviterName": "초대자 이름 *",
+        "expiresInDays": "만료 기간 (일)",
+        "requesterName": "요청자 이름 *",
+        "requesterEmail": "요청자 이메일 *",
+        "evidence": "증거 *",
+        "reviewerName": "검토자 이름 *",
+        "reviewNotes": "검토 노트 (선택 사항)",
+        "evidenceTitle": "증거 제목 *",
+        "stage": "단계 *",
+        "feedback": "피드백 *",
+        "submitterName": "제출자 이름 *",
+        "subject": "제목 *",
+        "preheader": "프리헤더",
+        "title": "제목 *",
+        "preTitle": "프리타이틀 (부제목)",
+        "messageContent": "메시지 내용 *",
+        "recipientType": "수신자 유형",
+        "selectLanguages": "번역 미리보기를 위한 언어 선택",
+        "viewEditTranslation": "번역 보기/편집"
+      },
+      "placeholders": {
+        "teacherEmail": "teacher@example.com",
+        "testSchool": "테스트 학교",
+        "selectEmailType": "테스트할 이메일 유형 선택",
+        "emailSubject": "이메일 제목 줄",
+        "preheaderText": "이메일 클라이언트에 표시되는 미리보기 텍스트 (선택 사항)",
+        "largeHeading": "이메일 내부의 큰 제목",
+        "subtitleText": "제목 아래의 부제목 (선택 사항)",
+        "messageContent": "주요 메시지 내용을 입력하세요. HTML 태그가 서식 지정에 지원됩니다.",
+        "testEmail": "test@example.com",
+        "searchImages": "이미지 검색..."
+      },
+      "helpText": {
+        "subjectLength": "{{length}}/200자 • 이메일의 주요 제목 줄",
+        "preheaderLength": "{{length}}/100자 • 이메일 받은 편지함에 표시되는 선택적 미리보기 텍스트",
+        "titleLength": "{{length}}/200자 • 이메일 본문에 표시되는 주요 제목",
+        "preTitleLength": "{{length}}/200자 • 제목 아래의 선택적 부제목 텍스트",
+        "contentLength": "{{length}}/10,000자",
+        "readTime": "~{{minutes}}분 읽기",
+        "supportsHTML": "HTML 서식 지원"
+      }
+    },
+    "recipientTypes": {
+      "allTeachers": "모든 교사",
+      "schools": "필터링된 학교",
+      "custom": "사용자 정의 수신자"
+    },
+    "stages": {
+      "stage1": "1단계",
+      "stage2": "2단계",
+      "stage3": "3단계"
+    },
+    "languages": {
+      "english": "영어 (원본)",
+      "spanish": "스페인어",
+      "french": "프랑스어",
+      "german": "독일어",
+      "italian": "이탈리아어",
+      "portuguese": "포르투갈어",
+      "dutch": "네덜란드어",
+      "russian": "러시아어",
+      "chinese": "중국어",
+      "korean": "한국어",
+      "arabic": "아랍어",
+      "indonesian": "인도네시아어",
+      "greek": "그리스어",
+      "welsh": "웨일스어"
+    },
+    "badges": {
+      "editingTranslation": "번역 편집 중"
+    },
+    "toasts": {
+      "emailRequired": {
+        "title": "이메일 필수",
+        "description": "수신자 이메일 주소를 입력해 주세요.",
+        "testDescription": "테스트 이메일 주소를 입력해 주세요."
+      },
+      "testEmailSent": {
+        "title": "테스트 이메일 전송됨",
+        "description": "{{email}}(으)로 이메일이 성공적으로 전송되었습니다",
+        "withLanguage": "{{email}}(으)로 {{language}}로 테스트 이메일이 성공적으로 전송되었습니다",
+        "defaultDescription": "{{email}}(으)로 이메일이 전송되었습니다"
+      },
+      "sendEmailFailed": {
+        "title": "이메일 전송 실패",
+        "description": "이메일을 전송하는 동안 오류가 발생했습니다.",
+        "tryAgain": "이메일을 전송하지 못했습니다. 다시 시도해 주세요."
+      },
+      "testEmailFailed": {
+        "title": "테스트 이메일 전송 실패",
+        "description": "테스트 이메일을 전송하는 동안 오류가 발생했습니다.",
+        "customMessage": "{{message}}"
+      },
+      "imageInserted": {
+        "title": "이미지 삽입됨",
+        "description": "{{filename}}이(가) 이메일 내용에 추가되었습니다"
+      },
+      "translationFailed": {
+        "title": "번역 실패",
+        "description": "번역 생성에 실패했습니다. 다시 시도해 주세요."
+      },
+      "error": {
+        "title": "오류",
+        "description": "이메일을 전송하지 못했습니다. 다시 시도해 주세요."
+      },
+      "emailsSent": {
+        "title": "이메일이 성공적으로 전송되었습니다",
+        "description": "{{sent}}개의 이메일이 성공적으로 전송되었습니다{{failedText}}."
+      },
+      "bulkEmailFailed": {
+        "title": "이메일 전송 실패",
+        "description": "대량 이메일을 전송하는 동안 오류가 발생했습니다. 다시 시도해 주세요."
+      }
+    },
+    "dialogs": {
+      "preview": {
+        "title": "이메일 미리보기",
+        "subject": "제목:",
+        "preheader": "프리헤더:"
+      },
+      "bulkConfirm": {
+        "title": "대량 이메일 전송 확인",
+        "description": "이 이메일을 다음에게 전송하시겠습니까:",
+        "subject": "제목: {{subject}}",
+        "warning": "이 작업은 취소할 수 없습니다. 먼저 이메일을 테스트했는지 확인하세요.",
+        "recipientCount": "{{count}}명의 사용자 정의 수신자"
+      },
+      "imagePicker": {
+        "title": "미디어 라이브러리에서 이미지 삽입"
+      }
+    },
+    "resultMessages": {
+      "success": "✅ 성공",
+      "error": "❌ 오류"
+    },
+    "defaultValues": {
+      "testSchool": "테스트 학교",
+      "johnDoe": "홍길동",
+      "janeSmith": "김영희",
+      "janeEmail": "jane@example.com",
+      "recyclingProgram": "재활용 프로그램",
+      "teacherEvidence": "저는 이 학교의 교사입니다.",
+      "participationFeedback": "학생 참여에 대한 세부 정보를 더 추가해 주세요.",
+      "headTeacher": "교장"
     }
   },
   "evidence": {
@@ -65,63 +858,69 @@
     "bulk_approve": "일괄 승인",
     "bulk_request_revision": "일괄 수정 요청"
   },
-  "resources": {
-    "title": "리소스 관리",
-    "subtitle": "교육 리소스 업로드 및 관리",
-    "upload_resource": "새 리소스 업로드",
-    "resource_library": "리소스 라이브러리",
-    "featured_resources": "추천 리소스",
-    "upload_form": {
-      "title": "새 리소스 업로드",
-      "resource_title": "리소스 제목",
-      "description": "설명",
-      "stage": "대상 단계",
-      "language": "언어",
-      "age_range": "연령대",
-      "file_type": "파일 유형",
-      "visibility": "공개 범위",
-      "featured": "추천 리소스",
-      "featured_description": "이 리소스를 강조 표시하려면 추천으로 표시",
-      "upload_file": "파일 업로드",
-      "save_resource": "리소스 저장",
-      "cancel": "취소"
-    },
-    "resource_table": {
-      "title": "제목",
-      "type": "유형",
-      "stage": "단계",
-      "downloads": "다운로드",
-      "status": "상태",
-      "actions": "작업",
-      "edit": "편집",
-      "delete": "삭제",
-      "feature": "추천",
-      "unfeature": "추천 해제"
-    },
-    "delete_confirmation": {
-      "title": "리소스 삭제",
-      "message": "이 리소스를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.",
-      "delete": "삭제",
-      "cancel": "취소"
-    },
-    "resource_uploaded": "리소스가 성공적으로 업로드되었습니다",
-    "resource_updated": "리소스가 성공적으로 업데이트되었습니다",
-    "resource_deleted": "리소스가 성공적으로 삭제되었습니다"
-  },
   "schools": {
     "title": "학교 관리",
     "subtitle": "등록된 학교 및 사용자 계정 관리",
     "active_schools": "활성 학교",
     "pending_approval": "승인 대기 중",
     "search_schools": "학교 검색...",
+    "filters": {
+      "allCountries": "모든 국가",
+      "selectAll": "모두 선택 ({count}개 학교)",
+      "selected": "{count}개 선택됨",
+      "searchPlaceholder": "학교 검색..."
+    },
+    "buttons": {
+      "bulkUpdate": "일괄 업데이트",
+      "deleteSchools": "학교 삭제",
+      "view": "보기",
+      "edit": "편집",
+      "delete": "삭제",
+      "save": "저장",
+      "saving": "저장 중...",
+      "cancel": "취소",
+      "confirm": "확인",
+      "processing": "처리 중...",
+      "deleting": "삭제 중...",
+      "editLanguage": "언어 편집",
+      "editProgression": "진행 상황 편집",
+      "saveChanges": "변경 사항 저장"
+    },
     "school_table": {
-      "school_name": "학교 이름",
-      "country": "국가",
-      "contact": "주 담당자",
-      "stage": "현재 단계",
-      "registered_date": "등록일",
-      "status": "상태",
-      "actions": "작업"
+      "headers": {
+        "select": "선택",
+        "school_name": "학교 이름",
+        "country": "국가",
+        "stage": "단계",
+        "progress": "진행률",
+        "students": "학생",
+        "contact": "주 담당자",
+        "joined": "가입일",
+        "actions": "작업",
+        "expand": "확장",
+        "collapse": "축소"
+      },
+      "teachers": {
+        "loading": "교사 로딩 중...",
+        "loadingError": "교사를 로드하지 못했습니다. 다시 시도해 주세요.",
+        "noTeachers": "이 학교에 아직 교사가 배정되지 않았습니다.",
+        "headers": {
+          "name": "이름",
+          "email": "이메일",
+          "role": "역할",
+          "verification": "확인",
+          "joined": "가입일"
+        },
+        "roles": {
+          "headTeacher": "교장",
+          "teacher": "교사"
+        },
+        "status": {
+          "verified": "확인됨",
+          "notVerified": "미확인"
+        }
+      },
+      "notAvailable": "N/A"
     },
     "school_actions": {
       "view_details": "세부 정보 보기",
@@ -137,108 +936,1145 @@
       "suspended": "정지됨"
     },
     "school_details": {
+      "title": "{name}",
       "basic_info": "기본 정보",
       "contact_info": "연락처 정보",
       "progress": "프로그램 진행 상황",
       "evidence_history": "증거 기록",
-      "last_activity": "마지막 활동"
+      "last_activity": "마지막 활동",
+      "labels": {
+        "country": "국가",
+        "schoolType": "학교 유형",
+        "preferredLanguage": "선호 언어",
+        "studentCount": "학생 수",
+        "currentStage": "현재 단계",
+        "progress": "진행률",
+        "primaryContactEmail": "주 담당자 이메일",
+        "joined": "가입일",
+        "address": "주소",
+        "currentRound": "현재 라운드",
+        "stageCompletion": "단계 완료"
+      },
+      "progression": {
+        "title": "진행 상황 관리",
+        "description": "이 섹션을 사용하여 학교의 진행 단계, 라운드 및 완료 상태를 수동으로 설정하세요. 이를 통해 증거 제출을 기반으로 한 자동 진행을 재정의할 수 있습니다.",
+        "currentStage": "현재 단계:",
+        "currentRound": "현재 라운드:",
+        "stageCompletion": "단계 완료:",
+        "inspireCompleted": "영감 완료됨",
+        "investigateCompleted": "조사 완료됨",
+        "actCompleted": "행동 완료됨",
+        "notCompleted": "○ 완료되지 않음",
+        "completed": "✓ 완료됨"
+      },
+      "stages": {
+        "inspire": "영감",
+        "investigate": "조사",
+        "act": "행동"
+      },
+      "languages": {
+        "en": "영어",
+        "es": "스페인어",
+        "fr": "프랑스어",
+        "de": "독일어",
+        "it": "이탈리아어",
+        "pt": "포르투갈어",
+        "nl": "네덜란드어",
+        "el": "그리스어",
+        "ar": "아랍어",
+        "zh": "중국어",
+        "ko": "한국어",
+        "ru": "러시아어",
+        "id": "인도네시아어",
+        "cy": "웨일스어"
+      },
+      "actionPlan": {
+        "title": "실행 계획 지표",
+        "totalPromises": "전체 약속",
+        "annualReduction": "연간 감소된 항목",
+        "annualWeight": "감소된 무게",
+        "perYear": "연간",
+        "oceanImpact": "해양 영향",
+        "oceanBottles": "방지된 해양 병",
+        "fishSaved": "구한 물고기",
+        "seaTurtles": "보호된 바다거북",
+        "environmentalImpact": "환경 영향",
+        "co2Prevented": "방지된 CO₂",
+        "oilSaved": "절약된 석유",
+        "wastePrevented": "방지된 폐기물",
+        "loading": "감소 지표 로딩 중...",
+        "noPromises": "이 학교에 대한 감소 약속이 아직 생성되지 않았습니다."
+      },
+      "photoConsent": {
+        "title": "사진 동의 상태",
+        "status": "상태:",
+        "uploadedAt": "업로드됨:",
+        "approvedAt": "승인됨:",
+        "approvedBy": "승인자:",
+        "reviewNotes": "검토 노트:",
+        "viewDocument": "문서 보기",
+        "pending": "대기 중",
+        "approved": "승인됨",
+        "rejected": "거부됨",
+        "notUploaded": "업로드되지 않음",
+        "approve": "승인",
+        "reject": "거부",
+        "rejectionNotes": "거부 노트",
+        "rejectionNotesPlaceholder": "사진 동의가 거부되는 이유를 설명하세요...",
+        "submitRejection": "거부 제출"
+      }
+    },
+    "bulkActions": {
+      "dialogs": {
+        "update": {
+          "title": "학교 일괄 업데이트",
+          "description": "이 작업은 <strong>{count}</strong>개 학교에 영향을 미칩니다.",
+          "updateStageLabel": "현재 단계 업데이트",
+          "updateStageHelpText": "선택한 모든 학교가 이 프로그램 단계로 이동됩니다."
+        },
+        "delete": {
+          "title": "학교 일괄 삭제",
+          "description": "이 작업은 <strong>{count}</strong>개 학교에 영향을 미칩니다.",
+          "warningTitle": "경고:",
+          "warningDescription": "이 작업은 취소할 수 없습니다. 선택한 모든 학교 및 관련 데이터가 영구적으로 삭제됩니다."
+        },
+        "deleteSchool": {
+          "title": "학교 삭제",
+          "description": "<strong>{name}</strong>을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없으며 학교 및 모든 관련 데이터가 영구적으로 제거됩니다.",
+          "loadingUsers": "학교 사용자 로딩 중...",
+          "warningUsers": "경고: 이 학교에는 {count}명의 관련 사용자{plural}가 있습니다.",
+          "associatedUsers": "관련 사용자:",
+          "deleteUsersLabel": "모든 관련 사용자 계정도 삭제",
+          "deleteUsersDescription": "선택하지 않으면 사용자 계정이 시스템에 남아 있으며 다른 학교에 재할당될 수 있습니다. 선택하면 사용자가 영구적으로 삭제되며 동일한 이메일 주소로 다시 등록할 수 없습니다.",
+          "noUsers": "이 학교에는 관련 사용자가 없습니다."
+        }
+      }
+    },
+    "toasts": {
+      "languageUpdated": {
+        "title": "언어 업데이트됨",
+        "description": "학교 선호 언어가 성공적으로 업데이트되었습니다."
+      },
+      "languageUpdateFailed": {
+        "title": "업데이트 실패",
+        "description": "학교 언어를 업데이트하지 못했습니다. 변경 사항이 되돌려졌습니다."
+      },
+      "progressionUpdated": {
+        "title": "진행 상황 업데이트됨",
+        "description": "학교 진행 상황이 성공적으로 업데이트되었습니다."
+      },
+      "progressionUpdateFailed": {
+        "title": "업데이트 실패",
+        "description": "학교 진행 상황을 업데이트하지 못했습니다. 변경 사항이 되돌려졌습니다."
+      },
+      "bulkUpdateComplete": {
+        "title": "일괄 업데이트 완료",
+        "description": "{count}개 학교가 성공적으로 업데이트되었습니다."
+      },
+      "bulkUpdateFailed": {
+        "title": "일괄 업데이트 실패",
+        "description": "학교를 업데이트하지 못했습니다. 다시 시도해 주세요."
+      },
+      "bulkDeleteComplete": {
+        "title": "일괄 삭제 완료",
+        "description": "{count}개 학교가 성공적으로 삭제되었습니다."
+      },
+      "bulkDeleteFailed": {
+        "title": "일괄 삭제 실패",
+        "description": "학교를 삭제하지 못했습니다. 다시 시도해 주세요."
+      },
+      "schoolDeleted": {
+        "title": "학교 삭제됨",
+        "descriptionWithUsers": "학교 및 모든 관련 사용자가 성공적으로 삭제되었습니다.",
+        "descriptionWithoutUsers": "학교가 성공적으로 삭제되었습니다."
+      },
+      "schoolDeleteFailed": {
+        "title": "삭제 실패",
+        "description": "학교를 삭제하지 못했습니다. 다시 시도해 주세요."
+      }
     }
   },
   "permissions": {
-    "admin_only": "관리자 액세스 권한 필요",
-    "insufficient_permissions": "이 기능에 액세스하기 위한 권한이 부족합니다"
+    "admin_only": "관리자 액세스 필요",
+    "insufficient_permissions": "이 기능에 액세스할 권한이 부족합니다"
   },
   "toasts": {
-    "teacher_removed": "Teacher Removed",
-    "teacher_removed_desc": "Teacher has been successfully removed from the school.",
-    "removal_failed": "Removal Failed",
-    "removal_failed_desc": "Failed to remove teacher. Please try again.",
-    "request_approved": "Request Approved",
-    "request_approved_desc": "Verification request has been successfully approved.",
-    "request_rejected": "Request Rejected",
-    "request_rejected_desc": "Verification request has been successfully rejected.",
-    "action_failed": "Action Failed",
-    "action_failed_desc": "Failed to process verification request. Please try again.",
-    "access_denied": "Access Denied",
-    "access_denied_desc": "Admin access required",
-    "success": "Success",
-    "error": "Error",
-    "requirement_created": "Evidence requirement created successfully.",
-    "requirement_updated": "Evidence requirement updated successfully.",
-    "requirement_deleted": "Evidence requirement deleted successfully.",
-    "requirement_delete_failed": "Failed to delete evidence requirement. It may be linked to existing evidence.",
-    "reorder_failed": "Failed to reorder requirements.",
-    "event_created": "Event Created Successfully! 🎉",
-    "event_updated": "Event updated successfully.",
-    "event_deleted": "Event deleted successfully.",
-    "event_creation_failed": "Failed to create event.",
-    "event_update_failed": "Failed to update event.",
-    "event_delete_failed": "Failed to delete event.",
-    "event_duplicated": "Event Duplicated",
-    "event_duplicated_desc": "\"{{title}}\" has been created as a draft.",
-    "duplication_failed": "Duplication Failed",
-    "duplication_failed_desc": "Failed to duplicate event",
-    "page_content_update_failed": "Failed to update event page content.",
-    "status_update_failed": "Failed to update event status.",
-    "same_language_selected": "Same language selected"
+    "teacher_removed": "교사 제거됨",
+    "teacher_removed_desc": "교사가 학교에서 성공적으로 제거되었습니다.",
+    "removal_failed": "제거 실패",
+    "removal_failed_desc": "교사를 제거하지 못했습니다. 다시 시도해 주세요.",
+    "request_approved": "요청 승인됨",
+    "request_approved_desc": "확인 요청이 성공적으로 승인되었습니다.",
+    "request_rejected": "요청 거부됨",
+    "request_rejected_desc": "확인 요청이 성공적으로 거부되었습니다.",
+    "action_failed": "작업 실패",
+    "action_failed_desc": "확인 요청을 처리하지 못했습니다. 다시 시도해 주세요.",
+    "access_denied": "액세스 거부됨",
+    "access_denied_desc": "관리자 액세스 필요",
+    "session_expired": "권한 없음",
+    "session_expired_desc": "관리자 세션이 만료되었습니다. 다시 로그인해 주세요.",
+    "success": "성공",
+    "error": "오류",
+    "requirement_created": "증거 요구사항이 성공적으로 생성되었습니다.",
+    "requirement_updated": "증거 요구사항이 성공적으로 업데이트되었습니다.",
+    "requirement_deleted": "증거 요구사항이 성공적으로 삭제되었습니다.",
+    "requirement_delete_failed": "증거 요구사항을 삭제하지 못했습니다. 기존 증거에 연결되어 있을 수 있습니다.",
+    "reorder_failed": "요구사항 재정렬에 실패했습니다.",
+    "event_created": "이벤트가 성공적으로 생성되었습니다! 🎉",
+    "event_updated": "이벤트가 성공적으로 업데이트되었습니다.",
+    "event_deleted": "이벤트가 성공적으로 삭제되었습니다.",
+    "event_creation_failed": "이벤트를 생성하지 못했습니다.",
+    "event_update_failed": "이벤트를 업데이트하지 못했습니다.",
+    "event_delete_failed": "이벤트를 삭제하지 못했습니다.",
+    "event_duplicated": "이벤트 복제됨",
+    "event_duplicated_desc": "\"{{title}}\"이(가) 초안으로 생성되었습니다.",
+    "duplication_failed": "복제 실패",
+    "duplication_failed_desc": "이벤트를 복제하지 못했습니다",
+    "page_content_update_failed": "이벤트 페이지 콘텐츠를 업데이트하지 못했습니다.",
+    "status_update_failed": "이벤트 상태를 업데이트하지 못했습니다.",
+    "same_language_selected": "동일한 언어가 선택되었습니다",
+    "photoConsentApproved": {
+      "title": "사진 동의 승인됨",
+      "description": "사진 동의가 성공적으로 승인되었습니다."
+    },
+    "photoConsentApprovalFailed": {
+      "title": "승인 실패",
+      "description": "사진 동의를 승인하지 못했습니다. 변경 사항이 되돌려졌습니다."
+    },
+    "photoConsentRejected": {
+      "title": "사진 동의 거부됨",
+      "description": "사진 동의 문서가 거부되었습니다."
+    },
+    "photoConsentRejectionFailed": {
+      "title": "거부 실패",
+      "description": "사진 동의를 거부하지 못했습니다. 변경 사항이 되돌려졌습니다."
+    }
   },
   "case_study": {
-    "categories": "Categories",
-    "organize_case_study_categories": "Organize your case study by selecting relevant categories",
-    "add_categories": "Add Categories",
-    "enter_category": "Enter a category",
-    "press_enter_or_click_plus_category": "Press Enter or click + to add a category",
-    "suggested_categories": "Suggested Categories",
-    "selected_categories": "Selected Categories",
-    "add_suggested": "Add suggested",
-    "category_plastic_reduction": "Plastic Reduction",
-    "category_recycling_initiative": "Recycling Initiative",
-    "category_student_leadership": "Student Leadership",
-    "category_community_engagement": "Community Engagement",
-    "category_educational_campaign": "Educational Campaign",
-    "category_waste_audit": "Waste Audit",
-    "category_policy_change": "Policy Change",
-    "category_innovation": "Innovation",
-    "tags": "Tags",
-    "add_descriptive_tags": "Add descriptive tags to improve discoverability",
-    "add_tags": "Add Tags",
-    "enter_tag": "Enter a tag",
-    "press_enter_or_click_plus_tag": "Press Enter or click + to add a tag",
-    "suggested_tags": "Suggested Tags",
-    "selected_tags": "Selected Tags",
-    "tag_single_use_plastic": "single-use-plastic",
-    "tag_recycling": "recycling",
-    "tag_composting": "composting",
-    "tag_awareness": "awareness",
-    "tag_students": "students",
-    "tag_teachers": "teachers",
-    "tag_community": "community",
-    "tag_impact": "impact",
-    "tag_sustainability": "sustainability",
-    "tag_ocean_conservation": "ocean-conservation",
-    "impact_metrics": "Impact Metrics",
-    "add_quantifiable_metrics": "Add quantifiable metrics to showcase the project's impact",
-    "add_metric": "Add Metric",
-    "no_impact_metrics_yet": "No impact metrics yet. Click \"Add Metric\" to get started.",
-    "metric_number": "Metric {{number}}",
-    "metric_label_required": "Metric Label *",
-    "metric_value_required": "Value *",
-    "metric_unit": "Unit",
-    "metric_icon": "Icon",
-    "metric_label_placeholder": "e.g., Plastic Items Reduced",
-    "metric_value_placeholder": "e.g., 500 or 85%",
-    "metric_unit_placeholder": "e.g., items, kg, %",
-    "metric_icon_placeholder": "e.g., trash, droplet, leaf",
-    "project_timeline": "Project Timeline",
-    "create_chronological_timeline": "Create a chronological timeline of key milestones and events",
-    "add_section": "Add Section",
-    "no_timeline_sections_yet": "No timeline sections yet. Click \"Add Section\" to get started.",
-    "section_number": "Section {{number}}",
-    "section_title_required": "Section Title *",
-    "section_title_placeholder": "e.g., Project Launch, Week 1",
-    "section_content": "Content *",
-    "section_content_placeholder": "Describe what happened during this phase...",
-    "section_image_url": "Image URL",
+    "categories": "카테고리",
+    "organize_case_study_categories": "관련 카테고리를 선택하여 사례 연구 구성",
+    "add_categories": "카테고리 추가",
+    "enter_category": "카테고리 입력",
+    "press_enter_or_click_plus_category": "Enter 키를 누르거나 +를 클릭하여 카테고리 추가",
+    "suggested_categories": "제안된 카테고리",
+    "selected_categories": "선택한 카테고리",
+    "add_suggested": "제안 추가",
+    "category_plastic_reduction": "플라스틱 감소",
+    "category_recycling_initiative": "재활용 이니셔티브",
+    "category_student_leadership": "학생 리더십",
+    "category_community_engagement": "지역사회 참여",
+    "category_educational_campaign": "교육 캠페인",
+    "category_waste_audit": "폐기물 감사",
+    "category_policy_change": "정책 변경",
+    "category_innovation": "혁신",
+    "tags": "태그",
+    "add_descriptive_tags": "검색 가능성을 향상시키기 위해 설명 태그 추가",
+    "add_tags": "태그 추가",
+    "enter_tag": "태그 입력",
+    "press_enter_or_click_plus_tag": "Enter 키를 누르거나 +를 클릭하여 태그 추가",
+    "suggested_tags": "제안된 태그",
+    "selected_tags": "선택한 태그",
+    "tag_single_use_plastic": "일회용-플라스틱",
+    "tag_recycling": "재활용",
+    "tag_composting": "퇴비화",
+    "tag_awareness": "인식",
+    "tag_students": "학생",
+    "tag_teachers": "교사",
+    "tag_community": "지역사회",
+    "tag_impact": "영향",
+    "tag_sustainability": "지속가능성",
+    "tag_ocean_conservation": "해양-보전",
+    "impact_metrics": "영향 지표",
+    "add_quantifiable_metrics": "프로젝트의 영향을 보여주기 위해 정량화 가능한 지표 추가",
+    "add_metric": "지표 추가",
+    "no_impact_metrics_yet": "아직 영향 지표가 없습니다. \"지표 추가\"를 클릭하여 시작하세요.",
+    "metric_number": "지표 {{number}}",
+    "metric_label_required": "지표 레이블 *",
+    "metric_value_required": "값 *",
+    "metric_unit": "단위",
+    "metric_icon": "아이콘",
+    "metric_label_placeholder": "예: 감소된 플라스틱 항목",
+    "metric_value_placeholder": "예: 500 또는 85%",
+    "metric_unit_placeholder": "예: 항목, kg, %",
+    "metric_icon_placeholder": "예: trash, droplet, leaf",
+    "project_timeline": "프로젝트 타임라인",
+    "create_chronological_timeline": "주요 이정표 및 이벤트의 시간순 타임라인 생성",
+    "add_section": "섹션 추가",
+    "no_timeline_sections_yet": "아직 타임라인 섹션이 없습니다. \"섹션 추가\"를 클릭하여 시작하세요.",
+    "section_number": "섹션 {{number}}",
+    "section_title_required": "섹션 제목 *",
+    "section_title_placeholder": "예: 프로젝트 시작, 1주차",
+    "section_content": "내용 *",
+    "section_content_placeholder": "이 단계에서 발생한 일을 설명하세요...",
+    "section_image_url": "이미지 URL",
     "section_image_placeholder": "https://..."
+  },
+  "evidenceGallery": {
+    "title": "증거 갤러리",
+    "subtitle": "모든 증거 제출물 탐색 및 관리",
+    "submissionCount": {
+      "single": "{{count}}개 제출물",
+      "plural": "{{count}}개 제출물"
+    },
+    "filters": {
+      "labels": {
+        "stage": "단계",
+        "country": "국가",
+        "status": "상태",
+        "visibility": "가시성"
+      },
+      "options": {
+        "allStages": "모든 단계",
+        "allCountries": "모든 국가",
+        "allStatuses": "모든 상태",
+        "allVisibility": "모든 가시성",
+        "public": "공개",
+        "private": "비공개"
+      },
+      "stages": {
+        "inspire": "영감",
+        "investigate": "조사",
+        "act": "행동"
+      },
+      "statuses": {
+        "pending": "대기 중",
+        "approved": "승인됨",
+        "rejected": "거부됨"
+      }
+    },
+    "buttons": {
+      "clearFilters": "필터 지우기",
+      "view": "보기",
+      "schoolHistory": "학교 기록 보기"
+    },
+    "badges": {
+      "permissionPending": "권한 대기 중",
+      "noPermission": "권한 없음",
+      "permissionApproved": "권한 승인됨",
+      "permissionRejected": "권한 거부됨",
+      "public": "공개",
+      "registeredOnly": "등록된 사용자만"
+    },
+    "dialogs": {
+      "evidenceDetails": {
+        "title": "증거 세부 정보"
+      },
+      "schoolHistory": {
+        "title": "{{schoolName}} - 모든 제출물 ({{count}})"
+      }
+    },
+    "form": {
+      "labels": {
+        "title": "제목",
+        "description": "설명",
+        "school": "학교",
+        "country": "국가",
+        "stage": "단계",
+        "status": "상태",
+        "visibilitySetting": "가시성 설정",
+        "photoPermission": "사진 권한",
+        "files": "파일 ({{count}})",
+        "videoLinks": "비디오 링크"
+      },
+      "values": {
+        "noDescription": "설명 없음",
+        "unknownSchool": "알 수 없는 학교",
+        "unknown": "알 수 없음"
+      }
+    },
+    "warnings": {
+      "permissionRequired": "권한 필요:",
+      "photoConsentPending": "이 학교에는 대기 중인 사진 동의 문서가 있습니다. 권한이 승인될 때까지 이 증거는 공개 사례 연구에 사용하지 않아야 합니다.",
+      "photoConsentMissing": "이 학교는 사진 동의 문서를 업로드하지 않았습니다. 권한이 승인될 때까지 이 증거는 공개 사례 연구에 사용하지 않아야 합니다."
+    },
+    "emptyStates": {
+      "noEvidence": {
+        "title": "아직 증거 제출물이 없습니다",
+        "description": "학교가 업로드를 시작하면 증거 제출물이 여기에 나타납니다"
+      },
+      "noSchoolSubmissions": {
+        "title": "아직 제출물이 없습니다",
+        "description": "이 학교는 아직 증거를 제출하지 않았습니다"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "성공",
+        "description": "증거 상태가 업데이트되었습니다"
+      },
+      "updateFailed": {
+        "title": "오류",
+        "description": "증거 상태를 업데이트하지 못했습니다"
+      }
+    }
+  },
+  "printableForms": {
+    "title": "인쇄 가능한 양식 검토",
+    "subtitle": "학교의 인쇄 가능한 양식 제출물 검토 및 관리",
+    "filters": {
+      "labels": {
+        "status": "상태",
+        "formType": "양식 유형",
+        "schoolSearch": "학교 검색"
+      },
+      "statusOptions": {
+        "all": "모든 상태",
+        "pending": "대기 중",
+        "approved": "승인됨",
+        "rejected": "거부됨",
+        "revisionRequested": "수정 요청됨"
+      },
+      "formTypeOptions": {
+        "all": "모든 유형",
+        "audit": "감사",
+        "actionPlan": "실행 계획"
+      },
+      "placeholders": {
+        "searchSchool": "학교 이름으로 검색..."
+      }
+    },
+    "table": {
+      "headers": {
+        "school": "학교",
+        "formType": "양식 유형",
+        "status": "상태",
+        "submittedBy": "제출자",
+        "uploadDate": "업로드 날짜",
+        "actions": "작업"
+      }
+    },
+    "buttons": {
+      "download": "다운로드",
+      "review": "검토",
+      "submitReview": "검토 제출",
+      "cancel": "취소"
+    },
+    "dialogs": {
+      "reviewSubmission": {
+        "title": "제출물 검토",
+        "labels": {
+          "school": "학교:",
+          "formType": "양식 유형:",
+          "submittedBy": "제출자:",
+          "status": "상태",
+          "adminNotes": "관리자 노트 (선택 사항)"
+        },
+        "statusOptions": {
+          "approved": "승인됨",
+          "rejected": "거부됨",
+          "revisionRequested": "수정 요청됨"
+        },
+        "placeholders": {
+          "reviewNotes": "이 검토에 대한 노트 추가..."
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingSubmissions": "제출물 로딩 중..."
+    },
+    "emptyStates": {
+      "noSubmissions": {
+        "title": "제출물을 찾을 수 없음",
+        "description": "필터와 일치하는 인쇄 가능한 양식 제출물이 없습니다"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "성공",
+        "description": "제출물 상태가 성공적으로 업데이트되었습니다"
+      },
+      "updateFailed": {
+        "title": "오류",
+        "description": "제출물 상태를 업데이트하지 못했습니다",
+        "customMessage": "{{message}}"
+      },
+      "downloadFailed": {
+        "title": "오류",
+        "description": "제출물을 다운로드하지 못했습니다"
+      }
+    },
+    "updating": "업데이트 중..."
+  },
+  "caseStudies": {
+    "title": "사례 연구 관리",
+    "filters": {
+      "placeholders": {
+        "search": "사례 연구 검색..."
+      },
+      "labels": {
+        "stage": "단계",
+        "featuredStatus": "추천 상태"
+      },
+      "options": {
+        "allStages": "모든 단계",
+        "all": "모두",
+        "featured": "추천",
+        "notFeatured": "추천 안 됨"
+      },
+      "stages": {
+        "inspire": "영감",
+        "investigate": "조사",
+        "act": "행동"
+      }
+    },
+    "buttons": {
+      "createCaseStudy": "사례 연구 생성",
+      "preview": "미리보기",
+      "edit": "편집",
+      "feature": "추천",
+      "unfeature": "추천 해제",
+      "delete": "삭제",
+      "cancel": "취소"
+    },
+    "badges": {
+      "featured": "추천"
+    },
+    "dialogs": {
+      "delete": {
+        "title": "사례 연구 삭제",
+        "description": "\"{{title}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+      },
+      "editor": {
+        "title": "사례 연구 편집기"
+      }
+    },
+    "emptyStates": {
+      "noCaseStudies": "사례 연구를 찾을 수 없습니다. 승인된 증거 제출물로 하나 만드세요."
+    },
+    "toasts": {
+      "created": {
+        "title": "사례 연구 생성됨",
+        "description": "사례 연구가 성공적으로 생성되었습니다."
+      },
+      "createFailed": {
+        "title": "생성 실패",
+        "description": "사례 연구를 생성하지 못했습니다. 다시 시도해 주세요.",
+        "customMessage": "{{message}}"
+      },
+      "updated": {
+        "title": "사례 연구 업데이트됨",
+        "description": "사례 연구가 성공적으로 업데이트되었습니다."
+      },
+      "updateFailed": {
+        "title": "업데이트 실패",
+        "description": "사례 연구를 업데이트하지 못했습니다. 다시 시도해 주세요.",
+        "customMessage": "{{message}}"
+      },
+      "deleted": {
+        "title": "사례 연구 삭제됨",
+        "description": "사례 연구가 성공적으로 삭제되었습니다."
+      },
+      "deleteFailed": {
+        "title": "삭제 실패",
+        "description": "사례 연구를 삭제하지 못했습니다. 다시 시도해 주세요.",
+        "customMessage": "{{message}}"
+      },
+      "featuredUpdated": {
+        "title": "사례 연구 업데이트됨",
+        "description": "사례 연구 추천 상태가 업데이트되었습니다."
+      },
+      "featuredUpdateFailed": {
+        "title": "업데이트 실패",
+        "description": "사례 연구를 업데이트하지 못했습니다. 다시 시도해 주세요."
+      },
+      "locked": {
+        "title": "사례 연구 잠김",
+        "description": "이 사례 연구는 현재 {{lockedBy}}님이 편집 중입니다."
+      },
+      "cannotSave": {
+        "title": "저장 불가",
+        "description": "이 사례 연구는 다른 사용자에 의해 잠겨 있습니다."
+      },
+      "lockAcquired": {
+        "title": "잠금 획득됨",
+        "description": "이제 이 사례 연구를 편집할 수 있습니다."
+      }
+    }
+  },
+  "dataImport": {
+    "title": "WordPress에서 데이터 가져오기",
+    "subtitle": "WordPress 데이터베이스에서 내보낸 CSV 또는 Excel 파일에서 학교, 사용자 및 관계 가져오기",
+    "alerts": {
+      "important": {
+        "title": "중요:",
+        "description": "세 개의 별도 파일(CSV 또는 Excel 형식) 준비:",
+        "schools": "학교 - 학교 정보 포함 (이름, 국가, 유형 등)",
+        "users": "사용자 - 교사/사용자 정보 포함 (이메일, 이름 등)",
+        "relationships": "관계 - 사용자를 학교에 역할과 함께 연결",
+        "templateNote": "필요한 열 형식을 보려면 아래 템플릿을 다운로드하세요.",
+        "note": "필요한 열 형식을 보려면 아래 템플릿을 다운로드하세요."
+      }
+    },
+    "tabs": {
+      "schools": "학교",
+      "users": "사용자",
+      "relationships": "관계"
+    },
+    "fileUpload": {
+      "titles": {
+        "schools": "학교 파일",
+        "users": "사용자 파일",
+        "relationships": "학교-사용자 관계 파일"
+      },
+      "descriptions": {
+        "schools": "학교 데이터가 포함된 CSV 또는 Excel 파일 업로드",
+        "users": "사용자/교사 데이터가 포함된 CSV 또는 Excel 파일 업로드",
+        "relationships": "사용자를 학교에 연결하는 CSV 또는 Excel 파일 업로드"
+      },
+      "labels": {
+        "clickToUpload": "파일 업로드하려면 클릭",
+        "formatNote": "CSV 또는 Excel 형식"
+      },
+      "validation": {
+        "success": "파일이 성공적으로 검증되었습니다",
+        "failed": "검증 실패",
+        "rowsFound": "{{headerCount}}개 열이 있는 {{rowCount}}개 행 발견",
+        "errorsTitle": "검증 오류 ({{count}}개):",
+        "moreErrors": "... 및 {{count}}개의 추가 오류",
+        "previewTitle": "미리보기 (처음 5개 행):"
+      }
+    },
+    "buttons": {
+      "downloadTemplate": "템플릿 다운로드",
+      "startImport": "가져오기 시작",
+      "importAnother": "다른 파일 가져오기",
+      "viewData": "가져온 데이터 보기"
+    },
+    "status": {
+      "readyToImport": "가져올 준비가 되었습니까?",
+      "allFilesUploaded": "모든 파일 업로드 및 검증됨",
+      "filesUploaded": "{{count}}/3 파일 업로드됨",
+      "fixErrors": "가져오기 전에 검증 오류를 수정하세요"
+    },
+    "importing": {
+      "title": "데이터 가져오는 중...",
+      "description": "몇 분 정도 걸릴 수 있습니다. 이 페이지를 닫지 마세요."
+    },
+    "results": {
+      "successTitle": "가져오기가 성공적으로 완료되었습니다",
+      "errorTitle": "가져오기가 오류와 함께 완료되었습니다",
+      "summary": "요약:",
+      "schoolsImported": "가져온 학교: {{count}}",
+      "usersImported": "가져온 사용자: {{count}}",
+      "relationshipsCreated": "생성된 관계: {{count}}",
+      "errors": "오류:",
+      "errorsCount": "오류 ({{count}}개)",
+      "viewDetails": "상세 로그 보기",
+      "newUsersCreated": "{{count}}명의 새 사용자 생성됨",
+      "sections": {
+        "schools": "학교",
+        "users": "사용자",
+        "relationships": "관계"
+      },
+      "tableHeaders": {
+        "row": "행",
+        "field": "필드",
+        "error": "오류"
+      },
+      "stats": {
+        "processed": "처리됨:",
+        "succeeded": "성공:",
+        "failed": "실패:"
+      }
+    },
+    "toasts": {
+      "fileValidated": {
+        "title": "파일 검증됨",
+        "description": "{{rowCount}}개 행이 성공적으로 검증되었습니다"
+      },
+      "validationErrors": {
+        "title": "검증 오류 발견",
+        "description": "{{filename}}에서 {{count}}개의 검증 오류{{plural}}를 발견했습니다. 가져오기 전에 검토하고 수정해 주세요."
+      },
+      "validationFailed": {
+        "title": "검증 실패",
+        "description": "파일 파싱 실패",
+        "customMessage": "{{message}}"
+      },
+      "noFilesSelected": {
+        "title": "파일이 선택되지 않음",
+        "description": "가져올 파일을 최소 하나 업로드해 주세요"
+      },
+      "importSuccess": {
+        "title": "가져오기 성공",
+        "description": "데이터가 성공적으로 가져왔습니다"
+      },
+      "importFailed": {
+        "title": "가져오기 실패",
+        "description": "데이터를 가져오지 못했습니다",
+        "customMessage": "{{message}}"
+      }
+    }
+  },
+  "resourcePacks": {
+    "title": "리소스 팩 관리",
+    "subtitle": "리소스 컬렉션을 관리 가능한 팩으로 구성",
+    "buttons": {
+      "createPack": "리소스 팩 생성",
+      "edit": "편집",
+      "delete": "삭제",
+      "save": "저장",
+      "cancel": "취소",
+      "addResources": "리소스 추가",
+      "saving": "저장 중..."
+    },
+    "dialogs": {
+      "create": {
+        "title": "새 리소스 팩 생성"
+      },
+      "edit": {
+        "title": "리소스 팩 편집"
+      },
+      "delete": {
+        "title": "리소스 팩 삭제",
+        "description": "\"{{name}}\"을(를) 삭제하시겠습니까? 이 작업은 팩만 삭제하며 개별 리소스는 삭제되지 않습니다."
+      }
+    },
+    "form": {
+      "labels": {
+        "name": "팩 이름 *",
+        "description": "설명",
+        "stage": "프로그램 단계",
+        "visibility": "가시성",
+        "resources": "리소스 ({{count}}개)",
+        "featured": "추천 팩"
+      },
+      "placeholders": {
+        "name": "리소스 팩 이름 입력",
+        "description": "이 팩에 대한 설명 입력"
+      }
+    },
+    "emptyStates": {
+      "noPacks": "리소스 팩을 찾을 수 없습니다. 첫 번째 팩을 만들어 시작하세요.",
+      "noResourcesInPack": "이 팩에 리소스가 없습니다. \"리소스 추가\"를 클릭하여 시작하세요."
+    },
+    "toasts": {
+      "packCreated": {
+        "title": "팩 생성됨",
+        "description": "리소스 팩이 성공적으로 생성되었습니다."
+      },
+      "packUpdated": {
+        "title": "팩 업데이트됨",
+        "description": "리소스 팩이 성공적으로 업데이트되었습니다."
+      },
+      "packDeleted": {
+        "title": "팩 삭제됨",
+        "description": "리소스 팩이 성공적으로 삭제되었습니다."
+      },
+      "saveFailed": {
+        "title": "저장 실패",
+        "description": "리소스 팩을 저장하지 못했습니다. 다시 시도해 주세요."
+      },
+      "deleteFailed": {
+        "title": "삭제 실패",
+        "description": "리소스 팩을 삭제하지 못했습니다. 다시 시도해 주세요."
+      }
+    }
+  },
+  "evidenceRequirements": {
+    "title": "증거 요구사항",
+    "subtitle": "각 프로그램 단계에 대한 증거 요구사항 정의 및 관리",
+    "buttons": {
+      "addRequirement": "요구사항 추가",
+      "save": "저장",
+      "cancel": "취소",
+      "edit": "편집",
+      "delete": "삭제",
+      "saving": "저장 중..."
+    },
+    "form": {
+      "labels": {
+        "title": "제목 *",
+        "description": "설명",
+        "stage": "단계 *",
+        "required": "필수",
+        "mediaType": "미디어 유형"
+      },
+      "placeholders": {
+        "title": "요구사항 제목 입력",
+        "description": "요구사항 설명 입력"
+      },
+      "mediaTypes": {
+        "any": "모두",
+        "photo": "사진",
+        "video": "비디오",
+        "document": "문서"
+      }
+    },
+    "stages": {
+      "inspire": "영감",
+      "investigate": "조사",
+      "act": "행동"
+    },
+    "dialogs": {
+      "create": {
+        "title": "새 증거 요구사항 생성"
+      },
+      "edit": {
+        "title": "증거 요구사항 편집"
+      },
+      "delete": {
+        "title": "요구사항 삭제",
+        "description": "이 증거 요구사항을 삭제하시겠습니까? 기존 증거에 연결되어 있으면 삭제할 수 없습니다."
+      }
+    },
+    "emptyStates": {
+      "noRequirements": "이 단계에 대한 증거 요구사항이 없습니다. 첫 번째 요구사항을 추가하세요."
+    },
+    "table": {
+      "headers": {
+        "order": "순서",
+        "title": "제목",
+        "description": "설명",
+        "mediaType": "미디어 유형",
+        "required": "필수",
+        "actions": "작업"
+      },
+      "values": {
+        "yes": "예",
+        "no": "아니오"
+      }
+    }
+  },
+  "activityLogs": {
+    "title": "활동 로그",
+    "subtitle": "시스템 활동 및 변경 사항 모니터링",
+    "filters": {
+      "labels": {
+        "user": "사용자",
+        "action": "작업",
+        "resource": "리소스",
+        "dateRange": "날짜 범위"
+      },
+      "placeholders": {
+        "allUsers": "모든 사용자",
+        "allActions": "모든 작업",
+        "allResources": "모든 리소스"
+      }
+    },
+    "table": {
+      "headers": {
+        "timestamp": "타임스탬프",
+        "user": "사용자",
+        "action": "작업",
+        "resource": "리소스",
+        "details": "세부 정보"
+      }
+    },
+    "actions": {
+      "create": "생성",
+      "update": "업데이트",
+      "delete": "삭제",
+      "login": "로그인",
+      "logout": "로그아웃"
+    },
+    "emptyStates": {
+      "noLogs": "활동 로그를 찾을 수 없습니다."
+    }
+  },
+  "events": {
+    "title": "이벤트 관리",
+    "subtitle": "플랫폼 이벤트 및 공지 생성 및 관리",
+    "buttons": {
+      "createEvent": "이벤트 생성",
+      "edit": "편집",
+      "delete": "삭제",
+      "duplicate": "복제",
+      "sendAnnouncement": "공지 보내기",
+      "save": "저장",
+      "cancel": "취소",
+      "saving": "저장 중...",
+      "createBanner": "배너 생성"
+    },
+    "form": {
+      "labels": {
+        "title": "이벤트 제목 *",
+        "description": "설명",
+        "startDate": "시작 날짜 *",
+        "endDate": "종료 날짜",
+        "location": "위치",
+        "eventType": "이벤트 유형",
+        "registrationDeadline": "등록 마감일",
+        "maxParticipants": "최대 참가자",
+        "featured": "추천 이벤트",
+        "status": "상태",
+        "pageContent": "페이지 내용"
+      },
+      "placeholders": {
+        "title": "이벤트 제목 입력",
+        "description": "이벤트 설명 입력",
+        "location": "예: 런던, 영국 또는 온라인"
+      },
+      "eventTypes": {
+        "workshop": "워크숍",
+        "webinar": "웨비나",
+        "conference": "컨퍼런스",
+        "training": "교육",
+        "other": "기타"
+      },
+      "statuses": {
+        "draft": "초안",
+        "published": "게시됨",
+        "archived": "보관됨"
+      }
+    },
+    "dialogs": {
+      "deleteEvent": {
+        "title": "이벤트 삭제",
+        "description": "\"{title}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+      },
+      "deleteBanner": {
+        "title": "배너 삭제",
+        "description": "이 배너를 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+      },
+      "bannerEditor": {
+        "titleCreate": "배너 생성",
+        "titleEdit": "배너 편집",
+        "labels": {
+          "bannerText": "배너 텍스트",
+          "required": "*",
+          "event": "이벤트",
+          "gradient": "그라데이션",
+          "active": "활성"
+        },
+        "placeholders": {
+          "selectEvent": "이벤트 선택"
+        }
+      },
+      "newsletter": {
+        "title": "이벤트 공지 보내기",
+        "description": "\"{title}\"을(를) 교사에게 이메일로 보냅니다.",
+        "labels": {
+          "recipientType": "수신자 유형",
+          "emailAddresses": "이메일 주소",
+          "commaSeparated": "(쉼표로 구분)"
+        },
+        "options": {
+          "allTeachers": "모든 교사 ({count}명)",
+          "customEmailList": "사용자 정의 이메일 목록"
+        },
+        "placeholders": {
+          "emailList": "email1@example.com, email2@example.com"
+        }
+      }
+    },
+    "emptyStates": {
+      "noEvents": "이벤트를 찾을 수 없습니다. 첫 번째 이벤트를 만들어 시작하세요."
+    },
+    "toasts": {
+      "announcementSent": {
+        "title": "공지 전송됨",
+        "description": "이벤트 공지가 {{count}}명의 수신자에게 성공적으로 전송되었습니다."
+      },
+      "announcementFailed": {
+        "title": "전송 실패",
+        "description": "공지를 보내지 못했습니다. 다시 시도해 주세요."
+      },
+      "validationError": {
+        "title": "검증 오류",
+        "description": "모든 필수 필드를 입력해 주세요."
+      }
+    },
+    "buttons": {
+      "cancel": "취소",
+      "delete": "삭제",
+      "deleting": "삭제 중...",
+      "save": "저장",
+      "saving": "저장 중...",
+      "sendAnnouncement": "공지 보내기",
+      "sending": "전송 중..."
+    }
+  },
+  "reviews": {
+    "filters": {
+      "evidenceReview": "증거 검토",
+      "auditReview": "감사 검토",
+      "photoConsent": "사진 동의"
+    },
+    "evidence": {
+      "title": "증거 검토 대기열",
+      "selected": "{count}개 선택됨",
+      "bulkApprove": "일괄 승인",
+      "bulkReject": "일괄 거부",
+      "delete": "삭제",
+      "filterAll": "모두",
+      "filterPending": "대기 중",
+      "filterApproved": "승인됨",
+      "filterRejected": "거부됨",
+      "filterByAssignee": "담당자별 필터",
+      "allEvidence": "모든 증거",
+      "unassigned": "미할당",
+      "assignedToMe": "나에게 할당됨",
+      "selectAll": "모두 선택 ({count}개 항목)",
+      "allCaughtUp": "모두 완료!",
+      "noPendingEvidence": "검토할 대기 중인 증거 제출물이 없습니다.",
+      "badges": {
+        "public": "공개",
+        "photoApproved": "사진 승인됨",
+        "photoPending": "사진 대기 중",
+        "noPhotoConsent": "사진 동의 없음",
+        "new": "새로운"
+      },
+      "labels": {
+        "schoolId": "학교 ID:",
+        "submitted": "제출됨:",
+        "files": "파일:",
+        "assignedTo": "담당자:"
+      },
+      "buttons": {
+        "approve": "승인",
+        "reject": "거부",
+        "cancel": "취소",
+        "confirm": "확인",
+        "processing": "처리 중..."
+      },
+      "modal": {
+        "approveTitle": "증거 승인",
+        "rejectTitle": "증거 거부",
+        "reviewNotes": "검토 노트",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "학교에 대한 선택적 피드백...",
+        "feedbackRequired": "이 증거가 거부된 이유에 대한 피드백을 제공해 주세요..."
+      },
+      "consentWarning": {
+        "title": "사진 동의 없이 승인하시겠습니까? 📸",
+        "noConsentProvided": "이 학교는 <strong>승인된 사진 동의를 제공하지 않았습니다</strong>.",
+        "statusPending": "사진 동의 문서가 현재 검토 중입니다.",
+        "statusRejected": "사진 동의 문서가 거부되었습니다.",
+        "statusMissing": "사진 동의 문서가 업로드되지 않았습니다.",
+        "warningMessage": "이 증거를 승인하면 사진 동의가 나중에 승인되지 않는 한 공개 사례 연구 또는 홍보 자료에 사용할 수 <strong>없습니다</strong>.",
+        "confirmQuestion": "어쨌든 승인하시겠습니까?",
+        "proceedAnyway": "예, 어쨌든 진행",
+        "goBack": "돌아가기"
+      },
+      "bulkDialog": {
+        "reviewTitle": "일괄 증거 검토",
+        "deleteTitle": "일괄 증거 삭제",
+        "approveDescription": "{count}개의 증거 제출물을 승인하려고 합니다. 이렇게 하면 가시성 설정에 따라 표시됩니다.",
+        "rejectDescription": "{count}개의 증거 제출물을 거부하려고 합니다. 학교에 통지되며 다시 제출할 수 있습니다.",
+        "deleteDescription": "{count}개의 증거 제출물을 영구적으로 삭제하려고 합니다. 이 작업은 취소할 수 없습니다.",
+        "notes": "노트 (승인의 경우 선택 사항, 거부의 경우 필수)",
+        "notesPlaceholder": "학교를 위한 노트 입력...",
+        "confirm": "확인",
+        "cancel": "취소",
+        "processing": "처리 중..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "검토 노트 필수",
+        "feedbackRequired": "증거를 거부할 때 피드백을 제공해 주세요."
+      }
+    },
+    "assignment": {
+      "assignTo": "할당...",
+      "unassigned": "미할당",
+      "toasts": {
+        "success": "증거가 성공적으로 할당되었습니다",
+        "failed": "증거를 할당하지 못했습니다"
+      }
+    },
+    "photoConsent": {
+      "title": "사진 동의 검토 대기열",
+      "noPending": "대기 중인 사진 동의 없음",
+      "allReviewed": "모든 사진 동의 제출물이 검토되었습니다!",
+      "viewDocument": "문서 보기",
+      "buttons": {
+        "approve": "승인",
+        "reject": "거부"
+      },
+      "confirmApprove": "{name}의 사진 동의를 승인하시겠습니까?",
+      "rejectionNotes": "{name}에 대한 거부 노트:",
+      "rejectionRequired": "거부 노트 필수"
+    },
+    "audit": {
+      "title": "감사 검토 대기열",
+      "noPending": "대기 중인 감사 없음",
+      "allReviewed": "모든 감사가 검토되었습니다. 훌륭한 작업!",
+      "labels": {
+        "submittedBy": "제출자:",
+        "totalPlasticItems": "전체 플라스틱 항목:"
+      },
+      "parts": {
+        "part1": "파트 1: 학교 정보",
+        "part2": "파트 2: 급식실 및 교무실",
+        "part3": "파트 3: 교실 및 화장실",
+        "part4": "파트 4: 폐기물 관리"
+      },
+      "part1": {
+        "schoolName": "학교 이름:",
+        "studentCount": "학생 수:",
+        "staffCount": "교직원 수:",
+        "auditDate": "감사 날짜:",
+        "auditTeam": "감사 팀 구성원:",
+        "noData": "데이터 없음"
+      },
+      "part2": {
+        "lunchroom": "급식실",
+        "staffroom": "교무실",
+        "plasticBottles": "플라스틱 병:",
+        "plasticCups": "플라스틱 컵:",
+        "plasticCutlery": "플라스틱 식기:",
+        "plasticStraws": "플라스틱 빨대:",
+        "foodPackaging": "음식 포장:",
+        "clingFilm": "랩 필름:",
+        "additionalNotes": "추가 노트:",
+        "noData": "데이터 없음"
+      },
+      "part3": {
+        "classrooms": "교실",
+        "bathrooms": "화장실",
+        "pensPencils": "펜 및 연필:",
+        "stationeryItems": "문구류:",
+        "bottlesCups": "병 및 컵:",
+        "otherItems": "기타 항목:",
+        "soapDispensers": "비누 디스펜서:",
+        "additionalNotes": "추가 노트:",
+        "noData": "데이터 없음"
+      },
+      "part4": {
+        "hasRecyclingSystem": "재활용 시스템 있음:",
+        "recyclingBinLocations": "재활용 쓰레기통 위치:",
+        "plasticWasteDestination": "플라스틱 폐기물 처리 장소:",
+        "compostsOrganicWaste": "유기 폐기물 퇴비화:",
+        "hasPlasticReductionPolicy": "플라스틱 감소 정책 있음:",
+        "policyDetails": "정책 세부 사항:",
+        "additionalNotes": "추가 노트:",
+        "yes": "예",
+        "no": "아니오",
+        "noData": "데이터 없음"
+      },
+      "buttons": {
+        "approve": "승인",
+        "reject": "거부"
+      },
+      "modal": {
+        "approveTitle": "감사 승인",
+        "rejectTitle": "감사 거부",
+        "reviewNotes": "검토 노트",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "학교에 대한 선택적 피드백...",
+        "feedbackRequired": "이 감사가 거부된 이유에 대한 피드백을 제공해 주세요...",
+        "cancel": "취소",
+        "confirm": "확인",
+        "processing": "처리 중..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "검토 노트 필수",
+        "feedbackRequired": "감사를 거부할 때 피드백을 제공해 주세요."
+      }
+    },
+    "toasts": {
+      "success": "성공",
+      "evidenceReviewSuccess": "증거 검토가 성공적으로 제출되었습니다.",
+      "reviewFailed": "검토 실패",
+      "evidenceReviewFailed": "증거를 업데이트하지 못했습니다. 변경 사항이 되돌려졌습니다.",
+      "auditReviewed": "감사 검토됨",
+      "auditApproved": "감사가 승인되었습니다.",
+      "auditRejected": "감사가 거부되었습니다.",
+      "auditReviewFailed": "감사를 검토하지 못했습니다. 변경 사항이 되돌려졌습니다.",
+      "bulkReviewSuccess": "일괄 증거 검토가 성공적으로 완료되었습니다.",
+      "bulkReviewFailed": "일괄 증거 검토를 완료하지 못했습니다. 변경 사항이 되돌려졌습니다.",
+      "bulkDeleteSuccess": "선택한 증거가 성공적으로 삭제되었습니다.",
+      "bulkDeleteFailed": "증거를 삭제하지 못했습니다. 변경 사항이 되돌려졌습니다."
+    }
   }
 }

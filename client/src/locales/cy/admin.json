@@ -1,11 +1,143 @@
 {
+  "tabs": {
+    "dashboard": "Dangosfwrdd",
+    "schools": "Ysgolion",
+    "content": "Cynnwys",
+    "reviewQueue": "Ciw Adolygu",
+    "program": "Rhaglen",
+    "communications": "Cyfathrebu"
+  },
+  "activityHistory": {
+    "title": "Hanes Gweithgaredd",
+    "loading": "Yn llwytho hanes gweithgaredd...",
+    "error": "Methodd llwytho hanes gweithgaredd",
+    "empty": "Dim hanes gweithgaredd ar gael",
+    "reason": "Rheswm",
+    "stage": "Cam",
+    "unknownUser": "Defnyddiwr Anhysbys"
+  },
+  "activityLogs": {
+    "title": "Cofnodion Gweithgaredd Defnyddwyr",
+    "subtitle": "Olrhain a monitro gweithgareddau defnyddwyr ar draws y platfform",
+    "filters": {
+      "labels": {
+        "actionType": "Math o Weithred",
+        "userEmail": "E-bost Defnyddiwr",
+        "startDate": "Dyddiad Dechrau",
+        "endDate": "Dyddiad Gorffen",
+        "dateRange": "Ystod Dyddiadau",
+        "fromDate": "O Ddyddiad",
+        "toDate": "I Ddyddiad"
+      },
+      "options": {
+        "allActions": "Pob Gweithred",
+        "userLogin": "Mewngofnodi Defnyddiwr",
+        "schoolCreated": "Ysgol wedi'i Chreu",
+        "schoolUpdated": "Ysgol wedi'i Diweddaru",
+        "evidenceSubmitted": "Tystiolaeth wedi'i Chyflwyno",
+        "evidenceApproved": "Tystiolaeth wedi'i Chymeradwyo",
+        "evidenceRejected": "Tystiolaeth wedi'i Gwrthod",
+        "caseStudyCreated": "Astudiaeth Achos wedi'i Chreu",
+        "caseStudyUpdated": "Astudiaeth Achos wedi'i Diweddaru",
+        "resourceUploaded": "Adnodd wedi'i Lwytho"
+      },
+      "placeholders": {
+        "searchByEmail": "Chwilio yn ôl e-bost..."
+      }
+    },
+    "table": {
+      "headers": {
+        "timestamp": "Stamp Amser",
+        "dateTime": "Dyddiad/Amser",
+        "user": "Defnyddiwr",
+        "action": "Gweithred",
+        "actionType": "Math o Weithred",
+        "target": "Targed",
+        "ipAddress": "Cyfeiriad IP",
+        "details": "Manylion"
+      }
+    },
+    "buttons": {
+      "applyFilters": "Cymhwyso Hidlyddion",
+      "clearFilters": "Clirio Hidlyddion",
+      "exportLogs": "Allforio Cofnodion",
+      "refresh": "Adnewyddu"
+    },
+    "loadingStates": {
+      "loadingLogs": "Yn llwytho cofnodion gweithgaredd..."
+    },
+    "emptyStates": {
+      "noLogs": {
+        "title": "Dim Cofnodion Gweithgaredd",
+        "description": "Nid oes cofnodion gweithgaredd yn cyfateb i'ch hidlyddion presennol"
+      }
+    },
+    "pagination": {
+      "showing": "Yn dangos {{start}} - {{end}} o {{total}}",
+      "showingRange": "Yn dangos {{start}} i {{end}} o {{total}} canlyniad",
+      "pageOf": "Tudalen {{page}} o {{totalPages}}",
+      "previous": "Blaenorol",
+      "next": "Nesaf"
+    }
+  },
   "navigation": {
     "overview": "Trosolwg",
     "analytics": "Dadansoddeg",
     "evidence": "Adolygu Tystiolaeth",
     "resources": "Rheoli Adnoddau",
     "schools": "Rheoli Ysgolion",
-    "admin_panel": "Panel Gweinyddol"
+    "admin_panel": "Panel Gweinyddol",
+    "manageSchools": "Rheoli Ysgolion",
+    "manageTeams": "Rheoli Timau",
+    "userManagement": "Rheoli Defnyddwyr",
+    "userActivity": "Gweithgaredd Defnyddwyr",
+    "importData": "Mewnforio Data",
+    "manageResources": "Rheoli Adnoddau",
+    "manageResourcePacks": "Rheoli Pecynnau Adnoddau",
+    "createCaseStudies": "Creu Astudiaethau Achos",
+    "manageEvents": "Rheoli Digwyddiadau",
+    "evidenceGallery": "Oriel Tystiolaeth",
+    "setEvidenceRequirements": "Gosod Gofynion Tystiolaeth",
+    "reviewPrintableForms": "Adolygu Ffurflenni Argraffadwy"
+  },
+  "header": {
+    "title": "Dangosfwrdd Gweinyddol",
+    "subtitle": "Rheoli ysgolion, adolygu tystiolaeth, a monitro cynnydd y rhaglen"
+  },
+  "welcomeBanner": {
+    "title": "Lwcus Chi!",
+    "greeting": "Croeso i dîm gweinyddol Ysgolion Plastig Clyfar!",
+    "description": "Mae gennych chi fynediad llawn nawr i reoli'r rhaglen, adolygu cyflwyniadau tystiolaeth, cyhoeddi astudiaethau achos, a helpu ysgolion ar eu taith i leihau gwastraff plastig."
+  },
+  "export": {
+    "title": "Allforio Data",
+    "buttonLabel": "Allforio Data",
+    "description": "Dewis fformat a data i'w allforio:",
+    "selectFormatPlaceholder": "Dewis fformat",
+    "formats": {
+      "csv": "Fformat CSV",
+      "excel": "Fformat Excel (.xlsx)"
+    },
+    "buttons": {
+      "exportSchools": "Allforio Data Ysgolion",
+      "exportEvidence": "Allforio Data Tystiolaeth",
+      "exportUsers": "Allforio Data Defnyddwyr",
+      "withCurrentFilters": "(gyda hidlyddion presennol)"
+    },
+    "toasts": {
+      "success": {
+        "title": "Allforiad Llwyddiannus",
+        "description": "Mae data {{type}} wedi'i allforio fel {{format}}."
+      },
+      "failed": {
+        "title": "Allforiad wedi Methu",
+        "description": "Methodd allforio data. Rhowch gynnig arall arni."
+      }
+    }
+  },
+  "loading": {
+    "dashboard": "Yn llwytho dangosfwrdd gweinyddol...",
+    "caseStudies": "Yn llwytho astudiaethau achos..."
   },
   "overview": {
     "title": "Trosolwg Gweinyddol",
@@ -15,55 +147,199 @@
     "pending_evidence": "Tystiolaeth yn Aros",
     "resources_uploaded": "Adnoddau wedi'u Llwytho"
   },
-  "analytics": {
-    "title": "Dadansoddeg y Platfform",
-    "subtitle": "Mewnwelediadau cynhwysfawr i effeithiolrwydd y rhaglen",
-    "global_metrics": "Metrigau Byd-eang",
-    "enrollment_over_time": "Cofrestru Ysgolion dros Amser",
-    "evidence_submissions": "Cyflwyniadau Tystiolaeth yn ôl Cam",
-    "geographic_distribution": "Dosbarthiad Daearyddol",
-    "completion_rates": "Cyfraddau Cwblhau yn ôl Cam",
-    "resource_downloads": "Ystadegau Lawrlwytho Adnoddau",
-    "filter_by_period": "Hidlo yn ôl Cyfnod",
-    "last_30_days": "30 Diwrnod Diwethaf",
-    "last_90_days": "90 Diwrnod Diwethaf",
-    "last_year": "Y Flwyddyn Ddiwethaf",
-    "all_time": "Bob Amser",
-    "export_report": "Allforio Adroddiad",
-    "charts": {
-      "schools_by_country": "Ysgolion yn ôl Gwlad",
-      "completion_by_stage": "Cyfradd Cwblhau yn ôl Cam",
-      "monthly_registrations": "Cofrestriadau Ysgolion Misol",
-      "evidence_status": "Statws Adolygu Tystiolaeth"
+  "userManagement": {
+    "title": "Rheoli Defnyddwyr",
+    "buttons": {
+      "inviteAdmin": "Gwahodd Gweinyddwr",
+      "invitePartner": "Gwahodd Partner",
+      "sendInvitation": "Anfon Gwahoddiad",
+      "sending": "Yn Anfon...",
+      "cancel": "Canslo",
+      "filterAll": "Pob Defnyddiwr",
+      "filterWithSchools": "Gydag Ysgolion",
+      "filterWithoutSchools": "Heb Ysgolion",
+      "bulkDelete": "Dileu Defnyddwyr a Ddewiswyd ({{count}})",
+      "confirmDelete": "Cadarnhau {{mode}}",
+      "deleting": "Yn Dileu...",
+      "confirmSoftDelete": "Cadarnhau Dileu Meddal",
+      "confirmTransfer": "Cadarnhau Trosglwyddo",
+      "confirmHardDelete": "Cadarnhau Dileu Caled"
+    },
+    "dialogs": {
+      "invitePartner": {
+        "title": "Gwahodd Partner Newydd",
+        "description": "Mae gan bartneriaid fynediad tebyg i weinyddwyr ond ni allant neilltuo rolau nac lawrlwytho data ysgolion."
+      },
+      "inviteAdmin": {
+        "title": "Gwahodd Gweinyddwr Newydd"
+      },
+      "deleteUser": {
+        "title": "Dileu Defnyddiwr",
+        "description": "Dewis sut i drin cynnwys a data'r defnyddiwr"
+      },
+      "bulkDelete": {
+        "title": "Dileu Swmp {{count}} Defnyddiwr{{plural}}",
+        "description": "Dewis sut i drin cynnwys a data'r defnyddwyr a ddewiswyd",
+        "selectedUsers": "Defnyddwyr a Ddewiswyd: {{count}} defnyddiwr{{plural}}"
+      },
+      "changeRole": {
+        "title": "Newid Rôl Defnyddiwr",
+        "description": "Diweddaru'r rôl a'r caniatâd ar gyfer {{name}}"
+      },
+      "deletionPreview": {
+        "title": "Rhagolwg Dileu",
+        "description": "Mae gan y defnyddiwr hwn y data canlynol:",
+        "evidence": "Tystiolaeth: {{count}}",
+        "caseStudies": "Astudiaethau Achos: {{count}}",
+        "reductionPromises": "Addewidion Lleihau: {{count}}",
+        "mediaAssets": "Asedau Cyfryngau: {{count}}",
+        "certificates": "Tystysgrifau: {{count}}",
+        "importBatches": "Sypiau Mewnforio: {{count}}",
+        "teacherInvitations": "Gwahoddiadau Athrawon: {{count}}",
+        "adminInvitations": "Gwahoddiadau Gweinyddwyr: {{count}}"
+      }
+    },
+    "form": {
+      "labels": {
+        "emailAddress": "Cyfeiriad E-bost *",
+        "platformRole": "Rôl Platfform",
+        "roleDescription": "Dewis rôl a chaniatâd y defnyddiwr"
+      },
+      "placeholders": {
+        "partnerEmail": "partner@example.com",
+        "adminEmail": "gweinyddwr@example.com",
+        "searchUsers": "Chwilio yn ôl enw neu e-bost..."
+      }
+    },
+    "table": {
+      "headers": {
+        "name": "Enw",
+        "email": "E-bost",
+        "role": "Rôl",
+        "schools": "Ysgolion",
+        "status": "Statws",
+        "actions": "Gweithredoedd"
+      },
+      "showingCount": "Yn dangos {{filtered}} o {{total}} defnyddiwr"
+    },
+    "deletionModes": {
+      "soft": {
+        "label": "Dileu Meddal (Argymhellir)",
+        "description": "Bydd defnyddwyr yn cael eu cuddio o'r system ond mae'r holl ddata yn cael ei gadw. Gellir ei adfer yn ddiweddarach."
+      },
+      "transfer": {
+        "label": "Trosglwyddo Perchnogaeth",
+        "description": "Trosglwyddo'r holl gynnwys i gyfrif system \"Defnyddiwr wedi'i Archifo\", yna dileu'r defnyddiwr. Mae data hanesyddol yn cael ei gadw.",
+        "bulkDescription": "Trosglwyddo'r holl gynnwys i gyfrif system \"Defnyddiwr wedi'i Archifo\", yna dileu'r defnyddwyr. Mae data hanesyddol yn cael ei gadw."
+      },
+      "hard": {
+        "label": "Dileu Caled (Parhaol)",
+        "description": "RHYBUDD: Dileu'r defnyddiwr A'u holl gynnwys yn barhaol. Ni ellir dadwneud hyn!",
+        "bulkDescription": "RHYBUDD: Dileu defnyddwyr A'u holl gynnwys yn barhaol. Ni ellir dadwneud hyn!"
+      }
+    },
+    "roles": {
+      "teacher": {
+        "label": "Athro",
+        "description": "Defnyddiwr safonol gyda chaniatâd lefel ysgol"
+      },
+      "school": {
+        "label": "Ysgol (Pennaeth)",
+        "description": "Rôl pennaeth gyda chaniatâd rheoli ysgol"
+      },
+      "partner": {
+        "label": "Partner",
+        "description": "Mynediad tebyg i weinyddwr ond ni all neilltuo rolau na lawrlwytho data ysgolion"
+      },
+      "admin": {
+        "label": "Gweinyddwr",
+        "description": "Mynediad llawn i'r platfform gan gynnwys neilltuo rolau a lawrlwytho data"
+      }
+    },
+    "badges": {
+      "pending": "Ar Aros",
+      "pendingInvite": "Gwahoddiad yn Aros",
+      "active": "Gweithredol",
+      "admin": "Gweinyddwr",
+      "partner": "Partner"
+    },
+    "toasts": {
+      "invitationSent": {
+        "title": "Gwahoddiad wedi'i Anfon",
+        "adminDescription": "Mae gwahoddiad gweinyddwr wedi'i anfon yn llwyddiannus.",
+        "partnerDescription": "Mae gwahoddiad partner wedi'i anfon yn llwyddiannus."
+      },
+      "invitationFailed": {
+        "title": "Gwahoddiad wedi Methu",
+        "adminDescription": "Methodd anfon gwahoddiad gweinyddwr. Rhowch gynnig arall arni.",
+        "partnerDescription": "Methodd anfon gwahoddiad partner. Rhowch gynnig arall arni.",
+        "defaultDescription": "{{message}}"
+      },
+      "invitationDeleted": {
+        "title": "Gwahoddiad wedi'i Ddileu",
+        "description": "Mae'r gwahoddiad gweinyddwr wedi'i ddileu'n llwyddiannus."
+      },
+      "deleteFailed": {
+        "title": "Dileu wedi Methu",
+        "description": "Methodd dileu gwahoddiad. Rhowch gynnig arall arni.",
+        "userDescription": "Methodd dileu defnyddiwr. Rhowch gynnig arall arni.",
+        "customMessage": "{{message}}"
+      },
+      "userDeleted": {
+        "title": "Defnyddiwr wedi'i Ddileu",
+        "softDeleted": "Mae'r defnyddiwr wedi'i ddileu'n feddal yn llwyddiannus.",
+        "transferred": "Mae'r defnyddiwr wedi'i ddileu'n llwyddiannus (cynnwys wedi'i drosglwyddo).",
+        "hardDeleted": "Mae'r defnyddiwr wedi'i ddileu'n barhaol yn llwyddiannus."
+      },
+      "userUpdated": {
+        "title": "Defnyddiwr wedi'i Ddiweddaru",
+        "description": "Mae rôl y defnyddiwr wedi'i diweddaru'n llwyddiannus."
+      },
+      "updateFailed": {
+        "title": "Diweddariad wedi Methu",
+        "description": "Methodd diweddaru rôl y defnyddiwr. Rhowch gynnig arall arni.",
+        "customMessage": "{{message}}"
+      },
+      "emailRequired": {
+        "title": "Mae Angen E-bost",
+        "description": "Rhowch gyfeiriad e-bost."
+      },
+      "bulkDeleteSuccessful": {
+        "title": "Dileu Swmp yn Llwyddiannus",
+        "description": "Wedi dileu {{count}} defnyddiwr{{plural}} yn llwyddiannus",
+        "withEvidence": "Wedi dileu {{count}} defnyddiwr{{plural}} yn llwyddiannus ({{evidenceCount}} eitem{{evidencePlural}} tystiolaeth wedi'i dileu)",
+        "withCaseStudies": "Rhybudd: {{caseStudyCount}} astudiaeth{{caseStudyPlural}} achos wedi'i heffeithio",
+        "creatorsRemoved": "ac mae eu crewyr wedi'u tynnu."
+      },
+      "bulkDeleteFailed": {
+        "title": "Dileu Swmp wedi Methu",
+        "description": "Methodd dileu defnyddwyr. Rhowch gynnig arall arni.",
+        "allFailed": "Methodd dileu'r holl ddefnyddwyr a ddewiswyd:",
+        "customMessage": "{{message}}"
+      },
+      "bulkDeletePartial": {
+        "title": "Dileu Swmp yn Rhannol Lwyddiannus",
+        "description": "Wedi dileu {{successCount}} defnyddiwr{{plural}} yn llwyddiannus. Methodd dileu {{failedCount}}."
+      }
+    },
+    "emptyStates": {
+      "noUsers": {
+        "title": "Dim Defnyddwyr wedi'u Canfod",
+        "noMatch": "Nid oes defnyddwyr yn cyfateb i'ch meini prawf chwilio.",
+        "allAssigned": "Mae pob defnyddiwr wedi'i neilltuo i o leiaf un ysgol.",
+        "noneInSystem": "Dim defnyddwyr wedi'u canfod yn y system."
+      }
+    },
+    "adminInvitations": {
+      "title": "Gwahoddiadau Gweinyddwyr",
+      "table": {
+        "email": "E-bost",
+        "status": "Statws",
+        "createdAt": "Crëwyd",
+        "expiresAt": "Yn Dod i Ben",
+        "actions": "Gweithredoedd"
+      }
     }
-  },
-  "evidence": {
-    "title": "Adolygu Tystiolaeth",
-    "subtitle": "Adolygu a chymedroli cyflwyniadau tystiolaeth",
-    "pending_review": "Adolygiad yn Aros",
-    "approved": "Cymeradwy",
-    "needs_revision": "Angen Adolygiad",
-    "filter_by_stage": "Hidlo yn ôl Cam",
-    "filter_by_status": "Hidlo yn ôl Statws",
-    "sort_by": "Trefnu yn ôl",
-    "newest_first": "Diweddaraf Gyntaf",
-    "oldest_first": "Hynaf Gyntaf",
-    "school_name": "Enw'r Ysgol",
-    "stage": "Cam",
-    "submitted_date": "Dyddiad Cyflwyno",
-    "review_evidence": "Adolygu Tystiolaeth",
-    "approve_evidence": "Cymeradwyo Tystiolaeth",
-    "request_revision": "Gofyn am Adolygiad",
-    "add_feedback": "Ychwanegu Adborth",
-    "feedback_placeholder": "Darparu adborth i'r ysgol...",
-    "approve_button": "Cymeradwyo",
-    "revision_button": "Gofyn am Adolygiad",
-    "evidence_approved": "Tystiolaeth wedi'i chymeradwyo'n llwyddiannus",
-    "evidence_revision_requested": "Adolygiad wedi'i ofyn amdano'n llwyddiannus",
-    "bulk_actions": "Gweithredoedd Swmp",
-    "select_all": "Dewis Popeth",
-    "bulk_approve": "Cymeradwyo Swmp",
-    "bulk_request_revision": "Cais Adolygiad Swmp"
   },
   "resources": {
     "title": "Rheoli Adnoddau",
@@ -71,6 +347,191 @@
     "upload_resource": "Llwytho Adnodd Newydd",
     "resource_library": "Llyfrgell Adnoddau",
     "featured_resources": "Adnoddau Amlwg",
+    "buttons": {
+      "addResource": "Ychwanegu Adnodd",
+      "bulkUpload": "Llwytho Adnoddau Swmp",
+      "uploadFile": "Llwytho Ffeil",
+      "uploading": "Yn Llwytho...",
+      "replaceFile": "Disodli Ffeil",
+      "removeFile": "Tynnu Ffeil",
+      "autoFillAI": "Llenwi'n Awtomatig gydag AI",
+      "generating": "Yn Cynhyrchu...",
+      "saveResource": "Cadw Adnodd",
+      "cancel": "Canslo",
+      "preview": "Rhagolwg",
+      "edit": "Golygu",
+      "delete": "Dileu",
+      "deleteResources": "Dileu Adnoddau",
+      "deleting": "Yn Dileu...",
+      "bulkDelete": "Dileu Swmp ({{count}})",
+      "insertImage": "Mewnosod Delwedd"
+    },
+    "form": {
+      "titles": {
+        "addNew": "Ychwanegu Adnodd Newydd",
+        "edit": "Golygu Adnodd"
+      },
+      "labels": {
+        "title": "Teitl *",
+        "description": "Disgrifiad",
+        "stage": "Cam y Rhaglen *",
+        "ageRange": "Ystod Oedran",
+        "languages": "Ieithoedd ar Gael *",
+        "country": "Gwlad Darged",
+        "visibility": "Gwelededd *",
+        "resourceFile": "Ffeil Adnodd",
+        "resourceType": "Math o Adnodd",
+        "theme": "Thema"
+      },
+      "placeholders": {
+        "title": "Rhowch deitl yr adnodd",
+        "description": "Rhowch ddisgrifiad o'r adnodd",
+        "ageRange": "e.e., 8-12 mlwydd oed",
+        "country": "Byd-eang (pob gwlad)",
+        "searchResources": "Chwilio adnoddau..."
+      },
+      "helpText": {
+        "languageSelection": "Dewis yr holl ieithoedd y mae'r adnodd hwn ar gael ynddynt",
+        "visibilityPublic": "Bydd yr adnodd hwn yn weladwy i bob ymwelydd â'r wefan",
+        "visibilityRegistered": "Dim ond i ysgolion cofrestredig y bydd yr adnodd hwn yn weladwy",
+        "uploadInstructions": "Llwytho ffeil adnodd (PDF, DOC, PPT, XLS, ac ati)",
+        "maxFileSize": "Maint ffeil uchaf: 150MB",
+        "replaceInstructions": "Gallwch ddisodli'r ffeil wrth gadw'r un adnodd, neu ei dynnu'n gyfan gwbl.",
+        "aiAutoFillTooltip": "Mae AI yn dadansoddi eich ffeil ac yn awgrymu teitl, disgrifiad, cam, thema, ystod oedran, a math o adnodd yn awtomatig yn seiliedig ar gynnwys ac enw'r ffeil.",
+        "aiAutoFillDescription": "Gadewch i AI ddadansoddi eich ffeil ac awgrymu metadata i arbed amser. Gallwch adolygu ac addasu'r awgrymiadau cyn cadw."
+      }
+    },
+    "filters": {
+      "allStages": "Pob Cam",
+      "allCountries": "Pob Gwlad",
+      "allLanguages": "Pob Iaith",
+      "allVisibility": "Pob Gwelededd",
+      "allStatus": "Pob Statws"
+    },
+    "stages": {
+      "inspire": "Ysbrydoli",
+      "investigate": "Ymchwilio",
+      "act": "Gweithredu"
+    },
+    "visibility": {
+      "public": "Cyhoeddus (gweladwy i bawb)",
+      "publicShort": "Cyhoeddus",
+      "registered": "Cofrestredig yn Unig (angen mewngofnodi)",
+      "registeredShort": "Cofrestredig yn Unig"
+    },
+    "resourceTypes": {
+      "lessonPlan": "Cynllun Gwers",
+      "assembly": "Gwasanaeth",
+      "teacherToolkit": "Pecyn Cymorth Athrawon",
+      "studentWorkbook": "Llyfr Gwaith Myfyrwyr",
+      "printableActivities": "Gweithgareddau Argraffadwy",
+      "none": "Dim"
+    },
+    "themes": {
+      "oceanLiteracy": "Llythrennedd y Cefnfor",
+      "climateChange": "Newid Hinsawdd",
+      "plasticPollution": "Llygredd Plastig",
+      "science": "Gwyddoniaeth",
+      "designTechnology": "Dylunio a Thechnoleg",
+      "geography": "Daearyddiaeth",
+      "crossCurricular": "Traws-Gwricwlaidd",
+      "enrichment": "Cyfoethogi",
+      "none": "Dim"
+    },
+    "table": {
+      "headers": {
+        "preview": "Rhagolwg",
+        "title": "Teitl",
+        "stage": "Cam",
+        "visibility": "Gwelededd",
+        "country": "Gwlad",
+        "languages": "Ieithoedd",
+        "fileSize": "Maint Ffeil",
+        "downloads": "Lawrlwythiadau",
+        "status": "Statws",
+        "actions": "Gweithredoedd"
+      },
+      "values": {
+        "global": "Byd-eang",
+        "active": "Gweithredol",
+        "inactive": "Anweithredol",
+        "notAvailable": "Ddim ar Gael"
+      }
+    },
+    "toasts": {
+      "fileUploaded": {
+        "title": "Ffeil wedi'i Llwytho",
+        "description": "Mae {{filename}} wedi'i lwytho'n llwyddiannus."
+      },
+      "uploadError": {
+        "title": "Gwall Llwytho",
+        "failedToGetUrl": "Methodd cael URL llwytho",
+        "failedToUpload": "Methodd llwytho ffeil",
+        "customMessage": "{{message}}"
+      },
+      "aiAutoFillComplete": {
+        "title": "Llenwi Awtomatig AI yn Gyflawn",
+        "description": "Mae metadata'r adnodd wedi'i lenwi ag awgrymiadau AI. Adolygwch ac addaswch yn ôl yr angen."
+      },
+      "aiAutoFillFailed": {
+        "title": "Llenwi Awtomatig AI wedi Methu",
+        "noSuggestions": "Ni allai AI gynhyrchu awgrymiadau ar gyfer yr adnodd hwn.",
+        "description": "Methodd cynhyrchu awgrymiadau AI. Rhowch gynnig arall arni.",
+        "customMessage": "{{message}}"
+      },
+      "cannotAutoFill": {
+        "title": "Methu Llenwi'n Awtomatig",
+        "description": "Llwythwch ffeil yn gyntaf i ddefnyddio llenwi awtomatig AI."
+      },
+      "resourceCreated": {
+        "title": "Adnodd wedi'i Greu",
+        "description": "Mae'r adnodd wedi'i greu'n llwyddiannus."
+      },
+      "resourceUpdated": {
+        "title": "Adnodd wedi'i Ddiweddaru",
+        "description": "Mae'r adnodd wedi'i ddiweddaru'n llwyddiannus."
+      },
+      "saveFailed": {
+        "title": "Cadw wedi Methu",
+        "description": "Methodd cadw adnodd. Rhowch gynnig arall arni.",
+        "customMessage": "{{message}}"
+      },
+      "resourceDeleted": {
+        "title": "Adnodd wedi'i Ddileu",
+        "description": "Mae'r adnodd wedi'i ddileu'n llwyddiannus.",
+        "bulkDescription": "Mae {{count}} adnodd{{plural}} wedi'u dileu'n llwyddiannus."
+      },
+      "deleteFailed": {
+        "title": "Dileu wedi Methu",
+        "description": "Methodd dileu adnodd. Rhowch gynnig arall arni."
+      },
+      "bulkDeleteFailed": {
+        "title": "Dileu Swmp wedi Methu",
+        "description": "Methodd dileu rhai adnoddau."
+      },
+      "validationError": {
+        "title": "Gwall Dilysu",
+        "selectLanguage": "Dewiswch o leiaf un iaith."
+      }
+    },
+    "dialogs": {
+      "deleteConfirmation": {
+        "title": "Dileu Adnodd",
+        "description": "Ydych chi'n siŵr eich bod am ddileu'r adnodd hwn?",
+        "cannotUndo": "Ni ellir dadwneud y weithred hon."
+      },
+      "bulkDelete": {
+        "title": "Dileu Adnoddau",
+        "description": "Ydych chi'n siŵr eich bod am ddileu {{count}} adnodd{{plural}}? Ni ellir dadwneud y weithred hon.",
+        "listTitle": "Adnoddau i'w dileu:"
+      }
+    },
+    "emptyStates": {
+      "noResources": "Dim adnoddau wedi'u canfod. Ychwanegwch eich adnodd cyntaf i ddechrau arni."
+    },
+    "ai": {
+      "sectionTitle": "Llenwi Awtomatig AI"
+    },
     "upload_form": {
       "title": "Llwytho Adnodd Newydd",
       "resource_title": "Teitl yr Adnodd",
@@ -108,20 +569,431 @@
     "resource_updated": "Adnodd wedi'i ddiweddaru'n llwyddiannus",
     "resource_deleted": "Adnodd wedi'i ddileu'n llwyddiannus"
   },
+  "analytics": {
+    "title": "Dadansoddeg y Platfform",
+    "subtitle": "Mewnwelediadau cynhwysfawr i effeithiolrwydd y rhaglen",
+    "dashboard": {
+      "title": "Dangosfwrdd Dadansoddeg",
+      "description": "Mewnwelediadau a metrigau cynhwysfawr ar gyfer Ysgolion Plastig Clyfar"
+    },
+    "buttons": {
+      "exportCSV": "Allforio CSV",
+      "exportExcel": "Allforio Excel",
+      "exportPDF": "Allforio Adroddiad PDF",
+      "cancel": "Canslo",
+      "exportReport": "Allforio Adroddiad",
+      "generating": "Yn Cynhyrchu...",
+      "confirmExport": "Allforio Adroddiad"
+    },
+    "tabs": {
+      "overview": "Trosolwg",
+      "schoolsEvidence": "Ysgolion a Thystiolaeth",
+      "plasticWasteAudits": "Archwiliadau Gwastraff Plastig",
+      "userEngagement": "Ymgysylltiad Defnyddwyr"
+    },
+    "metrics": {
+      "totalSchools": {
+        "label": "Cyfanswm Ysgolion",
+        "description": "Ysgolion sy'n cymryd rhan"
+      },
+      "activeUsers": {
+        "label": "Defnyddwyr Gweithredol"
+      },
+      "evidenceSubmissions": {
+        "label": "Cyflwyniadau Tystiolaeth"
+      },
+      "globalReach": {
+        "label": "Cyrhaeddiad Byd-eang"
+      },
+      "totalEvidence": {
+        "label": "Cyfanswm Tystiolaeth",
+        "description": "Cyflwyniadau a dderbyniwyd"
+      },
+      "clickToView": "Cliciwch i weld manylion →"
+    },
+    "dialogs": {
+      "exportPDF": {
+        "title": "Allforio Adroddiad PDF",
+        "description": "Dewis pa adrannau i'w cynnwys yn eich adroddiad dadansoddeg. Bydd yr adroddiad yn cynnwys data o {{startDate}} - {{endDate}}",
+        "sections": {
+          "overview": "Trosolwg",
+          "scoresEvidence": "Ysgolion a Thystiolaeth",
+          "plasticWasteAudits": "Archwiliadau Gwastraff Plastig",
+          "userEngagement": "Ymgysylltiad Defnyddwyr",
+          "aiInsights": "Cynnwys Mewnwelediadau AI"
+        }
+      }
+    },
+    "charts": {
+      "userRegistrationTrends": "Tueddiadau Cofrestru Defnyddwyr",
+      "userRoleDistribution": "Dosbarthiad Rolau Defnyddwyr",
+      "teachers": "Athrawon",
+      "admins": "Gweinyddwyr",
+      "schools_by_country": "Ysgolion yn ôl Gwlad",
+      "completion_by_stage": "Cyfradd Cwblhau yn ôl Cam",
+      "monthly_registrations": "Cofrestriadau Ysgolion Misol",
+      "evidence_status": "Statws Adolygu Tystiolaeth"
+    },
+    "actionPlan": {
+      "title": "Effaith Cynllun Gweithredu Byd-eang",
+      "description": "Olrhain effaith cyfunol cynlluniau gweithredu pob ysgol",
+      "metrics": {
+        "totalActionItems": {
+          "label": "Cyfanswm Eitemau Gweithredu",
+          "description": "Ymrwymiadau a wnaed"
+        },
+        "schoolsParticipating": {
+          "label": "Ysgolion yn Cymryd Rhan",
+          "description": "Yn gwneud gwahaniaeth"
+        },
+        "itemsReduced": {
+          "label": "Eitemau wedi'u Lleihau'n Flynyddol",
+          "description": "Eitemau y flwyddyn"
+        },
+        "weightReduced": {
+          "label": "Pwysau wedi'i Leihau",
+          "description": "kg y flwyddyn"
+        }
+      },
+      "oceanImpact": {
+        "title": "Effaith ar y Cefnfor",
+        "oceanBottles": {
+          "label": "Poteli Cefnfor wedi'u Hatal",
+          "description": "Poteli plastig wedi'u hachub rhag y cefnforoedd"
+        },
+        "fishSaved": {
+          "label": "Pysgod wedi'u Hachub",
+          "description": "Pysgod posibl wedi'u hachub rhag plastig"
+        },
+        "seaTurtles": {
+          "label": "Crwbanod Môr wedi'u Hachub",
+          "description": "Cyfwerthoedd crwbanod môr wedi'u diogelu"
+        }
+      },
+      "environmentalImpact": {
+        "title": "Effaith Amgylcheddol",
+        "co2Prevented": {
+          "label": "CO₂ wedi'i Atal",
+          "description": "kg o allyriadau CO₂ wedi'u hatal"
+        },
+        "oilSaved": {
+          "label": "Olew wedi'i Arbed",
+          "description": "litrau o olew wedi'u cadw"
+        },
+        "wastePrevented": {
+          "label": "Gwastraff wedi'i Atal",
+          "description": "tunnell o wastraff plastig wedi'i osgoi"
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingMetrics": "Yn llwytho metrigau lleihau..."
+    },
+    "errorStates": {
+      "failedToLoad": "Methodd llwytho metrigau cynllun gweithredu",
+      "refreshPage": "Rhowch gynnig ar adnewyddu'r dudalen"
+    },
+    "emptyStates": {
+      "noActionPlans": {
+        "title": "Nid oes cynlluniau gweithredu wedi'u creu eto.",
+        "description": "Anogwch ysgolion i greu eu cynllun gweithredu cyntaf!"
+      }
+    },
+    "toasts": {
+      "reportDownloaded": {
+        "title": "Adroddiad wedi'i lawrlwytho'n llwyddiannus",
+        "description": "Mae eich adroddiad dadansoddeg PDF wedi'i lawrlwytho."
+      },
+      "exportFailed": {
+        "title": "Allforiad wedi methu",
+        "description": "Methodd allforio adroddiad PDF",
+        "customMessage": "{{message}}"
+      }
+    },
+    "global_metrics": "Metrigau Byd-eang",
+    "enrollment_over_time": "Cofrestru Ysgolion dros Amser",
+    "evidence_submissions": "Cyflwyniadau Tystiolaeth yn ôl Cam",
+    "geographic_distribution": "Dosbarthiad Daearyddol",
+    "completion_rates": "Cyfraddau Cwblhau yn ôl Cam",
+    "resource_downloads": "Ystadegau Lawrlwytho Adnoddau",
+    "filter_by_period": "Hidlo yn ôl Cyfnod",
+    "last_30_days": "30 Diwrnod Diwethaf",
+    "last_90_days": "90 Diwrnod Diwethaf",
+    "last_year": "Y Flwyddyn Ddiwethaf",
+    "all_time": "Bob Amser",
+    "export_report": "Allforio Adroddiad"
+  },
+  "email": {
+    "testTemplates": {
+      "title": "Profi Templedi E-bost",
+      "selectType": "Dewis Math o E-bost",
+      "types": {
+        "welcome": "E-bost Croeso",
+        "invitation": "Gwahoddiad Athro",
+        "joinRequest": "Cais Ymuno",
+        "joinApproved": "Cais Ymuno wedi'i Gymeradwyo",
+        "evidenceSubmitted": "Tystiolaeth wedi'i Chyflwyno",
+        "evidenceApproved": "Tystiolaeth wedi'i Chymeradwyo",
+        "evidenceRevision": "Mae Angen Adolygu Tystiolaeth",
+        "newEvidence": "Tystiolaeth Newydd i Weinyddwr"
+      }
+    },
+    "bulkComposer": {
+      "title": "Cyfansoddwr E-bost Swmp",
+      "previewTest": "Rhagolwg a Phrawf"
+    },
+    "buttons": {
+      "sendTest": "Anfon Prawf",
+      "sending": "Yn Anfon...",
+      "previewEmail": "Rhagolwg E-bost",
+      "insertImage": "Mewnosod Delwedd",
+      "sendBulkEmail": "Anfon E-bost Swmp i {{recipientType}}",
+      "sendBulk": "Anfon E-bost Swmp",
+      "cancel": "Canslo",
+      "previewTranslations": "Rhagolwg Cyfieithiadau",
+      "generating": "Yn Cynhyrchu..."
+    },
+    "form": {
+      "labels": {
+        "recipientEmail": "E-bost Derbynnydd *",
+        "schoolName": "Enw'r Ysgol *",
+        "inviterName": "Enw'r Gwahoddwr *",
+        "expiresInDays": "Yn Dod i Ben mewn Diwrnodau",
+        "requesterName": "Enw'r Ceisiwr *",
+        "requesterEmail": "E-bost y Ceisiwr *",
+        "evidence": "Tystiolaeth *",
+        "reviewerName": "Enw'r Adolygydd *",
+        "reviewNotes": "Nodiadau Adolygu (Dewisol)",
+        "evidenceTitle": "Teitl Tystiolaeth *",
+        "stage": "Cam *",
+        "feedback": "Adborth *",
+        "submitterName": "Enw'r Cyflwynydd *",
+        "subject": "Pwnc *",
+        "preheader": "Rhagarweiniad",
+        "title": "Teitl *",
+        "preTitle": "Cyn-deitl (Is-deitl)",
+        "messageContent": "Cynnwys y Neges *",
+        "recipientType": "Math o Dderbynydd",
+        "selectLanguages": "Dewis Ieithoedd ar gyfer Rhagolwg Cyfieithiad",
+        "viewEditTranslation": "Gweld/Golygu Cyfieithiad"
+      },
+      "placeholders": {
+        "teacherEmail": "athro@example.com",
+        "testSchool": "Ysgol Brawf",
+        "selectEmailType": "Dewis math o e-bost i'w brofi",
+        "emailSubject": "Llinell bwnc yr e-bost",
+        "preheaderText": "Testun rhagolwg a ddangosir mewn cleientiaid e-bost (dewisol)",
+        "largeHeading": "Pennawd mawr y tu mewn i'r e-bost",
+        "subtitleText": "Is-deitl o dan y teitl (dewisol)",
+        "messageContent": "Rhowch brif gynnwys y neges. Mae tagiau HTML yn cael eu cefnogi ar gyfer fformatio.",
+        "testEmail": "prawf@example.com",
+        "searchImages": "Chwilio delweddau..."
+      },
+      "helpText": {
+        "subjectLength": "{{length}}/200 nod • Y brif linell bwnc ar gyfer yr e-bost",
+        "preheaderLength": "{{length}}/100 nod • Testun rhagolwg dewisol sy'n ymddangos yn y blwch derbyn e-bost",
+        "titleLength": "{{length}}/200 nod • Y prif bennawd a ddangosir yn y corff e-bost",
+        "preTitleLength": "{{length}}/200 nod • Testun is-deitl dewisol o dan y teitl",
+        "contentLength": "{{length}}/10,000 nod",
+        "readTime": "~{{minutes}} munud i'w ddarllen",
+        "supportsHTML": "Yn cefnogi fformatio HTML"
+      }
+    },
+    "recipientTypes": {
+      "allTeachers": "Pob Athro",
+      "schools": "Ysgolion wedi'u Hidlo",
+      "custom": "Derbynwyr Cwstwm"
+    },
+    "stages": {
+      "stage1": "Cam 1",
+      "stage2": "Cam 2",
+      "stage3": "Cam 3"
+    },
+    "languages": {
+      "english": "Saesneg (Gwreiddiol)",
+      "spanish": "Sbaeneg",
+      "french": "Ffrangeg",
+      "german": "Almaeneg",
+      "italian": "Eidaleg",
+      "portuguese": "Portiwgaleg",
+      "dutch": "Iseldireg",
+      "russian": "Rwsieg",
+      "chinese": "Tsieinëeg",
+      "korean": "Corëeg",
+      "arabic": "Arabeg",
+      "indonesian": "Indoneseg",
+      "greek": "Groeg",
+      "welsh": "Cymraeg"
+    },
+    "badges": {
+      "editingTranslation": "Golygu Cyfieithiad"
+    },
+    "toasts": {
+      "emailRequired": {
+        "title": "Mae Angen E-bost",
+        "description": "Rhowch gyfeiriad e-bost derbynnydd.",
+        "testDescription": "Rhowch gyfeiriad e-bost prawf."
+      },
+      "testEmailSent": {
+        "title": "E-bost Prawf wedi'i Anfon",
+        "description": "E-bost wedi'i anfon yn llwyddiannus i {{email}}",
+        "withLanguage": "E-bost prawf wedi'i anfon yn llwyddiannus i {{email}} yn {{language}}",
+        "defaultDescription": "E-bost wedi'i anfon i {{email}}"
+      },
+      "sendEmailFailed": {
+        "title": "Methodd Anfon E-bost",
+        "description": "Digwyddodd gwall wrth anfon yr e-bost.",
+        "tryAgain": "Methodd anfon e-bost. Rhowch gynnig arall arni."
+      },
+      "testEmailFailed": {
+        "title": "Methodd Anfon E-bost Prawf",
+        "description": "Bu gwall wrth anfon yr e-bost prawf.",
+        "customMessage": "{{message}}"
+      },
+      "imageInserted": {
+        "title": "Delwedd wedi'i Mewnosod",
+        "description": "Mae {{filename}} wedi'i ychwanegu at gynnwys eich e-bost"
+      },
+      "translationFailed": {
+        "title": "Cyfieithiad wedi Methu",
+        "description": "Methodd cynhyrchu cyfieithiadau. Rhowch gynnig arall arni."
+      },
+      "error": {
+        "title": "Gwall",
+        "description": "Methodd anfon e-bost. Rhowch gynnig arall arni."
+      },
+      "emailsSent": {
+        "title": "E-byst wedi'u Hanfon yn Llwyddiannus",
+        "description": "{{sent}} e-bost wedi'u hanfon yn llwyddiannus{{failedText}}."
+      },
+      "bulkEmailFailed": {
+        "title": "Methodd Anfon E-byst",
+        "description": "Bu gwall wrth anfon yr e-byst swmp. Rhowch gynnig arall arni."
+      }
+    },
+    "dialogs": {
+      "preview": {
+        "title": "Rhagolwg E-bost",
+        "subject": "Pwnc:",
+        "preheader": "Rhagarweiniad:"
+      },
+      "bulkConfirm": {
+        "title": "Cadarnhau Anfon E-bost Swmp",
+        "description": "Ydych chi'n siŵr eich bod am anfon yr e-bost hwn at:",
+        "subject": "Pwnc: {{subject}}",
+        "warning": "Ni ellir dadwneud y weithred hon. Gwnewch yn siŵr eich bod wedi profi'r e-bost yn gyntaf.",
+        "recipientCount": "{{count}} Derbynydd Cwstwm"
+      },
+      "imagePicker": {
+        "title": "Mewnosod Delwedd o'r Llyfrgell Cyfryngau"
+      }
+    },
+    "resultMessages": {
+      "success": "✅ Llwyddiant",
+      "error": "❌ Gwall"
+    },
+    "defaultValues": {
+      "testSchool": "Ysgol Brawf",
+      "johnDoe": "John Doe",
+      "janeSmith": "Jane Smith",
+      "janeEmail": "jane@example.com",
+      "recyclingProgram": "Rhaglen Ailgylchu",
+      "teacherEvidence": "Rwy'n athro yn yr ysgol hon.",
+      "participationFeedback": "Ychwanegwch fwy o fanylion am gyfranogiad myfyrwyr.",
+      "headTeacher": "Pennaeth"
+    }
+  },
+  "evidence": {
+    "title": "Adolygu Tystiolaeth",
+    "subtitle": "Adolygu a chymedroli cyflwyniadau tystiolaeth",
+    "pending_review": "Adolygiad yn Aros",
+    "approved": "Cymeradwy",
+    "needs_revision": "Angen Adolygiad",
+    "filter_by_stage": "Hidlo yn ôl Cam",
+    "filter_by_status": "Hidlo yn ôl Statws",
+    "sort_by": "Trefnu yn ôl",
+    "newest_first": "Diweddaraf Gyntaf",
+    "oldest_first": "Hynaf Gyntaf",
+    "school_name": "Enw'r Ysgol",
+    "stage": "Cam",
+    "submitted_date": "Dyddiad Cyflwyno",
+    "review_evidence": "Adolygu Tystiolaeth",
+    "approve_evidence": "Cymeradwyo Tystiolaeth",
+    "request_revision": "Gofyn am Adolygiad",
+    "add_feedback": "Ychwanegu Adborth",
+    "feedback_placeholder": "Darparu adborth i'r ysgol...",
+    "approve_button": "Cymeradwyo",
+    "revision_button": "Gofyn am Adolygiad",
+    "evidence_approved": "Tystiolaeth wedi'i chymeradwyo'n llwyddiannus",
+    "evidence_revision_requested": "Adolygiad wedi'i ofyn amdano'n llwyddiannus",
+    "bulk_actions": "Gweithredoedd Swmp",
+    "select_all": "Dewis Popeth",
+    "bulk_approve": "Cymeradwyo Swmp",
+    "bulk_request_revision": "Cais Adolygiad Swmp"
+  },
   "schools": {
     "title": "Rheoli Ysgolion",
     "subtitle": "Rheoli ysgolion cofrestredig a chyfrifon defnyddwyr",
     "active_schools": "Ysgolion Gweithredol",
     "pending_approval": "Cymeradwyaeth yn Aros",
     "search_schools": "Chwilio ysgolion...",
+    "filters": {
+      "allCountries": "Pob Gwlad",
+      "selectAll": "Dewis Popeth ({count} ysgol)",
+      "selected": "{count} wedi'u dewis",
+      "searchPlaceholder": "Chwilio ysgolion..."
+    },
+    "buttons": {
+      "bulkUpdate": "Diweddaru Swmp",
+      "deleteSchools": "Dileu Ysgolion",
+      "view": "Gweld",
+      "edit": "Golygu",
+      "delete": "Dileu",
+      "save": "Cadw",
+      "saving": "Yn Cadw...",
+      "cancel": "Canslo",
+      "confirm": "Cadarnhau",
+      "processing": "Yn Prosesu...",
+      "deleting": "Yn Dileu...",
+      "editLanguage": "Golygu Iaith",
+      "editProgression": "Golygu Dilyniant",
+      "saveChanges": "Cadw Newidiadau"
+    },
     "school_table": {
-      "school_name": "Enw'r Ysgol",
-      "country": "Gwlad",
-      "contact": "Prif Gyswllt",
-      "stage": "Cam Presennol",
-      "registered_date": "Cofrestrwyd",
-      "status": "Statws",
-      "actions": "Gweithredoedd"
+      "headers": {
+        "select": "Dewis",
+        "school_name": "Enw'r Ysgol",
+        "country": "Gwlad",
+        "stage": "Cam",
+        "progress": "Cynnydd",
+        "students": "Myfyrwyr",
+        "contact": "Prif Gyswllt",
+        "joined": "Ymunodd",
+        "actions": "Gweithredoedd",
+        "expand": "Ehangu",
+        "collapse": "Crebachu"
+      },
+      "teachers": {
+        "loading": "Yn llwytho athrawon...",
+        "loadingError": "Methodd llwytho athrawon. Rhowch gynnig arall arni.",
+        "noTeachers": "Dim athrawon wedi'u neilltuo i'r ysgol hon eto.",
+        "headers": {
+          "name": "Enw",
+          "email": "E-bost",
+          "role": "Rôl",
+          "verification": "Dilysu",
+          "joined": "Ymunodd"
+        },
+        "roles": {
+          "headTeacher": "Pennaeth",
+          "teacher": "Athro"
+        },
+        "status": {
+          "verified": "Wedi'i Ddilysu",
+          "notVerified": "Heb ei Ddilysu"
+        }
+      },
+      "notAvailable": "Ddim ar Gael"
     },
     "school_actions": {
       "view_details": "Gweld Manylion",
@@ -137,108 +1009,1141 @@
       "suspended": "Wedi'i Atal"
     },
     "school_details": {
+      "title": "{name}",
       "basic_info": "Gwybodaeth Sylfaenol",
       "contact_info": "Gwybodaeth Gyswllt",
       "progress": "Cynnydd y Rhaglen",
       "evidence_history": "Hanes Tystiolaeth",
-      "last_activity": "Gweithgaredd Diwethaf"
+      "last_activity": "Gweithgaredd Diwethaf",
+      "labels": {
+        "country": "Gwlad",
+        "schoolType": "Math o Ysgol",
+        "preferredLanguage": "Iaith a Ffefrir",
+        "studentCount": "Nifer y Myfyrwyr",
+        "currentStage": "Cam Presennol",
+        "progress": "Cynnydd",
+        "primaryContactEmail": "E-bost Prif Gyswllt",
+        "joined": "Ymunodd",
+        "address": "Cyfeiriad",
+        "currentRound": "Rownd Bresennol",
+        "stageCompletion": "Cwblhau Cam"
+      },
+      "progression": {
+        "title": "Rheoli Dilyniant",
+        "description": "Defnyddiwch yr adran hon i osod cam dilyniant yr ysgol, rownd, a statws cwblhau yn llaw. Mae hyn yn caniatáu ichi ddiystyru'r dilyniant awtomatig yn seiliedig ar gyflwyno tystiolaeth.",
+        "currentStage": "Cam Presennol:",
+        "currentRound": "Rownd Bresennol:",
+        "stageCompletion": "Cwblhau Cam:",
+        "inspireCompleted": "Ysbrydoli wedi'i Gwblhau",
+        "investigateCompleted": "Ymchwilio wedi'i Gwblhau",
+        "actCompleted": "Gweithredu wedi'i Gwblhau",
+        "notCompleted": "○ Heb ei gwblhau",
+        "completed": "✓ Wedi'i gwblhau"
+      },
+      "stages": {
+        "inspire": "Ysbrydoli",
+        "investigate": "Ymchwilio",
+        "act": "Gweithredu"
+      },
+      "languages": {
+        "en": "Saesneg",
+        "es": "Sbaeneg",
+        "fr": "Ffrangeg",
+        "de": "Almaeneg",
+        "it": "Eidaleg",
+        "pt": "Portiwgaleg",
+        "nl": "Iseldireg",
+        "el": "Groeg",
+        "ar": "Arabeg",
+        "zh": "Tsieinëeg",
+        "ko": "Corëeg",
+        "ru": "Rwsieg",
+        "id": "Indoneseg",
+        "cy": "Cymraeg"
+      },
+      "actionPlan": {
+        "title": "Metrigau Cynllun Gweithredu",
+        "totalPromises": "Cyfanswm Addewidion",
+        "annualReduction": "Eitemau wedi'u Lleihau'n Flynyddol",
+        "annualWeight": "Pwysau wedi'i Leihau",
+        "perYear": "y flwyddyn",
+        "oceanImpact": "Effaith ar y Cefnfor",
+        "oceanBottles": "Poteli Cefnfor wedi'u Hatal",
+        "fishSaved": "Pysgod wedi'u Hachub",
+        "seaTurtles": "Crwbanod Môr wedi'u Diogelu",
+        "environmentalImpact": "Effaith Amgylcheddol",
+        "co2Prevented": "CO₂ wedi'i Atal",
+        "oilSaved": "Olew wedi'i Arbed",
+        "wastePrevented": "Gwastraff wedi'i Atal",
+        "loading": "Yn llwytho metrigau lleihau...",
+        "noPromises": "Nid oes addewidion lleihau wedi'u creu eto ar gyfer yr ysgol hon."
+      },
+      "photoConsent": {
+        "title": "Statws Caniatâd Ffotograffau",
+        "status": "Statws:",
+        "uploadedAt": "Wedi'i Lwytho:",
+        "approvedAt": "Wedi'i Gymeradwyo:",
+        "approvedBy": "Cymeradwywyd gan:",
+        "reviewNotes": "Nodiadau Adolygu:",
+        "viewDocument": "Gweld Dogfen",
+        "pending": "Ar Aros",
+        "approved": "Cymeradwy",
+        "rejected": "Gwrthodwyd",
+        "notUploaded": "Heb ei lwytho",
+        "approve": "Cymeradwyo",
+        "reject": "Gwrthod",
+        "rejectionNotes": "Nodiadau Gwrthod",
+        "rejectionNotesPlaceholder": "Esboniwch pam mae'r caniatâd ffotograffau yn cael ei wrthod...",
+        "submitRejection": "Cyflwyno Gwrthodiad"
+      }
+    },
+    "bulkActions": {
+      "dialogs": {
+        "update": {
+          "title": "Diweddaru Ysgolion Swmp",
+          "description": "Bydd y weithred hon yn effeithio ar <strong>{count}</strong> ysgol.",
+          "updateStageLabel": "Diweddaru Cam Presennol",
+          "updateStageHelpText": "Bydd yr holl ysgolion a ddewiswyd yn cael eu symud i'r cam rhaglen hwn."
+        },
+        "delete": {
+          "title": "Dileu Ysgolion Swmp",
+          "description": "Bydd y weithred hon yn effeithio ar <strong>{count}</strong> ysgol.",
+          "warningTitle": "Rhybudd:",
+          "warningDescription": "Ni ellir dadwneud y weithred hon. Bydd yr holl ysgolion a ddewiswyd a'u data cysylltiedig yn cael eu dileu'n barhaol."
+        },
+        "deleteSchool": {
+          "title": "Dileu Ysgol",
+          "description": "Ydych chi'n siŵr eich bod am ddileu <strong>{name}</strong>? Ni ellir dadwneud y weithred hon a bydd yn dileu'r ysgol a'r holl ddata cysylltiedig yn barhaol.",
+          "loadingUsers": "Yn llwytho defnyddwyr yr ysgol...",
+          "warningUsers": "Rhybudd: Mae gan yr ysgol hon {count} defnyddiwr{plural} cysylltiedig.",
+          "associatedUsers": "Defnyddwyr Cysylltiedig:",
+          "deleteUsersLabel": "Dileu'r holl gyfrifon defnyddwyr cysylltiedig hefyd",
+          "deleteUsersDescription": "Os na chaiff ei dicio, bydd y cyfrifon defnyddwyr yn aros yn y system a gellir eu hailneilltuo i ysgolion eraill. Os caiff ei dicio, bydd y defnyddwyr yn cael eu dileu'n barhaol ac ni fyddant yn gallu cofrestru eto gyda'r un cyfeiriadau e-bost.",
+          "noUsers": "Nid oes gan yr ysgol hon ddefnyddwyr cysylltiedig."
+        }
+      }
+    },
+    "toasts": {
+      "languageUpdated": {
+        "title": "Iaith wedi'i Diweddaru",
+        "description": "Mae iaith a ffefrir yr ysgol wedi'i diweddaru'n llwyddiannus."
+      },
+      "languageUpdateFailed": {
+        "title": "Diweddariad wedi Methu",
+        "description": "Methodd diweddaru iaith yr ysgol. Mae newidiadau wedi'u gwrthdroi."
+      },
+      "progressionUpdated": {
+        "title": "Dilyniant wedi'i Ddiweddaru",
+        "description": "Mae dilyniant yr ysgol wedi'i ddiweddaru'n llwyddiannus."
+      },
+      "progressionUpdateFailed": {
+        "title": "Diweddariad wedi Methu",
+        "description": "Methodd diweddaru dilyniant yr ysgol. Mae newidiadau wedi'u gwrthdroi."
+      },
+      "bulkUpdateComplete": {
+        "title": "Diweddariad Swmp yn Gyflawn",
+        "description": "Mae {count} ysgol wedi'u diweddaru'n llwyddiannus."
+      },
+      "bulkUpdateFailed": {
+        "title": "Diweddariad Swmp wedi Methu",
+        "description": "Methodd diweddaru ysgolion. Rhowch gynnig arall arni."
+      },
+      "bulkDeleteComplete": {
+        "title": "Dileu Swmp yn Gyflawn",
+        "description": "Mae {count} ysgol wedi'u dileu'n llwyddiannus."
+      },
+      "bulkDeleteFailed": {
+        "title": "Dileu Swmp wedi Methu",
+        "description": "Methodd dileu ysgolion. Rhowch gynnig arall arni."
+      },
+      "schoolDeleted": {
+        "title": "Ysgol wedi'i Dileu",
+        "descriptionWithUsers": "Mae'r ysgol a'r holl ddefnyddwyr cysylltiedig wedi'u dileu'n llwyddiannus.",
+        "descriptionWithoutUsers": "Mae'r ysgol wedi'i dileu'n llwyddiannus."
+      },
+      "schoolDeleteFailed": {
+        "title": "Dileu wedi Methu",
+        "description": "Methodd dileu ysgol. Rhowch gynnig arall arni."
+      }
+    }
+  },
+  "teams": {
+    "assignTeacher": {
+      "title": "Neilltuo Athro i Ysgol"
+    },
+    "schoolTeachers": {
+      "title": "Athrawon yr Ysgol"
+    },
+    "verificationRequests": {
+      "title": "Ceisiadau Dilysu"
     }
   },
   "permissions": {
-    "admin_only": "Angen mynediad gweinyddol",
+    "admin_only": "Mae angen mynediad gweinyddol",
     "insufficient_permissions": "Caniatâd annigonol i gael mynediad i'r nodwedd hon"
   },
   "toasts": {
-    "teacher_removed": "Teacher Removed",
-    "teacher_removed_desc": "Teacher has been successfully removed from the school.",
-    "removal_failed": "Removal Failed",
-    "removal_failed_desc": "Failed to remove teacher. Please try again.",
-    "request_approved": "Request Approved",
-    "request_approved_desc": "Verification request has been successfully approved.",
-    "request_rejected": "Request Rejected",
-    "request_rejected_desc": "Verification request has been successfully rejected.",
-    "action_failed": "Action Failed",
-    "action_failed_desc": "Failed to process verification request. Please try again.",
-    "access_denied": "Access Denied",
-    "access_denied_desc": "Admin access required",
-    "success": "Success",
-    "error": "Error",
-    "requirement_created": "Evidence requirement created successfully.",
-    "requirement_updated": "Evidence requirement updated successfully.",
-    "requirement_deleted": "Evidence requirement deleted successfully.",
-    "requirement_delete_failed": "Failed to delete evidence requirement. It may be linked to existing evidence.",
-    "reorder_failed": "Failed to reorder requirements.",
-    "event_created": "Event Created Successfully! 🎉",
-    "event_updated": "Event updated successfully.",
-    "event_deleted": "Event deleted successfully.",
-    "event_creation_failed": "Failed to create event.",
-    "event_update_failed": "Failed to update event.",
-    "event_delete_failed": "Failed to delete event.",
-    "event_duplicated": "Event Duplicated",
-    "event_duplicated_desc": "\"{{title}}\" has been created as a draft.",
-    "duplication_failed": "Duplication Failed",
-    "duplication_failed_desc": "Failed to duplicate event",
-    "page_content_update_failed": "Failed to update event page content.",
-    "status_update_failed": "Failed to update event status.",
-    "same_language_selected": "Same language selected"
+    "teacher_removed": "Athro wedi'i Dynnu",
+    "teacher_removed_desc": "Mae'r athro wedi'i dynnu o'r ysgol yn llwyddiannus.",
+    "removal_failed": "Tynnu wedi Methu",
+    "removal_failed_desc": "Methodd tynnu athro. Rhowch gynnig arall arni.",
+    "request_approved": "Cais wedi'i Gymeradwyo",
+    "request_approved_desc": "Mae'r cais dilysu wedi'i gymeradwyo'n llwyddiannus.",
+    "request_rejected": "Cais wedi'i Wrthod",
+    "request_rejected_desc": "Mae'r cais dilysu wedi'i wrthod yn llwyddiannus.",
+    "action_failed": "Gweithred wedi Methu",
+    "action_failed_desc": "Methodd prosesu'r cais dilysu. Rhowch gynnig arall arni.",
+    "access_denied": "Mynediad wedi'i Wrthod",
+    "access_denied_desc": "Mae angen mynediad gweinyddol",
+    "session_expired": "Heb Awdurdod",
+    "session_expired_desc": "Mae sesiwn gweinyddol wedi dod i ben. Mewngofnodwch eto.",
+    "success": "Llwyddiant",
+    "error": "Gwall",
+    "requirement_created": "Gofyniad tystiolaeth wedi'i greu'n llwyddiannus.",
+    "requirement_updated": "Gofyniad tystiolaeth wedi'i ddiweddaru'n llwyddiannus.",
+    "requirement_deleted": "Gofyniad tystiolaeth wedi'i ddileu'n llwyddiannus.",
+    "requirement_delete_failed": "Methodd dileu gofyniad tystiolaeth. Efallai ei fod yn gysylltiedig â thystiolaeth sy'n bodoli.",
+    "reorder_failed": "Methodd aildrefnu gofynion.",
+    "event_created": "Digwyddiad wedi'i Greu'n Llwyddiannus! 🎉",
+    "event_updated": "Digwyddiad wedi'i ddiweddaru'n llwyddiannus.",
+    "event_deleted": "Digwyddiad wedi'i ddileu'n llwyddiannus.",
+    "event_creation_failed": "Methodd creu digwyddiad.",
+    "event_update_failed": "Methodd diweddaru digwyddiad.",
+    "event_delete_failed": "Methodd dileu digwyddiad.",
+    "event_duplicated": "Digwyddiad wedi'i Ddyblygu",
+    "event_duplicated_desc": "Mae \"{{title}}\" wedi'i greu fel drafft.",
+    "duplication_failed": "Dyblygu wedi Methu",
+    "duplication_failed_desc": "Methodd dyblygu digwyddiad",
+    "page_content_update_failed": "Methodd diweddaru cynnwys tudalen y digwyddiad.",
+    "status_update_failed": "Methodd diweddaru statws y digwyddiad.",
+    "same_language_selected": "Yr un iaith wedi'i dewis",
+    "photoConsentApproved": {
+      "title": "Caniatâd Ffotograffau wedi'i Gymeradwyo",
+      "description": "Mae caniatâd ffotograffau wedi'i gymeradwyo'n llwyddiannus."
+    },
+    "photoConsentApprovalFailed": {
+      "title": "Cymeradwyaeth wedi Methu",
+      "description": "Methodd cymeradwyo caniatâd ffotograffau. Mae newidiadau wedi'u gwrthdroi."
+    },
+    "photoConsentRejected": {
+      "title": "Caniatâd Ffotograffau wedi'i Wrthod",
+      "description": "Mae'r ddogfen caniatâd ffotograffau wedi'i gwrthod."
+    },
+    "photoConsentRejectionFailed": {
+      "title": "Gwrthodiad wedi Methu",
+      "description": "Methodd gwrthod caniatâd ffotograffau. Mae newidiadau wedi'u gwrthdroi."
+    }
   },
   "case_study": {
-    "categories": "Categories",
-    "organize_case_study_categories": "Organize your case study by selecting relevant categories",
-    "add_categories": "Add Categories",
-    "enter_category": "Enter a category",
-    "press_enter_or_click_plus_category": "Press Enter or click + to add a category",
-    "suggested_categories": "Suggested Categories",
-    "selected_categories": "Selected Categories",
-    "add_suggested": "Add suggested",
-    "category_plastic_reduction": "Plastic Reduction",
-    "category_recycling_initiative": "Recycling Initiative",
-    "category_student_leadership": "Student Leadership",
-    "category_community_engagement": "Community Engagement",
-    "category_educational_campaign": "Educational Campaign",
-    "category_waste_audit": "Waste Audit",
-    "category_policy_change": "Policy Change",
-    "category_innovation": "Innovation",
-    "tags": "Tags",
-    "add_descriptive_tags": "Add descriptive tags to improve discoverability",
-    "add_tags": "Add Tags",
-    "enter_tag": "Enter a tag",
-    "press_enter_or_click_plus_tag": "Press Enter or click + to add a tag",
-    "suggested_tags": "Suggested Tags",
-    "selected_tags": "Selected Tags",
-    "tag_single_use_plastic": "single-use-plastic",
-    "tag_recycling": "recycling",
-    "tag_composting": "composting",
-    "tag_awareness": "awareness",
-    "tag_students": "students",
-    "tag_teachers": "teachers",
-    "tag_community": "community",
-    "tag_impact": "impact",
-    "tag_sustainability": "sustainability",
-    "tag_ocean_conservation": "ocean-conservation",
-    "impact_metrics": "Impact Metrics",
-    "add_quantifiable_metrics": "Add quantifiable metrics to showcase the project's impact",
-    "add_metric": "Add Metric",
-    "no_impact_metrics_yet": "No impact metrics yet. Click \"Add Metric\" to get started.",
-    "metric_number": "Metric {{number}}",
-    "metric_label_required": "Metric Label *",
-    "metric_value_required": "Value *",
-    "metric_unit": "Unit",
-    "metric_icon": "Icon",
-    "metric_label_placeholder": "e.g., Plastic Items Reduced",
-    "metric_value_placeholder": "e.g., 500 or 85%",
-    "metric_unit_placeholder": "e.g., items, kg, %",
-    "metric_icon_placeholder": "e.g., trash, droplet, leaf",
-    "project_timeline": "Project Timeline",
-    "create_chronological_timeline": "Create a chronological timeline of key milestones and events",
-    "add_section": "Add Section",
-    "no_timeline_sections_yet": "No timeline sections yet. Click \"Add Section\" to get started.",
-    "section_number": "Section {{number}}",
-    "section_title_required": "Section Title *",
-    "section_title_placeholder": "e.g., Project Launch, Week 1",
-    "section_content": "Content *",
-    "section_content_placeholder": "Describe what happened during this phase...",
-    "section_image_url": "Image URL",
+    "categories": "Categorïau",
+    "organize_case_study_categories": "Trefnu eich astudiaeth achos trwy ddewis categorïau perthnasol",
+    "add_categories": "Ychwanegu Categorïau",
+    "enter_category": "Rhowch gategori",
+    "press_enter_or_click_plus_category": "Pwyswch Enter neu gliciwch + i ychwanegu categori",
+    "suggested_categories": "Categorïau Awgrymedig",
+    "selected_categories": "Categorïau a Ddewiswyd",
+    "add_suggested": "Ychwanegu awgrymedig",
+    "category_plastic_reduction": "Lleihau Plastig",
+    "category_recycling_initiative": "Menter Ailgylchu",
+    "category_student_leadership": "Arweinyddiaeth Myfyrwyr",
+    "category_community_engagement": "Ymgysylltu Cymunedol",
+    "category_educational_campaign": "Ymgyrch Addysgol",
+    "category_waste_audit": "Archwiliad Gwastraff",
+    "category_policy_change": "Newid Polisi",
+    "category_innovation": "Arloesedd",
+    "tags": "Tagiau",
+    "add_descriptive_tags": "Ychwanegu tagiau disgrifiadol i wella darganfyddadwyedd",
+    "add_tags": "Ychwanegu Tagiau",
+    "enter_tag": "Rhowch dag",
+    "press_enter_or_click_plus_tag": "Pwyswch Enter neu gliciwch + i ychwanegu tag",
+    "suggested_tags": "Tagiau Awgrymedig",
+    "selected_tags": "Tagiau a Ddewiswyd",
+    "tag_single_use_plastic": "plastig-untro",
+    "tag_recycling": "ailgylchu",
+    "tag_composting": "compostio",
+    "tag_awareness": "ymwybyddiaeth",
+    "tag_students": "myfyrwyr",
+    "tag_teachers": "athrawon",
+    "tag_community": "cymuned",
+    "tag_impact": "effaith",
+    "tag_sustainability": "cynaliadwyedd",
+    "tag_ocean_conservation": "cadwraeth-cefnfor",
+    "impact_metrics": "Metrigau Effaith",
+    "add_quantifiable_metrics": "Ychwanegu metrigau mesuradwy i arddangos effaith y prosiect",
+    "add_metric": "Ychwanegu Metrig",
+    "no_impact_metrics_yet": "Dim metrigau effaith eto. Cliciwch \"Ychwanegu Metrig\" i ddechrau arni.",
+    "metric_number": "Metrig {{number}}",
+    "metric_label_required": "Label Metrig *",
+    "metric_value_required": "Gwerth *",
+    "metric_unit": "Uned",
+    "metric_icon": "Eicon",
+    "metric_label_placeholder": "e.e., Eitemau Plastig wedi'u Lleihau",
+    "metric_value_placeholder": "e.e., 500 neu 85%",
+    "metric_unit_placeholder": "e.e., eitemau, kg, %",
+    "metric_icon_placeholder": "e.e., sbwriel, diferyn, dalen",
+    "project_timeline": "Llinell Amser y Prosiect",
+    "create_chronological_timeline": "Creu llinell amser gronolegol o gerrig milltir a digwyddiadau allweddol",
+    "add_section": "Ychwanegu Adran",
+    "no_timeline_sections_yet": "Dim adrannau llinell amser eto. Cliciwch \"Ychwanegu Adran\" i ddechrau arni.",
+    "section_number": "Adran {{number}}",
+    "section_title_required": "Teitl Adran *",
+    "section_title_placeholder": "e.e., Lansio'r Prosiect, Wythnos 1",
+    "section_content": "Cynnwys *",
+    "section_content_placeholder": "Disgrifiwch beth ddigwyddodd yn ystod y cyfnod hwn...",
+    "section_image_url": "URL Delwedd",
     "section_image_placeholder": "https://..."
+  },
+  "evidenceGallery": {
+    "title": "Oriel Tystiolaeth",
+    "subtitle": "Pori a rheoli'r holl gyflwyniadau tystiolaeth",
+    "submissionCount": {
+      "single": "{{count}} cyflwyniad",
+      "plural": "{{count}} cyflwyniad"
+    },
+    "filters": {
+      "labels": {
+        "stage": "Cam",
+        "country": "Gwlad",
+        "status": "Statws",
+        "visibility": "Gwelededd"
+      },
+      "options": {
+        "allStages": "Pob Cam",
+        "allCountries": "Pob Gwlad",
+        "allStatuses": "Pob Statws",
+        "allVisibility": "Pob Gwelededd",
+        "public": "Cyhoeddus",
+        "private": "Preifat"
+      },
+      "stages": {
+        "inspire": "Ysbrydoli",
+        "investigate": "Ymchwilio",
+        "act": "Gweithredu"
+      },
+      "statuses": {
+        "pending": "Ar Aros",
+        "approved": "Cymeradwy",
+        "rejected": "Gwrthodwyd"
+      }
+    },
+    "buttons": {
+      "clearFilters": "Clirio Hidlyddion",
+      "view": "Gweld",
+      "schoolHistory": "Gweld Hanes Ysgol"
+    },
+    "badges": {
+      "permissionPending": "Caniatâd ar Aros",
+      "noPermission": "Dim Caniatâd",
+      "permissionApproved": "Caniatâd wedi'i Gymeradwyo",
+      "permissionRejected": "Caniatâd wedi'i Wrthod",
+      "public": "Cyhoeddus",
+      "registeredOnly": "Cofrestredig yn Unig"
+    },
+    "dialogs": {
+      "evidenceDetails": {
+        "title": "Manylion Tystiolaeth"
+      },
+      "schoolHistory": {
+        "title": "{{schoolName}} - Pob Cyflwyniad ({{count}})"
+      }
+    },
+    "form": {
+      "labels": {
+        "title": "Teitl",
+        "description": "Disgrifiad",
+        "school": "Ysgol",
+        "country": "Gwlad",
+        "stage": "Cam",
+        "status": "Statws",
+        "visibilitySetting": "Gosodiad Gwelededd",
+        "photoPermission": "Caniatâd Ffotograffau",
+        "files": "Ffeiliau ({{count}})",
+        "videoLinks": "Dolenni Fideo"
+      },
+      "values": {
+        "noDescription": "Dim disgrifiad",
+        "unknownSchool": "Ysgol Anhysbys",
+        "unknown": "Anhysbys"
+      }
+    },
+    "warnings": {
+      "permissionRequired": "Mae Angen Caniatâd:",
+      "photoConsentPending": "Mae gan yr ysgol hon ddogfen caniatâd ffotograffau ar aros. Ni ddylid defnyddio'r dystiolaeth hon mewn astudiaethau achos cyhoeddus nes bod caniatâd wedi'i gymeradwyo.",
+      "photoConsentMissing": "Nid yw'r ysgol hon wedi llwytho dogfen caniatâd ffotograffau. Ni ddylid defnyddio'r dystiolaeth hon mewn astudiaethau achos cyhoeddus nes bod caniatâd wedi'i gymeradwyo."
+    },
+    "emptyStates": {
+      "noEvidence": {
+        "title": "Dim cyflwyniadau tystiolaeth eto",
+        "description": "Bydd cyflwyniadau tystiolaeth yn ymddangos yma unwaith y bydd ysgolion yn dechrau llwytho"
+      },
+      "noSchoolSubmissions": {
+        "title": "Dim cyflwyniadau eto",
+        "description": "Nid yw'r ysgol hon wedi cyflwyno unrhyw dystiolaeth eto"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "Llwyddiant",
+        "description": "Statws tystiolaeth wedi'i ddiweddaru"
+      },
+      "updateFailed": {
+        "title": "Gwall",
+        "description": "Methodd diweddaru statws tystiolaeth"
+      }
+    }
+  },
+  "printableForms": {
+    "title": "Adolygu Ffurflenni Argraffadwy",
+    "subtitle": "Adolygu a rheoli cyflwyniadau ffurflenni argraffadwy gan ysgolion",
+    "filters": {
+      "labels": {
+        "status": "Statws",
+        "formType": "Math o Ffurflen",
+        "schoolSearch": "Chwilio Ysgolion"
+      },
+      "statusOptions": {
+        "all": "Pob statws",
+        "pending": "Ar Aros",
+        "approved": "Cymeradwy",
+        "rejected": "Gwrthodwyd",
+        "revisionRequested": "Adolygiad wedi'i Ofyn"
+      },
+      "formTypeOptions": {
+        "all": "Pob math",
+        "audit": "Archwiliad",
+        "actionPlan": "Cynllun Gweithredu"
+      },
+      "placeholders": {
+        "searchSchool": "Chwilio yn ôl enw ysgol..."
+      }
+    },
+    "table": {
+      "headers": {
+        "school": "Ysgol",
+        "formType": "Math o Ffurflen",
+        "status": "Statws",
+        "submittedBy": "Cyflwynwyd gan",
+        "uploadDate": "Dyddiad Llwytho",
+        "actions": "Gweithredoedd"
+      }
+    },
+    "buttons": {
+      "download": "Lawrlwytho",
+      "review": "Adolygu",
+      "submitReview": "Cyflwyno Adolygiad",
+      "cancel": "Canslo"
+    },
+    "dialogs": {
+      "reviewSubmission": {
+        "title": "Adolygu Cyflwyniad",
+        "labels": {
+          "school": "Ysgol:",
+          "formType": "Math o Ffurflen:",
+          "submittedBy": "Cyflwynwyd gan:",
+          "status": "Statws",
+          "adminNotes": "Nodiadau Gweinyddol (Dewisol)"
+        },
+        "statusOptions": {
+          "approved": "Cymeradwy",
+          "rejected": "Gwrthodwyd",
+          "revisionRequested": "Adolygiad wedi'i Ofyn"
+        },
+        "placeholders": {
+          "reviewNotes": "Ychwanegwch unrhyw nodiadau am yr adolygiad hwn..."
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingSubmissions": "Yn llwytho cyflwyniadau..."
+    },
+    "emptyStates": {
+      "noSubmissions": {
+        "title": "Dim Cyflwyniadau wedi'u Canfod",
+        "description": "Nid oes cyflwyniadau ffurflenni argraffadwy yn cyfateb i'ch hidlyddion"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "Llwyddiant",
+        "description": "Statws cyflwyniad wedi'i ddiweddaru'n llwyddiannus"
+      },
+      "updateFailed": {
+        "title": "Gwall",
+        "description": "Methodd diweddaru statws cyflwyniad",
+        "customMessage": "{{message}}"
+      },
+      "downloadFailed": {
+        "title": "Gwall",
+        "description": "Methodd lawrlwytho cyflwyniad"
+      }
+    },
+    "updating": "Yn Diweddaru..."
+  },
+  "caseStudies": {
+    "title": "Rheoli Astudiaethau Achos",
+    "filters": {
+      "placeholders": {
+        "search": "Chwilio astudiaethau achos..."
+      },
+      "labels": {
+        "stage": "Cam",
+        "featuredStatus": "Statws Amlwg"
+      },
+      "options": {
+        "allStages": "Pob Cam",
+        "all": "Popeth",
+        "featured": "Amlwg",
+        "notFeatured": "Ddim yn Amlwg"
+      },
+      "stages": {
+        "inspire": "Ysbrydoli",
+        "investigate": "Ymchwilio",
+        "act": "Gweithredu"
+      }
+    },
+    "buttons": {
+      "createCaseStudy": "Creu Astudiaeth Achos",
+      "preview": "Rhagolwg",
+      "edit": "Golygu",
+      "feature": "Gwneud yn Amlwg",
+      "unfeature": "Tynnu o Amlwg",
+      "delete": "Dileu",
+      "cancel": "Canslo"
+    },
+    "badges": {
+      "featured": "Amlwg"
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Dileu Astudiaeth Achos",
+        "description": "Ydych chi'n siŵr eich bod am ddileu \"{{title}}\"? Ni ellir dadwneud y weithred hon."
+      },
+      "editor": {
+        "title": "Golygydd Astudiaethau Achos"
+      }
+    },
+    "emptyStates": {
+      "noCaseStudies": "Dim astudiaethau achos wedi'u canfod. Crëwch un o gyflwyniadau tystiolaeth cymeradwy."
+    },
+    "toasts": {
+      "created": {
+        "title": "Astudiaeth Achos wedi'i Chreu",
+        "description": "Mae'r astudiaeth achos wedi'i chreu'n llwyddiannus."
+      },
+      "createFailed": {
+        "title": "Creu wedi Methu",
+        "description": "Methodd creu astudiaeth achos. Rhowch gynnig arall arni.",
+        "customMessage": "{{message}}"
+      },
+      "updated": {
+        "title": "Astudiaeth Achos wedi'i Diweddaru",
+        "description": "Mae'r astudiaeth achos wedi'i diweddaru'n llwyddiannus."
+      },
+      "updateFailed": {
+        "title": "Diweddariad wedi Methu",
+        "description": "Methodd diweddaru astudiaeth achos. Rhowch gynnig arall arni.",
+        "customMessage": "{{message}}"
+      },
+      "deleted": {
+        "title": "Astudiaeth Achos wedi'i Dileu",
+        "description": "Mae'r astudiaeth achos wedi'i dileu'n llwyddiannus."
+      },
+      "deleteFailed": {
+        "title": "Dileu wedi Methu",
+        "description": "Methodd dileu astudiaeth achos. Rhowch gynnig arall arni.",
+        "customMessage": "{{message}}"
+      },
+      "featuredUpdated": {
+        "title": "Astudiaeth Achos wedi'i Diweddaru",
+        "description": "Mae statws amlwg yr astudiaeth achos wedi'i ddiweddaru."
+      },
+      "featuredUpdateFailed": {
+        "title": "Diweddariad wedi Methu",
+        "description": "Methodd diweddaru astudiaeth achos. Rhowch gynnig arall arni."
+      },
+      "locked": {
+        "title": "Astudiaeth Achos wedi'i Chloi",
+        "description": "Mae'r astudiaeth achos hon yn cael ei golygu ar hyn o bryd gan {{lockedBy}}."
+      },
+      "cannotSave": {
+        "title": "Methu Cadw",
+        "description": "Mae'r astudiaeth achos hon wedi'i chloi gan ddefnyddiwr arall."
+      },
+      "lockAcquired": {
+        "title": "Clo wedi'i Gaffael",
+        "description": "Gallwch olygu'r astudiaeth achos hon nawr."
+      }
+    }
+  },
+  "dataImport": {
+    "title": "Mewnforio Data o WordPress",
+    "subtitle": "Mewnforio ysgolion, defnyddwyr, a'u perthnasoedd o ffeiliau CSV neu Excel a allforiwyd o'ch cronfa ddata WordPress",
+    "alerts": {
+      "important": {
+        "title": "Pwysig:",
+        "description": "Paratowch dair ffeil ar wahân (fformat CSV neu Excel):",
+        "schools": "Ysgolion - Yn cynnwys gwybodaeth ysgolion (enw, gwlad, math, ac ati)",
+        "users": "Defnyddwyr - Yn cynnwys gwybodaeth athrawon/defnyddwyr (e-bost, enw, ac ati)",
+        "relationships": "Perthnasoedd - Yn cysylltu defnyddwyr ag ysgolion gyda'u rolau",
+        "templateNote": "Lawrlwythwch y templedi isod i weld y fformat colofn angenrheidiol.",
+        "note": "Lawrlwythwch y templedi isod i weld y fformat colofn angenrheidiol."
+      }
+    },
+    "tabs": {
+      "schools": "Ysgolion",
+      "users": "Defnyddwyr",
+      "relationships": "Perthnasoedd"
+    },
+    "fileUpload": {
+      "titles": {
+        "schools": "Ffeil Ysgolion",
+        "users": "Ffeil Defnyddwyr",
+        "relationships": "Ffeil Perthnasoedd Ysgol-Defnyddiwr"
+      },
+      "descriptions": {
+        "schools": "Llwytho ffeil CSV neu Excel yn cynnwys data ysgolion",
+        "users": "Llwytho ffeil CSV neu Excel yn cynnwys data defnyddwyr/athrawon",
+        "relationships": "Llwytho ffeil CSV neu Excel yn cysylltu defnyddwyr ag ysgolion"
+      },
+      "labels": {
+        "clickToUpload": "Cliciwch i lwytho ffeil",
+        "formatNote": "Fformat CSV neu Excel"
+      },
+      "validation": {
+        "success": "Ffeil wedi'i dilysu'n llwyddiannus",
+        "failed": "Dilysu wedi methu",
+        "rowsFound": "Wedi canfod {{rowCount}} rhes gyda {{headerCount}} colofn",
+        "errorsTitle": "Gwallau Dilysu ({{count}}):",
+        "moreErrors": "... a {{count}} gwall arall",
+        "previewTitle": "Rhagolwg (5 rhes gyntaf):"
+      }
+    },
+    "buttons": {
+      "downloadTemplate": "Lawrlwytho Templed",
+      "startImport": "Dechrau Mewnforio",
+      "importAnother": "Mewnforio Ffeil Arall",
+      "viewData": "Gweld Data a Fewnforiwyd"
+    },
+    "status": {
+      "readyToImport": "Barod i fewnforio?",
+      "allFilesUploaded": "Pob ffeil wedi'i llwytho a'i dilysu",
+      "filesUploaded": "{{count}}/3 ffeil wedi'u llwytho",
+      "fixErrors": "Trwsiwch wallau dilysu cyn mewnforio"
+    },
+    "importing": {
+      "title": "Yn Mewnforio Data...",
+      "description": "Gall hyn gymryd ychydig funudau. Peidiwch â chau'r dudalen hon."
+    },
+    "results": {
+      "successTitle": "Mewnforiad wedi'i Gwblhau'n Llwyddiannus",
+      "errorTitle": "Mewnforiad wedi'i Gwblhau gyda Gwallau",
+      "summary": "Crynodeb:",
+      "schoolsImported": "Ysgolion wedi'u mewnforio: {{count}}",
+      "usersImported": "Defnyddwyr wedi'u mewnforio: {{count}}",
+      "relationshipsCreated": "Perthnasoedd wedi'u creu: {{count}}",
+      "errors": "Gwallau:",
+      "errorsCount": "Gwallau ({{count}})",
+      "viewDetails": "Gweld cofnodion manwl",
+      "newUsersCreated": "{{count}} defnyddiwr newydd wedi'u creu",
+      "sections": {
+        "schools": "Ysgolion",
+        "users": "Defnyddwyr",
+        "relationships": "Perthnasoedd"
+      },
+      "tableHeaders": {
+        "row": "Rhes",
+        "field": "Maes",
+        "error": "Gwall"
+      },
+      "stats": {
+        "processed": "Wedi'u prosesu:",
+        "succeeded": "Llwyddodd:",
+        "failed": "Methodd:"
+      }
+    },
+    "toasts": {
+      "fileValidated": {
+        "title": "Ffeil wedi'i Dilysu",
+        "description": "{{rowCount}} rhes wedi'u dilysu'n llwyddiannus"
+      },
+      "validationErrors": {
+        "title": "Gwallau Dilysu wedi'u Canfod",
+        "description": "Wedi canfod {{count}} gwall{{plural}} dilysu yn {{filename}}. Adolygwch a thrwsiwch cyn mewnforio."
+      },
+      "validationFailed": {
+        "title": "Dilysu wedi Methu",
+        "description": "Methodd dosrannu ffeil",
+        "customMessage": "{{message}}"
+      },
+      "noFilesSelected": {
+        "title": "Dim Ffeiliau wedi'u Dewis",
+        "description": "Llwythwch o leiaf un ffeil i'w mewnforio"
+      },
+      "importSuccess": {
+        "title": "Mewnforiad yn Llwyddiannus",
+        "description": "Data wedi'i fewnforio'n llwyddiannus"
+      },
+      "importFailed": {
+        "title": "Mewnforiad wedi Methu",
+        "description": "Methodd mewnforio data",
+        "customMessage": "{{message}}"
+      }
+    }
+  },
+  "evidenceRequirements": {
+    "title": "Gofynion Tystiolaeth",
+    "subtitle": "Rheoli pa fathau o dystiolaeth sy'n ofynnol ar gyfer pob cam",
+    "buttons": {
+      "addRequirement": "Ychwanegu Gofyniad",
+      "edit": "Golygu",
+      "delete": "Dileu",
+      "cancel": "Canslo",
+      "save": "Cadw",
+      "saving": "Yn Cadw..."
+    },
+    "form": {
+      "titles": {
+        "create": "Creu Gofyniad Tystiolaeth Newydd",
+        "edit": "Golygu Gofyniad Tystiolaeth"
+      },
+      "labels": {
+        "stage": "Cam y Rhaglen *",
+        "name": "Enw'r Gofyniad *",
+        "description": "Disgrifiad",
+        "type": "Math o Dystiolaeth *",
+        "required": "Gorfodol?",
+        "helpText": "Testun Cymorth (i ddefnyddwyr)"
+      },
+      "placeholders": {
+        "name": "e.e., Lluniau Arddangosfa Ysbrydoli",
+        "description": "Disgrifiwch pa dystiolaeth sydd ei hangen...",
+        "helpText": "Cynghorion neu ganllawiau defnyddiol ar gyfer yr ysgol..."
+      },
+      "types": {
+        "photo": "Ffotograffau",
+        "video": "Fideos",
+        "document": "Dogfennau",
+        "link": "Dolenni"
+      }
+    },
+    "stages": {
+      "inspire": "Ysbrydoli",
+      "investigate": "Ymchwilio",
+      "act": "Gweithredu"
+    },
+    "badges": {
+      "required": "Gorfodol",
+      "optional": "Dewisol"
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Dileu Gofyniad",
+        "description": "Ydych chi'n siŵr eich bod am ddileu'r gofyniad tystiolaeth hwn? Ni ellir dadwneud y weithred hon."
+      }
+    },
+    "emptyStates": {
+      "noRequirements": "Dim gofynion tystiolaeth wedi'u gosod eto. Ychwanegwch eich gofyniad cyntaf i ddechrau arni."
+    },
+    "table": {
+      "headers": {
+        "order": "Trefn",
+        "name": "Enw",
+        "stage": "Cam",
+        "type": "Math",
+        "status": "Statws",
+        "actions": "Gweithredoedd"
+      }
+    }
+  },
+  "events": {
+    "title": "Rheoli Digwyddiadau",
+    "subtitle": "Creu a rheoli digwyddiadau ar gyfer ysgolion",
+    "buttons": {
+      "createEvent": "Creu Digwyddiad",
+      "edit": "Golygu",
+      "delete": "Dileu",
+      "duplicate": "Dyblygu",
+      "viewPage": "Gweld Tudalen",
+      "cancel": "Canslo",
+      "save": "Cadw",
+      "saving": "Yn Cadw...",
+      "createBanner": "Creu Baner",
+      "editBanner": "Golygu Baner",
+      "deleteBanner": "Dileu Baner",
+      "sendNewsletter": "Anfon Cyhoeddiad",
+      "manageRegistrations": "Rheoli Cofrestriadau"
+    },
+    "form": {
+      "titles": {
+        "create": "Creu Digwyddiad Newydd",
+        "edit": "Golygu Digwyddiad"
+      },
+      "tabs": {
+        "basicInfo": "Gwybodaeth Sylfaenol",
+        "pageContent": "Cynnwys Tudalen",
+        "banners": "Baneri",
+        "registrations": "Cofrestriadau"
+      },
+      "labels": {
+        "title": "Teitl Digwyddiad *",
+        "description": "Disgrifiad Byr",
+        "startDate": "Dyddiad Dechrau *",
+        "endDate": "Dyddiad Gorffen *",
+        "location": "Lleoliad",
+        "eventType": "Math o Ddigwyddiad *",
+        "targetAudience": "Cynulleidfa Darged",
+        "maxParticipants": "Uchafswm Cyfranogwyr",
+        "registrationDeadline": "Dyddiad Cau Cofrestru",
+        "status": "Statws *",
+        "featured": "Digwyddiad Amlwg",
+        "pageContent": "Cynnwys Tudalen Digwyddiad",
+        "language": "Iaith"
+      },
+      "placeholders": {
+        "title": "e.e., Diwrnod Gweithredu Rhyngwladol 2024",
+        "description": "Disgrifiad byr o'r digwyddiad...",
+        "location": "e.e., Ar-lein neu Leoliad Ffisegol",
+        "maxParticipants": "Gadewch yn wag am ddiderfyn",
+        "pageContent": "Ysgrifennwch gynnwys eich tudalen digwyddiad yma..."
+      },
+      "eventTypes": {
+        "workshop": "Gweithdy",
+        "webinar": "Gweminar",
+        "conference": "Cynhadledd",
+        "training": "Hyfforddiant",
+        "actionDay": "Diwrnod Gweithredu",
+        "other": "Arall"
+      },
+      "targetAudiences": {
+        "allSchools": "Pob Ysgol",
+        "primarySchools": "Ysgolion Cynradd",
+        "secondarySchools": "Ysgolion Uwchradd",
+        "teachers": "Athrawon",
+        "students": "Myfyrwyr"
+      },
+      "statuses": {
+        "draft": "Drafft",
+        "published": "Cyhoeddwyd",
+        "cancelled": "Canslwyd",
+        "completed": "Cwblhawyd"
+      }
+    },
+    "filters": {
+      "allStatuses": "Pob Statws",
+      "allTypes": "Pob Math",
+      "search": "Chwilio digwyddiadau..."
+    },
+    "table": {
+      "headers": {
+        "title": "Teitl",
+        "date": "Dyddiad",
+        "type": "Math",
+        "status": "Statws",
+        "registrations": "Cofrestriadau",
+        "actions": "Gweithredoedd"
+      }
+    },
+    "badges": {
+      "featured": "Amlwg",
+      "full": "Llawn"
+    },
+    "banners": {
+      "title": "Baneri Digwyddiadau",
+      "subtitle": "Rheoli baneri hysbysebu ar gyfer y digwyddiad hwn",
+      "noBanners": "Dim baneri eto. Crëwch un i hysbysebu'r digwyddiad hwn.",
+      "active": "Gweithredol",
+      "inactive": "Anweithredol"
+    },
+    "registrations": {
+      "title": "Cofrestriadau Digwyddiadau",
+      "count": "{{count}} o {{max}} cofrestriadau",
+      "countUnlimited": "{{count}} cofrestriad",
+      "table": {
+        "school": "Ysgol",
+        "contact": "Cyswllt",
+        "registeredAt": "Cofrestrwyd",
+        "status": "Statws"
+      },
+      "statuses": {
+        "confirmed": "Cadarnhawyd",
+        "pending": "Ar Aros",
+        "cancelled": "Canslwyd"
+      },
+      "emptyState": "Dim cofrestriadau eto ar gyfer y digwyddiad hwn."
+    },
+    "emptyStates": {
+      "noEvents": "Dim digwyddiadau wedi'u creu eto. Crëwch eich digwyddiad cyntaf i ddechrau arni."
+    },
+    "toasts": {
+      "bannerCreated": {
+        "title": "Baner wedi'i Chreu",
+        "description": "Mae'r faner wedi'i chreu'n llwyddiannus."
+      },
+      "bannerUpdated": {
+        "title": "Baner wedi'i Diweddaru",
+        "description": "Mae'r faner wedi'i diweddaru'n llwyddiannus."
+      },
+      "bannerDeleted": {
+        "title": "Baner wedi'i Dileu",
+        "description": "Mae'r faner wedi'i dileu'n llwyddiannus."
+      },
+      "bannerFailed": {
+        "title": "Gweithred wedi Methu",
+        "description": "Methodd prosesu'r faner. Rhowch gynnig arall arni."
+      },
+      "newsletterSent": {
+        "title": "Cyhoeddiad wedi'i Anfon",
+        "description": "Mae'r e-bost cyhoeddiad wedi'i anfon i {{count}} derbynydd."
+      },
+      "newsletterFailed": {
+        "title": "Anfon wedi Methu",
+        "description": "Methodd anfon y cyhoeddiad. Rhowch gynnig arall arni."
+      },
+      "validationError": {
+        "title": "Gwall Dilysu",
+        "description": "Llenwch yr holl feysydd gofynnol."
+      }
+    },
+    "dialogs": {
+      "deleteEvent": {
+        "title": "Dileu Digwyddiad",
+        "description": "Ydych chi'n siŵr eich bod am ddileu \"{title}\"? Ni ellir dadwneud y weithred hon."
+      },
+      "deleteBanner": {
+        "title": "Dileu Baner",
+        "description": "Ydych chi'n siŵr eich bod am ddileu'r faner hon? Ni ellir dadwneud y weithred hon."
+      },
+      "bannerEditor": {
+        "titleCreate": "Creu Baner",
+        "titleEdit": "Golygu Baner",
+        "labels": {
+          "bannerText": "Testun Baner",
+          "required": "*",
+          "event": "Digwyddiad",
+          "gradient": "Graddiant",
+          "active": "Gweithredol"
+        },
+        "placeholders": {
+          "selectEvent": "Dewis digwyddiad"
+        }
+      },
+      "newsletter": {
+        "title": "Anfon Cyhoeddiad Digwyddiad",
+        "description": "Anfon \"{title}\" drwy e-bost i athrawon.",
+        "labels": {
+          "recipientType": "Math o Dderbynydd",
+          "emailAddresses": "Cyfeiriadau E-bost",
+          "commaSeparated": "(gwahanu â choma)"
+        },
+        "options": {
+          "allTeachers": "Pob Athro ({count} athro)",
+          "customEmailList": "Rhestr E-bost Cwstwm"
+        },
+        "placeholders": {
+          "emailList": "ebost1@example.com, ebost2@example.com"
+        }
+      }
+    },
+    "buttons": {
+      "cancel": "Canslo",
+      "delete": "Dileu",
+      "deleting": "Yn Dileu...",
+      "save": "Cadw",
+      "saving": "Yn Cadw...",
+      "sendAnnouncement": "Anfon Cyhoeddiad",
+      "sending": "Yn Anfon..."
+    }
+  },
+  "reviews": {
+    "filters": {
+      "evidenceReview": "Adolygu Tystiolaeth",
+      "auditReview": "Adolygu Archwiliad",
+      "photoConsent": "Caniatâd Ffotograffau"
+    },
+    "evidence": {
+      "title": "Ciw Adolygu Tystiolaeth",
+      "selected": "{count} wedi'u dewis",
+      "bulkApprove": "Cymeradwyo Swmp",
+      "bulkReject": "Gwrthod Swmp",
+      "delete": "Dileu",
+      "filterAll": "Popeth",
+      "filterPending": "Ar Aros",
+      "filterApproved": "Cymeradwy",
+      "filterRejected": "Gwrthodwyd",
+      "filterByAssignee": "Hidlo yn ôl neilltuydd",
+      "allEvidence": "Pob Tystiolaeth",
+      "unassigned": "Heb ei Neilltuo",
+      "assignedToMe": "Wedi'i Neilltuo i Mi",
+      "selectAll": "Dewis Popeth ({count} eitem)",
+      "allCaughtUp": "Wedi Dal i Fyny!",
+      "noPendingEvidence": "Dim cyflwyniadau tystiolaeth ar aros i'w hadolygu.",
+      "badges": {
+        "public": "Cyhoeddus",
+        "photoApproved": "Ffoto wedi'i Chymeradwyo",
+        "photoPending": "Ffoto ar Aros",
+        "noPhotoConsent": "Dim Caniatâd Ffoto",
+        "new": "NEWYDD"
+      },
+      "labels": {
+        "schoolId": "ID Ysgol:",
+        "submitted": "Cyflwynwyd:",
+        "files": "Ffeiliau:",
+        "assignedTo": "Wedi'i Neilltuo i:"
+      },
+      "buttons": {
+        "approve": "Cymeradwyo",
+        "reject": "Gwrthod",
+        "cancel": "Canslo",
+        "confirm": "Cadarnhau",
+        "processing": "Yn Prosesu..."
+      },
+      "modal": {
+        "approveTitle": "Cymeradwyo Tystiolaeth",
+        "rejectTitle": "Gwrthod Tystiolaeth",
+        "reviewNotes": "Nodiadau Adolygu",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "Adborth dewisol i'r ysgol...",
+        "feedbackRequired": "Darparwch adborth ar pam y cafodd y dystiolaeth hon ei gwrthod..."
+      },
+      "consentWarning": {
+        "title": "Cymeradwyo Heb Ganiatâd Ffotograffau? 📸",
+        "noConsentProvided": "Nid yw'r ysgol hon <strong>wedi darparu caniatâd ffotograffau cymeradwy</strong>.",
+        "statusPending": "Mae eu dogfen caniatâd ffotograffau ar hyn o bryd yn cael ei hadolygu.",
+        "statusRejected": "Cafodd eu dogfen caniatâd ffotograffau ei gwrthod.",
+        "statusMissing": "Nid oes dogfen caniatâd ffotograffau wedi'i llwytho.",
+        "warningMessage": "Mae cymeradwyo'r dystiolaeth hon yn golygu <strong>na fydd yn gymwys</strong> i'w defnyddio mewn astudiaethau achos cyhoeddus na deunyddiau hyrwyddo oni bai bod caniatâd ffotograffau yn cael ei gymeradwyo'n ddiweddarach.",
+        "confirmQuestion": "A ydych am barhau â'r cymeradwyaeth beth bynnag?",
+        "proceedAnyway": "Ie, Parhau Beth Bynnag",
+        "goBack": "Mynd yn Ôl"
+      },
+      "bulkDialog": {
+        "reviewTitle": "Adolygiad Tystiolaeth Swmp",
+        "deleteTitle": "Dileu Tystiolaeth Swmp",
+        "approveDescription": "Rydych chi ar fin cymeradwyo {count} cyflwyniad tystiolaeth. Bydd hyn yn eu gwneud yn weladwy yn ôl eu gosodiadau gwelededd.",
+        "rejectDescription": "Rydych chi ar fin gwrthod {count} cyflwyniad tystiolaeth. Bydd yr ysgolion yn cael eu hysbysu a gallant ailgyflwyno.",
+        "deleteDescription": "Rydych chi ar fin dileu {count} cyflwyniad tystiolaeth yn barhaol. Ni ellir dadwneud y weithred hon.",
+        "notes": "Nodiadau (dewisol ar gyfer cymeradwyaeth, gorfodol ar gyfer gwrthodiad)",
+        "notesPlaceholder": "Rhowch nodiadau i ysgolion...",
+        "confirm": "Cadarnhau",
+        "cancel": "Canslo",
+        "processing": "Yn Prosesu..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "Mae Angen Nodiadau Adolygu",
+        "feedbackRequired": "Darparwch adborth wrth wrthod tystiolaeth."
+      }
+    },
+    "assignment": {
+      "assignTo": "Neilltuo i...",
+      "unassigned": "Heb ei Neilltuo",
+      "toasts": {
+        "success": "Tystiolaeth wedi'i neilltuo'n llwyddiannus",
+        "failed": "Methodd neilltuo tystiolaeth"
+      }
+    },
+    "photoConsent": {
+      "title": "Ciw Adolygu Caniatâd Ffotograffau",
+      "noPending": "Dim Caniatâd Ffotograffau ar Aros",
+      "allReviewed": "Mae'r holl gyflwyniadau caniatâd ffotograffau wedi'u hadolygu!",
+      "viewDocument": "Gweld Dogfen",
+      "buttons": {
+        "approve": "Cymeradwyo",
+        "reject": "Gwrthod"
+      },
+      "confirmApprove": "Cymeradwyo caniatâd ffotograffau ar gyfer {name}?",
+      "rejectionNotes": "Nodiadau gwrthod ar gyfer {name}:",
+      "rejectionRequired": "Mae angen nodiadau gwrthod"
+    },
+    "audit": {
+      "title": "Ciw Adolygu Archwiliad",
+      "noPending": "Dim Archwiliadau ar Aros",
+      "allReviewed": "Mae'r holl archwiliadau wedi'u hadolygu. Gwaith gwych!",
+      "labels": {
+        "submittedBy": "Cyflwynwyd gan:",
+        "totalPlasticItems": "Cyfanswm Eitemau Plastig:"
+      },
+      "parts": {
+        "part1": "Rhan 1: Gwybodaeth yr Ysgol",
+        "part2": "Rhan 2: Ystafell Ginio ac Ystafell Staff",
+        "part3": "Rhan 3: Ystafelloedd Dosbarth ac Ystafelloedd Ymolchi",
+        "part4": "Rhan 4: Rheoli Gwastraff"
+      },
+      "part1": {
+        "schoolName": "Enw'r Ysgol:",
+        "studentCount": "Nifer y Myfyrwyr:",
+        "staffCount": "Nifer y Staff:",
+        "auditDate": "Dyddiad Archwilio:",
+        "auditTeam": "Aelodau Tîm Archwilio:",
+        "noData": "Dim data ar gael"
+      },
+      "part2": {
+        "lunchroom": "Ystafell Ginio",
+        "staffroom": "Ystafell Staff",
+        "plasticBottles": "Poteli Plastig:",
+        "plasticCups": "Cwpanau Plastig:",
+        "plasticCutlery": "Cyllyll a Ffyrc Plastig:",
+        "plasticStraws": "Gwelltyn Plastig:",
+        "foodPackaging": "Pecynnu Bwyd:",
+        "clingFilm": "Ffilm Glynol:",
+        "additionalNotes": "Nodiadau Ychwanegol:",
+        "noData": "Dim data ar gael"
+      },
+      "part3": {
+        "classrooms": "Ystafelloedd Dosbarth",
+        "bathrooms": "Ystafelloedd Ymolchi",
+        "pensPencils": "Pensiliau a Phinnau:",
+        "stationeryItems": "Eitemau Ysgrifenyddiaeth:",
+        "bottlesCups": "Poteli a Chwpanau:",
+        "otherItems": "Eitemau Eraill:",
+        "soapDispensers": "Dosbarthwyr Sebon:",
+        "additionalNotes": "Nodiadau Ychwanegol:",
+        "noData": "Dim data ar gael"
+      },
+      "part4": {
+        "hasRecyclingSystem": "System Ailgylchu:",
+        "recyclingBinLocations": "Lleoliadau Biniau Ailgylchu:",
+        "plasticWasteDestination": "Cyrchfan Gwastraff Plastig:",
+        "compostsOrganicWaste": "Yn Compostio Gwastraff Organig:",
+        "hasPlasticReductionPolicy": "Polisi Lleihau Plastig:",
+        "policyDetails": "Manylion y Polisi:",
+        "additionalNotes": "Nodiadau Ychwanegol:",
+        "yes": "Ie",
+        "no": "Na",
+        "noData": "Dim data ar gael"
+      },
+      "buttons": {
+        "approve": "Cymeradwyo",
+        "reject": "Gwrthod"
+      },
+      "modal": {
+        "approveTitle": "Cymeradwyo Archwiliad",
+        "rejectTitle": "Gwrthod Archwiliad",
+        "reviewNotes": "Nodiadau Adolygu",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "Adborth dewisol i'r ysgol...",
+        "feedbackRequired": "Darparwch adborth ar pam y cafodd yr archwiliad hwn ei wrthod...",
+        "cancel": "Canslo",
+        "confirm": "Cadarnhau",
+        "processing": "Yn Prosesu..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "Mae Angen Nodiadau Adolygu",
+        "feedbackRequired": "Darparwch adborth wrth wrthod archwiliad."
+      }
+    },
+    "toasts": {
+      "success": "Llwyddiant",
+      "evidenceReviewSuccess": "Adolygiad tystiolaeth wedi'i gyflwyno'n llwyddiannus.",
+      "reviewFailed": "Adolygiad wedi Methu",
+      "evidenceReviewFailed": "Methodd diweddaru tystiolaeth. Mae newidiadau wedi'u gwrthdroi.",
+      "auditReviewed": "Archwiliad wedi'i Adolygu",
+      "auditApproved": "Mae'r archwiliad wedi'i gymeradwyo.",
+      "auditRejected": "Mae'r archwiliad wedi'i wrthod.",
+      "auditReviewFailed": "Methodd adolygu archwiliad. Mae newidiadau wedi'u gwrthdroi.",
+      "bulkReviewSuccess": "Adolygiad tystiolaeth swmp wedi'i gwblhau'n llwyddiannus.",
+      "bulkReviewFailed": "Methodd cwblhau adolygiad tystiolaeth swmp. Mae newidiadau wedi'u gwrthdroi.",
+      "bulkDeleteSuccess": "Tystiolaeth a ddewiswyd wedi'i dileu'n llwyddiannus.",
+      "bulkDeleteFailed": "Methodd dileu tystiolaeth. Mae newidiadau wedi'u gwrthdroi."
+    }
   }
 }
