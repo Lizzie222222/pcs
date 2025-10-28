@@ -61,6 +61,7 @@ interface EvidenceReviewQueueProps {
   reviewEvidenceMutation: any;
   bulkEvidenceReviewMutation: any;
   bulkEvidenceDeleteMutation: any;
+  deleteEvidenceMutation: any;
   bulkEvidenceDialogOpen: boolean;
   setBulkEvidenceDialogOpen: (open: boolean) => void;
   bulkAction: {
@@ -89,6 +90,7 @@ export default function EvidenceReviewQueue({
   reviewEvidenceMutation,
   bulkEvidenceReviewMutation,
   bulkEvidenceDeleteMutation,
+  deleteEvidenceMutation,
   bulkEvidenceDialogOpen,
   setBulkEvidenceDialogOpen,
   bulkAction,
@@ -105,6 +107,8 @@ export default function EvidenceReviewQueue({
   const { t } = useTranslation('admin');
   const [consentWarningDialogOpen, setConsentWarningDialogOpen] = useState(false);
   const [pendingApprovalEvidence, setPendingApprovalEvidence] = useState<PendingEvidence | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [evidenceToDelete, setEvidenceToDelete] = useState<string | null>(null);
 
   const { data: admins } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
@@ -474,6 +478,18 @@ export default function EvidenceReviewQueue({
                         <XCircle className="h-4 w-4 mr-1" />
                         {t('reviews.evidence.buttons.reject')}
                       </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => {
+                          setEvidenceToDelete(evidence.id);
+                          setDeleteDialogOpen(true);
+                        }}
+                        data-testid={`button-delete-${evidence.id}`}
+                      >
+                        <Trash2 className="h-4 w-4 mr-1" />
+                        {t('reviews.evidence.buttons.delete')}
+                      </Button>
                     </div>
                   </div>
                 </div>
@@ -681,6 +697,40 @@ export default function EvidenceReviewQueue({
           </div>
         </div>
       )}
+
+      {/* Individual Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent data-testid="dialog-delete-evidence">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Trash2 className="h-5 w-5 text-red-600" />
+              {t('reviews.evidence.deleteDialog.title')}
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('reviews.evidence.deleteDialog.description')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">
+              {t('reviews.evidence.deleteDialog.cancel')}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (evidenceToDelete) {
+                  deleteEvidenceMutation.mutate(evidenceToDelete);
+                  setDeleteDialogOpen(false);
+                  setEvidenceToDelete(null);
+                }
+              }}
+              className="bg-red-600 hover:bg-red-700"
+              data-testid="button-confirm-delete"
+            >
+              {deleteEvidenceMutation.isPending && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
+              {t('reviews.evidence.deleteDialog.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
