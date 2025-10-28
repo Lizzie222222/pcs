@@ -444,7 +444,9 @@ export default function Inspiration() {
     filters.featuredOnly;
 
   const featuredStory = caseStudies?.find(cs => cs.featured);
-  const regularStories = caseStudies?.filter(cs => !cs.featured || cs.id !== featuredStory?.id) || [];
+  const regularStories = filters.featuredOnly 
+    ? (caseStudies || [])
+    : (caseStudies?.filter(cs => cs.id !== featuredStory?.id) || []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-20">
@@ -640,8 +642,8 @@ export default function Inspiration() {
           <div className="mb-6 text-sm text-gray-600 flex items-center justify-between">
             <span data-testid="text-results-count">
               {t('results.showing', { 
-                count: regularStories.length,
-                story: regularStories.length === 1 ? t('results.story') : t('results.stories')
+                count: caseStudies.length,
+                story: caseStudies.length === 1 ? t('results.story') : t('results.stories')
               })}
               {hasActiveFilters && ` ${t('results.filtered')}`}
             </span>
