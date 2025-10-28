@@ -23,7 +23,6 @@ export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
       label: "",
       value: "",
       unit: "",
-      icon: "",
     });
   };
 
@@ -119,25 +118,6 @@ export function ImpactMetricsBuilder({ form }: ImpactMetricsBuilderProps) {
                             {...field}
                             value={field.value || ""}
                             data-testid={`input-metric-unit-${index}`}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name={`impactMetrics.${index}.icon`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t('case_study.metric_icon')}</FormLabel>
-                        <FormControl>
-                          <Input
-                            placeholder={t('case_study.metric_icon_placeholder')}
-                            {...field}
-                            value={field.value || ""}
-                            data-testid={`input-metric-icon-${index}`}
                           />
                         </FormControl>
                         <FormMessage />

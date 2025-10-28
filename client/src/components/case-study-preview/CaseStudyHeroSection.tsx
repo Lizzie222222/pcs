@@ -33,20 +33,14 @@ export function CaseStudyHeroSection({
   showScrollIndicator = true,
 }: CaseStudyHeroSectionProps) {
   return (
-    <div className="relative h-screen overflow-hidden">
-      {heroVideo ? (
-        <div className="absolute inset-0 w-full h-full">
-          <VideoEmbed video={heroVideo} />
-        </div>
-      ) : (
-        <div 
-          className="absolute inset-0 w-full h-full bg-cover bg-center"
-          style={{ 
-            backgroundImage: `url(${heroImage})`,
-            transform: 'translateY(calc(var(--scroll) * 0.5px))',
-          }}
-        />
-      )}
+    <div className="relative h-[500px] max-h-[500px] overflow-hidden">
+      <div 
+        className="absolute inset-0 w-full h-full bg-cover bg-center"
+        style={{ 
+          backgroundImage: `url(${heroImage})`,
+          transform: 'translateY(calc(var(--scroll) * 0.5px))',
+        }}
+      />
       
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
@@ -79,10 +73,12 @@ export function CaseStudyHeroSection({
                 <School className="w-5 h-5" />
                 <span data-testid="text-school-name">{schoolName}</span>
               </div>
-              <div className="flex items-center gap-2">
-                <MapPin className="w-5 h-5" />
-                <span data-testid="text-location">{location}</span>
-              </div>
+              {location && location.trim() !== '' && (
+                <div className="flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  <span data-testid="text-location">{location}</span>
+                </div>
+              )}
               <div className="flex items-center gap-2">
                 <Calendar className="w-5 h-5" />
                 <span data-testid="text-date">

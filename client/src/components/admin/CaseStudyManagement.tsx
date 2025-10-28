@@ -29,6 +29,8 @@ import {
   Calendar,
   MapPin,
   Eye,
+  Lock,
+  Users,
 } from "lucide-react";
 import { CaseStudyEditor } from "@/components/admin/CaseStudyEditor";
 import DocumentLockWarning from "@/components/admin/DocumentLockWarning";
@@ -45,7 +47,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
   const { t } = useTranslation('admin');
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { requestDocumentLock, releaseDocumentLock, getDocumentLock } = useCollaboration();
+  const { requestDocumentLock, releaseDocumentLock, getDocumentLock, getViewersForDocument } = useCollaboration();
   
   // State
   const [caseStudyFilters, setCaseStudyFilters] = useState({
@@ -303,11 +305,39 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
 
           {/* Case Studies List */}
           <div className="space-y-4">
-            {caseStudies?.map((caseStudy: any) => (
-              <Card key={caseStudy.id} className="border-l-4 border-l-pcs_blue">
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
+            {caseStudies?.map((caseStudy: any) => {
+              const viewers = getViewersForDocument(caseStudy.id, 'case_study');
+              const lock = getDocumentLock(caseStudy.id, 'case_study');
+              
+              return (
+                <Card key={caseStudy.id} className="border-l-4 border-l-pcs_blue relative">
+                  <CardContent className="p-4">
+                    {/* Presence Badges - Top Right */}
+                    <div className="absolute top-2 right-2 flex flex-col gap-1">
+                      {lock && (
+                        <Badge 
+                          variant="outline" 
+                          className="bg-red-50 border-red-300 text-red-700 text-xs"
+                          data-testid={`badge-lock-${caseStudy.id}`}
+                        >
+                          <Lock className="h-3 w-3 mr-1" />
+                          Editing: {lock.lockedByName}
+                        </Badge>
+                      )}
+                      {viewers.length > 0 && !lock && (
+                        <Badge 
+                          variant="outline" 
+                          className="bg-blue-50 border-blue-300 text-blue-700 text-xs"
+                          data-testid={`badge-viewers-${caseStudy.id}`}
+                        >
+                          <Users className="h-3 w-3 mr-1" />
+                          Viewing: {viewers.map(v => v.name).join(', ')}
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <h3 className="font-semibold text-navy" data-testid={`case-study-title-${caseStudy.id}`}>
                           {caseStudy.title}
@@ -395,11 +425,12 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
                           <Trash2 className="h-4 w-4" />
                         </Button>
                       </div>
+                      </div>
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              );
+            })}
 
             {caseStudies?.length === 0 && (
               <div className="text-center py-8 text-gray-500" data-testid="no-case-studies">

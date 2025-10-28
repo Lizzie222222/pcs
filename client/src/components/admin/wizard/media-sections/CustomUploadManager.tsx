@@ -6,10 +6,11 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/comp
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Card, CardContent } from "@/components/ui/card";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { Plus, Trash2, Image as ImageIcon, Video, Upload } from "lucide-react";
+import { Plus, Trash2, Image as ImageIcon, Video, Upload, Star } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import type { TemplateConfig } from "../templateConfigurations";
 import type { CaseStudyVideo } from "@shared/schema";
 import type { UploadResult } from "@uppy/core";
@@ -137,8 +138,21 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
       url: "",
       platform: "youtube",
       embedId: "",
+      featured: false,
     };
     appendVideo(newVideo);
+  };
+
+  const handleFeaturedToggle = (index: number, checked: boolean) => {
+    if (checked) {
+      const videos = form.getValues("videos") || [];
+      videos.forEach((_: any, idx: number) => {
+        if (idx !== index) {
+          form.setValue(`videos.${idx}.featured`, false);
+        }
+      });
+    }
+    form.setValue(`videos.${index}.featured`, checked);
   };
 
   const detectVideoPlatform = (url: string, index: number) => {
@@ -306,16 +320,21 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
             </Card>
           ) : (
             <Accordion type="single" collapsible className="w-full">
-              {videoFields.map((field, index) => (
-                <AccordionItem key={field.id} value={`video-${index}`}>
-                  <AccordionTrigger data-testid={`accordion-video-${index}`}>
-                    <div className="flex items-center gap-2">
-                      <Video className="h-4 w-4" />
-                      <span>
-                        {form.watch(`videos.${index}.platform`) || "Video"} {index + 1}
-                      </span>
-                    </div>
-                  </AccordionTrigger>
+              {videoFields.map((field, index) => {
+                const isFeatured = form.watch(`videos.${index}.featured`);
+                return (
+                  <AccordionItem key={field.id} value={`video-${index}`}>
+                    <AccordionTrigger data-testid={`accordion-video-${index}`}>
+                      <div className="flex items-center gap-2">
+                        <Video className="h-4 w-4" />
+                        <span>
+                          {form.watch(`videos.${index}.platform`) || "Video"} {index + 1}
+                        </span>
+                        {isFeatured && (
+                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400 ml-2" />
+                        )}
+                      </div>
+                    </AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-4 pt-4">
                       <FormField
@@ -366,6 +385,25 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
                         )}
                       />
 
+                      <FormField
+                        control={form.control}
+                        name={`videos.${index}.title`}
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Video Title</FormLabel>
+                            <FormControl>
+                              <Input
+                                placeholder="Enter video title (optional)"
+                                {...field}
+                                value={field.value || ""}
+                                data-testid={`input-video-title-${index}`}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
                       {form.watch(`videos.${index}.embedId`) && (
                         <div className="p-2 bg-muted rounded">
                           <p className="text-sm text-muted-foreground">
@@ -373,6 +411,31 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
                           </p>
                         </div>
                       )}
+
+                      <FormField
+                        control={form.control}
+                        name={`videos.${index}.featured`}
+                        render={({ field }) => (
+                          <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                            <div className="space-y-0.5">
+                              <FormLabel className="text-base flex items-center gap-2">
+                                <Star className="h-4 w-4" />
+                                Featured Video
+                              </FormLabel>
+                              <p className="text-sm text-muted-foreground">
+                                Display this video prominently in the videos section
+                              </p>
+                            </div>
+                            <FormControl>
+                              <Switch
+                                checked={field.value || false}
+                                onCheckedChange={(checked) => handleFeaturedToggle(index, checked)}
+                                data-testid={`switch-video-featured-${index}`}
+                              />
+                            </FormControl>
+                          </FormItem>
+                        )}
+                      />
 
                       <Button
                         type="button"
@@ -387,7 +450,8 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
                     </div>
                   </AccordionContent>
                 </AccordionItem>
-              ))}
+                );
+              })}
             </Accordion>
           )}
         </div>

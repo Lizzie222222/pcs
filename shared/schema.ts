@@ -1536,6 +1536,7 @@ export const caseStudyVideoSchema = z.object({
   title: z.string().optional(),
   platform: z.enum(['youtube', 'vimeo', 'other']).optional(),
   embedId: z.string().optional(),
+  featured: z.boolean().optional(),
 });
 
 export const studentQuoteSchema = z.object({
@@ -1550,7 +1551,6 @@ export const impactMetricSchema = z.object({
   label: z.string(),
   value: z.union([z.string(), z.number()]),
   unit: z.string().optional(),
-  icon: z.string().optional(),
 });
 
 export const timelineSectionSchema = z.object({

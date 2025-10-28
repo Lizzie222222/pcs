@@ -10,7 +10,7 @@ export function CaseStudyLegacyImpactSection({
   impact, 
   showIfMetricsExist = false 
 }: CaseStudyLegacyImpactSectionProps) {
-  if (!impact || showIfMetricsExist) return null;
+  if (!impact) return null;
 
   return (
     <Card className="mb-16 bg-gradient-to-br from-ocean-blue/5 to-teal/5 border-ocean-blue/20 scroll-reveal">
