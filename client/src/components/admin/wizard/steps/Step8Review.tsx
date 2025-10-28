@@ -277,28 +277,28 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
         </div>
       )}
 
-      {/* Validation Errors */}
+      {/* Validation Errors - More Prominent */}
       {validationErrors.length > 0 && (
-        <Alert variant="destructive" data-testid="alert-validation-errors">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Please address these issues:</AlertTitle>
+        <Alert variant="destructive" className="border-2" data-testid="alert-validation-errors">
+          <AlertCircle className="h-5 w-5" />
+          <AlertTitle className="text-lg">Cannot Publish Yet - Please Fix These Issues:</AlertTitle>
           <AlertDescription>
-            <ul className="mt-2 space-y-3">
+            <ul className="mt-3 space-y-4">
               {validationErrors.map((error, idx) => (
-                <li key={idx} className="flex items-start gap-2" data-testid={`error-item-${idx}`}>
-                  <span className="mt-0.5">•</span>
+                <li key={idx} className="flex items-start gap-3 p-3 bg-destructive/10 rounded-md" data-testid={`error-item-${idx}`}>
+                  <AlertCircle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                   <div className="flex-1">
-                    <p className="font-medium">{error.field}</p>
-                    <p className="text-sm">{error.message}</p>
+                    <p className="font-semibold text-base">{error.field}</p>
+                    <p className="text-sm mt-1">{error.message}</p>
                     {error.stepLink && onStepChange && (
                       <Button
-                        variant="link"
+                        variant="outline"
                         size="sm"
-                        className="h-auto p-0 text-xs mt-1"
+                        className="mt-2 h-8"
                         onClick={() => onStepChange(error.stepLink!)}
                         data-testid={`button-go-to-step-${error.stepLink}`}
                       >
-                        Go to {error.stepName} <ArrowRight className="h-3 w-3 ml-1" />
+                        Fix in {error.stepName} <ArrowRight className="h-4 w-4 ml-1" />
                       </Button>
                     )}
                   </div>
@@ -310,17 +310,34 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
       )}
       
       {/* Requirements Checklist */}
-      <Alert variant={isReadyToPublish ? "default" : "destructive"} data-testid="alert-requirements-checklist">
-        <AlertCircle className="h-4 w-4" />
-        <AlertTitle>Template Requirements</AlertTitle>
+      <Alert variant={isReadyToPublish ? "default" : "destructive"} className="border-2" data-testid="alert-requirements-checklist">
+        {isReadyToPublish ? (
+          <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400" />
+        ) : (
+          <AlertCircle className="h-5 w-5" />
+        )}
+        <AlertTitle className="text-lg">
+          {isReadyToPublish ? "✓ Ready to Publish!" : "Publishing Checklist"}
+        </AlertTitle>
         <AlertDescription>
-          <div className="mt-2 mb-3">
-            <p className="text-sm">
-              {isReadyToPublish 
-                ? "✓ All requirements met! Your case study is ready to publish." 
-                : `${passedChecks} of ${totalChecks} requirements met`
-              }
-            </p>
+          <div className="mt-2 mb-4">
+            {isReadyToPublish ? (
+              <p className="text-sm font-medium text-green-800 dark:text-green-200">
+                All requirements met! Your case study is ready to publish.
+              </p>
+            ) : (
+              <>
+                <p className="text-sm font-medium mb-2">
+                  Progress: {passedChecks} of {totalChecks} requirements completed
+                </p>
+                <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                  <div 
+                    className="bg-primary h-2 rounded-full transition-all" 
+                    style={{ width: `${(passedChecks / totalChecks) * 100}%` }}
+                  />
+                </div>
+              </>
+            )}
           </div>
           <ul className="space-y-2">
             <RequirementItem 
