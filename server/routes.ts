@@ -1062,12 +1062,24 @@ Return JSON with:
         }
       }
       
+      // Get evidence data if evidenceId is present
+      let evidenceLink: string | null = null;
+      let evidenceFiles: any[] | null = null;
+      if (caseStudy.evidenceId) {
+        const evidence = await storage.getEvidenceById(caseStudy.evidenceId);
+        if (evidence) {
+          evidenceLink = evidence.videoLinks || null;
+          evidenceFiles = (evidence.files as any) || null;
+        }
+      }
+      
       // Transform the response to match the expected frontend interface
       const transformedCaseStudy = {
         ...caseStudy,
         location: caseStudy.schoolCountry || '', // Map schoolCountry to location
         createdByName, // Add creator name
-        evidenceLink: caseStudy.evidenceLink || null, // Ensure null instead of undefined
+        evidenceLink, // From evidence table
+        evidenceFiles, // From evidence table
       };
       
       res.json(transformedCaseStudy);
@@ -9478,7 +9490,13 @@ Return JSON with:
 
   // Server-side meta tag injection for case study pages
   // This route MUST be before Vite/SPA catch-all to intercept case study requests
+  // ONLY enabled in production - in development, Vite needs to transform the HTML
   app.get('/case-study/:id', async (req: any, res, next) => {
+    // In development, skip meta tag injection and let Vite handle the request
+    if (process.env.NODE_ENV === 'development') {
+      return next();
+    }
+    
     try {
       const { id } = req.params;
       
