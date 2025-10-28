@@ -269,38 +269,42 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
   });
 
   return (
-    <div className="space-y-6" data-refactor-source="AnalyticsContent">
+    <div className="space-y-4 sm:space-y-6" data-refactor-source="AnalyticsContent">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h2 className="text-2xl font-bold text-navy">Analytics Dashboard</h2>
-          <p className="text-gray-600 mt-1">Comprehensive insights and metrics for Plastic Clever Schools</p>
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 sm:gap-4">
+        <div className="min-w-0">
+          <h2 className="text-xl sm:text-2xl font-bold text-navy">Analytics Dashboard</h2>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Comprehensive insights and metrics for Plastic Clever Schools</p>
         </div>
         
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-shrink-0">
           <Button
             variant="outline"
             onClick={() => exportAnalytics('csv')}
             data-testid="button-export-csv"
+            className="min-h-11 text-xs sm:text-sm px-3 sm:px-4"
           >
-            <Download className="w-4 h-4 mr-2" />
-            Export CSV
+            <Download className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Export CSV</span>
+            <span className="sm:hidden">CSV</span>
           </Button>
           <Button
             variant="outline"
             onClick={() => exportAnalytics('excel')}
             data-testid="button-export-excel"
+            className="min-h-11 text-xs sm:text-sm px-3 sm:px-4"
           >
-            <Download className="w-4 h-4 mr-2" />
-            Export Excel
+            <Download className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Export Excel</span>
+            <span className="sm:hidden">Excel</span>
           </Button>
         </div>
       </div>
 
       {/* Date Range Picker and PDF Export */}
-      <div className="bg-white border border-gray-200 rounded-lg p-4 space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex-1">
+      <div className="bg-white border border-gray-200 rounded-lg p-3 sm:p-4 space-y-3 sm:space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+          <div className="flex-1 min-w-0">
             <DateRangePicker
               value={dateRange}
               onChange={setDateRange}
@@ -308,16 +312,17 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
             />
           </div>
           
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2 sm:gap-4 flex-shrink-0">
             <Dialog open={showExportDialog} onOpenChange={setShowExportDialog}>
               <DialogTrigger asChild>
                 <Button
                   disabled={!dateRange?.from || !dateRange?.to}
                   data-testid="button-export-pdf"
-                  className="bg-pcs_blue hover:bg-pcs_navy"
+                  className="bg-pcs_blue hover:bg-pcs_navy min-h-11 text-xs sm:text-sm whitespace-nowrap px-3 sm:px-4"
                 >
-                  <Download className="w-4 h-4 mr-2" />
-                  Export PDF Report
+                  <Download className="w-4 h-4 sm:mr-2" />
+                  <span className="hidden sm:inline">Export PDF Report</span>
+                  <span className="sm:hidden">PDF</span>
                 </Button>
               </DialogTrigger>
               <DialogContent className="sm:max-w-[500px]" data-testid="dialog-export-pdf">

@@ -589,7 +589,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Welcome Banner */}
         {showWelcomeBanner && (
           <Alert 
@@ -644,24 +644,25 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
         )}
 
         {/* Header */}
-        <Card className="mb-8">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold text-navy" data-testid="text-admin-title">
+        <Card className="mb-4 sm:mb-6 lg:mb-8">
+          <CardContent className="p-3 sm:p-4 lg:p-6">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
+              <div className="min-w-0">
+                <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-navy truncate" data-testid="text-admin-title">
                   {t('header.title')}
                 </h1>
-                <p className="text-gray-600 mt-1">
+                <p className="text-sm sm:text-base text-gray-600 mt-1">
                   {t('header.subtitle')}
                 </p>
               </div>
-              <div className="flex gap-4">
+              <div className="flex gap-2 sm:gap-4 flex-shrink-0">
                 {!isPartner && (
                   <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
                     <DialogTrigger asChild>
-                      <Button variant="outline" data-testid="button-export-data">
-                        <Download className="h-4 w-4 mr-2" />
-                        {t('export.buttonLabel')}
+                      <Button variant="outline" className="min-h-11 text-xs sm:text-sm px-3 sm:px-4" data-testid="button-export-data">
+                        <Download className="h-4 w-4 sm:mr-2" />
+                        <span className="hidden sm:inline">{t('export.buttonLabel')}</span>
+                        <span className="sm:hidden">Export</span>
                       </Button>
                     </DialogTrigger>
                   <DialogContent>
@@ -718,10 +719,10 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
         </Card>
 
         {/* Navigation Tabs - Two Tier Structure */}
-        <div className="flex space-x-1 bg-gray-200 p-1 rounded-lg mb-8">
+        <div className="flex overflow-x-auto space-x-1 bg-gray-200 p-1 rounded-lg mb-4 sm:mb-6 lg:mb-8 scrollbar-hide -mx-2 px-2 sm:mx-0">
           {/* Dashboard - No dropdown */}
           <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-3 sm:py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 min-h-11 ${
               activeTab === 'overview' 
                 ? 'bg-white text-navy shadow-sm' 
                 : 'text-gray-600 hover:text-navy'
@@ -736,7 +737,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 ${
+                className={`px-3 sm:px-4 py-3 sm:py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0 min-h-11 ${
                   ['schools', 'teams', 'users', 'activity', 'data-import'].includes(activeTab)
                     ? 'bg-white text-navy shadow-sm' 
                     : 'text-gray-600 hover:text-navy'
@@ -747,7 +748,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 <ChevronDown className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent align="start" className="max-w-[calc(100vw-2rem)]">
               <DropdownMenuItem 
                 onClick={() => setActiveTab('schools')}
                 className={activeTab === 'schools' ? 'bg-gray-100 font-medium' : ''}
@@ -791,7 +792,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 ${
+                className={`px-3 sm:px-4 py-3 sm:py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0 min-h-11 ${
                   ['resources', 'resource-packs', 'case-studies', 'events', 'media-library'].includes(activeTab)
                     ? 'bg-white text-navy shadow-sm' 
                     : 'text-gray-600 hover:text-navy'
@@ -802,7 +803,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 <ChevronDown className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent align="start" className="max-w-[calc(100vw-2rem)]">
               <DropdownMenuItem 
                 onClick={() => setActiveTab('resources')}
                 className={activeTab === 'resources' ? 'bg-gray-100 font-medium' : ''}
@@ -844,7 +845,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
           {/* Review Queue - Top Level Tab */}
           <button
             onClick={() => setActiveTab('reviews')}
-            className={`px-4 py-2 rounded-md font-medium transition-colors relative ${
+            className={`px-3 sm:px-4 py-3 sm:py-2 rounded-md text-sm font-medium transition-colors relative whitespace-nowrap flex-shrink-0 min-h-11 ${
               activeTab === 'reviews' 
                 ? 'bg-white text-navy shadow-sm' 
                 : 'text-gray-600 hover:text-navy'
@@ -854,7 +855,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
             {t('tabs.reviewQueue')}
             {((stats && stats.pendingEvidence > 0) || pendingAudits.length > 0 || pendingPhotoConsent.length > 0) && (
               <span 
-                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center"
+                className="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center"
                 data-testid="badge-reviews-count"
               >
                 {(stats?.pendingEvidence || 0) + pendingAudits.length + pendingPhotoConsent.length}
@@ -866,7 +867,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <button
-                className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-1 relative ${
+                className={`px-3 sm:px-4 py-3 sm:py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 relative whitespace-nowrap flex-shrink-0 min-h-11 ${
                   ['evidence-requirements', 'printable-forms'].includes(activeTab)
                     ? 'bg-white text-navy shadow-sm' 
                     : 'text-gray-600 hover:text-navy'
@@ -877,7 +878,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 <ChevronDown className="h-4 w-4" />
               </button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="start">
+            <DropdownMenuContent align="start" className="max-w-[calc(100vw-2rem)]">
               <DropdownMenuItem 
                 onClick={() => setActiveTab('evidence-requirements')}
                 className={activeTab === 'evidence-requirements' ? 'bg-gray-100 font-medium' : ''}
@@ -897,7 +898,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
 
           {/* Communications - No dropdown */}
           <button
-            className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+            className={`px-3 sm:px-4 py-3 sm:py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 min-h-11 ${
               activeTab === 'email-test' 
                 ? 'bg-white text-navy shadow-sm' 
                 : 'text-gray-600 hover:text-navy'

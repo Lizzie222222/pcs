@@ -45,6 +45,7 @@ export default function CollaborationSidebar() {
   const { user } = useAuth();
   const { connectionState, onlineUsers } = useCollaboration();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
 
   const sortedUsers = useMemo(() => {
     return [...onlineUsers].sort((a, b) => {
@@ -63,7 +64,7 @@ export default function CollaborationSidebar() {
 
   if (isCollapsed) {
     return (
-      <div className="fixed right-0 top-20 z-40 bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 rounded-l-lg">
+      <div className="hidden lg:block fixed right-0 top-20 z-40 bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 rounded-l-lg">
         <Button
           variant="ghost"
           size="sm"
@@ -88,28 +89,69 @@ export default function CollaborationSidebar() {
   }
 
   return (
-    <div className="fixed right-0 top-20 z-40 w-80 bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 rounded-l-lg max-h-[calc(100vh-6rem)] flex flex-col">
-      <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
+    <>
+      {/* Mobile toggle button */}
+      <Button
+        variant="default"
+        size="sm"
+        className="lg:hidden fixed bottom-4 right-4 z-50 rounded-full w-12 h-12 p-0 shadow-lg"
+        onClick={() => setIsMobileOpen(!isMobileOpen)}
+        data-testid="button-toggle-mobile-sidebar"
+      >
+        <Users className="h-5 w-5" />
+        {onlineUsers.length > 0 && (
+          <span className="absolute -top-1 -right-1 bg-green-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+            {onlineUsers.length}
+          </span>
+        )}
+      </Button>
+
+      {/* Mobile overlay */}
+      {isMobileOpen && (
+        <div 
+          className="lg:hidden fixed inset-0 bg-black/50 z-40"
+          onClick={() => setIsMobileOpen(false)}
+          data-testid="mobile-sidebar-overlay"
+        />
+      )}
+
+      {/* Sidebar */}
+      <div className={`fixed right-0 top-0 lg:top-20 z-50 lg:z-40 w-full sm:w-80 md:w-72 lg:w-64 xl:w-80 bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 lg:rounded-l-lg h-screen lg:max-h-[calc(100vh-6rem)] flex flex-col transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
+        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-          <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+          <h3 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-gray-100">
             Online Admins
           </h3>
           <Badge variant="secondary" data-testid="badge-online-count">
             {onlineUsers.length}
           </Badge>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setIsCollapsed(true)}
-          data-testid="button-collapse-sidebar"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </Button>
-      </div>
+        <div className="flex gap-1">
+          {/* Mobile close button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsMobileOpen(false)}
+            className="lg:hidden"
+            data-testid="button-close-mobile-sidebar"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+          {/* Desktop collapse button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsCollapsed(true)}
+            className="hidden lg:inline-flex"
+            data-testid="button-collapse-sidebar"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </Button>
+        </div>
+        </div>
 
-      <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto">
         <div className="p-2">
           {connectionState === 'connecting' && (
             <div className="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
@@ -181,10 +223,10 @@ export default function CollaborationSidebar() {
               </div>
             );
           })}
+          </div>
         </div>
-      </div>
 
-      <div className="p-3 border-t border-gray-200 dark:border-gray-700">
+        <div className="p-3 border-t border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400">
           <div className={`w-2 h-2 rounded-full ${
             connectionState === 'connected' ? 'bg-green-500' : 
@@ -197,7 +239,8 @@ export default function CollaborationSidebar() {
              'Disconnected'}
           </span>
         </div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
