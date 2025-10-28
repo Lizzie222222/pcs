@@ -1053,7 +1053,24 @@ Return JSON with:
         return res.status(404).json({ message: "Case study not found" });
       }
       
-      res.json(caseStudy);
+      // Get creator name
+      let createdByName = 'Unknown';
+      if (caseStudy.createdBy) {
+        const creator = await storage.getUser(caseStudy.createdBy);
+        if (creator) {
+          createdByName = `${creator.firstName || ''} ${creator.lastName || ''}`.trim() || creator.email || 'Unknown';
+        }
+      }
+      
+      // Transform the response to match the expected frontend interface
+      const transformedCaseStudy = {
+        ...caseStudy,
+        location: caseStudy.schoolCountry || '', // Map schoolCountry to location
+        createdByName, // Add creator name
+        evidenceLink: caseStudy.evidenceLink || null, // Ensure null instead of undefined
+      };
+      
+      res.json(transformedCaseStudy);
     } catch (error) {
       console.error("Error fetching case study:", error);
       res.status(500).json({ message: "Failed to fetch case study" });
