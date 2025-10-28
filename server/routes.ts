@@ -5258,8 +5258,20 @@ Return JSON with:
   // Get all users with their school associations for admin management
   app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const usersWithSchools = await storage.getAllUsersWithSchools();
-      res.json(usersWithSchools);
+      const { role } = req.query;
+      
+      // If filtering by role=admin, return just admin users (not the full structure)
+      if (role === 'admin') {
+        const usersWithSchools = await storage.getAllUsersWithSchools();
+        const adminUsers = usersWithSchools
+          .filter(({ user }) => user.isAdmin)
+          .map(({ user }) => user);
+        res.json(adminUsers);
+      } else {
+        // Otherwise return full structure with schools for admin management
+        const usersWithSchools = await storage.getAllUsersWithSchools();
+        res.json(usersWithSchools);
+      }
     } catch (error) {
       console.error("Error fetching users with schools:", error);
       res.status(500).json({ message: "Failed to fetch users" });
