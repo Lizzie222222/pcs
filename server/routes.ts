@@ -884,11 +884,12 @@ Return JSON with:
       const shouldFetchCaseStudies = !contentType || contentType === 'all' || contentType === 'case-study';
       const shouldFetchEvidence = !contentType || contentType === 'all' || contentType === 'evidence';
       
-      // When fetching both types (contentType='all'), fetch extra to ensure we have enough after sorting
-      // Fetch enough items to cover the requested page plus buffer for proper sorting
+      // When fetching both types (contentType='all'), fetch a reasonable buffer
+      // Use a constant buffer multiplier to prevent exponential growth on subsequent pages
       const isMixedContent = contentType === 'all' || !contentType;
+      const bufferMultiplier = 2; // Fetch 2x the requested page to ensure enough after sorting
       const fetchLimit = isMixedContent 
-        ? (requestedOffset + requestedLimit) * 2  // Fetch enough to reach the requested page with buffer
+        ? (requestedOffset + requestedLimit) + (requestedLimit * bufferMultiplier)
         : requestedLimit;
       const fetchOffset = isMixedContent 
         ? 0  // Always start from beginning when mixing to ensure correct sorting
@@ -5040,12 +5041,27 @@ Return JSON with:
     }
   });
 
+  // Helper function to synchronize imageUrl with images array
+  function syncImageUrl(data: any): any {
+    // If images array exists and has items, ensure imageUrl is set to first image
+    if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+      const firstImageUrl = data.images[0].url;
+      if (firstImageUrl && !data.imageUrl) {
+        data.imageUrl = firstImageUrl;
+      }
+    }
+    return data;
+  }
+
   // Create new case study
   app.post('/api/admin/case-studies', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const validatedData = insertCaseStudySchema.parse(req.body);
       
-      const caseStudy = await storage.createCaseStudy(validatedData);
+      // Sync imageUrl with images array
+      const dataWithSyncedImage = syncImageUrl(validatedData);
+      
+      const caseStudy = await storage.createCaseStudy(dataWithSyncedImage);
       
       // Log audit action
       await logAuditAction(req.user.id, 'created', 'case_study', caseStudy.id);
@@ -5068,10 +5084,13 @@ Return JSON with:
     try {
       const validatedData = insertCaseStudySchema.partial().parse(req.body);
       
+      // Sync imageUrl with images array
+      const dataWithSyncedImage = syncImageUrl(validatedData);
+      
       // Get original case study to check if status is changing to published
       const originalCaseStudy = await storage.getCaseStudyById(req.params.id);
       
-      const caseStudy = await storage.updateCaseStudy(req.params.id, validatedData);
+      const caseStudy = await storage.updateCaseStudy(req.params.id, dataWithSyncedImage);
       
       if (!caseStudy) {
         return res.status(404).json({ message: "Case study not found" });
