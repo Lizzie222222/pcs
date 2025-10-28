@@ -1005,6 +1005,7 @@
         "oilSaved": "Oil Saved",
         "wastePrevented": "Waste Prevented",
         "loading": "Loading reduction metrics...",
+        "loadingError": "Failed to load reduction metrics. Please try again.",
         "noPromises": "No reduction promises have been created yet for this school."
       },
       "photoConsent": {
