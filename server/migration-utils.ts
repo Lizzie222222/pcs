@@ -49,7 +49,7 @@ export class MigrationUtils {
         relax_column_count: true,
         trim: true,
       });
-      return records;
+      return records as CSVUserRow[];
     } catch (error) {
       throw new Error(`Failed to parse CSV: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
@@ -64,10 +64,8 @@ export class MigrationUtils {
       return { isValid: false, reason: 'Invalid email (ends with .invalid)' };
     }
 
-    if (!row.stage_1 || row.stage_1.trim() === '' || row.stage_1 === 'a:0:{}') {
-      return { isValid: false, reason: 'No stage_1 data' };
-    }
-
+    // Lenient mode: Accept all users even without stage_1 data
+    // They'll be set to "inspire" stage if they have no progression
     return { isValid: true };
   }
 
