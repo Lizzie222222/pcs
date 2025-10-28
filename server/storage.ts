@@ -189,6 +189,8 @@ export interface IStorage {
     country?: string;
     stage?: string;
     type?: string;
+    showOnMap?: boolean;
+    lastActiveDays?: number;
     limit?: number;
     offset?: number;
   }): Promise<School[]>;
@@ -1349,6 +1351,7 @@ export class DatabaseStorage implements IStorage {
     type?: string;
     showOnMap?: boolean;
     language?: string;
+    lastActiveDays?: number;
     limit?: number;
     offset?: number;
   } = {}): Promise<Array<School & { primaryContactEmail: string | null; primaryContactFirstName: string | null; primaryContactLastName: string | null }>> {
@@ -1378,6 +1381,11 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.language && filters.language !== 'all') {
       conditions.push(eq(schools.primaryLanguage, filters.language));
+    }
+    if (filters.lastActiveDays) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - filters.lastActiveDays);
+      conditions.push(gte(schools.lastActiveAt, cutoffDate));
     }
     
     let query = db

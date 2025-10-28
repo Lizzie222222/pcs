@@ -1204,11 +1204,11 @@ Return JSON with:
     }
   });
 
-  // Get schools for map (cached for 15 minutes, per country)
+  // Get schools for map (cached for 15 minutes, per country and activity filter)
   app.get('/api/schools/map', async (req, res) => {
     try {
-      const { country } = req.query;
-      const cacheKey = `schools-map-${country || 'all'}`;
+      const { country, lastActiveDays } = req.query;
+      const cacheKey = `schools-map-${country || 'all'}-${lastActiveDays || 'all'}`;
       const cached = apiCache.get(cacheKey);
       
       if (cached) {
@@ -1218,6 +1218,7 @@ Return JSON with:
       const schools = await storage.getSchools({
         country: country as string,
         showOnMap: true, // Only show schools that have consented to be on the map
+        lastActiveDays: lastActiveDays ? parseInt(lastActiveDays as string) : undefined,
         limit: 1000, // Large limit for map display
       });
       

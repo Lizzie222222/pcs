@@ -74,6 +74,7 @@ interface SchoolMapData {
 
 export default function SchoolsMap() {
   const [selectedCountry, setSelectedCountry] = useState('');
+  const [selectedLastActiveDays, setSelectedLastActiveDays] = useState('');
 
   // Handle country selection with "all" conversion
   const handleCountryChange = (value: string) => {
@@ -82,14 +83,21 @@ export default function SchoolsMap() {
     setSelectedCountry(actualValue);
   };
 
+  const handleLastActiveChange = (value: string) => {
+    setSelectedLastActiveDays(value === 'all' ? '' : value);
+  };
+
   const { data: countryOptions = [], isLoading: isLoadingCountries } = useCountries();
 
   const { data: schools, isLoading } = useQuery<SchoolMapData[]>({
-    queryKey: ['/api/schools/map', selectedCountry],
+    queryKey: ['/api/schools/map', selectedCountry, selectedLastActiveDays],
     queryFn: async () => {
       const params = new URLSearchParams();
       if (selectedCountry) {
         params.set('country', selectedCountry);
+      }
+      if (selectedLastActiveDays) {
+        params.set('lastActiveDays', selectedLastActiveDays);
       }
       
       const response = await fetch(`/api/schools/map?${params}`);
@@ -175,6 +183,18 @@ export default function SchoolsMap() {
                         {option.label}
                       </SelectItem>
                     ))}
+                  </SelectContent>
+                </Select>
+                <Select value={selectedLastActiveDays || 'all'} onValueChange={handleLastActiveChange}>
+                  <SelectTrigger className="w-48" data-testid="select-last-active-filter">
+                    <SelectValue placeholder="All Time" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Time</SelectItem>
+                    <SelectItem value="30">Last 30 Days</SelectItem>
+                    <SelectItem value="90">Last 90 Days</SelectItem>
+                    <SelectItem value="180">Last 6 Months</SelectItem>
+                    <SelectItem value="365">Last Year</SelectItem>
                   </SelectContent>
                 </Select>
                 <Button variant="outline" data-testid="button-export-data">

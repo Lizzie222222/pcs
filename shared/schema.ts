@@ -231,6 +231,7 @@ export const schools = pgTable("schools", {
   isMigrated: boolean("is_migrated").default(false),
   legacyDistrict: varchar("legacy_district"),
   migratedAt: timestamp("migrated_at"),
+  lastActiveAt: timestamp("last_active_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
