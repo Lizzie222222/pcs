@@ -49,12 +49,13 @@ export function transformFormToPreview(
     beforeImage: formData.beforeImage || '',
     afterImage: formData.afterImage || '',
     
-    // Include student quotes
-    studentQuotes: formData.studentQuotes?.map((quote: any) => ({
-      quote: quote.quote || quote.text || '',
-      studentName: quote.studentName || quote.name || '',
-      studentAge: quote.studentAge || quote.age,
-      studentRole: quote.studentRole || quote.role || ''
+    // Include student quotes - filter out empty quotes
+    studentQuotes: formData.studentQuotes?.filter((quote: any) => quote.text && quote.name).map((quote: any) => ({
+      text: quote.text || '',
+      name: quote.name || '',
+      age: quote.age,
+      role: quote.role || '',
+      photo: quote.photo || undefined
     })) || [],
     
     // Include impact metrics

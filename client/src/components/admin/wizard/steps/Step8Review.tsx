@@ -112,8 +112,9 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
   const imageCount = formValues.images?.length || 0;
   const videoCount = formValues.videos?.length || 0;
   
-  // Check if enhancements exist
-  const hasQuotes = (formValues.studentQuotes?.length || 0) > 0;
+  // Check if enhancements exist - filter out empty quotes
+  const validQuotes = formValues.studentQuotes?.filter((quote: any) => quote.text && quote.name) || [];
+  const hasQuotes = validQuotes.length > 0;
   const hasMetrics = (formValues.impactMetrics?.length || 0) > 0;
   const hasTimeline = (formValues.timelineSections?.length || 0) > 0;
   const hasEnhancements = hasQuotes || hasMetrics || hasTimeline;
@@ -603,7 +604,7 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
                   <div>
                     <p className="text-sm font-medium text-muted-foreground mb-2">Student Quotes:</p>
                     <div className="space-y-2">
-                      {formValues.studentQuotes?.filter((quote: any) => quote.text && quote.name).slice(0, 2).map((quote: any, idx: number) => (
+                      {validQuotes.slice(0, 2).map((quote: any, idx: number) => (
                         <div 
                           key={idx} 
                           className="p-3 bg-muted/50 rounded-lg text-sm"
@@ -614,9 +615,9 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
                         </div>
                       ))}
                     </div>
-                    {(formValues.studentQuotes?.filter((quote: any) => quote.text && quote.name).length || 0) > 2 && (
+                    {validQuotes.length > 2 && (
                       <p className="text-xs text-muted-foreground mt-2">
-                        + {formValues.studentQuotes.filter((quote: any) => quote.text && quote.name).length - 2} more quote(s)
+                        + {validQuotes.length - 2} more quote(s)
                       </p>
                     )}
                   </div>
