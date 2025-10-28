@@ -1,88 +1,476 @@
 {
+  "tabs": {
+    "dashboard": "لوحة التحكم",
+    "schools": "المدارس",
+    "content": "المحتوى",
+    "reviewQueue": "قائمة المراجعة",
+    "program": "البرنامج",
+    "communications": "الاتصالات"
+  },
   "navigation": {
     "overview": "نظرة عامة",
     "analytics": "التحليلات",
     "evidence": "مراجعة الأدلة",
     "resources": "إدارة الموارد",
     "schools": "إدارة المدارس",
-    "admin_panel": "لوحة الإدارة"
+    "admin_panel": "لوحة الإدارة",
+    "manageSchools": "إدارة المدارس",
+    "manageTeams": "إدارة الفرق",
+    "userManagement": "إدارة المستخدمين",
+    "userActivity": "نشاط المستخدمين",
+    "importData": "استيراد البيانات",
+    "manageResources": "إدارة الموارد",
+    "manageResourcePacks": "إدارة حزم الموارد",
+    "createCaseStudies": "إنشاء دراسات الحالة",
+    "manageEvents": "إدارة الفعاليات",
+    "evidenceGallery": "معرض الأدلة",
+    "setEvidenceRequirements": "تحديد متطلبات الأدلة",
+    "reviewPrintableForms": "مراجعة النماذج القابلة للطباعة"
+  },
+  "header": {
+    "title": "لوحة تحكم الإدارة",
+    "subtitle": "إدارة المدارس ومراجعة الأدلة ومراقبة تقدم البرنامج"
+  },
+  "welcomeBanner": {
+    "title": "أنت محظوظ!",
+    "greeting": "مرحباً بك في فريق إدارة المدارس الذكية للبلاستيك!",
+    "description": "لديك الآن وصول كامل لإدارة البرنامج ومراجعة الأدلة المقدمة ونشر دراسات الحالة ومساعدة المدارس في رحلتها لتقليل النفايات البلاستيكية."
+  },
+  "export": {
+    "title": "تصدير البيانات",
+    "buttonLabel": "تصدير البيانات",
+    "description": "اختر التنسيق والبيانات للتصدير:",
+    "selectFormatPlaceholder": "اختر التنسيق",
+    "formats": {
+      "csv": "تنسيق CSV",
+      "excel": "تنسيق Excel (.xlsx)"
+    },
+    "buttons": {
+      "exportSchools": "تصدير بيانات المدارس",
+      "exportEvidence": "تصدير بيانات الأدلة",
+      "exportUsers": "تصدير بيانات المستخدمين",
+      "withCurrentFilters": "(مع المرشحات الحالية)"
+    },
+    "toasts": {
+      "success": {
+        "title": "التصدير ناجح",
+        "description": "تم تصدير بيانات {{type}} بتنسيق {{format}}."
+      },
+      "failed": {
+        "title": "فشل التصدير",
+        "description": "فشل تصدير البيانات. يرجى المحاولة مرة أخرى."
+      }
+    }
+  },
+  "loading": {
+    "dashboard": "جارٍ تحميل لوحة تحكم الإدارة...",
+    "caseStudies": "جارٍ تحميل دراسات الحالة..."
   },
   "overview": {
     "title": "نظرة عامة على الإدارة",
-    "subtitle": "مراقبة نشاط المنصة وأدائها",
+    "subtitle": "مراقبة نشاط المنصة والأداء",
     "total_schools": "إجمالي المدارس",
     "total_students": "إجمالي الطلاب",
-    "pending_evidence": "الأدلة المعلقة",
+    "pending_evidence": "الأدلة قيد الانتظار",
     "resources_uploaded": "الموارد المحملة"
   },
-  "analytics": {
-    "title": "تحليلات المنصة",
-    "subtitle": "رؤى شاملة حول فعالية البرنامج",
-    "global_metrics": "المقاييس العالمية",
-    "enrollment_over_time": "تسجيل المدارس بمرور الوقت",
-    "evidence_submissions": "تقديمات الأدلة حسب المرحلة",
-    "geographic_distribution": "التوزيع الجغرافي",
-    "completion_rates": "معدلات الإكمال حسب المرحلة",
-    "resource_downloads": "إحصائيات تنزيل الموارد",
-    "filter_by_period": "تصفية حسب الفترة",
-    "last_30_days": "آخر 30 يومًا",
-    "last_90_days": "آخر 90 يومًا",
-    "last_year": "العام الماضي",
-    "all_time": "كل الوقت",
-    "export_report": "تصدير التقرير",
-    "charts": {
-      "schools_by_country": "المدارس حسب البلد",
-      "completion_by_stage": "معدل الإكمال حسب المرحلة",
-      "monthly_registrations": "التسجيلات الشهرية للمدارس",
-      "evidence_status": "حالة مراجعة الأدلة"
+  "userManagement": {
+    "title": "إدارة المستخدمين",
+    "buttons": {
+      "inviteAdmin": "دعوة مسؤول",
+      "invitePartner": "دعوة شريك",
+      "sendInvitation": "إرسال الدعوة",
+      "sending": "جارٍ الإرسال...",
+      "cancel": "إلغاء",
+      "filterAll": "جميع المستخدمين",
+      "filterWithSchools": "مع مدارس",
+      "filterWithoutSchools": "بدون مدارس",
+      "bulkDelete": "حذف المستخدمين المحددين ({{count}})",
+      "confirmDelete": "تأكيد {{mode}}",
+      "deleting": "جارٍ الحذف...",
+      "confirmSoftDelete": "تأكيد الحذف المؤقت",
+      "confirmTransfer": "تأكيد النقل",
+      "confirmHardDelete": "تأكيد الحذف النهائي"
+    },
+    "dialogs": {
+      "invitePartner": {
+        "title": "دعوة شريك جديد",
+        "description": "يتمتع الشركاء بوصول مشابه للمسؤولين ولكن لا يمكنهم تعيين الأدوار أو تنزيل بيانات المدارس."
+      },
+      "inviteAdmin": {
+        "title": "دعوة مسؤول جديد"
+      },
+      "deleteUser": {
+        "title": "حذف المستخدم",
+        "description": "اختر كيفية التعامل مع محتوى المستخدم وبياناته"
+      },
+      "bulkDelete": {
+        "title": "حذف جماعي لـ {{count}} مستخدم{{plural}}",
+        "description": "اختر كيفية التعامل مع محتوى المستخدمين المحددين وبياناتهم",
+        "selectedUsers": "المستخدمون المحددون: {{count}} مستخدم{{plural}}"
+      },
+      "changeRole": {
+        "title": "تغيير دور المستخدم",
+        "description": "تحديث الدور والصلاحيات لـ {{name}}"
+      },
+      "deletionPreview": {
+        "title": "معاينة الحذف",
+        "description": "لدى هذا المستخدم البيانات التالية:",
+        "evidence": "الأدلة: {{count}}",
+        "caseStudies": "دراسات الحالة: {{count}}",
+        "reductionPromises": "وعود التخفيض: {{count}}",
+        "mediaAssets": "الأصول الإعلامية: {{count}}",
+        "certificates": "الشهادات: {{count}}",
+        "importBatches": "دفعات الاستيراد: {{count}}",
+        "teacherInvitations": "دعوات المعلمين: {{count}}",
+        "adminInvitations": "دعوات المسؤولين: {{count}}"
+      }
+    },
+    "form": {
+      "labels": {
+        "emailAddress": "عنوان البريد الإلكتروني *",
+        "platformRole": "دور المنصة",
+        "roleDescription": "اختر دور المستخدم وصلاحياته"
+      },
+      "placeholders": {
+        "partnerEmail": "partner@example.com",
+        "adminEmail": "admin@example.com",
+        "searchUsers": "البحث بالاسم أو البريد الإلكتروني..."
+      }
+    },
+    "table": {
+      "headers": {
+        "name": "الاسم",
+        "email": "البريد الإلكتروني",
+        "role": "الدور",
+        "schools": "المدارس",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "showingCount": "عرض {{filtered}} من أصل {{total}} مستخدم"
+    },
+    "deletionModes": {
+      "soft": {
+        "label": "حذف مؤقت (موصى به)",
+        "description": "سيتم إخفاء المستخدمين من النظام ولكن يتم الاحتفاظ بجميع البيانات. يمكن استعادتها لاحقاً."
+      },
+      "transfer": {
+        "label": "نقل الملكية",
+        "description": "نقل جميع المحتوى إلى حساب نظام \"المستخدم المؤرشف\"، ثم حذف المستخدم. يتم الاحتفاظ بالبيانات التاريخية.",
+        "bulkDescription": "نقل جميع المحتوى إلى حساب نظام \"المستخدم المؤرشف\"، ثم حذف المستخدمين. يتم الاحتفاظ بالبيانات التاريخية."
+      },
+      "hard": {
+        "label": "حذف نهائي (دائم)",
+        "description": "تحذير: حذف نهائي للمستخدم وجميع محتوياته. لا يمكن التراجع عن هذا الإجراء!",
+        "bulkDescription": "تحذير: حذف نهائي للمستخدمين وجميع محتوياتهم. لا يمكن التراجع عن هذا الإجراء!"
+      }
+    },
+    "roles": {
+      "teacher": {
+        "label": "معلم",
+        "description": "مستخدم عادي بصلاحيات على مستوى المدرسة"
+      },
+      "school": {
+        "label": "مدرسة (مدير المدرسة)",
+        "description": "دور مدير المدرسة مع صلاحيات إدارة المدرسة"
+      },
+      "partner": {
+        "label": "شريك",
+        "description": "وصول مشابه للمسؤول ولكن لا يمكن تعيين الأدوار أو تنزيل بيانات المدارس"
+      },
+      "admin": {
+        "label": "مسؤول",
+        "description": "وصول كامل للمنصة بما في ذلك تعيين الأدوار وتنزيل البيانات"
+      }
+    },
+    "badges": {
+      "pending": "قيد الانتظار",
+      "pendingInvite": "دعوة قيد الانتظار",
+      "active": "نشط",
+      "admin": "مسؤول",
+      "partner": "شريك"
+    },
+    "toasts": {
+      "invitationSent": {
+        "title": "تم إرسال الدعوة",
+        "adminDescription": "تم إرسال دعوة المسؤول بنجاح.",
+        "partnerDescription": "تم إرسال دعوة الشريك بنجاح."
+      },
+      "invitationFailed": {
+        "title": "فشل إرسال الدعوة",
+        "adminDescription": "فشل إرسال دعوة المسؤول. يرجى المحاولة مرة أخرى.",
+        "partnerDescription": "فشل إرسال دعوة الشريك. يرجى المحاولة مرة أخرى.",
+        "defaultDescription": "{{message}}"
+      },
+      "invitationDeleted": {
+        "title": "تم حذف الدعوة",
+        "description": "تم حذف دعوة المسؤول بنجاح."
+      },
+      "deleteFailed": {
+        "title": "فشل الحذف",
+        "description": "فشل حذف الدعوة. يرجى المحاولة مرة أخرى.",
+        "userDescription": "فشل حذف المستخدم. يرجى المحاولة مرة أخرى.",
+        "customMessage": "{{message}}"
+      },
+      "userDeleted": {
+        "title": "تم حذف المستخدم",
+        "softDeleted": "تم حذف المستخدم مؤقتاً بنجاح.",
+        "transferred": "تم حذف المستخدم بنجاح (تم نقل المحتوى).",
+        "hardDeleted": "تم حذف المستخدم نهائياً بنجاح."
+      },
+      "userUpdated": {
+        "title": "تم تحديث المستخدم",
+        "description": "تم تحديث دور المستخدم بنجاح."
+      },
+      "updateFailed": {
+        "title": "فشل التحديث",
+        "description": "فشل تحديث دور المستخدم. يرجى المحاولة مرة أخرى.",
+        "customMessage": "{{message}}"
+      },
+      "emailRequired": {
+        "title": "البريد الإلكتروني مطلوب",
+        "description": "يرجى إدخال عنوان بريد إلكتروني."
+      },
+      "bulkDeleteSuccessful": {
+        "title": "نجح الحذف الجماعي",
+        "description": "تم حذف {{count}} مستخدم{{plural}} بنجاح",
+        "withEvidence": "تم حذف {{count}} مستخدم{{plural}} بنجاح ({{evidenceCount}} عنصر دليل{{evidencePlural}} محذوف)",
+        "withCaseStudies": "تحذير: {{caseStudyCount}} دراسة {{caseStudyPlural}} متأثرة",
+        "creatorsRemoved": "وتم إزالة منشئيهم."
+      },
+      "bulkDeleteFailed": {
+        "title": "فشل الحذف الجماعي",
+        "description": "فشل حذف المستخدمين. يرجى المحاولة مرة أخرى.",
+        "allFailed": "فشل حذف جميع المستخدمين المحددين:",
+        "customMessage": "{{message}}"
+      },
+      "bulkDeletePartial": {
+        "title": "نجح الحذف الجماعي جزئياً",
+        "description": "تم حذف {{successCount}} مستخدم{{plural}} بنجاح. فشل حذف {{failedCount}}."
+      }
+    },
+    "emptyStates": {
+      "noUsers": {
+        "title": "لم يتم العثور على مستخدمين",
+        "noMatch": "لا يوجد مستخدمون يطابقون معايير البحث.",
+        "allAssigned": "جميع المستخدمين معينون لمدرسة واحدة على الأقل.",
+        "noneInSystem": "لم يتم العثور على مستخدمين في النظام."
+      }
+    },
+    "adminInvitations": {
+      "title": "دعوات المسؤولين",
+      "table": {
+        "email": "البريد الإلكتروني",
+        "status": "الحالة",
+        "createdAt": "تاريخ الإنشاء",
+        "expiresAt": "تاريخ الانتهاء",
+        "actions": "الإجراءات"
+      }
     }
-  },
-  "evidence": {
-    "title": "مراجعة الأدلة",
-    "subtitle": "مراجعة وإشراف على تقديمات الأدلة",
-    "pending_review": "قيد المراجعة",
-    "approved": "موافق عليه",
-    "needs_revision": "يحتاج مراجعة",
-    "filter_by_stage": "تصفية حسب المرحلة",
-    "filter_by_status": "تصفية حسب الحالة",
-    "sort_by": "ترتيب حسب",
-    "newest_first": "الأحدث أولاً",
-    "oldest_first": "الأقدم أولاً",
-    "school_name": "اسم المدرسة",
-    "stage": "المرحلة",
-    "submitted_date": "تاريخ التقديم",
-    "review_evidence": "مراجعة الأدلة",
-    "approve_evidence": "الموافقة على الأدلة",
-    "request_revision": "طلب المراجعة",
-    "add_feedback": "إضافة ملاحظات",
-    "feedback_placeholder": "تقديم ملاحظات للمدرسة...",
-    "approve_button": "موافقة",
-    "revision_button": "طلب المراجعة",
-    "evidence_approved": "تمت الموافقة على الأدلة بنجاح",
-    "evidence_revision_requested": "تم طلب المراجعة بنجاح",
-    "bulk_actions": "إجراءات جماعية",
-    "select_all": "تحديد الكل",
-    "bulk_approve": "موافقة جماعية",
-    "bulk_request_revision": "طلب مراجعة جماعي"
   },
   "resources": {
     "title": "إدارة الموارد",
-    "subtitle": "رفع وإدارة الموارد التعليمية",
-    "upload_resource": "رفع مورد جديد",
+    "subtitle": "تحميل وإدارة الموارد التعليمية",
+    "upload_resource": "تحميل مورد جديد",
     "resource_library": "مكتبة الموارد",
     "featured_resources": "الموارد المميزة",
+    "buttons": {
+      "addResource": "إضافة مورد",
+      "bulkUpload": "تحميل جماعي للموارد",
+      "uploadFile": "تحميل ملف",
+      "uploading": "جارٍ التحميل...",
+      "replaceFile": "استبدال الملف",
+      "removeFile": "إزالة الملف",
+      "autoFillAI": "ملء تلقائي بالذكاء الاصطناعي",
+      "generating": "جارٍ الإنشاء...",
+      "saveResource": "حفظ المورد",
+      "cancel": "إلغاء",
+      "preview": "معاينة",
+      "edit": "تحرير",
+      "delete": "حذف",
+      "deleteResources": "حذف الموارد",
+      "deleting": "جارٍ الحذف...",
+      "bulkDelete": "حذف جماعي ({{count}})",
+      "insertImage": "إدراج صورة"
+    },
+    "form": {
+      "titles": {
+        "addNew": "إضافة مورد جديد",
+        "edit": "تحرير المورد"
+      },
+      "labels": {
+        "title": "العنوان *",
+        "description": "الوصف",
+        "stage": "مرحلة البرنامج *",
+        "ageRange": "الفئة العمرية",
+        "languages": "اللغات المتاحة *",
+        "country": "الدولة المستهدفة",
+        "visibility": "الرؤية *",
+        "resourceFile": "ملف المورد",
+        "resourceType": "نوع المورد",
+        "theme": "الموضوع"
+      },
+      "placeholders": {
+        "title": "أدخل عنوان المورد",
+        "description": "أدخل وصف المورد",
+        "ageRange": "مثال، 8-12 سنة",
+        "country": "عالمي (جميع الدول)",
+        "searchResources": "البحث عن الموارد..."
+      },
+      "helpText": {
+        "languageSelection": "اختر جميع اللغات التي يتوفر بها هذا المورد",
+        "visibilityPublic": "سيكون هذا المورد مرئياً لجميع زوار الموقع",
+        "visibilityRegistered": "سيكون هذا المورد مرئياً فقط للمدارس المسجلة",
+        "uploadInstructions": "تحميل ملف مورد (PDF، DOC، PPT، XLS، إلخ)",
+        "maxFileSize": "الحد الأقصى لحجم الملف: 150 ميجابايت",
+        "replaceInstructions": "يمكنك استبدال الملف مع الاحتفاظ بنفس المورد، أو إزالته بالكامل.",
+        "aiAutoFillTooltip": "يقوم الذكاء الاصطناعي بتحليل الملف المحمل ويقترح تلقائياً عنواناً ووصفاً ومرحلة وموضوعاً وفئة عمرية ونوع مورد بناءً على محتوى الملف واسمه.",
+        "aiAutoFillDescription": "دع الذكاء الاصطناعي يحلل ملفك ويقترح البيانات الوصفية لتوفير الوقت. يمكنك مراجعة الاقتراحات وتعديلها قبل الحفظ."
+      }
+    },
+    "filters": {
+      "allStages": "جميع المراحل",
+      "allCountries": "جميع الدول",
+      "allLanguages": "جميع اللغات",
+      "allVisibility": "جميع أنواع الرؤية",
+      "allStatus": "جميع الحالات"
+    },
+    "stages": {
+      "inspire": "إلهام",
+      "investigate": "استكشاف",
+      "act": "عمل"
+    },
+    "visibility": {
+      "public": "عام (مرئي للجميع)",
+      "publicShort": "عام",
+      "registered": "للمسجلين فقط (يتطلب تسجيل الدخول)",
+      "registeredShort": "للمسجلين فقط"
+    },
+    "resourceTypes": {
+      "lessonPlan": "خطة درس",
+      "assembly": "تجمع",
+      "teacherToolkit": "أدوات المعلم",
+      "studentWorkbook": "دفتر عمل الطالب",
+      "printableActivities": "أنشطة قابلة للطباعة",
+      "none": "لا شيء"
+    },
+    "themes": {
+      "oceanLiteracy": "الثقافة المحيطية",
+      "climateChange": "تغير المناخ",
+      "plasticPollution": "التلوث البلاستيكي",
+      "science": "علوم",
+      "designTechnology": "تكنولوجيا التصميم",
+      "geography": "جغرافيا",
+      "crossCurricular": "متعدد التخصصات",
+      "enrichment": "إثراء",
+      "none": "لا شيء"
+    },
+    "table": {
+      "headers": {
+        "preview": "معاينة",
+        "title": "العنوان",
+        "stage": "المرحلة",
+        "visibility": "الرؤية",
+        "country": "الدولة",
+        "languages": "اللغات",
+        "fileSize": "حجم الملف",
+        "downloads": "التنزيلات",
+        "status": "الحالة",
+        "actions": "الإجراءات"
+      },
+      "values": {
+        "global": "عالمي",
+        "active": "نشط",
+        "inactive": "غير نشط",
+        "notAvailable": "غير متاح"
+      }
+    },
+    "toasts": {
+      "fileUploaded": {
+        "title": "تم تحميل الملف",
+        "description": "تم تحميل {{filename}} بنجاح."
+      },
+      "uploadError": {
+        "title": "خطأ في التحميل",
+        "failedToGetUrl": "فشل الحصول على رابط التحميل",
+        "failedToUpload": "فشل تحميل الملف",
+        "customMessage": "{{message}}"
+      },
+      "aiAutoFillComplete": {
+        "title": "اكتمل الملء التلقائي بالذكاء الاصطناعي",
+        "description": "تم ملء البيانات الوصفية للمورد باقتراحات الذكاء الاصطناعي. راجع وعدل حسب الحاجة."
+      },
+      "aiAutoFillFailed": {
+        "title": "فشل الملء التلقائي بالذكاء الاصطناعي",
+        "noSuggestions": "لم يتمكن الذكاء الاصطناعي من إنشاء اقتراحات لهذا المورد.",
+        "description": "فشل إنشاء اقتراحات الذكاء الاصطناعي. يرجى المحاولة مرة أخرى.",
+        "customMessage": "{{message}}"
+      },
+      "cannotAutoFill": {
+        "title": "لا يمكن الملء التلقائي",
+        "description": "يرجى تحميل ملف أولاً لاستخدام الملء التلقائي بالذكاء الاصطناعي."
+      },
+      "resourceCreated": {
+        "title": "تم إنشاء المورد",
+        "description": "تم إنشاء المورد بنجاح."
+      },
+      "resourceUpdated": {
+        "title": "تم تحديث المورد",
+        "description": "تم تحديث المورد بنجاح."
+      },
+      "saveFailed": {
+        "title": "فشل الحفظ",
+        "description": "فشل حفظ المورد. يرجى المحاولة مرة أخرى.",
+        "customMessage": "{{message}}"
+      },
+      "resourceDeleted": {
+        "title": "تم حذف المورد",
+        "description": "تم حذف المورد بنجاح.",
+        "bulkDescription": "تم حذف {{count}} مورد{{plural}} بنجاح."
+      },
+      "deleteFailed": {
+        "title": "فشل الحذف",
+        "description": "فشل حذف المورد. يرجى المحاولة مرة أخرى."
+      },
+      "bulkDeleteFailed": {
+        "title": "فشل الحذف الجماعي",
+        "description": "فشل حذف بعض الموارد."
+      },
+      "validationError": {
+        "title": "خطأ في التحقق",
+        "selectLanguage": "يرجى اختيار لغة واحدة على الأقل."
+      }
+    },
+    "dialogs": {
+      "deleteConfirmation": {
+        "title": "حذف المورد",
+        "description": "هل أنت متأكد من حذف هذا المورد؟",
+        "cannotUndo": "لا يمكن التراجع عن هذا الإجراء."
+      },
+      "bulkDelete": {
+        "title": "حذف الموارد",
+        "description": "هل أنت متأكد من حذف {{count}} مورد{{plural}}؟ لا يمكن التراجع عن هذا الإجراء.",
+        "listTitle": "الموارد المراد حذفها:"
+      }
+    },
+    "emptyStates": {
+      "noResources": "لم يتم العثور على موارد. أضف أول مورد للبدء."
+    },
+    "ai": {
+      "sectionTitle": "ملء تلقائي بالذكاء الاصطناعي"
+    },
     "upload_form": {
-      "title": "رفع مورد جديد",
+      "title": "تحميل مورد جديد",
       "resource_title": "عنوان المورد",
       "description": "الوصف",
       "stage": "المرحلة المستهدفة",
       "language": "اللغة",
       "age_range": "الفئة العمرية",
       "file_type": "نوع الملف",
-      "visibility": "الظهور",
+      "visibility": "الرؤية",
       "featured": "مورد مميز",
-      "featured_description": "وضع علامة كمميز لإبراز هذا المورد",
-      "upload_file": "رفع الملف",
+      "featured_description": "وضع علامة كمميز لتسليط الضوء على هذا المورد",
+      "upload_file": "تحميل ملف",
       "save_resource": "حفظ المورد",
       "cancel": "إلغاء"
     },
@@ -93,20 +481,382 @@
       "downloads": "التنزيلات",
       "status": "الحالة",
       "actions": "الإجراءات",
-      "edit": "تعديل",
+      "edit": "تحرير",
       "delete": "حذف",
       "feature": "تمييز",
       "unfeature": "إلغاء التمييز"
     },
     "delete_confirmation": {
       "title": "حذف المورد",
-      "message": "هل أنت متأكد من رغبتك في حذف هذا المورد؟ لا يمكن التراجع عن هذا الإجراء.",
+      "message": "هل أنت متأكد من حذف هذا المورد؟ لا يمكن التراجع عن هذا الإجراء.",
       "delete": "حذف",
       "cancel": "إلغاء"
     },
-    "resource_uploaded": "تم رفع المورد بنجاح",
+    "resource_uploaded": "تم تحميل المورد بنجاح",
     "resource_updated": "تم تحديث المورد بنجاح",
     "resource_deleted": "تم حذف المورد بنجاح"
+  },
+  "analytics": {
+    "title": "تحليلات المنصة",
+    "subtitle": "رؤى شاملة حول فعالية البرنامج",
+    "dashboard": {
+      "title": "لوحة التحليلات",
+      "description": "رؤى ومقاييس شاملة للمدارس الذكية للبلاستيك"
+    },
+    "buttons": {
+      "exportCSV": "تصدير CSV",
+      "exportExcel": "تصدير Excel",
+      "exportPDF": "تصدير تقرير PDF",
+      "cancel": "إلغاء",
+      "exportReport": "تصدير التقرير",
+      "generating": "جارٍ الإنشاء...",
+      "confirmExport": "تصدير التقرير"
+    },
+    "tabs": {
+      "overview": "نظرة عامة",
+      "schoolsEvidence": "المدارس والأدلة",
+      "plasticWasteAudits": "تدقيق النفايات البلاستيكية",
+      "userEngagement": "تفاعل المستخدمين"
+    },
+    "metrics": {
+      "totalSchools": {
+        "label": "إجمالي المدارس",
+        "description": "المدارس المشاركة"
+      },
+      "activeUsers": {
+        "label": "المستخدمون النشطون"
+      },
+      "evidenceSubmissions": {
+        "label": "تقديم الأدلة"
+      },
+      "globalReach": {
+        "label": "الانتشار العالمي"
+      },
+      "totalEvidence": {
+        "label": "إجمالي الأدلة",
+        "description": "المقدمات المستلمة"
+      },
+      "clickToView": "انقر لعرض التفاصيل ←"
+    },
+    "dialogs": {
+      "exportPDF": {
+        "title": "تصدير تقرير PDF",
+        "description": "اختر الأقسام المراد تضمينها في تقرير التحليلات. سيتضمن التقرير بيانات من {{startDate}} - {{endDate}}",
+        "sections": {
+          "overview": "نظرة عامة",
+          "scoresEvidence": "المدارس والأدلة",
+          "plasticWasteAudits": "تدقيق النفايات البلاستيكية",
+          "userEngagement": "تفاعل المستخدمين",
+          "aiInsights": "تضمين رؤى الذكاء الاصطناعي"
+        }
+      }
+    },
+    "charts": {
+      "userRegistrationTrends": "اتجاهات تسجيل المستخدمين",
+      "userRoleDistribution": "توزيع أدوار المستخدمين",
+      "teachers": "المعلمون",
+      "admins": "المسؤولون",
+      "schools_by_country": "المدارس حسب الدولة",
+      "completion_by_stage": "معدل الإنجاز حسب المرحلة",
+      "monthly_registrations": "تسجيلات المدارس الشهرية",
+      "evidence_status": "حالة مراجعة الأدلة"
+    },
+    "actionPlan": {
+      "title": "تأثير خطة العمل العالمية",
+      "description": "تتبع التأثير الجماعي لخطط عمل جميع المدارس",
+      "metrics": {
+        "totalActionItems": {
+          "label": "إجمالي بنود العمل",
+          "description": "الالتزامات المعلنة"
+        },
+        "schoolsParticipating": {
+          "label": "المدارس المشاركة",
+          "description": "تحدث فرقاً"
+        },
+        "itemsReduced": {
+          "label": "المواد المخفضة سنوياً",
+          "description": "مواد في السنة"
+        },
+        "weightReduced": {
+          "label": "الوزن المخفض",
+          "description": "كجم في السنة"
+        }
+      },
+      "oceanImpact": {
+        "title": "تأثير المحيط",
+        "oceanBottles": {
+          "label": "زجاجات المحيط المنقذة",
+          "description": "زجاجات بلاستيكية تم إنقاذها من المحيطات"
+        },
+        "fishSaved": {
+          "label": "الأسماك المنقذة",
+          "description": "الأسماك المحتملة المنقذة من البلاستيك"
+        },
+        "seaTurtles": {
+          "label": "السلاحف البحرية المنقذة",
+          "description": "معادلات السلاحف البحرية المحمية"
+        }
+      },
+      "environmentalImpact": {
+        "title": "التأثير البيئي",
+        "co2Prevented": {
+          "label": "CO₂ المنقذ",
+          "description": "كجم من انبعاثات CO₂ المنعة"
+        },
+        "oilSaved": {
+          "label": "النفط المحفوظ",
+          "description": "لترات من النفط المحفوظ"
+        },
+        "wastePrevented": {
+          "label": "النفايات المنعة",
+          "description": "أطنان من النفايات البلاستيكية المتجنبة"
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingMetrics": "جارٍ تحميل مقاييس التخفيض..."
+    },
+    "errorStates": {
+      "failedToLoad": "فشل تحميل مقاييس خطة العمل",
+      "refreshPage": "يرجى تحديث الصفحة"
+    },
+    "emptyStates": {
+      "noActionPlans": {
+        "title": "لم يتم إنشاء خطط عمل بعد.",
+        "description": "شجع المدارس على إنشاء خطة عملهم الأولى!"
+      }
+    },
+    "toasts": {
+      "reportDownloaded": {
+        "title": "تم تنزيل التقرير بنجاح",
+        "description": "تم تنزيل تقرير تحليلات PDF الخاص بك."
+      },
+      "exportFailed": {
+        "title": "فشل التصدير",
+        "description": "فشل تصدير تقرير PDF",
+        "customMessage": "{{message}}"
+      }
+    },
+    "global_metrics": "المقاييس العالمية",
+    "enrollment_over_time": "تسجيل المدارس عبر الزمن",
+    "evidence_submissions": "تقديم الأدلة حسب المرحلة",
+    "geographic_distribution": "التوزيع الجغرافي",
+    "completion_rates": "معدلات الإنجاز حسب المرحلة",
+    "resource_downloads": "إحصائيات تنزيل الموارد",
+    "filter_by_period": "التصفية حسب الفترة",
+    "last_30_days": "آخر 30 يوماً",
+    "last_90_days": "آخر 90 يوماً",
+    "last_year": "السنة الماضية",
+    "all_time": "طوال الوقت",
+    "export_report": "تصدير التقرير"
+  },
+  "email": {
+    "testTemplates": {
+      "title": "اختبار قوالب البريد الإلكتروني",
+      "selectType": "اختر نوع البريد الإلكتروني",
+      "types": {
+        "welcome": "بريد ترحيبي",
+        "invitation": "دعوة معلم",
+        "joinRequest": "طلب انضمام",
+        "joinApproved": "تمت الموافقة على طلب الانضمام",
+        "evidenceSubmitted": "تم تقديم الدليل",
+        "evidenceApproved": "تمت الموافقة على الدليل",
+        "evidenceRevision": "الدليل يحتاج إلى مراجعة",
+        "newEvidence": "دليل جديد للمسؤول"
+      }
+    },
+    "bulkComposer": {
+      "title": "منشئ البريد الإلكتروني الجماعي",
+      "previewTest": "معاينة واختبار"
+    },
+    "buttons": {
+      "sendTest": "إرسال اختبار",
+      "sending": "جارٍ الإرسال...",
+      "previewEmail": "معاينة البريد الإلكتروني",
+      "insertImage": "إدراج صورة",
+      "sendBulkEmail": "إرسال بريد جماعي إلى {{recipientType}}",
+      "sendBulk": "إرسال بريد جماعي",
+      "cancel": "إلغاء",
+      "previewTranslations": "معاينة الترجمات",
+      "generating": "جارٍ الإنشاء..."
+    },
+    "form": {
+      "labels": {
+        "recipientEmail": "بريد المستلم *",
+        "schoolName": "اسم المدرسة *",
+        "inviterName": "اسم المدعو *",
+        "expiresInDays": "تنتهي خلال أيام",
+        "requesterName": "اسم الطالب *",
+        "requesterEmail": "بريد الطالب *",
+        "evidence": "الدليل *",
+        "reviewerName": "اسم المراجع *",
+        "reviewNotes": "ملاحظات المراجعة (اختياري)",
+        "evidenceTitle": "عنوان الدليل *",
+        "stage": "المرحلة *",
+        "feedback": "الملاحظات *",
+        "submitterName": "اسم المقدم *",
+        "subject": "الموضوع *",
+        "preheader": "العنوان الفرعي",
+        "title": "العنوان *",
+        "preTitle": "العنوان الفرعي",
+        "messageContent": "محتوى الرسالة *",
+        "recipientType": "نوع المستلم",
+        "selectLanguages": "اختر اللغات لمعاينة الترجمة",
+        "viewEditTranslation": "عرض/تحرير الترجمة"
+      },
+      "placeholders": {
+        "teacherEmail": "teacher@example.com",
+        "testSchool": "مدرسة اختبار",
+        "selectEmailType": "اختر نوع البريد الإلكتروني للاختبار",
+        "emailSubject": "سطر موضوع البريد الإلكتروني",
+        "preheaderText": "نص المعاينة المعروض في برامج البريد الإلكتروني (اختياري)",
+        "largeHeading": "عنوان كبير داخل البريد الإلكتروني",
+        "subtitleText": "عنوان فرعي تحت العنوان (اختياري)",
+        "messageContent": "أدخل محتوى الرسالة الرئيسي. علامات HTML مدعومة للتنسيق.",
+        "testEmail": "test@example.com",
+        "searchImages": "البحث عن الصور..."
+      },
+      "helpText": {
+        "subjectLength": "{{length}}/200 حرف • سطر الموضوع الرئيسي للبريد الإلكتروني",
+        "preheaderLength": "{{length}}/100 حرف • نص المعاينة الاختياري الذي يظهر في صندوق البريد",
+        "titleLength": "{{length}}/200 حرف • العنوان الرئيسي المعروض في جسم البريد الإلكتروني",
+        "preTitleLength": "{{length}}/200 حرف • نص العنوان الفرعي الاختياري أسفل العنوان",
+        "contentLength": "{{length}}/10,000 حرف",
+        "readTime": "~{{minutes}} دقيقة للقراءة",
+        "supportsHTML": "يدعم تنسيق HTML"
+      }
+    },
+    "recipientTypes": {
+      "allTeachers": "جميع المعلمين",
+      "schools": "مدارس مفلترة",
+      "custom": "مستلمون مخصصون"
+    },
+    "stages": {
+      "stage1": "المرحلة 1",
+      "stage2": "المرحلة 2",
+      "stage3": "المرحلة 3"
+    },
+    "languages": {
+      "english": "الإنجليزية (الأصلية)",
+      "spanish": "الإسبانية",
+      "french": "الفرنسية",
+      "german": "الألمانية",
+      "italian": "الإيطالية",
+      "portuguese": "البرتغالية",
+      "dutch": "الهولندية",
+      "russian": "الروسية",
+      "chinese": "الصينية",
+      "korean": "الكورية",
+      "arabic": "العربية",
+      "indonesian": "الإندونيسية",
+      "greek": "اليونانية",
+      "welsh": "الويلزية"
+    },
+    "badges": {
+      "editingTranslation": "تحرير الترجمة"
+    },
+    "toasts": {
+      "emailRequired": {
+        "title": "البريد الإلكتروني مطلوب",
+        "description": "يرجى إدخال عنوان بريد إلكتروني للمستلم.",
+        "testDescription": "يرجى إدخال عنوان بريد إلكتروني اختباري."
+      },
+      "testEmailSent": {
+        "title": "تم إرسال البريد الاختباري",
+        "description": "تم إرسال البريد بنجاح إلى {{email}}",
+        "withLanguage": "تم إرسال البريد الاختباري بنجاح إلى {{email}} بلغة {{language}}",
+        "defaultDescription": "تم إرسال البريد إلى {{email}}"
+      },
+      "sendEmailFailed": {
+        "title": "فشل إرسال البريد",
+        "description": "حدث خطأ أثناء إرسال البريد الإلكتروني.",
+        "tryAgain": "فشل إرسال البريد. يرجى المحاولة مرة أخرى."
+      },
+      "testEmailFailed": {
+        "title": "فشل إرسال البريد الاختباري",
+        "description": "حدث خطأ في إرسال البريد الاختباري.",
+        "customMessage": "{{message}}"
+      },
+      "imageInserted": {
+        "title": "تم إدراج الصورة",
+        "description": "تمت إضافة {{filename}} إلى محتوى بريدك الإلكتروني"
+      },
+      "translationFailed": {
+        "title": "فشلت الترجمة",
+        "description": "فشل إنشاء الترجمات. يرجى المحاولة مرة أخرى."
+      },
+      "error": {
+        "title": "خطأ",
+        "description": "فشل إرسال البريد. يرجى المحاولة مرة أخرى."
+      },
+      "emailsSent": {
+        "title": "تم إرسال الرسائل بنجاح",
+        "description": "تم إرسال {{sent}} رسالة بريد إلكتروني بنجاح{{failedText}}."
+      },
+      "bulkEmailFailed": {
+        "title": "فشل إرسال الرسائل",
+        "description": "حدث خطأ في إرسال الرسائل الجماعية. يرجى المحاولة مرة أخرى."
+      }
+    },
+    "dialogs": {
+      "preview": {
+        "title": "معاينة البريد الإلكتروني",
+        "subject": "الموضوع:",
+        "preheader": "العنوان الفرعي:"
+      },
+      "bulkConfirm": {
+        "title": "تأكيد إرسال البريد الجماعي",
+        "description": "هل أنت متأكد من إرسال هذا البريد إلى:",
+        "subject": "الموضوع: {{subject}}",
+        "warning": "لا يمكن التراجع عن هذا الإجراء. تأكد من اختبار البريد أولاً.",
+        "recipientCount": "{{count}} مستلم مخصص"
+      },
+      "imagePicker": {
+        "title": "إدراج صورة من مكتبة الوسائط"
+      }
+    },
+    "resultMessages": {
+      "success": "✅ نجاح",
+      "error": "❌ خطأ"
+    },
+    "defaultValues": {
+      "testSchool": "مدرسة اختبار",
+      "johnDoe": "جون دو",
+      "janeSmith": "جين سميث",
+      "janeEmail": "jane@example.com",
+      "recyclingProgram": "برنامج إعادة التدوير",
+      "teacherEvidence": "أنا معلم في هذه المدرسة.",
+      "participationFeedback": "يرجى إضافة المزيد من التفاصيل حول مشاركة الطلاب.",
+      "headTeacher": "مدير المدرسة"
+    }
+  },
+  "evidence": {
+    "title": "مراجعة الأدلة",
+    "subtitle": "مراجعة ومراقبة تقديم الأدلة",
+    "pending_review": "قيد المراجعة",
+    "approved": "تمت الموافقة",
+    "needs_revision": "يحتاج إلى مراجعة",
+    "filter_by_stage": "التصفية حسب المرحلة",
+    "filter_by_status": "التصفية حسب الحالة",
+    "sort_by": "الترتيب حسب",
+    "newest_first": "الأحدث أولاً",
+    "oldest_first": "الأقدم أولاً",
+    "school_name": "اسم المدرسة",
+    "stage": "المرحلة",
+    "submitted_date": "تاريخ التقديم",
+    "review_evidence": "مراجعة الدليل",
+    "approve_evidence": "الموافقة على الدليل",
+    "request_revision": "طلب مراجعة",
+    "add_feedback": "إضافة ملاحظات",
+    "feedback_placeholder": "تقديم ملاحظات للمدرسة...",
+    "approve_button": "موافقة",
+    "revision_button": "طلب مراجعة",
+    "evidence_approved": "تمت الموافقة على الدليل بنجاح",
+    "evidence_revision_requested": "تم طلب المراجعة بنجاح",
+    "bulk_actions": "إجراءات جماعية",
+    "select_all": "تحديد الكل",
+    "bulk_approve": "موافقة جماعية",
+    "bulk_request_revision": "طلب مراجعة جماعية"
   },
   "schools": {
     "title": "إدارة المدارس",
@@ -114,20 +864,69 @@
     "active_schools": "المدارس النشطة",
     "pending_approval": "قيد الموافقة",
     "search_schools": "البحث عن المدارس...",
+    "filters": {
+      "allCountries": "جميع الدول",
+      "selectAll": "تحديد الكل ({count} مدرسة)",
+      "selected": "{count} محدد",
+      "searchPlaceholder": "البحث عن المدارس..."
+    },
+    "buttons": {
+      "bulkUpdate": "تحديث جماعي",
+      "deleteSchools": "حذف المدارس",
+      "view": "عرض",
+      "edit": "تحرير",
+      "delete": "حذف",
+      "save": "حفظ",
+      "saving": "جارٍ الحفظ...",
+      "cancel": "إلغاء",
+      "confirm": "تأكيد",
+      "processing": "جارٍ المعالجة...",
+      "deleting": "جارٍ الحذف...",
+      "editLanguage": "تحرير اللغة",
+      "editProgression": "تحرير التقدم",
+      "saveChanges": "حفظ التغييرات"
+    },
     "school_table": {
-      "school_name": "اسم المدرسة",
-      "country": "البلد",
-      "contact": "جهة الاتصال الرئيسية",
-      "stage": "المرحلة الحالية",
-      "registered_date": "مسجل",
-      "status": "الحالة",
-      "actions": "الإجراءات"
+      "headers": {
+        "select": "تحديد",
+        "school_name": "اسم المدرسة",
+        "country": "الدولة",
+        "stage": "المرحلة",
+        "progress": "التقدم",
+        "students": "الطلاب",
+        "contact": "جهة الاتصال الأساسية",
+        "joined": "تاريخ الانضمام",
+        "actions": "الإجراءات",
+        "expand": "توسيع",
+        "collapse": "طي"
+      },
+      "teachers": {
+        "loading": "جارٍ تحميل المعلمين...",
+        "loadingError": "فشل تحميل المعلمين. يرجى المحاولة مرة أخرى.",
+        "noTeachers": "لم يتم تعيين معلمين لهذه المدرسة بعد.",
+        "headers": {
+          "name": "الاسم",
+          "email": "البريد الإلكتروني",
+          "role": "الدور",
+          "verification": "التحقق",
+          "joined": "تاريخ الانضمام"
+        },
+        "roles": {
+          "headTeacher": "مدير المدرسة",
+          "teacher": "معلم"
+        },
+        "status": {
+          "verified": "تم التحقق",
+          "notVerified": "لم يتم التحقق"
+        }
+      },
+      "notAvailable": "غير متاح"
     },
     "school_actions": {
       "view_details": "عرض التفاصيل",
-      "edit_school": "تعديل المدرسة",
-      "deactivate": "إلغاء التفعيل",
-      "activate": "تفعيل",
+      "edit_school": "تحرير المدرسة",
+      "deactivate": "إلغاء التنشيط",
+      "activate": "تنشيط",
       "delete": "حذف"
     },
     "school_status": {
@@ -137,108 +936,1135 @@
       "suspended": "معلق"
     },
     "school_details": {
+      "title": "{name}",
       "basic_info": "المعلومات الأساسية",
       "contact_info": "معلومات الاتصال",
       "progress": "تقدم البرنامج",
       "evidence_history": "سجل الأدلة",
-      "last_activity": "آخر نشاط"
+      "last_activity": "آخر نشاط",
+      "labels": {
+        "country": "الدولة",
+        "schoolType": "نوع المدرسة",
+        "preferredLanguage": "اللغة المفضلة",
+        "studentCount": "عدد الطلاب",
+        "currentStage": "المرحلة الحالية",
+        "progress": "التقدم",
+        "primaryContactEmail": "البريد الإلكتروني لجهة الاتصال الأساسية",
+        "joined": "تاريخ الانضمام",
+        "address": "العنوان",
+        "currentRound": "الجولة الحالية",
+        "stageCompletion": "إنجاز المرحلة"
+      },
+      "progression": {
+        "title": "إدارة التقدم",
+        "description": "استخدم هذا القسم لتعيين مرحلة تقدم المدرسة والجولة وحالة الإنجاز يدوياً. يتيح لك هذا تجاوز التقدم التلقائي بناءً على تقديم الأدلة.",
+        "currentStage": "المرحلة الحالية:",
+        "currentRound": "الجولة الحالية:",
+        "stageCompletion": "إنجاز المرحلة:",
+        "inspireCompleted": "اكتملت مرحلة الإلهام",
+        "investigateCompleted": "اكتملت مرحلة الاستكشاف",
+        "actCompleted": "اكتملت مرحلة العمل",
+        "notCompleted": "○ لم تكتمل",
+        "completed": "✓ مكتملة"
+      },
+      "stages": {
+        "inspire": "إلهام",
+        "investigate": "استكشاف",
+        "act": "عمل"
+      },
+      "languages": {
+        "en": "الإنجليزية",
+        "es": "الإسبانية",
+        "fr": "الفرنسية",
+        "de": "الألمانية",
+        "it": "الإيطالية",
+        "pt": "البرتغالية",
+        "nl": "الهولندية",
+        "el": "اليونانية",
+        "ar": "العربية",
+        "zh": "الصينية",
+        "ko": "الكورية",
+        "ru": "الروسية",
+        "id": "الإندونيسية",
+        "cy": "الويلزية"
+      },
+      "actionPlan": {
+        "title": "مقاييس خطة العمل",
+        "totalPromises": "إجمالي الوعود",
+        "annualReduction": "المواد المخفضة سنوياً",
+        "annualWeight": "الوزن المخفض",
+        "perYear": "في السنة",
+        "oceanImpact": "تأثير المحيط",
+        "oceanBottles": "زجاجات المحيط المنقذة",
+        "fishSaved": "الأسماك المنقذة",
+        "seaTurtles": "السلاحف البحرية المحمية",
+        "environmentalImpact": "التأثير البيئي",
+        "co2Prevented": "CO₂ المنقذ",
+        "oilSaved": "النفط المحفوظ",
+        "wastePrevented": "النفايات المنعة",
+        "loading": "جارٍ تحميل مقاييس التخفيض...",
+        "noPromises": "لم يتم إنشاء وعود تخفيض بعد لهذه المدرسة."
+      },
+      "photoConsent": {
+        "title": "حالة موافقة الصور",
+        "status": "الحالة:",
+        "uploadedAt": "تم التحميل:",
+        "approvedAt": "تمت الموافقة:",
+        "approvedBy": "تمت الموافقة من قبل:",
+        "reviewNotes": "ملاحظات المراجعة:",
+        "viewDocument": "عرض المستند",
+        "pending": "قيد الانتظار",
+        "approved": "تمت الموافقة",
+        "rejected": "مرفوض",
+        "notUploaded": "لم يتم التحميل",
+        "approve": "موافقة",
+        "reject": "رفض",
+        "rejectionNotes": "ملاحظات الرفض",
+        "rejectionNotesPlaceholder": "اشرح سبب رفض موافقة الصور...",
+        "submitRejection": "تقديم الرفض"
+      }
+    },
+    "bulkActions": {
+      "dialogs": {
+        "update": {
+          "title": "تحديث جماعي للمدارس",
+          "description": "سيؤثر هذا الإجراء على <strong>{count}</strong> مدرسة.",
+          "updateStageLabel": "تحديث المرحلة الحالية",
+          "updateStageHelpText": "سيتم نقل جميع المدارس المحددة إلى هذه المرحلة من البرنامج."
+        },
+        "delete": {
+          "title": "حذف جماعي للمدارس",
+          "description": "سيؤثر هذا الإجراء على <strong>{count}</strong> مدرسة.",
+          "warningTitle": "تحذير:",
+          "warningDescription": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع المدارس المحددة وبياناتها المرتبطة نهائياً."
+        },
+        "deleteSchool": {
+          "title": "حذف المدرسة",
+          "description": "هل أنت متأكد من حذف <strong>{name}</strong>؟ لا يمكن التراجع عن هذا الإجراء وسيتم إزالة المدرسة وجميع البيانات المرتبطة نهائياً.",
+          "loadingUsers": "جارٍ تحميل مستخدمي المدرسة...",
+          "warningUsers": "تحذير: لدى هذه المدرسة {count} مستخدم{plural} مرتبط.",
+          "associatedUsers": "المستخدمون المرتبطون:",
+          "deleteUsersLabel": "حذف جميع حسابات المستخدمين المرتبطة أيضاً",
+          "deleteUsersDescription": "إذا لم يتم تحديده، ستبقى حسابات المستخدمين في النظام ويمكن إعادة تعيينها لمدارس أخرى. إذا تم تحديده، سيتم حذف المستخدمين نهائياً ولن يتمكنوا من التسجيل مرة أخرى بنفس عناوين البريد الإلكتروني.",
+          "noUsers": "ليس لدى هذه المدرسة مستخدمون مرتبطون."
+        }
+      }
+    },
+    "toasts": {
+      "languageUpdated": {
+        "title": "تم تحديث اللغة",
+        "description": "تم تحديث اللغة المفضلة للمدرسة بنجاح."
+      },
+      "languageUpdateFailed": {
+        "title": "فشل التحديث",
+        "description": "فشل تحديث لغة المدرسة. تم التراجع عن التغييرات."
+      },
+      "progressionUpdated": {
+        "title": "تم تحديث التقدم",
+        "description": "تم تحديث تقدم المدرسة بنجاح."
+      },
+      "progressionUpdateFailed": {
+        "title": "فشل التحديث",
+        "description": "فشل تحديث تقدم المدرسة. تم التراجع عن التغييرات."
+      },
+      "bulkUpdateComplete": {
+        "title": "اكتمل التحديث الجماعي",
+        "description": "تم تحديث {count} مدرسة بنجاح."
+      },
+      "bulkUpdateFailed": {
+        "title": "فشل التحديث الجماعي",
+        "description": "فشل تحديث المدارس. يرجى المحاولة مرة أخرى."
+      },
+      "bulkDeleteComplete": {
+        "title": "اكتمل الحذف الجماعي",
+        "description": "تم حذف {count} مدرسة بنجاح."
+      },
+      "bulkDeleteFailed": {
+        "title": "فشل الحذف الجماعي",
+        "description": "فشل حذف المدارس. يرجى المحاولة مرة أخرى."
+      },
+      "schoolDeleted": {
+        "title": "تم حذف المدرسة",
+        "descriptionWithUsers": "تم حذف المدرسة وجميع المستخدمين المرتبطين بنجاح.",
+        "descriptionWithoutUsers": "تم حذف المدرسة بنجاح."
+      },
+      "schoolDeleteFailed": {
+        "title": "فشل الحذف",
+        "description": "فشل حذف المدرسة. يرجى المحاولة مرة أخرى."
+      }
     }
   },
   "permissions": {
-    "admin_only": "يلزم وصول المسؤول",
+    "admin_only": "يتطلب وصول المسؤول",
     "insufficient_permissions": "صلاحيات غير كافية للوصول إلى هذه الميزة"
   },
   "toasts": {
-    "teacher_removed": "Teacher Removed",
-    "teacher_removed_desc": "Teacher has been successfully removed from the school.",
-    "removal_failed": "Removal Failed",
-    "removal_failed_desc": "Failed to remove teacher. Please try again.",
-    "request_approved": "Request Approved",
-    "request_approved_desc": "Verification request has been successfully approved.",
-    "request_rejected": "Request Rejected",
-    "request_rejected_desc": "Verification request has been successfully rejected.",
-    "action_failed": "Action Failed",
-    "action_failed_desc": "Failed to process verification request. Please try again.",
-    "access_denied": "Access Denied",
-    "access_denied_desc": "Admin access required",
-    "success": "Success",
-    "error": "Error",
-    "requirement_created": "Evidence requirement created successfully.",
-    "requirement_updated": "Evidence requirement updated successfully.",
-    "requirement_deleted": "Evidence requirement deleted successfully.",
-    "requirement_delete_failed": "Failed to delete evidence requirement. It may be linked to existing evidence.",
-    "reorder_failed": "Failed to reorder requirements.",
-    "event_created": "Event Created Successfully! 🎉",
-    "event_updated": "Event updated successfully.",
-    "event_deleted": "Event deleted successfully.",
-    "event_creation_failed": "Failed to create event.",
-    "event_update_failed": "Failed to update event.",
-    "event_delete_failed": "Failed to delete event.",
-    "event_duplicated": "Event Duplicated",
-    "event_duplicated_desc": "\"{{title}}\" has been created as a draft.",
-    "duplication_failed": "Duplication Failed",
-    "duplication_failed_desc": "Failed to duplicate event",
-    "page_content_update_failed": "Failed to update event page content.",
-    "status_update_failed": "Failed to update event status.",
-    "same_language_selected": "Same language selected"
+    "teacher_removed": "تم إزالة المعلم",
+    "teacher_removed_desc": "تم إزالة المعلم من المدرسة بنجاح.",
+    "removal_failed": "فشلت الإزالة",
+    "removal_failed_desc": "فشل إزالة المعلم. يرجى المحاولة مرة أخرى.",
+    "request_approved": "تمت الموافقة على الطلب",
+    "request_approved_desc": "تمت الموافقة على طلب التحقق بنجاح.",
+    "request_rejected": "تم رفض الطلب",
+    "request_rejected_desc": "تم رفض طلب التحقق بنجاح.",
+    "action_failed": "فشل الإجراء",
+    "action_failed_desc": "فشلت معالجة طلب التحقق. يرجى المحاولة مرة أخرى.",
+    "access_denied": "الوصول مرفوض",
+    "access_denied_desc": "يتطلب وصول المسؤول",
+    "session_expired": "غير مصرح",
+    "session_expired_desc": "انتهت جلسة المسؤول. يرجى تسجيل الدخول مرة أخرى.",
+    "success": "نجاح",
+    "error": "خطأ",
+    "requirement_created": "تم إنشاء متطلب الدليل بنجاح.",
+    "requirement_updated": "تم تحديث متطلب الدليل بنجاح.",
+    "requirement_deleted": "تم حذف متطلب الدليل بنجاح.",
+    "requirement_delete_failed": "فشل حذف متطلب الدليل. قد يكون مرتبطاً بأدلة موجودة.",
+    "reorder_failed": "فشل إعادة ترتيب المتطلبات.",
+    "event_created": "تم إنشاء الفعالية بنجاح! 🎉",
+    "event_updated": "تم تحديث الفعالية بنجاح.",
+    "event_deleted": "تم حذف الفعالية بنجاح.",
+    "event_creation_failed": "فشل إنشاء الفعالية.",
+    "event_update_failed": "فشل تحديث الفعالية.",
+    "event_delete_failed": "فشل حذف الفعالية.",
+    "event_duplicated": "تم نسخ الفعالية",
+    "event_duplicated_desc": "تم إنشاء \"{{title}}\" كمسودة.",
+    "duplication_failed": "فشل النسخ",
+    "duplication_failed_desc": "فشل نسخ الفعالية",
+    "page_content_update_failed": "فشل تحديث محتوى صفحة الفعالية.",
+    "status_update_failed": "فشل تحديث حالة الفعالية.",
+    "same_language_selected": "تم تحديد نفس اللغة",
+    "photoConsentApproved": {
+      "title": "تمت الموافقة على موافقة الصور",
+      "description": "تمت الموافقة على موافقة الصور بنجاح."
+    },
+    "photoConsentApprovalFailed": {
+      "title": "فشلت الموافقة",
+      "description": "فشلت الموافقة على موافقة الصور. تم التراجع عن التغييرات."
+    },
+    "photoConsentRejected": {
+      "title": "تم رفض موافقة الصور",
+      "description": "تم رفض مستند موافقة الصور."
+    },
+    "photoConsentRejectionFailed": {
+      "title": "فشل الرفض",
+      "description": "فشل رفض موافقة الصور. تم التراجع عن التغييرات."
+    }
   },
   "case_study": {
-    "categories": "Categories",
-    "organize_case_study_categories": "Organize your case study by selecting relevant categories",
-    "add_categories": "Add Categories",
-    "enter_category": "Enter a category",
-    "press_enter_or_click_plus_category": "Press Enter or click + to add a category",
-    "suggested_categories": "Suggested Categories",
-    "selected_categories": "Selected Categories",
-    "add_suggested": "Add suggested",
-    "category_plastic_reduction": "Plastic Reduction",
-    "category_recycling_initiative": "Recycling Initiative",
-    "category_student_leadership": "Student Leadership",
-    "category_community_engagement": "Community Engagement",
-    "category_educational_campaign": "Educational Campaign",
-    "category_waste_audit": "Waste Audit",
-    "category_policy_change": "Policy Change",
-    "category_innovation": "Innovation",
-    "tags": "Tags",
-    "add_descriptive_tags": "Add descriptive tags to improve discoverability",
-    "add_tags": "Add Tags",
-    "enter_tag": "Enter a tag",
-    "press_enter_or_click_plus_tag": "Press Enter or click + to add a tag",
-    "suggested_tags": "Suggested Tags",
-    "selected_tags": "Selected Tags",
-    "tag_single_use_plastic": "single-use-plastic",
-    "tag_recycling": "recycling",
-    "tag_composting": "composting",
-    "tag_awareness": "awareness",
-    "tag_students": "students",
-    "tag_teachers": "teachers",
-    "tag_community": "community",
-    "tag_impact": "impact",
-    "tag_sustainability": "sustainability",
-    "tag_ocean_conservation": "ocean-conservation",
-    "impact_metrics": "Impact Metrics",
-    "add_quantifiable_metrics": "Add quantifiable metrics to showcase the project's impact",
-    "add_metric": "Add Metric",
-    "no_impact_metrics_yet": "No impact metrics yet. Click \"Add Metric\" to get started.",
-    "metric_number": "Metric {{number}}",
-    "metric_label_required": "Metric Label *",
-    "metric_value_required": "Value *",
-    "metric_unit": "Unit",
-    "metric_icon": "Icon",
-    "metric_label_placeholder": "e.g., Plastic Items Reduced",
-    "metric_value_placeholder": "e.g., 500 or 85%",
-    "metric_unit_placeholder": "e.g., items, kg, %",
-    "metric_icon_placeholder": "e.g., trash, droplet, leaf",
-    "project_timeline": "Project Timeline",
-    "create_chronological_timeline": "Create a chronological timeline of key milestones and events",
-    "add_section": "Add Section",
-    "no_timeline_sections_yet": "No timeline sections yet. Click \"Add Section\" to get started.",
-    "section_number": "Section {{number}}",
-    "section_title_required": "Section Title *",
-    "section_title_placeholder": "e.g., Project Launch, Week 1",
-    "section_content": "Content *",
-    "section_content_placeholder": "Describe what happened during this phase...",
-    "section_image_url": "Image URL",
+    "categories": "الفئات",
+    "organize_case_study_categories": "نظم دراسة الحالة عن طريق اختيار الفئات ذات الصلة",
+    "add_categories": "إضافة فئات",
+    "enter_category": "أدخل فئة",
+    "press_enter_or_click_plus_category": "اضغط Enter أو انقر + لإضافة فئة",
+    "suggested_categories": "الفئات المقترحة",
+    "selected_categories": "الفئات المحددة",
+    "add_suggested": "إضافة المقترحة",
+    "category_plastic_reduction": "تخفيض البلاستيك",
+    "category_recycling_initiative": "مبادرة إعادة التدوير",
+    "category_student_leadership": "قيادة الطلاب",
+    "category_community_engagement": "مشاركة المجتمع",
+    "category_educational_campaign": "حملة تعليمية",
+    "category_waste_audit": "تدقيق النفايات",
+    "category_policy_change": "تغيير السياسة",
+    "category_innovation": "ابتكار",
+    "tags": "الوسوم",
+    "add_descriptive_tags": "أضف وسوماً وصفية لتحسين قابلية الاكتشاف",
+    "add_tags": "إضافة وسوم",
+    "enter_tag": "أدخل وسماً",
+    "press_enter_or_click_plus_tag": "اضغط Enter أو انقر + لإضافة وسم",
+    "suggested_tags": "الوسوم المقترحة",
+    "selected_tags": "الوسوم المحددة",
+    "tag_single_use_plastic": "بلاستيك-أحادي-الاستخدام",
+    "tag_recycling": "إعادة-التدوير",
+    "tag_composting": "التسميد",
+    "tag_awareness": "التوعية",
+    "tag_students": "الطلاب",
+    "tag_teachers": "المعلمون",
+    "tag_community": "المجتمع",
+    "tag_impact": "التأثير",
+    "tag_sustainability": "الاستدامة",
+    "tag_ocean_conservation": "حفظ-المحيطات",
+    "impact_metrics": "مقاييس التأثير",
+    "add_quantifiable_metrics": "أضف مقاييس قابلة للقياس لإظهار تأثير المشروع",
+    "add_metric": "إضافة مقياس",
+    "no_impact_metrics_yet": "لا توجد مقاييس تأثير بعد. انقر \"إضافة مقياس\" للبدء.",
+    "metric_number": "المقياس {{number}}",
+    "metric_label_required": "تسمية المقياس *",
+    "metric_value_required": "القيمة *",
+    "metric_unit": "الوحدة",
+    "metric_icon": "الأيقونة",
+    "metric_label_placeholder": "مثال، المواد البلاستيكية المخفضة",
+    "metric_value_placeholder": "مثال، 500 أو 85%",
+    "metric_unit_placeholder": "مثال، مواد، كجم، %",
+    "metric_icon_placeholder": "مثال، نفايات، قطرة، ورقة",
+    "project_timeline": "جدول المشروع الزمني",
+    "create_chronological_timeline": "أنشئ جدولاً زمنياً للمعالم والأحداث الرئيسية",
+    "add_section": "إضافة قسم",
+    "no_timeline_sections_yet": "لا توجد أقسام زمنية بعد. انقر \"إضافة قسم\" للبدء.",
+    "section_number": "القسم {{number}}",
+    "section_title_required": "عنوان القسم *",
+    "section_title_placeholder": "مثال، إطلاق المشروع، الأسبوع 1",
+    "section_content": "المحتوى *",
+    "section_content_placeholder": "اشرح ما حدث خلال هذه المرحلة...",
+    "section_image_url": "رابط الصورة",
     "section_image_placeholder": "https://..."
+  },
+  "evidenceGallery": {
+    "title": "معرض الأدلة",
+    "subtitle": "تصفح وإدارة جميع تقديمات الأدلة",
+    "submissionCount": {
+      "single": "{{count}} تقديم",
+      "plural": "{{count}} تقديم"
+    },
+    "filters": {
+      "labels": {
+        "stage": "المرحلة",
+        "country": "الدولة",
+        "status": "الحالة",
+        "visibility": "الرؤية"
+      },
+      "options": {
+        "allStages": "جميع المراحل",
+        "allCountries": "جميع الدول",
+        "allStatuses": "جميع الحالات",
+        "allVisibility": "جميع أنواع الرؤية",
+        "public": "عام",
+        "private": "خاص"
+      },
+      "stages": {
+        "inspire": "إلهام",
+        "investigate": "استكشاف",
+        "act": "عمل"
+      },
+      "statuses": {
+        "pending": "قيد الانتظار",
+        "approved": "تمت الموافقة",
+        "rejected": "مرفوض"
+      }
+    },
+    "buttons": {
+      "clearFilters": "مسح المرشحات",
+      "view": "عرض",
+      "schoolHistory": "عرض سجل المدرسة"
+    },
+    "badges": {
+      "permissionPending": "الإذن قيد الانتظار",
+      "noPermission": "لا يوجد إذن",
+      "permissionApproved": "تمت الموافقة على الإذن",
+      "permissionRejected": "تم رفض الإذن",
+      "public": "عام",
+      "registeredOnly": "للمسجلين فقط"
+    },
+    "dialogs": {
+      "evidenceDetails": {
+        "title": "تفاصيل الدليل"
+      },
+      "schoolHistory": {
+        "title": "{{schoolName}} - جميع التقديمات ({{count}})"
+      }
+    },
+    "form": {
+      "labels": {
+        "title": "العنوان",
+        "description": "الوصف",
+        "school": "المدرسة",
+        "country": "الدولة",
+        "stage": "المرحلة",
+        "status": "الحالة",
+        "visibilitySetting": "إعداد الرؤية",
+        "photoPermission": "إذن الصور",
+        "files": "الملفات ({{count}})",
+        "videoLinks": "روابط الفيديو"
+      },
+      "values": {
+        "noDescription": "لا يوجد وصف",
+        "unknownSchool": "مدرسة غير معروفة",
+        "unknown": "غير معروف"
+      }
+    },
+    "warnings": {
+      "permissionRequired": "مطلوب إذن:",
+      "photoConsentPending": "لدى هذه المدرسة مستند موافقة صور قيد الانتظار. لا ينبغي استخدام هذا الدليل في دراسات الحالة العامة حتى تتم الموافقة على الإذن.",
+      "photoConsentMissing": "لم تحمل هذه المدرسة مستند موافقة صور. لا ينبغي استخدام هذا الدليل في دراسات الحالة العامة حتى تتم الموافقة على الإذن."
+    },
+    "emptyStates": {
+      "noEvidence": {
+        "title": "لا توجد تقديمات أدلة بعد",
+        "description": "ستظهر تقديمات الأدلة هنا بمجرد أن تبدأ المدارس في التحميل"
+      },
+      "noSchoolSubmissions": {
+        "title": "لا توجد تقديمات بعد",
+        "description": "لم تقدم هذه المدرسة أي أدلة بعد"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "نجاح",
+        "description": "تم تحديث حالة الدليل"
+      },
+      "updateFailed": {
+        "title": "خطأ",
+        "description": "فشل تحديث حالة الدليل"
+      }
+    }
+  },
+  "printableForms": {
+    "title": "مراجعة النماذج القابلة للطباعة",
+    "subtitle": "مراجعة وإدارة تقديمات النماذج القابلة للطباعة من المدارس",
+    "filters": {
+      "labels": {
+        "status": "الحالة",
+        "formType": "نوع النموذج",
+        "schoolSearch": "البحث عن المدارس"
+      },
+      "statusOptions": {
+        "all": "جميع الحالات",
+        "pending": "قيد الانتظار",
+        "approved": "تمت الموافقة",
+        "rejected": "مرفوض",
+        "revisionRequested": "مطلوب مراجعة"
+      },
+      "formTypeOptions": {
+        "all": "جميع الأنواع",
+        "audit": "تدقيق",
+        "actionPlan": "خطة عمل"
+      },
+      "placeholders": {
+        "searchSchool": "البحث باسم المدرسة..."
+      }
+    },
+    "table": {
+      "headers": {
+        "school": "المدرسة",
+        "formType": "نوع النموذج",
+        "status": "الحالة",
+        "submittedBy": "قدمه",
+        "uploadDate": "تاريخ التحميل",
+        "actions": "الإجراءات"
+      }
+    },
+    "buttons": {
+      "download": "تنزيل",
+      "review": "مراجعة",
+      "submitReview": "تقديم المراجعة",
+      "cancel": "إلغاء"
+    },
+    "dialogs": {
+      "reviewSubmission": {
+        "title": "مراجعة التقديم",
+        "labels": {
+          "school": "المدرسة:",
+          "formType": "نوع النموذج:",
+          "submittedBy": "قدمه:",
+          "status": "الحالة",
+          "adminNotes": "ملاحظات المسؤول (اختياري)"
+        },
+        "statusOptions": {
+          "approved": "تمت الموافقة",
+          "rejected": "مرفوض",
+          "revisionRequested": "مطلوب مراجعة"
+        },
+        "placeholders": {
+          "reviewNotes": "أضف أي ملاحظات حول هذه المراجعة..."
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingSubmissions": "جارٍ تحميل التقديمات..."
+    },
+    "emptyStates": {
+      "noSubmissions": {
+        "title": "لم يتم العثور على تقديمات",
+        "description": "لا توجد تقديمات نماذج قابلة للطباعة تطابق المرشحات"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "نجاح",
+        "description": "تم تحديث حالة التقديم بنجاح"
+      },
+      "updateFailed": {
+        "title": "خطأ",
+        "description": "فشل تحديث حالة التقديم",
+        "customMessage": "{{message}}"
+      },
+      "downloadFailed": {
+        "title": "خطأ",
+        "description": "فشل تنزيل التقديم"
+      }
+    },
+    "updating": "جارٍ التحديث..."
+  },
+  "caseStudies": {
+    "title": "إدارة دراسات الحالة",
+    "filters": {
+      "placeholders": {
+        "search": "البحث عن دراسات الحالة..."
+      },
+      "labels": {
+        "stage": "المرحلة",
+        "featuredStatus": "حالة التمييز"
+      },
+      "options": {
+        "allStages": "جميع المراحل",
+        "all": "الكل",
+        "featured": "مميز",
+        "notFeatured": "غير مميز"
+      },
+      "stages": {
+        "inspire": "إلهام",
+        "investigate": "استكشاف",
+        "act": "عمل"
+      }
+    },
+    "buttons": {
+      "createCaseStudy": "إنشاء دراسة حالة",
+      "preview": "معاينة",
+      "edit": "تحرير",
+      "feature": "تمييز",
+      "unfeature": "إلغاء التمييز",
+      "delete": "حذف",
+      "cancel": "إلغاء"
+    },
+    "badges": {
+      "featured": "مميز"
+    },
+    "dialogs": {
+      "delete": {
+        "title": "حذف دراسة الحالة",
+        "description": "هل أنت متأكد من حذف \"{{title}}\"؟ لا يمكن التراجع عن هذا الإجراء."
+      },
+      "editor": {
+        "title": "محرر دراسة الحالة"
+      }
+    },
+    "emptyStates": {
+      "noCaseStudies": "لم يتم العثور على دراسات حالة. أنشئ واحدة من تقديمات الأدلة المعتمدة."
+    },
+    "toasts": {
+      "created": {
+        "title": "تم إنشاء دراسة الحالة",
+        "description": "تم إنشاء دراسة الحالة بنجاح."
+      },
+      "createFailed": {
+        "title": "فشل الإنشاء",
+        "description": "فشل إنشاء دراسة الحالة. يرجى المحاولة مرة أخرى.",
+        "customMessage": "{{message}}"
+      },
+      "updated": {
+        "title": "تم تحديث دراسة الحالة",
+        "description": "تم تحديث دراسة الحالة بنجاح."
+      },
+      "updateFailed": {
+        "title": "فشل التحديث",
+        "description": "فشل تحديث دراسة الحالة. يرجى المحاولة مرة أخرى.",
+        "customMessage": "{{message}}"
+      },
+      "deleted": {
+        "title": "تم حذف دراسة الحالة",
+        "description": "تم حذف دراسة الحالة بنجاح."
+      },
+      "deleteFailed": {
+        "title": "فشل الحذف",
+        "description": "فشل حذف دراسة الحالة. يرجى المحاولة مرة أخرى.",
+        "customMessage": "{{message}}"
+      },
+      "featuredUpdated": {
+        "title": "تم تحديث دراسة الحالة",
+        "description": "تم تحديث حالة تمييز دراسة الحالة."
+      },
+      "featuredUpdateFailed": {
+        "title": "فشل التحديث",
+        "description": "فشل تحديث دراسة الحالة. يرجى المحاولة مرة أخرى."
+      },
+      "locked": {
+        "title": "دراسة الحالة مقفلة",
+        "description": "يتم تحرير دراسة الحالة هذه حالياً بواسطة {{lockedBy}}."
+      },
+      "cannotSave": {
+        "title": "لا يمكن الحفظ",
+        "description": "دراسة الحالة هذه مقفلة من قبل مستخدم آخر."
+      },
+      "lockAcquired": {
+        "title": "تم الحصول على القفل",
+        "description": "يمكنك الآن تحرير دراسة الحالة هذه."
+      }
+    }
+  },
+  "dataImport": {
+    "title": "استيراد البيانات من WordPress",
+    "subtitle": "استيراد المدارس والمستخدمين وعلاقاتهم من ملفات CSV أو Excel المصدرة من قاعدة بيانات WordPress الخاصة بك",
+    "alerts": {
+      "important": {
+        "title": "مهم:",
+        "description": "جهز ثلاثة ملفات منفصلة (تنسيق CSV أو Excel):",
+        "schools": "المدارس - يحتوي على معلومات المدرسة (الاسم، الدولة، النوع، إلخ)",
+        "users": "المستخدمون - يحتوي على معلومات المعلم/المستخدم (البريد الإلكتروني، الاسم، إلخ)",
+        "relationships": "العلاقات - تربط المستخدمين بالمدارس مع أدوارهم",
+        "templateNote": "قم بتنزيل القوالب أدناه لرؤية تنسيق الأعمدة المطلوب.",
+        "note": "قم بتنزيل القوالب أدناه لرؤية تنسيق الأعمدة المطلوب."
+      }
+    },
+    "tabs": {
+      "schools": "المدارس",
+      "users": "المستخدمون",
+      "relationships": "العلاقات"
+    },
+    "fileUpload": {
+      "titles": {
+        "schools": "ملف المدارس",
+        "users": "ملف المستخدمين",
+        "relationships": "ملف علاقات المدرسة-المستخدم"
+      },
+      "descriptions": {
+        "schools": "تحميل ملف CSV أو Excel يحتوي على بيانات المدارس",
+        "users": "تحميل ملف CSV أو Excel يحتوي على بيانات المستخدم/المعلم",
+        "relationships": "تحميل ملف CSV أو Excel يربط المستخدمين بالمدارس"
+      },
+      "labels": {
+        "clickToUpload": "انقر لتحميل الملف",
+        "formatNote": "تنسيق CSV أو Excel"
+      },
+      "validation": {
+        "success": "تم التحقق من الملف بنجاح",
+        "failed": "فشل التحقق",
+        "rowsFound": "تم العثور على {{rowCount}} صف مع {{headerCount}} عمود",
+        "errorsTitle": "أخطاء التحقق ({{count}}):",
+        "moreErrors": "... و {{count}} خطأ آخر",
+        "previewTitle": "معاينة (أول 5 صفوف):"
+      }
+    },
+    "buttons": {
+      "downloadTemplate": "تنزيل القالب",
+      "startImport": "بدء الاستيراد",
+      "importAnother": "استيراد ملف آخر",
+      "viewData": "عرض البيانات المستوردة"
+    },
+    "status": {
+      "readyToImport": "جاهز للاستيراد؟",
+      "allFilesUploaded": "تم تحميل جميع الملفات والتحقق منها",
+      "filesUploaded": "{{count}}/3 ملفات محملة",
+      "fixErrors": "يرجى إصلاح أخطاء التحقق قبل الاستيراد"
+    },
+    "importing": {
+      "title": "جارٍ استيراد البيانات...",
+      "description": "قد يستغرق هذا بضع دقائق. يرجى عدم إغلاق هذه الصفحة."
+    },
+    "results": {
+      "successTitle": "اكتمل الاستيراد بنجاح",
+      "errorTitle": "اكتمل الاستيراد مع أخطاء",
+      "summary": "الملخص:",
+      "schoolsImported": "المدارس المستوردة: {{count}}",
+      "usersImported": "المستخدمون المستوردون: {{count}}",
+      "relationshipsCreated": "العلاقات المنشأة: {{count}}",
+      "errors": "الأخطاء:",
+      "errorsCount": "الأخطاء ({{count}})",
+      "viewDetails": "عرض السجلات التفصيلية",
+      "newUsersCreated": "تم إنشاء {{count}} مستخدم جديد",
+      "sections": {
+        "schools": "المدارس",
+        "users": "المستخدمون",
+        "relationships": "العلاقات"
+      },
+      "tableHeaders": {
+        "row": "الصف",
+        "field": "الحقل",
+        "error": "الخطأ"
+      },
+      "stats": {
+        "processed": "تمت معالجته:",
+        "succeeded": "نجح:",
+        "failed": "فشل:"
+      }
+    },
+    "toasts": {
+      "fileValidated": {
+        "title": "تم التحقق من الملف",
+        "description": "تم التحقق من {{rowCount}} صف بنجاح"
+      },
+      "validationErrors": {
+        "title": "تم العثور على أخطاء التحقق",
+        "description": "تم العثور على {{count}} خطأ{{plural}} في التحقق في {{filename}}. يرجى المراجعة والإصلاح قبل الاستيراد."
+      },
+      "validationFailed": {
+        "title": "فشل التحقق",
+        "description": "فشل تحليل الملف",
+        "customMessage": "{{message}}"
+      },
+      "noFilesSelected": {
+        "title": "لم يتم تحديد ملفات",
+        "description": "يرجى تحميل ملف واحد على الأقل للاستيراد"
+      },
+      "importSuccess": {
+        "title": "اكتمل الاستيراد بنجاح",
+        "description": "تمت معالجة جميع البيانات بنجاح"
+      },
+      "importFailed": {
+        "title": "فشل الاستيراد",
+        "description": "فشل استيراد البيانات",
+        "customMessage": "{{message}}"
+      }
+    }
+  },
+  "events": {
+    "title": "إدارة الفعاليات",
+    "subtitle": "إنشاء وإدارة الفعاليات والإعلانات للمدارس",
+    "filters": {
+      "search": "البحث عن الفعاليات...",
+      "status": {
+        "all": "جميع الحالات",
+        "draft": "مسودة",
+        "published": "منشورة",
+        "archived": "مؤرشفة"
+      },
+      "type": {
+        "all": "جميع الأنواع"
+      }
+    },
+    "buttons": {
+      "createEvent": "إنشاء فعالية",
+      "createBanner": "إنشاء بانر",
+      "edit": "تحرير",
+      "duplicate": "نسخ",
+      "delete": "حذف",
+      "viewPage": "عرض الصفحة",
+      "sendAnnouncement": "إرسال إعلان",
+      "cancel": "إلغاء",
+      "save": "حفظ",
+      "saving": "جارٍ الحفظ..."
+    },
+    "form": {
+      "basicInfo": {
+        "title": "المعلومات الأساسية",
+        "labels": {
+          "title": "عنوان الفعالية *",
+          "slug": "معرف URL (slug)",
+          "description": "الوصف *",
+          "date": "التاريخ *",
+          "time": "الوقت",
+          "duration": "المدة",
+          "status": "الحالة *",
+          "featured": "فعالية مميزة"
+        },
+        "placeholders": {
+          "title": "أدخل عنوان الفعالية",
+          "slug": "event-title",
+          "description": "اشرح الفعالية للمشاركين المحتملين...",
+          "time": "مثال، 14:00 GMT",
+          "duration": "مثال، ساعتان",
+          "autoGenerate": "يتم الإنشاء تلقائياً من العنوان"
+        },
+        "statuses": {
+          "draft": "مسودة",
+          "published": "منشورة",
+          "archived": "مؤرشفة"
+        }
+      },
+      "eventType": {
+        "title": "نوع الفعالية",
+        "options": {
+          "webinar": "ندوة عبر الإنترنت",
+          "workshop": "ورشة عمل",
+          "competition": "مسابقة",
+          "campaign": "حملة",
+          "conference": "مؤتمر",
+          "training": "تدريب",
+          "celebration": "احتفال",
+          "other": "أخرى"
+        }
+      },
+      "location": {
+        "title": "الموقع",
+        "labels": {
+          "type": "نوع الموقع",
+          "venue": "المكان",
+          "meetingLink": "رابط الاجتماع"
+        },
+        "types": {
+          "online": "عبر الإنترنت",
+          "inPerson": "شخصياً",
+          "hybrid": "هجين"
+        },
+        "placeholders": {
+          "venue": "أدخل عنوان المكان أو اسمه",
+          "meetingLink": "https://zoom.us/j/..."
+        }
+      },
+      "registration": {
+        "title": "التسجيل",
+        "labels": {
+          "required": "يتطلب التسجيل",
+          "deadline": "موعد التسجيل النهائي",
+          "capacity": "السعة القصوى",
+          "externalLink": "رابط التسجيل الخارجي"
+        },
+        "helpText": {
+          "capacity": "اتركه فارغاً لعدم وجود حد",
+          "externalLink": "اتركه فارغاً لاستخدام التسجيل المدمج"
+        },
+        "placeholders": {
+          "externalLink": "https://..."
+        }
+      },
+      "organizers": {
+        "title": "المنظمون",
+        "labels": {
+          "organizers": "منظمو الفعالية",
+          "contactEmail": "بريد جهة الاتصال"
+        },
+        "placeholders": {
+          "organizers": "أدخل أسماء أو منظمات المنظمين",
+          "contactEmail": "contact@example.com"
+        }
+      },
+      "targeting": {
+        "title": "الجمهور المستهدف",
+        "labels": {
+          "targetCountries": "الدول المستهدفة",
+          "targetStages": "مراحل البرنامج المستهدفة"
+        },
+        "helpText": {
+          "countries": "اتركه فارغاً لجميع الدول",
+          "stages": "اتركه فارغاً لجميع المراحل"
+        },
+        "placeholders": {
+          "selectCountries": "اختر الدول...",
+          "selectStages": "اختر المراحل..."
+        },
+        "stages": {
+          "inspire": "إلهام",
+          "investigate": "استكشاف",
+          "act": "عمل"
+        }
+      },
+      "media": {
+        "title": "الوسائط والمواد",
+        "labels": {
+          "thumbnailUrl": "صورة مصغرة للفعالية",
+          "bannerUrl": "صورة بانر",
+          "attachments": "المرفقات"
+        },
+        "buttons": {
+          "uploadThumbnail": "تحميل صورة مصغرة",
+          "uploadBanner": "تحميل بانر",
+          "addAttachment": "إضافة مرفق"
+        },
+        "attachment": {
+          "title": "العنوان",
+          "url": "الرابط",
+          "type": "النوع"
+        }
+      },
+      "pageContent": {
+        "title": "محتوى الصفحة",
+        "description": "قم بتخصيص الصفحة المخصصة لهذه الفعالية",
+        "enableCustomPage": "تمكين الصفحة المخصصة",
+        "pageContentPlaceholder": "أدخل محتوى الصفحة بتنسيق Markdown أو HTML..."
+      },
+      "notifications": {
+        "title": "الإشعارات",
+        "sendReminders": "إرسال تذكيرات تلقائية للمسجلين",
+        "reminderDays": "أيام قبل الفعالية:"
+      }
+    },
+    "banners": {
+      "title": "بانرات الفعاليات",
+      "active": "نشط",
+      "inactive": "غير نشط",
+      "noEvent": "لا توجد فعالية مرتبطة"
+    },
+    "table": {
+      "headers": {
+        "title": "العنوان",
+        "date": "التاريخ",
+        "type": "النوع",
+        "status": "الحالة",
+        "registrations": "التسجيلات",
+        "actions": "الإجراءات"
+      }
+    },
+    "emptyState": {
+      "title": "لا توجد فعاليات",
+      "description": "ابدأ بإنشاء فعالية جديدة"
+    },
+    "toasts": {
+      "created": {
+        "title": "تم إنشاء الفعالية",
+        "description": "تم إنشاء {{title}} بنجاح."
+      },
+      "updated": {
+        "title": "تم تحديث الفعالية",
+        "description": "تم تحديث {{title}} بنجاح."
+      },
+      "deleted": {
+        "title": "تم حذف الفعالية",
+        "description": "تم حذف الفعالية بنجاح."
+      },
+      "duplicated": {
+        "title": "تم نسخ الفعالية",
+        "description": "تم إنشاء نسخة من {{title}} كمسودة."
+      },
+      "announcementSent": {
+        "title": "تم إرسال الإعلان",
+        "description": "تم إرسال إعلان الفعالية بنجاح."
+      },
+      "bannerCreated": {
+        "title": "تم إنشاء البانر",
+        "description": "تم إنشاء بانر الفعالية بنجاح."
+      },
+      "bannerUpdated": {
+        "title": "تم تحديث البانر",
+        "description": "تم تحديث بانر الفعالية بنجاح."
+      },
+      "bannerDeleted": {
+        "title": "تم حذف البانر",
+        "description": "تم حذف البانر بنجاح."
+      },
+      "validationError": {
+        "title": "خطأ في التحقق",
+        "description": "يرجى ملء جميع الحقول المطلوبة."
+      }
+    },
+    "dialogs": {
+      "deleteEvent": {
+        "title": "حذف الفعالية",
+        "description": "هل أنت متأكد من حذف \"{title}\"؟ لا يمكن التراجع عن هذا الإجراء."
+      },
+      "deleteBanner": {
+        "title": "حذف البانر",
+        "description": "هل أنت متأكد من حذف هذا البانر؟ لا يمكن التراجع عن هذا الإجراء."
+      },
+      "bannerEditor": {
+        "titleCreate": "إنشاء بانر",
+        "titleEdit": "تحرير البانر",
+        "labels": {
+          "bannerText": "نص البانر",
+          "required": "*",
+          "event": "الفعالية",
+          "gradient": "التدرج",
+          "active": "نشط"
+        },
+        "placeholders": {
+          "selectEvent": "اختر فعالية"
+        }
+      },
+      "newsletter": {
+        "title": "إرسال إعلان الفعالية",
+        "description": "إرسال \"{title}\" عبر البريد الإلكتروني للمعلمين.",
+        "labels": {
+          "recipientType": "نوع المستلم",
+          "emailAddresses": "عناوين البريد الإلكتروني",
+          "commaSeparated": "(مفصولة بفاصلة)"
+        },
+        "options": {
+          "allTeachers": "جميع المعلمين ({count} معلم)",
+          "customEmailList": "قائمة بريد إلكتروني مخصصة"
+        },
+        "placeholders": {
+          "emailList": "email1@example.com, email2@example.com"
+        }
+      }
+    },
+    "buttons": {
+      "cancel": "إلغاء",
+      "delete": "حذف",
+      "deleting": "جارٍ الحذف...",
+      "save": "حفظ",
+      "saving": "جارٍ الحفظ...",
+      "sendAnnouncement": "إرسال الإعلان",
+      "sending": "جارٍ الإرسال..."
+    }
+  },
+  "reviews": {
+    "filters": {
+      "evidenceReview": "مراجعة الأدلة",
+      "auditReview": "مراجعة التدقيق",
+      "photoConsent": "موافقة الصور"
+    },
+    "evidence": {
+      "title": "قائمة مراجعة الأدلة",
+      "selected": "{count} محدد",
+      "bulkApprove": "موافقة جماعية",
+      "bulkReject": "رفض جماعي",
+      "delete": "حذف",
+      "filterAll": "الكل",
+      "filterPending": "قيد الانتظار",
+      "filterApproved": "تمت الموافقة",
+      "filterRejected": "مرفوض",
+      "filterByAssignee": "التصفية حسب المعين",
+      "allEvidence": "جميع الأدلة",
+      "unassigned": "غير معين",
+      "assignedToMe": "معين لي",
+      "selectAll": "تحديد الكل ({count} عنصر)",
+      "allCaughtUp": "جميعها منجزة!",
+      "noPendingEvidence": "لا توجد تقديمات أدلة قيد الانتظار للمراجعة.",
+      "badges": {
+        "public": "عام",
+        "photoApproved": "تمت الموافقة على الصور",
+        "photoPending": "الصورة قيد الانتظار",
+        "noPhotoConsent": "لا توجد موافقة على الصور",
+        "new": "جديد"
+      },
+      "labels": {
+        "schoolId": "معرف المدرسة:",
+        "submitted": "تم التقديم:",
+        "files": "الملفات:",
+        "assignedTo": "معين لـ:"
+      },
+      "buttons": {
+        "approve": "موافقة",
+        "reject": "رفض",
+        "cancel": "إلغاء",
+        "confirm": "تأكيد",
+        "processing": "جارٍ المعالجة..."
+      },
+      "modal": {
+        "approveTitle": "الموافقة على الدليل",
+        "rejectTitle": "رفض الدليل",
+        "reviewNotes": "ملاحظات المراجعة",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "ملاحظات اختيارية للمدرسة...",
+        "feedbackRequired": "يرجى تقديم ملاحظات حول سبب رفض هذا الدليل..."
+      },
+      "consentWarning": {
+        "title": "الموافقة بدون موافقة الصور؟ 📸",
+        "noConsentProvided": "لم تقدم هذه المدرسة <strong>موافقة معتمدة على الصور</strong>.",
+        "statusPending": "مستند موافقة الصور الخاص بهم قيد المراجعة حالياً.",
+        "statusRejected": "تم رفض مستند موافقة الصور الخاص بهم.",
+        "statusMissing": "لم يتم تحميل مستند موافقة الصور.",
+        "warningMessage": "الموافقة على هذا الدليل تعني أنه <strong>لن يكون مؤهلاً</strong> للاستخدام في دراسات الحالة العامة أو المواد الترويجية ما لم تتم الموافقة على موافقة الصور لاحقاً.",
+        "confirmQuestion": "هل تريد المتابعة بالموافقة على أي حال؟",
+        "proceedAnyway": "نعم، المتابعة على أي حال",
+        "goBack": "الرجوع"
+      },
+      "bulkDialog": {
+        "reviewTitle": "مراجعة الأدلة الجماعية",
+        "deleteTitle": "حذف الأدلة الجماعي",
+        "approveDescription": "أنت على وشك الموافقة على {count} تقديم دليل. سيصبحون مرئيين وفقاً لإعدادات الرؤية الخاصة بهم.",
+        "rejectDescription": "أنت على وشك رفض {count} تقديم دليل. سيتم إخطار المدارس ويمكنها إعادة التقديم.",
+        "deleteDescription": "أنت على وشك حذف {count} تقديم دليل نهائياً. لا يمكن التراجع عن هذا الإجراء.",
+        "notes": "الملاحظات (اختياري للموافقة، مطلوب للرفض)",
+        "notesPlaceholder": "أدخل الملاحظات للمدارس...",
+        "confirm": "تأكيد",
+        "cancel": "إلغاء",
+        "processing": "جارٍ المعالجة..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "ملاحظات المراجعة مطلوبة",
+        "feedbackRequired": "يرجى تقديم ملاحظات عند رفض الدليل."
+      }
+    },
+    "assignment": {
+      "assignTo": "تعيين إلى...",
+      "unassigned": "غير معين",
+      "toasts": {
+        "success": "تم تعيين الدليل بنجاح",
+        "failed": "فشل تعيين الدليل"
+      }
+    },
+    "photoConsent": {
+      "title": "قائمة مراجعة موافقة الصور",
+      "noPending": "لا توجد موافقة صور قيد الانتظار",
+      "allReviewed": "تمت مراجعة جميع تقديمات موافقة الصور!",
+      "viewDocument": "عرض المستند",
+      "buttons": {
+        "approve": "موافقة",
+        "reject": "رفض"
+      },
+      "confirmApprove": "الموافقة على موافقة الصور لـ {name}؟",
+      "rejectionNotes": "ملاحظات الرفض لـ {name}:",
+      "rejectionRequired": "ملاحظات الرفض مطلوبة"
+    },
+    "audit": {
+      "title": "قائمة مراجعة التدقيق",
+      "noPending": "لا توجد تدقيقات قيد الانتظار",
+      "allReviewed": "تمت مراجعة جميع التدقيقات. عمل رائع!",
+      "labels": {
+        "submittedBy": "قدمه:",
+        "totalPlasticItems": "إجمالي المواد البلاستيكية:"
+      },
+      "parts": {
+        "part1": "الجزء 1: معلومات المدرسة",
+        "part2": "الجزء 2: غرفة الغداء وغرفة الموظفين",
+        "part3": "الجزء 3: الفصول الدراسية ودورات المياه",
+        "part4": "الجزء 4: إدارة النفايات"
+      },
+      "part1": {
+        "schoolName": "اسم المدرسة:",
+        "studentCount": "عدد الطلاب:",
+        "staffCount": "عدد الموظفين:",
+        "auditDate": "تاريخ التدقيق:",
+        "auditTeam": "أعضاء فريق التدقيق:",
+        "noData": "لا توجد بيانات متاحة"
+      },
+      "part2": {
+        "lunchroom": "غرفة الغداء",
+        "staffroom": "غرفة الموظفين",
+        "plasticBottles": "زجاجات بلاستيكية:",
+        "plasticCups": "أكواب بلاستيكية:",
+        "plasticCutlery": "أدوات مائدة بلاستيكية:",
+        "plasticStraws": "مصاصات بلاستيكية:",
+        "foodPackaging": "تغليف الطعام:",
+        "clingFilm": "غلاف بلاستيكي:",
+        "additionalNotes": "ملاحظات إضافية:",
+        "noData": "لا توجد بيانات متاحة"
+      },
+      "part3": {
+        "classrooms": "الفصول الدراسية",
+        "bathrooms": "دورات المياه",
+        "pensPencils": "الأقلام وأقلام الرصاص:",
+        "stationeryItems": "مواد قرطاسية:",
+        "bottlesCups": "زجاجات وأكواب:",
+        "otherItems": "مواد أخرى:",
+        "soapDispensers": "موزعات الصابون:",
+        "additionalNotes": "ملاحظات إضافية:",
+        "noData": "لا توجد بيانات متاحة"
+      },
+      "part4": {
+        "hasRecyclingSystem": "لديه نظام إعادة تدوير:",
+        "recyclingBinLocations": "مواقع صناديق إعادة التدوير:",
+        "plasticWasteDestination": "وجهة النفايات البلاستيكية:",
+        "compostsOrganicWaste": "يسمد النفايات العضوية:",
+        "hasPlasticReductionPolicy": "لديه سياسة تخفيض البلاستيك:",
+        "policyDetails": "تفاصيل السياسة:",
+        "additionalNotes": "ملاحظات إضافية:",
+        "yes": "نعم",
+        "no": "لا",
+        "noData": "لا توجد بيانات متاحة"
+      },
+      "buttons": {
+        "approve": "موافقة",
+        "reject": "رفض"
+      },
+      "modal": {
+        "approveTitle": "الموافقة على التدقيق",
+        "rejectTitle": "رفض التدقيق",
+        "reviewNotes": "ملاحظات المراجعة",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "ملاحظات اختيارية للمدرسة...",
+        "feedbackRequired": "يرجى تقديم ملاحظات حول سبب رفض هذا التدقيق...",
+        "cancel": "إلغاء",
+        "confirm": "تأكيد",
+        "processing": "جارٍ المعالجة..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "ملاحظات المراجعة مطلوبة",
+        "feedbackRequired": "يرجى تقديم ملاحظات عند رفض التدقيق."
+      }
+    },
+    "toasts": {
+      "success": "نجاح",
+      "evidenceReviewSuccess": "تم تقديم مراجعة الدليل بنجاح.",
+      "reviewFailed": "فشلت المراجعة",
+      "evidenceReviewFailed": "فشل تحديث الدليل. تم التراجع عن التغييرات.",
+      "auditReviewed": "تمت مراجعة التدقيق",
+      "auditApproved": "تمت الموافقة على التدقيق.",
+      "auditRejected": "تم رفض التدقيق.",
+      "auditReviewFailed": "فشلت مراجعة التدقيق. تم التراجع عن التغييرات.",
+      "bulkReviewSuccess": "اكتملت مراجعة الأدلة الجماعية بنجاح.",
+      "bulkReviewFailed": "فشل إكمال مراجعة الأدلة الجماعية. تم التراجع عن التغييرات.",
+      "bulkDeleteSuccess": "تم حذف الأدلة المحددة بنجاح.",
+      "bulkDeleteFailed": "فشل حذف الأدلة. تم التراجع عن التغييرات."
+    }
   }
 }

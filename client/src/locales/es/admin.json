@@ -1,81 +1,469 @@
 {
+  "tabs": {
+    "dashboard": "Panel",
+    "schools": "Escuelas",
+    "content": "Contenido",
+    "reviewQueue": "Cola de Revisión",
+    "program": "Programa",
+    "communications": "Comunicaciones"
+  },
   "navigation": {
     "overview": "Resumen",
-    "analytics": "Analítica",
+    "analytics": "Análisis",
     "evidence": "Revisión de Evidencia",
     "resources": "Gestión de Recursos",
     "schools": "Gestión de Escuelas",
-    "admin_panel": "Panel de Administración"
+    "admin_panel": "Panel de Administración",
+    "manageSchools": "Gestionar Escuelas",
+    "manageTeams": "Gestionar Equipos",
+    "userManagement": "Gestión de Usuarios",
+    "userActivity": "Actividad de Usuarios",
+    "importData": "Importar Datos",
+    "manageResources": "Gestionar Recursos",
+    "manageResourcePacks": "Gestionar Paquetes de Recursos",
+    "createCaseStudies": "Crear Casos de Estudio",
+    "manageEvents": "Gestionar Eventos",
+    "evidenceGallery": "Galería de Evidencia",
+    "setEvidenceRequirements": "Establecer Requisitos de Evidencia",
+    "reviewPrintableForms": "Revisar Formularios Imprimibles"
+  },
+  "header": {
+    "title": "Panel de Administración",
+    "subtitle": "Gestiona escuelas, revisa evidencia y monitorea el progreso del programa"
+  },
+  "welcomeBanner": {
+    "title": "¡Qué Suerte!",
+    "greeting": "¡Bienvenido al equipo administrativo de Plastic Clever Schools!",
+    "description": "Ahora tienes acceso completo para gestionar el programa, revisar envíos de evidencia, publicar casos de estudio y ayudar a las escuelas en su camino hacia la reducción de residuos plásticos."
+  },
+  "export": {
+    "title": "Exportar Datos",
+    "buttonLabel": "Exportar Datos",
+    "description": "Elija el formato y los datos a exportar:",
+    "selectFormatPlaceholder": "Seleccionar formato",
+    "formats": {
+      "csv": "Formato CSV",
+      "excel": "Formato Excel (.xlsx)"
+    },
+    "buttons": {
+      "exportSchools": "Exportar Datos de Escuelas",
+      "exportEvidence": "Exportar Datos de Evidencia",
+      "exportUsers": "Exportar Datos de Usuarios",
+      "withCurrentFilters": "(con filtros actuales)"
+    },
+    "toasts": {
+      "success": {
+        "title": "Exportación Exitosa",
+        "description": "Los datos de {{type}} se han exportado como {{format}}."
+      },
+      "failed": {
+        "title": "Exportación Fallida",
+        "description": "Error al exportar datos. Por favor, inténtelo de nuevo."
+      }
+    }
+  },
+  "loading": {
+    "dashboard": "Cargando panel de administración...",
+    "caseStudies": "Cargando casos de estudio..."
   },
   "overview": {
     "title": "Resumen de Administración",
-    "subtitle": "Monitorear la actividad y el rendimiento de la plataforma",
-    "total_schools": "Total de Escuelas",
-    "total_students": "Total de Estudiantes",
+    "subtitle": "Monitorear actividad y rendimiento de la plataforma",
+    "total_schools": "Escuelas Totales",
+    "total_students": "Estudiantes Totales",
     "pending_evidence": "Evidencia Pendiente",
     "resources_uploaded": "Recursos Subidos"
   },
-  "analytics": {
-    "title": "Analítica de Plataforma",
-    "subtitle": "Información completa sobre la efectividad del programa",
-    "global_metrics": "Métricas Globales",
-    "enrollment_over_time": "Inscripción de Escuelas a lo Largo del Tiempo",
-    "evidence_submissions": "Presentaciones de Evidencia por Etapa",
-    "geographic_distribution": "Distribución Geográfica",
-    "completion_rates": "Tasas de Finalización por Etapa",
-    "resource_downloads": "Estadísticas de Descarga de Recursos",
-    "filter_by_period": "Filtrar por Período",
-    "last_30_days": "Últimos 30 Días",
-    "last_90_days": "Últimos 90 Días",
-    "last_year": "Último Año",
-    "all_time": "Todo el Tiempo",
-    "export_report": "Exportar Informe",
-    "charts": {
-      "schools_by_country": "Escuelas por País",
-      "completion_by_stage": "Tasa de Finalización por Etapa",
-      "monthly_registrations": "Registros Mensuales de Escuelas",
-      "evidence_status": "Estado de Revisión de Evidencia"
+  "userManagement": {
+    "title": "Gestión de Usuarios",
+    "buttons": {
+      "inviteAdmin": "Invitar Administrador",
+      "invitePartner": "Invitar Colaborador",
+      "sendInvitation": "Enviar Invitación",
+      "sending": "Enviando...",
+      "cancel": "Cancelar",
+      "filterAll": "Todos los Usuarios",
+      "filterWithSchools": "Con Escuelas",
+      "filterWithoutSchools": "Sin Escuelas",
+      "bulkDelete": "Eliminar Usuarios Seleccionados ({{count}})",
+      "confirmDelete": "Confirmar {{mode}}",
+      "deleting": "Eliminando...",
+      "confirmSoftDelete": "Confirmar Eliminación Suave",
+      "confirmTransfer": "Confirmar Transferencia",
+      "confirmHardDelete": "Confirmar Eliminación Permanente"
+    },
+    "dialogs": {
+      "invitePartner": {
+        "title": "Invitar Nuevo Colaborador",
+        "description": "Los colaboradores tienen acceso similar al de administrador pero no pueden asignar roles ni descargar datos de escuelas."
+      },
+      "inviteAdmin": {
+        "title": "Invitar Nuevo Administrador"
+      },
+      "deleteUser": {
+        "title": "Eliminar Usuario",
+        "description": "Elija cómo manejar el contenido y los datos del usuario"
+      },
+      "bulkDelete": {
+        "title": "Eliminación Masiva de {{count}} Usuario{{plural}}",
+        "description": "Elija cómo manejar el contenido y los datos de los usuarios seleccionados",
+        "selectedUsers": "Usuarios Seleccionados: {{count}} usuario{{plural}}"
+      },
+      "changeRole": {
+        "title": "Cambiar Rol de Usuario",
+        "description": "Actualizar el rol y permisos para {{name}}"
+      },
+      "deletionPreview": {
+        "title": "Vista Previa de Eliminación",
+        "description": "Este usuario tiene los siguientes datos:",
+        "evidence": "Evidencia: {{count}}",
+        "caseStudies": "Casos de Estudio: {{count}}",
+        "reductionPromises": "Promesas de Reducción: {{count}}",
+        "mediaAssets": "Recursos Multimedia: {{count}}",
+        "certificates": "Certificados: {{count}}",
+        "importBatches": "Lotes de Importación: {{count}}",
+        "teacherInvitations": "Invitaciones de Profesores: {{count}}",
+        "adminInvitations": "Invitaciones de Administradores: {{count}}"
+      }
+    },
+    "form": {
+      "labels": {
+        "emailAddress": "Dirección de Correo Electrónico *",
+        "platformRole": "Rol en la Plataforma",
+        "roleDescription": "Seleccione el rol y permisos del usuario"
+      },
+      "placeholders": {
+        "partnerEmail": "colaborador@ejemplo.com",
+        "adminEmail": "admin@ejemplo.com",
+        "searchUsers": "Buscar por nombre o correo electrónico..."
+      }
+    },
+    "table": {
+      "headers": {
+        "name": "Nombre",
+        "email": "Correo Electrónico",
+        "role": "Rol",
+        "schools": "Escuelas",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "showingCount": "Mostrando {{filtered}} de {{total}} usuarios"
+    },
+    "deletionModes": {
+      "soft": {
+        "label": "Eliminación Suave (Recomendado)",
+        "description": "Los usuarios se ocultarán del sistema pero todos los datos se conservan. Se pueden restaurar más tarde."
+      },
+      "transfer": {
+        "label": "Transferir Propiedad",
+        "description": "Transferir todo el contenido a la cuenta del sistema \"Usuario Archivado\", luego eliminar el usuario. Los datos históricos se conservan.",
+        "bulkDescription": "Transferir todo el contenido a la cuenta del sistema \"Usuario Archivado\", luego eliminar los usuarios. Los datos históricos se conservan."
+      },
+      "hard": {
+        "label": "Eliminación Permanente",
+        "description": "ADVERTENCIA: Eliminar permanentemente al usuario Y todo su contenido. ¡Esto no se puede deshacer!",
+        "bulkDescription": "ADVERTENCIA: Eliminar permanentemente a los usuarios Y todo su contenido. ¡Esto no se puede deshacer!"
+      }
+    },
+    "roles": {
+      "teacher": {
+        "label": "Profesor",
+        "description": "Usuario estándar con permisos a nivel de escuela"
+      },
+      "school": {
+        "label": "Escuela (Director)",
+        "description": "Rol de director con permisos de gestión escolar"
+      },
+      "partner": {
+        "label": "Colaborador",
+        "description": "Acceso similar al de administrador pero no puede asignar roles ni descargar datos de escuelas"
+      },
+      "admin": {
+        "label": "Administrador",
+        "description": "Acceso completo a la plataforma incluyendo asignación de roles y descarga de datos"
+      }
+    },
+    "badges": {
+      "pending": "Pendiente",
+      "pendingInvite": "Invitación Pendiente",
+      "active": "Activo",
+      "admin": "Administrador",
+      "partner": "Colaborador"
+    },
+    "toasts": {
+      "invitationSent": {
+        "title": "Invitación Enviada",
+        "adminDescription": "La invitación de administrador se ha enviado correctamente.",
+        "partnerDescription": "La invitación de colaborador se ha enviado correctamente."
+      },
+      "invitationFailed": {
+        "title": "Invitación Fallida",
+        "adminDescription": "Error al enviar la invitación de administrador. Por favor, inténtelo de nuevo.",
+        "partnerDescription": "Error al enviar la invitación de colaborador. Por favor, inténtelo de nuevo.",
+        "defaultDescription": "{{message}}"
+      },
+      "invitationDeleted": {
+        "title": "Invitación Eliminada",
+        "description": "La invitación de administrador se ha eliminado correctamente."
+      },
+      "deleteFailed": {
+        "title": "Eliminación Fallida",
+        "description": "Error al eliminar la invitación. Por favor, inténtelo de nuevo.",
+        "userDescription": "Error al eliminar el usuario. Por favor, inténtelo de nuevo.",
+        "customMessage": "{{message}}"
+      },
+      "userDeleted": {
+        "title": "Usuario Eliminado",
+        "softDeleted": "El usuario se ha eliminado de forma suave correctamente.",
+        "transferred": "El usuario se ha eliminado correctamente (contenido transferido).",
+        "hardDeleted": "El usuario se ha eliminado permanentemente de forma correcta."
+      },
+      "userUpdated": {
+        "title": "Usuario Actualizado",
+        "description": "El rol del usuario se ha actualizado correctamente."
+      },
+      "updateFailed": {
+        "title": "Actualización Fallida",
+        "description": "Error al actualizar el rol del usuario. Por favor, inténtelo de nuevo.",
+        "customMessage": "{{message}}"
+      },
+      "emailRequired": {
+        "title": "Correo Electrónico Requerido",
+        "description": "Por favor, introduzca una dirección de correo electrónico."
+      },
+      "bulkDeleteSuccessful": {
+        "title": "Eliminación Masiva Exitosa",
+        "description": "{{count}} usuario{{plural}} eliminado correctamente",
+        "withEvidence": "{{count}} usuario{{plural}} eliminado correctamente ({{evidenceCount}} elemento{{evidencePlural}} de evidencia eliminado)",
+        "withCaseStudies": "Advertencia: {{caseStudyCount}} caso{{caseStudyPlural}} afectado",
+        "creatorsRemoved": "y sus creadores han sido eliminados."
+      },
+      "bulkDeleteFailed": {
+        "title": "Eliminación Masiva Fallida",
+        "description": "Error al eliminar usuarios. Por favor, inténtelo de nuevo.",
+        "allFailed": "Error al eliminar todos los usuarios seleccionados:",
+        "customMessage": "{{message}}"
+      },
+      "bulkDeletePartial": {
+        "title": "Eliminación Masiva Parcialmente Exitosa",
+        "description": "{{successCount}} usuario{{plural}} eliminado correctamente. Error al eliminar {{failedCount}}."
+      }
+    },
+    "emptyStates": {
+      "noUsers": {
+        "title": "No Se Encontraron Usuarios",
+        "noMatch": "Ningún usuario coincide con sus criterios de búsqueda.",
+        "allAssigned": "Todos los usuarios están asignados a al menos una escuela.",
+        "noneInSystem": "No se encontraron usuarios en el sistema."
+      }
+    },
+    "adminInvitations": {
+      "title": "Invitaciones de Administrador",
+      "table": {
+        "email": "Correo Electrónico",
+        "status": "Estado",
+        "createdAt": "Creado",
+        "expiresAt": "Expira",
+        "actions": "Acciones"
+      }
     }
-  },
-  "evidence": {
-    "title": "Revisión de Evidencia",
-    "subtitle": "Revisar y moderar presentaciones de evidencia",
-    "pending_review": "Revisión Pendiente",
-    "approved": "Aprobado",
-    "needs_revision": "Necesita Revisión",
-    "filter_by_stage": "Filtrar por Etapa",
-    "filter_by_status": "Filtrar por Estado",
-    "sort_by": "Ordenar por",
-    "newest_first": "Más Reciente Primero",
-    "oldest_first": "Más Antiguo Primero",
-    "school_name": "Nombre de la Escuela",
-    "stage": "Etapa",
-    "submitted_date": "Fecha de Presentación",
-    "review_evidence": "Revisar Evidencia",
-    "approve_evidence": "Aprobar Evidencia",
-    "request_revision": "Solicitar Revisión",
-    "add_feedback": "Agregar Comentarios",
-    "feedback_placeholder": "Proporcionar comentarios para la escuela...",
-    "approve_button": "Aprobar",
-    "revision_button": "Solicitar Revisión",
-    "evidence_approved": "Evidencia aprobada exitosamente",
-    "evidence_revision_requested": "Revisión solicitada exitosamente",
-    "bulk_actions": "Acciones Masivas",
-    "select_all": "Seleccionar Todo",
-    "bulk_approve": "Aprobación Masiva",
-    "bulk_request_revision": "Solicitud de Revisión Masiva"
   },
   "resources": {
     "title": "Gestión de Recursos",
-    "subtitle": "Subir y gestionar recursos educativos",
+    "subtitle": "Cargar y gestionar recursos educativos",
     "upload_resource": "Subir Nuevo Recurso",
     "resource_library": "Biblioteca de Recursos",
     "featured_resources": "Recursos Destacados",
+    "buttons": {
+      "addResource": "Añadir Recurso",
+      "bulkUpload": "Carga Masiva de Recursos",
+      "uploadFile": "Subir Archivo",
+      "uploading": "Subiendo...",
+      "replaceFile": "Reemplazar Archivo",
+      "removeFile": "Eliminar Archivo",
+      "autoFillAI": "Autocompletar con IA",
+      "generating": "Generando...",
+      "saveResource": "Guardar Recurso",
+      "cancel": "Cancelar",
+      "preview": "Vista Previa",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "deleteResources": "Eliminar Recursos",
+      "deleting": "Eliminando...",
+      "bulkDelete": "Eliminación Masiva ({{count}})",
+      "insertImage": "Insertar Imagen"
+    },
+    "form": {
+      "titles": {
+        "addNew": "Añadir Nuevo Recurso",
+        "edit": "Editar Recurso"
+      },
+      "labels": {
+        "title": "Título *",
+        "description": "Descripción",
+        "stage": "Etapa del Programa *",
+        "ageRange": "Rango de Edad",
+        "languages": "Idiomas Disponibles *",
+        "country": "País de Destino",
+        "visibility": "Visibilidad *",
+        "resourceFile": "Archivo de Recurso",
+        "resourceType": "Tipo de Recurso",
+        "theme": "Tema"
+      },
+      "placeholders": {
+        "title": "Introducir título del recurso",
+        "description": "Introducir descripción del recurso",
+        "ageRange": "ej., 8-12 años",
+        "country": "Global (todos los países)",
+        "searchResources": "Buscar recursos..."
+      },
+      "helpText": {
+        "languageSelection": "Seleccione todos los idiomas en los que este recurso está disponible",
+        "visibilityPublic": "Este recurso será visible para todos los visitantes del sitio web",
+        "visibilityRegistered": "Este recurso solo será visible para las escuelas registradas",
+        "uploadInstructions": "Subir un archivo de recurso (PDF, DOC, PPT, XLS, etc.)",
+        "maxFileSize": "Tamaño máximo de archivo: 150MB",
+        "replaceInstructions": "Puede reemplazar el archivo manteniendo el mismo recurso, o eliminarlo por completo.",
+        "aiAutoFillTooltip": "La IA analiza su archivo cargado y sugiere automáticamente un título, descripción, etapa, tema, rango de edad y tipo de recurso basándose en el contenido y nombre del archivo.",
+        "aiAutoFillDescription": "Permita que la IA analice su archivo y sugiera metadatos para ahorrar tiempo. Puede revisar y ajustar las sugerencias antes de guardar."
+      }
+    },
+    "filters": {
+      "allStages": "Todas las Etapas",
+      "allCountries": "Todos los Países",
+      "allLanguages": "Todos los Idiomas",
+      "allVisibility": "Toda la Visibilidad",
+      "allStatus": "Todos los Estados"
+    },
+    "stages": {
+      "inspire": "Inspirar",
+      "investigate": "Investigar",
+      "act": "Actuar"
+    },
+    "visibility": {
+      "public": "Público (visible para todos)",
+      "publicShort": "Público",
+      "registered": "Solo Registrados (requiere inicio de sesión)",
+      "registeredShort": "Solo Registrados"
+    },
+    "resourceTypes": {
+      "lessonPlan": "Plan de Lección",
+      "assembly": "Asamblea",
+      "teacherToolkit": "Kit de Herramientas para Profesores",
+      "studentWorkbook": "Cuaderno de Trabajo para Estudiantes",
+      "printableActivities": "Actividades Imprimibles",
+      "none": "Ninguno"
+    },
+    "themes": {
+      "oceanLiteracy": "Alfabetización Oceánica",
+      "climateChange": "Cambio Climático",
+      "plasticPollution": "Contaminación por Plásticos",
+      "science": "Ciencias",
+      "designTechnology": "Diseño y Tecnología",
+      "geography": "Geografía",
+      "crossCurricular": "Transversal",
+      "enrichment": "Enriquecimiento",
+      "none": "Ninguno"
+    },
+    "table": {
+      "headers": {
+        "preview": "Vista Previa",
+        "title": "Título",
+        "stage": "Etapa",
+        "visibility": "Visibilidad",
+        "country": "País",
+        "languages": "Idiomas",
+        "fileSize": "Tamaño de Archivo",
+        "downloads": "Descargas",
+        "status": "Estado",
+        "actions": "Acciones"
+      },
+      "values": {
+        "global": "Global",
+        "active": "Activo",
+        "inactive": "Inactivo",
+        "notAvailable": "N/D"
+      }
+    },
+    "toasts": {
+      "fileUploaded": {
+        "title": "Archivo Subido",
+        "description": "{{filename}} se ha subido correctamente."
+      },
+      "uploadError": {
+        "title": "Error de Carga",
+        "failedToGetUrl": "Error al obtener URL de carga",
+        "failedToUpload": "Error al subir archivo",
+        "customMessage": "{{message}}"
+      },
+      "aiAutoFillComplete": {
+        "title": "Autocompletado con IA Completo",
+        "description": "Los metadatos del recurso se han completado con sugerencias de IA. Revise y ajuste según sea necesario."
+      },
+      "aiAutoFillFailed": {
+        "title": "Autocompletado con IA Fallido",
+        "noSuggestions": "La IA no pudo generar sugerencias para este recurso.",
+        "description": "Error al generar sugerencias de IA. Por favor, inténtelo de nuevo.",
+        "customMessage": "{{message}}"
+      },
+      "cannotAutoFill": {
+        "title": "No Se Puede Autocompletar",
+        "description": "Por favor, suba un archivo primero para usar el autocompletado con IA."
+      },
+      "resourceCreated": {
+        "title": "Recurso Creado",
+        "description": "El recurso se ha creado correctamente."
+      },
+      "resourceUpdated": {
+        "title": "Recurso Actualizado",
+        "description": "El recurso se ha actualizado correctamente."
+      },
+      "saveFailed": {
+        "title": "Error al Guardar",
+        "description": "Error al guardar el recurso. Por favor, inténtelo de nuevo.",
+        "customMessage": "{{message}}"
+      },
+      "resourceDeleted": {
+        "title": "Recurso Eliminado",
+        "description": "El recurso se ha eliminado correctamente.",
+        "bulkDescription": "{{count}} recurso{{plural}} se han eliminado correctamente."
+      },
+      "deleteFailed": {
+        "title": "Eliminación Fallida",
+        "description": "Error al eliminar el recurso. Por favor, inténtelo de nuevo."
+      },
+      "bulkDeleteFailed": {
+        "title": "Eliminación Masiva Fallida",
+        "description": "Error al eliminar algunos recursos."
+      },
+      "validationError": {
+        "title": "Error de Validación",
+        "selectLanguage": "Por favor, seleccione al menos un idioma."
+      }
+    },
+    "dialogs": {
+      "deleteConfirmation": {
+        "title": "Eliminar Recurso",
+        "description": "¿Está seguro de que desea eliminar este recurso?",
+        "cannotUndo": "Esta acción no se puede deshacer."
+      },
+      "bulkDelete": {
+        "title": "Eliminar Recursos",
+        "description": "¿Está seguro de que desea eliminar {{count}} recurso{{plural}}? Esta acción no se puede deshacer.",
+        "listTitle": "Recursos a eliminar:"
+      }
+    },
+    "emptyStates": {
+      "noResources": "No se encontraron recursos. Añada su primer recurso para comenzar."
+    },
+    "ai": {
+      "sectionTitle": "Autocompletado con IA"
+    },
     "upload_form": {
       "title": "Subir Nuevo Recurso",
       "resource_title": "Título del Recurso",
       "description": "Descripción",
-      "stage": "Etapa Objetivo",
+      "stage": "Etapa de Destino",
       "language": "Idioma",
       "age_range": "Rango de Edad",
       "file_type": "Tipo de Archivo",
@@ -104,9 +492,371 @@
       "delete": "Eliminar",
       "cancel": "Cancelar"
     },
-    "resource_uploaded": "Recurso subido exitosamente",
-    "resource_updated": "Recurso actualizado exitosamente",
-    "resource_deleted": "Recurso eliminado exitosamente"
+    "resource_uploaded": "Recurso subido correctamente",
+    "resource_updated": "Recurso actualizado correctamente",
+    "resource_deleted": "Recurso eliminado correctamente"
+  },
+  "analytics": {
+    "title": "Análisis de la Plataforma",
+    "subtitle": "Información completa sobre la efectividad del programa",
+    "dashboard": {
+      "title": "Panel de Análisis",
+      "description": "Información completa y métricas para Plastic Clever Schools"
+    },
+    "buttons": {
+      "exportCSV": "Exportar CSV",
+      "exportExcel": "Exportar Excel",
+      "exportPDF": "Exportar Informe PDF",
+      "cancel": "Cancelar",
+      "exportReport": "Exportar Informe",
+      "generating": "Generando...",
+      "confirmExport": "Exportar Informe"
+    },
+    "tabs": {
+      "overview": "Resumen",
+      "schoolsEvidence": "Escuelas y Evidencia",
+      "plasticWasteAudits": "Auditorías de Residuos Plásticos",
+      "userEngagement": "Compromiso de Usuarios"
+    },
+    "metrics": {
+      "totalSchools": {
+        "label": "Escuelas Totales",
+        "description": "Escuelas participantes"
+      },
+      "activeUsers": {
+        "label": "Usuarios Activos"
+      },
+      "evidenceSubmissions": {
+        "label": "Envíos de Evidencia"
+      },
+      "globalReach": {
+        "label": "Alcance Global"
+      },
+      "totalEvidence": {
+        "label": "Evidencia Total",
+        "description": "Envíos recibidos"
+      },
+      "clickToView": "Haga clic para ver detalles →"
+    },
+    "dialogs": {
+      "exportPDF": {
+        "title": "Exportar Informe PDF",
+        "description": "Seleccione qué secciones incluir en su informe de análisis. El informe incluirá datos desde {{startDate}} - {{endDate}}",
+        "sections": {
+          "overview": "Resumen",
+          "scoresEvidence": "Escuelas y Evidencia",
+          "plasticWasteAudits": "Auditorías de Residuos Plásticos",
+          "userEngagement": "Compromiso de Usuarios",
+          "aiInsights": "Incluir Información de IA"
+        }
+      }
+    },
+    "charts": {
+      "userRegistrationTrends": "Tendencias de Registro de Usuarios",
+      "userRoleDistribution": "Distribución de Roles de Usuario",
+      "teachers": "Profesores",
+      "admins": "Administradores",
+      "schools_by_country": "Escuelas por País",
+      "completion_by_stage": "Tasa de Finalización por Etapa",
+      "monthly_registrations": "Registros Mensuales de Escuelas",
+      "evidence_status": "Estado de Revisión de Evidencia"
+    },
+    "actionPlan": {
+      "title": "Impacto del Plan de Acción Global",
+      "description": "Seguimiento del impacto colectivo de los planes de acción de todas las escuelas",
+      "metrics": {
+        "totalActionItems": {
+          "label": "Elementos de Acción Totales",
+          "description": "Compromisos realizados"
+        },
+        "schoolsParticipating": {
+          "label": "Escuelas Participantes",
+          "description": "Marcando la diferencia"
+        },
+        "itemsReduced": {
+          "label": "Elementos Reducidos Anualmente",
+          "description": "Elementos por año"
+        },
+        "weightReduced": {
+          "label": "Peso Reducido",
+          "description": "kg por año"
+        }
+      },
+      "oceanImpact": {
+        "title": "Impacto Oceánico",
+        "oceanBottles": {
+          "label": "Botellas Oceánicas Prevenidas",
+          "description": "Botellas de plástico salvadas de los océanos"
+        },
+        "fishSaved": {
+          "label": "Peces Salvados",
+          "description": "Peces potencialmente salvados del plástico"
+        },
+        "seaTurtles": {
+          "label": "Tortugas Marinas Salvadas",
+          "description": "Equivalentes de tortugas marinas protegidas"
+        }
+      },
+      "environmentalImpact": {
+        "title": "Impacto Ambiental",
+        "co2Prevented": {
+          "label": "CO₂ Prevenido",
+          "description": "kg de emisiones de CO₂ prevenidas"
+        },
+        "oilSaved": {
+          "label": "Petróleo Ahorrado",
+          "description": "litros de petróleo conservados"
+        },
+        "wastePrevented": {
+          "label": "Residuos Prevenidos",
+          "description": "toneladas de residuos plásticos evitados"
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingMetrics": "Cargando métricas de reducción..."
+    },
+    "errorStates": {
+      "failedToLoad": "Error al cargar métricas del plan de acción",
+      "refreshPage": "Por favor, intente actualizar la página"
+    },
+    "emptyStates": {
+      "noActionPlans": {
+        "title": "Aún no se han creado planes de acción.",
+        "description": "¡Anime a las escuelas a crear su primer plan de acción!"
+      }
+    },
+    "toasts": {
+      "reportDownloaded": {
+        "title": "Informe descargado correctamente",
+        "description": "Su informe de análisis PDF se ha descargado."
+      },
+      "exportFailed": {
+        "title": "Exportación fallida",
+        "description": "Error al exportar informe PDF",
+        "customMessage": "{{message}}"
+      }
+    },
+    "global_metrics": "Métricas Globales",
+    "enrollment_over_time": "Inscripción Escolar a lo Largo del Tiempo",
+    "evidence_submissions": "Envíos de Evidencia por Etapa",
+    "geographic_distribution": "Distribución Geográfica",
+    "completion_rates": "Tasas de Finalización por Etapa",
+    "resource_downloads": "Estadísticas de Descarga de Recursos",
+    "filter_by_period": "Filtrar por Período",
+    "last_30_days": "Últimos 30 Días",
+    "last_90_days": "Últimos 90 Días",
+    "last_year": "Último Año",
+    "all_time": "Todo el Tiempo",
+    "export_report": "Exportar Informe"
+  },
+  "email": {
+    "testTemplates": {
+      "title": "Probar Plantillas de Correo Electrónico",
+      "selectType": "Seleccionar Tipo de Correo Electrónico",
+      "types": {
+        "welcome": "Correo de Bienvenida",
+        "invitation": "Invitación de Profesor",
+        "joinRequest": "Solicitud de Incorporación",
+        "joinApproved": "Solicitud de Incorporación Aprobada",
+        "evidenceSubmitted": "Evidencia Enviada",
+        "evidenceApproved": "Evidencia Aprobada",
+        "evidenceRevision": "Evidencia Necesita Revisión",
+        "newEvidence": "Nueva Evidencia para Administrador"
+      }
+    },
+    "bulkComposer": {
+      "title": "Compositor de Correos Masivos",
+      "previewTest": "Vista Previa y Prueba"
+    },
+    "buttons": {
+      "sendTest": "Enviar Prueba",
+      "sending": "Enviando...",
+      "previewEmail": "Vista Previa del Correo",
+      "insertImage": "Insertar Imagen",
+      "sendBulkEmail": "Enviar Correo Masivo a {{recipientType}}",
+      "sendBulk": "Enviar Correo Masivo",
+      "cancel": "Cancelar",
+      "previewTranslations": "Vista Previa de Traducciones",
+      "generating": "Generando..."
+    },
+    "form": {
+      "labels": {
+        "recipientEmail": "Correo Electrónico del Destinatario *",
+        "schoolName": "Nombre de la Escuela *",
+        "inviterName": "Nombre del Invitador *",
+        "expiresInDays": "Expira en Días",
+        "requesterName": "Nombre del Solicitante *",
+        "requesterEmail": "Correo Electrónico del Solicitante *",
+        "evidence": "Evidencia *",
+        "reviewerName": "Nombre del Revisor *",
+        "reviewNotes": "Notas de Revisión (Opcional)",
+        "evidenceTitle": "Título de la Evidencia *",
+        "stage": "Etapa *",
+        "feedback": "Comentarios *",
+        "submitterName": "Nombre del Remitente *",
+        "subject": "Asunto *",
+        "preheader": "Preencabezado",
+        "title": "Título *",
+        "preTitle": "Pre-título (Subtítulo)",
+        "messageContent": "Contenido del Mensaje *",
+        "recipientType": "Tipo de Destinatario",
+        "selectLanguages": "Seleccionar Idiomas para Vista Previa de Traducción",
+        "viewEditTranslation": "Ver/Editar Traducción"
+      },
+      "placeholders": {
+        "teacherEmail": "profesor@ejemplo.com",
+        "testSchool": "Escuela de Prueba",
+        "selectEmailType": "Seleccionar tipo de correo a probar",
+        "emailSubject": "Línea de asunto del correo electrónico",
+        "preheaderText": "Texto de vista previa mostrado en clientes de correo (opcional)",
+        "largeHeading": "Encabezado grande dentro del correo electrónico",
+        "subtitleText": "Subtítulo bajo el título (opcional)",
+        "messageContent": "Introduzca el contenido principal del mensaje. Se admiten etiquetas HTML para formato.",
+        "testEmail": "prueba@ejemplo.com",
+        "searchImages": "Buscar imágenes..."
+      },
+      "helpText": {
+        "subjectLength": "{{length}}/200 caracteres • La línea de asunto principal del correo electrónico",
+        "preheaderLength": "{{length}}/100 caracteres • Texto de vista previa opcional que aparece en la bandeja de entrada",
+        "titleLength": "{{length}}/200 caracteres • El encabezado principal mostrado en el cuerpo del correo",
+        "preTitleLength": "{{length}}/200 caracteres • Texto de subtítulo opcional debajo del título",
+        "contentLength": "{{length}}/10.000 caracteres",
+        "readTime": "~{{minutes}} min de lectura",
+        "supportsHTML": "Admite formato HTML"
+      }
+    },
+    "recipientTypes": {
+      "allTeachers": "Todos los Profesores",
+      "schools": "Escuelas Filtradas",
+      "custom": "Destinatarios Personalizados"
+    },
+    "stages": {
+      "stage1": "Etapa 1",
+      "stage2": "Etapa 2",
+      "stage3": "Etapa 3"
+    },
+    "languages": {
+      "english": "Inglés (Original)",
+      "spanish": "Español",
+      "french": "Francés",
+      "german": "Alemán",
+      "italian": "Italiano",
+      "portuguese": "Portugués",
+      "dutch": "Neerlandés",
+      "russian": "Ruso",
+      "chinese": "Chino",
+      "korean": "Coreano",
+      "arabic": "Árabe",
+      "indonesian": "Indonesio",
+      "greek": "Griego",
+      "welsh": "Galés"
+    },
+    "badges": {
+      "editingTranslation": "Editando Traducción"
+    },
+    "toasts": {
+      "emailRequired": {
+        "title": "Correo Electrónico Requerido",
+        "description": "Por favor, introduzca una dirección de correo electrónico del destinatario.",
+        "testDescription": "Por favor, introduzca una dirección de correo electrónico de prueba."
+      },
+      "testEmailSent": {
+        "title": "Correo de Prueba Enviado",
+        "description": "Correo electrónico enviado correctamente a {{email}}",
+        "withLanguage": "Correo de prueba enviado correctamente a {{email}} en {{language}}",
+        "defaultDescription": "Correo electrónico enviado a {{email}}"
+      },
+      "sendEmailFailed": {
+        "title": "Error al Enviar Correo Electrónico",
+        "description": "Se produjo un error al enviar el correo electrónico.",
+        "tryAgain": "Error al enviar correo electrónico. Por favor, inténtelo de nuevo."
+      },
+      "testEmailFailed": {
+        "title": "Error al Enviar Correo de Prueba",
+        "description": "Hubo un error al enviar el correo de prueba.",
+        "customMessage": "{{message}}"
+      },
+      "imageInserted": {
+        "title": "Imagen Insertada",
+        "description": "{{filename}} se ha añadido a su contenido de correo electrónico"
+      },
+      "translationFailed": {
+        "title": "Traducción Fallida",
+        "description": "Error al generar traducciones. Por favor, inténtelo de nuevo."
+      },
+      "error": {
+        "title": "Error",
+        "description": "Error al enviar correo electrónico. Por favor, inténtelo de nuevo."
+      },
+      "emailsSent": {
+        "title": "Correos Electrónicos Enviados Correctamente",
+        "description": "{{sent}} correos enviados correctamente{{failedText}}."
+      },
+      "bulkEmailFailed": {
+        "title": "Error al Enviar Correos Electrónicos",
+        "description": "Hubo un error al enviar los correos masivos. Por favor, inténtelo de nuevo."
+      }
+    },
+    "dialogs": {
+      "preview": {
+        "title": "Vista Previa del Correo Electrónico",
+        "subject": "Asunto:",
+        "preheader": "Preencabezado:"
+      },
+      "bulkConfirm": {
+        "title": "Confirmar Envío de Correo Masivo",
+        "description": "¿Está seguro de que desea enviar este correo electrónico a:",
+        "subject": "Asunto: {{subject}}",
+        "warning": "Esta acción no se puede deshacer. Asegúrese de haber probado el correo primero.",
+        "recipientCount": "{{count}} Destinatarios Personalizados"
+      },
+      "imagePicker": {
+        "title": "Insertar Imagen de la Biblioteca Multimedia"
+      }
+    },
+    "resultMessages": {
+      "success": "✅ Éxito",
+      "error": "❌ Error"
+    },
+    "defaultValues": {
+      "testSchool": "Escuela de Prueba",
+      "johnDoe": "Juan Pérez",
+      "janeSmith": "Ana García",
+      "janeEmail": "ana@ejemplo.com",
+      "recyclingProgram": "Programa de Reciclaje",
+      "teacherEvidence": "Soy profesor en esta escuela.",
+      "participationFeedback": "Por favor, añada más detalles sobre la participación de los estudiantes.",
+      "headTeacher": "Director"
+    }
+  },
+  "evidence": {
+    "title": "Revisión de Evidencia",
+    "subtitle": "Revisar y moderar envíos de evidencia",
+    "pending_review": "Revisión Pendiente",
+    "approved": "Aprobado",
+    "needs_revision": "Necesita Revisión",
+    "filter_by_stage": "Filtrar por Etapa",
+    "filter_by_status": "Filtrar por Estado",
+    "sort_by": "Ordenar por",
+    "newest_first": "Más Reciente Primero",
+    "oldest_first": "Más Antiguo Primero",
+    "school_name": "Nombre de la Escuela",
+    "stage": "Etapa",
+    "submitted_date": "Fecha de Envío",
+    "review_evidence": "Revisar Evidencia",
+    "approve_evidence": "Aprobar Evidencia",
+    "request_revision": "Solicitar Revisión",
+    "add_feedback": "Añadir Comentarios",
+    "feedback_placeholder": "Proporcione comentarios para la escuela...",
+    "approve_button": "Aprobar",
+    "revision_button": "Solicitar Revisión",
+    "evidence_approved": "Evidencia aprobada correctamente",
+    "evidence_revision_requested": "Revisión solicitada correctamente",
+    "bulk_actions": "Acciones Masivas",
+    "select_all": "Seleccionar Todo",
+    "bulk_approve": "Aprobar en Masa",
+    "bulk_request_revision": "Solicitar Revisión en Masa"
   },
   "schools": {
     "title": "Gestión de Escuelas",
@@ -114,14 +864,63 @@
     "active_schools": "Escuelas Activas",
     "pending_approval": "Aprobación Pendiente",
     "search_schools": "Buscar escuelas...",
+    "filters": {
+      "allCountries": "Todos los Países",
+      "selectAll": "Seleccionar Todo ({count} escuelas)",
+      "selected": "{count} seleccionado",
+      "searchPlaceholder": "Buscar escuelas..."
+    },
+    "buttons": {
+      "bulkUpdate": "Actualización Masiva",
+      "deleteSchools": "Eliminar Escuelas",
+      "view": "Ver",
+      "edit": "Editar",
+      "delete": "Eliminar",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "cancel": "Cancelar",
+      "confirm": "Confirmar",
+      "processing": "Procesando...",
+      "deleting": "Eliminando...",
+      "editLanguage": "Editar Idioma",
+      "editProgression": "Editar Progresión",
+      "saveChanges": "Guardar Cambios"
+    },
     "school_table": {
-      "school_name": "Nombre de la Escuela",
-      "country": "País",
-      "contact": "Contacto Principal",
-      "stage": "Etapa Actual",
-      "registered_date": "Registrado",
-      "status": "Estado",
-      "actions": "Acciones"
+      "headers": {
+        "select": "Seleccionar",
+        "school_name": "Nombre de la Escuela",
+        "country": "País",
+        "stage": "Etapa",
+        "progress": "Progreso",
+        "students": "Estudiantes",
+        "contact": "Contacto Principal",
+        "joined": "Se Unió",
+        "actions": "Acciones",
+        "expand": "Expandir",
+        "collapse": "Contraer"
+      },
+      "teachers": {
+        "loading": "Cargando profesores...",
+        "loadingError": "Error al cargar profesores. Por favor, inténtelo de nuevo.",
+        "noTeachers": "Aún no hay profesores asignados a esta escuela.",
+        "headers": {
+          "name": "Nombre",
+          "email": "Correo Electrónico",
+          "role": "Rol",
+          "verification": "Verificación",
+          "joined": "Se Unió"
+        },
+        "roles": {
+          "headTeacher": "Director",
+          "teacher": "Profesor"
+        },
+        "status": {
+          "verified": "Verificado",
+          "notVerified": "No Verificado"
+        }
+      },
+      "notAvailable": "N/D"
     },
     "school_actions": {
       "view_details": "Ver Detalles",
@@ -137,11 +936,162 @@
       "suspended": "Suspendido"
     },
     "school_details": {
+      "title": "{name}",
       "basic_info": "Información Básica",
       "contact_info": "Información de Contacto",
       "progress": "Progreso del Programa",
       "evidence_history": "Historial de Evidencia",
-      "last_activity": "Última Actividad"
+      "last_activity": "Última Actividad",
+      "labels": {
+        "country": "País",
+        "schoolType": "Tipo de Escuela",
+        "preferredLanguage": "Idioma Preferido",
+        "studentCount": "Número de Estudiantes",
+        "currentStage": "Etapa Actual",
+        "progress": "Progreso",
+        "primaryContactEmail": "Correo Electrónico de Contacto Principal",
+        "joined": "Se Unió",
+        "address": "Dirección",
+        "currentRound": "Ronda Actual",
+        "stageCompletion": "Finalización de Etapa"
+      },
+      "progression": {
+        "title": "Gestionar Progresión",
+        "description": "Use esta sección para establecer manualmente la etapa de progresión, ronda y estado de finalización de la escuela. Esto le permite anular la progresión automática basada en el envío de evidencia.",
+        "currentStage": "Etapa Actual:",
+        "currentRound": "Ronda Actual:",
+        "stageCompletion": "Finalización de Etapa:",
+        "inspireCompleted": "Inspirar Completado",
+        "investigateCompleted": "Investigar Completado",
+        "actCompleted": "Actuar Completado",
+        "notCompleted": "○ No completado",
+        "completed": "✓ Completado"
+      },
+      "stages": {
+        "inspire": "Inspirar",
+        "investigate": "Investigar",
+        "act": "Actuar"
+      },
+      "languages": {
+        "en": "Inglés",
+        "es": "Español",
+        "fr": "Francés",
+        "de": "Alemán",
+        "it": "Italiano",
+        "pt": "Portugués",
+        "nl": "Neerlandés",
+        "el": "Griego",
+        "ar": "Árabe",
+        "zh": "Chino",
+        "ko": "Coreano",
+        "ru": "Ruso",
+        "id": "Indonesio",
+        "cy": "Galés"
+      },
+      "actionPlan": {
+        "title": "Métricas del Plan de Acción",
+        "totalPromises": "Promesas Totales",
+        "annualReduction": "Elementos Reducidos Anualmente",
+        "annualWeight": "Peso Reducido",
+        "perYear": "por año",
+        "oceanImpact": "Impacto Oceánico",
+        "oceanBottles": "Botellas Oceánicas Prevenidas",
+        "fishSaved": "Peces Salvados",
+        "seaTurtles": "Tortugas Marinas Protegidas",
+        "environmentalImpact": "Impacto Ambiental",
+        "co2Prevented": "CO₂ Prevenido",
+        "oilSaved": "Petróleo Ahorrado",
+        "wastePrevented": "Residuos Prevenidos",
+        "loading": "Cargando métricas de reducción...",
+        "noPromises": "Aún no se han creado promesas de reducción para esta escuela."
+      },
+      "photoConsent": {
+        "title": "Estado de Consentimiento Fotográfico",
+        "status": "Estado:",
+        "uploadedAt": "Subido:",
+        "approvedAt": "Aprobado:",
+        "approvedBy": "Aprobado por:",
+        "reviewNotes": "Notas de Revisión:",
+        "viewDocument": "Ver Documento",
+        "pending": "Pendiente",
+        "approved": "Aprobado",
+        "rejected": "Rechazado",
+        "notUploaded": "No subido",
+        "approve": "Aprobar",
+        "reject": "Rechazar",
+        "rejectionNotes": "Notas de Rechazo",
+        "rejectionNotesPlaceholder": "Explique por qué se rechaza el consentimiento fotográfico...",
+        "submitRejection": "Enviar Rechazo"
+      }
+    },
+    "bulkActions": {
+      "dialogs": {
+        "update": {
+          "title": "Actualización Masiva de Escuelas",
+          "description": "Esta acción afectará a <strong>{count}</strong> escuelas.",
+          "updateStageLabel": "Actualizar Etapa Actual",
+          "updateStageHelpText": "Todas las escuelas seleccionadas se moverán a esta etapa del programa."
+        },
+        "delete": {
+          "title": "Eliminación Masiva de Escuelas",
+          "description": "Esta acción afectará a <strong>{count}</strong> escuelas.",
+          "warningTitle": "Advertencia:",
+          "warningDescription": "Esta acción no se puede deshacer. Todas las escuelas seleccionadas y sus datos asociados se eliminarán permanentemente."
+        },
+        "deleteSchool": {
+          "title": "Eliminar Escuela",
+          "description": "¿Está seguro de que desea eliminar <strong>{name}</strong>? Esta acción no se puede deshacer y eliminará permanentemente la escuela y todos los datos asociados.",
+          "loadingUsers": "Cargando usuarios de la escuela...",
+          "warningUsers": "Advertencia: Esta escuela tiene {count} usuario{plural} asociado.",
+          "associatedUsers": "Usuarios Asociados:",
+          "deleteUsersLabel": "También eliminar todas las cuentas de usuario asociadas",
+          "deleteUsersDescription": "Si no se marca, las cuentas de usuario permanecerán en el sistema y se pueden reasignar a otras escuelas. Si se marca, los usuarios se eliminarán permanentemente y no podrán registrarse nuevamente con las mismas direcciones de correo electrónico.",
+          "noUsers": "Esta escuela no tiene usuarios asociados."
+        }
+      }
+    },
+    "toasts": {
+      "languageUpdated": {
+        "title": "Idioma Actualizado",
+        "description": "El idioma preferido de la escuela se ha actualizado correctamente."
+      },
+      "languageUpdateFailed": {
+        "title": "Actualización Fallida",
+        "description": "Error al actualizar el idioma de la escuela. Los cambios se han revertido."
+      },
+      "progressionUpdated": {
+        "title": "Progresión Actualizada",
+        "description": "La progresión de la escuela se ha actualizado correctamente."
+      },
+      "progressionUpdateFailed": {
+        "title": "Actualización Fallida",
+        "description": "Error al actualizar la progresión de la escuela. Los cambios se han revertido."
+      },
+      "bulkUpdateComplete": {
+        "title": "Actualización Masiva Completa",
+        "description": "{count} escuelas se han actualizado correctamente."
+      },
+      "bulkUpdateFailed": {
+        "title": "Actualización Masiva Fallida",
+        "description": "Error al actualizar escuelas. Por favor, inténtelo de nuevo."
+      },
+      "bulkDeleteComplete": {
+        "title": "Eliminación Masiva Completa",
+        "description": "{count} escuelas se han eliminado correctamente."
+      },
+      "bulkDeleteFailed": {
+        "title": "Eliminación Masiva Fallida",
+        "description": "Error al eliminar escuelas. Por favor, inténtelo de nuevo."
+      },
+      "schoolDeleted": {
+        "title": "Escuela Eliminada",
+        "descriptionWithUsers": "La escuela y todos los usuarios asociados se han eliminado correctamente.",
+        "descriptionWithoutUsers": "La escuela se ha eliminado correctamente."
+      },
+      "schoolDeleteFailed": {
+        "title": "Eliminación Fallida",
+        "description": "Error al eliminar la escuela. Por favor, inténtelo de nuevo."
+      }
     }
   },
   "permissions": {
@@ -149,96 +1099,1005 @@
     "insufficient_permissions": "Permisos insuficientes para acceder a esta función"
   },
   "toasts": {
-    "teacher_removed": "Teacher Removed",
-    "teacher_removed_desc": "Teacher has been successfully removed from the school.",
-    "removal_failed": "Removal Failed",
-    "removal_failed_desc": "Failed to remove teacher. Please try again.",
-    "request_approved": "Request Approved",
-    "request_approved_desc": "Verification request has been successfully approved.",
-    "request_rejected": "Request Rejected",
-    "request_rejected_desc": "Verification request has been successfully rejected.",
-    "action_failed": "Action Failed",
-    "action_failed_desc": "Failed to process verification request. Please try again.",
-    "access_denied": "Access Denied",
-    "access_denied_desc": "Admin access required",
-    "success": "Success",
+    "teacher_removed": "Profesor Eliminado",
+    "teacher_removed_desc": "El profesor se ha eliminado correctamente de la escuela.",
+    "removal_failed": "Eliminación Fallida",
+    "removal_failed_desc": "Error al eliminar el profesor. Por favor, inténtelo de nuevo.",
+    "request_approved": "Solicitud Aprobada",
+    "request_approved_desc": "La solicitud de verificación se ha aprobado correctamente.",
+    "request_rejected": "Solicitud Rechazada",
+    "request_rejected_desc": "La solicitud de verificación se ha rechazado correctamente.",
+    "action_failed": "Acción Fallida",
+    "action_failed_desc": "Error al procesar la solicitud de verificación. Por favor, inténtelo de nuevo.",
+    "access_denied": "Acceso Denegado",
+    "access_denied_desc": "Se requiere acceso de administrador",
+    "session_expired": "No Autorizado",
+    "session_expired_desc": "La sesión de administrador ha expirado. Por favor, inicie sesión de nuevo.",
+    "success": "Éxito",
     "error": "Error",
-    "requirement_created": "Evidence requirement created successfully.",
-    "requirement_updated": "Evidence requirement updated successfully.",
-    "requirement_deleted": "Evidence requirement deleted successfully.",
-    "requirement_delete_failed": "Failed to delete evidence requirement. It may be linked to existing evidence.",
-    "reorder_failed": "Failed to reorder requirements.",
-    "event_created": "Event Created Successfully! 🎉",
-    "event_updated": "Event updated successfully.",
-    "event_deleted": "Event deleted successfully.",
-    "event_creation_failed": "Failed to create event.",
-    "event_update_failed": "Failed to update event.",
-    "event_delete_failed": "Failed to delete event.",
-    "event_duplicated": "Event Duplicated",
-    "event_duplicated_desc": "\"{{title}}\" has been created as a draft.",
-    "duplication_failed": "Duplication Failed",
-    "duplication_failed_desc": "Failed to duplicate event",
-    "page_content_update_failed": "Failed to update event page content.",
-    "status_update_failed": "Failed to update event status.",
-    "same_language_selected": "Same language selected"
+    "requirement_created": "Requisito de evidencia creado correctamente.",
+    "requirement_updated": "Requisito de evidencia actualizado correctamente.",
+    "requirement_deleted": "Requisito de evidencia eliminado correctamente.",
+    "requirement_delete_failed": "Error al eliminar el requisito de evidencia. Puede estar vinculado a evidencia existente.",
+    "reorder_failed": "Error al reordenar requisitos.",
+    "event_created": "¡Evento Creado Correctamente! 🎉",
+    "event_updated": "Evento actualizado correctamente.",
+    "event_deleted": "Evento eliminado correctamente.",
+    "event_creation_failed": "Error al crear evento.",
+    "event_update_failed": "Error al actualizar evento.",
+    "event_delete_failed": "Error al eliminar evento.",
+    "event_duplicated": "Evento Duplicado",
+    "event_duplicated_desc": "\"{{title}}\" se ha creado como borrador.",
+    "duplication_failed": "Duplicación Fallida",
+    "duplication_failed_desc": "Error al duplicar evento",
+    "page_content_update_failed": "Error al actualizar el contenido de la página del evento.",
+    "status_update_failed": "Error al actualizar el estado del evento.",
+    "same_language_selected": "Mismo idioma seleccionado",
+    "photoConsentApproved": {
+      "title": "Consentimiento Fotográfico Aprobado",
+      "description": "El consentimiento fotográfico se ha aprobado correctamente."
+    },
+    "photoConsentApprovalFailed": {
+      "title": "Aprobación Fallida",
+      "description": "Error al aprobar el consentimiento fotográfico. Los cambios se han revertido."
+    },
+    "photoConsentRejected": {
+      "title": "Consentimiento Fotográfico Rechazado",
+      "description": "El documento de consentimiento fotográfico ha sido rechazado."
+    },
+    "photoConsentRejectionFailed": {
+      "title": "Rechazo Fallido",
+      "description": "Error al rechazar el consentimiento fotográfico. Los cambios se han revertido."
+    }
   },
   "case_study": {
-    "categories": "Categories",
-    "organize_case_study_categories": "Organize your case study by selecting relevant categories",
-    "add_categories": "Add Categories",
-    "enter_category": "Enter a category",
-    "press_enter_or_click_plus_category": "Press Enter or click + to add a category",
-    "suggested_categories": "Suggested Categories",
-    "selected_categories": "Selected Categories",
-    "add_suggested": "Add suggested",
-    "category_plastic_reduction": "Plastic Reduction",
-    "category_recycling_initiative": "Recycling Initiative",
-    "category_student_leadership": "Student Leadership",
-    "category_community_engagement": "Community Engagement",
-    "category_educational_campaign": "Educational Campaign",
-    "category_waste_audit": "Waste Audit",
-    "category_policy_change": "Policy Change",
-    "category_innovation": "Innovation",
-    "tags": "Tags",
-    "add_descriptive_tags": "Add descriptive tags to improve discoverability",
-    "add_tags": "Add Tags",
-    "enter_tag": "Enter a tag",
-    "press_enter_or_click_plus_tag": "Press Enter or click + to add a tag",
-    "suggested_tags": "Suggested Tags",
-    "selected_tags": "Selected Tags",
-    "tag_single_use_plastic": "single-use-plastic",
-    "tag_recycling": "recycling",
-    "tag_composting": "composting",
-    "tag_awareness": "awareness",
-    "tag_students": "students",
-    "tag_teachers": "teachers",
-    "tag_community": "community",
-    "tag_impact": "impact",
-    "tag_sustainability": "sustainability",
-    "tag_ocean_conservation": "ocean-conservation",
-    "impact_metrics": "Impact Metrics",
-    "add_quantifiable_metrics": "Add quantifiable metrics to showcase the project's impact",
-    "add_metric": "Add Metric",
-    "no_impact_metrics_yet": "No impact metrics yet. Click \"Add Metric\" to get started.",
-    "metric_number": "Metric {{number}}",
-    "metric_label_required": "Metric Label *",
-    "metric_value_required": "Value *",
-    "metric_unit": "Unit",
-    "metric_icon": "Icon",
-    "metric_label_placeholder": "e.g., Plastic Items Reduced",
-    "metric_value_placeholder": "e.g., 500 or 85%",
-    "metric_unit_placeholder": "e.g., items, kg, %",
-    "metric_icon_placeholder": "e.g., trash, droplet, leaf",
-    "project_timeline": "Project Timeline",
-    "create_chronological_timeline": "Create a chronological timeline of key milestones and events",
-    "add_section": "Add Section",
-    "no_timeline_sections_yet": "No timeline sections yet. Click \"Add Section\" to get started.",
-    "section_number": "Section {{number}}",
-    "section_title_required": "Section Title *",
-    "section_title_placeholder": "e.g., Project Launch, Week 1",
-    "section_content": "Content *",
-    "section_content_placeholder": "Describe what happened during this phase...",
-    "section_image_url": "Image URL",
+    "categories": "Categorías",
+    "organize_case_study_categories": "Organice su caso de estudio seleccionando categorías relevantes",
+    "add_categories": "Añadir Categorías",
+    "enter_category": "Introducir una categoría",
+    "press_enter_or_click_plus_category": "Presione Enter o haga clic en + para añadir una categoría",
+    "suggested_categories": "Categorías Sugeridas",
+    "selected_categories": "Categorías Seleccionadas",
+    "add_suggested": "Añadir sugerida",
+    "category_plastic_reduction": "Reducción de Plástico",
+    "category_recycling_initiative": "Iniciativa de Reciclaje",
+    "category_student_leadership": "Liderazgo Estudiantil",
+    "category_community_engagement": "Compromiso Comunitario",
+    "category_educational_campaign": "Campaña Educativa",
+    "category_waste_audit": "Auditoría de Residuos",
+    "category_policy_change": "Cambio de Política",
+    "category_innovation": "Innovación",
+    "tags": "Etiquetas",
+    "add_descriptive_tags": "Añada etiquetas descriptivas para mejorar la visibilidad",
+    "add_tags": "Añadir Etiquetas",
+    "enter_tag": "Introducir una etiqueta",
+    "press_enter_or_click_plus_tag": "Presione Enter o haga clic en + para añadir una etiqueta",
+    "suggested_tags": "Etiquetas Sugeridas",
+    "selected_tags": "Etiquetas Seleccionadas",
+    "tag_single_use_plastic": "plástico-de-un-solo-uso",
+    "tag_recycling": "reciclaje",
+    "tag_composting": "compostaje",
+    "tag_awareness": "concienciación",
+    "tag_students": "estudiantes",
+    "tag_teachers": "profesores",
+    "tag_community": "comunidad",
+    "tag_impact": "impacto",
+    "tag_sustainability": "sostenibilidad",
+    "tag_ocean_conservation": "conservación-oceánica",
+    "impact_metrics": "Métricas de Impacto",
+    "add_quantifiable_metrics": "Añada métricas cuantificables para mostrar el impacto del proyecto",
+    "add_metric": "Añadir Métrica",
+    "no_impact_metrics_yet": "Aún no hay métricas de impacto. Haga clic en \"Añadir Métrica\" para comenzar.",
+    "metric_number": "Métrica {{number}}",
+    "metric_label_required": "Etiqueta de Métrica *",
+    "metric_value_required": "Valor *",
+    "metric_unit": "Unidad",
+    "metric_icon": "Icono",
+    "metric_label_placeholder": "ej., Elementos de Plástico Reducidos",
+    "metric_value_placeholder": "ej., 500 o 85%",
+    "metric_unit_placeholder": "ej., elementos, kg, %",
+    "metric_icon_placeholder": "ej., papelera, gota, hoja",
+    "project_timeline": "Cronología del Proyecto",
+    "create_chronological_timeline": "Cree una cronología de hitos y eventos clave",
+    "add_section": "Añadir Sección",
+    "no_timeline_sections_yet": "Aún no hay secciones de cronología. Haga clic en \"Añadir Sección\" para comenzar.",
+    "section_number": "Sección {{number}}",
+    "section_title_required": "Título de Sección *",
+    "section_title_placeholder": "ej., Lanzamiento del Proyecto, Semana 1",
+    "section_content": "Contenido *",
+    "section_content_placeholder": "Describa lo que sucedió durante esta fase...",
+    "section_image_url": "URL de Imagen",
     "section_image_placeholder": "https://..."
+  },
+  "evidenceGallery": {
+    "title": "Galería de Evidencia",
+    "subtitle": "Explorar y gestionar todos los envíos de evidencia",
+    "submissionCount": {
+      "single": "{{count}} envío",
+      "plural": "{{count}} envíos"
+    },
+    "filters": {
+      "labels": {
+        "stage": "Etapa",
+        "country": "País",
+        "status": "Estado",
+        "visibility": "Visibilidad"
+      },
+      "options": {
+        "allStages": "Todas las Etapas",
+        "allCountries": "Todos los Países",
+        "allStatuses": "Todos los Estados",
+        "allVisibility": "Toda la Visibilidad",
+        "public": "Público",
+        "private": "Privado"
+      },
+      "stages": {
+        "inspire": "Inspirar",
+        "investigate": "Investigar",
+        "act": "Actuar"
+      },
+      "statuses": {
+        "pending": "Pendiente",
+        "approved": "Aprobado",
+        "rejected": "Rechazado"
+      }
+    },
+    "buttons": {
+      "clearFilters": "Limpiar Filtros",
+      "view": "Ver",
+      "schoolHistory": "Ver Historial de la Escuela"
+    },
+    "badges": {
+      "permissionPending": "Permiso Pendiente",
+      "noPermission": "Sin Permiso",
+      "permissionApproved": "Permiso Aprobado",
+      "permissionRejected": "Permiso Rechazado",
+      "public": "Público",
+      "registeredOnly": "Solo Registrados"
+    },
+    "dialogs": {
+      "evidenceDetails": {
+        "title": "Detalles de la Evidencia"
+      },
+      "schoolHistory": {
+        "title": "{{schoolName}} - Todos los Envíos ({{count}})"
+      }
+    },
+    "form": {
+      "labels": {
+        "title": "Título",
+        "description": "Descripción",
+        "school": "Escuela",
+        "country": "País",
+        "stage": "Etapa",
+        "status": "Estado",
+        "visibilitySetting": "Configuración de Visibilidad",
+        "photoPermission": "Permiso Fotográfico",
+        "files": "Archivos ({{count}})",
+        "videoLinks": "Enlaces de Video"
+      },
+      "values": {
+        "noDescription": "Sin descripción",
+        "unknownSchool": "Escuela Desconocida",
+        "unknown": "Desconocido"
+      }
+    },
+    "warnings": {
+      "permissionRequired": "Permiso Requerido:",
+      "photoConsentPending": "Esta escuela tiene un documento de consentimiento fotográfico pendiente. Esta evidencia no debe usarse en casos de estudio públicos hasta que se apruebe el permiso.",
+      "photoConsentMissing": "Esta escuela no ha subido un documento de consentimiento fotográfico. Esta evidencia no debe usarse en casos de estudio públicos hasta que se apruebe el permiso."
+    },
+    "emptyStates": {
+      "noEvidence": {
+        "title": "Aún no hay envíos de evidencia",
+        "description": "Los envíos de evidencia aparecerán aquí una vez que las escuelas comiencen a subir"
+      },
+      "noSchoolSubmissions": {
+        "title": "Aún no hay envíos",
+        "description": "Esta escuela aún no ha enviado ninguna evidencia"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "Éxito",
+        "description": "Estado de evidencia actualizado"
+      },
+      "updateFailed": {
+        "title": "Error",
+        "description": "Error al actualizar el estado de evidencia"
+      }
+    }
+  },
+  "printableForms": {
+    "title": "Revisión de Formularios Imprimibles",
+    "subtitle": "Revisar y gestionar envíos de formularios imprimibles de las escuelas",
+    "filters": {
+      "labels": {
+        "status": "Estado",
+        "formType": "Tipo de Formulario",
+        "schoolSearch": "Búsqueda de Escuela"
+      },
+      "statusOptions": {
+        "all": "Todos los estados",
+        "pending": "Pendiente",
+        "approved": "Aprobado",
+        "rejected": "Rechazado",
+        "revisionRequested": "Revisión Solicitada"
+      },
+      "formTypeOptions": {
+        "all": "Todos los tipos",
+        "audit": "Auditoría",
+        "actionPlan": "Plan de Acción"
+      },
+      "placeholders": {
+        "searchSchool": "Buscar por nombre de escuela..."
+      }
+    },
+    "table": {
+      "headers": {
+        "school": "Escuela",
+        "formType": "Tipo de Formulario",
+        "status": "Estado",
+        "submittedBy": "Enviado por",
+        "uploadDate": "Fecha de Subida",
+        "actions": "Acciones"
+      }
+    },
+    "buttons": {
+      "download": "Descargar",
+      "review": "Revisar",
+      "submitReview": "Enviar Revisión",
+      "cancel": "Cancelar"
+    },
+    "dialogs": {
+      "reviewSubmission": {
+        "title": "Revisar Envío",
+        "labels": {
+          "school": "Escuela:",
+          "formType": "Tipo de Formulario:",
+          "submittedBy": "Enviado por:",
+          "status": "Estado",
+          "adminNotes": "Notas de Administrador (Opcional)"
+        },
+        "statusOptions": {
+          "approved": "Aprobado",
+          "rejected": "Rechazado",
+          "revisionRequested": "Revisión Solicitada"
+        },
+        "placeholders": {
+          "reviewNotes": "Añadir notas sobre esta revisión..."
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingSubmissions": "Cargando envíos..."
+    },
+    "emptyStates": {
+      "noSubmissions": {
+        "title": "No Se Encontraron Envíos",
+        "description": "Ningún envío de formulario imprimible coincide con sus filtros"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "Éxito",
+        "description": "Estado del envío actualizado correctamente"
+      },
+      "updateFailed": {
+        "title": "Error",
+        "description": "Error al actualizar el estado del envío",
+        "customMessage": "{{message}}"
+      },
+      "downloadFailed": {
+        "title": "Error",
+        "description": "Error al descargar el envío"
+      }
+    },
+    "updating": "Actualizando..."
+  },
+  "caseStudies": {
+    "title": "Gestión de Casos de Estudio",
+    "filters": {
+      "placeholders": {
+        "search": "Buscar casos de estudio..."
+      },
+      "labels": {
+        "stage": "Etapa",
+        "featuredStatus": "Estado Destacado"
+      },
+      "options": {
+        "allStages": "Todas las Etapas",
+        "all": "Todos",
+        "featured": "Destacados",
+        "notFeatured": "No Destacados"
+      },
+      "stages": {
+        "inspire": "Inspirar",
+        "investigate": "Investigar",
+        "act": "Actuar"
+      }
+    },
+    "buttons": {
+      "createCaseStudy": "Crear Caso de Estudio",
+      "preview": "Vista Previa",
+      "edit": "Editar",
+      "feature": "Destacar",
+      "unfeature": "Quitar Destacado",
+      "delete": "Eliminar",
+      "cancel": "Cancelar"
+    },
+    "badges": {
+      "featured": "Destacado"
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Eliminar Caso de Estudio",
+        "description": "¿Está seguro de que desea eliminar \"{{title}}\"? Esta acción no se puede deshacer."
+      },
+      "editor": {
+        "title": "Editor de Casos de Estudio"
+      }
+    },
+    "emptyStates": {
+      "noCaseStudies": "No se encontraron casos de estudio. Cree uno a partir de envíos de evidencia aprobados."
+    },
+    "toasts": {
+      "created": {
+        "title": "Caso de Estudio Creado",
+        "description": "El caso de estudio se ha creado correctamente."
+      },
+      "createFailed": {
+        "title": "Creación Fallida",
+        "description": "Error al crear el caso de estudio. Por favor, inténtelo de nuevo.",
+        "customMessage": "{{message}}"
+      },
+      "updated": {
+        "title": "Caso de Estudio Actualizado",
+        "description": "El caso de estudio se ha actualizado correctamente."
+      },
+      "updateFailed": {
+        "title": "Actualización Fallida",
+        "description": "Error al actualizar el caso de estudio. Por favor, inténtelo de nuevo.",
+        "customMessage": "{{message}}"
+      },
+      "deleted": {
+        "title": "Caso de Estudio Eliminado",
+        "description": "El caso de estudio se ha eliminado correctamente."
+      },
+      "deleteFailed": {
+        "title": "Eliminación Fallida",
+        "description": "Error al eliminar el caso de estudio. Por favor, inténtelo de nuevo.",
+        "customMessage": "{{message}}"
+      },
+      "featuredUpdated": {
+        "title": "Caso de Estudio Actualizado",
+        "description": "El estado destacado del caso de estudio se ha actualizado."
+      },
+      "featuredUpdateFailed": {
+        "title": "Actualización Fallida",
+        "description": "Error al actualizar el caso de estudio. Por favor, inténtelo de nuevo."
+      },
+      "locked": {
+        "title": "Caso de Estudio Bloqueado",
+        "description": "Este caso de estudio está siendo editado actualmente por {{lockedBy}}."
+      },
+      "cannotSave": {
+        "title": "No Se Puede Guardar",
+        "description": "Este caso de estudio está bloqueado por otro usuario."
+      },
+      "lockAcquired": {
+        "title": "Bloqueo Adquirido",
+        "description": "Ahora puede editar este caso de estudio."
+      }
+    }
+  },
+  "dataImport": {
+    "title": "Importar Datos desde WordPress",
+    "subtitle": "Importar escuelas, usuarios y sus relaciones desde archivos CSV o Excel exportados desde su base de datos WordPress",
+    "alerts": {
+      "important": {
+        "title": "Importante:",
+        "description": "Prepare tres archivos separados (formato CSV o Excel):",
+        "schools": "Escuelas - Contiene información de escuela (nombre, país, tipo, etc.)",
+        "users": "Usuarios - Contiene información de profesor/usuario (correo electrónico, nombre, etc.)",
+        "relationships": "Relaciones - Vincula usuarios con escuelas con sus roles",
+        "templateNote": "Descargue las plantillas a continuación para ver el formato de columnas requerido.",
+        "note": "Descargue las plantillas a continuación para ver el formato de columnas requerido."
+      }
+    },
+    "tabs": {
+      "schools": "Escuelas",
+      "users": "Usuarios",
+      "relationships": "Relaciones"
+    },
+    "fileUpload": {
+      "titles": {
+        "schools": "Archivo de Escuelas",
+        "users": "Archivo de Usuarios",
+        "relationships": "Archivo de Relaciones Escuela-Usuario"
+      },
+      "descriptions": {
+        "schools": "Subir un archivo CSV o Excel que contenga datos de escuela",
+        "users": "Subir un archivo CSV o Excel que contenga datos de usuario/profesor",
+        "relationships": "Subir un archivo CSV o Excel vinculando usuarios con escuelas"
+      },
+      "labels": {
+        "clickToUpload": "Haga clic para subir archivo",
+        "formatNote": "Formato CSV o Excel"
+      },
+      "validation": {
+        "success": "Archivo validado correctamente",
+        "failed": "Validación fallida",
+        "rowsFound": "Se encontraron {{rowCount}} filas con {{headerCount}} columnas",
+        "errorsTitle": "Errores de Validación ({{count}}):",
+        "moreErrors": "... y {{count}} errores más",
+        "previewTitle": "Vista previa (primeras 5 filas):"
+      }
+    },
+    "buttons": {
+      "downloadTemplate": "Descargar Plantilla",
+      "startImport": "Iniciar Importación",
+      "importAnother": "Importar Otro Archivo",
+      "viewData": "Ver Datos Importados"
+    },
+    "status": {
+      "readyToImport": "¿Listo para importar?",
+      "allFilesUploaded": "Todos los archivos subidos y validados",
+      "filesUploaded": "{{count}}/3 archivos subidos",
+      "fixErrors": "Por favor, corrija los errores de validación antes de importar"
+    },
+    "importing": {
+      "title": "Importando Datos...",
+      "description": "Esto puede tardar unos minutos. Por favor, no cierre esta página."
+    },
+    "results": {
+      "successTitle": "Importación Completada Correctamente",
+      "errorTitle": "Importación Completada con Errores",
+      "summary": "Resumen:",
+      "schoolsImported": "Escuelas importadas: {{count}}",
+      "usersImported": "Usuarios importados: {{count}}",
+      "relationshipsCreated": "Relaciones creadas: {{count}}",
+      "errors": "Errores:",
+      "errorsCount": "Errores ({{count}})",
+      "viewDetails": "Ver registros detallados",
+      "newUsersCreated": "{{count}} nuevos usuarios creados",
+      "sections": {
+        "schools": "Escuelas",
+        "users": "Usuarios",
+        "relationships": "Relaciones"
+      },
+      "tableHeaders": {
+        "row": "Fila",
+        "field": "Campo",
+        "error": "Error"
+      },
+      "stats": {
+        "processed": "Procesado:",
+        "succeeded": "Exitoso:",
+        "failed": "Fallido:"
+      }
+    },
+    "toasts": {
+      "fileValidated": {
+        "title": "Archivo Validado",
+        "description": "{{rowCount}} filas validadas correctamente"
+      },
+      "validationErrors": {
+        "title": "Errores de Validación Encontrados",
+        "description": "Se encontraron {{count}} error{{plural}} de validación en {{filename}}. Por favor, revise y corrija antes de importar."
+      },
+      "validationFailed": {
+        "title": "Validación Fallida",
+        "description": "Error al analizar el archivo",
+        "customMessage": "{{message}}"
+      },
+      "noFilesSelected": {
+        "title": "No Se Seleccionaron Archivos",
+        "description": "Por favor, suba al menos un archivo para importar"
+      },
+      "importSuccess": {
+        "title": "Importación Exitosa",
+        "description": "Los datos se han importado correctamente"
+      },
+      "importFailed": {
+        "title": "Importación Fallida",
+        "description": "Error al importar datos. Por favor, inténtelo de nuevo.",
+        "customMessage": "{{message}}"
+      }
+    }
+  },
+  "activityLogs": {
+    "title": "Registros de Actividad de Usuarios",
+    "subtitle": "Rastrear y monitorear las actividades de los usuarios en la plataforma",
+    "filters": {
+      "labels": {
+        "actionType": "Tipo de Acción",
+        "userEmail": "Correo Electrónico del Usuario",
+        "startDate": "Fecha de Inicio",
+        "endDate": "Fecha de Fin",
+        "dateRange": "Rango de Fechas",
+        "fromDate": "Desde Fecha",
+        "toDate": "Hasta Fecha"
+      },
+      "options": {
+        "allActions": "Todas las Acciones",
+        "userLogin": "Inicio de Sesión de Usuario",
+        "schoolCreated": "Escuela Creada",
+        "schoolUpdated": "Escuela Actualizada",
+        "evidenceSubmitted": "Evidencia Enviada",
+        "evidenceApproved": "Evidencia Aprobada",
+        "evidenceRejected": "Evidencia Rechazada",
+        "caseStudyCreated": "Caso de Estudio Creado",
+        "caseStudyUpdated": "Caso de Estudio Actualizado",
+        "resourceUploaded": "Recurso Subido"
+      },
+      "placeholders": {
+        "searchByEmail": "Buscar por correo electrónico..."
+      }
+    },
+    "table": {
+      "headers": {
+        "timestamp": "Marca de Tiempo",
+        "dateTime": "Fecha/Hora",
+        "user": "Usuario",
+        "action": "Acción",
+        "actionType": "Tipo de Acción",
+        "target": "Objetivo",
+        "ipAddress": "Dirección IP",
+        "details": "Detalles"
+      }
+    },
+    "buttons": {
+      "applyFilters": "Aplicar Filtros",
+      "clearFilters": "Limpiar Filtros",
+      "exportLogs": "Exportar Registros",
+      "refresh": "Actualizar"
+    },
+    "loadingStates": {
+      "loadingLogs": "Cargando registros de actividad..."
+    },
+    "emptyStates": {
+      "noLogs": {
+        "title": "Sin Registros de Actividad",
+        "description": "Ningún registro de actividad coincide con sus filtros actuales"
+      }
+    },
+    "pagination": {
+      "showing": "Mostrando {{start}} - {{end}} de {{total}}",
+      "showingRange": "Mostrando {{start}} a {{end}} de {{total}} resultados",
+      "pageOf": "Página {{page}} de {{totalPages}}",
+      "previous": "Anterior",
+      "next": "Siguiente"
+    }
+  },
+  "events": {
+    "title": "Gestión de Eventos",
+    "subtitle": "Crear y gestionar eventos del programa",
+    "filters": {
+      "labels": {
+        "status": "Estado",
+        "type": "Tipo de Evento"
+      },
+      "placeholders": {
+        "search": "Buscar eventos..."
+      },
+      "options": {
+        "allStatuses": "Todos los Estados",
+        "allTypes": "Todos los Tipos"
+      },
+      "statuses": {
+        "draft": "Borrador",
+        "published": "Publicado",
+        "archived": "Archivado"
+      },
+      "eventTypes": {
+        "webinar": "Webinar",
+        "workshop": "Taller",
+        "conference": "Conferencia",
+        "training": "Formación",
+        "meetup": "Encuentro",
+        "competition": "Competición",
+        "other": "Otro"
+      }
+    },
+    "buttons": {
+      "createEvent": "Crear Evento",
+      "edit": "Editar",
+      "duplicate": "Duplicar",
+      "delete": "Eliminar",
+      "viewRegistrations": "Ver Inscripciones",
+      "sendNewsletter": "Enviar Boletín",
+      "save": "Guardar",
+      "cancel": "Cancelar",
+      "viewEvent": "Ver Evento"
+    },
+    "badges": {
+      "draft": "Borrador",
+      "published": "Publicado",
+      "archived": "Archivado",
+      "upcoming": "Próximo",
+      "ongoing": "En Curso",
+      "past": "Pasado"
+    },
+    "emptyStates": {
+      "noEvents": "No se encontraron eventos. Cree su primer evento para comenzar."
+    },
+    "form": {
+      "sections": {
+        "basicInfo": "Información Básica",
+        "eventDetails": "Detalles del Evento",
+        "registrationSettings": "Configuración de Inscripción",
+        "pageContent": "Contenido de la Página",
+        "notificationBanner": "Banner de Notificación"
+      },
+      "labels": {
+        "title": "Título del Evento *",
+        "slug": "Slug de URL",
+        "eventType": "Tipo de Evento",
+        "eventDate": "Fecha del Evento *",
+        "eventTime": "Hora del Evento",
+        "eventEndTime": "Hora de Finalización",
+        "timezone": "Zona Horaria",
+        "location": "Ubicación/Formato *",
+        "language": "Idioma del Evento *",
+        "targetAudience": "Audiencia Objetivo",
+        "capacity": "Capacidad (dejar en blanco para ilimitado)",
+        "description": "Descripción Breve",
+        "status": "Estado de Publicación *",
+        "bannerImage": "Imagen del Banner",
+        "registrationEnabled": "Habilitar Inscripción",
+        "registrationDeadline": "Fecha Límite de Inscripción",
+        "externalRegistrationUrl": "URL de Inscripción Externa",
+        "pageContent": "Contenido Detallado del Evento",
+        "bannerText": "Texto del Banner de Notificación",
+        "bannerActive": "Mostrar Banner en el Sitio Web",
+        "bannerGradient": "Estilo del Banner"
+      },
+      "placeholders": {
+        "title": "ej., Webinar de Día de Acción Global 2025",
+        "slug": "Se genera automáticamente a partir del título",
+        "eventTime": "ej., 14:00",
+        "eventEndTime": "ej., 15:30",
+        "location": "ej., En línea - Zoom, o Londres, Reino Unido",
+        "capacity": "ej., 100",
+        "description": "Una breve descripción del evento (150-200 caracteres)",
+        "externalRegistrationUrl": "https://ejemplo.com/inscripcion",
+        "pageContent": "Información detallada sobre el evento, agenda, ponentes, etc.",
+        "bannerText": "ej., ¡Únete a nuestro Webinar de Día de Acción Global el 15 de marzo!",
+        "selectTargetAudience": "Seleccionar audiencias objetivo"
+      },
+      "helpText": {
+        "slug": "Slug de URL amigable para este evento. Se genera automáticamente si se deja en blanco.",
+        "timezone": "La zona horaria para el evento. Se detecta automáticamente.",
+        "capacity": "Número máximo de inscripciones permitidas. Dejar en blanco para capacidad ilimitada.",
+        "registrationDeadline": "Los usuarios no podrán inscribirse después de esta fecha.",
+        "externalRegistrationUrl": "Si se proporciona, el botón de inscripción enlazará aquí en lugar de usar el sistema interno.",
+        "bannerInfo": "El banner de notificación aparece en la parte superior del sitio web para promocionar este evento."
+      }
+    },
+    "targetAudiences": {
+      "teachers": "Profesores",
+      "students": "Estudiantes",
+      "parents": "Padres",
+      "administrators": "Administradores",
+      "generalPublic": "Público General"
+    },
+    "banners": {
+      "title": "Banners de Eventos Activos",
+      "noBanners": "No hay banners de eventos activos",
+      "createBanner": "Crear Nuevo Banner",
+      "edit": "Editar",
+      "delete": "Eliminar"
+    },
+    "registrations": {
+      "title": "Inscripciones de Eventos",
+      "subtitle": "para {{eventTitle}}",
+      "table": {
+        "headers": {
+          "name": "Nombre",
+          "email": "Correo Electrónico",
+          "school": "Escuela",
+          "registeredAt": "Registrado En"
+        }
+      },
+      "buttons": {
+        "exportCSV": "Exportar CSV"
+      },
+      "stats": {
+        "totalRegistrations": "Inscripciones Totales",
+        "availableSpots": "Lugares Disponibles",
+        "unlimited": "Ilimitado"
+      },
+      "emptyState": "No hay inscripciones aún para este evento."
+    },
+    "toasts": {
+      "eventCreated": {
+        "title": "Evento Creado",
+        "description": "El evento se ha creado correctamente."
+      },
+      "eventUpdated": {
+        "title": "Evento Actualizado",
+        "description": "El evento se ha actualizado correctamente."
+      },
+      "eventDeleted": {
+        "title": "Evento Eliminado",
+        "description": "El evento se ha eliminado correctamente."
+      },
+      "saveFailed": {
+        "title": "Error al Guardar",
+        "description": "Error al guardar el evento. Por favor, inténtelo de nuevo.",
+        "customMessage": "{{message}}"
+      },
+      "deleteFailed": {
+        "title": "Eliminación Fallida",
+        "description": "Error al eliminar el evento. Por favor, inténtelo de nuevo.",
+        "customMessage": "{{message}}"
+      },
+      "bannerCreated": {
+        "title": "Banner Creado",
+        "description": "El banner del evento se ha creado correctamente."
+      },
+      "bannerUpdated": {
+        "title": "Banner Actualizado",
+        "description": "El banner del evento se ha actualizado correctamente."
+      },
+      "bannerDeleted": {
+        "title": "Banner Eliminado",
+        "description": "El banner se ha eliminado correctamente."
+      },
+      "newsletterSent": {
+        "title": "Boletín Enviado",
+        "description": "El anuncio del evento se ha enviado correctamente a {{count}} destinatario{{plural}}."
+      },
+      "newsletterFailed": {
+        "title": "Error al Enviar Boletín",
+        "description": "Error al enviar el anuncio del evento. Por favor, inténtelo de nuevo."
+      },
+      "validationError": {
+        "title": "Error de Validación",
+        "description": "Por favor, complete todos los campos obligatorios."
+      }
+    },
+    "dialogs": {
+      "deleteEvent": {
+        "title": "Eliminar Evento",
+        "description": "¿Está seguro de que desea eliminar \"{title}\"? Esta acción no se puede deshacer."
+      },
+      "deleteBanner": {
+        "title": "Eliminar Banner",
+        "description": "¿Está seguro de que desea eliminar este banner? Esta acción no se puede deshacer."
+      },
+      "bannerEditor": {
+        "titleCreate": "Crear Banner",
+        "titleEdit": "Editar Banner",
+        "labels": {
+          "bannerText": "Texto del Banner",
+          "required": "*",
+          "event": "Evento",
+          "gradient": "Gradiente",
+          "active": "Activo"
+        },
+        "placeholders": {
+          "selectEvent": "Seleccionar un evento"
+        }
+      },
+      "newsletter": {
+        "title": "Enviar Anuncio de Evento",
+        "description": "Enviar \"{title}\" por correo electrónico a los profesores.",
+        "labels": {
+          "recipientType": "Tipo de Destinatario",
+          "emailAddresses": "Direcciones de Correo Electrónico",
+          "commaSeparated": "(separadas por comas)"
+        },
+        "options": {
+          "allTeachers": "Todos los Profesores ({count} profesores)",
+          "customEmailList": "Lista de Correo Personalizada"
+        },
+        "placeholders": {
+          "emailList": "correo1@ejemplo.com, correo2@ejemplo.com"
+        }
+      }
+    },
+    "buttons": {
+      "cancel": "Cancelar",
+      "delete": "Eliminar",
+      "deleting": "Eliminando...",
+      "save": "Guardar",
+      "saving": "Guardando...",
+      "sendAnnouncement": "Enviar Anuncio",
+      "sending": "Enviando..."
+    }
+  },
+  "reviews": {
+    "filters": {
+      "evidenceReview": "Revisión de Evidencia",
+      "auditReview": "Revisión de Auditoría",
+      "photoConsent": "Consentimiento Fotográfico"
+    },
+    "evidence": {
+      "title": "Cola de Revisión de Evidencia",
+      "selected": "{count} seleccionado",
+      "bulkApprove": "Aprobar en Masa",
+      "bulkReject": "Rechazar en Masa",
+      "delete": "Eliminar",
+      "filterAll": "Todos",
+      "filterPending": "Pendiente",
+      "filterApproved": "Aprobado",
+      "filterRejected": "Rechazado",
+      "filterByAssignee": "Filtrar por asignado",
+      "allEvidence": "Toda la Evidencia",
+      "unassigned": "Sin Asignar",
+      "assignedToMe": "Asignado a Mí",
+      "selectAll": "Seleccionar Todo ({count} elementos)",
+      "allCaughtUp": "¡Todo al Día!",
+      "noPendingEvidence": "No hay envíos de evidencia pendientes para revisar.",
+      "badges": {
+        "public": "Público",
+        "photoApproved": "Foto Aprobada",
+        "photoPending": "Foto Pendiente",
+        "noPhotoConsent": "Sin Consentimiento Fotográfico",
+        "new": "NUEVO"
+      },
+      "labels": {
+        "schoolId": "ID de Escuela:",
+        "submitted": "Enviado:",
+        "files": "Archivos:",
+        "assignedTo": "Asignado a:"
+      },
+      "buttons": {
+        "approve": "Aprobar",
+        "reject": "Rechazar",
+        "cancel": "Cancelar",
+        "confirm": "Confirmar",
+        "processing": "Procesando..."
+      },
+      "modal": {
+        "approveTitle": "Aprobar Evidencia",
+        "rejectTitle": "Rechazar Evidencia",
+        "reviewNotes": "Notas de Revisión",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "Comentarios opcionales para la escuela...",
+        "feedbackRequired": "Por favor, proporcione comentarios sobre por qué se rechazó esta evidencia..."
+      },
+      "consentWarning": {
+        "title": "¿Aprobar Sin Consentimiento Fotográfico? 📸",
+        "noConsentProvided": "Esta escuela <strong>no ha proporcionado consentimiento fotográfico aprobado</strong>.",
+        "statusPending": "Su documento de consentimiento fotográfico está actualmente bajo revisión.",
+        "statusRejected": "Su documento de consentimiento fotográfico fue rechazado.",
+        "statusMissing": "No se ha subido ningún documento de consentimiento fotográfico.",
+        "warningMessage": "Aprobar esta evidencia significa que <strong>no será elegible</strong> para usar en casos de estudio públicos o materiales promocionales a menos que el consentimiento fotográfico sea aprobado más tarde.",
+        "confirmQuestion": "¿Desea proceder con la aprobación de todos modos?",
+        "proceedAnyway": "Sí, Proceder de Todos Modos",
+        "goBack": "Volver"
+      },
+      "bulkDialog": {
+        "reviewTitle": "Revisión Masiva de Evidencia",
+        "deleteTitle": "Eliminación Masiva de Evidencia",
+        "approveDescription": "Está a punto de aprobar {count} envíos de evidencia. Esto los hará visibles según su configuración de visibilidad.",
+        "rejectDescription": "Está a punto de rechazar {count} envíos de evidencia. Las escuelas serán notificadas y podrán volver a enviar.",
+        "deleteDescription": "Está a punto de eliminar permanentemente {count} envíos de evidencia. Esta acción no se puede deshacer.",
+        "notes": "Notas (opcional para aprobación, obligatorio para rechazo)",
+        "notesPlaceholder": "Introducir notas para las escuelas...",
+        "confirm": "Confirmar",
+        "cancel": "Cancelar",
+        "processing": "Procesando..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "Notas de Revisión Requeridas",
+        "feedbackRequired": "Por favor, proporcione comentarios al rechazar evidencia."
+      }
+    },
+    "assignment": {
+      "assignTo": "Asignar a...",
+      "unassigned": "Sin Asignar",
+      "toasts": {
+        "success": "Evidencia asignada correctamente",
+        "failed": "Error al asignar evidencia"
+      }
+    },
+    "photoConsent": {
+      "title": "Cola de Revisión de Consentimiento Fotográfico",
+      "noPending": "Sin Consentimiento Fotográfico Pendiente",
+      "allReviewed": "¡Todos los envíos de consentimiento fotográfico han sido revisados!",
+      "viewDocument": "Ver Documento",
+      "buttons": {
+        "approve": "Aprobar",
+        "reject": "Rechazar"
+      },
+      "confirmApprove": "¿Aprobar consentimiento fotográfico para {name}?",
+      "rejectionNotes": "Notas de rechazo para {name}:",
+      "rejectionRequired": "Las notas de rechazo son obligatorias"
+    },
+    "audit": {
+      "title": "Cola de Revisión de Auditoría",
+      "noPending": "Sin Auditorías Pendientes",
+      "allReviewed": "¡Todas las auditorías han sido revisadas. ¡Gran trabajo!",
+      "labels": {
+        "submittedBy": "Enviado por:",
+        "totalPlasticItems": "Elementos de Plástico Totales:"
+      },
+      "parts": {
+        "part1": "Parte 1: Información de la Escuela",
+        "part2": "Parte 2: Comedor y Sala de Profesores",
+        "part3": "Parte 3: Aulas y Baños",
+        "part4": "Parte 4: Gestión de Residuos"
+      },
+      "part1": {
+        "schoolName": "Nombre de la Escuela:",
+        "studentCount": "Número de Estudiantes:",
+        "staffCount": "Número de Personal:",
+        "auditDate": "Fecha de Auditoría:",
+        "auditTeam": "Miembros del Equipo de Auditoría:",
+        "noData": "No hay datos disponibles"
+      },
+      "part2": {
+        "lunchroom": "Comedor",
+        "staffroom": "Sala de Profesores",
+        "plasticBottles": "Botellas de Plástico:",
+        "plasticCups": "Vasos de Plástico:",
+        "plasticCutlery": "Cubiertos de Plástico:",
+        "plasticStraws": "Pajitas de Plástico:",
+        "foodPackaging": "Envases de Alimentos:",
+        "clingFilm": "Film Transparente:",
+        "additionalNotes": "Notas Adicionales:",
+        "noData": "No hay datos disponibles"
+      },
+      "part3": {
+        "classrooms": "Aulas",
+        "bathrooms": "Baños",
+        "pensPencils": "Bolígrafos y Lápices:",
+        "stationeryItems": "Artículos de Papelería:",
+        "bottlesCups": "Botellas y Vasos:",
+        "otherItems": "Otros Elementos:",
+        "soapDispensers": "Dispensadores de Jabón:",
+        "additionalNotes": "Notas Adicionales:",
+        "noData": "No hay datos disponibles"
+      },
+      "part4": {
+        "hasRecyclingSystem": "Tiene Sistema de Reciclaje:",
+        "recyclingBinLocations": "Ubicaciones de Contenedores de Reciclaje:",
+        "plasticWasteDestination": "Destino de Residuos Plásticos:",
+        "compostsOrganicWaste": "Composta Residuos Orgánicos:",
+        "hasPlasticReductionPolicy": "Tiene Política de Reducción de Plásticos:",
+        "policyDetails": "Detalles de la Política:",
+        "additionalNotes": "Notas Adicionales:",
+        "yes": "Sí",
+        "no": "No",
+        "noData": "No hay datos disponibles"
+      },
+      "buttons": {
+        "approve": "Aprobar",
+        "reject": "Rechazar"
+      },
+      "modal": {
+        "approveTitle": "Aprobar Auditoría",
+        "rejectTitle": "Rechazar Auditoría",
+        "reviewNotes": "Notas de Revisión",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "Comentarios opcionales para la escuela...",
+        "feedbackRequired": "Por favor, proporcione comentarios sobre por qué se rechazó esta auditoría...",
+        "cancel": "Cancelar",
+        "confirm": "Confirmar",
+        "processing": "Procesando..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "Notas de Revisión Requeridas",
+        "feedbackRequired": "Por favor, proporcione comentarios al rechazar auditoría."
+      }
+    },
+    "toasts": {
+      "success": "Éxito",
+      "evidenceReviewSuccess": "Revisión de evidencia enviada correctamente.",
+      "reviewFailed": "Revisión Fallida",
+      "evidenceReviewFailed": "Error al actualizar evidencia. Los cambios se han revertido.",
+      "auditReviewed": "Auditoría Revisada",
+      "auditApproved": "La auditoría ha sido aprobada.",
+      "auditRejected": "La auditoría ha sido rechazada.",
+      "auditReviewFailed": "Error al revisar auditoría. Los cambios se han revertido.",
+      "bulkReviewSuccess": "Revisión masiva de evidencia completada correctamente.",
+      "bulkReviewFailed": "Error al completar la revisión masiva de evidencia. Los cambios se han revertido.",
+      "bulkDeleteSuccess": "Evidencia seleccionada eliminada correctamente.",
+      "bulkDeleteFailed": "Error al eliminar evidencia. Los cambios se han revertido."
+    }
   }
 }

@@ -1,76 +1,464 @@
 {
+  "tabs": {
+    "dashboard": "Dashboard",
+    "schools": "Scholen",
+    "content": "Inhoud",
+    "reviewQueue": "Beoordelingswachtrij",
+    "program": "Programma",
+    "communications": "Communicatie"
+  },
   "navigation": {
     "overview": "Overzicht",
     "analytics": "Analytics",
-    "evidence": "Bewijs Beoordeling",
+    "evidence": "Bewijs Beoordelen",
     "resources": "Bronbeheer",
     "schools": "Schoolbeheer",
-    "admin_panel": "Beheerpaneel"
+    "admin_panel": "Beheerders panel",
+    "manageSchools": "Scholen Beheren",
+    "manageTeams": "Teams Beheren",
+    "userManagement": "Gebruikersbeheer",
+    "userActivity": "Gebruikersactiviteit",
+    "importData": "Gegevens Importeren",
+    "manageResources": "Bronnen Beheren",
+    "manageResourcePacks": "Bronnenpakketten Beheren",
+    "createCaseStudies": "Casestudies Maken",
+    "manageEvents": "Evenementen Beheren",
+    "evidenceGallery": "Bewijsgalerij",
+    "setEvidenceRequirements": "Bewijs vereisten Instellen",
+    "reviewPrintableForms": "Afdrukbare Formulieren Beoordelen"
+  },
+  "header": {
+    "title": "Beheerders panel",
+    "subtitle": "Beheer scholen, beoordeel bewijs en monitor de voortgang van het programma"
+  },
+  "welcomeBanner": {
+    "title": "Wat een Geluk!",
+    "greeting": "Welkom bij het administratieve team van Plastic Clever Schools!",
+    "description": "Je hebt nu volledige toegang om het programma te beheren, ingediend bewijs te beoordelen, casestudies te publiceren en scholen te helpen in hun reis om plastic afval te verminderen."
+  },
+  "export": {
+    "title": "Gegevens Exporteren",
+    "buttonLabel": "Gegevens Exporteren",
+    "description": "Kies formaat en gegevens om te exporteren:",
+    "selectFormatPlaceholder": "Selecteer formaat",
+    "formats": {
+      "csv": "CSV Formaat",
+      "excel": "Excel Formaat (.xlsx)"
+    },
+    "buttons": {
+      "exportSchools": "Schoolgegevens Exporteren",
+      "exportEvidence": "Bewijsgegevens Exporteren",
+      "exportUsers": "Gebruikersgegevens Exporteren",
+      "withCurrentFilters": "(met huidige filters)"
+    },
+    "toasts": {
+      "success": {
+        "title": "Export Geslaagd",
+        "description": "De {{type}} gegevens zijn geëxporteerd als {{format}}."
+      },
+      "failed": {
+        "title": "Export Mislukt",
+        "description": "Kon gegevens niet exporteren. Probeer opnieuw."
+      }
+    }
+  },
+  "loading": {
+    "dashboard": "Beheerders panel laden...",
+    "caseStudies": "Casestudies laden..."
   },
   "overview": {
-    "title": "Beheeroverzicht",
-    "subtitle": "Platformactiviteit en prestaties monitoren",
+    "title": "Beheer Overzicht",
+    "subtitle": "Monitor platformactiviteit en prestaties",
     "total_schools": "Totaal Scholen",
     "total_students": "Totaal Leerlingen",
     "pending_evidence": "Bewijs in Behandeling",
     "resources_uploaded": "Geüploade Bronnen"
   },
-  "analytics": {
-    "title": "Platform Analytics",
-    "subtitle": "Uitgebreide inzichten in programma-effectiviteit",
-    "global_metrics": "Globale Statistieken",
-    "enrollment_over_time": "Schoolinschrijvingen in de Tijd",
-    "evidence_submissions": "Bewijsinzendingen per Fase",
-    "geographic_distribution": "Geografische Verdeling",
-    "completion_rates": "Voltooiingspercentages per Fase",
-    "resource_downloads": "Brondownloadstatistieken",
-    "filter_by_period": "Filteren op Periode",
-    "last_30_days": "Laatste 30 Dagen",
-    "last_90_days": "Laatste 90 Dagen",
-    "last_year": "Afgelopen Jaar",
-    "all_time": "Alle Tijd",
-    "export_report": "Rapport Exporteren",
-    "charts": {
-      "schools_by_country": "Scholen per Land",
-      "completion_by_stage": "Voltooiingspercentage per Fase",
-      "monthly_registrations": "Maandelijkse Schoolregistraties",
-      "evidence_status": "Bewijsbeoordelingsstatus"
+  "userManagement": {
+    "title": "Gebruikersbeheer",
+    "buttons": {
+      "inviteAdmin": "Admin Uitnodigen",
+      "invitePartner": "Partner Uitnodigen",
+      "sendInvitation": "Uitnodiging Verzenden",
+      "sending": "Verzenden...",
+      "cancel": "Annuleren",
+      "filterAll": "Alle Gebruikers",
+      "filterWithSchools": "Met Scholen",
+      "filterWithoutSchools": "Zonder Scholen",
+      "bulkDelete": "Geselecteerde Gebruikers Verwijderen ({{count}})",
+      "confirmDelete": "Bevestig {{mode}}",
+      "deleting": "Verwijderen...",
+      "confirmSoftDelete": "Bevestig Soft Verwijdering",
+      "confirmTransfer": "Bevestig Overdracht",
+      "confirmHardDelete": "Bevestig Permanente Verwijdering"
+    },
+    "dialogs": {
+      "invitePartner": {
+        "title": "Nieuwe Partner Uitnodigen",
+        "description": "Partners hebben vergelijkbare toegang als admins, maar kunnen geen rollen toewijzen of schoolgegevens downloaden."
+      },
+      "inviteAdmin": {
+        "title": "Nieuwe Beheerder Uitnodigen"
+      },
+      "deleteUser": {
+        "title": "Gebruiker Verwijderen",
+        "description": "Kies hoe om te gaan met de inhoud en gegevens van de gebruiker"
+      },
+      "bulkDelete": {
+        "title": "Bulk Verwijder {{count}} Gebruiker{{plural}}",
+        "description": "Kies hoe om te gaan met de inhoud en gegevens van de geselecteerde gebruikers",
+        "selectedUsers": "Geselecteerde Gebruikers: {{count}} gebruiker{{plural}}"
+      },
+      "changeRole": {
+        "title": "Gebruikersrol Wijzigen",
+        "description": "Update de rol en rechten voor {{name}}"
+      },
+      "deletionPreview": {
+        "title": "Verwijderingsvoorbeeld",
+        "description": "Deze gebruiker heeft de volgende gegevens:",
+        "evidence": "Bewijs: {{count}}",
+        "caseStudies": "Casestudies: {{count}}",
+        "reductionPromises": "Reductie Beloftes: {{count}}",
+        "mediaAssets": "Media Bestanden: {{count}}",
+        "certificates": "Certificaten: {{count}}",
+        "importBatches": "Import Batches: {{count}}",
+        "teacherInvitations": "Docentuitnodigingen: {{count}}",
+        "adminInvitations": "Admin Uitnodigingen: {{count}}"
+      }
+    },
+    "form": {
+      "labels": {
+        "emailAddress": "E-mailadres *",
+        "platformRole": "Platform Rol",
+        "roleDescription": "Selecteer de rol en rechten van de gebruiker"
+      },
+      "placeholders": {
+        "partnerEmail": "partner@voorbeeld.nl",
+        "adminEmail": "admin@voorbeeld.nl",
+        "searchUsers": "Zoek op naam of email..."
+      }
+    },
+    "table": {
+      "headers": {
+        "name": "Naam",
+        "email": "Email",
+        "role": "Rol",
+        "schools": "Scholen",
+        "status": "Status",
+        "actions": "Acties"
+      },
+      "showingCount": "{{filtered}} van {{total}} gebruikers weergegeven"
+    },
+    "deletionModes": {
+      "soft": {
+        "label": "Soft Verwijdering (Aanbevolen)",
+        "description": "Gebruikers worden verborgen in het systeem maar alle gegevens blijven bewaard. Kan later worden hersteld."
+      },
+      "transfer": {
+        "label": "Eigendom Overdragen",
+        "description": "Draag alle inhoud over naar het systeemaccount \"Gearchiveerde Gebruiker\", verwijder daarna de gebruiker. Historische gegevens blijven bewaard.",
+        "bulkDescription": "Draag alle inhoud over naar het systeemaccount \"Gearchiveerde Gebruiker\", verwijder daarna de gebruikers. Historische gegevens blijven bewaard."
+      },
+      "hard": {
+        "label": "Permanente Verwijdering (Onomkeerbaar)",
+        "description": "WAARSCHUWING: Verwijder de gebruiker EN alle inhoud permanent. Deze actie kan niet ongedaan gemaakt worden!",
+        "bulkDescription": "WAARSCHUWING: Verwijder de gebruikers EN alle inhoud permanent. Deze actie kan niet ongedaan gemaakt worden!"
+      }
+    },
+    "roles": {
+      "teacher": {
+        "label": "Docent",
+        "description": "Standaard gebruiker met rechten op schoolniveau"
+      },
+      "school": {
+        "label": "School (Schooldirecteur)",
+        "description": "Schooldirecteur rol met schoolbeheer rechten"
+      },
+      "partner": {
+        "label": "Partner",
+        "description": "Vergelijkbare toegang als admin maar kan geen rollen toewijzen of schoolgegevens downloaden"
+      },
+      "admin": {
+        "label": "Admin",
+        "description": "Volledige toegang tot het platform inclusief roltoewijzing en gegevensdownload"
+      }
+    },
+    "badges": {
+      "pending": "In Behandeling",
+      "pendingInvite": "Uitnodiging in Behandeling",
+      "active": "Actief",
+      "admin": "Admin",
+      "partner": "Partner"
+    },
+    "toasts": {
+      "invitationSent": {
+        "title": "Uitnodiging Verzonden",
+        "adminDescription": "De admin uitnodiging is succesvol verzonden.",
+        "partnerDescription": "De partner uitnodiging is succesvol verzonden."
+      },
+      "invitationFailed": {
+        "title": "Uitnodiging Mislukt",
+        "adminDescription": "Kon admin uitnodiging niet verzenden. Probeer opnieuw.",
+        "partnerDescription": "Kon partner uitnodiging niet verzenden. Probeer opnieuw.",
+        "defaultDescription": "{{message}}"
+      },
+      "invitationDeleted": {
+        "title": "Uitnodiging Verwijderd",
+        "description": "De admin uitnodiging is succesvol verwijderd."
+      },
+      "deleteFailed": {
+        "title": "Verwijdering Mislukt",
+        "description": "Kon uitnodiging niet verwijderen. Probeer opnieuw.",
+        "userDescription": "Kon gebruiker niet verwijderen. Probeer opnieuw.",
+        "customMessage": "{{message}}"
+      },
+      "userDeleted": {
+        "title": "Gebruiker Verwijderd",
+        "softDeleted": "De gebruiker is succesvol soft verwijderd.",
+        "transferred": "De gebruiker is succesvol verwijderd (inhoud overgedragen).",
+        "hardDeleted": "De gebruiker is succesvol permanent verwijderd."
+      },
+      "userUpdated": {
+        "title": "Gebruiker Bijgewerkt",
+        "description": "De gebruikersrol is succesvol bijgewerkt."
+      },
+      "updateFailed": {
+        "title": "Update Mislukt",
+        "description": "Kon gebruikersrol niet bijwerken. Probeer opnieuw.",
+        "customMessage": "{{message}}"
+      },
+      "emailRequired": {
+        "title": "Email Vereist",
+        "description": "Voer een e-mailadres in."
+      },
+      "bulkDeleteSuccessful": {
+        "title": "Bulk Verwijdering Geslaagd",
+        "description": "{{count}} gebruiker{{plural}} succesvol verwijderd",
+        "withEvidence": "{{count}} gebruiker{{plural}} succesvol verwijderd ({{evidenceCount}} bewijs item{{evidencePlural}} verwijderd)",
+        "withCaseStudies": "Let op: {{caseStudyCount}} casestud{{caseStudyPlural}} beïnvloed",
+        "creatorsRemoved": "en hun makers zijn verwijderd."
+      },
+      "bulkDeleteFailed": {
+        "title": "Bulk Verwijdering Mislukt",
+        "description": "Kon gebruikers niet verwijderen. Probeer opnieuw.",
+        "allFailed": "Kon alle geselecteerde gebruikers niet verwijderen:",
+        "customMessage": "{{message}}"
+      },
+      "bulkDeletePartial": {
+        "title": "Bulk Verwijdering Gedeeltelijk Geslaagd",
+        "description": "{{successCount}} gebruiker{{plural}} succesvol verwijderd. Kon {{failedCount}} niet verwijderen."
+      }
+    },
+    "emptyStates": {
+      "noUsers": {
+        "title": "Geen Gebruikers Gevonden",
+        "noMatch": "Geen gebruikers komen overeen met de zoekcriteria.",
+        "allAssigned": "Alle gebruikers zijn toegewezen aan ten minste één school.",
+        "noneInSystem": "Geen gebruikers gevonden in het systeem."
+      }
+    },
+    "adminInvitations": {
+      "title": "Admin Uitnodigingen",
+      "table": {
+        "email": "Email",
+        "status": "Status",
+        "createdAt": "Aangemaakt",
+        "expiresAt": "Verloopt",
+        "actions": "Acties"
+      }
     }
-  },
-  "evidence": {
-    "title": "Bewijs Beoordeling",
-    "subtitle": "Bewijsinzendingen beoordelen en modereren",
-    "pending_review": "In Behandeling",
-    "approved": "Goedgekeurd",
-    "needs_revision": "Revisie Nodig",
-    "filter_by_stage": "Filteren op Fase",
-    "filter_by_status": "Filteren op Status",
-    "sort_by": "Sorteren op",
-    "newest_first": "Nieuwste Eerst",
-    "oldest_first": "Oudste Eerst",
-    "school_name": "Schoolnaam",
-    "stage": "Fase",
-    "submitted_date": "Inzenddatum",
-    "review_evidence": "Bewijs Beoordelen",
-    "approve_evidence": "Bewijs Goedkeuren",
-    "request_revision": "Revisie Aanvragen",
-    "add_feedback": "Feedback Toevoegen",
-    "feedback_placeholder": "Feedback voor de school geven...",
-    "approve_button": "Goedkeuren",
-    "revision_button": "Revisie Aanvragen",
-    "evidence_approved": "Bewijs succesvol goedgekeurd",
-    "evidence_revision_requested": "Revisie succesvol aangevraagd",
-    "bulk_actions": "Bulkacties",
-    "select_all": "Alles Selecteren",
-    "bulk_approve": "Bulk Goedkeuren",
-    "bulk_request_revision": "Bulk Revisie Aanvragen"
   },
   "resources": {
     "title": "Bronbeheer",
-    "subtitle": "Educatieve bronnen uploaden en beheren",
+    "subtitle": "Upload en beheer educatieve bronnen",
     "upload_resource": "Nieuwe Bron Uploaden",
     "resource_library": "Bronbibliotheek",
     "featured_resources": "Uitgelichte Bronnen",
+    "buttons": {
+      "addResource": "Bron Toevoegen",
+      "bulkUpload": "Bulk Upload Bronnen",
+      "uploadFile": "Bestand Uploaden",
+      "uploading": "Uploaden...",
+      "replaceFile": "Bestand Vervangen",
+      "removeFile": "Bestand Verwijderen",
+      "autoFillAI": "Automatisch Invullen met AI",
+      "generating": "Genereren...",
+      "saveResource": "Bron Opslaan",
+      "cancel": "Annuleren",
+      "preview": "Voorbeeld",
+      "edit": "Bewerken",
+      "delete": "Verwijderen",
+      "deleteResources": "Bronnen Verwijderen",
+      "deleting": "Verwijderen...",
+      "bulkDelete": "Bulk Verwijderen ({{count}})",
+      "insertImage": "Afbeelding Invoegen"
+    },
+    "form": {
+      "titles": {
+        "addNew": "Nieuwe Bron Toevoegen",
+        "edit": "Bron Bewerken"
+      },
+      "labels": {
+        "title": "Titel *",
+        "description": "Beschrijving",
+        "stage": "Programma Fase *",
+        "ageRange": "Leeftijdscategorie",
+        "languages": "Beschikbare Talen *",
+        "country": "Doelland",
+        "visibility": "Zichtbaarheid *",
+        "resourceFile": "Bronbestand",
+        "resourceType": "Brontype",
+        "theme": "Thema"
+      },
+      "placeholders": {
+        "title": "Voer brontitel in",
+        "description": "Voer bronbeschrijving in",
+        "ageRange": "bijv., 8-12 jaar",
+        "country": "Wereldwijd (alle landen)",
+        "searchResources": "Bronnen zoeken..."
+      },
+      "helpText": {
+        "languageSelection": "Selecteer alle talen waarin deze bron beschikbaar is",
+        "visibilityPublic": "Deze bron zal zichtbaar zijn voor alle sitebezoekers",
+        "visibilityRegistered": "Deze bron zal alleen zichtbaar zijn voor geregistreerde scholen",
+        "uploadInstructions": "Upload een bronbestand (PDF, DOC, PPT, XLS, enz.)",
+        "maxFileSize": "Maximale bestandsgrootte: 150MB",
+        "replaceInstructions": "Je kunt het bestand vervangen terwijl je dezelfde bron behoudt, of het volledig verwijderen.",
+        "aiAutoFillTooltip": "AI analyseert je geüploade bestand en suggereert automatisch een titel, beschrijving, fase, thema, leeftijdscategorie en brontype op basis van de inhoud en bestandsnaam.",
+        "aiAutoFillDescription": "Laat AI je bestand analyseren en metadata voorstellen om tijd te besparen. Je kunt de suggesties bekijken en aanpassen voordat je opslaat."
+      }
+    },
+    "filters": {
+      "allStages": "Alle Fasen",
+      "allCountries": "Alle Landen",
+      "allLanguages": "Alle Talen",
+      "allVisibility": "Alle Zichtbaarheid",
+      "allStatus": "Alle Statussen"
+    },
+    "stages": {
+      "inspire": "Inspireren",
+      "investigate": "Onderzoeken",
+      "act": "Handelen"
+    },
+    "visibility": {
+      "public": "Publiek (zichtbaar voor iedereen)",
+      "publicShort": "Publiek",
+      "registered": "Alleen Geregistreerd (vereist login)",
+      "registeredShort": "Alleen Geregistreerd"
+    },
+    "resourceTypes": {
+      "lessonPlan": "Lesplan",
+      "assembly": "Bijeenkomst",
+      "teacherToolkit": "Docenttoolkit",
+      "studentWorkbook": "Leerling Werkboek",
+      "printableActivities": "Afdrukbare Activiteiten",
+      "none": "Geen"
+    },
+    "themes": {
+      "oceanLiteracy": "Oceaangeletterdheid",
+      "climateChange": "Klimaatverandering",
+      "plasticPollution": "Plasticvervuiling",
+      "science": "Wetenschap",
+      "designTechnology": "Ontwerp en Technologie",
+      "geography": "Aardrijkskunde",
+      "crossCurricular": "Vak overschrijdend",
+      "enrichment": "Verrijking",
+      "none": "Geen"
+    },
+    "table": {
+      "headers": {
+        "preview": "Voorbeeld",
+        "title": "Titel",
+        "stage": "Fase",
+        "visibility": "Zichtbaarheid",
+        "country": "Land",
+        "languages": "Talen",
+        "fileSize": "Bestandsgrootte",
+        "downloads": "Downloads",
+        "status": "Status",
+        "actions": "Acties"
+      },
+      "values": {
+        "global": "Wereldwijd",
+        "active": "Actief",
+        "inactive": "Inactief",
+        "notAvailable": "N.v.t."
+      }
+    },
+    "toasts": {
+      "fileUploaded": {
+        "title": "Bestand Geüpload",
+        "description": "{{filename}} is succesvol geüpload."
+      },
+      "uploadError": {
+        "title": "Upload Fout",
+        "failedToGetUrl": "Kon upload URL niet ophalen",
+        "failedToUpload": "Kon bestand niet uploaden",
+        "customMessage": "{{message}}"
+      },
+      "aiAutoFillComplete": {
+        "title": "AI Automatisch Invullen Voltooid",
+        "description": "Bronmetadata is ingevuld met AI suggesties. Controleer en pas aan indien nodig."
+      },
+      "aiAutoFillFailed": {
+        "title": "AI Automatisch Invullen Mislukt",
+        "noSuggestions": "AI kon geen suggesties genereren voor deze bron.",
+        "description": "Kon geen AI suggesties genereren. Probeer opnieuw.",
+        "customMessage": "{{message}}"
+      },
+      "cannotAutoFill": {
+        "title": "Kan Niet Automatisch Invullen",
+        "description": "Upload eerst een bestand om AI automatisch invullen te gebruiken."
+      },
+      "resourceCreated": {
+        "title": "Bron Aangemaakt",
+        "description": "De bron is succesvol aangemaakt."
+      },
+      "resourceUpdated": {
+        "title": "Bron Bijgewerkt",
+        "description": "De bron is succesvol bijgewerkt."
+      },
+      "saveFailed": {
+        "title": "Opslaan Mislukt",
+        "description": "Kon bron niet opslaan. Probeer opnieuw.",
+        "customMessage": "{{message}}"
+      },
+      "resourceDeleted": {
+        "title": "Bron Verwijderd",
+        "description": "De bron is succesvol verwijderd.",
+        "bulkDescription": "{{count}} bron{{plural}} succesvol verwijderd."
+      },
+      "deleteFailed": {
+        "title": "Verwijdering Mislukt",
+        "description": "Kon bron niet verwijderen. Probeer opnieuw."
+      },
+      "bulkDeleteFailed": {
+        "title": "Bulk Verwijdering Mislukt",
+        "description": "Kon sommige bronnen niet verwijderen."
+      },
+      "validationError": {
+        "title": "Validatiefout",
+        "selectLanguage": "Selecteer ten minste één taal."
+      }
+    },
+    "dialogs": {
+      "deleteConfirmation": {
+        "title": "Bron Verwijderen",
+        "description": "Weet je zeker dat je deze bron wilt verwijderen?",
+        "cannotUndo": "Deze actie kan niet ongedaan gemaakt worden."
+      },
+      "bulkDelete": {
+        "title": "Bronnen Verwijderen",
+        "description": "Weet je zeker dat je {{count}} bron{{plural}} wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
+        "listTitle": "Te verwijderen bronnen:"
+      }
+    },
+    "emptyStates": {
+      "noResources": "Geen bronnen gevonden. Voeg je eerste bron toe om te beginnen."
+    },
+    "ai": {
+      "sectionTitle": "AI Automatisch Invullen"
+    },
     "upload_form": {
       "title": "Nieuwe Bron Uploaden",
       "resource_title": "Brontitel",
@@ -100,7 +488,7 @@
     },
     "delete_confirmation": {
       "title": "Bron Verwijderen",
-      "message": "Weet u zeker dat u deze bron wilt verwijderen? Deze actie kan niet ongedaan worden gemaakt.",
+      "message": "Weet je zeker dat je deze bron wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden.",
       "delete": "Verwijderen",
       "cancel": "Annuleren"
     },
@@ -108,20 +496,431 @@
     "resource_updated": "Bron succesvol bijgewerkt",
     "resource_deleted": "Bron succesvol verwijderd"
   },
+  "analytics": {
+    "title": "Platform Analytics",
+    "subtitle": "Uitgebreide inzichten in programma-effectiviteit",
+    "dashboard": {
+      "title": "Analytics Dashboard",
+      "description": "Uitgebreide inzichten en statistieken voor Plastic Clever Schools"
+    },
+    "buttons": {
+      "exportCSV": "CSV Exporteren",
+      "exportExcel": "Excel Exporteren",
+      "exportPDF": "PDF Rapport Exporteren",
+      "cancel": "Annuleren",
+      "exportReport": "Rapport Exporteren",
+      "generating": "Genereren...",
+      "confirmExport": "Rapport Exporteren"
+    },
+    "tabs": {
+      "overview": "Overzicht",
+      "schoolsEvidence": "Scholen & Bewijs",
+      "plasticWasteAudits": "Plastic Afval Audits",
+      "userEngagement": "Gebruikersbetrokkenheid"
+    },
+    "metrics": {
+      "totalSchools": {
+        "label": "Totaal Scholen",
+        "description": "Deelnemende scholen"
+      },
+      "activeUsers": {
+        "label": "Actieve Gebruikers"
+      },
+      "evidenceSubmissions": {
+        "label": "Bewijs Inzendingen"
+      },
+      "globalReach": {
+        "label": "Wereldwijd Bereik"
+      },
+      "totalEvidence": {
+        "label": "Totaal Bewijs",
+        "description": "Ontvangen inzendingen"
+      },
+      "clickToView": "Klik om details te bekijken →"
+    },
+    "dialogs": {
+      "exportPDF": {
+        "title": "PDF Rapport Exporteren",
+        "description": "Selecteer welke secties je wilt opnemen in je analytics rapport. Het rapport bevat gegevens van {{startDate}} - {{endDate}}",
+        "sections": {
+          "overview": "Overzicht",
+          "scoresEvidence": "Scholen & Bewijs",
+          "plasticWasteAudits": "Plastic Afval Audits",
+          "userEngagement": "Gebruikersbetrokkenheid",
+          "aiInsights": "AI Inzichten Opnemen"
+        }
+      }
+    },
+    "charts": {
+      "userRegistrationTrends": "Gebruikersregistratie Trends",
+      "userRoleDistribution": "Gebruikersrol Distributie",
+      "teachers": "Docenten",
+      "admins": "Admins",
+      "schools_by_country": "Scholen per Land",
+      "completion_by_stage": "Voltooiingspercentage per Fase",
+      "monthly_registrations": "Maandelijkse Schoolregistraties",
+      "evidence_status": "Bewijs Beoordelingsstatus"
+    },
+    "actionPlan": {
+      "title": "Wereldwijde Impact Actieplan",
+      "description": "Volg de collectieve impact van alle school actieplannen",
+      "metrics": {
+        "totalActionItems": {
+          "label": "Totaal Acties",
+          "description": "Aangenomen verplichtingen"
+        },
+        "schoolsParticipating": {
+          "label": "Deelnemende Scholen",
+          "description": "Het verschil maken"
+        },
+        "itemsReduced": {
+          "label": "Jaarlijks Gereduceerde Items",
+          "description": "Items per jaar"
+        },
+        "weightReduced": {
+          "label": "Gereduceerd Gewicht",
+          "description": "kg per jaar"
+        }
+      },
+      "oceanImpact": {
+        "title": "Impact op de Oceaan",
+        "oceanBottles": {
+          "label": "Vermeden Oceaanflessen",
+          "description": "Plastic flessen gered van de oceanen"
+        },
+        "fishSaved": {
+          "label": "Geredde Vissen",
+          "description": "Mogelijk geredde vissen van plastic"
+        },
+        "seaTurtles": {
+          "label": "Geredde Zeeschildpadden",
+          "description": "Equivalent beschermde zeeschildpadden"
+        }
+      },
+      "environmentalImpact": {
+        "title": "Milieu-impact",
+        "co2Prevented": {
+          "label": "Vermeden CO₂",
+          "description": "kg vermeden CO₂ uitstoot"
+        },
+        "oilSaved": {
+          "label": "Bespaard Olie",
+          "description": "liter gespaard olie"
+        },
+        "wastePrevented": {
+          "label": "Vermeden Afval",
+          "description": "ton vermeden plastic afval"
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingMetrics": "Reductie statistieken laden..."
+    },
+    "errorStates": {
+      "failedToLoad": "Kon actieplan statistieken niet laden",
+      "refreshPage": "Probeer de pagina te vernieuwen"
+    },
+    "emptyStates": {
+      "noActionPlans": {
+        "title": "Er zijn nog geen actieplannen aangemaakt.",
+        "description": "Moedig scholen aan om hun eerste actieplan te maken!"
+      }
+    },
+    "toasts": {
+      "reportDownloaded": {
+        "title": "Rapport succesvol gedownload",
+        "description": "Je analytics PDF rapport is gedownload."
+      },
+      "exportFailed": {
+        "title": "Export mislukt",
+        "description": "Kon PDF rapport niet exporteren",
+        "customMessage": "{{message}}"
+      }
+    },
+    "global_metrics": "Wereldwijde Statistieken",
+    "enrollment_over_time": "Schoolinschrijvingen in de Tijd",
+    "evidence_submissions": "Bewijs Inzendingen per Fase",
+    "geographic_distribution": "Geografische Verdeling",
+    "completion_rates": "Voltooiingspercentages per Fase",
+    "resource_downloads": "Bron Download Statistieken",
+    "filter_by_period": "Filteren op Periode",
+    "last_30_days": "Laatste 30 Dagen",
+    "last_90_days": "Laatste 90 Dagen",
+    "last_year": "Afgelopen Jaar",
+    "all_time": "Alle Tijd",
+    "export_report": "Rapport Exporteren"
+  },
+  "email": {
+    "testTemplates": {
+      "title": "Email Templates Testen",
+      "selectType": "Selecteer Email Type",
+      "types": {
+        "welcome": "Welkom Email",
+        "invitation": "Docent Uitnodiging",
+        "joinRequest": "Aanvraag Deelname",
+        "joinApproved": "Aanvraag Deelname Goedgekeurd",
+        "evidenceSubmitted": "Bewijs Ingediend",
+        "evidenceApproved": "Bewijs Goedgekeurd",
+        "evidenceRevision": "Bewijs Vereist Revisie",
+        "newEvidence": "Nieuw Bewijs voor Admin"
+      }
+    },
+    "bulkComposer": {
+      "title": "Bulk Email Composer",
+      "previewTest": "Voorbeeld & Test"
+    },
+    "buttons": {
+      "sendTest": "Test Verzenden",
+      "sending": "Verzenden...",
+      "previewEmail": "Email Voorbeeld",
+      "insertImage": "Afbeelding Invoegen",
+      "sendBulkEmail": "Bulk Email Verzenden naar {{recipientType}}",
+      "sendBulk": "Bulk Email Verzenden",
+      "cancel": "Annuleren",
+      "previewTranslations": "Vertalingen Bekijken",
+      "generating": "Genereren..."
+    },
+    "form": {
+      "labels": {
+        "recipientEmail": "Ontvanger Email *",
+        "schoolName": "Schoolnaam *",
+        "inviterName": "Naam Uitnodiger *",
+        "expiresInDays": "Verloopt In Dagen",
+        "requesterName": "Naam Aanvrager *",
+        "requesterEmail": "Email Aanvrager *",
+        "evidence": "Bewijs *",
+        "reviewerName": "Naam Beoordelaar *",
+        "reviewNotes": "Beoordelingsnotities (Optioneel)",
+        "evidenceTitle": "Bewijs Titel *",
+        "stage": "Fase *",
+        "feedback": "Feedback *",
+        "submitterName": "Naam Indiener *",
+        "subject": "Onderwerp *",
+        "preheader": "Pre-header",
+        "title": "Titel *",
+        "preTitle": "Pre-titel (Ondertitel)",
+        "messageContent": "Bericht Inhoud *",
+        "recipientType": "Ontvanger Type",
+        "selectLanguages": "Selecteer Talen voor Vertaalvoorbeeld",
+        "viewEditTranslation": "Bekijk/Bewerk Vertaling"
+      },
+      "placeholders": {
+        "teacherEmail": "docent@voorbeeld.nl",
+        "testSchool": "Test School",
+        "selectEmailType": "Selecteer email type om te testen",
+        "emailSubject": "Email onderwerpregel",
+        "preheaderText": "Voorbeeldtekst weergegeven in email clients (optioneel)",
+        "largeHeading": "Grote kop binnen de email",
+        "subtitleText": "Ondertitel onder de titel (optioneel)",
+        "messageContent": "Voer de hoofdinhoud van het bericht in. HTML tags worden ondersteund voor opmaak.",
+        "testEmail": "test@voorbeeld.nl",
+        "searchImages": "Zoek afbeeldingen..."
+      },
+      "helpText": {
+        "subjectLength": "{{length}}/200 tekens • De belangrijkste onderwerpregel voor de email",
+        "preheaderLength": "{{length}}/100 tekens • Optionele voorbeeldtekst die verschijnt in de inbox",
+        "titleLength": "{{length}}/200 tekens • De belangrijkste kop weergegeven in de email body",
+        "preTitleLength": "{{length}}/200 tekens • Optionele ondertitel onder de titel",
+        "contentLength": "{{length}}/10.000 tekens",
+        "readTime": "~{{minutes}} min leestijd",
+        "supportsHTML": "Ondersteunt HTML opmaak"
+      }
+    },
+    "recipientTypes": {
+      "allTeachers": "Alle Docenten",
+      "schools": "Gefilterde Scholen",
+      "custom": "Aangepaste Ontvangers"
+    },
+    "stages": {
+      "stage1": "Fase 1",
+      "stage2": "Fase 2",
+      "stage3": "Fase 3"
+    },
+    "languages": {
+      "english": "Engels (Origineel)",
+      "spanish": "Spaans",
+      "french": "Frans",
+      "german": "Duits",
+      "italian": "Italiaans",
+      "portuguese": "Portugees",
+      "dutch": "Nederlands",
+      "russian": "Russisch",
+      "chinese": "Chinees",
+      "korean": "Koreaans",
+      "arabic": "Arabisch",
+      "indonesian": "Indonesisch",
+      "greek": "Grieks",
+      "welsh": "Welsh"
+    },
+    "badges": {
+      "editingTranslation": "Vertaling Bewerken"
+    },
+    "toasts": {
+      "emailRequired": {
+        "title": "Email Vereist",
+        "description": "Voer een ontvanger email adres in.",
+        "testDescription": "Voer een test email adres in."
+      },
+      "testEmailSent": {
+        "title": "Test Email Verzonden",
+        "description": "Email succesvol verzonden naar {{email}}",
+        "withLanguage": "Test email succesvol verzonden naar {{email}} in {{language}}",
+        "defaultDescription": "Email verzonden naar {{email}}"
+      },
+      "sendEmailFailed": {
+        "title": "Kon Email Niet Verzenden",
+        "description": "Er is een fout opgetreden bij het verzenden van de email.",
+        "tryAgain": "Kon email niet verzenden. Probeer opnieuw."
+      },
+      "testEmailFailed": {
+        "title": "Kon Test Email Niet Verzenden",
+        "description": "Er is een fout opgetreden bij het verzenden van de test email.",
+        "customMessage": "{{message}}"
+      },
+      "imageInserted": {
+        "title": "Afbeelding Ingevoegd",
+        "description": "{{filename}} is toegevoegd aan je email inhoud"
+      },
+      "translationFailed": {
+        "title": "Vertaling Mislukt",
+        "description": "Kon vertalingen niet genereren. Probeer opnieuw."
+      },
+      "error": {
+        "title": "Fout",
+        "description": "Kon email niet verzenden. Probeer opnieuw."
+      },
+      "emailsSent": {
+        "title": "Emails Succesvol Verzonden",
+        "description": "{{sent}} emails succesvol verzonden{{failedText}}."
+      },
+      "bulkEmailFailed": {
+        "title": "Kon Emails Niet Verzenden",
+        "description": "Er is een fout opgetreden bij het verzenden van bulk emails. Probeer opnieuw."
+      }
+    },
+    "dialogs": {
+      "preview": {
+        "title": "Email Voorbeeld",
+        "subject": "Onderwerp:",
+        "preheader": "Pre-header:"
+      },
+      "bulkConfirm": {
+        "title": "Bevestig Bulk Email Verzending",
+        "description": "Weet je zeker dat je deze email wilt verzenden naar:",
+        "subject": "Onderwerp: {{subject}}",
+        "warning": "Deze actie kan niet ongedaan gemaakt worden. Zorg ervoor dat je de email eerst hebt getest.",
+        "recipientCount": "{{count}} Aangepaste Ontvangers"
+      },
+      "imagePicker": {
+        "title": "Afbeelding Invoegen uit Mediabibliotheek"
+      }
+    },
+    "resultMessages": {
+      "success": "✅ Succes",
+      "error": "❌ Fout"
+    },
+    "defaultValues": {
+      "testSchool": "Test School",
+      "johnDoe": "Jan Jansen",
+      "janeSmith": "Emma de Vries",
+      "janeEmail": "emma@voorbeeld.nl",
+      "recyclingProgram": "Recyclingprogramma",
+      "teacherEvidence": "Ik ben een docent op deze school.",
+      "participationFeedback": "Voeg meer details toe over leerlingdeelname.",
+      "headTeacher": "Schooldirecteur"
+    }
+  },
+  "evidence": {
+    "title": "Bewijs Beoordeling",
+    "subtitle": "Beoordeel en modereer bewijs inzendingen",
+    "pending_review": "In Afwachting van Beoordeling",
+    "approved": "Goedgekeurd",
+    "needs_revision": "Revisie Nodig",
+    "filter_by_stage": "Filteren op Fase",
+    "filter_by_status": "Filteren op Status",
+    "sort_by": "Sorteren op",
+    "newest_first": "Nieuwste Eerst",
+    "oldest_first": "Oudste Eerst",
+    "school_name": "Schoolnaam",
+    "stage": "Fase",
+    "submitted_date": "Inzenddatum",
+    "review_evidence": "Bewijs Beoordelen",
+    "approve_evidence": "Bewijs Goedkeuren",
+    "request_revision": "Revisie Aanvragen",
+    "add_feedback": "Feedback Toevoegen",
+    "feedback_placeholder": "Feedback voor de school geven...",
+    "approve_button": "Goedkeuren",
+    "revision_button": "Revisie Aanvragen",
+    "evidence_approved": "Bewijs succesvol goedgekeurd",
+    "evidence_revision_requested": "Revisie succesvol aangevraagd",
+    "bulk_actions": "Bulk Acties",
+    "select_all": "Alles Selecteren",
+    "bulk_approve": "Bulk Goedkeuren",
+    "bulk_request_revision": "Bulk Revisie Aanvragen"
+  },
   "schools": {
     "title": "Schoolbeheer",
-    "subtitle": "Geregistreerde scholen en gebruikersaccounts beheren",
+    "subtitle": "Beheer geregistreerde scholen en gebruikersaccounts",
     "active_schools": "Actieve Scholen",
     "pending_approval": "In Afwachting van Goedkeuring",
     "search_schools": "Scholen zoeken...",
+    "filters": {
+      "allCountries": "Alle Landen",
+      "selectAll": "Alles Selecteren ({count} scholen)",
+      "selected": "{count} geselecteerd",
+      "searchPlaceholder": "Scholen zoeken..."
+    },
+    "buttons": {
+      "bulkUpdate": "Bulk Update",
+      "deleteSchools": "Scholen Verwijderen",
+      "view": "Bekijken",
+      "edit": "Bewerken",
+      "delete": "Verwijderen",
+      "save": "Opslaan",
+      "saving": "Opslaan...",
+      "cancel": "Annuleren",
+      "confirm": "Bevestigen",
+      "processing": "Verwerken...",
+      "deleting": "Verwijderen...",
+      "editLanguage": "Taal Bewerken",
+      "editProgression": "Voortgang Bewerken",
+      "saveChanges": "Wijzigingen Opslaan"
+    },
     "school_table": {
-      "school_name": "Schoolnaam",
-      "country": "Land",
-      "contact": "Primair Contact",
-      "stage": "Huidige Fase",
-      "registered_date": "Geregistreerd",
-      "status": "Status",
-      "actions": "Acties"
+      "headers": {
+        "select": "Selecteren",
+        "school_name": "Schoolnaam",
+        "country": "Land",
+        "stage": "Fase",
+        "progress": "Voortgang",
+        "students": "Leerlingen",
+        "contact": "Primair Contact",
+        "joined": "Lid Geworden",
+        "actions": "Acties",
+        "expand": "Uitklappen",
+        "collapse": "Inklappen"
+      },
+      "teachers": {
+        "loading": "Docenten laden...",
+        "loadingError": "Kon docenten niet laden. Probeer opnieuw.",
+        "noTeachers": "Nog geen docenten toegewezen aan deze school.",
+        "headers": {
+          "name": "Naam",
+          "email": "Email",
+          "role": "Rol",
+          "verification": "Verificatie",
+          "joined": "Lid Geworden"
+        },
+        "roles": {
+          "headTeacher": "Schooldirecteur",
+          "teacher": "Docent"
+        },
+        "status": {
+          "verified": "Geverifieerd",
+          "notVerified": "Niet Geverifieerd"
+        }
+      },
+      "notAvailable": "N.v.t."
     },
     "school_actions": {
       "view_details": "Details Bekijken",
@@ -137,108 +936,1158 @@
       "suspended": "Opgeschort"
     },
     "school_details": {
+      "title": "{name}",
       "basic_info": "Basisinformatie",
       "contact_info": "Contactinformatie",
       "progress": "Programmavordering",
       "evidence_history": "Bewijsgeschiedenis",
-      "last_activity": "Laatste Activiteit"
+      "last_activity": "Laatste Activiteit",
+      "labels": {
+        "country": "Land",
+        "schoolType": "Schooltype",
+        "preferredLanguage": "Voorkeurstaal",
+        "studentCount": "Aantal Leerlingen",
+        "currentStage": "Huidige Fase",
+        "progress": "Voortgang",
+        "primaryContactEmail": "Primair Contact Email",
+        "joined": "Lid Geworden",
+        "address": "Adres",
+        "currentRound": "Huidige Ronde",
+        "stageCompletion": "Fase Voltooiing"
+      },
+      "progression": {
+        "title": "Voortgang Beheren",
+        "description": "Gebruik dit gedeelte om handmatig de voortgangsfase, ronde en voltooiingsstatus van de school in te stellen. Hiermee kun je de automatische voortgang op basis van bewijs inzendingen overschrijven.",
+        "currentStage": "Huidige Fase:",
+        "currentRound": "Huidige Ronde:",
+        "stageCompletion": "Fase Voltooiing:",
+        "inspireCompleted": "Inspireren Voltooid",
+        "investigateCompleted": "Onderzoeken Voltooid",
+        "actCompleted": "Handelen Voltooid",
+        "notCompleted": "○ Niet voltooid",
+        "completed": "✓ Voltooid"
+      },
+      "stages": {
+        "inspire": "Inspireren",
+        "investigate": "Onderzoeken",
+        "act": "Handelen"
+      },
+      "languages": {
+        "en": "Engels",
+        "es": "Spaans",
+        "fr": "Frans",
+        "de": "Duits",
+        "it": "Italiaans",
+        "pt": "Portugees",
+        "nl": "Nederlands",
+        "el": "Grieks",
+        "ar": "Arabisch",
+        "zh": "Chinees",
+        "ko": "Koreaans",
+        "ru": "Russisch",
+        "id": "Indonesisch",
+        "cy": "Welsh"
+      },
+      "actionPlan": {
+        "title": "Actieplan Statistieken",
+        "totalPromises": "Totaal Beloftes",
+        "annualReduction": "Jaarlijks Gereduceerde Items",
+        "annualWeight": "Gereduceerd Gewicht",
+        "perYear": "per jaar",
+        "oceanImpact": "Impact op de Oceaan",
+        "oceanBottles": "Vermeden Oceaanflessen",
+        "fishSaved": "Geredde Vissen",
+        "seaTurtles": "Beschermde Zeeschildpadden",
+        "environmentalImpact": "Milieu-impact",
+        "co2Prevented": "Vermeden CO₂",
+        "oilSaved": "Bespaard Olie",
+        "wastePrevented": "Vermeden Afval",
+        "loading": "Reductie statistieken laden...",
+        "noPromises": "Er zijn nog geen reductie beloftes aangemaakt voor deze school."
+      },
+      "photoConsent": {
+        "title": "Foto Toestemming Status",
+        "status": "Status:",
+        "uploadedAt": "Geüpload:",
+        "approvedAt": "Goedgekeurd:",
+        "approvedBy": "Goedgekeurd door:",
+        "reviewNotes": "Beoordelingsnotities:",
+        "viewDocument": "Document Bekijken",
+        "pending": "In Behandeling",
+        "approved": "Goedgekeurd",
+        "rejected": "Afgewezen",
+        "notUploaded": "Niet geüpload",
+        "approve": "Goedkeuren",
+        "reject": "Afwijzen",
+        "rejectionNotes": "Afwijzingsnotities",
+        "rejectionNotesPlaceholder": "Leg uit waarom de foto toestemming wordt afgewezen...",
+        "submitRejection": "Afwijzing Indienen"
+      }
+    },
+    "bulkActions": {
+      "dialogs": {
+        "update": {
+          "title": "Bulk Update Scholen",
+          "description": "Deze actie heeft invloed op <strong>{count}</strong> scholen.",
+          "updateStageLabel": "Huidige Fase Bijwerken",
+          "updateStageHelpText": "Alle geselecteerde scholen worden verplaatst naar deze programmafase."
+        },
+        "delete": {
+          "title": "Bulk Verwijder Scholen",
+          "description": "Deze actie heeft invloed op <strong>{count}</strong> scholen.",
+          "warningTitle": "Waarschuwing:",
+          "warningDescription": "Deze actie kan niet ongedaan gemaakt worden. Alle geselecteerde scholen en hun bijbehorende gegevens worden permanent verwijderd."
+        },
+        "deleteSchool": {
+          "title": "School Verwijderen",
+          "description": "Weet je zeker dat je <strong>{name}</strong> wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden en verwijdert de school en alle bijbehorende gegevens permanent.",
+          "loadingUsers": "School gebruikers laden...",
+          "warningUsers": "Waarschuwing: Deze school heeft {count} geassocieerde gebruiker{{plural}}.",
+          "associatedUsers": "Geassocieerde Gebruikers:",
+          "deleteUsersLabel": "Ook alle geassocieerde gebruikersaccounts verwijderen",
+          "deleteUsersDescription": "Indien niet aangevinkt, blijven de gebruikersaccounts in het systeem en kunnen ze worden toegewezen aan andere scholen. Indien aangevinkt, worden de gebruikers permanent verwijderd en kunnen ze zich niet opnieuw registreren met dezelfde emailadressen.",
+          "noUsers": "Deze school heeft geen geassocieerde gebruikers."
+        }
+      }
+    },
+    "toasts": {
+      "languageUpdated": {
+        "title": "Taal Bijgewerkt",
+        "description": "De voorkeurstaal van de school is succesvol bijgewerkt."
+      },
+      "languageUpdateFailed": {
+        "title": "Update Mislukt",
+        "description": "Kon schooltaal niet bijwerken. Wijzigingen zijn teruggedraaid."
+      },
+      "progressionUpdated": {
+        "title": "Voortgang Bijgewerkt",
+        "description": "De voortgang van de school is succesvol bijgewerkt."
+      },
+      "progressionUpdateFailed": {
+        "title": "Update Mislukt",
+        "description": "Kon schoolvoortgang niet bijwerken. Wijzigingen zijn teruggedraaid."
+      },
+      "bulkUpdateComplete": {
+        "title": "Bulk Update Voltooid",
+        "description": "{count} scholen zijn succesvol bijgewerkt."
+      },
+      "bulkUpdateFailed": {
+        "title": "Bulk Update Mislukt",
+        "description": "Kon scholen niet bijwerken. Probeer opnieuw."
+      },
+      "bulkDeleteComplete": {
+        "title": "Bulk Verwijdering Voltooid",
+        "description": "{count} scholen zijn succesvol verwijderd."
+      },
+      "bulkDeleteFailed": {
+        "title": "Bulk Verwijdering Mislukt",
+        "description": "Kon scholen niet verwijderen. Probeer opnieuw."
+      },
+      "schoolDeleted": {
+        "title": "School Verwijderd",
+        "descriptionWithUsers": "De school en alle geassocieerde gebruikers zijn succesvol verwijderd.",
+        "descriptionWithoutUsers": "De school is succesvol verwijderd."
+      },
+      "schoolDeleteFailed": {
+        "title": "Verwijdering Mislukt",
+        "description": "Kon school niet verwijderen. Probeer opnieuw."
+      }
     }
   },
   "permissions": {
-    "admin_only": "Beheerderstoegang vereist",
+    "admin_only": "Beheerders toegang vereist",
     "insufficient_permissions": "Onvoldoende rechten voor toegang tot deze functie"
   },
   "toasts": {
-    "teacher_removed": "Teacher Removed",
-    "teacher_removed_desc": "Teacher has been successfully removed from the school.",
-    "removal_failed": "Removal Failed",
-    "removal_failed_desc": "Failed to remove teacher. Please try again.",
-    "request_approved": "Request Approved",
-    "request_approved_desc": "Verification request has been successfully approved.",
-    "request_rejected": "Request Rejected",
-    "request_rejected_desc": "Verification request has been successfully rejected.",
-    "action_failed": "Action Failed",
-    "action_failed_desc": "Failed to process verification request. Please try again.",
-    "access_denied": "Access Denied",
-    "access_denied_desc": "Admin access required",
-    "success": "Success",
-    "error": "Error",
-    "requirement_created": "Evidence requirement created successfully.",
-    "requirement_updated": "Evidence requirement updated successfully.",
-    "requirement_deleted": "Evidence requirement deleted successfully.",
-    "requirement_delete_failed": "Failed to delete evidence requirement. It may be linked to existing evidence.",
-    "reorder_failed": "Failed to reorder requirements.",
-    "event_created": "Event Created Successfully! 🎉",
-    "event_updated": "Event updated successfully.",
-    "event_deleted": "Event deleted successfully.",
-    "event_creation_failed": "Failed to create event.",
-    "event_update_failed": "Failed to update event.",
-    "event_delete_failed": "Failed to delete event.",
-    "event_duplicated": "Event Duplicated",
-    "event_duplicated_desc": "\"{{title}}\" has been created as a draft.",
-    "duplication_failed": "Duplication Failed",
-    "duplication_failed_desc": "Failed to duplicate event",
-    "page_content_update_failed": "Failed to update event page content.",
-    "status_update_failed": "Failed to update event status.",
-    "same_language_selected": "Same language selected"
+    "teacher_removed": "Docent Verwijderd",
+    "teacher_removed_desc": "De docent is succesvol verwijderd van de school.",
+    "removal_failed": "Verwijdering Mislukt",
+    "removal_failed_desc": "Kon docent niet verwijderen. Probeer opnieuw.",
+    "request_approved": "Aanvraag Goedgekeurd",
+    "request_approved_desc": "De verificatie aanvraag is succesvol goedgekeurd.",
+    "request_rejected": "Aanvraag Afgewezen",
+    "request_rejected_desc": "De verificatie aanvraag is succesvol afgewezen.",
+    "action_failed": "Actie Mislukt",
+    "action_failed_desc": "Kon verificatie aanvraag niet verwerken. Probeer opnieuw.",
+    "access_denied": "Toegang Geweigerd",
+    "access_denied_desc": "Admin toegang vereist",
+    "session_expired": "Ongeautoriseerd",
+    "session_expired_desc": "Admin sessie verlopen. Log opnieuw in.",
+    "success": "Succes",
+    "error": "Fout",
+    "requirement_created": "Bewijs vereiste succesvol aangemaakt.",
+    "requirement_updated": "Bewijs vereiste succesvol bijgewerkt.",
+    "requirement_deleted": "Bewijs vereiste succesvol verwijderd.",
+    "requirement_delete_failed": "Kon bewijs vereiste niet verwijderen. Het kan gekoppeld zijn aan bestaand bewijs.",
+    "reorder_failed": "Kon vereisten niet herordenen.",
+    "event_created": "Evenement Succesvol Aangemaakt! 🎉",
+    "event_updated": "Evenement succesvol bijgewerkt.",
+    "event_deleted": "Evenement succesvol verwijderd.",
+    "event_creation_failed": "Kon evenement niet aanmaken.",
+    "event_update_failed": "Kon evenement niet bijwerken.",
+    "event_delete_failed": "Kon evenement niet verwijderen.",
+    "event_duplicated": "Evenement Gedupliceerd",
+    "event_duplicated_desc": "\"{{title}}\" is aangemaakt als concept.",
+    "duplication_failed": "Duplicatie Mislukt",
+    "duplication_failed_desc": "Kon evenement niet dupliceren",
+    "page_content_update_failed": "Kon evenement pagina-inhoud niet bijwerken.",
+    "status_update_failed": "Kon evenement status niet bijwerken.",
+    "same_language_selected": "Dezelfde taal geselecteerd",
+    "photoConsentApproved": {
+      "title": "Foto Toestemming Goedgekeurd",
+      "description": "De foto toestemming is succesvol goedgekeurd."
+    },
+    "photoConsentApprovalFailed": {
+      "title": "Goedkeuring Mislukt",
+      "description": "Kon foto toestemming niet goedkeuren. Wijzigingen zijn teruggedraaid."
+    },
+    "photoConsentRejected": {
+      "title": "Foto Toestemming Afgewezen",
+      "description": "Het foto toestemmingsdocument is afgewezen."
+    },
+    "photoConsentRejectionFailed": {
+      "title": "Afwijzing Mislukt",
+      "description": "Kon foto toestemming niet afwijzen. Wijzigingen zijn teruggedraaid."
+    }
   },
   "case_study": {
-    "categories": "Categories",
-    "organize_case_study_categories": "Organize your case study by selecting relevant categories",
-    "add_categories": "Add Categories",
-    "enter_category": "Enter a category",
-    "press_enter_or_click_plus_category": "Press Enter or click + to add a category",
-    "suggested_categories": "Suggested Categories",
-    "selected_categories": "Selected Categories",
-    "add_suggested": "Add suggested",
-    "category_plastic_reduction": "Plastic Reduction",
-    "category_recycling_initiative": "Recycling Initiative",
-    "category_student_leadership": "Student Leadership",
-    "category_community_engagement": "Community Engagement",
-    "category_educational_campaign": "Educational Campaign",
-    "category_waste_audit": "Waste Audit",
-    "category_policy_change": "Policy Change",
-    "category_innovation": "Innovation",
+    "categories": "Categorieën",
+    "organize_case_study_categories": "Organiseer je casestudy door relevante categorieën te selecteren",
+    "add_categories": "Categorieën Toevoegen",
+    "enter_category": "Voer een categorie in",
+    "press_enter_or_click_plus_category": "Druk op Enter of klik op + om een categorie toe te voegen",
+    "suggested_categories": "Voorgestelde Categorieën",
+    "selected_categories": "Geselecteerde Categorieën",
+    "add_suggested": "Voorgestelde toevoegen",
+    "category_plastic_reduction": "Plastic Reductie",
+    "category_recycling_initiative": "Recycling Initiatief",
+    "category_student_leadership": "Leerling Leiderschap",
+    "category_community_engagement": "Gemeenschap Betrokkenheid",
+    "category_educational_campaign": "Educatieve Campagne",
+    "category_waste_audit": "Afval Audit",
+    "category_policy_change": "Beleidswijziging",
+    "category_innovation": "Innovatie",
     "tags": "Tags",
-    "add_descriptive_tags": "Add descriptive tags to improve discoverability",
-    "add_tags": "Add Tags",
-    "enter_tag": "Enter a tag",
-    "press_enter_or_click_plus_tag": "Press Enter or click + to add a tag",
-    "suggested_tags": "Suggested Tags",
-    "selected_tags": "Selected Tags",
-    "tag_single_use_plastic": "single-use-plastic",
+    "add_descriptive_tags": "Voeg beschrijvende tags toe om vindbaarheid te verbeteren",
+    "add_tags": "Tags Toevoegen",
+    "enter_tag": "Voer een tag in",
+    "press_enter_or_click_plus_tag": "Druk op Enter of klik op + om een tag toe te voegen",
+    "suggested_tags": "Voorgestelde Tags",
+    "selected_tags": "Geselecteerde Tags",
+    "tag_single_use_plastic": "wegwerpplastic",
     "tag_recycling": "recycling",
-    "tag_composting": "composting",
-    "tag_awareness": "awareness",
-    "tag_students": "students",
-    "tag_teachers": "teachers",
-    "tag_community": "community",
+    "tag_composting": "composteren",
+    "tag_awareness": "bewustzijn",
+    "tag_students": "leerlingen",
+    "tag_teachers": "docenten",
+    "tag_community": "gemeenschap",
     "tag_impact": "impact",
-    "tag_sustainability": "sustainability",
-    "tag_ocean_conservation": "ocean-conservation",
-    "impact_metrics": "Impact Metrics",
-    "add_quantifiable_metrics": "Add quantifiable metrics to showcase the project's impact",
-    "add_metric": "Add Metric",
-    "no_impact_metrics_yet": "No impact metrics yet. Click \"Add Metric\" to get started.",
-    "metric_number": "Metric {{number}}",
-    "metric_label_required": "Metric Label *",
-    "metric_value_required": "Value *",
-    "metric_unit": "Unit",
-    "metric_icon": "Icon",
-    "metric_label_placeholder": "e.g., Plastic Items Reduced",
-    "metric_value_placeholder": "e.g., 500 or 85%",
-    "metric_unit_placeholder": "e.g., items, kg, %",
-    "metric_icon_placeholder": "e.g., trash, droplet, leaf",
-    "project_timeline": "Project Timeline",
-    "create_chronological_timeline": "Create a chronological timeline of key milestones and events",
-    "add_section": "Add Section",
-    "no_timeline_sections_yet": "No timeline sections yet. Click \"Add Section\" to get started.",
-    "section_number": "Section {{number}}",
-    "section_title_required": "Section Title *",
-    "section_title_placeholder": "e.g., Project Launch, Week 1",
-    "section_content": "Content *",
-    "section_content_placeholder": "Describe what happened during this phase...",
-    "section_image_url": "Image URL",
+    "tag_sustainability": "duurzaamheid",
+    "tag_ocean_conservation": "oceaan-bescherming",
+    "impact_metrics": "Impact Statistieken",
+    "add_quantifiable_metrics": "Voeg meetbare statistieken toe om de impact van het project te tonen",
+    "add_metric": "Statistiek Toevoegen",
+    "no_impact_metrics_yet": "Nog geen impact statistieken. Klik op \"Statistiek Toevoegen\" om te beginnen.",
+    "metric_number": "Statistiek {{number}}",
+    "metric_label_required": "Statistiek Label *",
+    "metric_value_required": "Waarde *",
+    "metric_unit": "Eenheid",
+    "metric_icon": "Icoon",
+    "metric_label_placeholder": "bijv., Gereduceerde Plastic Items",
+    "metric_value_placeholder": "bijv., 500 of 85%",
+    "metric_unit_placeholder": "bijv., items, kg, %",
+    "metric_icon_placeholder": "bijv., trash, droplet, leaf",
+    "project_timeline": "Project Tijdlijn",
+    "create_chronological_timeline": "Creëer een chronologische tijdlijn van belangrijke mijlpalen en gebeurtenissen",
+    "add_section": "Sectie Toevoegen",
+    "no_timeline_sections_yet": "Nog geen tijdlijn secties. Klik op \"Sectie Toevoegen\" om te beginnen.",
+    "section_number": "Sectie {{number}}",
+    "section_title_required": "Sectie Titel *",
+    "section_title_placeholder": "bijv., Project Lancering, Week 1",
+    "section_content": "Inhoud *",
+    "section_content_placeholder": "Beschrijf wat er gebeurde tijdens deze fase...",
+    "section_image_url": "Afbeelding URL",
     "section_image_placeholder": "https://..."
+  },
+  "evidenceGallery": {
+    "title": "Bewijsgalerij",
+    "subtitle": "Bekijk en beheer alle bewijs inzendingen",
+    "submissionCount": {
+      "single": "{{count}} inzending",
+      "plural": "{{count}} inzendingen"
+    },
+    "filters": {
+      "labels": {
+        "stage": "Fase",
+        "country": "Land",
+        "status": "Status",
+        "visibility": "Zichtbaarheid"
+      },
+      "options": {
+        "allStages": "Alle Fasen",
+        "allCountries": "Alle Landen",
+        "allStatuses": "Alle Statussen",
+        "allVisibility": "Alle Zichtbaarheid",
+        "public": "Publiek",
+        "private": "Privé"
+      },
+      "stages": {
+        "inspire": "Inspireren",
+        "investigate": "Onderzoeken",
+        "act": "Handelen"
+      },
+      "statuses": {
+        "pending": "In Behandeling",
+        "approved": "Goedgekeurd",
+        "rejected": "Afgewezen"
+      }
+    },
+    "buttons": {
+      "clearFilters": "Filters Wissen",
+      "view": "Bekijken",
+      "schoolHistory": "School Geschiedenis Bekijken"
+    },
+    "badges": {
+      "permissionPending": "Toestemming in Behandeling",
+      "noPermission": "Geen Toestemming",
+      "permissionApproved": "Toestemming Goedgekeurd",
+      "permissionRejected": "Toestemming Afgewezen",
+      "public": "Publiek",
+      "registeredOnly": "Alleen Geregistreerd"
+    },
+    "dialogs": {
+      "evidenceDetails": {
+        "title": "Bewijs Details"
+      },
+      "schoolHistory": {
+        "title": "{{schoolName}} - Alle Inzendingen ({{count}})"
+      }
+    },
+    "form": {
+      "labels": {
+        "title": "Titel",
+        "description": "Beschrijving",
+        "school": "School",
+        "country": "Land",
+        "stage": "Fase",
+        "status": "Status",
+        "visibilitySetting": "Zichtbaarheid Instelling",
+        "photoPermission": "Foto Toestemming",
+        "files": "Bestanden ({{count}})",
+        "videoLinks": "Video Links"
+      },
+      "values": {
+        "noDescription": "Geen beschrijving",
+        "unknownSchool": "Onbekende School",
+        "unknown": "Onbekend"
+      }
+    },
+    "warnings": {
+      "permissionRequired": "Toestemming Vereist:",
+      "photoConsentPending": "Deze school heeft een foto toestemmingsdocument in behandeling. Dit bewijs mag niet gebruikt worden in publieke casestudies totdat toestemming is goedgekeurd.",
+      "photoConsentMissing": "Deze school heeft geen foto toestemmingsdocument geüpload. Dit bewijs mag niet gebruikt worden in publieke casestudies totdat toestemming is goedgekeurd."
+    },
+    "emptyStates": {
+      "noEvidence": {
+        "title": "Nog geen bewijs inzendingen",
+        "description": "Bewijs inzendingen verschijnen hier zodra scholen beginnen met uploaden"
+      },
+      "noSchoolSubmissions": {
+        "title": "Nog geen inzendingen",
+        "description": "Deze school heeft nog geen bewijs ingediend"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "Succes",
+        "description": "Bewijs status bijgewerkt"
+      },
+      "updateFailed": {
+        "title": "Fout",
+        "description": "Kon bewijs status niet bijwerken"
+      }
+    }
+  },
+  "printableForms": {
+    "title": "Afdrukbare Formulieren Beoordeling",
+    "subtitle": "Beoordeel en beheer afdrukbare formulier inzendingen van scholen",
+    "filters": {
+      "labels": {
+        "status": "Status",
+        "formType": "Formulier Type",
+        "schoolSearch": "School Zoeken"
+      },
+      "statusOptions": {
+        "all": "Alle statussen",
+        "pending": "In Behandeling",
+        "approved": "Goedgekeurd",
+        "rejected": "Afgewezen",
+        "revisionRequested": "Revisie Aangevraagd"
+      },
+      "formTypeOptions": {
+        "all": "Alle types",
+        "audit": "Audit",
+        "actionPlan": "Actieplan"
+      },
+      "placeholders": {
+        "searchSchool": "Zoek op schoolnaam..."
+      }
+    },
+    "table": {
+      "headers": {
+        "school": "School",
+        "formType": "Formulier Type",
+        "status": "Status",
+        "submittedBy": "Ingediend Door",
+        "uploadDate": "Upload Datum",
+        "actions": "Acties"
+      }
+    },
+    "buttons": {
+      "download": "Downloaden",
+      "review": "Beoordelen",
+      "submitReview": "Beoordeling Indienen",
+      "cancel": "Annuleren"
+    },
+    "dialogs": {
+      "reviewSubmission": {
+        "title": "Inzending Beoordelen",
+        "labels": {
+          "school": "School:",
+          "formType": "Formulier Type:",
+          "submittedBy": "Ingediend door:",
+          "status": "Status",
+          "adminNotes": "Admin Notities (Optioneel)"
+        },
+        "statusOptions": {
+          "approved": "Goedgekeurd",
+          "rejected": "Afgewezen",
+          "revisionRequested": "Revisie Aangevraagd"
+        },
+        "placeholders": {
+          "reviewNotes": "Voeg notities toe over deze beoordeling..."
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingSubmissions": "Inzendingen laden..."
+    },
+    "emptyStates": {
+      "noSubmissions": {
+        "title": "Geen Inzendingen Gevonden",
+        "description": "Geen afdrukbare formulier inzendingen komen overeen met je filters"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "Succes",
+        "description": "Inzending status succesvol bijgewerkt"
+      },
+      "updateFailed": {
+        "title": "Fout",
+        "description": "Kon inzending status niet bijwerken",
+        "customMessage": "{{message}}"
+      },
+      "downloadFailed": {
+        "title": "Fout",
+        "description": "Kon inzending niet downloaden"
+      }
+    },
+    "updating": "Bijwerken..."
+  },
+  "caseStudies": {
+    "title": "Casestudy Beheer",
+    "filters": {
+      "placeholders": {
+        "search": "Casestudies zoeken..."
+      },
+      "labels": {
+        "stage": "Fase",
+        "featuredStatus": "Uitgelichte Status"
+      },
+      "options": {
+        "allStages": "Alle Fasen",
+        "all": "Alle",
+        "featured": "Uitgelicht",
+        "notFeatured": "Niet Uitgelicht"
+      },
+      "stages": {
+        "inspire": "Inspireren",
+        "investigate": "Onderzoeken",
+        "act": "Handelen"
+      }
+    },
+    "buttons": {
+      "createCaseStudy": "Casestudy Maken",
+      "preview": "Voorbeeld",
+      "edit": "Bewerken",
+      "feature": "Uitlichten",
+      "unfeature": "Uitlichting Verwijderen",
+      "delete": "Verwijderen",
+      "cancel": "Annuleren"
+    },
+    "badges": {
+      "featured": "Uitgelicht"
+    },
+    "dialogs": {
+      "delete": {
+        "title": "Casestudy Verwijderen",
+        "description": "Weet je zeker dat je \"{{title}}\" wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden."
+      },
+      "editor": {
+        "title": "Casestudy Editor"
+      }
+    },
+    "emptyStates": {
+      "noCaseStudies": "Geen casestudies gevonden. Maak er een van goedgekeurde bewijs inzendingen."
+    },
+    "toasts": {
+      "created": {
+        "title": "Casestudy Aangemaakt",
+        "description": "De casestudy is succesvol aangemaakt."
+      },
+      "createFailed": {
+        "title": "Aanmaken Mislukt",
+        "description": "Kon casestudy niet aanmaken. Probeer opnieuw.",
+        "customMessage": "{{message}}"
+      },
+      "updated": {
+        "title": "Casestudy Bijgewerkt",
+        "description": "De casestudy is succesvol bijgewerkt."
+      },
+      "updateFailed": {
+        "title": "Bijwerken Mislukt",
+        "description": "Kon casestudy niet bijwerken. Probeer opnieuw.",
+        "customMessage": "{{message}}"
+      },
+      "deleted": {
+        "title": "Casestudy Verwijderd",
+        "description": "De casestudy is succesvol verwijderd."
+      },
+      "deleteFailed": {
+        "title": "Verwijdering Mislukt",
+        "description": "Kon casestudy niet verwijderen. Probeer opnieuw.",
+        "customMessage": "{{message}}"
+      },
+      "featuredUpdated": {
+        "title": "Casestudy Bijgewerkt",
+        "description": "De uitgelichte status van de casestudy is bijgewerkt."
+      },
+      "featuredUpdateFailed": {
+        "title": "Bijwerken Mislukt",
+        "description": "Kon casestudy niet bijwerken. Probeer opnieuw."
+      },
+      "locked": {
+        "title": "Casestudy Vergrendeld",
+        "description": "Deze casestudy wordt momenteel bewerkt door {{lockedBy}}."
+      },
+      "cannotSave": {
+        "title": "Kan Niet Opslaan",
+        "description": "Deze casestudy is vergrendeld door een andere gebruiker."
+      },
+      "lockAcquired": {
+        "title": "Vergrendeling Verkregen",
+        "description": "Je kunt deze casestudy nu bewerken."
+      }
+    }
+  },
+  "dataImport": {
+    "title": "Gegevens Importeren uit WordPress",
+    "subtitle": "Importeer scholen, gebruikers en hun relaties uit CSV of Excel bestanden geëxporteerd uit je WordPress database",
+    "alerts": {
+      "important": {
+        "title": "Belangrijk:",
+        "description": "Bereid drie aparte bestanden voor (CSV of Excel formaat):",
+        "schools": "Scholen - Bevat schoolinformatie (naam, land, type, enz.)",
+        "users": "Gebruikers - Bevat docent/gebruiker informatie (email, naam, enz.)",
+        "relationships": "Relaties - Koppelt gebruikers aan scholen met hun rollen",
+        "templateNote": "Download de sjablonen hieronder om het vereiste kolomformaat te zien.",
+        "note": "Download de sjablonen hieronder om het vereiste kolomformaat te zien."
+      }
+    },
+    "tabs": {
+      "schools": "Scholen",
+      "users": "Gebruikers",
+      "relationships": "Relaties"
+    },
+    "fileUpload": {
+      "titles": {
+        "schools": "Scholen Bestand",
+        "users": "Gebruikers Bestand",
+        "relationships": "School-Gebruiker Relaties Bestand"
+      },
+      "descriptions": {
+        "schools": "Upload een CSV of Excel bestand met schoolgegevens",
+        "users": "Upload een CSV of Excel bestand met gebruiker/docent gegevens",
+        "relationships": "Upload een CSV of Excel bestand dat gebruikers aan scholen koppelt"
+      },
+      "labels": {
+        "clickToUpload": "Klik om bestand te uploaden",
+        "formatNote": "CSV of Excel formaat"
+      },
+      "validation": {
+        "success": "Bestand succesvol gevalideerd",
+        "failed": "Validatie mislukt",
+        "rowsFound": "{{rowCount}} rijen gevonden met {{headerCount}} kolommen",
+        "errorsTitle": "Validatiefouten ({{count}}):",
+        "moreErrors": "... en {{count}} meer fouten",
+        "previewTitle": "Voorbeeld (eerste 5 rijen):"
+      }
+    },
+    "buttons": {
+      "downloadTemplate": "Sjabloon Downloaden",
+      "startImport": "Import Starten",
+      "importAnother": "Ander Bestand Importeren",
+      "viewData": "Geïmporteerde Gegevens Bekijken"
+    },
+    "status": {
+      "readyToImport": "Klaar om te importeren?",
+      "allFilesUploaded": "Alle bestanden geüpload en gevalideerd",
+      "filesUploaded": "{{count}}/3 bestanden geüpload",
+      "fixErrors": "Herstel validatiefouten voordat je importeert"
+    },
+    "importing": {
+      "title": "Gegevens Importeren...",
+      "description": "Dit kan enkele minuten duren. Sluit deze pagina niet."
+    },
+    "results": {
+      "successTitle": "Import Succesvol Voltooid",
+      "errorTitle": "Import Voltooid met Fouten",
+      "summary": "Samenvatting:",
+      "schoolsImported": "Scholen geïmporteerd: {{count}}",
+      "usersImported": "Gebruikers geïmporteerd: {{count}}",
+      "relationshipsCreated": "Relaties aangemaakt: {{count}}",
+      "errors": "Fouten:",
+      "errorsCount": "Fouten ({{count}})",
+      "viewDetails": "Gedetailleerde logs bekijken",
+      "newUsersCreated": "{{count}} nieuwe gebruikers aangemaakt",
+      "sections": {
+        "schools": "Scholen",
+        "users": "Gebruikers",
+        "relationships": "Relaties"
+      },
+      "tableHeaders": {
+        "row": "Rij",
+        "field": "Veld",
+        "error": "Fout"
+      },
+      "stats": {
+        "processed": "Verwerkt:",
+        "succeeded": "Geslaagd:",
+        "failed": "Mislukt:"
+      }
+    },
+    "toasts": {
+      "fileValidated": {
+        "title": "Bestand Gevalideerd",
+        "description": "{{rowCount}} rijen succesvol gevalideerd"
+      },
+      "validationErrors": {
+        "title": "Validatiefouten Gevonden",
+        "description": "{{count}} validatiefout{{plural}} gevonden in {{filename}}. Controleer en herstel voordat je importeert."
+      },
+      "validationFailed": {
+        "title": "Validatie Mislukt",
+        "description": "Kon bestand niet parsen",
+        "customMessage": "{{message}}"
+      },
+      "noFilesSelected": {
+        "title": "Geen Bestanden Geselecteerd",
+        "description": "Upload minimaal één bestand om te importeren"
+      },
+      "importSuccess": {
+        "title": "Import Geslaagd",
+        "description": "Gegevens succesvol geïmporteerd"
+      },
+      "importFailed": {
+        "title": "Import Mislukt",
+        "description": "Kon gegevens niet importeren",
+        "customMessage": "{{message}}"
+      }
+    }
+  },
+  "activityLogs": {
+    "title": "Gebruikersactiviteitenlogboeken",
+    "subtitle": "Volg en monitor gebruikersactiviteiten op het platform",
+    "filters": {
+      "labels": {
+        "actionType": "Actietype",
+        "userEmail": "E-mail Gebruiker",
+        "startDate": "Startdatum",
+        "endDate": "Einddatum",
+        "dateRange": "Datumbereik",
+        "fromDate": "Van Datum",
+        "toDate": "Tot Datum"
+      },
+      "options": {
+        "allActions": "Alle Acties",
+        "userLogin": "Gebruikerslogin",
+        "schoolCreated": "School Aangemaakt",
+        "schoolUpdated": "School Bijgewerkt",
+        "evidenceSubmitted": "Bewijs Ingediend",
+        "evidenceApproved": "Bewijs Goedgekeurd",
+        "evidenceRejected": "Bewijs Afgewezen",
+        "caseStudyCreated": "Casestudy Aangemaakt",
+        "caseStudyUpdated": "Casestudy Bijgewerkt",
+        "resourceUploaded": "Bron Geüpload"
+      },
+      "placeholders": {
+        "searchByEmail": "Zoek op e-mail..."
+      }
+    },
+    "table": {
+      "headers": {
+        "timestamp": "Tijdstempel",
+        "dateTime": "Datum/Tijd",
+        "user": "Gebruiker",
+        "action": "Actie",
+        "actionType": "Actietype",
+        "target": "Doel",
+        "ipAddress": "IP-adres",
+        "details": "Details"
+      }
+    },
+    "buttons": {
+      "applyFilters": "Filters Toepassen",
+      "clearFilters": "Filters Wissen",
+      "exportLogs": "Logboeken Exporteren",
+      "refresh": "Vernieuwen"
+    },
+    "loadingStates": {
+      "loadingLogs": "Activiteitenlogboeken laden..."
+    },
+    "emptyStates": {
+      "noLogs": {
+        "title": "Geen Activiteitenlogboeken",
+        "description": "Geen activiteitenlogboeken komen overeen met uw huidige filters"
+      }
+    },
+    "pagination": {
+      "showing": "Toont {{start}} - {{end}} van {{total}}",
+      "showingRange": "Toont {{start}} tot {{end}} van {{total}} resultaten",
+      "pageOf": "Pagina {{page}} van {{totalPages}}",
+      "previous": "Vorige",
+      "next": "Volgende"
+    }
+  },
+  "events": {
+    "title": "Evenementen",
+    "subtitle": "Maak en beheer evenementen voor de Plastic Clever Schools gemeenschap",
+    "tabs": {
+      "events": "Evenementen",
+      "banners": "Banners"
+    },
+    "list": {
+      "upcoming": "Aankomende Evenementen",
+      "past": "Voorbije Evenementen",
+      "drafts": "Concepten",
+      "noEvents": "Geen evenementen om weer te geven",
+      "createFirst": "Maak je eerste evenement om te beginnen"
+    },
+    "form": {
+      "titles": {
+        "create": "Nieuw Evenement Maken",
+        "edit": "Evenement Bewerken",
+        "duplicate": "Evenement Dupliceren"
+      },
+      "tabs": {
+        "basicInfo": "Basisinformatie",
+        "contentSettings": "Inhoud & Instellingen"
+      },
+      "labels": {
+        "eventTitle": "Evenement Titel *",
+        "date": "Datum *",
+        "time": "Tijd",
+        "timezone": "Tijdzone *",
+        "location": "Locatie",
+        "locationPlaceholder": "bijv., Londen, VK of Online",
+        "description": "Beschrijving",
+        "descriptionPlaceholder": "Beschrijf je evenement...",
+        "targetAudience": "Doelgroep",
+        "audiencePlaceholder": "Wie moet deelnemen?",
+        "registrationRequired": "Registratie Vereist",
+        "maxParticipants": "Maximaal Deelnemers",
+        "registrationDeadline": "Registratie Deadline",
+        "eventImage": "Evenement Afbeelding",
+        "eventImageUrl": "Evenement Afbeelding URL",
+        "tags": "Tags",
+        "tagsPlaceholder": "Tags toevoegen...",
+        "eventPageContent": "Evenement Pagina Inhoud",
+        "status": "Status",
+        "featured": "Uitgelicht",
+        "visibility": "Zichtbaarheid"
+      },
+      "statusOptions": {
+        "draft": "Concept",
+        "published": "Gepubliceerd",
+        "cancelled": "Geannuleerd"
+      },
+      "visibilityOptions": {
+        "public": "Publiek",
+        "registeredOnly": "Alleen Geregistreerd"
+      },
+      "helpText": {
+        "registrationRequired": "Vereist dat gebruikers zich registreren om deel te nemen",
+        "featured": "Toon dit evenement prominent op de homepage",
+        "visibility": "Bepaal wie dit evenement kan zien",
+        "eventImage": "Optionele URL voor evenement afbeelding"
+      }
+    },
+    "cards": {
+      "labels": {
+        "draft": "Concept",
+        "featured": "Uitgelicht",
+        "cancelled": "Geannuleerd",
+        "registrations": "Registraties:",
+        "maxParticipants": "van {{max}}"
+      }
+    },
+    "buttons": {
+      "createEvent": "Evenement Maken",
+      "editEvent": "Evenement Bewerken",
+      "duplicateEvent": "Evenement Dupliceren",
+      "deleteEvent": "Evenement Verwijderen",
+      "viewRegistrations": "Registraties Bekijken ({{count}})",
+      "sendAnnouncement": "Aankondiging Verzenden",
+      "createBanner": "Banner Maken",
+      "cancel": "Annuleren",
+      "save": "Opslaan",
+      "saving": "Opslaan...",
+      "uploadImage": "Afbeelding Uploaden"
+    },
+    "registrations": {
+      "title": "Evenement Registraties",
+      "table": {
+        "name": "Naam",
+        "email": "Email",
+        "school": "School",
+        "registeredAt": "Geregistreerd op",
+        "status": "Status"
+      },
+      "status": {
+        "confirmed": "Bevestigd",
+        "waitlist": "Wachtlijst",
+        "cancelled": "Geannuleerd"
+      },
+      "empty": {
+        "title": "Nog Geen Registraties",
+        "description": "Registraties verschijnen hier wanneer mensen zich inschrijven"
+      }
+    },
+    "banners": {
+      "title": "Evenement Banners",
+      "subtitle": "Beheer evenement banners weergegeven op de site",
+      "table": {
+        "bannerText": "Banner Tekst",
+        "event": "Evenement",
+        "gradient": "Gradient",
+        "status": "Status",
+        "actions": "Acties"
+      },
+      "status": {
+        "active": "Actief",
+        "inactive": "Inactief"
+      },
+      "empty": {
+        "title": "Geen Banners",
+        "description": "Maak je eerste banner om te beginnen"
+      }
+    },
+    "toasts": {
+      "eventCreated": {
+        "title": "Evenement Aangemaakt",
+        "description": "Het evenement is succesvol aangemaakt."
+      },
+      "eventUpdated": {
+        "title": "Evenement Bijgewerkt",
+        "description": "Het evenement is succesvol bijgewerkt."
+      },
+      "eventDeleted": {
+        "title": "Evenement Verwijderd",
+        "description": "Het evenement is succesvol verwijderd."
+      },
+      "saveFailed": {
+        "title": "Opslaan Mislukt",
+        "description": "Kon evenement niet opslaan. Probeer opnieuw.",
+        "customMessage": "{{message}}"
+      },
+      "deleteFailed": {
+        "title": "Verwijdering Mislukt",
+        "description": "Kon evenement niet verwijderen. Probeer opnieuw."
+      },
+      "duplicateSuccess": {
+        "title": "Evenement Gedupliceerd",
+        "description": "Het evenement is succesvol gedupliceerd als concept."
+      },
+      "duplicateFailed": {
+        "title": "Duplicatie Mislukt",
+        "description": "Kon evenement niet dupliceren. Probeer opnieuw."
+      },
+      "announcementSent": {
+        "title": "Aankondiging Verzonden",
+        "description": "De evenement aankondiging is verzonden naar {{count}} ontvanger{{plural}}."
+      },
+      "announcementFailed": {
+        "title": "Aankondiging Verzenden Mislukt",
+        "description": "Kon aankondiging niet verzenden. Probeer opnieuw."
+      },
+      "bannerCreated": {
+        "title": "Banner Aangemaakt",
+        "description": "De banner is succesvol aangemaakt."
+      },
+      "bannerUpdated": {
+        "title": "Banner Bijgewerkt",
+        "description": "De banner is succesvol bijgewerkt."
+      },
+      "bannerDeleted": {
+        "title": "Banner Verwijderd",
+        "description": "De banner is succesvol verwijderd."
+      },
+      "validationError": {
+        "title": "Validatiefout",
+        "description": "Vul alle verplichte velden in."
+      }
+    },
+    "dialogs": {
+      "deleteEvent": {
+        "title": "Evenement Verwijderen",
+        "description": "Weet je zeker dat je \"{title}\" wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden."
+      },
+      "deleteBanner": {
+        "title": "Banner Verwijderen",
+        "description": "Weet je zeker dat je deze banner wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden."
+      },
+      "bannerEditor": {
+        "titleCreate": "Banner Maken",
+        "titleEdit": "Banner Bewerken",
+        "labels": {
+          "bannerText": "Banner Tekst",
+          "required": "*",
+          "event": "Evenement",
+          "gradient": "Gradient",
+          "active": "Actief"
+        },
+        "placeholders": {
+          "selectEvent": "Selecteer een evenement"
+        }
+      },
+      "newsletter": {
+        "title": "Evenement Aankondiging Verzenden",
+        "description": "Verzend \"{title}\" per email naar docenten.",
+        "labels": {
+          "recipientType": "Ontvanger Type",
+          "emailAddresses": "Email Adressen",
+          "commaSeparated": "(komma gescheiden)"
+        },
+        "options": {
+          "allTeachers": "Alle Docenten ({count} docenten)",
+          "customEmailList": "Aangepaste Email Lijst"
+        },
+        "placeholders": {
+          "emailList": "email1@voorbeeld.nl, email2@voorbeeld.nl"
+        }
+      }
+    },
+    "buttons": {
+      "cancel": "Annuleren",
+      "delete": "Verwijderen",
+      "deleting": "Verwijderen...",
+      "save": "Opslaan",
+      "saving": "Opslaan...",
+      "sendAnnouncement": "Aankondiging Verzenden",
+      "sending": "Verzenden..."
+    }
+  },
+  "reviews": {
+    "filters": {
+      "evidenceReview": "Bewijs Beoordeling",
+      "auditReview": "Audit Beoordeling",
+      "photoConsent": "Foto Toestemming"
+    },
+    "evidence": {
+      "title": "Bewijs Beoordelingswachtrij",
+      "selected": "{count} geselecteerd",
+      "bulkApprove": "Bulk Goedkeuren",
+      "bulkReject": "Bulk Afwijzen",
+      "delete": "Verwijderen",
+      "filterAll": "Alle",
+      "filterPending": "In Behandeling",
+      "filterApproved": "Goedgekeurd",
+      "filterRejected": "Afgewezen",
+      "filterByAssignee": "Filteren op toegewezene",
+      "allEvidence": "Al het Bewijs",
+      "unassigned": "Niet Toegewezen",
+      "assignedToMe": "Toegewezen aan Mij",
+      "selectAll": "Alles Selecteren ({count} items)",
+      "allCaughtUp": "Helemaal Bij!",
+      "noPendingEvidence": "Geen bewijs in behandeling om te beoordelen.",
+      "badges": {
+        "public": "Publiek",
+        "photoApproved": "Foto Goedgekeurd",
+        "photoPending": "Foto in Behandeling",
+        "noPhotoConsent": "Geen Foto Toestemming",
+        "new": "NIEUW"
+      },
+      "labels": {
+        "schoolId": "School ID:",
+        "submitted": "Ingediend:",
+        "files": "Bestanden:",
+        "assignedTo": "Toegewezen aan:"
+      },
+      "buttons": {
+        "approve": "Goedkeuren",
+        "reject": "Afwijzen",
+        "cancel": "Annuleren",
+        "confirm": "Bevestigen",
+        "processing": "Verwerken..."
+      },
+      "modal": {
+        "approveTitle": "Bewijs Goedkeuren",
+        "rejectTitle": "Bewijs Afwijzen",
+        "reviewNotes": "Beoordelingsnotities",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "Optionele feedback voor de school...",
+        "feedbackRequired": "Geef feedback waarom dit bewijs werd afgewezen..."
+      },
+      "consentWarning": {
+        "title": "Goedkeuren Zonder Foto Toestemming? 📸",
+        "noConsentProvided": "Deze school heeft <strong>geen goedgekeurde foto toestemming verstrekt</strong>.",
+        "statusPending": "Hun foto toestemmingsdocument wordt momenteel beoordeeld.",
+        "statusRejected": "Hun foto toestemmingsdocument is afgewezen.",
+        "statusMissing": "Er is geen foto toestemmingsdocument geüpload.",
+        "warningMessage": "Dit bewijs goedkeuren betekent dat het <strong>niet in aanmerking komt</strong> voor gebruik in publieke casestudies of promotioneel materiaal tenzij foto toestemming later wordt goedgekeurd.",
+        "confirmQuestion": "Wil je toch doorgaan met goedkeuring?",
+        "proceedAnyway": "Ja, Toch Doorgaan",
+        "goBack": "Ga Terug"
+      },
+      "bulkDialog": {
+        "reviewTitle": "Bulk Bewijs Beoordeling",
+        "deleteTitle": "Bulk Bewijs Verwijderen",
+        "approveDescription": "Je staat op het punt om {count} bewijs inzendingen goed te keuren. Dit maakt ze zichtbaar volgens hun zichtbaarheidsinstellingen.",
+        "rejectDescription": "Je staat op het punt om {count} bewijs inzendingen af te wijzen. De scholen worden geïnformeerd en kunnen opnieuw indienen.",
+        "deleteDescription": "Je staat op het punt om {count} bewijs inzendingen permanent te verwijderen. Deze actie kan niet ongedaan gemaakt worden.",
+        "notes": "Notities (optioneel voor goedkeuring, vereist voor afwijzing)",
+        "notesPlaceholder": "Voer notities in voor de scholen...",
+        "confirm": "Bevestigen",
+        "cancel": "Annuleren",
+        "processing": "Verwerken..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "Beoordelingsnotities Vereist",
+        "feedbackRequired": "Geef feedback bij het afwijzen van bewijs."
+      }
+    },
+    "assignment": {
+      "assignTo": "Toewijzen aan...",
+      "unassigned": "Niet Toegewezen",
+      "toasts": {
+        "success": "Bewijs succesvol toegewezen",
+        "failed": "Kon bewijs niet toewijzen"
+      }
+    },
+    "photoConsent": {
+      "title": "Foto Toestemming Beoordelingswachtrij",
+      "noPending": "Geen Foto Toestemming in Behandeling",
+      "allReviewed": "Alle foto toestemmingen zijn beoordeeld!",
+      "viewDocument": "Document Bekijken",
+      "buttons": {
+        "approve": "Goedkeuren",
+        "reject": "Afwijzen"
+      },
+      "confirmApprove": "Foto toestemming goedkeuren voor {name}?",
+      "rejectionNotes": "Afwijzingsnotities voor {name}:",
+      "rejectionRequired": "Afwijzingsnotities zijn vereist"
+    },
+    "audit": {
+      "title": "Audit Beoordelingswachtrij",
+      "noPending": "Geen Audits in Behandeling",
+      "allReviewed": "Alle audits zijn beoordeeld. Goed gedaan!",
+      "labels": {
+        "submittedBy": "Ingediend door:",
+        "totalPlasticItems": "Totaal Plastic Items:"
+      },
+      "parts": {
+        "part1": "Deel 1: School Informatie",
+        "part2": "Deel 2: Kantine & Docentenkamer",
+        "part3": "Deel 3: Klaslokalen & Toiletten",
+        "part4": "Deel 4: Afvalbeheer"
+      },
+      "part1": {
+        "schoolName": "Schoolnaam:",
+        "studentCount": "Aantal Leerlingen:",
+        "staffCount": "Aantal Personeel:",
+        "auditDate": "Audit Datum:",
+        "auditTeam": "Audit Team Leden:",
+        "noData": "Geen gegevens beschikbaar"
+      },
+      "part2": {
+        "lunchroom": "Kantine",
+        "staffroom": "Docentenkamer",
+        "plasticBottles": "Plastic Flessen:",
+        "plasticCups": "Plastic Bekers:",
+        "plasticCutlery": "Plastic Bestek:",
+        "plasticStraws": "Plastic Rietjes:",
+        "foodPackaging": "Voedsel Verpakking:",
+        "clingFilm": "Vershoudfolie:",
+        "additionalNotes": "Aanvullende Notities:",
+        "noData": "Geen gegevens beschikbaar"
+      },
+      "part3": {
+        "classrooms": "Klaslokalen",
+        "bathrooms": "Toiletten",
+        "pensPencils": "Pennen & Potloden:",
+        "stationeryItems": "Kantoorartikelen:",
+        "bottlesCups": "Flessen & Bekers:",
+        "otherItems": "Andere Items:",
+        "soapDispensers": "Zeepdispensers:",
+        "additionalNotes": "Aanvullende Notities:",
+        "noData": "Geen gegevens beschikbaar"
+      },
+      "part4": {
+        "hasRecyclingSystem": "Heeft Recycling Systeem:",
+        "recyclingBinLocations": "Recycling Bak Locaties:",
+        "plasticWasteDestination": "Plastic Afval Bestemming:",
+        "compostsOrganicWaste": "Composts Organisch Afval:",
+        "hasPlasticReductionPolicy": "Heeft Plastic Reductie Beleid:",
+        "policyDetails": "Beleid Details:",
+        "additionalNotes": "Aanvullende Notities:",
+        "yes": "Ja",
+        "no": "Nee",
+        "noData": "Geen gegevens beschikbaar"
+      },
+      "buttons": {
+        "approve": "Goedkeuren",
+        "reject": "Afwijzen"
+      },
+      "modal": {
+        "approveTitle": "Audit Goedkeuren",
+        "rejectTitle": "Audit Afwijzen",
+        "reviewNotes": "Beoordelingsnotities",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "Optionele feedback voor de school...",
+        "feedbackRequired": "Geef feedback waarom deze audit werd afgewezen...",
+        "cancel": "Annuleren",
+        "confirm": "Bevestigen",
+        "processing": "Verwerken..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "Beoordelingsnotities Vereist",
+        "feedbackRequired": "Geef feedback bij het afwijzen van een audit."
+      }
+    },
+    "toasts": {
+      "success": "Succes",
+      "evidenceReviewSuccess": "Bewijs beoordeling succesvol ingediend.",
+      "reviewFailed": "Beoordeling Mislukt",
+      "evidenceReviewFailed": "Kon bewijs niet bijwerken. Wijzigingen zijn teruggedraaid.",
+      "auditReviewed": "Audit Beoordeeld",
+      "auditApproved": "De audit is goedgekeurd.",
+      "auditRejected": "De audit is afgewezen.",
+      "auditReviewFailed": "Kon audit niet beoordelen. Wijzigingen zijn teruggedraaid.",
+      "bulkReviewSuccess": "Bulk bewijs beoordeling succesvol voltooid.",
+      "bulkReviewFailed": "Kon bulk bewijs beoordeling niet voltooien. Wijzigingen zijn teruggedraaid.",
+      "bulkDeleteSuccess": "Geselecteerd bewijs succesvol verwijderd.",
+      "bulkDeleteFailed": "Kon bewijs niet verwijderen. Wijzigingen zijn teruggedraaid."
+    }
   }
 }

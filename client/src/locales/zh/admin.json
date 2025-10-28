@@ -1,11 +1,70 @@
 {
+  "tabs": {
+    "dashboard": "仪表板",
+    "schools": "学校",
+    "content": "内容",
+    "reviewQueue": "审核队列",
+    "program": "项目",
+    "communications": "通讯"
+  },
   "navigation": {
     "overview": "概览",
     "analytics": "分析",
     "evidence": "证据审核",
     "resources": "资源管理",
     "schools": "学校管理",
-    "admin_panel": "管理面板"
+    "admin_panel": "管理面板",
+    "manageSchools": "管理学校",
+    "manageTeams": "管理团队",
+    "userManagement": "用户管理",
+    "userActivity": "用户活动",
+    "importData": "导入数据",
+    "manageResources": "管理资源",
+    "manageResourcePacks": "管理资源包",
+    "createCaseStudies": "创建案例研究",
+    "manageEvents": "管理活动",
+    "evidenceGallery": "证据库",
+    "setEvidenceRequirements": "设置证据要求",
+    "reviewPrintableForms": "审核可打印表单"
+  },
+  "header": {
+    "title": "管理仪表板",
+    "subtitle": "管理学校、审核证据并监控项目进度"
+  },
+  "welcomeBanner": {
+    "title": "真幸运！",
+    "greeting": "欢迎加入 Plastic Clever Schools 管理团队！",
+    "description": "您现在拥有完整权限来管理项目、审核证据提交、发布案例研究，并帮助学校踏上减少塑料废物的旅程。"
+  },
+  "export": {
+    "title": "导出数据",
+    "buttonLabel": "导出数据",
+    "description": "选择格式和要导出的数据：",
+    "selectFormatPlaceholder": "选择格式",
+    "formats": {
+      "csv": "CSV 格式",
+      "excel": "Excel 格式 (.xlsx)"
+    },
+    "buttons": {
+      "exportSchools": "导出学校数据",
+      "exportEvidence": "导出证据数据",
+      "exportUsers": "导出用户数据",
+      "withCurrentFilters": "（使用当前筛选条件）"
+    },
+    "toasts": {
+      "success": {
+        "title": "导出成功",
+        "description": "{{type}} 数据已导出为 {{format}}。"
+      },
+      "failed": {
+        "title": "导出失败",
+        "description": "导出数据失败。请重试。"
+      }
+    }
+  },
+  "loading": {
+    "dashboard": "正在加载管理仪表板...",
+    "caseStudies": "正在加载案例研究..."
   },
   "overview": {
     "title": "管理概览",
@@ -15,9 +74,569 @@
     "pending_evidence": "待审核证据",
     "resources_uploaded": "已上传资源"
   },
+  "userManagement": {
+    "title": "用户管理",
+    "buttons": {
+      "inviteAdmin": "邀请管理员",
+      "invitePartner": "邀请合作伙伴",
+      "sendInvitation": "发送邀请",
+      "sending": "发送中...",
+      "cancel": "取消",
+      "filterAll": "所有用户",
+      "filterWithSchools": "有学校",
+      "filterWithoutSchools": "无学校",
+      "bulkDelete": "删除所选用户 ({{count}})",
+      "confirmDelete": "确认{{mode}}",
+      "deleting": "删除中...",
+      "confirmSoftDelete": "确认软删除",
+      "confirmTransfer": "确认转移",
+      "confirmHardDelete": "确认硬删除"
+    },
+    "dialogs": {
+      "invitePartner": {
+        "title": "邀请新合作伙伴",
+        "description": "合作伙伴拥有类似管理员的访问权限，但不能分配角色或下载学校数据。"
+      },
+      "inviteAdmin": {
+        "title": "邀请新管理员"
+      },
+      "deleteUser": {
+        "title": "删除用户",
+        "description": "选择如何处理用户的内容和数据"
+      },
+      "bulkDelete": {
+        "title": "批量删除 {{count}} 个用户{{plural}}",
+        "description": "选择如何处理所选用户的内容和数据",
+        "selectedUsers": "已选用户：{{count}} 个用户{{plural}}"
+      },
+      "changeRole": {
+        "title": "更改用户角色",
+        "description": "更新 {{name}} 的角色和权限"
+      },
+      "deletionPreview": {
+        "title": "删除预览",
+        "description": "此用户拥有以下数据：",
+        "evidence": "证据：{{count}}",
+        "caseStudies": "案例研究：{{count}}",
+        "reductionPromises": "减少承诺：{{count}}",
+        "mediaAssets": "媒体资源：{{count}}",
+        "certificates": "证书：{{count}}",
+        "importBatches": "导入批次：{{count}}",
+        "teacherInvitations": "教师邀请：{{count}}",
+        "adminInvitations": "管理员邀请：{{count}}"
+      }
+    },
+    "form": {
+      "labels": {
+        "emailAddress": "电子邮件地址 *",
+        "platformRole": "平台角色",
+        "roleDescription": "选择用户的角色和权限"
+      },
+      "placeholders": {
+        "partnerEmail": "partner@example.com",
+        "adminEmail": "admin@example.com",
+        "searchUsers": "按姓名或电子邮件搜索..."
+      }
+    },
+    "table": {
+      "headers": {
+        "name": "姓名",
+        "email": "电子邮件",
+        "role": "角色",
+        "schools": "学校",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "showingCount": "显示 {{filtered}} / {{total}} 个用户"
+    },
+    "deletionModes": {
+      "soft": {
+        "label": "软删除（推荐）",
+        "description": "用户将从系统中隐藏，但所有数据都将保留。以后可以恢复。"
+      },
+      "transfer": {
+        "label": "转移所有权",
+        "description": "将所有内容转移到"已归档用户"系统帐户，然后删除用户。历史数据将被保留。",
+        "bulkDescription": "将所有内容转移到"已归档用户"系统帐户，然后删除用户。历史数据将被保留。"
+      },
+      "hard": {
+        "label": "硬删除（永久）",
+        "description": "警告：永久删除用户及其所有内容。此操作无法撤消！",
+        "bulkDescription": "警告：永久删除用户及其所有内容。此操作无法撤消！"
+      }
+    },
+    "roles": {
+      "teacher": {
+        "label": "教师",
+        "description": "具有学校级别权限的标准用户"
+      },
+      "school": {
+        "label": "学校（校长）",
+        "description": "具有学校管理权限的校长角色"
+      },
+      "partner": {
+        "label": "合作伙伴",
+        "description": "类似管理员的访问权限，但不能分配角色或下载学校数据"
+      },
+      "admin": {
+        "label": "管理员",
+        "description": "完全的平台访问权限，包括角色分配和数据下载"
+      }
+    },
+    "badges": {
+      "pending": "待处理",
+      "pendingInvite": "待邀请",
+      "active": "活跃",
+      "admin": "管理员",
+      "partner": "合作伙伴"
+    },
+    "toasts": {
+      "invitationSent": {
+        "title": "已发送邀请",
+        "adminDescription": "管理员邀请已成功发送。",
+        "partnerDescription": "合作伙伴邀请已成功发送。"
+      },
+      "invitationFailed": {
+        "title": "邀请失败",
+        "adminDescription": "发送管理员邀请失败。请重试。",
+        "partnerDescription": "发送合作伙伴邀请失败。请重试。",
+        "defaultDescription": "{{message}}"
+      },
+      "invitationDeleted": {
+        "title": "已删除邀请",
+        "description": "管理员邀请已成功删除。"
+      },
+      "deleteFailed": {
+        "title": "删除失败",
+        "description": "删除邀请失败。请重试。",
+        "userDescription": "删除用户失败。请重试。",
+        "customMessage": "{{message}}"
+      },
+      "userDeleted": {
+        "title": "已删除用户",
+        "softDeleted": "用户已成功软删除。",
+        "transferred": "用户已成功删除（内容已转移）。",
+        "hardDeleted": "用户已成功永久删除。"
+      },
+      "userUpdated": {
+        "title": "已更新用户",
+        "description": "用户角色已成功更新。"
+      },
+      "updateFailed": {
+        "title": "更新失败",
+        "description": "更新用户角色失败。请重试。",
+        "customMessage": "{{message}}"
+      },
+      "emailRequired": {
+        "title": "需要电子邮件",
+        "description": "请输入电子邮件地址。"
+      },
+      "bulkDeleteSuccessful": {
+        "title": "批量删除成功",
+        "description": "成功删除 {{count}} 个用户{{plural}}",
+        "withEvidence": "成功删除 {{count}} 个用户{{plural}}（已删除 {{evidenceCount}} 个证据项目{{evidencePlural}}）",
+        "withCaseStudies": "警告：{{caseStudyCount}} 个案例{{caseStudyPlural}}受到影响",
+        "creatorsRemoved": "并且其创建者已被移除。"
+      },
+      "bulkDeleteFailed": {
+        "title": "批量删除失败",
+        "description": "删除用户失败。请重试。",
+        "allFailed": "删除所有选定用户失败：",
+        "customMessage": "{{message}}"
+      },
+      "bulkDeletePartial": {
+        "title": "批量删除部分成功",
+        "description": "成功删除 {{successCount}} 个用户{{plural}}。删除 {{failedCount}} 个失败。"
+      }
+    },
+    "emptyStates": {
+      "noUsers": {
+        "title": "未找到用户",
+        "noMatch": "没有用户匹配您的搜索条件。",
+        "allAssigned": "所有用户都至少分配给一所学校。",
+        "noneInSystem": "系统中未找到用户。"
+      }
+    },
+    "adminInvitations": {
+      "title": "管理员邀请",
+      "table": {
+        "email": "电子邮件",
+        "status": "状态",
+        "createdAt": "创建时间",
+        "expiresAt": "过期时间",
+        "actions": "操作"
+      }
+    }
+  },
+  "resources": {
+    "title": "资源管理",
+    "subtitle": "上传和管理教育资源",
+    "upload_resource": "上传新资源",
+    "resource_library": "资源库",
+    "featured_resources": "精选资源",
+    "buttons": {
+      "addResource": "添加资源",
+      "bulkUpload": "批量上传资源",
+      "uploadFile": "上传文件",
+      "uploading": "上传中...",
+      "replaceFile": "替换文件",
+      "removeFile": "移除文件",
+      "autoFillAI": "AI 自动填充",
+      "generating": "生成中...",
+      "saveResource": "保存资源",
+      "cancel": "取消",
+      "preview": "预览",
+      "edit": "编辑",
+      "delete": "删除",
+      "deleteResources": "删除资源",
+      "deleting": "删除中...",
+      "bulkDelete": "批量删除 ({{count}})",
+      "insertImage": "插入图片"
+    },
+    "form": {
+      "titles": {
+        "addNew": "添加新资源",
+        "edit": "编辑资源"
+      },
+      "labels": {
+        "title": "标题 *",
+        "description": "描述",
+        "stage": "项目阶段 *",
+        "ageRange": "年龄范围",
+        "languages": "可用语言 *",
+        "country": "目标国家",
+        "visibility": "可见性 *",
+        "resourceFile": "资源文件",
+        "resourceType": "资源类型",
+        "theme": "主题"
+      },
+      "placeholders": {
+        "title": "输入资源标题",
+        "description": "输入资源描述",
+        "ageRange": "例如，8-12 岁",
+        "country": "全球（所有国家）",
+        "searchResources": "搜索资源..."
+      },
+      "helpText": {
+        "languageSelection": "选择此资源可用的所有语言",
+        "visibilityPublic": "此资源将对所有网站访问者可见",
+        "visibilityRegistered": "此资源仅对注册学校可见",
+        "uploadInstructions": "上传资源文件（PDF、DOC、PPT、XLS 等）",
+        "maxFileSize": "最大文件大小：150MB",
+        "replaceInstructions": "您可以在保留相同资源的同时替换文件，或完全删除它。",
+        "aiAutoFillTooltip": "AI 分析您上传的文件，并根据文件内容和名称自动建议标题、描述、阶段、主题、年龄范围和资源类型。",
+        "aiAutoFillDescription": "让 AI 分析您的文件并建议元数据以节省时间。您可以在保存之前查看和调整建议。"
+      }
+    },
+    "filters": {
+      "allStages": "所有阶段",
+      "allCountries": "所有国家",
+      "allLanguages": "所有语言",
+      "allVisibility": "所有可见性",
+      "allStatus": "所有状态"
+    },
+    "stages": {
+      "inspire": "激励",
+      "investigate": "调查",
+      "act": "行动"
+    },
+    "visibility": {
+      "public": "公开（对所有人可见）",
+      "publicShort": "公开",
+      "registered": "仅限注册（需要登录）",
+      "registeredShort": "仅限注册"
+    },
+    "resourceTypes": {
+      "lessonPlan": "课程计划",
+      "assembly": "集会",
+      "teacherToolkit": "教师工具包",
+      "studentWorkbook": "学生练习册",
+      "printableActivities": "可打印活动",
+      "none": "无"
+    },
+    "themes": {
+      "oceanLiteracy": "海洋素养",
+      "climateChange": "气候变化",
+      "plasticPollution": "塑料污染",
+      "science": "科学",
+      "designTechnology": "设计技术",
+      "geography": "地理",
+      "crossCurricular": "跨学科",
+      "enrichment": "拓展",
+      "none": "无"
+    },
+    "table": {
+      "headers": {
+        "preview": "预览",
+        "title": "标题",
+        "stage": "阶段",
+        "visibility": "可见性",
+        "country": "国家",
+        "languages": "语言",
+        "fileSize": "文件大小",
+        "downloads": "下载次数",
+        "status": "状态",
+        "actions": "操作"
+      },
+      "values": {
+        "global": "全球",
+        "active": "活跃",
+        "inactive": "不活跃",
+        "notAvailable": "不适用"
+      }
+    },
+    "toasts": {
+      "fileUploaded": {
+        "title": "文件已上传",
+        "description": "{{filename}} 已成功上传。"
+      },
+      "uploadError": {
+        "title": "上传错误",
+        "failedToGetUrl": "获取上传 URL 失败",
+        "failedToUpload": "上传文件失败",
+        "customMessage": "{{message}}"
+      },
+      "aiAutoFillComplete": {
+        "title": "AI 自动填充完成",
+        "description": "资源元数据已使用 AI 建议填充。请根据需要进行审核和调整。"
+      },
+      "aiAutoFillFailed": {
+        "title": "AI 自动填充失败",
+        "noSuggestions": "AI 无法为此资源生成建议。",
+        "description": "生成 AI 建议失败。请重试。",
+        "customMessage": "{{message}}"
+      },
+      "cannotAutoFill": {
+        "title": "无法自动填充",
+        "description": "请先上传文件以使用 AI 自动填充。"
+      },
+      "resourceCreated": {
+        "title": "已创建资源",
+        "description": "资源已成功创建。"
+      },
+      "resourceUpdated": {
+        "title": "已更新资源",
+        "description": "资源已成功更新。"
+      },
+      "saveFailed": {
+        "title": "保存失败",
+        "description": "保存资源失败。请重试。",
+        "customMessage": "{{message}}"
+      },
+      "resourceDeleted": {
+        "title": "已删除资源",
+        "description": "资源已成功删除。",
+        "bulkDescription": "{{count}} 个资源{{plural}}已成功删除。"
+      },
+      "deleteFailed": {
+        "title": "删除失败",
+        "description": "删除资源失败。请重试。"
+      },
+      "bulkDeleteFailed": {
+        "title": "批量删除失败",
+        "description": "删除某些资源失败。"
+      },
+      "validationError": {
+        "title": "验证错误",
+        "selectLanguage": "请至少选择一种语言。"
+      }
+    },
+    "dialogs": {
+      "deleteConfirmation": {
+        "title": "删除资源",
+        "description": "您确定要删除此资源吗？",
+        "cannotUndo": "此操作无法撤消。"
+      },
+      "bulkDelete": {
+        "title": "删除资源",
+        "description": "您确定要删除 {{count}} 个资源{{plural}}吗？此操作无法撤消。",
+        "listTitle": "要删除的资源："
+      }
+    },
+    "emptyStates": {
+      "noResources": "未找到资源。添加您的第一个资源以开始使用。"
+    },
+    "ai": {
+      "sectionTitle": "AI 自动填充"
+    },
+    "upload_form": {
+      "title": "上传新资源",
+      "resource_title": "资源标题",
+      "description": "描述",
+      "stage": "目标阶段",
+      "language": "语言",
+      "age_range": "年龄范围",
+      "file_type": "文件类型",
+      "visibility": "可见性",
+      "featured": "精选资源",
+      "featured_description": "标记为精选以突出显示此资源",
+      "upload_file": "上传文件",
+      "save_resource": "保存资源",
+      "cancel": "取消"
+    },
+    "resource_table": {
+      "title": "标题",
+      "type": "类型",
+      "stage": "阶段",
+      "downloads": "下载次数",
+      "status": "状态",
+      "actions": "操作",
+      "edit": "编辑",
+      "delete": "删除",
+      "feature": "设为精选",
+      "unfeature": "取消精选"
+    },
+    "delete_confirmation": {
+      "title": "删除资源",
+      "message": "您确定要删除此资源吗？此操作无法撤消。",
+      "delete": "删除",
+      "cancel": "取消"
+    },
+    "resource_uploaded": "资源上传成功",
+    "resource_updated": "资源更新成功",
+    "resource_deleted": "资源删除成功"
+  },
   "analytics": {
     "title": "平台分析",
     "subtitle": "全面了解项目有效性",
+    "dashboard": {
+      "title": "分析仪表板",
+      "description": "Plastic Clever Schools 的综合见解和指标"
+    },
+    "buttons": {
+      "exportCSV": "导出 CSV",
+      "exportExcel": "导出 Excel",
+      "exportPDF": "导出 PDF 报告",
+      "cancel": "取消",
+      "exportReport": "导出报告",
+      "generating": "生成中...",
+      "confirmExport": "导出报告"
+    },
+    "tabs": {
+      "overview": "概览",
+      "schoolsEvidence": "学校与证据",
+      "plasticWasteAudits": "塑料废物审计",
+      "userEngagement": "用户参与度"
+    },
+    "metrics": {
+      "totalSchools": {
+        "label": "学校总数",
+        "description": "参与学校"
+      },
+      "activeUsers": {
+        "label": "活跃用户"
+      },
+      "evidenceSubmissions": {
+        "label": "证据提交"
+      },
+      "globalReach": {
+        "label": "全球覆盖"
+      },
+      "totalEvidence": {
+        "label": "证据总数",
+        "description": "已收到的提交"
+      },
+      "clickToView": "点击查看详情 →"
+    },
+    "dialogs": {
+      "exportPDF": {
+        "title": "导出 PDF 报告",
+        "description": "选择要包含在分析报告中的部分。报告将包含 {{startDate}} - {{endDate}} 的数据",
+        "sections": {
+          "overview": "概览",
+          "scoresEvidence": "学校与证据",
+          "plasticWasteAudits": "塑料废物审计",
+          "userEngagement": "用户参与度",
+          "aiInsights": "包含 AI 见解"
+        }
+      }
+    },
+    "charts": {
+      "userRegistrationTrends": "用户注册趋势",
+      "userRoleDistribution": "用户角色分布",
+      "teachers": "教师",
+      "admins": "管理员",
+      "schools_by_country": "按国家分类的学校",
+      "completion_by_stage": "按阶段划分的完成率",
+      "monthly_registrations": "每月学校注册数",
+      "evidence_status": "证据审核状态"
+    },
+    "actionPlan": {
+      "title": "全球行动计划影响",
+      "description": "跟踪所有学校行动计划的集体影响",
+      "metrics": {
+        "totalActionItems": {
+          "label": "行动项目总数",
+          "description": "已做出的承诺"
+        },
+        "schoolsParticipating": {
+          "label": "参与学校",
+          "description": "正在产生影响"
+        },
+        "itemsReduced": {
+          "label": "每年减少的物品",
+          "description": "物品/年"
+        },
+        "weightReduced": {
+          "label": "减少重量",
+          "description": "公斤/年"
+        }
+      },
+      "oceanImpact": {
+        "title": "海洋影响",
+        "oceanBottles": {
+          "label": "防止的海洋瓶",
+          "description": "从海洋中拯救的塑料瓶"
+        },
+        "fishSaved": {
+          "label": "拯救的鱼类",
+          "description": "从塑料中拯救的潜在鱼类"
+        },
+        "seaTurtles": {
+          "label": "拯救的海龟",
+          "description": "受保护的海龟等效数量"
+        }
+      },
+      "environmentalImpact": {
+        "title": "环境影响",
+        "co2Prevented": {
+          "label": "防止的 CO₂",
+          "description": "防止的 CO₂ 排放量（公斤）"
+        },
+        "oilSaved": {
+          "label": "节省的石油",
+          "description": "节约的石油（升）"
+        },
+        "wastePrevented": {
+          "label": "防止的废物",
+          "description": "避免的塑料废物（吨）"
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingMetrics": "正在加载减少指标..."
+    },
+    "errorStates": {
+      "failedToLoad": "加载行动计划指标失败",
+      "refreshPage": "请尝试刷新页面"
+    },
+    "emptyStates": {
+      "noActionPlans": {
+        "title": "尚未创建行动计划。",
+        "description": "鼓励学校创建他们的第一个行动计划！"
+      }
+    },
+    "toasts": {
+      "reportDownloaded": {
+        "title": "报告下载成功",
+        "description": "您的 PDF 分析报告已下载。"
+      },
+      "exportFailed": {
+        "title": "导出失败",
+        "description": "导出 PDF 报告失败",
+        "customMessage": "{{message}}"
+      }
+    },
     "global_metrics": "全球指标",
     "enrollment_over_time": "学校注册随时间变化",
     "evidence_submissions": "按阶段分类的证据提交",
@@ -25,16 +644,190 @@
     "completion_rates": "按阶段完成率",
     "resource_downloads": "资源下载统计",
     "filter_by_period": "按时间段筛选",
-    "last_30_days": "最近30天",
-    "last_90_days": "最近90天",
+    "last_30_days": "最近 30 天",
+    "last_90_days": "最近 90 天",
     "last_year": "去年",
     "all_time": "所有时间",
-    "export_report": "导出报告",
-    "charts": {
-      "schools_by_country": "按国家分类的学校",
-      "completion_by_stage": "按阶段完成率",
-      "monthly_registrations": "每月学校注册数",
-      "evidence_status": "证据审核状态"
+    "export_report": "导出报告"
+  },
+  "email": {
+    "testTemplates": {
+      "title": "测试电子邮件模板",
+      "selectType": "选择电子邮件类型",
+      "types": {
+        "welcome": "欢迎电子邮件",
+        "invitation": "教师邀请",
+        "joinRequest": "加入请求",
+        "joinApproved": "加入请求已批准",
+        "evidenceSubmitted": "已提交证据",
+        "evidenceApproved": "证据已批准",
+        "evidenceRevision": "证据需要修订",
+        "newEvidence": "管理员新证据"
+      }
+    },
+    "bulkComposer": {
+      "title": "批量电子邮件编写器",
+      "previewTest": "预览与测试"
+    },
+    "buttons": {
+      "sendTest": "发送测试",
+      "sending": "发送中...",
+      "previewEmail": "预览电子邮件",
+      "insertImage": "插入图片",
+      "sendBulkEmail": "向{{recipientType}}发送批量电子邮件",
+      "sendBulk": "发送批量电子邮件",
+      "cancel": "取消",
+      "previewTranslations": "预览翻译",
+      "generating": "生成中..."
+    },
+    "form": {
+      "labels": {
+        "recipientEmail": "收件人电子邮件 *",
+        "schoolName": "学校名称 *",
+        "inviterName": "邀请人姓名 *",
+        "expiresInDays": "过期天数",
+        "requesterName": "请求人姓名 *",
+        "requesterEmail": "请求人电子邮件 *",
+        "evidence": "证据 *",
+        "reviewerName": "审核人姓名 *",
+        "reviewNotes": "审核备注（可选）",
+        "evidenceTitle": "证据标题 *",
+        "stage": "阶段 *",
+        "feedback": "反馈 *",
+        "submitterName": "提交人姓名 *",
+        "subject": "主题 *",
+        "preheader": "预览标题",
+        "title": "标题 *",
+        "preTitle": "前标题（副标题）",
+        "messageContent": "消息内容 *",
+        "recipientType": "收件人类型",
+        "selectLanguages": "选择翻译预览的语言",
+        "viewEditTranslation": "查看/编辑翻译"
+      },
+      "placeholders": {
+        "teacherEmail": "teacher@example.com",
+        "testSchool": "测试学校",
+        "selectEmailType": "选择要测试的电子邮件类型",
+        "emailSubject": "电子邮件主题行",
+        "preheaderText": "在电子邮件客户端中显示的预览文本（可选）",
+        "largeHeading": "电子邮件内的大标题",
+        "subtitleText": "标题下的副标题（可选）",
+        "messageContent": "输入主要消息内容。支持 HTML 标签进行格式化。",
+        "testEmail": "test@example.com",
+        "searchImages": "搜索图片..."
+      },
+      "helpText": {
+        "subjectLength": "{{length}}/200 个字符 • 电子邮件的主主题行",
+        "preheaderLength": "{{length}}/100 个字符 • 在电子邮件收件箱中显示的可选预览文本",
+        "titleLength": "{{length}}/200 个字符 • 电子邮件正文中显示的主标题",
+        "preTitleLength": "{{length}}/200 个字符 • 标题下方的可选副标题文本",
+        "contentLength": "{{length}}/10,000 个字符",
+        "readTime": "约{{minutes}}分钟阅读",
+        "supportsHTML": "支持 HTML 格式"
+      }
+    },
+    "recipientTypes": {
+      "allTeachers": "所有教师",
+      "schools": "筛选的学校",
+      "custom": "自定义收件人"
+    },
+    "stages": {
+      "stage1": "阶段 1",
+      "stage2": "阶段 2",
+      "stage3": "阶段 3"
+    },
+    "languages": {
+      "english": "英语（原文）",
+      "spanish": "西班牙语",
+      "french": "法语",
+      "german": "德语",
+      "italian": "意大利语",
+      "portuguese": "葡萄牙语",
+      "dutch": "荷兰语",
+      "russian": "俄语",
+      "chinese": "中文",
+      "korean": "韩语",
+      "arabic": "阿拉伯语",
+      "indonesian": "印度尼西亚语",
+      "greek": "希腊语",
+      "welsh": "威尔士语"
+    },
+    "badges": {
+      "editingTranslation": "正在编辑翻译"
+    },
+    "toasts": {
+      "emailRequired": {
+        "title": "需要电子邮件",
+        "description": "请输入收件人电子邮件地址。",
+        "testDescription": "请输入测试电子邮件地址。"
+      },
+      "testEmailSent": {
+        "title": "已发送测试电子邮件",
+        "description": "电子邮件已成功发送至 {{email}}",
+        "withLanguage": "测试电子邮件已成功以 {{language}} 发送至 {{email}}",
+        "defaultDescription": "电子邮件已发送至 {{email}}"
+      },
+      "sendEmailFailed": {
+        "title": "发送电子邮件失败",
+        "description": "发送电子邮件时发生错误。",
+        "tryAgain": "发送电子邮件失败。请重试。"
+      },
+      "testEmailFailed": {
+        "title": "发送测试电子邮件失败",
+        "description": "发送测试电子邮件时出错。",
+        "customMessage": "{{message}}"
+      },
+      "imageInserted": {
+        "title": "已插入图片",
+        "description": "{{filename}} 已添加到您的电子邮件内容中"
+      },
+      "translationFailed": {
+        "title": "翻译失败",
+        "description": "生成翻译失败。请重试。"
+      },
+      "error": {
+        "title": "错误",
+        "description": "发送电子邮件失败。请重试。"
+      },
+      "emailsSent": {
+        "title": "电子邮件发送成功",
+        "description": "已成功发送 {{sent}} 封电子邮件{{failedText}}。"
+      },
+      "bulkEmailFailed": {
+        "title": "发送电子邮件失败",
+        "description": "发送批量电子邮件时出错。请重试。"
+      }
+    },
+    "dialogs": {
+      "preview": {
+        "title": "电子邮件预览",
+        "subject": "主题：",
+        "preheader": "预览标题："
+      },
+      "bulkConfirm": {
+        "title": "确认批量发送电子邮件",
+        "description": "您确定要将此电子邮件发送给：",
+        "subject": "主题：{{subject}}",
+        "warning": "此操作无法撤消。请确保您已先测试电子邮件。",
+        "recipientCount": "{{count}} 个自定义收件人"
+      },
+      "imagePicker": {
+        "title": "从媒体库插入图片"
+      }
+    },
+    "resultMessages": {
+      "success": "✅ 成功",
+      "error": "❌ 错误"
+    },
+    "defaultValues": {
+      "testSchool": "测试学校",
+      "johnDoe": "张三",
+      "janeSmith": "李四",
+      "janeEmail": "jane@example.com",
+      "recyclingProgram": "回收计划",
+      "teacherEvidence": "我是这所学校的老师。",
+      "participationFeedback": "请添加更多关于学生参与的详细信息。",
+      "headTeacher": "校长"
     }
   },
   "evidence": {
@@ -65,63 +858,69 @@
     "bulk_approve": "批量批准",
     "bulk_request_revision": "批量请求修订"
   },
-  "resources": {
-    "title": "资源管理",
-    "subtitle": "上传和管理教育资源",
-    "upload_resource": "上传新资源",
-    "resource_library": "资源库",
-    "featured_resources": "精选资源",
-    "upload_form": {
-      "title": "上传新资源",
-      "resource_title": "资源标题",
-      "description": "描述",
-      "stage": "目标阶段",
-      "language": "语言",
-      "age_range": "年龄范围",
-      "file_type": "文件类型",
-      "visibility": "可见性",
-      "featured": "精选资源",
-      "featured_description": "标记为精选以突出显示此资源",
-      "upload_file": "上传文件",
-      "save_resource": "保存资源",
-      "cancel": "取消"
-    },
-    "resource_table": {
-      "title": "标题",
-      "type": "类型",
-      "stage": "阶段",
-      "downloads": "下载次数",
-      "status": "状态",
-      "actions": "操作",
-      "edit": "编辑",
-      "delete": "删除",
-      "feature": "设为精选",
-      "unfeature": "取消精选"
-    },
-    "delete_confirmation": {
-      "title": "删除资源",
-      "message": "确定要删除此资源吗？此操作无法撤消。",
-      "delete": "删除",
-      "cancel": "取消"
-    },
-    "resource_uploaded": "资源上传成功",
-    "resource_updated": "资源更新成功",
-    "resource_deleted": "资源删除成功"
-  },
   "schools": {
     "title": "学校管理",
     "subtitle": "管理注册学校和用户账户",
     "active_schools": "活跃学校",
     "pending_approval": "待批准",
     "search_schools": "搜索学校...",
+    "filters": {
+      "allCountries": "所有国家",
+      "selectAll": "全选（{count} 所学校）",
+      "selected": "已选 {count} 所",
+      "searchPlaceholder": "搜索学校..."
+    },
+    "buttons": {
+      "bulkUpdate": "批量更新",
+      "deleteSchools": "删除学校",
+      "view": "查看",
+      "edit": "编辑",
+      "delete": "删除",
+      "save": "保存",
+      "saving": "保存中...",
+      "cancel": "取消",
+      "confirm": "确认",
+      "processing": "处理中...",
+      "deleting": "删除中...",
+      "editLanguage": "编辑语言",
+      "editProgression": "编辑进度",
+      "saveChanges": "保存更改"
+    },
     "school_table": {
-      "school_name": "学校名称",
-      "country": "国家",
-      "contact": "主要联系人",
-      "stage": "当前阶段",
-      "registered_date": "注册时间",
-      "status": "状态",
-      "actions": "操作"
+      "headers": {
+        "select": "选择",
+        "school_name": "学校名称",
+        "country": "国家",
+        "stage": "阶段",
+        "progress": "进度",
+        "students": "学生",
+        "contact": "主要联系人",
+        "joined": "加入时间",
+        "actions": "操作",
+        "expand": "展开",
+        "collapse": "折叠"
+      },
+      "teachers": {
+        "loading": "正在加载教师...",
+        "loadingError": "加载教师失败。请重试。",
+        "noTeachers": "尚未为此学校分配教师。",
+        "headers": {
+          "name": "姓名",
+          "email": "电子邮件",
+          "role": "角色",
+          "verification": "验证",
+          "joined": "加入时间"
+        },
+        "roles": {
+          "headTeacher": "校长",
+          "teacher": "教师"
+        },
+        "status": {
+          "verified": "已验证",
+          "notVerified": "未验证"
+        }
+      },
+      "notAvailable": "不适用"
     },
     "school_actions": {
       "view_details": "查看详情",
@@ -133,15 +932,166 @@
     "school_status": {
       "active": "活跃",
       "pending": "待批准",
-      "inactive": "非活跃",
+      "inactive": "不活跃",
       "suspended": "已暂停"
     },
     "school_details": {
+      "title": "{name}",
       "basic_info": "基本信息",
       "contact_info": "联系信息",
       "progress": "项目进度",
       "evidence_history": "证据历史",
-      "last_activity": "最近活动"
+      "last_activity": "最近活动",
+      "labels": {
+        "country": "国家",
+        "schoolType": "学校类型",
+        "preferredLanguage": "首选语言",
+        "studentCount": "学生人数",
+        "currentStage": "当前阶段",
+        "progress": "进度",
+        "primaryContactEmail": "主要联系电子邮件",
+        "joined": "加入时间",
+        "address": "地址",
+        "currentRound": "当前轮次",
+        "stageCompletion": "阶段完成"
+      },
+      "progression": {
+        "title": "管理进度",
+        "description": "使用此部分手动设置学校的进度阶段、轮次和完成状态。这允许您根据证据提交覆盖自动进度。",
+        "currentStage": "当前阶段：",
+        "currentRound": "当前轮次：",
+        "stageCompletion": "阶段完成：",
+        "inspireCompleted": "激励已完成",
+        "investigateCompleted": "调查已完成",
+        "actCompleted": "行动已完成",
+        "notCompleted": "○ 未完成",
+        "completed": "✓ 已完成"
+      },
+      "stages": {
+        "inspire": "激励",
+        "investigate": "调查",
+        "act": "行动"
+      },
+      "languages": {
+        "en": "英语",
+        "es": "西班牙语",
+        "fr": "法语",
+        "de": "德语",
+        "it": "意大利语",
+        "pt": "葡萄牙语",
+        "nl": "荷兰语",
+        "el": "希腊语",
+        "ar": "阿拉伯语",
+        "zh": "中文",
+        "ko": "韩语",
+        "ru": "俄语",
+        "id": "印度尼西亚语",
+        "cy": "威尔士语"
+      },
+      "actionPlan": {
+        "title": "行动计划指标",
+        "totalPromises": "承诺总数",
+        "annualReduction": "每年减少的物品",
+        "annualWeight": "减少重量",
+        "perYear": "每年",
+        "oceanImpact": "海洋影响",
+        "oceanBottles": "防止的海洋瓶",
+        "fishSaved": "拯救的鱼类",
+        "seaTurtles": "受保护的海龟",
+        "environmentalImpact": "环境影响",
+        "co2Prevented": "防止的 CO₂",
+        "oilSaved": "节省的石油",
+        "wastePrevented": "防止的废物",
+        "loading": "正在加载减少指标...",
+        "noPromises": "尚未为此学校创建减少承诺。"
+      },
+      "photoConsent": {
+        "title": "照片同意状态",
+        "status": "状态：",
+        "uploadedAt": "上传时间：",
+        "approvedAt": "批准时间：",
+        "approvedBy": "批准人：",
+        "reviewNotes": "审核备注：",
+        "viewDocument": "查看文档",
+        "pending": "待处理",
+        "approved": "已批准",
+        "rejected": "已拒绝",
+        "notUploaded": "未上传",
+        "approve": "批准",
+        "reject": "拒绝",
+        "rejectionNotes": "拒绝备注",
+        "rejectionNotesPlaceholder": "解释为什么拒绝照片同意...",
+        "submitRejection": "提交拒绝"
+      }
+    },
+    "bulkActions": {
+      "dialogs": {
+        "update": {
+          "title": "批量更新学校",
+          "description": "此操作将影响 <strong>{count}</strong> 所学校。",
+          "updateStageLabel": "更新当前阶段",
+          "updateStageHelpText": "所有选定的学校将被移至此项目阶段。"
+        },
+        "delete": {
+          "title": "批量删除学校",
+          "description": "此操作将影响 <strong>{count}</strong> 所学校。",
+          "warningTitle": "警告：",
+          "warningDescription": "此操作无法撤消。所有选定的学校及其关联数据将被永久删除。"
+        },
+        "deleteSchool": {
+          "title": "删除学校",
+          "description": "您确定要删除 <strong>{name}</strong> 吗？此操作无法撤消，将永久删除学校及所有关联数据。",
+          "loadingUsers": "正在加载学校用户...",
+          "warningUsers": "警告：此学校有 {count} 个关联用户{plural}。",
+          "associatedUsers": "关联用户：",
+          "deleteUsersLabel": "同时删除所有关联用户账户",
+          "deleteUsersDescription": "如果未选中，用户账户将保留在系统中，可以重新分配给其他学校。如果选中，用户将被永久删除，并且无法使用相同的电子邮件地址再次注册。",
+          "noUsers": "此学校没有关联用户。"
+        }
+      }
+    },
+    "toasts": {
+      "languageUpdated": {
+        "title": "已更新语言",
+        "description": "学校首选语言已成功更新。"
+      },
+      "languageUpdateFailed": {
+        "title": "更新失败",
+        "description": "更新学校语言失败。更改已恢复。"
+      },
+      "progressionUpdated": {
+        "title": "已更新进度",
+        "description": "学校进度已成功更新。"
+      },
+      "progressionUpdateFailed": {
+        "title": "更新失败",
+        "description": "更新学校进度失败。更改已恢复。"
+      },
+      "bulkUpdateComplete": {
+        "title": "批量更新完成",
+        "description": "{count} 所学校已成功更新。"
+      },
+      "bulkUpdateFailed": {
+        "title": "批量更新失败",
+        "description": "更新学校失败。请重试。"
+      },
+      "bulkDeleteComplete": {
+        "title": "批量删除完成",
+        "description": "{count} 所学校已成功删除。"
+      },
+      "bulkDeleteFailed": {
+        "title": "批量删除失败",
+        "description": "删除学校失败。请重试。"
+      },
+      "schoolDeleted": {
+        "title": "已删除学校",
+        "descriptionWithUsers": "学校及所有关联用户已成功删除。",
+        "descriptionWithoutUsers": "学校已成功删除。"
+      },
+      "schoolDeleteFailed": {
+        "title": "删除失败",
+        "description": "删除学校失败。请重试。"
+      }
     }
   },
   "permissions": {
@@ -149,96 +1099,874 @@
     "insufficient_permissions": "权限不足，无法访问此功能"
   },
   "toasts": {
-    "teacher_removed": "Teacher Removed",
-    "teacher_removed_desc": "Teacher has been successfully removed from the school.",
-    "removal_failed": "Removal Failed",
-    "removal_failed_desc": "Failed to remove teacher. Please try again.",
-    "request_approved": "Request Approved",
-    "request_approved_desc": "Verification request has been successfully approved.",
-    "request_rejected": "Request Rejected",
-    "request_rejected_desc": "Verification request has been successfully rejected.",
-    "action_failed": "Action Failed",
-    "action_failed_desc": "Failed to process verification request. Please try again.",
-    "access_denied": "Access Denied",
-    "access_denied_desc": "Admin access required",
-    "success": "Success",
-    "error": "Error",
-    "requirement_created": "Evidence requirement created successfully.",
-    "requirement_updated": "Evidence requirement updated successfully.",
-    "requirement_deleted": "Evidence requirement deleted successfully.",
-    "requirement_delete_failed": "Failed to delete evidence requirement. It may be linked to existing evidence.",
-    "reorder_failed": "Failed to reorder requirements.",
-    "event_created": "Event Created Successfully! 🎉",
-    "event_updated": "Event updated successfully.",
-    "event_deleted": "Event deleted successfully.",
-    "event_creation_failed": "Failed to create event.",
-    "event_update_failed": "Failed to update event.",
-    "event_delete_failed": "Failed to delete event.",
-    "event_duplicated": "Event Duplicated",
-    "event_duplicated_desc": "\"{{title}}\" has been created as a draft.",
-    "duplication_failed": "Duplication Failed",
-    "duplication_failed_desc": "Failed to duplicate event",
-    "page_content_update_failed": "Failed to update event page content.",
-    "status_update_failed": "Failed to update event status.",
-    "same_language_selected": "Same language selected"
+    "teacher_removed": "已移除教师",
+    "teacher_removed_desc": "教师已成功从学校中移除。",
+    "removal_failed": "移除失败",
+    "removal_failed_desc": "移除教师失败。请重试。",
+    "request_approved": "请求已批准",
+    "request_approved_desc": "验证请求已成功批准。",
+    "request_rejected": "请求已拒绝",
+    "request_rejected_desc": "验证请求已成功拒绝。",
+    "action_failed": "操作失败",
+    "action_failed_desc": "处理验证请求失败。请重试。",
+    "access_denied": "访问被拒绝",
+    "access_denied_desc": "需要管理员访问权限",
+    "session_expired": "未授权",
+    "session_expired_desc": "管理员会话已过期。请重新登录。",
+    "success": "成功",
+    "error": "错误",
+    "requirement_created": "证据要求创建成功。",
+    "requirement_updated": "证据要求更新成功。",
+    "requirement_deleted": "证据要求删除成功。",
+    "requirement_delete_failed": "删除证据要求失败。它可能与现有证据相关联。",
+    "reorder_failed": "重新排序要求失败。",
+    "event_created": "活动创建成功！🎉",
+    "event_updated": "活动更新成功。",
+    "event_deleted": "活动删除成功。",
+    "event_creation_failed": "创建活动失败。",
+    "event_update_failed": "更新活动失败。",
+    "event_delete_failed": "删除活动失败。",
+    "event_duplicated": "活动已复制",
+    "event_duplicated_desc": ""{{title}}"已创建为草稿。",
+    "duplication_failed": "复制失败",
+    "duplication_failed_desc": "复制活动失败",
+    "page_content_update_failed": "更新活动页面内容失败。",
+    "status_update_failed": "更新活动状态失败。",
+    "same_language_selected": "选择了相同的语言",
+    "photoConsentApproved": {
+      "title": "照片同意已批准",
+      "description": "照片同意已成功批准。"
+    },
+    "photoConsentApprovalFailed": {
+      "title": "批准失败",
+      "description": "批准照片同意失败。更改已恢复。"
+    },
+    "photoConsentRejected": {
+      "title": "照片同意已拒绝",
+      "description": "照片同意文档已被拒绝。"
+    },
+    "photoConsentRejectionFailed": {
+      "title": "拒绝失败",
+      "description": "拒绝照片同意失败。更改已恢复。"
+    }
   },
   "case_study": {
-    "categories": "Categories",
-    "organize_case_study_categories": "Organize your case study by selecting relevant categories",
-    "add_categories": "Add Categories",
-    "enter_category": "Enter a category",
-    "press_enter_or_click_plus_category": "Press Enter or click + to add a category",
-    "suggested_categories": "Suggested Categories",
-    "selected_categories": "Selected Categories",
-    "add_suggested": "Add suggested",
-    "category_plastic_reduction": "Plastic Reduction",
-    "category_recycling_initiative": "Recycling Initiative",
-    "category_student_leadership": "Student Leadership",
-    "category_community_engagement": "Community Engagement",
-    "category_educational_campaign": "Educational Campaign",
-    "category_waste_audit": "Waste Audit",
-    "category_policy_change": "Policy Change",
-    "category_innovation": "Innovation",
-    "tags": "Tags",
-    "add_descriptive_tags": "Add descriptive tags to improve discoverability",
-    "add_tags": "Add Tags",
-    "enter_tag": "Enter a tag",
-    "press_enter_or_click_plus_tag": "Press Enter or click + to add a tag",
-    "suggested_tags": "Suggested Tags",
-    "selected_tags": "Selected Tags",
-    "tag_single_use_plastic": "single-use-plastic",
-    "tag_recycling": "recycling",
-    "tag_composting": "composting",
-    "tag_awareness": "awareness",
-    "tag_students": "students",
-    "tag_teachers": "teachers",
-    "tag_community": "community",
-    "tag_impact": "impact",
-    "tag_sustainability": "sustainability",
-    "tag_ocean_conservation": "ocean-conservation",
-    "impact_metrics": "Impact Metrics",
-    "add_quantifiable_metrics": "Add quantifiable metrics to showcase the project's impact",
-    "add_metric": "Add Metric",
-    "no_impact_metrics_yet": "No impact metrics yet. Click \"Add Metric\" to get started.",
-    "metric_number": "Metric {{number}}",
-    "metric_label_required": "Metric Label *",
-    "metric_value_required": "Value *",
-    "metric_unit": "Unit",
-    "metric_icon": "Icon",
-    "metric_label_placeholder": "e.g., Plastic Items Reduced",
-    "metric_value_placeholder": "e.g., 500 or 85%",
-    "metric_unit_placeholder": "e.g., items, kg, %",
-    "metric_icon_placeholder": "e.g., trash, droplet, leaf",
-    "project_timeline": "Project Timeline",
-    "create_chronological_timeline": "Create a chronological timeline of key milestones and events",
-    "add_section": "Add Section",
-    "no_timeline_sections_yet": "No timeline sections yet. Click \"Add Section\" to get started.",
-    "section_number": "Section {{number}}",
-    "section_title_required": "Section Title *",
-    "section_title_placeholder": "e.g., Project Launch, Week 1",
-    "section_content": "Content *",
-    "section_content_placeholder": "Describe what happened during this phase...",
-    "section_image_url": "Image URL",
+    "categories": "类别",
+    "organize_case_study_categories": "通过选择相关类别来组织您的案例研究",
+    "add_categories": "添加类别",
+    "enter_category": "输入类别",
+    "press_enter_or_click_plus_category": "按 Enter 或点击 + 添加类别",
+    "suggested_categories": "建议的类别",
+    "selected_categories": "已选类别",
+    "add_suggested": "添加建议",
+    "category_plastic_reduction": "塑料减少",
+    "category_recycling_initiative": "回收倡议",
+    "category_student_leadership": "学生领导力",
+    "category_community_engagement": "社区参与",
+    "category_educational_campaign": "教育活动",
+    "category_waste_audit": "废物审计",
+    "category_policy_change": "政策变化",
+    "category_innovation": "创新",
+    "tags": "标签",
+    "add_descriptive_tags": "添加描述性标签以提高可发现性",
+    "add_tags": "添加标签",
+    "enter_tag": "输入标签",
+    "press_enter_or_click_plus_tag": "按 Enter 或点击 + 添加标签",
+    "suggested_tags": "建议的标签",
+    "selected_tags": "已选标签",
+    "tag_single_use_plastic": "一次性塑料",
+    "tag_recycling": "回收",
+    "tag_composting": "堆肥",
+    "tag_awareness": "意识",
+    "tag_students": "学生",
+    "tag_teachers": "教师",
+    "tag_community": "社区",
+    "tag_impact": "影响",
+    "tag_sustainability": "可持续性",
+    "tag_ocean_conservation": "海洋保护",
+    "impact_metrics": "影响指标",
+    "add_quantifiable_metrics": "添加可量化指标以展示项目的影响",
+    "add_metric": "添加指标",
+    "no_impact_metrics_yet": "尚无影响指标。点击"添加指标"开始。",
+    "metric_number": "指标 {{number}}",
+    "metric_label_required": "指标标签 *",
+    "metric_value_required": "值 *",
+    "metric_unit": "单位",
+    "metric_icon": "图标",
+    "metric_label_placeholder": "例如，减少的塑料物品",
+    "metric_value_placeholder": "例如，500 或 85%",
+    "metric_unit_placeholder": "例如，物品、公斤、%",
+    "metric_icon_placeholder": "例如，垃圾、水滴、叶子",
+    "project_timeline": "项目时间线",
+    "create_chronological_timeline": "创建关键里程碑和事件的时间顺序时间线",
+    "add_section": "添加部分",
+    "no_timeline_sections_yet": "尚无时间线部分。点击"添加部分"开始。",
+    "section_number": "部分 {{number}}",
+    "section_title_required": "部分标题 *",
+    "section_title_placeholder": "例如，项目启动、第 1 周",
+    "section_content": "内容 *",
+    "section_content_placeholder": "描述此阶段发生的事情...",
+    "section_image_url": "图片 URL",
     "section_image_placeholder": "https://..."
+  },
+  "evidenceGallery": {
+    "title": "证据库",
+    "subtitle": "浏览和管理所有证据提交",
+    "submissionCount": {
+      "single": "{{count}} 个提交",
+      "plural": "{{count}} 个提交"
+    },
+    "filters": {
+      "labels": {
+        "stage": "阶段",
+        "country": "国家",
+        "status": "状态",
+        "visibility": "可见性"
+      },
+      "options": {
+        "allStages": "所有阶段",
+        "allCountries": "所有国家",
+        "allStatuses": "所有状态",
+        "allVisibility": "所有可见性",
+        "public": "公开",
+        "private": "私密"
+      },
+      "stages": {
+        "inspire": "激励",
+        "investigate": "调查",
+        "act": "行动"
+      },
+      "statuses": {
+        "pending": "待处理",
+        "approved": "已批准",
+        "rejected": "已拒绝"
+      }
+    },
+    "buttons": {
+      "clearFilters": "清除筛选条件",
+      "view": "查看",
+      "schoolHistory": "查看学校历史"
+    },
+    "badges": {
+      "permissionPending": "权限待处理",
+      "noPermission": "无权限",
+      "permissionApproved": "权限已批准",
+      "permissionRejected": "权限已拒绝",
+      "public": "公开",
+      "registeredOnly": "仅限注册"
+    },
+    "dialogs": {
+      "evidenceDetails": {
+        "title": "证据详情"
+      },
+      "schoolHistory": {
+        "title": "{{schoolName}} - 所有提交 ({{count}})"
+      }
+    },
+    "form": {
+      "labels": {
+        "title": "标题",
+        "description": "描述",
+        "school": "学校",
+        "country": "国家",
+        "stage": "阶段",
+        "status": "状态",
+        "visibilitySetting": "可见性设置",
+        "photoPermission": "照片权限",
+        "files": "文件 ({{count}})",
+        "videoLinks": "视频链接"
+      },
+      "values": {
+        "noDescription": "无描述",
+        "unknownSchool": "未知学校",
+        "unknown": "未知"
+      }
+    },
+    "warnings": {
+      "permissionRequired": "需要权限：",
+      "photoConsentPending": "此学校有待处理的照片同意文档。在权限获得批准之前，不应在公开案例研究中使用此证据。",
+      "photoConsentMissing": "此学校尚未上传照片同意文档。在权限获得批准之前，不应在公开案例研究中使用此证据。"
+    },
+    "emptyStates": {
+      "noEvidence": {
+        "title": "尚无证据提交",
+        "description": "学校开始上传后，证据提交将显示在此处"
+      },
+      "noSchoolSubmissions": {
+        "title": "尚无提交",
+        "description": "此学校尚未提交任何证据"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "成功",
+        "description": "证据状态已更新"
+      },
+      "updateFailed": {
+        "title": "错误",
+        "description": "更新证据状态失败"
+      }
+    }
+  },
+  "printableForms": {
+    "title": "可打印表单审核",
+    "subtitle": "审核和管理学校的可打印表单提交",
+    "filters": {
+      "labels": {
+        "status": "状态",
+        "formType": "表单类型",
+        "schoolSearch": "学校搜索"
+      },
+      "statusOptions": {
+        "all": "所有状态",
+        "pending": "待处理",
+        "approved": "已批准",
+        "rejected": "已拒绝",
+        "revisionRequested": "请求修订"
+      },
+      "formTypeOptions": {
+        "all": "所有类型",
+        "audit": "审计",
+        "actionPlan": "行动计划"
+      },
+      "placeholders": {
+        "searchSchool": "按学校名称搜索..."
+      }
+    },
+    "table": {
+      "headers": {
+        "school": "学校",
+        "formType": "表单类型",
+        "status": "状态",
+        "submittedBy": "提交人",
+        "uploadDate": "上传日期",
+        "actions": "操作"
+      }
+    },
+    "buttons": {
+      "download": "下载",
+      "review": "审核",
+      "submitReview": "提交审核",
+      "cancel": "取消"
+    },
+    "dialogs": {
+      "reviewSubmission": {
+        "title": "审核提交",
+        "labels": {
+          "school": "学校：",
+          "formType": "表单类型：",
+          "submittedBy": "提交人：",
+          "status": "状态",
+          "adminNotes": "管理员备注（可选）"
+        },
+        "statusOptions": {
+          "approved": "已批准",
+          "rejected": "已拒绝",
+          "revisionRequested": "请求修订"
+        },
+        "placeholders": {
+          "reviewNotes": "添加有关此审核的任何备注..."
+        }
+      }
+    },
+    "loadingStates": {
+      "loadingSubmissions": "正在加载提交..."
+    },
+    "emptyStates": {
+      "noSubmissions": {
+        "title": "未找到提交",
+        "description": "没有可打印表单提交匹配您的筛选条件"
+      }
+    },
+    "toasts": {
+      "statusUpdated": {
+        "title": "成功",
+        "description": "提交状态已成功更新"
+      },
+      "updateFailed": {
+        "title": "错误",
+        "description": "更新提交状态失败",
+        "customMessage": "{{message}}"
+      },
+      "downloadFailed": {
+        "title": "错误",
+        "description": "下载提交失败"
+      }
+    },
+    "updating": "更新中..."
+  },
+  "caseStudies": {
+    "title": "案例研究管理",
+    "filters": {
+      "placeholders": {
+        "search": "搜索案例研究..."
+      },
+      "labels": {
+        "stage": "阶段",
+        "featuredStatus": "精选状态"
+      },
+      "options": {
+        "allStages": "所有阶段",
+        "all": "所有",
+        "featured": "精选",
+        "notFeatured": "非精选"
+      },
+      "stages": {
+        "inspire": "激励",
+        "investigate": "调查",
+        "act": "行动"
+      }
+    },
+    "buttons": {
+      "createCaseStudy": "创建案例研究",
+      "preview": "预览",
+      "edit": "编辑",
+      "feature": "设为精选",
+      "unfeature": "取消精选",
+      "delete": "删除",
+      "cancel": "取消"
+    },
+    "badges": {
+      "featured": "精选"
+    },
+    "dialogs": {
+      "delete": {
+        "title": "删除案例研究",
+        "description": "您确定要删除"{{title}}"吗？此操作无法撤消。"
+      },
+      "editor": {
+        "title": "案例研究编辑器"
+      }
+    },
+    "emptyStates": {
+      "noCaseStudies": "未找到案例研究。从已批准的证据提交中创建一个。"
+    },
+    "toasts": {
+      "created": {
+        "title": "已创建案例研究",
+        "description": "案例研究已成功创建。"
+      },
+      "createFailed": {
+        "title": "创建失败",
+        "description": "创建案例研究失败。请重试。",
+        "customMessage": "{{message}}"
+      },
+      "updated": {
+        "title": "已更新案例研究",
+        "description": "案例研究已成功更新。"
+      },
+      "updateFailed": {
+        "title": "更新失败",
+        "description": "更新案例研究失败。请重试。",
+        "customMessage": "{{message}}"
+      },
+      "deleted": {
+        "title": "已删除案例研究",
+        "description": "案例研究已成功删除。"
+      },
+      "deleteFailed": {
+        "title": "删除失败",
+        "description": "删除案例研究失败。请重试。",
+        "customMessage": "{{message}}"
+      },
+      "featuredUpdated": {
+        "title": "已更新案例研究",
+        "description": "案例研究精选状态已更新。"
+      },
+      "featuredUpdateFailed": {
+        "title": "更新失败",
+        "description": "更新案例研究失败。请重试。"
+      },
+      "locked": {
+        "title": "案例研究已锁定",
+        "description": "此案例研究当前正由 {{lockedBy}} 编辑。"
+      },
+      "cannotSave": {
+        "title": "无法保存",
+        "description": "此案例研究已被另一个用户锁定。"
+      },
+      "lockAcquired": {
+        "title": "已获取锁定",
+        "description": "您现在可以编辑此案例研究。"
+      }
+    }
+  },
+  "dataImport": {
+    "title": "从 WordPress 导入数据",
+    "subtitle": "从 WordPress 数据库导出的 CSV 或 Excel 文件导入学校、用户及其关系",
+    "alerts": {
+      "important": {
+        "title": "重要：",
+        "description": "准备三个单独的文件（CSV 或 Excel 格式）：",
+        "schools": "学校 - 包含学校信息（名称、国家、类型等）",
+        "users": "用户 - 包含教师/用户信息（电子邮件、姓名等）",
+        "relationships": "关系 - 将用户与学校及其角色关联",
+        "templateNote": "下载下面的模板以查看所需的列格式。",
+        "note": "下载下面的模板以查看所需的列格式。"
+      }
+    },
+    "tabs": {
+      "schools": "学校",
+      "users": "用户",
+      "relationships": "关系"
+    },
+    "fileUpload": {
+      "titles": {
+        "schools": "学校文件",
+        "users": "用户文件",
+        "relationships": "学校-用户关系文件"
+      },
+      "descriptions": {
+        "schools": "上传包含学校数据的 CSV 或 Excel 文件",
+        "users": "上传包含用户/教师数据的 CSV 或 Excel 文件",
+        "relationships": "上传将用户与学校关联的 CSV 或 Excel 文件"
+      },
+      "labels": {
+        "clickToUpload": "点击上传文件",
+        "formatNote": "CSV 或 Excel 格式"
+      },
+      "validation": {
+        "success": "文件验证成功",
+        "failed": "验证失败",
+        "rowsFound": "找到 {{rowCount}} 行，包含 {{headerCount}} 列",
+        "errorsTitle": "验证错误 ({{count}})：",
+        "moreErrors": "... 以及 {{count}} 个更多错误",
+        "previewTitle": "预览（前 5 行）："
+      }
+    },
+    "buttons": {
+      "downloadTemplate": "下载模板",
+      "startImport": "开始导入",
+      "importAnother": "导入另一个文件",
+      "viewData": "查看导入的数据"
+    },
+    "status": {
+      "readyToImport": "准备好导入了吗？",
+      "allFilesUploaded": "所有文件已上传并验证",
+      "filesUploaded": "{{count}}/3 个文件已上传",
+      "fixErrors": "导入前请修复验证错误"
+    },
+    "importing": {
+      "title": "正在导入数据...",
+      "description": "这可能需要几分钟。请不要关闭此页面。"
+    },
+    "results": {
+      "successTitle": "导入成功完成",
+      "errorTitle": "导入完成但有错误",
+      "summary": "摘要：",
+      "schoolsImported": "已导入学校：{{count}}",
+      "usersImported": "已导入用户：{{count}}",
+      "relationshipsCreated": "已创建关系：{{count}}",
+      "errors": "错误：",
+      "errorsCount": "错误 ({{count}})",
+      "viewDetails": "查看详细日志",
+      "newUsersCreated": "已创建 {{count}} 个新用户",
+      "sections": {
+        "schools": "学校",
+        "users": "用户",
+        "relationships": "关系"
+      },
+      "tableHeaders": {
+        "row": "行",
+        "field": "字段",
+        "error": "错误"
+      },
+      "stats": {
+        "processed": "已处理：",
+        "succeeded": "成功：",
+        "failed": "失败："
+      }
+    },
+    "toasts": {
+      "fileValidated": {
+        "title": "文件已验证",
+        "description": "{{rowCount}} 行验证成功"
+      },
+      "validationErrors": {
+        "title": "发现验证错误",
+        "description": "在 {{filename}} 中发现 {{count}} 个验证错误{{plural}}。导入前请审核并修复。"
+      },
+      "validationFailed": {
+        "title": "验证失败",
+        "description": "解析文件失败",
+        "customMessage": "{{message}}"
+      },
+      "noFilesSelected": {
+        "title": "未选择文件",
+        "description": "请上传至少一个文件以导入"
+      },
+      "importSuccess": {
+        "title": "导入成功",
+        "description": "数据已成功导入"
+      },
+      "importFailed": {
+        "title": "导入失败",
+        "description": "导入数据时出错",
+        "customMessage": "{{message}}"
+      }
+    }
+  },
+  "activityLogs": {
+    "title": "用户活动日志",
+    "subtitle": "跟踪和监控平台上的用户活动",
+    "filters": {
+      "labels": {
+        "actionType": "操作类型",
+        "userEmail": "用户电子邮件",
+        "startDate": "开始日期",
+        "endDate": "结束日期",
+        "dateRange": "日期范围",
+        "fromDate": "从日期",
+        "toDate": "至日期"
+      },
+      "options": {
+        "allActions": "所有操作",
+        "userLogin": "用户登录",
+        "schoolCreated": "学校已创建",
+        "schoolUpdated": "学校已更新",
+        "evidenceSubmitted": "证据已提交",
+        "evidenceApproved": "证据已批准",
+        "evidenceRejected": "证据已拒绝",
+        "caseStudyCreated": "案例研究已创建",
+        "caseStudyUpdated": "案例研究已更新",
+        "resourceUploaded": "资源已上传"
+      },
+      "placeholders": {
+        "searchByEmail": "按电子邮件搜索..."
+      }
+    },
+    "table": {
+      "headers": {
+        "timestamp": "时间戳",
+        "dateTime": "日期/时间",
+        "user": "用户",
+        "action": "操作",
+        "actionType": "操作类型",
+        "target": "目标",
+        "ipAddress": "IP地址",
+        "details": "详情"
+      }
+    },
+    "buttons": {
+      "applyFilters": "应用筛选",
+      "clearFilters": "清除筛选",
+      "exportLogs": "导出日志",
+      "refresh": "刷新"
+    },
+    "loadingStates": {
+      "loadingLogs": "正在加载活动日志..."
+    },
+    "emptyStates": {
+      "noLogs": {
+        "title": "无活动日志",
+        "description": "没有活动日志符合您当前的筛选条件"
+      }
+    },
+    "pagination": {
+      "showing": "显示 {{start}} - {{end}} / {{total}}",
+      "showingRange": "显示 {{start}} 至 {{end}} / {{total}} 个结果",
+      "pageOf": "第 {{page}} 页 / 共 {{totalPages}} 页",
+      "previous": "上一页",
+      "next": "下一页"
+    }
+  },
+  "events": {
+    "title": "活动管理",
+    "subtitle": "创建和管理教育活动",
+    "buttons": {
+      "createEvent": "创建活动",
+      "saveEvent": "保存活动",
+      "cancel": "取消",
+      "edit": "编辑",
+      "duplicate": "复制",
+      "delete": "删除",
+      "preview": "预览",
+      "sendAnnouncement": "发送公告"
+    },
+    "form": {
+      "labels": {
+        "title": "标题 *",
+        "description": "描述",
+        "eventDate": "活动日期 *",
+        "eventTime": "活动时间",
+        "location": "地点",
+        "isVirtual": "虚拟活动",
+        "meetingLink": "会议链接",
+        "capacity": "容量",
+        "registrationDeadline": "注册截止日期",
+        "status": "状态",
+        "featured": "精选",
+        "eventType": "活动类型",
+        "targetAudience": "目标受众",
+        "bannerImage": "横幅图片"
+      },
+      "placeholders": {
+        "title": "输入活动标题",
+        "description": "描述活动...",
+        "location": "活动地点",
+        "meetingLink": "https://...",
+        "capacity": "最大参与者数量",
+        "searchEvents": "搜索活动..."
+      },
+      "statuses": {
+        "draft": "草稿",
+        "published": "已发布",
+        "cancelled": "已取消",
+        "completed": "已完成"
+      },
+      "eventTypes": {
+        "workshop": "研讨会",
+        "webinar": "网络研讨会",
+        "conference": "会议",
+        "training": "培训",
+        "other": "其他"
+      },
+      "audiences": {
+        "teachers": "教师",
+        "students": "学生",
+        "parents": "家长",
+        "all": "所有"
+      }
+    },
+    "table": {
+      "headers": {
+        "title": "标题",
+        "date": "日期",
+        "location": "地点",
+        "registrations": "注册",
+        "status": "状态",
+        "actions": "操作"
+      }
+    },
+    "dialogs": {
+      "delete": {
+        "title": "删除活动",
+        "description": "您确定要删除"{{title}}"吗？此操作无法撤消。"
+      },
+      "selectEvent": {
+        "title": "选择活动",
+        "description": "选择要发送公告的活动",
+        "placeholders": {
+          "selectEvent": "选择活动"
+        }
+      },
+      "newsletter": {
+        "title": "发送活动公告",
+        "description": "通过电子邮件向教师发送"{title}"。",
+        "labels": {
+          "recipientType": "收件人类型",
+          "emailAddresses": "电子邮件地址",
+          "commaSeparated": "（逗号分隔）"
+        },
+        "options": {
+          "allTeachers": "所有教师（{count} 位教师）",
+          "customEmailList": "自定义电子邮件列表"
+        },
+        "placeholders": {
+          "emailList": "email1@example.com, email2@example.com"
+        }
+      }
+    },
+    "buttons": {
+      "cancel": "取消",
+      "delete": "删除",
+      "deleting": "删除中...",
+      "save": "保存",
+      "saving": "保存中...",
+      "sendAnnouncement": "发送公告",
+      "sending": "发送中..."
+    }
+  },
+  "reviews": {
+    "filters": {
+      "evidenceReview": "证据审核",
+      "auditReview": "审计审核",
+      "photoConsent": "照片同意"
+    },
+    "evidence": {
+      "title": "证据审核队列",
+      "selected": "已选 {count} 个",
+      "bulkApprove": "批量批准",
+      "bulkReject": "批量拒绝",
+      "delete": "删除",
+      "filterAll": "所有",
+      "filterPending": "待处理",
+      "filterApproved": "已批准",
+      "filterRejected": "已拒绝",
+      "filterByAssignee": "按分配人筛选",
+      "allEvidence": "所有证据",
+      "unassigned": "未分配",
+      "assignedToMe": "分配给我",
+      "selectAll": "全选（{count} 个项目）",
+      "allCaughtUp": "全部完成！",
+      "noPendingEvidence": "没有待审核的证据提交。",
+      "badges": {
+        "public": "公开",
+        "photoApproved": "照片已批准",
+        "photoPending": "照片待处理",
+        "noPhotoConsent": "无照片同意",
+        "new": "新"
+      },
+      "labels": {
+        "schoolId": "学校 ID：",
+        "submitted": "提交时间：",
+        "files": "文件：",
+        "assignedTo": "分配给："
+      },
+      "buttons": {
+        "approve": "批准",
+        "reject": "拒绝",
+        "cancel": "取消",
+        "confirm": "确认",
+        "processing": "处理中..."
+      },
+      "modal": {
+        "approveTitle": "批准证据",
+        "rejectTitle": "拒绝证据",
+        "reviewNotes": "审核备注",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "可选的学校反馈...",
+        "feedbackRequired": "请提供拒绝此证据的原因..."
+      },
+      "consentWarning": {
+        "title": "在没有照片同意的情况下批准？📸",
+        "noConsentProvided": "此学校<strong>未提供已批准的照片同意</strong>。",
+        "statusPending": "他们的照片同意文档目前正在审核中。",
+        "statusRejected": "他们的照片同意文档已被拒绝。",
+        "statusMissing": "尚未上传照片同意文档。",
+        "warningMessage": "批准此证据意味着它<strong>将不符合</strong>在公开案例研究或宣传材料中使用的条件，除非照片同意稍后获得批准。",
+        "confirmQuestion": "您要继续批准吗？",
+        "proceedAnyway": "是的，继续",
+        "goBack": "返回"
+      },
+      "bulkDialog": {
+        "reviewTitle": "批量证据审核",
+        "deleteTitle": "批量删除证据",
+        "approveDescription": "您即将批准 {count} 个证据提交。这将根据其可见性设置使其可见。",
+        "rejectDescription": "您即将拒绝 {count} 个证据提交。学校将收到通知并可以重新提交。",
+        "deleteDescription": "您即将永久删除 {count} 个证据提交。此操作无法撤消。",
+        "notes": "备注（批准时可选，拒绝时必填）",
+        "notesPlaceholder": "为学校输入备注...",
+        "confirm": "确认",
+        "cancel": "取消",
+        "processing": "处理中..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "需要审核备注",
+        "feedbackRequired": "拒绝证据时请提供反馈。"
+      }
+    },
+    "assignment": {
+      "assignTo": "分配给...",
+      "unassigned": "未分配",
+      "toasts": {
+        "success": "证据分配成功",
+        "failed": "分配证据失败"
+      }
+    },
+    "photoConsent": {
+      "title": "照片同意审核队列",
+      "noPending": "无待处理的照片同意",
+      "allReviewed": "所有照片同意提交已审核！",
+      "viewDocument": "查看文档",
+      "buttons": {
+        "approve": "批准",
+        "reject": "拒绝"
+      },
+      "confirmApprove": "批准 {name} 的照片同意？",
+      "rejectionNotes": "{name} 的拒绝备注：",
+      "rejectionRequired": "拒绝备注为必填项"
+    },
+    "audit": {
+      "title": "审计审核队列",
+      "noPending": "无待处理的审计",
+      "allReviewed": "所有审计已审核。做得好！",
+      "labels": {
+        "submittedBy": "提交人：",
+        "totalPlasticItems": "塑料物品总数："
+      },
+      "parts": {
+        "part1": "第 1 部分：学校信息",
+        "part2": "第 2 部分：午餐室和员工室",
+        "part3": "第 3 部分：教室和浴室",
+        "part4": "第 4 部分：废物管理"
+      },
+      "part1": {
+        "schoolName": "学校名称：",
+        "studentCount": "学生人数：",
+        "staffCount": "员工人数：",
+        "auditDate": "审计日期：",
+        "auditTeam": "审计团队成员：",
+        "noData": "无可用数据"
+      },
+      "part2": {
+        "lunchroom": "午餐室",
+        "staffroom": "员工室",
+        "plasticBottles": "塑料瓶：",
+        "plasticCups": "塑料杯：",
+        "plasticCutlery": "塑料餐具：",
+        "plasticStraws": "塑料吸管：",
+        "foodPackaging": "食品包装：",
+        "clingFilm": "保鲜膜：",
+        "additionalNotes": "附加备注：",
+        "noData": "无可用数据"
+      },
+      "part3": {
+        "classrooms": "教室",
+        "bathrooms": "浴室",
+        "pensPencils": "钢笔和铅笔：",
+        "stationeryItems": "文具用品：",
+        "bottlesCups": "瓶子和杯子：",
+        "otherItems": "其他物品：",
+        "soapDispensers": "皂液器：",
+        "additionalNotes": "附加备注：",
+        "noData": "无可用数据"
+      },
+      "part4": {
+        "hasRecyclingSystem": "有回收系统：",
+        "recyclingBinLocations": "回收箱位置：",
+        "plasticWasteDestination": "塑料废物去向：",
+        "compostsOrganicWaste": "堆肥有机废物：",
+        "hasPlasticReductionPolicy": "有塑料减少政策：",
+        "policyDetails": "政策详情：",
+        "additionalNotes": "附加备注：",
+        "yes": "是",
+        "no": "否",
+        "noData": "无可用数据"
+      },
+      "buttons": {
+        "approve": "批准",
+        "reject": "拒绝"
+      },
+      "modal": {
+        "approveTitle": "批准审计",
+        "rejectTitle": "拒绝审计",
+        "reviewNotes": "审核备注",
+        "reviewNotesRequired": "*",
+        "feedbackOptional": "可选的学校反馈...",
+        "feedbackRequired": "请提供拒绝此审计的原因...",
+        "cancel": "取消",
+        "confirm": "确认",
+        "processing": "处理中..."
+      },
+      "toasts": {
+        "reviewNotesRequired": "需要审核备注",
+        "feedbackRequired": "拒绝审计时请提供反馈。"
+      }
+    },
+    "toasts": {
+      "success": "成功",
+      "evidenceReviewSuccess": "证据审核提交成功。",
+      "reviewFailed": "审核失败",
+      "evidenceReviewFailed": "更新证据失败。更改已恢复。",
+      "auditReviewed": "审计已审核",
+      "auditApproved": "审计已批准。",
+      "auditRejected": "审计已拒绝。",
+      "auditReviewFailed": "审核审计失败。更改已恢复。",
+      "bulkReviewSuccess": "批量证据审核成功完成。",
+      "bulkReviewFailed": "完成批量证据审核失败。更改已恢复。",
+      "bulkDeleteSuccess": "所选证据删除成功。",
+      "bulkDeleteFailed": "删除证据失败。更改已恢复。"
+    }
   }
 }
