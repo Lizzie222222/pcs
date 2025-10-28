@@ -1127,7 +1127,7 @@
     "event_update_failed": "更新活动失败。",
     "event_delete_failed": "删除活动失败。",
     "event_duplicated": "活动已复制",
-    "event_duplicated_desc": ""{{title}}"已创建为草稿。",
+    "event_duplicated_desc": "\"{{title}}\"已创建为草稿。",
     "duplication_failed": "复制失败",
     "duplication_failed_desc": "复制活动失败",
     "page_content_update_failed": "更新活动页面内容失败。",
@@ -1187,7 +1187,7 @@
     "impact_metrics": "影响指标",
     "add_quantifiable_metrics": "添加可量化指标以展示项目的影响",
     "add_metric": "添加指标",
-    "no_impact_metrics_yet": "尚无影响指标。点击"添加指标"开始。",
+    "no_impact_metrics_yet": "尚无影响指标。点击\"添加指标\"开始。",
     "metric_number": "指标 {{number}}",
     "metric_label_required": "指标标签 *",
     "metric_value_required": "值 *",
@@ -1200,7 +1200,7 @@
     "project_timeline": "项目时间线",
     "create_chronological_timeline": "创建关键里程碑和事件的时间顺序时间线",
     "add_section": "添加部分",
-    "no_timeline_sections_yet": "尚无时间线部分。点击"添加部分"开始。",
+    "no_timeline_sections_yet": "尚无时间线部分。点击\"添加部分\"开始。",
     "section_number": "部分 {{number}}",
     "section_title_required": "部分标题 *",
     "section_title_placeholder": "例如，项目启动、第 1 周",
@@ -1432,7 +1432,7 @@
     "dialogs": {
       "delete": {
         "title": "删除案例研究",
-        "description": "您确定要删除"{{title}}"吗？此操作无法撤消。"
+        "description": "您确定要删除\"{{title}}\"吗？此操作无法撤消。"
       },
       "editor": {
         "title": "案例研究编辑器"
@@ -1741,7 +1741,7 @@
     "dialogs": {
       "delete": {
         "title": "删除活动",
-        "description": "您确定要删除"{{title}}"吗？此操作无法撤消。"
+        "description": "您确定要删除\"{{title}}\"吗？此操作无法撤消。"
       },
       "selectEvent": {
         "title": "选择活动",
@@ -1752,7 +1752,7 @@
       },
       "newsletter": {
         "title": "发送活动公告",
-        "description": "通过电子邮件向教师发送"{title}"。",
+        "description": "通过电子邮件向教师发送\"{title}\"。",
         "labels": {
           "recipientType": "收件人类型",
           "emailAddresses": "电子邮件地址",
