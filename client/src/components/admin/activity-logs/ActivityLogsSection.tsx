@@ -99,10 +99,10 @@ export default function ActivityLogsSection({
           </div>
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="p-3 sm:p-4 lg:p-6">
         {/* Filters Section */}
-        <div className="bg-gray-50 p-4 rounded-lg mb-6 space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="bg-gray-50 p-3 sm:p-4 rounded-lg mb-6 space-y-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {/* Action Type Filter */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -171,13 +171,13 @@ export default function ActivityLogsSection({
           </div>
 
           {/* Filter Action Buttons */}
-          <div className="flex gap-3">
+          <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
             <Button
               onClick={() => {
                 setActivityPage(1);
                 queryClient.invalidateQueries({ queryKey: ['/api/admin/activity-logs'] });
               }}
-              className="bg-pcs_blue hover:bg-blue-600"
+              className="bg-pcs_blue hover:bg-blue-600 min-h-11 px-3 sm:px-4"
               data-testid="button-apply-filters"
             >
               <Filter className="h-4 w-4 mr-2" />
@@ -185,6 +185,7 @@ export default function ActivityLogsSection({
             </Button>
             <Button
               variant="outline"
+              className="min-h-11 px-3 sm:px-4"
               onClick={() => {
                 setActivityFilters({
                   actionType: 'all',
@@ -279,7 +280,7 @@ export default function ActivityLogsSection({
             </div>
 
             {/* Pagination */}
-            <div className="flex items-center justify-between py-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 py-4">
               <div className="text-sm text-gray-600" data-testid="text-pagination-info">
                 {t('activityLogs.pagination.showingRange', {
                   start: ((activityLogsData.page - 1) * activityLogsData.limit) + 1,
@@ -290,13 +291,14 @@ export default function ActivityLogsSection({
               <div className="flex gap-2">
                 <Button
                   variant="outline"
+                  className="min-h-11 px-3 sm:px-4"
                   onClick={() => setActivityPage(prev => Math.max(1, prev - 1))}
                   disabled={activityLogsData.page === 1}
                   data-testid="button-previous-page"
                 >
                   {t('activityLogs.pagination.previous')}
                 </Button>
-                <div className="flex items-center px-4 text-sm text-gray-700" data-testid="text-page-number">
+                <div className="flex items-center px-3 sm:px-4 text-sm text-gray-700" data-testid="text-page-number">
                   {t('activityLogs.pagination.pageOf', {
                     page: activityLogsData.page,
                     totalPages: activityLogsData.totalPages
@@ -304,6 +306,7 @@ export default function ActivityLogsSection({
                 </div>
                 <Button
                   variant="outline"
+                  className="min-h-11 px-3 sm:px-4"
                   onClick={() => setActivityPage(prev => Math.min(activityLogsData.totalPages, prev + 1))}
                   disabled={activityLogsData.page >= activityLogsData.totalPages}
                   data-testid="button-next-page"

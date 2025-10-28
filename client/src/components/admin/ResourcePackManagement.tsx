@@ -704,13 +704,14 @@ export default function ResourcePackManagement() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-bold text-navy">Resource Pack Management</h2>
-          <p className="text-gray-600 mt-1">Create and manage curated resource packs</p>
+          <h2 className="text-xl sm:text-2xl font-bold text-navy">Resource Pack Management</h2>
+          <p className="text-sm sm:text-base text-gray-600 mt-1">Create and manage curated resource packs</p>
         </div>
         <Button
           onClick={() => setIsCreating(true)}
+          className="min-h-11 px-3 sm:px-4"
           data-testid="button-create-pack"
         >
           <Plus className="h-4 w-4 mr-2" />
@@ -736,15 +737,15 @@ export default function ResourcePackManagement() {
       </Alert>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Package className="h-5 w-5" />
             Resource Packs
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-4 lg:p-6">
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
@@ -888,6 +889,7 @@ export default function ResourcePackManagement() {
                             <Button
                               size="sm"
                               variant="outline"
+                              className="min-h-11 px-3"
                               onClick={() => handleEdit(pack)}
                               data-testid={`button-edit-pack-${pack.id}`}
                             >
@@ -896,6 +898,7 @@ export default function ResourcePackManagement() {
                             <Button
                               size="sm"
                               variant="destructive"
+                              className="min-h-11 px-3"
                               onClick={() => setDeletingPack(pack)}
                               data-testid={`button-delete-pack-${pack.id}`}
                             >

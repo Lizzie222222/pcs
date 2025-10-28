@@ -247,27 +247,27 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Star className="h-5 w-5" />
             {t('caseStudies.title')}
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-4 lg:p-6">
           {/* Filters */}
-          <div className="flex gap-4 mb-6">
+          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mb-6">
             <Input
               placeholder={t('caseStudies.filters.placeholders.search')}
               value={caseStudyFilters.search}
               onChange={(e) => setCaseStudyFilters(prev => ({ ...prev, search: e.target.value }))}
-              className="max-w-sm"
+              className="w-full sm:max-w-sm min-h-11"
               data-testid="input-case-study-search"
             />
             <Select
               value={caseStudyFilters.stage}
               onValueChange={(value) => setCaseStudyFilters(prev => ({ ...prev, stage: value }))}
             >
-              <SelectTrigger className="w-[180px]" data-testid="select-case-study-stage">
+              <SelectTrigger className="w-full sm:w-[180px] min-h-11" data-testid="select-case-study-stage">
                 <SelectValue placeholder={t('caseStudies.filters.labels.stage')} />
               </SelectTrigger>
               <SelectContent>
@@ -281,7 +281,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
               value={caseStudyFilters.featured}
               onValueChange={(value) => setCaseStudyFilters(prev => ({ ...prev, featured: value }))}
             >
-              <SelectTrigger className="w-[180px]" data-testid="select-case-study-featured">
+              <SelectTrigger className="w-full sm:w-[180px] min-h-11" data-testid="select-case-study-featured">
                 <SelectValue placeholder={t('caseStudies.filters.labels.featuredStatus')} />
               </SelectTrigger>
               <SelectContent>
@@ -295,7 +295,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
                 setEditingCaseStudy(null);
                 setEditorOpen(true);
               }}
-              className="bg-pcs_blue hover:bg-pcs_blue/90"
+              className="bg-pcs_blue hover:bg-pcs_blue/90 min-h-11 px-3 sm:px-4"
               data-testid="button-create-case-study"
             >
               <Plus className="h-4 w-4 mr-2" />

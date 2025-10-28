@@ -112,8 +112,8 @@ export default function MigratedUsersSection() {
   return (
     <>
       <Card className="mb-6 bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200" data-testid="card-migrated-users">
-        <CardHeader>
-          <div className="flex items-center justify-between">
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-blue-100 rounded-lg">
                 <Users className="h-5 w-5 text-blue-600" />
@@ -130,7 +130,7 @@ export default function MigratedUsersSection() {
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="p-3 sm:p-4 lg:p-6 space-y-4">
           <Alert className="bg-blue-50 border-blue-200">
             <AlertCircle className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-sm text-gray-700">
@@ -170,7 +170,7 @@ export default function MigratedUsersSection() {
                 onClick={() => sendTestEmailMutation.mutate(testEmail)}
                 disabled={!testEmail || sendTestEmailMutation.isPending}
                 variant="outline"
-                className="border-green-300 hover:bg-green-50"
+                className="border-green-300 hover:bg-green-50 min-h-11 px-3 sm:px-4"
                 data-testid="button-send-test-email"
               >
                 {sendTestEmailMutation.isPending ? (
@@ -188,14 +188,14 @@ export default function MigratedUsersSection() {
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-gray-200 mt-4 pt-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2 border-t border-gray-200 mt-4 pt-4">
             <p className="text-sm text-gray-600">
               Ready to send welcome emails to all {users.length} migrated {users.length === 1 ? 'user' : 'users'}?
             </p>
             <Button
               onClick={handleSendEmails}
               disabled={sendEmailsMutation.isPending}
-              className="bg-pcs_blue hover:bg-blue-600"
+              className="bg-pcs_blue hover:bg-blue-600 min-h-11 px-3 sm:px-4"
               data-testid="button-send-migrated-emails"
             >
               {sendEmailsMutation.isPending ? (

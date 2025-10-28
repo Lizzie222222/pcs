@@ -249,13 +249,13 @@ export default function EmailManagementSection({
     <div className="space-y-6" data-refactor-source="EmailManagementSection">
       {/* Test Email Forms */}
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Mail className="h-5 w-5" />
             Test Email Templates
           </CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-4 lg:p-6">
           <div className="w-full">
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2">Select Email Type</label>
@@ -279,8 +279,8 @@ export default function EmailManagementSection({
             {/* Welcome Email */}
             {selectedEmailType === 'welcome' && (
             <div className="space-y-4">
-              <h3 className="font-semibold text-lg">Welcome Email</h3>
-              <div className="grid grid-cols-2 gap-4">
+              <h3 className="font-semibold text-base sm:text-lg">Welcome Email</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Recipient Email *</label>
                   <Input
@@ -309,6 +309,7 @@ export default function EmailManagementSection({
                   schoolName: formData.welcome.schoolName
                 })}
                 disabled={loadingStates.welcome}
+                className="min-h-11 px-3 sm:px-4"
                 data-testid="button-send-welcome"
               >
                 {loadingStates.welcome ? 'Sending...' : 'Send Welcome Email'}

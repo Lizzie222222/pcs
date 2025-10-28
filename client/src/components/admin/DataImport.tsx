@@ -211,9 +211,9 @@ export default function DataImport() {
   return (
     <div className="space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="text-3xl font-bold text-navy">{t('dataImport.title')}</CardTitle>
-          <p className="text-gray-600 mt-2">
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <CardTitle className="text-xl sm:text-2xl lg:text-3xl font-bold text-navy">{t('dataImport.title')}</CardTitle>
+          <p className="text-sm sm:text-base text-gray-600 mt-2">
             {t('dataImport.subtitle')}
           </p>
         </CardHeader>

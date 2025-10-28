@@ -301,6 +301,7 @@ export default function SchoolsTable({
                         <Button 
                           size="sm" 
                           variant="outline"
+                          className="min-h-11 px-3 sm:px-4"
                           onClick={() => setViewingSchool(school)}
                           data-testid={`button-view-${school.id}`}
                         >
@@ -310,6 +311,7 @@ export default function SchoolsTable({
                         <Button 
                           size="sm" 
                           variant="destructive"
+                          className="min-h-11 px-3"
                           onClick={() => setDeletingSchool(school)}
                           data-testid={`button-delete-${school.id}`}
                         >

@@ -34,24 +34,27 @@ export default function SchoolsFilters({
   const { t } = useTranslation('admin');
   
   return (
-    <CardHeader>
-      <div className="flex items-center justify-between">
-        <CardTitle className="flex items-center gap-2">
-          <School className="h-5 w-5" />
-          {t('schools.title')}
-          <span className="text-sm font-normal text-gray-500 ml-2">
-            ({schoolsCount} {schoolsCount === 1 ? 'school' : 'schools'})
-          </span>
-        </CardTitle>
+    <CardHeader className="p-3 sm:p-4 lg:p-6">
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <School className="h-5 w-5" />
+            {t('schools.title')}
+            <span className="text-sm font-normal text-gray-500 ml-2">
+              ({schoolsCount} {schoolsCount === 1 ? 'school' : 'schools'})
+            </span>
+          </CardTitle>
+        </div>
+
         {selectedSchools.length > 0 && (
-          <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
             <span className="text-sm text-gray-600">
               {t('schools.filters.selected', { count: selectedSchools.length })}
             </span>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2">
               <Button
                 size="sm"
-                className="bg-pcs_blue hover:bg-blue-600"
+                className="bg-pcs_blue hover:bg-blue-600 min-h-11 px-3 sm:px-4"
                 onClick={onBulkUpdate}
                 data-testid="button-bulk-update-schools"
               >
@@ -61,6 +64,7 @@ export default function SchoolsFilters({
               <Button
                 size="sm"
                 variant="destructive"
+                className="min-h-11 px-3 sm:px-4"
                 onClick={onBulkDelete}
                 data-testid="button-bulk-delete-schools"
               >
@@ -70,14 +74,15 @@ export default function SchoolsFilters({
             </div>
           </div>
         )}
-        <div className="flex items-center gap-4">
-          <div className="relative">
+
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
             <Input
               placeholder={t('schools.filters.searchPlaceholder')}
               value={schoolFilters.search}
               onChange={(e) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, search: e.target.value }))}
-              className="pl-10 w-64"
+              className="pl-10 w-full min-h-11"
               data-testid="input-search-schools"
             />
           </div>
@@ -85,7 +90,7 @@ export default function SchoolsFilters({
             value={schoolFilters.country} 
             onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, country: value }))}
           >
-            <SelectTrigger className="w-48">
+            <SelectTrigger className="w-full sm:w-48 min-h-11">
               <SelectValue placeholder={t('schools.filters.allCountries')} />
             </SelectTrigger>
             <SelectContent>
@@ -98,6 +103,7 @@ export default function SchoolsFilters({
           </Select>
         </div>
       </div>
+
       {schoolsCount > 0 && (
         <div className="flex items-center gap-2 mt-4">
           <input

@@ -132,8 +132,11 @@ export default function CollaborationSidebar() {
           <Button
             variant="ghost"
             size="sm"
-            onClick={() => setIsMobileOpen(false)}
-            className="lg:hidden"
+            onClick={(e) => {
+              e.stopPropagation();
+              setIsMobileOpen(false);
+            }}
+            className="lg:hidden min-h-11 px-3"
             data-testid="button-close-mobile-sidebar"
           >
             <ChevronRight className="h-4 w-4" />

@@ -931,45 +931,48 @@ export default function ResourcesManagement() {
   return (
     <div className="space-y-6" data-refactor-source="ResourcesManagement">
       <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
-              <BookOpen className="h-5 w-5" />
-              Resource Management
-            </CardTitle>
-            <div className="flex gap-2">
-              {selectedResourceIds.size > 0 && (
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <BookOpen className="h-5 w-5" />
+                Resource Management
+              </CardTitle>
+              <div className="flex flex-col sm:flex-row gap-2">
+                {selectedResourceIds.size > 0 && (
+                  <Button
+                    onClick={handleBulkDelete}
+                    variant="destructive"
+                    className="min-h-11 px-3 sm:px-4"
+                    data-testid="button-bulk-delete-resources"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Selected ({selectedResourceIds.size})
+                  </Button>
+                )}
                 <Button
-                  onClick={handleBulkDelete}
-                  variant="destructive"
-                  data-testid="button-bulk-delete-resources"
+                  onClick={() => setShowAddForm(true)}
+                  className="bg-pcs_blue hover:bg-blue-600 min-h-11 px-3 sm:px-4"
+                  data-testid="button-add-resource"
                 >
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete Selected ({selectedResourceIds.size})
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Resource
                 </Button>
-              )}
-              <Button
-                onClick={() => setShowAddForm(true)}
-                className="bg-pcs_blue hover:bg-blue-600"
-                data-testid="button-add-resource"
-              >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Resource
-              </Button>
-              <Button
-                onClick={() => setShowBulkUpload(true)}
-                variant="outline"
-                className="border-pcs_blue text-pcs_blue hover:bg-blue-50"
-                data-testid="button-bulk-upload"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Bulk Upload
-              </Button>
+                <Button
+                  onClick={() => setShowBulkUpload(true)}
+                  variant="outline"
+                  className="border-pcs_blue text-pcs_blue hover:bg-blue-50 min-h-11 px-3 sm:px-4"
+                  data-testid="button-bulk-upload"
+                >
+                  <Upload className="h-4 w-4 mr-2" />
+                  Bulk Upload
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
-        <CardContent>
-          <div className="mb-6 grid grid-cols-1 md:grid-cols-6 gap-4">
+        <CardContent className="p-3 sm:p-4 lg:p-6">
+          <div className="mb-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
               <Input
