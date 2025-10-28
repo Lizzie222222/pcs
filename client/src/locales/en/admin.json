@@ -879,6 +879,7 @@
       "save": "Save",
       "saving": "Saving...",
       "cancel": "Cancel",
+      "close": "Close",
       "confirm": "Confirm",
       "processing": "Processing...",
       "deleting": "Deleting...",
@@ -957,6 +958,7 @@
       },
       "progression": {
         "title": "Manage Progression",
+        "editButton": "Edit Progression",
         "description": "Use this section to manually set the school's progression stage, round, and completion status. This allows you to override the automatic progression based on evidence submission.",
         "currentStage": "Current Stage:",
         "currentRound": "Current Round:",
@@ -1017,12 +1019,24 @@
         "approved": "Approved",
         "rejected": "Rejected",
         "notUploaded": "Not uploaded",
+        "noDocument": "No document uploaded",
         "approve": "Approve",
         "reject": "Reject",
         "rejectionNotes": "Rejection Notes",
         "rejectionNotesPlaceholder": "Explain why the photo consent is being rejected...",
-        "submitRejection": "Submit Rejection"
-      }
+        "submitRejection": "Submit Rejection",
+        "noNotes": "No notes provided",
+        "reviewedBy": "Reviewed by",
+        "rejecting": "Rejecting...",
+        "rejectDocument": "Reject Document",
+        "rejectDialog": {
+          "title": "Reject Photo Consent",
+          "description": "Please provide a reason for rejecting this photo consent document.",
+          "label": "Rejection Notes",
+          "placeholder": "Explain why the photo consent is being rejected..."
+        }
+      },
+      "submitEvidence": "Submit Evidence for School"
     },
     "bulkActions": {
       "dialogs": {
@@ -1066,6 +1080,14 @@
       "progressionUpdateFailed": {
         "title": "Update Failed",
         "description": "Failed to update school progression. Changes have been reverted."
+      },
+      "updateFailed": {
+        "title": "Update Failed",
+        "description": "Failed to update. Please try again."
+      },
+      "notesRequired": {
+        "title": "Notes Required",
+        "description": "Please provide rejection notes before submitting."
       },
       "bulkUpdateComplete": {
         "title": "Bulk Update Complete",

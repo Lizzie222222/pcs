@@ -116,6 +116,7 @@ import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne } from "drizzle-orm";
 import * as bcrypt from "bcrypt";
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
+import { normalizeCountryName, getAllCountryCodes } from './countryMapping';
 
 /**
  * Custom error class for database constraint violations
@@ -1350,10 +1351,21 @@ export class DatabaseStorage implements IStorage {
     language?: string;
     limit?: number;
     offset?: number;
-  } = {}): Promise<Array<School & { primaryContactEmail: string | null }>> {
+  } = {}): Promise<Array<School & { primaryContactEmail: string | null; primaryContactFirstName: string | null; primaryContactLastName: string | null }>> {
     const conditions = [];
     if (filters.country) {
-      conditions.push(eq(schools.country, filters.country));
+      // Get all country codes that match this country name
+      // Example: "United Kingdom" -> ["GB", "UK"]
+      // This handles cases where DB has multiple code variants
+      const allCodes = getAllCountryCodes(filters.country);
+      
+      if (allCodes.length > 1) {
+        // Multiple codes found, match against any of them
+        conditions.push(inArray(schools.country, allCodes));
+      } else {
+        // Single code or original value, use exact match
+        conditions.push(eq(schools.country, allCodes[0]));
+      }
     }
     if (filters.stage) {
       conditions.push(eq(schools.currentStage, filters.stage as any));
@@ -1372,6 +1384,8 @@ export class DatabaseStorage implements IStorage {
       .select({
         ...getTableColumns(schools),
         primaryContactEmail: users.email,
+        primaryContactFirstName: users.firstName,
+        primaryContactLastName: users.lastName,
       })
       .from(schools)
       .leftJoin(users, eq(schools.primaryContactId, users.id));
@@ -1389,7 +1403,13 @@ export class DatabaseStorage implements IStorage {
       query = query.offset(filters.offset) as any;
     }
     
-    return await query;
+    const results = await query;
+    
+    // Normalize country codes to full names
+    return results.map(school => ({
+      ...school,
+      country: normalizeCountryName(school.country) || school.country
+    }));
   }
 
   async updateSchool(id: string, updates: Partial<School>): Promise<School | undefined> {
@@ -1447,7 +1467,14 @@ export class DatabaseStorage implements IStorage {
       .where(sql`${schools.country} IS NOT NULL AND ${schools.country} != ''`)
       .orderBy(asc(schools.country));
     
-    return result.map(row => row.country).filter(Boolean);
+    // Normalize country codes to full names and remove duplicates
+    const countries = result.map(row => row.country).filter(Boolean);
+    const normalizedCountries = countries.map(c => normalizeCountryName(c) || c);
+    
+    // Remove duplicates that may appear after normalization
+    const uniqueCountries = Array.from(new Set(normalizedCountries));
+    
+    return uniqueCountries.sort();
   }
 
   async findSchoolsByEmailDomain(domain: string): Promise<Array<School & { userEmails: string[] }>> {

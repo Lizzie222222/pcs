@@ -43,6 +43,8 @@ export interface SchoolData {
   createdAt: string;
   primaryContactId: string;
   primaryContactEmail: string | null;
+  primaryContactFirstName?: string | null;
+  primaryContactLastName?: string | null;
   type?: string;
   address?: string;
   primaryLanguage?: string | null;

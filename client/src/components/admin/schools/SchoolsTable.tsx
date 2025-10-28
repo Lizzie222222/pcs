@@ -289,7 +289,9 @@ export default function SchoolsTable({
                     </td>
                     <td className="p-3 text-gray-600">{school.studentCount}</td>
                     <td className="p-3 text-gray-600" data-testid={`text-primary-contact-${school.id}`}>
-                      {school.primaryContactEmail || t('schools.school_table.notAvailable')}
+                      {school.primaryContactFirstName && school.primaryContactLastName
+                        ? `${school.primaryContactFirstName} ${school.primaryContactLastName}`
+                        : school.primaryContactEmail || t('schools.school_table.notAvailable')}
                     </td>
                     <td className="p-3 text-gray-600">
                       {new Date(school.createdAt).toLocaleDateString()}

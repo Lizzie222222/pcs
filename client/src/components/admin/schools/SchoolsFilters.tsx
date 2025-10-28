@@ -39,6 +39,9 @@ export default function SchoolsFilters({
         <CardTitle className="flex items-center gap-2">
           <School className="h-5 w-5" />
           {t('schools.title')}
+          <span className="text-sm font-normal text-gray-500 ml-2">
+            ({schoolsCount} {schoolsCount === 1 ? 'school' : 'schools'})
+          </span>
         </CardTitle>
         {selectedSchools.length > 0 && (
           <div className="flex items-center gap-3">

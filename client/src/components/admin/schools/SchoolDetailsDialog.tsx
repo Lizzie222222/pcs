@@ -360,7 +360,7 @@ export default function SchoolDetailsDialog({
                 )}
               </div>
               <div>
-                <label className="text-sm font-medium text-gray-600">{t('schools.school_details.labels.numberOfStudents')}</label>
+                <label className="text-sm font-medium text-gray-600">{t('schools.school_details.labels.studentCount')}</label>
                 <p className="text-base" data-testid={`text-student-count-${viewingSchool.id}`}>
                   {viewingSchool.studentCount}
                 </p>
@@ -380,7 +380,9 @@ export default function SchoolDetailsDialog({
               <div>
                 <label className="text-sm font-medium text-gray-600">{t('schools.school_details.labels.primaryContactEmail')}</label>
                 <p className="text-base" data-testid={`text-email-${viewingSchool.id}`}>
-                  {viewingSchool.primaryContactEmail || t('schools.school_table.notAvailable')}
+                  {viewingSchool.primaryContactFirstName && viewingSchool.primaryContactLastName
+                    ? `${viewingSchool.primaryContactFirstName} ${viewingSchool.primaryContactLastName} (${viewingSchool.primaryContactEmail})`
+                    : viewingSchool.primaryContactEmail || t('schools.school_table.notAvailable')}
                 </p>
               </div>
               <div>
@@ -406,7 +408,7 @@ export default function SchoolDetailsDialog({
                 <CardTitle className="flex items-center justify-between text-lg">
                   <div className="flex items-center gap-2">
                     <Target className="h-5 w-5 text-pcs_blue" />
-                    {t('schools.school_details.manageProgression.title')}
+                    {t('schools.school_details.progression.title')}
                   </div>
                   {!editingProgression && (
                     <Button 
@@ -425,7 +427,7 @@ export default function SchoolDetailsDialog({
                       data-testid={`button-edit-progression-${viewingSchool.id}`}
                     >
                       <Edit className="h-4 w-4 mr-2" />
-                      {t('schools.school_details.manageProgression.editButton')}
+                      {t('schools.school_details.progression.editButton')}
                     </Button>
                   )}
                 </CardTitle>
@@ -456,7 +458,7 @@ export default function SchoolDetailsDialog({
                         </Select>
                       </div>
                       <div>
-                        <label className="text-sm font-medium text-gray-700">{t('schools.school_details.manageProgression.currentRound')}</label>
+                        <label className="text-sm font-medium text-gray-700">{t('schools.school_details.progression.currentRound')}</label>
                         <Input
                           type="number"
                           min="1"
@@ -472,7 +474,7 @@ export default function SchoolDetailsDialog({
                       </div>
                     </div>
                     <div className="space-y-2">
-                      <label className="text-sm font-medium text-gray-700">{t('schools.school_details.manageProgression.stageCompletion')}</label>
+                      <label className="text-sm font-medium text-gray-700">{t('schools.school_details.progression.stageCompletion')}</label>
                       <div className="flex items-center gap-4">
                         <label className="flex items-center gap-2">
                           <Checkbox
@@ -485,7 +487,7 @@ export default function SchoolDetailsDialog({
                             }
                             data-testid={`checkbox-inspire-${viewingSchool.id}`}
                           />
-                          <span className="text-sm">{t('schools.school_details.manageProgression.inspireCompleted')}</span>
+                          <span className="text-sm">{t('schools.school_details.progression.inspireCompleted')}</span>
                         </label>
                         <label className="flex items-center gap-2">
                           <Checkbox
@@ -498,7 +500,7 @@ export default function SchoolDetailsDialog({
                             }
                             data-testid={`checkbox-investigate-${viewingSchool.id}`}
                           />
-                          <span className="text-sm">{t('schools.school_details.manageProgression.investigateCompleted')}</span>
+                          <span className="text-sm">{t('schools.school_details.progression.investigateCompleted')}</span>
                         </label>
                         <label className="flex items-center gap-2">
                           <Checkbox
@@ -511,7 +513,7 @@ export default function SchoolDetailsDialog({
                             }
                             data-testid={`checkbox-act-${viewingSchool.id}`}
                           />
-                          <span className="text-sm">{t('schools.school_details.manageProgression.actCompleted')}</span>
+                          <span className="text-sm">{t('schools.school_details.progression.actCompleted')}</span>
                         </label>
                       </div>
                     </div>
@@ -543,15 +545,15 @@ export default function SchoolDetailsDialog({
                   </div>
                 ) : (
                   <div className="text-sm text-gray-600">
-                    <p>{t('schools.school_details.manageProgression.description')}</p>
+                    <p>{t('schools.school_details.progression.description')}</p>
                     <div className="mt-3 space-y-1">
-                      <p><strong>{t('schools.school_details.labels.currentStage')}:</strong> {viewingSchool.currentStage}</p>
-                      <p><strong>{t('schools.school_details.manageProgression.currentRound')}:</strong> {viewingSchool.currentRound || 1}</p>
-                      <p><strong>{t('schools.school_details.manageProgression.stageCompletion')}:</strong></p>
+                      <p><strong>{t('schools.school_details.progression.currentStage')}:</strong> {viewingSchool.currentStage}</p>
+                      <p><strong>{t('schools.school_details.progression.currentRound')}:</strong> {viewingSchool.currentRound || 1}</p>
+                      <p><strong>{t('schools.school_details.progression.stageCompletion')}:</strong></p>
                       <ul className="ml-4 list-disc">
-                        <li>{t('schools.school_details.stages.inspire')}: {viewingSchool.inspireCompleted ? t('schools.school_details.manageProgression.completed') : t('schools.school_details.manageProgression.notCompleted')}</li>
-                        <li>{t('schools.school_details.stages.investigate')}: {viewingSchool.investigateCompleted ? t('schools.school_details.manageProgression.completed') : t('schools.school_details.manageProgression.notCompleted')}</li>
-                        <li>{t('schools.school_details.stages.act')}: {viewingSchool.actCompleted ? t('schools.school_details.manageProgression.completed') : t('schools.school_details.manageProgression.notCompleted')}</li>
+                        <li>{t('schools.school_details.stages.inspire')}: {viewingSchool.inspireCompleted ? t('schools.school_details.progression.completed') : t('schools.school_details.progression.notCompleted')}</li>
+                        <li>{t('schools.school_details.stages.investigate')}: {viewingSchool.investigateCompleted ? t('schools.school_details.progression.completed') : t('schools.school_details.progression.notCompleted')}</li>
+                        <li>{t('schools.school_details.stages.act')}: {viewingSchool.actCompleted ? t('schools.school_details.progression.completed') : t('schools.school_details.progression.notCompleted')}</li>
                       </ul>
                     </div>
                   </div>
