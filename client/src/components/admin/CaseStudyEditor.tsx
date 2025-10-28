@@ -81,18 +81,40 @@ const caseStudyFormSchema = z.object({
   metaKeywords: z.string().optional().nullable(),
   createdBy: z.string().min(1, "Creator is required"),
 }).refine((data) => {
-  // When publishing, enforce minimum media requirements based on template
+  // When publishing, enforce minimum requirements based on template
   if (data.status === "published") {
     const config = getTemplateConfig(data.templateType);
-    const imagesCount = data.images?.length || 0;
+    
+    // Helper to check if HTML content has actual text
+    const hasContent = (html: string | null | undefined): boolean => {
+      if (!html) return false;
+      const temp = document.createElement('div');
+      temp.innerHTML = html;
+      const text = (temp.textContent || temp.innerText || '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+      return text.length > 0;
+    };
+    
+    // Check required content fields
+    if (config.requiredFields.description && !hasContent(data.description)) {
+      console.error("Publish validation failed: description required");
+      return false;
+    }
+    
+    if (config.requiredFields.impact && !hasContent(data.impact)) {
+      console.error("Publish validation failed: impact required");
+      return false;
+    }
     
     // Check minimum images
+    const imagesCount = data.images?.length || 0;
     if (imagesCount < config.requiredFields.minImages) {
+      console.error(`Publish validation failed: need ${config.requiredFields.minImages} images, have ${imagesCount}`);
       return false;
     }
     
     // Check before/after if required
     if (config.requiredFields.requiresBeforeAfter && (!data.beforeImage || !data.afterImage)) {
+      console.error("Publish validation failed: before/after images required");
       return false;
     }
     
@@ -100,6 +122,7 @@ const caseStudyFormSchema = z.object({
     if (config.requiredFields.requiresMetrics) {
       const metricsCount = data.impactMetrics?.length || 0;
       if (metricsCount < (config.requiredFields.minMetrics || 0)) {
+        console.error(`Publish validation failed: need ${config.requiredFields.minMetrics} metrics`);
         return false;
       }
     }
@@ -107,6 +130,7 @@ const caseStudyFormSchema = z.object({
     if (config.requiredFields.requiresTimeline) {
       const timelineCount = data.timelineSections?.length || 0;
       if (timelineCount < (config.requiredFields.minTimelineSections || 0)) {
+        console.error(`Publish validation failed: need ${config.requiredFields.minTimelineSections} timeline sections`);
         return false;
       }
     }
@@ -114,6 +138,7 @@ const caseStudyFormSchema = z.object({
     if (config.requiredFields.requiresQuotes) {
       const quotesCount = data.studentQuotes?.length || 0;
       if (quotesCount < (config.requiredFields.minQuotes || 0)) {
+        console.error(`Publish validation failed: need ${config.requiredFields.minQuotes} quotes`);
         return false;
       }
     }
