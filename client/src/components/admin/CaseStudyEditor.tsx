@@ -278,26 +278,18 @@ export function CaseStudyEditor({ caseStudy, onSave, onCancel }: CaseStudyEditor
         if (config.requiredFields.impact && !hasActualContent(values.impact)) {
           errors.push("Impact is required");
         }
-        if (values.description && hasActualContent(values.description)) {
-          const textLength = values.description.replace(/<[^>]*>/g, '').trim().length;
-          if (textLength < 50) {
-            warnings.push("Description is quite short");
-          }
-        }
+        // Remove the short description warning - it's not helpful for validation
         break;
       
       case 4:
-        // Media - warnings only for drafts, errors only for publishing
+        // Media - enforce minimum image requirements
         const imagesCount = values.images?.length || 0;
         if (imagesCount < config.requiredFields.minImages) {
-          warnings.push(`Recommended: ${config.requiredFields.minImages} images (currently ${imagesCount})`);
+          errors.push(`Need ${config.requiredFields.minImages} image(s) minimum (currently have ${imagesCount})`);
         }
         if (config.requiredFields.requiresBeforeAfter) {
-          if (!values.beforeImage) warnings.push("Before image recommended");
-          if (!values.afterImage) warnings.push("After image recommended");
-        }
-        if (imagesCount > 0 && imagesCount < 3) {
-          warnings.push("Consider adding more images for better engagement");
+          if (!values.beforeImage) errors.push("Before image is required");
+          if (!values.afterImage) errors.push("After image is required");
         }
         break;
       

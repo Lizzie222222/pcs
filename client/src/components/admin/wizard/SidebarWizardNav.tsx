@@ -67,18 +67,15 @@ function StepItem({
           <div
             className={cn(
               "w-8 h-8 rounded-full flex items-center justify-center border-2 transition-all text-sm font-semibold",
-              isCompleted && validation.valid && "bg-green-500 border-green-500 text-white",
-              isCompleted && hasWarnings && !hasErrors && "bg-yellow-500 border-yellow-500 text-white",
+              isCompleted && validation.valid && !hasErrors && "bg-green-500 border-green-500 text-white",
               isCompleted && hasErrors && "bg-destructive border-destructive text-destructive-foreground",
               isCurrent && !isCompleted && "border-primary text-primary bg-background",
               !isCurrent && !isCompleted && "border-muted-foreground/30 text-muted-foreground bg-background"
             )}
             data-testid={`step-indicator-${step.id}`}
           >
-            {isCompleted && validation.valid && !hasWarnings && !hasErrors ? (
+            {isCompleted && validation.valid && !hasErrors ? (
               <Check className="h-4 w-4" data-testid={`step-completed-${step.id}`} />
-            ) : isCompleted && hasWarnings && !hasErrors ? (
-              <AlertTriangle className="h-4 w-4" data-testid={`step-warning-${step.id}`} />
             ) : isCompleted && hasErrors ? (
               <AlertCircle className="h-4 w-4" data-testid={`step-error-${step.id}`} />
             ) : (
