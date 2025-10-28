@@ -73,7 +73,7 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
   const handleImageComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
     if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
-      const imageUrl = uploadedFile.uploadURL?.split('?')[0] || '';
+      const uploadUrl = uploadedFile.uploadURL?.split('?')[0] || '';
 
       // Set ACL policy for the uploaded image
       try {
@@ -85,7 +85,7 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            fileURL: imageUrl,
+            fileURL: uploadUrl,
             visibility: 'public',
             filename: `case-study-custom-${Date.now()}.jpg`,
             owner: user.id,
@@ -97,9 +97,12 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
           throw new Error(errorData.message || 'Failed to set ACL');
         }
 
+        const aclData = await aclResponse.json();
+        const objectPath = aclData.objectPath || uploadUrl;
+
         const newImage = {
           id: nanoid(),
-          url: imageUrl,
+          url: objectPath,
           caption: "",
           altText: "",
           source: 'custom',

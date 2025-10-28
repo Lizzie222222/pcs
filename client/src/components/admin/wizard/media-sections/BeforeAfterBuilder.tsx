@@ -46,7 +46,7 @@ export function BeforeAfterBuilder({ form }: BeforeAfterBuilderProps) {
   const handleImageComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>, type: 'before' | 'after') => {
     if (result.successful && result.successful.length > 0) {
       const uploadedFile = result.successful[0];
-      const imageUrl = uploadedFile.uploadURL?.split('?')[0] || '';
+      const uploadUrl = uploadedFile.uploadURL?.split('?')[0] || '';
 
       try {
         if (!user?.id) {
@@ -57,7 +57,7 @@ export function BeforeAfterBuilder({ form }: BeforeAfterBuilderProps) {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            fileURL: imageUrl,
+            fileURL: uploadUrl,
             visibility: 'public',
             filename: `case-study-${type}-${Date.now()}.jpg`,
             owner: user.id,
@@ -69,10 +69,13 @@ export function BeforeAfterBuilder({ form }: BeforeAfterBuilderProps) {
           throw new Error(errorData.message || 'Failed to set ACL');
         }
 
+        const aclData = await aclResponse.json();
+        const objectPath = aclData.objectPath || uploadUrl;
+
         if (type === 'before') {
-          form.setValue('beforeImage', imageUrl);
+          form.setValue('beforeImage', objectPath);
         } else {
-          form.setValue('afterImage', imageUrl);
+          form.setValue('afterImage', objectPath);
         }
 
         toast({
