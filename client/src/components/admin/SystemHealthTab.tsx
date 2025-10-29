@@ -43,7 +43,64 @@ interface MetricDataPoint {
   status: 'healthy' | 'degraded' | 'down';
 }
 
+// Helper functions moved outside component to prevent recreation on every render
+const getStatusBadge = (status: 'healthy' | 'degraded' | 'down') => {
+  switch (status) {
+    case 'healthy':
+      return (
+        <Badge className="bg-green-500 hover:bg-green-600" data-testid="badge-status-healthy">
+          <CheckCircle className="w-3 h-3 mr-1" />
+          Healthy
+        </Badge>
+      );
+    case 'degraded':
+      return (
+        <Badge className="bg-yellow-500 hover:bg-yellow-600" data-testid="badge-status-degraded">
+          <AlertTriangle className="w-3 h-3 mr-1" />
+          Degraded
+        </Badge>
+      );
+    case 'down':
+      return (
+        <Badge className="bg-red-500 hover:bg-red-600" data-testid="badge-status-down">
+          <XCircle className="w-3 h-3 mr-1" />
+          Down
+        </Badge>
+      );
+  }
+};
+
+const getStatusIcon = (status: 'healthy' | 'degraded' | 'down') => {
+  switch (status) {
+    case 'healthy':
+      return <CheckCircle className="w-5 h-5 text-green-500" />;
+    case 'degraded':
+      return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
+    case 'down':
+      return <XCircle className="w-5 h-5 text-red-500" />;
+  }
+};
+
+const formatResponseTime = (ms: number) => {
+  if (ms < 1000) return `${ms}ms`;
+  return `${(ms / 1000).toFixed(2)}s`;
+};
+
+const safeFormatDistanceToNow = (dateString: string | null | undefined) => {
+  if (!dateString) return 'Unknown';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return 'Unknown';
+    return formatDistanceToNow(date, { addSuffix: true });
+  } catch {
+    return 'Unknown';
+  }
+};
+
+const CHART_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280'];
+
 export default function SystemHealthTab() {
+  // All hooks must be at the top level before any early returns
   const [uptimeRange, setUptimeRange] = useState<'7' | '30'>('7');
   const [incidentRange, setIncidentRange] = useState<'24' | '48'>('24');
 
@@ -67,44 +124,7 @@ export default function SystemHealthTab() {
     refetchInterval: 60000,
   });
 
-  const getStatusBadge = (status: 'healthy' | 'degraded' | 'down') => {
-    switch (status) {
-      case 'healthy':
-        return <Badge className="bg-green-500 hover:bg-green-600" data-testid="badge-status-healthy"><CheckCircle className="w-3 h-3 mr-1" />Healthy</Badge>;
-      case 'degraded':
-        return <Badge className="bg-yellow-500 hover:bg-yellow-600" data-testid="badge-status-degraded"><AlertTriangle className="w-3 h-3 mr-1" />Degraded</Badge>;
-      case 'down':
-        return <Badge className="bg-red-500 hover:bg-red-600" data-testid="badge-status-down"><XCircle className="w-3 h-3 mr-1" />Down</Badge>;
-    }
-  };
-
-  const getStatusIcon = (status: 'healthy' | 'degraded' | 'down') => {
-    switch (status) {
-      case 'healthy':
-        return <CheckCircle className="w-5 h-5 text-green-500" />;
-      case 'degraded':
-        return <AlertTriangle className="w-5 h-5 text-yellow-500" />;
-      case 'down':
-        return <XCircle className="w-5 h-5 text-red-500" />;
-    }
-  };
-
-  const formatResponseTime = (ms: number) => {
-    if (ms < 1000) return `${ms}ms`;
-    return `${(ms / 1000).toFixed(2)}s`;
-  };
-
-  const safeFormatDistanceToNow = (dateString: string | null | undefined) => {
-    if (!dateString) return 'Unknown';
-    try {
-      const date = new Date(dateString);
-      if (isNaN(date.getTime())) return 'Unknown';
-      return formatDistanceToNow(date, { addSuffix: true });
-    } catch {
-      return 'Unknown';
-    }
-  };
-
+  // Early returns only after all hooks are called
   if (statusError || statsError || incidentsError || metricsError) {
     return (
       <Alert variant="destructive" data-testid="alert-error">
@@ -148,7 +168,6 @@ export default function SystemHealthTab() {
 
   const chartData = prepareChartData();
   const endpoints = metrics ? Array.from(new Set(metrics.map(m => m.endpoint))) : [];
-  const CHART_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6B7280'];
 
   return (
     <div className="space-y-6" data-testid="system-health-tab">
@@ -241,11 +260,11 @@ export default function SystemHealthTab() {
       <div>
         <h3 className="text-lg font-semibold mb-4" data-testid="heading-endpoint-status">Monitored Endpoints</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {endpointStatuses?.map((endpoint, index) => (
-            <Card key={index} data-testid={`card-endpoint-${index}`}>
+          {endpointStatuses?.map((endpoint) => (
+            <Card key={endpoint.endpoint} data-testid={`card-endpoint-${endpoint.endpoint}`}>
               <CardHeader className="pb-3">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-medium" data-testid={`text-endpoint-name-${index}`}>
+                  <CardTitle className="text-sm font-medium" data-testid={`text-endpoint-name-${endpoint.endpoint}`}>
                     {endpoint.endpoint}
                   </CardTitle>
                   {getStatusIcon(endpoint.status)}
@@ -258,18 +277,18 @@ export default function SystemHealthTab() {
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Response Time</span>
-                  <span className="text-sm font-medium" data-testid={`text-response-time-${index}`}>
+                  <span className="text-sm font-medium" data-testid={`text-response-time-${endpoint.endpoint}`}>
                     {formatResponseTime(endpoint.responseTime)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Last Checked</span>
-                  <span className="text-sm text-gray-500" data-testid={`text-last-checked-${index}`}>
+                  <span className="text-sm text-gray-500" data-testid={`text-last-checked-${endpoint.endpoint}`}>
                     {safeFormatDistanceToNow(endpoint.lastChecked)}
                   </span>
                 </div>
                 {endpoint.message && (
-                  <p className="text-xs text-gray-500 pt-2 border-t" data-testid={`text-endpoint-message-${index}`}>
+                  <p className="text-xs text-gray-500 pt-2 border-t" data-testid={`text-endpoint-message-${endpoint.endpoint}`}>
                     {endpoint.message}
                   </p>
                 )}
@@ -331,11 +350,11 @@ export default function SystemHealthTab() {
         <CardContent>
           {incidents && incidents.length > 0 ? (
             <div className="space-y-4">
-              {incidents.map((incident, index) => (
+              {incidents.map((incident) => (
                 <div
                   key={incident.id}
                   className="flex items-start gap-3 pb-4 border-b last:border-b-0"
-                  data-testid={`incident-${index}`}
+                  data-testid={`incident-${incident.id}`}
                 >
                   <div className="mt-1">
                     {incident.status === 'down' ? (
@@ -346,31 +365,31 @@ export default function SystemHealthTab() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium" data-testid={`text-incident-endpoint-${index}`}>
+                      <span className="font-medium" data-testid={`text-incident-endpoint-${incident.id}`}>
                         {incident.endpoint}
                       </span>
                       {getStatusBadge(incident.status)}
                       {incident.resolved && (
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200" data-testid={`badge-incident-resolved-${index}`}>
+                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200" data-testid={`badge-incident-resolved-${incident.id}`}>
                           Resolved
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-gray-600 mb-1" data-testid={`text-incident-message-${index}`}>
+                    <p className="text-sm text-gray-600 mb-1" data-testid={`text-incident-message-${incident.id}`}>
                       {incident.message}
                     </p>
                     <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1" data-testid={`text-incident-timestamp-${index}`}>
+                      <span className="flex items-center gap-1" data-testid={`text-incident-timestamp-${incident.id}`}>
                         <Clock className="w-3 h-3" />
                         {safeFormatDistanceToNow(incident.timestamp)}
                       </span>
                       {incident.duration && (
-                        <span data-testid={`text-incident-duration-${index}`}>
+                        <span data-testid={`text-incident-duration-${incident.id}`}>
                           Duration: {formatResponseTime(incident.duration)}
                         </span>
                       )}
                       {incident.resolvedAt && (
-                        <span data-testid={`text-incident-resolved-at-${index}`}>
+                        <span data-testid={`text-incident-resolved-at-${incident.id}`}>
                           Resolved: {safeFormatDistanceToNow(incident.resolvedAt)}
                         </span>
                       )}

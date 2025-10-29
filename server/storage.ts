@@ -6837,7 +6837,11 @@ export class DatabaseStorage implements IStorage {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
-    const metrics = await this.getUptimeMetrics({ startDate });
+    // Query health_checks directly instead of uptime_metrics
+    const checks = await db
+      .select()
+      .from(healthChecks)
+      .where(gte(healthChecks.checkedAt, startDate));
 
     let totalChecks = 0;
     let totalSuccessful = 0;
@@ -6852,21 +6856,22 @@ export class DatabaseStorage implements IStorage {
       responseTimeCount: number;
     }>();
 
-    for (const metric of metrics) {
-      totalChecks += metric.totalChecks || 0;
-      totalSuccessful += metric.successfulChecks || 0;
-      totalFailed += metric.failedChecks || 0;
-
-      if (metric.avgResponseTime) {
-        const avgRT = parseFloat(metric.avgResponseTime);
-        if (!isNaN(avgRT)) {
-          totalResponseTime += avgRT * (metric.totalChecks || 0);
-          responseTimeCount += metric.totalChecks || 0;
-        }
+    for (const check of checks) {
+      totalChecks++;
+      
+      if (check.status === 'healthy') {
+        totalSuccessful++;
+      } else if (check.status === 'down') {
+        totalFailed++;
       }
 
-      if (!endpointStats.has(metric.endpoint)) {
-        endpointStats.set(metric.endpoint, {
+      if (check.responseTime !== null && check.responseTime !== undefined) {
+        totalResponseTime += check.responseTime;
+        responseTimeCount++;
+      }
+
+      if (!endpointStats.has(check.endpoint)) {
+        endpointStats.set(check.endpoint, {
           totalChecks: 0,
           successfulChecks: 0,
           totalResponseTime: 0,
@@ -6874,16 +6879,16 @@ export class DatabaseStorage implements IStorage {
         });
       }
 
-      const epStats = endpointStats.get(metric.endpoint)!;
-      epStats.totalChecks += metric.totalChecks || 0;
-      epStats.successfulChecks += metric.successfulChecks || 0;
+      const epStats = endpointStats.get(check.endpoint)!;
+      epStats.totalChecks++;
+      
+      if (check.status === 'healthy') {
+        epStats.successfulChecks++;
+      }
 
-      if (metric.avgResponseTime) {
-        const avgRT = parseFloat(metric.avgResponseTime);
-        if (!isNaN(avgRT)) {
-          epStats.totalResponseTime += avgRT * (metric.totalChecks || 0);
-          epStats.responseTimeCount += metric.totalChecks || 0;
-        }
+      if (check.responseTime !== null && check.responseTime !== undefined) {
+        epStats.totalResponseTime += check.responseTime;
+        epStats.responseTimeCount++;
       }
     }
 
