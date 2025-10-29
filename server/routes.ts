@@ -1674,11 +1674,11 @@ Return JSON with:
       
       console.log(`[Teacher Invitation] User ${userId} inviting ${email} to school ${schoolId}`);
       
-      // Check if user is head teacher of this school (will add middleware in next task)
+      // Check if user is a member of this school
       const schoolUser = await storage.getSchoolUser(schoolId, userId);
-      if (!schoolUser || schoolUser.role !== 'head_teacher') {
-        console.log(`[Teacher Invitation] Access denied - user is not head teacher`);
-        return res.status(403).json({ message: "Only head teachers can invite teachers" });
+      if (!schoolUser) {
+        console.log(`[Teacher Invitation] Access denied - user is not a school member`);
+        return res.status(403).json({ message: "You must be a member of this school to invite teachers" });
       }
       
       // Generate invitation token
@@ -1748,11 +1748,11 @@ Return JSON with:
       
       console.log(`[Teacher Invitations] User ${userId} fetching invitations for school ${schoolId}`);
       
-      // Check if user is head teacher of this school
+      // Check if user is a member of this school
       const schoolUser = await storage.getSchoolUser(schoolId, userId);
-      if (!schoolUser || schoolUser.role !== 'head_teacher') {
-        console.log(`[Teacher Invitations] Access denied - user is not head teacher`);
-        return res.status(403).json({ message: "Only head teachers can view invitations" });
+      if (!schoolUser) {
+        console.log(`[Teacher Invitations] Access denied - user is not a school member`);
+        return res.status(403).json({ message: "You must be a member of this school to view invitations" });
       }
       
       const invitations = await storage.getSchoolInvitations(schoolId);
@@ -2201,11 +2201,11 @@ Return JSON with:
       
       console.log(`[Verification Requests] User ${userId} fetching requests for school ${schoolId}`);
       
-      // Check if user is head teacher of this school
+      // Check if user is a member of this school
       const schoolUser = await storage.getSchoolUser(schoolId, userId);
-      if (!schoolUser || schoolUser.role !== 'head_teacher') {
-        console.log(`[Verification Requests] Access denied - user is not head teacher`);
-        return res.status(403).json({ message: "Only head teachers can view verification requests" });
+      if (!schoolUser) {
+        console.log(`[Verification Requests] Access denied - user is not a school member`);
+        return res.status(403).json({ message: "You must be a member of this school to view verification requests" });
       }
       
       const requests = await storage.getSchoolVerificationRequests(schoolId);
@@ -2238,12 +2238,12 @@ Return JSON with:
         return res.status(404).json({ message: "Verification request not found" });
       }
       
-      // Check if user is head teacher or admin
+      // Check if user is a member of this school or admin
       const schoolUser = await storage.getSchoolUser(request.schoolId, userId);
       const user = await storage.getUser(userId);
-      if ((!schoolUser || schoolUser.role !== 'head_teacher') && !user?.isAdmin) {
-        console.log(`[Approve Request] Access denied - user is not head teacher or admin`);
-        return res.status(403).json({ message: "Only head teachers or admins can approve requests" });
+      if (!schoolUser && !user?.isAdmin) {
+        console.log(`[Approve Request] Access denied - user is not a school member or admin`);
+        return res.status(403).json({ message: "You must be a member of this school or an admin to approve requests" });
       }
       
       // Approve the request
@@ -2318,12 +2318,12 @@ Return JSON with:
         return res.status(404).json({ message: "Verification request not found" });
       }
       
-      // Check if user is head teacher or admin
+      // Check if user is a member of this school or admin
       const schoolUser = await storage.getSchoolUser(request.schoolId, userId);
       const user = await storage.getUser(userId);
-      if ((!schoolUser || schoolUser.role !== 'head_teacher') && !user?.isAdmin) {
-        console.log(`[Reject Request] Access denied - user is not head teacher or admin`);
-        return res.status(403).json({ message: "Only head teachers or admins can reject requests" });
+      if (!schoolUser && !user?.isAdmin) {
+        console.log(`[Reject Request] Access denied - user is not a school member or admin`);
+        return res.status(403).json({ message: "You must be a member of this school or an admin to reject requests" });
       }
       
       // Reject the request
