@@ -566,6 +566,7 @@ export async function sendTeacherInvitationEmail(
 ): Promise<boolean> {
   const baseUrl = getBaseUrl();
   const acceptUrl = `${baseUrl}/invitations/${token}`;
+  const logoUrl = `${baseUrl}/api/email-logo`;
   
   console.log(`[Teacher Invitation Email] Sending to ${recipientEmail} for ${schoolName} with token ${token.substring(0, 8)}...`);
   
@@ -585,11 +586,12 @@ export async function sendTeacherInvitationEmail(
               <!-- Celebration Header -->
               <tr>
                 <td style="background: linear-gradient(135deg, #02BBB4 0%, #019ADE 100%); padding: 50px 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                  <img src="${logoUrl}" alt="Plastic Clever Schools" style="height: 125px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
                   <div style="font-size: 48px; margin-bottom: 15px;">🎓</div>
                   <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     You're Invited!
                   </h1>
-                  <p style="margin: 15px 0 0 0; color: #e0f7fa; font-size: 18px; font-weight: 500;">
+                  <p style="margin: 15px 0 0 0; color: #ffffff; font-size: 18px; font-weight: 500;">
                     Join ${schoolName} on Plastic Clever Schools
                   </p>
                 </td>
@@ -710,6 +712,7 @@ export async function sendAdminInvitationEmail(
 ): Promise<boolean> {
   const baseUrl = getBaseUrl();
   const acceptUrl = `${baseUrl}/admin-invitations/${token}`;
+  const logoUrl = `${baseUrl}/api/email-logo`;
   
   // Log with redacted token for security (show only first 8 chars)
   console.log(`[Admin Invitation Email] Sending to ${recipientEmail} with token ${token.substring(0, 8)}... to URL: ${baseUrl}/admin-invitations/[REDACTED]`);
@@ -731,9 +734,7 @@ export async function sendAdminInvitationEmail(
               <!-- Header Section -->
               <tr>
                 <td style="padding: 40px 30px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
-                  <h1 style="margin: 0 0 20px 0; color: #ffffff; font-size: 36px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1); letter-spacing: -0.5px;">
-                    Plastic Clever Schools
-                  </h1>
+                  <img src="${logoUrl}" alt="Plastic Clever Schools" style="height: 125px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
                   <h2 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     🎉 You're Invited to Lead! 🎉
                   </h2>
@@ -858,6 +859,7 @@ export async function sendPartnerInvitationEmail(
 ): Promise<boolean> {
   const baseUrl = getBaseUrl();
   const acceptUrl = `${baseUrl}/admin-invitations/${token}`;
+  const logoUrl = `${baseUrl}/api/email-logo`;
   
   // Log with redacted token for security (show only first 8 chars)
   console.log(`[Partner Invitation Email] Sending to ${recipientEmail} with token ${token.substring(0, 8)}... to URL: ${baseUrl}/admin-invitations/[REDACTED]`);
@@ -878,11 +880,12 @@ export async function sendPartnerInvitationEmail(
               <!-- Celebration Header -->
               <tr>
                 <td style="background: linear-gradient(135deg, #019ADE 0%, #0B3D5D 100%); padding: 50px 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                  <img src="${logoUrl}" alt="Plastic Clever Schools" style="height: 125px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
                   <div style="font-size: 48px; margin-bottom: 15px;">🤝</div>
                   <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     You're Invited!
                   </h1>
-                  <p style="margin: 15px 0 0 0; color: #e0f7fa; font-size: 18px; font-weight: 500;">
+                  <p style="margin: 15px 0 0 0; color: #ffffff; font-size: 18px; font-weight: 500;">
                     Join Plastic Clever Schools as a Partner
                   </p>
                 </td>

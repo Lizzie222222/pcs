@@ -877,31 +877,79 @@ export default function AdminInvitationAccept() {
             </>
           ) : (
             <>
-              <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
-                <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-yellow-800" data-testid="text-admin-email-warning">
-                  Make sure you're logged in with <strong>{invitation.email}</strong> to accept this admin invitation
-                </p>
-              </div>
+              {/* Check if logged in with correct email */}
+              {user && user.email.toLowerCase() !== invitation.email.toLowerCase() ? (
+                <>
+                  <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-red-900 mb-1">Wrong Account</p>
+                        <p className="text-sm text-red-800" data-testid="text-admin-email-mismatch">
+                          You're currently logged in as <strong>{user.email}</strong>, but this invitation was sent to <strong>{invitation.email}</strong>.
+                        </p>
+                        <p className="text-sm text-red-800 mt-2">
+                          Please log out and sign in with the correct email address to accept this invitation.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
-              <Button 
-                onClick={handleAccept}
-                disabled={acceptMutation.isPending}
-                className="w-full bg-gradient-to-r from-[#019ADE] to-[#019ADE]/80 hover:from-[#019ADE] hover:to-[#019ADE]/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                data-testid="button-accept-admin-invitation"
-              >
-                {acceptMutation.isPending ? (
-                  <>
-                    <ButtonSpinner size="sm" className="mr-2" />
-                    Accepting...
-                  </>
-                ) : (
-                  <>
-                    <CheckCircle className="h-5 w-5 mr-2" />
-                    Accept Admin Invitation
-                  </>
-                )}
-              </Button>
+                  <Button 
+                    onClick={async () => {
+                      try {
+                        await apiRequest("POST", "/api/auth/logout", {});
+                        queryClient.setQueryData(["/api/auth/user"], null);
+                        toast({
+                          title: "Logged out successfully",
+                          description: "Please sign in with the invited email address to continue",
+                        });
+                        // Force page reload to update auth state
+                        window.location.reload();
+                      } catch (error) {
+                        toast({
+                          title: "Logout failed",
+                          description: "Please try again",
+                          variant: "destructive",
+                        });
+                      }
+                    }}
+                    className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
+                    data-testid="button-logout-wrong-account"
+                  >
+                    <LogIn className="h-5 w-5 mr-2 rotate-180" />
+                    Log Out & Try Again
+                  </Button>
+                </>
+              ) : (
+                <>
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 flex items-start gap-2">
+                    <AlertCircle className="h-5 w-5 text-yellow-600 mt-0.5 flex-shrink-0" />
+                    <p className="text-sm text-yellow-800" data-testid="text-admin-email-warning">
+                      Make sure you're logged in with <strong>{invitation.email}</strong> to accept this admin invitation
+                    </p>
+                  </div>
+
+                  <Button 
+                    onClick={handleAccept}
+                    disabled={acceptMutation.isPending}
+                    className="w-full bg-gradient-to-r from-[#019ADE] to-[#019ADE]/80 hover:from-[#019ADE] hover:to-[#019ADE]/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    data-testid="button-accept-admin-invitation"
+                  >
+                    {acceptMutation.isPending ? (
+                      <>
+                        <ButtonSpinner size="sm" className="mr-2" />
+                        Accepting...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-5 w-5 mr-2" />
+                        Accept Admin Invitation
+                      </>
+                    )}
+                  </Button>
+                </>
+              )}
             </>
           )}
 
