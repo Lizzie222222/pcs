@@ -1419,6 +1419,7 @@
     },
     "buttons": {
       "createCaseStudy": "创建案例研究",
+      "createShort": "创建",
       "preview": "预览",
       "edit": "编辑",
       "feature": "设为精选",

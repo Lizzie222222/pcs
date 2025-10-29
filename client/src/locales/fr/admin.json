@@ -1627,6 +1627,7 @@
     },
     "buttons": {
       "createCaseStudy": "Créer une Étude de Cas",
+      "createShort": "Créer",
       "preview": "Aperçu",
       "edit": "Modifier",
       "feature": "Mettre en Vedette",

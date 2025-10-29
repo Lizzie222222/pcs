@@ -987,7 +987,7 @@ export default function ResourcesManagement() {
               value={resourceFilters.stage} 
               onValueChange={(value) => handleFilterChange('stage', value)}
             >
-              <SelectTrigger data-testid="select-stage-filter">
+              <SelectTrigger className="min-h-11" data-testid="select-stage-filter">
                 <SelectValue placeholder="All Stages" />
               </SelectTrigger>
               <SelectContent>
@@ -1001,7 +1001,7 @@ export default function ResourcesManagement() {
               value={resourceFilters.country} 
               onValueChange={(value) => handleFilterChange('country', value)}
             >
-              <SelectTrigger data-testid="select-country-filter">
+              <SelectTrigger className="min-h-11" data-testid="select-country-filter">
                 <SelectValue placeholder="All Countries" />
               </SelectTrigger>
               <SelectContent>
@@ -1015,7 +1015,7 @@ export default function ResourcesManagement() {
               value={resourceFilters.language} 
               onValueChange={(value) => handleFilterChange('language', value)}
             >
-              <SelectTrigger data-testid="select-language-filter">
+              <SelectTrigger className="min-h-11" data-testid="select-language-filter">
                 <SelectValue placeholder="All Languages" />
               </SelectTrigger>
               <SelectContent>
@@ -1031,7 +1031,7 @@ export default function ResourcesManagement() {
               value={resourceFilters.visibility} 
               onValueChange={(value) => handleFilterChange('visibility', value)}
             >
-              <SelectTrigger data-testid="select-visibility-filter">
+              <SelectTrigger className="min-h-11" data-testid="select-visibility-filter">
                 <SelectValue placeholder="All Visibility" />
               </SelectTrigger>
               <SelectContent>
@@ -1044,7 +1044,7 @@ export default function ResourcesManagement() {
               value={resourceFilters.isActive} 
               onValueChange={(value) => handleFilterChange('isActive', value)}
             >
-              <SelectTrigger data-testid="select-status-filter">
+              <SelectTrigger className="min-h-11" data-testid="select-status-filter">
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
               <SelectContent>

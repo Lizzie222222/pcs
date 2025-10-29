@@ -1419,6 +1419,7 @@
     },
     "buttons": {
       "createCaseStudy": "사례 연구 생성",
+      "createShort": "생성",
       "preview": "미리보기",
       "edit": "편집",
       "feature": "추천",

@@ -758,7 +758,7 @@ export default function ResourcePackManagement() {
               </div>
 
               <Select value={stageFilter} onValueChange={setStageFilter}>
-                <SelectTrigger data-testid="select-filter-stage">
+                <SelectTrigger className="min-h-11" data-testid="select-filter-stage">
                   <SelectValue placeholder="All Stages" />
                 </SelectTrigger>
                 <SelectContent>
@@ -770,7 +770,7 @@ export default function ResourcePackManagement() {
               </Select>
 
               <Select value={themeFilter} onValueChange={setThemeFilter}>
-                <SelectTrigger data-testid="select-filter-theme">
+                <SelectTrigger className="min-h-11" data-testid="select-filter-theme">
                   <SelectValue placeholder="All Themes" />
                 </SelectTrigger>
                 <SelectContent>
@@ -784,7 +784,7 @@ export default function ResourcePackManagement() {
               </Select>
 
               <Select value={visibilityFilter} onValueChange={setVisibilityFilter}>
-                <SelectTrigger data-testid="select-filter-visibility">
+                <SelectTrigger className="min-h-11" data-testid="select-filter-visibility">
                   <SelectValue placeholder="All Visibility" />
                 </SelectTrigger>
                 <SelectContent>

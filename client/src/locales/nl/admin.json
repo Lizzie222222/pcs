@@ -1419,6 +1419,7 @@
     },
     "buttons": {
       "createCaseStudy": "Casestudy Maken",
+      "createShort": "Maken",
       "preview": "Voorbeeld",
       "edit": "Bewerken",
       "feature": "Uitlichten",

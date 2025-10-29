@@ -1419,6 +1419,7 @@
     },
     "buttons": {
       "createCaseStudy": "إنشاء دراسة حالة",
+      "createShort": "إنشاء",
       "preview": "معاينة",
       "edit": "تحرير",
       "feature": "تمييز",

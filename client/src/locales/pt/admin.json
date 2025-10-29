@@ -1419,6 +1419,7 @@
     },
     "buttons": {
       "createCaseStudy": "Criar Estudo de Caso",
+      "createShort": "Criar",
       "preview": "Visualizar",
       "edit": "Editar",
       "feature": "Destacar",

@@ -298,8 +298,9 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
               className="bg-pcs_blue hover:bg-pcs_blue/90 min-h-11 px-3 sm:px-4"
               data-testid="button-create-case-study"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              {t('caseStudies.buttons.createCaseStudy')}
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">{t('caseStudies.buttons.createCaseStudy')}</span>
+              <span className="sm:hidden">{t('caseStudies.buttons.createShort')}</span>
             </Button>
           </div>
 
@@ -360,7 +361,7 @@ export default function CaseStudyManagement({ user, schools, countryOptions, isA
                       <p className="text-gray-600 text-sm mb-2" data-testid={`case-study-description-${caseStudy.id}`}>
                         {caseStudy.description}
                       </p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <div className="flex flex-wrap items-center gap-3 sm:gap-4 text-sm text-gray-500">
                         <span data-testid={`case-study-school-${caseStudy.id}`}>
                           <School className="h-4 w-4 inline mr-1" />
                           {caseStudy.schoolName}

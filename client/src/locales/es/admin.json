@@ -1419,6 +1419,7 @@
     },
     "buttons": {
       "createCaseStudy": "Crear Caso de Estudio",
+      "createShort": "Crear",
       "preview": "Vista Previa",
       "edit": "Editar",
       "feature": "Destacar",

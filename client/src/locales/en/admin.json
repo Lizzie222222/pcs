@@ -1457,6 +1457,7 @@
     },
     "buttons": {
       "createCaseStudy": "Create Case Study",
+      "createShort": "Create",
       "preview": "Preview",
       "edit": "Edit",
       "feature": "Feature",

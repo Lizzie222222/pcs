@@ -1503,6 +1503,7 @@
     },
     "buttons": {
       "createCaseStudy": "Creu Astudiaeth Achos",
+      "createShort": "Creu",
       "preview": "Rhagolwg",
       "edit": "Golygu",
       "feature": "Gwneud yn Amlwg",
