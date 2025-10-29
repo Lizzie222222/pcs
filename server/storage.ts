@@ -1423,31 +1423,44 @@ export class DatabaseStorage implements IStorage {
     offset?: number;
   } = {}): Promise<Array<School & { primaryContactEmail: string | null; primaryContactFirstName: string | null; primaryContactLastName: string | null }>> {
     const conditions = [];
-    if (filters.country) {
-      // Get all country codes that match this country name
-      // Example: "United Kingdom" -> ["GB", "UK"]
-      // This handles cases where DB has multiple code variants
+    if (filters.country && filters.country !== 'all') {
+      // Handle both full names and country codes in the database
+      // Database has mix of "United Kingdom" (full name) and "GR", "ID" (codes)
       const allCodes = getAllCountryCodes(filters.country);
+      const searchValues = [...allCodes, filters.country]; // Include original value
       
-      if (allCodes.length > 1) {
-        // Multiple codes found, match against any of them
-        conditions.push(inArray(schools.country, allCodes));
+      if (searchValues.length > 1) {
+        // Match against codes OR full name
+        conditions.push(inArray(schools.country, searchValues));
       } else {
-        // Single code or original value, use exact match
-        conditions.push(eq(schools.country, allCodes[0]));
+        conditions.push(eq(schools.country, searchValues[0]));
       }
     }
-    if (filters.stage) {
+    if (filters.stage && filters.stage !== 'all') {
       conditions.push(eq(schools.currentStage, filters.stage as any));
     }
-    if (filters.type) {
+    if (filters.type && filters.type !== 'all') {
       conditions.push(eq(schools.type, filters.type as any));
     }
     if (filters.showOnMap !== undefined) {
       conditions.push(eq(schools.showOnMap, filters.showOnMap));
     }
     if (filters.language && filters.language !== 'all') {
-      conditions.push(eq(schools.primaryLanguage, filters.language));
+      // Map language codes to full names since DB stores full names
+      const languageMap: Record<string, string> = {
+        'en': 'English',
+        'es': 'Spanish', 
+        'fr': 'French',
+        'de': 'German',
+        'it': 'Italian',
+        'pt': 'Portuguese',
+        'nl': 'Dutch',
+        'el': 'Greek',
+        'id': 'Indonesian',
+        'zh': 'Chinese'
+      };
+      const languageName = languageMap[filters.language] || filters.language;
+      conditions.push(eq(schools.primaryLanguage, languageName));
     }
     if (filters.search) {
       // Search across school name, address, and admin email (case-insensitive)

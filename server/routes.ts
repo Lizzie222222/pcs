@@ -5794,11 +5794,13 @@ Return JSON with:
   // Get all schools for admin management
   app.get('/api/admin/schools', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const { country, stage, type, search, limit, offset } = req.query;
+      const { country, stage, type, search, language, limit, offset } = req.query;
       const schools = await storage.getSchools({
         country: country as string,
         stage: stage as string,
         type: type as string,
+        search: search as string,
+        language: language as string,
         limit: limit ? parseInt(limit as string) : 10000,
         offset: offset ? parseInt(offset as string) : 0,
       });
