@@ -8544,16 +8544,24 @@ Return JSON with:
         }
       }
       
-      // Validate date changes - cannot reschedule past events (except drafts)
-      // Allow editing dates on draft events (e.g., duplicated events) regardless of date
+      // Validate date changes - prevent setting dates to the past (except drafts)
+      // Allow editing dates on draft events regardless of date
       if (updates.startDateTime || updates.endDateTime) {
-        const eventHasStarted = new Date(existingEvent.startDateTime) < new Date();
-        const isDraft = existingEvent.status === 'draft';
+        const isDraft = existingEvent.status === 'draft' || updates.status === 'draft';
+        const now = new Date();
         
-        if (eventHasStarted && !isDraft) {
-          return res.status(400).json({ 
-            message: "Cannot reschedule events that have already started" 
-          });
+        // Check if new dates are in the past (only for non-draft events)
+        if (!isDraft) {
+          if (updates.startDateTime && new Date(updates.startDateTime) < now) {
+            return res.status(400).json({ 
+              message: "Cannot set start date to the past" 
+            });
+          }
+          if (updates.endDateTime && new Date(updates.endDateTime) < now) {
+            return res.status(400).json({ 
+              message: "Cannot set end date to the past" 
+            });
+          }
         }
       }
       

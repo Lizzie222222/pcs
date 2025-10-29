@@ -753,6 +753,10 @@ export default function EventLivePage() {
     if (url.startsWith('http://') || url.startsWith('https://')) {
       return url;
     }
+    // Skip normalization for Vite dev server paths (/@fs/, /@assets/, etc.)
+    if (url.startsWith('/@')) {
+      return url;
+    }
     // Skip normalization if already has /api/objects prefix
     if (url.startsWith('/api/objects')) {
       return url;
