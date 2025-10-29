@@ -134,7 +134,7 @@ function Router() {
         >
           <div className="max-w-7xl mx-auto flex flex-row items-center justify-center gap-2 text-sm">
             <Badge 
-              className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-0.5 text-[10px] leading-tight font-bold animate-pulse shadow-sm border-0"
+              className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-0.5 text-[10px] leading-tight font-bold shadow-sm border-0"
               data-testid="badge-new-event-banner"
             >
               ✨ NEW
