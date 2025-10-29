@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
@@ -127,7 +128,6 @@ interface SchoolsTableProps {
   schoolsLoading: boolean;
   selectedSchools: string[];
   setSelectedSchools: (schools: string[]) => void;
-  setViewingSchool: (school: SchoolData | null) => void;
   setDeletingSchool: (school: SchoolData | null) => void;
   expandedSchools: Set<string>;
   setExpandedSchools: (schools: Set<string>) => void;
@@ -138,12 +138,12 @@ export default function SchoolsTable({
   schoolsLoading,
   selectedSchools,
   setSelectedSchools,
-  setViewingSchool,
   setDeletingSchool,
   expandedSchools,
   setExpandedSchools,
 }: SchoolsTableProps) {
   const { t } = useTranslation('admin');
+  const [, setLocation] = useLocation();
   
   const toggleSchoolSelection = (schoolId: string) => {
     setSelectedSchools(
@@ -302,11 +302,11 @@ export default function SchoolsTable({
                           size="sm" 
                           variant="outline"
                           className="min-h-11 px-3 sm:px-4"
-                          onClick={() => setViewingSchool(school)}
-                          data-testid={`button-view-${school.id}`}
+                          onClick={() => setLocation(`/admin/school/${school.id}`)}
+                          data-testid={`button-view-profile-${school.id}`}
                         >
                           <Eye className="h-3 w-3 mr-1" />
-                          {t('schools.buttons.view')}
+                          {t('schools.buttons.viewProfile')}
                         </Button>
                         <Button 
                           size="sm" 

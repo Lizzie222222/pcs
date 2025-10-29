@@ -36,6 +36,7 @@ const Events = lazy(() => import("@/pages/events"));
 const EventLive = lazy(() => import("@/pages/event-live"));
 const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
 const Admin = lazy(() => import("@/pages/admin"));
+const SchoolProfile = lazy(() => import("@/pages/SchoolProfile"));
 const Login = lazy(() => import("@/pages/login"));
 const Register = lazy(() => import("@/pages/register"));
 const Contact = lazy(() => import("@/pages/contact"));
@@ -207,6 +208,7 @@ function Router() {
                   <Route path="/admin/evidence-requirements">
                     {() => <Admin initialTab="evidence-requirements" />}
                   </Route>
+                  <Route path="/admin/school/:id" component={SchoolProfile} />
                   <Route path="/admin">
                     {() => <Admin />}
                   </Route>

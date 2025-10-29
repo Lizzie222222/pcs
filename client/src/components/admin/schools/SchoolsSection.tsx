@@ -3,7 +3,6 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import SchoolsFilters from "./SchoolsFilters";
 import SchoolsTable from "./SchoolsTable";
-import SchoolDetailsDialog from "./SchoolDetailsDialog";
 import BulkSchoolActions from "./BulkSchoolActions";
 import type { AdminStats, SchoolData } from "@/components/admin/shared/types";
 import { useTranslation } from 'react-i18next';
@@ -42,8 +41,6 @@ export default function SchoolsSection({
 }: SchoolsSectionProps) {
   // School management state
   const [selectedSchools, setSelectedSchools] = useState<string[]>([]);
-  const [viewingSchool, setViewingSchool] = useState<SchoolData | null>(null);
-  const [evidenceFormSchoolId, setEvidenceFormSchoolId] = useState<string | null>(null);
   const [deletingSchool, setDeletingSchool] = useState<SchoolData | null>(null);
   const [bulkSchoolDialogOpen, setBulkSchoolDialogOpen] = useState(false);
   const [bulkAction, setBulkAction] = useState<{
@@ -117,25 +114,11 @@ export default function SchoolsSection({
           schoolsLoading={schoolsLoading}
           selectedSchools={selectedSchools}
           setSelectedSchools={setSelectedSchools}
-          setViewingSchool={setViewingSchool}
           setDeletingSchool={setDeletingSchool}
           expandedSchools={expandedSchools}
           setExpandedSchools={setExpandedSchools}
         />
       </Card>
-
-      <SchoolDetailsDialog
-        viewingSchool={viewingSchool}
-        setViewingSchool={setViewingSchool}
-        approvePhotoConsentMutation={approvePhotoConsentMutation}
-        rejectPhotoConsentMutation={rejectPhotoConsentMutation}
-        photoConsentRejectDialogOpen={photoConsentRejectDialogOpen}
-        setPhotoConsentRejectDialogOpen={setPhotoConsentRejectDialogOpen}
-        photoConsentRejectNotes={photoConsentRejectNotes}
-        setPhotoConsentRejectNotes={setPhotoConsentRejectNotes}
-        evidenceFormSchoolId={evidenceFormSchoolId}
-        setEvidenceFormSchoolId={setEvidenceFormSchoolId}
-      />
 
       <BulkSchoolActions
         selectedSchools={selectedSchools}

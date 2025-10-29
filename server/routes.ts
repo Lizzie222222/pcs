@@ -5811,6 +5811,59 @@ Return JSON with:
     }
   });
 
+  // Get single school by ID
+  app.get('/api/admin/schools/:id', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const school = await storage.getSchool(req.params.id);
+      
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      res.json(school);
+    } catch (error) {
+      console.error("Error fetching school:", error);
+      res.status(500).json({ message: "Failed to fetch school" });
+    }
+  });
+
+  // Get evidence for a specific school
+  app.get('/api/admin/schools/:id/evidence', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const schoolId = req.params.id;
+      const evidence = await storage.getSchoolEvidence(schoolId);
+      res.json(evidence);
+    } catch (error) {
+      console.error("Error fetching school evidence:", error);
+      res.status(500).json({ message: "Failed to fetch evidence" });
+    }
+  });
+
+  // Get teachers for a specific school
+  app.get('/api/admin/schools/:id/teachers', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const schoolId = req.params.id;
+      const schoolUsers = await storage.getSchoolUsersWithDetails(schoolId);
+      
+      const teachers = schoolUsers.map(su => ({
+        userId: su.userId,
+        name: su.user ? `${su.user.firstName || ''} ${su.user.lastName || ''}`.trim() || 'Unknown' : 'Unknown',
+        email: su.user?.email || 'N/A',
+        firstName: su.user?.firstName || null,
+        lastName: su.user?.lastName || null,
+        role: su.role,
+        isVerified: su.isVerified,
+        joinedAt: su.createdAt,
+        createdAt: su.createdAt,
+      }));
+      
+      res.json(teachers);
+    } catch (error) {
+      console.error("Error fetching school teachers:", error);
+      res.status(500).json({ message: "Failed to fetch teachers" });
+    }
+  });
+
   // Update school details
   app.put('/api/admin/schools/:id', isAuthenticated, requireAdmin, async (req, res) => {
     try {
