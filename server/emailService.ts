@@ -121,8 +121,8 @@ function generateEmailTemplate(params: EmailTemplateParams): string {
               <!-- Header with Gradient and Logo -->
               <tr>
                 <td style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 30px; text-align: center;">
-                  <img src="${logoUrl}" alt="Plastic Clever Schools" style="height: 50px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
-                  ${preTitle ? `<p style="margin: 0 0 10px 0; color: #B8E6FF; font-size: 16px; font-weight: 500;">${preTitle}</p>` : ''}
+                  <img src="${logoUrl}" alt="Plastic Clever Schools" style="height: 125px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
+                  ${preTitle ? `<p style="margin: 0 0 10px 0; color: #ffffff; font-size: 16px; font-weight: 500;">${preTitle}</p>` : ''}
                   <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     ${title}
                   </h1>
@@ -1630,8 +1630,7 @@ export async function sendBulkEmail(params: BulkEmailParams): Promise<{ sent: nu
   const html = generateEmailTemplate({
     title: params.title,
     preTitle: params.preTitle,
-    preheader: params.preheader,
-    messageContent: params.messageContent,
+    content: params.messageContent,
     callToActionText: params.callToActionText,
     callToActionUrl: params.callToActionUrl,
     footerText: 'You received this email from Plastic Clever Schools.'

@@ -162,24 +162,16 @@ export default function AdminInvitationAccept() {
       // Update auth cache
       queryClient.setQueryData(["/api/auth/user"], loggedInUser);
       
-      // Store invitation token for later completion
-      if (token) {
-        sessionStorage.setItem('pendingAdminInvitation', token);
-      }
-      
       toast({
         title: "Signed in successfully!",
-        description: "Please return to the invitation link to complete acceptance.",
+        description: "Proceeding with your admin invitation...",
       });
       
       // Force refetch to update the page state
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       
-      // Redirect to appropriate dashboard based on user role
-      const dashboardPath = loggedInUser.isAdmin ? '/admin' : '/dashboard';
-      setTimeout(() => {
-        setLocation(dashboardPath);
-      }, 500);
+      // DO NOT redirect - let the page naturally show the acceptance or onboarding form
+      // The component will re-render with isAuthenticated=true and show the appropriate next step
     },
     onError: (error: Error) => {
       let errorMessage = "Login failed. Please try again.";
