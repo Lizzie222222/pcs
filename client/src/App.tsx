@@ -13,7 +13,6 @@ import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { getGradientById } from "@shared/gradients";
-import { ChatWidget } from "@/components/ChatWidget";
 import { CollaborationProvider } from "@/contexts/CollaborationContext";
 
 // Page Loading Component
@@ -217,9 +216,6 @@ function Router() {
           </Suspense>
         </ErrorBoundary>
       </main>
-
-      {/* AI Chat Widget - appears on all pages except admin */}
-      {!location.startsWith('/admin') && <ChatWidget />}
       </div>
     </CollaborationProvider>
   );

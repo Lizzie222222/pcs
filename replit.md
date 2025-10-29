@@ -35,7 +35,7 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 ### UI/UX Decisions
 -   **Design System**: PCS brand colors, specific fonts (Gilroy Bold, Century Gothic Regular), and a component-based design using Radix UI and shadcn/ui. Custom favicon using the official PCS logo.
 -   **Navigation**: Public and authenticated routes, including a tab-based dashboard and enhanced admin navigation.
--   **Features**: Comprehensive analytics with visualizations and PDF export, dynamic evidence requirements, student-led action plans, multi-step school registration (country-adaptive with complete i18n support), and multi-language support (14 languages, RTL support). Includes an AI-powered live chat widget.
+-   **Features**: Comprehensive analytics with visualizations and PDF export, dynamic evidence requirements, student-led action plans, multi-step school registration (country-adaptive with complete i18n support), and multi-language support (14 languages, RTL support).
 -   **Admin UI**: Integrated evidence requirements, school detail management, manual school progression, an 8-step Case Study Wizard, Resource Management, Data Import System with Legacy User Migration tool, multi-language event creator, bulk resource upload with AI-powered auto-fill, and a comprehensive Review Queue (Evidence, Audits, Photo Consent).
 -   **Mobile Responsiveness**: Full mobile optimization of admin panel including responsive headers, navigation, collaboration sidebar, export/action buttons, filter dropdowns, tables, forms, card layouts, padding, and internationalization across 11 major sections.
 -   **Legacy User Migration System**: Comprehensive data migration tool for importing users from the old WordPress system via CSV, with dry-run mode, smart school deduplication, user creation, stage mapping, tracking, credential export, security, and user onboarding notices.
@@ -117,3 +117,9 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 - **Footer Links Updated**: Changed footer privacy links from external Common Seas privacy policy to internal GDPR-compliant privacy policy
 - **GDPR Compliance**: Includes all required GDPR sections: Legal Basis for Processing, Your Rights, Data Security, Data Retention, International Data Transfers, Cookies and Tracking, Children's Privacy
 - **Impact**: Users can access comprehensive privacy information directly on the platform, meeting GDPR transparency requirements
+
+### UI/UX Simplification
+- **Removed Public Chatbot**: Removed AI-powered public chat widget from all non-admin pages for cleaner user experience
+- **Sticky Note Enhancement**: Updated landing page sticky note to use authentic PNG asset with realistic tape and shadow effects
+- **Admin Chat Preserved**: Maintained admin collaboration chat system for internal team communication
+- **Impact**: Simplified user interface by removing unnecessary AI chat widget, while preserving essential admin collaboration tools
