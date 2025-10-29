@@ -330,7 +330,7 @@ export default function ResourceView() {
           )}
 
           {/* Metadata Grid */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
             {resource.country && (
               <div className="flex flex-col" data-testid="text-country">
                 <span className="text-sm text-gray-500">Country</span>
@@ -353,13 +353,6 @@ export default function ResourceView() {
             <div className="flex flex-col" data-testid="text-file-size">
               <span className="text-sm text-gray-500">File Size</span>
               <span className="font-medium text-navy">{formatFileSize(resource.fileSize || 0)}</span>
-            </div>
-            <div className="flex flex-col" data-testid="text-download-count">
-              <span className="text-sm text-gray-500">Downloads</span>
-              <span className="font-medium text-navy flex items-center gap-1">
-                <Download className="h-4 w-4" />
-                {resource.downloadCount}
-              </span>
             </div>
           </div>
 
