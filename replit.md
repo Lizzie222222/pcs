@@ -83,3 +83,14 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 - **Rejection Dialog**: Added a modal dialog with Textarea for rejection notes, with proper validation and disabled state
 - **Consistent UX**: All dialogs now match the app's design language with proper loading spinners, cancel buttons, and action buttons
 - **Impact**: Photo consent review workflow now has a modern, consistent user experience instead of old-school browser popups
+
+### Resources System Enhancements (Client Feedback Implementation)
+- **Landing Page Hero Copy Update**: Updated main hero text to "An award to reduce waste with students at the heart of the action" for clearer messaging
+- **Download Count Privacy**: Removed download count display from public resources page while keeping it visible in admin panel for analytics
+- **Student Action Theme**: Added new "student_action" theme option to resourceThemeEnum for better categorization of student-focused resources
+- **Tags System**: Implemented JSONB array-based tags field on resources table with initial "all_stages" tag option for cross-stage resource identification
+- **Multi-Theme Support**: Converted resources from single theme to multiple themes (themes array field) enabling resources to be categorized under multiple topics
+- **Admin UI Multi-Select**: Updated admin resources management with checkbox-based multi-select UI for both themes and tags, replacing single-select dropdown
+- **Backend Array Filtering**: Enhanced backend filtering logic to handle PostgreSQL array operations for multi-theme queries while maintaining backward compatibility
+- **Database Schema**: Added themes (text array) and tags (jsonb array) fields to resources table, keeping legacy theme field for backward compatibility
+- **Impact**: Resources can now be tagged with multiple themes and special tags, improving discoverability and allowing more flexible categorization while maintaining data privacy on public pages
