@@ -794,25 +794,17 @@ export default function AdminInvitationAccept() {
                     
                     toast({
                       title: "Logged out successfully",
-                      description: "Redirecting to login page...",
+                      description: "You can now log in with the correct account",
                     });
                     
-                    // Small delay to ensure state updates, then redirect
-                    setTimeout(() => {
-                      window.location.href = '/login';
-                    }, 500);
+                    // Stay on the same page - it will show the login form now that user is logged out
                   } catch (error) {
                     console.error('Logout error:', error);
                     toast({
                       title: "Logout failed",
-                      description: "Redirecting to login page anyway...",
+                      description: "Please refresh the page and try again",
                       variant: "destructive",
                     });
-                    
-                    // Even if logout fails, redirect to login
-                    setTimeout(() => {
-                      window.location.href = '/login';
-                    }, 1000);
                   }
                 }}
                 className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
