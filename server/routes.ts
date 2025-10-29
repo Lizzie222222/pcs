@@ -1492,7 +1492,7 @@ Return JSON with:
 
           // Send welcome email (non-blocking)
           try {
-            await sendWelcomeEmail(user.email!, school.name);
+            await sendWelcomeEmail(user.email!, school.name, user.preferredLanguage || 'en');
           } catch (emailError) {
             // Log but don't fail registration if email fails
             console.warn('Welcome email failed to send:', emailError);
@@ -1623,7 +1623,7 @@ Return JSON with:
 
       // Send welcome email (non-blocking)
       try {
-        await sendWelcomeEmail(req.user.email!, school.name);
+        await sendWelcomeEmail(req.user.email!, school.name, req.user.preferredLanguage || 'en');
       } catch (emailError) {
         console.warn('Welcome email failed to send:', emailError);
       }
@@ -4411,9 +4411,9 @@ Return JSON with:
       
       if (user?.email && school) {
         if (status === 'approved') {
-          await sendEvidenceApprovalEmail(user.email, school.name, evidence.title, reviewerName);
+          await sendEvidenceApprovalEmail(user.email, school.name, evidence.title, reviewerName, user.preferredLanguage || 'en');
         } else {
-          await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit', reviewerName);
+          await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit', reviewerName, user.preferredLanguage || 'en');
         }
       }
 
@@ -4516,9 +4516,9 @@ Return JSON with:
               
               if (user?.email && school) {
                 if (status === 'approved') {
-                  await sendEvidenceApprovalEmail(user.email, school.name, evidence.title, reviewerName);
+                  await sendEvidenceApprovalEmail(user.email, school.name, evidence.title, reviewerName, user.preferredLanguage || 'en');
                 } else {
-                  await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit', reviewerName);
+                  await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit', reviewerName, user.preferredLanguage || 'en');
                 }
                 results.emailsProcessed++;
               }
@@ -4827,9 +4827,9 @@ Return JSON with:
         
         if (user?.email && school) {
           if (approved) {
-            await sendAuditApprovalEmail(user.email, school.name);
+            await sendAuditApprovalEmail(user.email, school.name, user.preferredLanguage || 'en');
           } else {
-            await sendAuditRejectionEmail(user.email, school.name, reviewNotes || 'Please review and resubmit');
+            await sendAuditRejectionEmail(user.email, school.name, reviewNotes || 'Please review and resubmit', user.preferredLanguage || 'en');
           }
         }
       } catch (emailError) {
@@ -7645,7 +7645,8 @@ Return JSON with:
           await sendVerificationApprovalEmail(
             user.email,
             school.name,
-            notes || undefined
+            notes || undefined,
+            user.preferredLanguage || 'en'
           );
         }
 
@@ -7668,7 +7669,8 @@ Return JSON with:
           await sendVerificationRejectionEmail(
             user.email,
             school.name,
-            notes
+            notes,
+            user.preferredLanguage || 'en'
           );
         }
 
