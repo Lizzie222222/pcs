@@ -135,6 +135,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Serve email logo (publicly accessible for email templates)
+  app.get('/api/email-logo', async (req, res) => {
+    try {
+      const logoPath = path.resolve(import.meta.dirname, '..', 'attached_assets', 'PCSWhite_1761216344335.png');
+      
+      // Check if file exists
+      try {
+        await fs.access(logoPath);
+      } catch {
+        return res.status(404).json({ message: 'Logo not found' });
+      }
+      
+      // Set proper headers for PNG image
+      res.setHeader('Content-Type', 'image/png');
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cache-Control', 'public, max-age=31536000'); // Cache for 1 year
+      
+      // Stream the file
+      const fileStream = await fs.readFile(logoPath);
+      res.send(fileStream);
+    } catch (error) {
+      console.error('Error serving email logo:', error);
+      res.status(500).json({ message: 'Failed to serve logo' });
+    }
+  });
+
   // Public routes
   
   // Get site statistics (cached for 5 minutes)
