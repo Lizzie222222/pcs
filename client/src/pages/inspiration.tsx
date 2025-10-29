@@ -453,12 +453,9 @@ export default function Inspiration() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 pb-16">
         {/* Header */}
         <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-2 mb-4">
-            <Sparkles className="h-8 w-8 text-pcs_blue" />
-            <h1 className="text-4xl font-bold text-navy" data-testid="text-inspiration-title">
-              {t('page.title')}
-            </h1>
-          </div>
+          <h1 className="text-4xl font-bold text-navy mb-4" data-testid="text-inspiration-title">
+            {t('page.title')}
+          </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             {t('page.description')}
           </p>
