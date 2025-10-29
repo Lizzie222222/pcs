@@ -1,5 +1,6 @@
 import { MailService } from '@sendgrid/mail';
 import { storage } from './storage';
+import { translateEmailContent, type EmailContent } from './translationService';
 
 if (!process.env.SENDGRID_API_KEY) {
   console.warn("SENDGRID_API_KEY environment variable not set");
@@ -76,6 +77,149 @@ export function getFromAddress(): string {
   return `${displayName} <${defaultEmail}>`;
 }
 
+/**
+ * Generate beautiful HTML email template with gradient design and logo
+ * Following the modern design pattern from admin invitation emails
+ */
+interface EmailTemplateParams {
+  title: string;
+  preTitle?: string;
+  content: string;
+  callToActionText?: string;
+  callToActionUrl?: string;
+  footerText?: string;
+}
+
+function generateEmailTemplate(params: EmailTemplateParams): string {
+  const {
+    title,
+    preTitle,
+    content,
+    callToActionText,
+    callToActionUrl,
+    footerText
+  } = params;
+  
+  const baseUrl = getBaseUrl();
+  const logoUrl = `${baseUrl}/api/email-logo`;
+  const currentYear = new Date().getFullYear();
+  
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <title>${title}</title>
+    </head>
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f4;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f4f4f4;">
+        <tr>
+          <td style="padding: 40px 20px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1); overflow: hidden;">
+              
+              <!-- Header with Gradient and Logo -->
+              <tr>
+                <td style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 30px; text-align: center;">
+                  <img src="${logoUrl}" alt="Plastic Clever Schools" style="height: 50px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
+                  ${preTitle ? `<p style="margin: 0 0 10px 0; color: #B8E6FF; font-size: 16px; font-weight: 500;">${preTitle}</p>` : ''}
+                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    ${title}
+                  </h1>
+                </td>
+              </tr>
+              
+              <!-- Content -->
+              <tr>
+                <td style="padding: 40px 30px;">
+                  <div style="color: #333333; font-size: 16px; line-height: 1.6;">
+                    ${content}
+                  </div>
+                </td>
+              </tr>
+              
+              ${callToActionText && callToActionUrl ? `
+              <!-- Call to Action -->
+              <tr>
+                <td style="padding: 0 30px 40px; text-align: center;">
+                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                    <tr>
+                      <td style="border-radius: 8px; background: linear-gradient(135deg, #02BBB4 0%, #019ADE 100%); box-shadow: 0 4px 15px rgba(2, 187, 180, 0.3);">
+                        <a href="${callToActionUrl}" style="display: inline-block; padding: 15px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; border-radius: 8px;">
+                          ${callToActionText}
+                        </a>
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
+              ` : ''}
+              
+              <!-- Footer -->
+              <tr>
+                <td style="background: #0B3D5D; color: white; padding: 30px; text-align: center;">
+                  <p style="margin: 0 0 10px 0; font-size: 14px; font-weight: 600;">🌊 Plastic Clever Schools 🌊</p>
+                  <p style="margin: 0 0 10px 0; font-size: 13px; color: #B8E6FF;">Making waves for a plastic-free future</p>
+                  ${footerText ? `<p style="margin: 0 0 10px 0; font-size: 12px; color: #B8E6FF;">${footerText}</p>` : ''}
+                  <p style="margin: 0; font-size: 11px; color: #B8E6FF;">
+                    © ${currentYear} Plastic Clever Schools. All rights reserved.
+                  </p>
+                </td>
+              </tr>
+              
+            </table>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+}
+
+/**
+ * Send an email with automatic translation support based on user's preferred language
+ */
+async function sendTranslatedEmail(params: {
+  to: string;
+  userLanguage?: string;
+  englishContent: EmailContent;
+  callToActionText?: string;
+  callToActionUrl?: string;
+  footerText?: string;
+}): Promise<boolean> {
+  const {
+    to,
+    userLanguage = 'en',
+    englishContent,
+    callToActionText,
+    callToActionUrl,
+    footerText
+  } = params;
+  
+  // Translate content if not English
+  let content = englishContent;
+  if (userLanguage !== 'en') {
+    content = await translateEmailContent(englishContent, userLanguage);
+  }
+  
+  // Generate HTML using the template
+  const html = generateEmailTemplate({
+    title: content.title,
+    preTitle: content.preTitle,
+    content: content.messageContent,
+    callToActionText,
+    callToActionUrl,
+    footerText
+  });
+  
+  return await sendEmail({
+    to,
+    from: getFromAddress(),
+    subject: content.subject,
+    html
+  });
+}
+
 interface EmailParams {
   to: string;
   from: string;
@@ -137,16 +281,54 @@ export async function sendEmail(params: EmailParams): Promise<boolean> {
   }
 }
 
-export async function sendWelcomeEmail(userEmail: string, schoolName: string): Promise<boolean> {
-  return await sendEmail({
+export async function sendWelcomeEmail(
+  userEmail: string, 
+  schoolName: string,
+  userLanguage?: string
+): Promise<boolean> {
+  const baseUrl = getBaseUrl();
+  
+  const englishContent: EmailContent = {
+    subject: `Welcome to Plastic Clever Schools!`,
+    title: `Welcome to Plastic Clever Schools!`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <p style="margin: 0 0 20px 0; font-size: 18px; font-weight: 600;">
+        Hello! 👋
+      </p>
+      
+      <p style="margin: 0 0 20px 0;">
+        Welcome to <strong>Plastic Clever Schools</strong>! We're thrilled to have <strong>${schoolName}</strong> join our global community of schools committed to reducing plastic waste and protecting our oceans.
+      </p>
+      
+      <p style="margin: 0 0 20px 0;">
+        Your journey to becoming plastic clever starts now! Here's what you can do:
+      </p>
+      
+      <ul style="margin: 0 0 25px 0; padding-left: 25px; line-height: 1.8;">
+        <li><strong>Track your progress</strong> - Upload evidence of your plastic reduction efforts</li>
+        <li><strong>Earn recognition</strong> - Work towards plastic clever certification</li>
+        <li><strong>Inspire others</strong> - Share your success with schools worldwide</li>
+        <li><strong>Access resources</strong> - Download toolkits and educational materials</li>
+      </ul>
+      
+      <p style="margin: 0 0 20px 0;">
+        Together, we're making waves for a plastic-free future! 🌊
+      </p>
+      
+      <p style="margin: 0; color: #666;">
+        Need help getting started? Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: userEmail,
-    from: getFromAddress(),
-    subject: `Welcome to Plastic Clever Schools - ${schoolName}`,
-    templateId: 'd-67435cbdbfbf42d5b3b3167a7efa2e1c',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      dashboardUrl: getBaseUrl(),
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '🚀 Go to Dashboard',
+    callToActionUrl: baseUrl,
+    footerText: 'You received this email because your school joined Plastic Clever Schools.'
   });
 }
 
@@ -154,215 +336,165 @@ export async function sendMigratedUserWelcomeEmail(
   userEmail: string,
   tempPassword: string,
   schoolName: string,
-  firstName?: string
+  firstName?: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  const loginUrl = `${getBaseUrl()}/login`;
-  const logoBase64 = `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`;
+  const baseUrl = getBaseUrl();
+  const loginUrl = `${baseUrl}/login`;
   
-  return await sendEmail({
+  const englishContent: EmailContent = {
+    subject: `🎉 You're Invited to the NEW Plastic Clever Schools!`,
+    title: `You're Invited${firstName ? `, ${firstName}` : ''}!`,
+    preTitle: `Welcome to our brand NEW platform!`,
+    messageContent: `
+      <div style="text-align: center; margin-bottom: 30px;">
+        <p style="font-size: 20px; color: #0B3D5D; font-weight: 600; margin: 0 0 15px 0;">
+          ✨ Something Amazing is Waiting for You! ✨
+        </p>
+        <p style="margin: 0;">
+          We're absolutely thrilled to welcome you to the <strong>all-new Plastic Clever Schools platform</strong>! 🌊 Your <strong>${schoolName}</strong> account has been upgraded to our exciting new system, packed with incredible features and improvements!
+        </p>
+      </div>
+      
+      <!-- What's New -->
+      <div style="background: #f9fafb; padding: 25px; border-radius: 12px; margin: 25px 0; border: 3px solid #02BBB4;">
+        <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 20px; font-weight: 700; text-align: center;">
+          🚀 What's New & Exciting?
+        </h2>
+        <ul style="line-height: 1.8; margin: 0; padding-left: 25px;">
+          <li><strong>Modern, intuitive design</strong> - easier than ever to navigate!</li>
+          <li><strong>Enhanced dashboard</strong> - see your impact at a glance</li>
+          <li><strong>Powerful new tools</strong> - track your plastic-free journey</li>
+          <li><strong>Faster performance</strong> - lightning-quick responses</li>
+          <li><strong>Mobile-friendly</strong> - access anywhere, anytime!</li>
+        </ul>
+      </div>
+      
+      <!-- Login Details -->
+      <div style="background: #eff6ff; border: 3px solid #3b82f6; padding: 25px; margin: 25px 0; border-radius: 12px;">
+        <h2 style="color: #1e40af; margin: 0 0 20px 0; font-size: 20px; font-weight: 700; text-align: center;">
+          🔑 Your Exclusive Access Details
+        </h2>
+        <div style="background: white; padding: 20px; border-radius: 8px;">
+          <p style="margin: 0 0 10px 0; color: #666;"><strong>🏫 School:</strong> ${schoolName}</p>
+          <p style="margin: 0 0 10px 0; color: #666;"><strong>📧 Email:</strong> ${userEmail}</p>
+          <p style="margin: 0 0 10px 0; color: #666;"><strong>🔐 Temporary Password:</strong></p>
+          <div style="background: #fef3c7; border: 2px solid #fbbf24; padding: 15px; border-radius: 8px; text-align: center;">
+            <code style="font-size: 18px; font-weight: 700; color: #92400e; letter-spacing: 1px;">${tempPassword}</code>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Important Notice -->
+      <div style="background: #fef3c7; border-left: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 25px 0;">
+        <p style="margin: 0; color: #92400e;">
+          <strong>⚠️ Important:</strong> This is a <strong>temporary password</strong> for your first login. You'll create your own secure password right after logging in - keeping your account safe and sound! 🛡️
+        </p>
+      </div>
+      
+      <!-- What We've Brought Over -->
+      <div style="margin: 30px 0;">
+        <h3 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 18px; font-weight: 700;">
+          📦 Everything You Love, All Here!
+        </h3>
+        <p style="margin: 0 0 10px 0;">We've carefully migrated all your valuable data:</p>
+        <ul style="line-height: 1.8; margin: 5px 0; padding-left: 25px;">
+          <li>✅ Your school information and details</li>
+          <li>✅ Your program progress (Learn, Plan, Act stages)</li>
+          <li>✅ Your team members and school associations</li>
+          <li>✅ All your achievements and milestones</li>
+        </ul>
+      </div>
+      
+      <!-- Quick Start Guide -->
+      <div style="background: #f9fafb; padding: 25px; border-radius: 12px; margin: 30px 0;">
+        <h3 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 18px; font-weight: 700;">
+          🎯 Your Quick Start Guide
+        </h3>
+        <ol style="line-height: 2; margin: 0; padding-left: 25px;">
+          <li><strong>Click the button below</strong> to access your new dashboard</li>
+          <li><strong>Use your temporary password</strong> to log in</li>
+          <li><strong>Create your new password</strong> - make it memorable!</li>
+          <li><strong>Update your profile</strong> - add a photo, confirm your details</li>
+          <li><strong>Explore the new features</strong> - discover what's possible!</li>
+          <li><strong>Start making an impact</strong> - continue your plastic-free journey! 🌍</li>
+        </ol>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0 20px;">
+        <p style="color: #02BBB4; font-size: 16px; font-weight: 600; margin: 0;">
+          We can't wait to see what you'll achieve! 🌟
+        </p>
+      </div>
+      
+      <p style="margin: 0; color: #666; text-align: center;">
+        <strong>Need help getting started?</strong><br>
+        Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: userEmail,
-    from: getFromAddress(),
-    subject: '🎉 You\'re Invited to the NEW Plastic Clever Schools!',
-    html: `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Welcome to Plastic Clever Schools</title>
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);">
-        <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);">
-          <tr>
-            <td style="padding: 40px 20px;">
-              <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 40px rgba(2, 187, 180, 0.3); overflow: hidden;">
-                
-                <!-- Logo Section -->
-                <tr>
-                  <td style="padding: 40px 30px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 36px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1); letter-spacing: -0.5px;">
-                      Plastic Clever Schools
-                    </h1>
-                  </td>
-                </tr>
-                
-                <!-- Exciting Header -->
-                <tr>
-                  <td style="padding: 30px 30px 20px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
-                    <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                      🎉 You're Invited${firstName ? `, ${firstName}` : ''}! 🎉
-                    </h1>
-                    <p style="margin: 15px 0 0; color: #e0f7fa; font-size: 18px; font-weight: 500;">
-                      Welcome to our brand NEW platform!
-                    </p>
-                  </td>
-                </tr>
-                
-                <!-- Body Content -->
-                <tr>
-                  <td style="padding: 40px 30px;">
-                    
-                    <!-- Exciting intro -->
-                    <div style="text-align: center; margin-bottom: 30px;">
-                      <p style="font-size: 20px; color: #0B3D5D; font-weight: 600; margin: 0 0 15px 0; line-height: 1.4;">
-                        ✨ Something Amazing is Waiting for You! ✨
-                      </p>
-                      <p style="font-size: 16px; color: #333333; margin: 0; line-height: 1.6;">
-                        We're absolutely thrilled to welcome you to the <strong>all-new Plastic Clever Schools platform</strong>! 🌊 Your ${schoolName} account has been upgraded to our exciting new system, packed with incredible features and improvements!
-                      </p>
-                    </div>
-                    
-                    <!-- What's New Highlights -->
-                    <div style="background: #ffffff; padding: 25px; border-radius: 12px; margin: 25px 0; border: 3px solid #02BBB4; box-shadow: 0 4px 12px rgba(2, 187, 180, 0.15);">
-                      <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 22px; font-weight: 700; text-align: center;">
-                        🚀 What's New & Exciting?
-                      </h2>
-                      <ul style="color: #1f2937; line-height: 2; margin: 0; padding-left: 25px; font-size: 15px; font-weight: 500;">
-                        <li><strong style="color: #0B3D5D;">Modern, intuitive design</strong> - easier than ever to navigate!</li>
-                        <li><strong style="color: #0B3D5D;">Enhanced dashboard</strong> - see your impact at a glance</li>
-                        <li><strong style="color: #0B3D5D;">Powerful new tools</strong> - track your plastic-free journey</li>
-                        <li><strong style="color: #0B3D5D;">Faster performance</strong> - lightning-quick responses</li>
-                        <li><strong style="color: #0B3D5D;">Mobile-friendly</strong> - access anywhere, anytime!</li>
-                      </ul>
-                    </div>
-                    
-                    <!-- Your Login Details -->
-                    <div style="background: #ffffff; border: 3px solid #02BBB4; padding: 25px; margin: 25px 0; border-radius: 12px; box-shadow: 0 4px 12px rgba(2, 187, 180, 0.15);">
-                      <h2 style="color: #02BBB4; margin: 0 0 20px 0; font-size: 20px; font-weight: 700; text-align: center;">
-                        🔑 Your Exclusive Access Details
-                      </h2>
-                      <table style="width: 100%; border-spacing: 0;">
-                        <tr>
-                          <td style="padding: 8px 0; color: #4b5563; font-weight: 600;">🏫 School:</td>
-                          <td style="padding: 8px 0; color: #1f2937; font-weight: 500;">${schoolName}</td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 8px 0; color: #4b5563; font-weight: 600;">📧 Email:</td>
-                          <td style="padding: 8px 0; color: #1f2937; font-weight: 500;">${userEmail}</td>
-                        </tr>
-                        <tr>
-                          <td style="padding: 8px 0; color: #4b5563; font-weight: 600; vertical-align: top;">🔐 Temp Password:</td>
-                          <td style="padding: 8px 0;">
-                            <code style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); padding: 8px 12px; border-radius: 6px; font-size: 15px; font-weight: 600; color: #92400e; display: inline-block; border: 2px solid #fbbf24;">${tempPassword}</code>
-                          </td>
-                        </tr>
-                      </table>
-                    </div>
-                    
-                    <!-- Important Notice -->
-                    <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 25px 0;">
-                      <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.6;">
-                        <strong>⚠️ Important:</strong> This is a <strong>temporary password</strong> for your first login. You'll create your own secure password right after logging in - keeping your account safe and sound! 🛡️
-                      </p>
-                    </div>
-                    
-                    <!-- What We've Brought Over -->
-                    <div style="margin: 30px 0;">
-                      <h3 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 18px; font-weight: 700;">
-                        📦 Everything You Love, All Here!
-                      </h3>
-                      <p style="color: #4b5563; margin: 0 0 10px 0; font-size: 15px;">We've carefully migrated all your valuable data:</p>
-                      <ul style="color: #4b5563; line-height: 1.8; margin: 5px 0; padding-left: 25px; font-size: 15px;">
-                        <li>✅ Your school information and details</li>
-                        <li>✅ Your program progress (Learn, Plan, Act stages)</li>
-                        <li>✅ Your team members and school associations</li>
-                        <li>✅ All your achievements and milestones</li>
-                      </ul>
-                    </div>
-                    
-                    <!-- Quick Start Guide -->
-                    <div style="background: #f9fafb; padding: 25px; border-radius: 12px; margin: 30px 0; border: 2px solid #e5e7eb;">
-                      <h3 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 18px; font-weight: 700;">
-                        🎯 Your Quick Start Guide
-                      </h3>
-                      <ol style="color: #4b5563; line-height: 2; margin: 0; padding-left: 25px; font-size: 15px;">
-                        <li><strong>Click the magic button below</strong> to access your new dashboard</li>
-                        <li><strong>Use your temporary password</strong> to log in</li>
-                        <li><strong>Create your new password</strong> - make it memorable!</li>
-                        <li><strong>Update your profile</strong> - add a photo, confirm your details</li>
-                        <li><strong>Explore the new features</strong> - discover what's possible!</li>
-                        <li><strong>Start making an impact</strong> - continue your plastic-free journey! 🌍</li>
-                      </ol>
-                    </div>
-                    
-                    <!-- CTA Button -->
-                    <div style="text-align: center; margin: 40px 0;">
-                      <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
-                        <tr>
-                          <td style="border-radius: 50px; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%); box-shadow: 0 8px 20px rgba(2, 187, 180, 0.4);">
-                            <a href="${loginUrl}" style="display: inline-block; padding: 18px 50px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px;">
-                              🚀 Launch My New Dashboard!
-                            </a>
-                          </td>
-                        </tr>
-                      </table>
-                      <p style="color: #6b7280; font-size: 13px; margin: 15px 0 0 0; font-style: italic;">
-                        Your plastic-free adventure awaits!
-                      </p>
-                    </div>
-                    
-                    <!-- Excitement Footer -->
-                    <div style="text-align: center; margin: 30px 0 20px;">
-                      <p style="color: #02BBB4; font-size: 16px; font-weight: 600; margin: 0;">
-                        We can't wait to see what you'll achieve! 🌟
-                      </p>
-                    </div>
-                    
-                    <!-- Support -->
-                    <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0;">
-                      <p style="color: #6b7280; font-size: 14px; line-height: 1.6; margin: 0; text-align: center;">
-                        <strong>Need help getting started?</strong><br>
-                        Our friendly team is here for you! Reach out anytime at<br>
-                        <a href="mailto:education@commonseas.com" style="color: #02BBB4; font-weight: 600; text-decoration: none;">education@commonseas.com</a>
-                      </p>
-                    </div>
-                    
-                  </td>
-                </tr>
-                
-                <!-- Footer -->
-                <tr>
-                  <td style="padding: 30px; background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%); text-align: center; border-top: 3px solid #02BBB4;">
-                    <p style="margin: 0 0 10px 0; color: #4b5563; font-size: 14px; font-weight: 600;">
-                      🌊 Plastic Clever Schools 🌊
-                    </p>
-                    <p style="margin: 0 0 5px 0; color: #6b7280; font-size: 13px; line-height: 1.5;">
-                      Together, we're creating a plastic-free future
-                    </p>
-                    <p style="margin: 5px 0 0 0; color: #9ca3af; font-size: 11px; line-height: 1.4;">
-                      This email was sent because your account was upgraded to our new platform.<br>
-                      © ${new Date().getFullYear()} Plastic Clever Schools. Making Education Plastic Clever.
-                    </p>
-                  </td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-      </html>
-    `,
+    userLanguage,
+    englishContent,
+    callToActionText: '🚀 Launch My New Dashboard!',
+    callToActionUrl: loginUrl,
+    footerText: 'This email was sent because your account was upgraded to our new platform.'
   });
 }
+
 
 export async function sendEvidenceApprovalEmail(
   userEmail: string, 
   schoolName: string, 
   evidenceTitle: string,
-  reviewerName?: string
+  reviewerName?: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
+  const baseUrl = getBaseUrl();
+  const approver = reviewerName || 'Platform Admin';
+  
+  const englishContent: EmailContent = {
+    subject: `✅ Evidence Approved: ${evidenceTitle}`,
+    title: `Evidence Approved!`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #166534; font-size: 18px; font-weight: 700;">
+          🎉 Great news!
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        Your evidence submission has been <strong style="color: #22c55e;">approved</strong>!
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Evidence:</p>
+        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #019ADE;">${evidenceTitle}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Reviewed by:</p>
+        <p style="margin: 0; font-size: 16px; color: #333;">✓ ${approver}</p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0;">
+        This evidence has been added to your school's progress and will help you on your journey to becoming plastic clever! Keep up the fantastic work! 🌊
+      </p>
+      
+      <p style="margin: 0; color: #666;">
+        View your evidence and track your progress in your dashboard.
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: userEmail,
-    from: getFromAddress(),
-    subject: `Evidence Approved - ${evidenceTitle}`,
-    templateId: 'd-3349376322ca47c79729d04b402372c6',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      evidenceTitle: evidenceTitle,
-      reviewerName: reviewerName || 'Platform Admin',
-      dashboardUrl: getBaseUrl(),
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '📊 View Dashboard',
+    callToActionUrl: baseUrl,
+    footerText: 'You received this email because evidence was approved for your school.'
   });
 }
 
@@ -371,20 +503,57 @@ export async function sendEvidenceRejectionEmail(
   schoolName: string, 
   evidenceTitle: string, 
   feedback: string,
-  reviewerName?: string
+  reviewerName?: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
+  const baseUrl = getBaseUrl();
+  const approver = reviewerName || 'Platform Admin';
+  
+  const englishContent: EmailContent = {
+    subject: `📋 Feedback on Evidence: ${evidenceTitle}`,
+    title: `Evidence Needs Attention`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #92400e; font-size: 18px; font-weight: 700;">
+          📝 Feedback from Reviewer
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        Your evidence submission needs some adjustments before it can be approved.
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Evidence:</p>
+        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #019ADE;">${evidenceTitle}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Reviewed by:</p>
+        <p style="margin: 0 0 20px 0; font-size: 16px; color: #333;">${approver}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Feedback:</p>
+        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb;">
+          <p style="margin: 0; color: #333; white-space: pre-wrap;">${feedback}</p>
+        </div>
+      </div>
+      
+      <p style="margin: 0 0 20px 0;">
+        Don't worry! You can update your evidence and resubmit it. We're here to help you succeed! 💪
+      </p>
+      
+      <p style="margin: 0; color: #666;">
+        Need help? Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: userEmail,
-    from: getFromAddress(),
-    subject: `Evidence Feedback - ${evidenceTitle}`,
-    templateId: 'd-df7b17c32ee04fc78db7dc888f6849da',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      evidenceTitle: evidenceTitle,
-      feedback: feedback,
-      reviewerName: reviewerName || 'Platform Admin',
-      dashboardUrl: getBaseUrl(),
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '📝 Update Evidence',
+    callToActionUrl: baseUrl,
+    footerText: 'You received this email because evidence was reviewed for your school.'
   });
 }
 
@@ -831,20 +1000,53 @@ export async function sendVerificationRequestEmail(
   schoolName: string,
   requesterName: string,
   requesterEmail: string,
-  evidence: string
+  evidence: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
+  const baseUrl = getBaseUrl();
+  const reviewUrl = `${baseUrl}/dashboard/team-management?tab=requests`;
+  
+  const englishContent: EmailContent = {
+    subject: `🔔 New Teacher Verification Request`,
+    title: `New Teacher Verification Request`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 700;">
+          📬 Action Required
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        A teacher has requested verification to join <strong>${schoolName}</strong> on Plastic Clever Schools.
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Teacher Name:</p>
+        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #019ADE;">${requesterName}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Email:</p>
+        <p style="margin: 0 0 15px 0; color: #333;">${requesterEmail}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Evidence Provided:</p>
+        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb;">
+          <p style="margin: 0; color: #333; white-space: pre-wrap;">${evidence}</p>
+        </div>
+      </div>
+      
+      <p style="margin: 0 0 20px 0;">
+        Please review this request and approve or decline it from your Team Management dashboard.
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: headTeacherEmail,
-    from: getFromAddress(),
-    subject: `New Teacher Verification Request for ${schoolName}`,
-    templateId: 'd-19393590bcaf43e091737b69c49139ac',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      requesterName: requesterName,
-      requesterEmail: requesterEmail,
-      evidence: evidence,
-      reviewUrl: `${getBaseUrl()}/dashboard/team-management?tab=requests`,
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '👀 Review Request',
+    callToActionUrl: reviewUrl,
+    footerText: 'You received this email because you are a head teacher at this school.'
   });
 }
 
@@ -852,19 +1054,51 @@ export async function sendVerificationApprovalEmail(
   requesterEmail: string,
   schoolName: string,
   reviewerName: string,
-  reviewNotes?: string
+  reviewNotes?: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
+  const baseUrl = getBaseUrl();
+  
+  const englishContent: EmailContent = {
+    subject: `🎉 Welcome to ${schoolName}!`,
+    title: `Verification Approved!`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #166534; font-size: 18px; font-weight: 700;">
+          🎉 Congratulations!
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        Your request to join <strong>${schoolName}</strong> has been <strong style="color: #22c55e;">approved</strong>!
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Approved by:</p>
+        <p style="margin: 0 ${reviewNotes ? '20px' : ''}  0; font-size: 16px; color: #333;">✓ ${reviewerName}</p>
+        
+        ${reviewNotes ? `
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Notes:</p>
+        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb;">
+          <p style="margin: 0; color: #333; white-space: pre-wrap;">${reviewNotes}</p>
+        </div>
+        ` : ''}
+      </div>
+      
+      <p style="margin: 0 0 20px 0;">
+        You can now access your school's dashboard and start contributing to your school's plastic clever journey! 🌊
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: requesterEmail,
-    from: getFromAddress(),
-    subject: `Welcome to ${schoolName} on Plastic Clever Schools!`,
-    templateId: 'd-adcb01d8edd5403490263da8ab97f402',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      reviewerName: reviewerName,
-      dashboardUrl: `${getBaseUrl()}/dashboard`,
-      reviewNotes: reviewNotes || '',
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '🚀 Go to Dashboard',
+    callToActionUrl: `${baseUrl}/dashboard`,
+    footerText: 'You received this email because your verification request was approved.'
   });
 }
 
@@ -872,19 +1106,53 @@ export async function sendVerificationRejectionEmail(
   requesterEmail: string,
   schoolName: string,
   reviewerName: string,
-  reviewNotes?: string
+  reviewNotes?: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
-    to: requesterEmail,
-    from: getFromAddress(),
+  const baseUrl = getBaseUrl();
+  
+  const englishContent: EmailContent = {
     subject: `Update on Your Request to Join ${schoolName}`,
-    templateId: 'd-6df35ffa36604ed9a62e919f5fa48962',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      reviewerName: reviewerName,
-      reviewNotes: reviewNotes || '',
-      helpCenterUrl: `${getBaseUrl()}/help`,
-    },
+    title: `Verification Request Update`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #92400e; font-size: 18px; font-weight: 700;">
+          📋 Request Status Update
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        Your request to join <strong>${schoolName}</strong> could not be approved at this time.
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Reviewed by:</p>
+        <p style="margin: 0 ${reviewNotes ? '20px' : ''} 0; font-size: 16px; color: #333;">${reviewerName}</p>
+        
+        ${reviewNotes ? `
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Notes:</p>
+        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb;">
+          <p style="margin: 0; color: #333; white-space: pre-wrap;">${reviewNotes}</p>
+        </div>
+        ` : ''}
+      </div>
+      
+      <p style="margin: 0 0 20px 0;">
+        If you believe this is an error or have questions, please contact the school directly or reach out to our support team.
+      </p>
+      
+      <p style="margin: 0; color: #666;">
+        Need help? Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
+    to: requesterEmail,
+    userLanguage,
+    englishContent,
+    footerText: 'You received this email because your verification request was reviewed.'
   });
 }
 
@@ -893,19 +1161,51 @@ export async function sendEvidenceSubmissionEmail(
   userEmail: string, 
   schoolName: string, 
   evidenceTitle: string,
-  stage: string
+  stage: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
+  const baseUrl = getBaseUrl();
+  
+  const englishContent: EmailContent = {
+    subject: `✅ Evidence Submitted: ${evidenceTitle}`,
+    title: `Evidence Submitted Successfully!`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 700;">
+          📤 Submission Confirmed
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        Your evidence has been successfully submitted and is now awaiting review!
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Evidence:</p>
+        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #019ADE;">${evidenceTitle}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Stage:</p>
+        <p style="margin: 0; color: #333;">${stage}</p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0;">
+        Our team will review your submission and get back to you soon. You'll receive an email notification once your evidence has been reviewed. 📬
+      </p>
+      
+      <p style="margin: 0; color: #666;">
+        Keep up the great work making your school plastic clever! 🌊
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: userEmail,
-    from: getFromAddress(),
-    subject: `Evidence Submitted Successfully - ${evidenceTitle}`,
-    templateId: 'd-2a045eb4f5a0477689d385a315dc2938',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      evidenceTitle: evidenceTitle,
-      stage: stage,
-      dashboardUrl: getBaseUrl(),
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '📊 View Dashboard',
+    callToActionUrl: baseUrl,
+    footerText: 'You received this email because you submitted evidence for your school.'
   });
 }
 
@@ -914,106 +1214,403 @@ export async function sendAdminNewEvidenceEmail(
   schoolName: string,
   evidenceTitle: string,
   stage: string,
-  submitterName: string
+  submitterName: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
+  const baseUrl = getBaseUrl();
+  const adminUrl = `${baseUrl}/admin`;
+  
+  const englishContent: EmailContent = {
+    subject: `🔔 New Evidence Submission: ${evidenceTitle}`,
+    title: `New Evidence Awaiting Review`,
+    preTitle: `Platform Administration`,
+    messageContent: `
+      <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 700;">
+          📬 Action Required
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        A new evidence submission requires your review.
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">School:</p>
+        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #019ADE;">${schoolName}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Evidence:</p>
+        <p style="margin: 0 0 15px 0; color: #333;">${evidenceTitle}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Stage:</p>
+        <p style="margin: 0 0 15px 0; color: #333;">${stage}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Submitted by:</p>
+        <p style="margin: 0; color: #333;">${submitterName}</p>
+      </div>
+      
+      <p style="margin: 0;">
+        Please review this submission from your admin dashboard.
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: adminEmail,
-    from: getFromAddress(),
-    subject: `New Evidence Submission - ${evidenceTitle}`,
-    templateId: 'd-cf5207c6e0734984bc8008f5285fcef4',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      evidenceTitle: evidenceTitle,
-      stage: stage,
-      submitterName: submitterName,
-      adminUrl: `${getBaseUrl()}/admin`,
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '👀 Review Evidence',
+    callToActionUrl: adminUrl,
+    footerText: 'You received this email because you are a platform administrator.'
   });
 }
 
 // Audit email functions
 export async function sendAuditSubmissionEmail(
   userEmail: string,
-  schoolName: string
+  schoolName: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
+  const baseUrl = getBaseUrl();
+  
+  const englishContent: EmailContent = {
+    subject: `✅ Plastic Waste Audit Submitted`,
+    title: `Audit Submitted Successfully!`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 700;">
+          📊 Submission Confirmed
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        Your plastic waste audit has been successfully submitted and is now awaiting review!
+      </p>
+      
+      <p style="margin: 0 0 20px 0;">
+        Thank you for taking the time to audit your school's plastic waste. This important data helps us understand and reduce plastic pollution in schools worldwide. 🌍
+      </p>
+      
+      <p style="margin: 0 0 20px 0;">
+        Our team will review your audit submission and get back to you soon. You'll receive an email notification once your audit has been reviewed. 📬
+      </p>
+      
+      <p style="margin: 0; color: #666;">
+        Keep up the fantastic work! 🌊
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: userEmail,
-    from: getFromAddress(),
-    subject: `Plastic Waste Audit Submitted - ${schoolName}`,
-    templateId: 'd-audit-submission-placeholder',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      dashboardUrl: getBaseUrl(),
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '📊 View Dashboard',
+    callToActionUrl: baseUrl,
+    footerText: 'You received this email because you submitted a plastic waste audit for your school.'
   });
 }
 
 export async function sendAdminNewAuditEmail(
   adminEmail: string,
   schoolName: string,
-  submitterName: string
+  submitterName: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
+  const baseUrl = getBaseUrl();
+  const adminUrl = `${baseUrl}/admin`;
+  
+  const englishContent: EmailContent = {
+    subject: `🔔 New Audit Submission: ${schoolName}`,
+    title: `New Audit Awaiting Review`,
+    preTitle: `Platform Administration`,
+    messageContent: `
+      <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 700;">
+          📬 Action Required
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        A new plastic waste audit submission requires your review.
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">School:</p>
+        <p style="margin: 0 0 15px 0; font-size: 18px; font-weight: 700; color: #019ADE;">${schoolName}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Submitted by:</p>
+        <p style="margin: 0; color: #333;">${submitterName}</p>
+      </div>
+      
+      <p style="margin: 0;">
+        Please review this audit submission from your admin dashboard.
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: adminEmail,
-    from: getFromAddress(),
-    subject: `New Audit Submission - ${schoolName}`,
-    templateId: 'd-admin-audit-notification-placeholder',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      submitterName: submitterName,
-      adminUrl: `${getBaseUrl()}/admin`,
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '👀 Review Audit',
+    callToActionUrl: adminUrl,
+    footerText: 'You received this email because you are a platform administrator.'
   });
 }
 
 export async function sendAuditApprovalEmail(
   userEmail: string,
-  schoolName: string
+  schoolName: string,
+  reviewerName?: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
+  const baseUrl = getBaseUrl();
+  const approver = reviewerName || 'Platform Admin';
+  
+  const englishContent: EmailContent = {
+    subject: `✅ Audit Approved`,
+    title: `Audit Approved!`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <div style="background: #f0fdf4; border-left: 4px solid #22c55e; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #166534; font-size: 18px; font-weight: 700;">
+          🎉 Great news!
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        Your plastic waste audit has been <strong style="color: #22c55e;">approved</strong>!
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Reviewed by:</p>
+        <p style="margin: 0; font-size: 16px; color: #333;">✓ ${approver}</p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0;">
+        Your audit data has been added to your school's records and will contribute to our global understanding of plastic waste in schools. This is an important step in your plastic clever journey! 🌊
+      </p>
+      
+      <p style="margin: 0; color: #666;">
+        View your audit results and track your progress in your dashboard.
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: userEmail,
-    from: getFromAddress(),
-    subject: `Audit Approved - ${schoolName}`,
-    templateId: 'd-audit-approval-placeholder',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      dashboardUrl: getBaseUrl(),
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '📊 View Dashboard',
+    callToActionUrl: baseUrl,
+    footerText: 'You received this email because your audit was approved.'
   });
 }
 
 export async function sendAuditRejectionEmail(
   userEmail: string,
   schoolName: string,
-  feedback: string
+  feedback: string,
+  reviewerName?: string,
+  userLanguage?: string
 ): Promise<boolean> {
-  return await sendEmail({
+  const baseUrl = getBaseUrl();
+  const approver = reviewerName || 'Platform Admin';
+  
+  const englishContent: EmailContent = {
+    subject: `📋 Feedback on Audit`,
+    title: `Audit Needs Attention`,
+    preTitle: `${schoolName}`,
+    messageContent: `
+      <div style="background: #fef3c7; border-left: 4px solid #f59e0b; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #92400e; font-size: 18px; font-weight: 700;">
+          📝 Feedback from Reviewer
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        Your plastic waste audit needs some adjustments before it can be approved.
+      </p>
+      
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 25px 0;">
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Reviewed by:</p>
+        <p style="margin: 0 0 20px 0; font-size: 16px; color: #333;">${approver}</p>
+        
+        <p style="margin: 0 0 10px 0; font-weight: 600; color: #0B3D5D;">Feedback:</p>
+        <div style="background: white; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb;">
+          <p style="margin: 0; color: #333; white-space: pre-wrap;">${feedback}</p>
+        </div>
+      </div>
+      
+      <p style="margin: 0 0 20px 0;">
+        Don't worry! You can update your audit and resubmit it. We're here to help you succeed! 💪
+      </p>
+      
+      <p style="margin: 0; color: #666;">
+        Need help? Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
     to: userEmail,
-    from: getFromAddress(),
-    subject: `Audit Feedback - ${schoolName}`,
-    templateId: 'd-audit-rejection-placeholder',
-    dynamicTemplateData: {
-      schoolName: schoolName,
-      feedback: feedback,
-      dashboardUrl: getBaseUrl(),
-    },
+    userLanguage,
+    englishContent,
+    callToActionText: '📝 Update Audit',
+    callToActionUrl: baseUrl,
+    footerText: 'You received this email because your audit was reviewed.'
   });
 }
 
-// Bulk email functions for admin use
-// 
-// IMPORTANT: You must create a SendGrid dynamic template with the following variables:
-// - {{subject}} - Email subject line
-// - {{preheader}} - Preview text shown in email clients (optional)
-// - {{title}} - Main heading displayed in the email
-// - {{preTitle}} - Subtitle displayed under the title (optional)
-// - {{{messageContent}}} - Main body content (use triple braces to allow HTML)
-//
-// The template ID should be set in the BULK_EMAIL_TEMPLATE_ID constant below.
-// Once you have created the template in SendGrid, replace 'BULK_EMAIL_TEMPLATE_ID' 
-// with your actual template ID (e.g., 'd-1234567890abcdef1234567890abcdef').
+// Weekly admin digest email
+export interface WeeklyDigestData {
+  evidenceCount: number;
+  evidenceSubmissions: Array<{
+    schoolName: string;
+    evidenceTitle: string;
+    submitterName: string;
+    submittedAt: Date;
+  }>;
+  newUsersCount: number;
+  newUsers: Array<{
+    email: string;
+    schoolName: string;
+    role: string;
+    joinedAt: Date;
+  }>;
+  platformStats: {
+    totalSchools: number;
+    totalEvidence: number;
+    totalUsers: number;
+    activeSchools: number;
+  };
+  weekStart: Date;
+  weekEnd: Date;
+}
 
-const BULK_EMAIL_TEMPLATE_ID = 'd-b546db54234145adaf87db5db37b3edc';
+export async function sendWeeklyAdminDigest(
+  adminEmail: string,
+  digestData: WeeklyDigestData,
+  userLanguage?: string
+): Promise<boolean> {
+  const baseUrl = getBaseUrl();
+  
+  const formatDate = (date: Date) => {
+    return new Date(date).toLocaleDateString('en-US', { 
+      weekday: 'short', 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+  
+  const evidenceList = digestData.evidenceSubmissions.length > 0
+    ? digestData.evidenceSubmissions.map(e => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
+          <strong>${e.evidenceTitle}</strong><br>
+          <span style="color: #666; font-size: 14px;">${e.schoolName} • ${e.submitterName}</span>
+        </td>
+      </tr>
+    `).join('')
+    : '<tr><td style="padding: 20px; text-align: center; color: #999;">No evidence submissions this week</td></tr>';
+  
+  const usersList = digestData.newUsers.length > 0
+    ? digestData.newUsers.map(u => `
+      <tr>
+        <td style="padding: 10px; border-bottom: 1px solid #e5e7eb;">
+          <strong>${u.email}</strong><br>
+          <span style="color: #666; font-size: 14px;">${u.schoolName} • ${u.role}</span>
+        </td>
+      </tr>
+    `).join('')
+    : '<tr><td style="padding: 20px; text-align: center; color: #999;">No new users this week</td></tr>';
+  
+  const englishContent: EmailContent = {
+    subject: `📊 Weekly Platform Digest: ${formatDate(digestData.weekStart)} - ${formatDate(digestData.weekEnd)}`,
+    title: `Weekly Platform Digest`,
+    preTitle: `${formatDate(digestData.weekStart)} - ${formatDate(digestData.weekEnd)}`,
+    messageContent: `
+      <p style="margin: 0 0 30px 0; font-size: 16px;">
+        Here's your weekly summary of platform activity.
+      </p>
+      
+      <!-- Quick Stats -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 0 0 30px 0;">
+        <div style="background: #f0fdf4; padding: 20px; border-radius: 8px; border-left: 4px solid #22c55e;">
+          <p style="margin: 0; color: #166534; font-size: 14px; font-weight: 600;">Evidence Submissions</p>
+          <p style="margin: 5px 0 0 0; color: #166534; font-size: 32px; font-weight: 700;">${digestData.evidenceCount}</p>
+        </div>
+        <div style="background: #eff6ff; padding: 20px; border-radius: 8px; border-left: 4px solid #3b82f6;">
+          <p style="margin: 0; color: #1e40af; font-size: 14px; font-weight: 600;">New Users</p>
+          <p style="margin: 5px 0 0 0; color: #1e40af; font-size: 32px; font-weight: 700;">${digestData.newUsersCount}</p>
+        </div>
+      </div>
+      
+      <!-- Evidence Submissions -->
+      <div style="margin: 0 0 30px 0;">
+        <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 20px; font-weight: 700;">
+          📤 Evidence Submissions This Week
+        </h2>
+        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
+          ${evidenceList}
+        </table>
+      </div>
+      
+      <!-- New Users -->
+      <div style="margin: 0 0 30px 0;">
+        <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 20px; font-weight: 700;">
+          👥 New Users This Week
+        </h2>
+        <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; border: 1px solid #e5e7eb;">
+          ${usersList}
+        </table>
+      </div>
+      
+      <!-- Platform Stats -->
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 0 0 20px 0;">
+        <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 20px; font-weight: 700;">
+          📊 Platform Overview
+        </h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+          <div>
+            <p style="margin: 0; color: #666; font-size: 14px;">Total Schools</p>
+            <p style="margin: 5px 0 0 0; color: #0B3D5D; font-size: 24px; font-weight: 700;">${digestData.platformStats.totalSchools}</p>
+          </div>
+          <div>
+            <p style="margin: 0; color: #666; font-size: 14px;">Active Schools</p>
+            <p style="margin: 5px 0 0 0; color: #02BBB4; font-size: 24px; font-weight: 700;">${digestData.platformStats.activeSchools}</p>
+          </div>
+          <div>
+            <p style="margin: 0; color: #666; font-size: 14px;">Total Evidence</p>
+            <p style="margin: 5px 0 0 0; color: #0B3D5D; font-size: 24px; font-weight: 700;">${digestData.platformStats.totalEvidence}</p>
+          </div>
+          <div>
+            <p style="margin: 0; color: #666; font-size: 14px;">Total Users</p>
+            <p style="margin: 5px 0 0 0; color: #02BBB4; font-size: 24px; font-weight: 700;">${digestData.platformStats.totalUsers}</p>
+          </div>
+        </div>
+      </div>
+      
+      <p style="margin: 0; color: #666; font-size: 14px;">
+        This digest is sent weekly every Monday at 9:00 AM.
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
+    to: adminEmail,
+    userLanguage,
+    englishContent,
+    callToActionText: '🔧 Go to Admin Dashboard',
+    callToActionUrl: `${baseUrl}/admin`,
+    footerText: 'You received this email because you are a platform administrator.'
+  });
+}
+
+// Bulk email functions for admin use - Now using custom HTML templates
 
 export interface BulkEmailParams {
   recipients: string[];
@@ -1022,10 +1619,23 @@ export interface BulkEmailParams {
   title: string;
   preTitle?: string;
   messageContent: string;
+  callToActionText?: string;
+  callToActionUrl?: string;
 }
 
 export async function sendBulkEmail(params: BulkEmailParams): Promise<{ sent: number; failed: number; details: Array<{email: string; success: boolean}> }> {
   const results = { sent: 0, failed: 0, details: [] as Array<{email: string; success: boolean}> };
+  
+  // Generate the HTML email using our template system
+  const html = generateEmailTemplate({
+    title: params.title,
+    preTitle: params.preTitle,
+    preheader: params.preheader,
+    messageContent: params.messageContent,
+    callToActionText: params.callToActionText,
+    callToActionUrl: params.callToActionUrl,
+    footerText: 'You received this email from Plastic Clever Schools.'
+  });
   
   for (const email of params.recipients) {
     try {
@@ -1033,14 +1643,7 @@ export async function sendBulkEmail(params: BulkEmailParams): Promise<{ sent: nu
         to: email,
         from: getFromAddress(),
         subject: params.subject,
-        templateId: BULK_EMAIL_TEMPLATE_ID,
-        dynamicTemplateData: {
-          subject: params.subject,
-          preheader: params.preheader || '',
-          title: params.title,
-          preTitle: params.preTitle || '',
-          messageContent: params.messageContent,
-        },
+        html,
       });
       
       if (success) {

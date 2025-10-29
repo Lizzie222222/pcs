@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isSchoolMember } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, caseStudies, importBatches, userActivityLogs } from "@shared/schema";
 import { nanoid } from 'nanoid';
@@ -2582,24 +2582,13 @@ Return JSON with:
             user.email,
             school.name,
             evidence.title,
-            evidence.stage
+            evidence.stage,
+            user.preferredLanguage || 'en'
           );
 
-          // Send notification email to all admin users
-          const adminUsers = await storage.getAllUsers();
-          const admins = adminUsers.filter(adminUser => adminUser.isAdmin);
-          
-          for (const admin of admins) {
-            if (admin.email) {
-              await sendAdminNewEvidenceEmail(
-                admin.email,
-                school.name,
-                evidence.title,
-                evidence.stage,
-                `${user.firstName} ${user.lastName}`.trim() || user.email
-              );
-            }
-          }
+          // NOTE: Admin notifications replaced with weekly digest emails
+          // Admins receive a weekly summary instead of being notified on every submission
+          // Use POST /api/admin/send-weekly-digest to send the digest manually
 
           // Add to Mailchimp evidence submission automation
           await mailchimpService.setupEvidenceSubmissionAutomation({
@@ -6371,6 +6360,148 @@ Return JSON with:
     } catch (error) {
       console.error("Error sending bulk email:", error);
       res.status(500).json({ message: "Failed to send bulk email" });
+    }
+  });
+
+  // Generate and send weekly admin digest
+  app.post('/api/admin/send-weekly-digest', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      // Get date range for the past week
+      const weekEnd = new Date();
+      const weekStart = new Date();
+      weekStart.setDate(weekStart.getDate() - 7);
+      
+      // Get all evidence submissions from the past week
+      const allEvidence = await storage.getAllEvidence({});
+      const weeklyEvidence = allEvidence.filter(e => {
+        const submittedAt = new Date(e.submittedAt || e.createdAt);
+        return submittedAt >= weekStart && submittedAt <= weekEnd;
+      });
+      
+      // Get all users created in the past week
+      const allUsers = await storage.getAllUsers();
+      const weeklyUsers = allUsers.filter(u => {
+        const joinedAt = new Date(u.createdAt);
+        return joinedAt >= weekStart && joinedAt <= weekEnd;
+      });
+      
+      // Get platform stats
+      const stats = await storage.getSchoolStats();
+      const totalSchools = stats.totalSchools || 0;
+      const activeSchools = stats.activeSchools || 0;
+      
+      // Count total evidence and users
+      const totalEvidence = allEvidence.length;
+      const totalUsers = allUsers.length;
+      
+      // Prepare evidence submissions data
+      const evidenceSubmissions = await Promise.all(
+        weeklyEvidence.slice(0, 20).map(async (e) => {
+          const school = await storage.getSchool(e.schoolId);
+          const submitter = await storage.getUser(e.submittedBy);
+          return {
+            schoolName: school?.name || 'Unknown School',
+            evidenceTitle: e.title,
+            submitterName: `${submitter?.firstName || ''} ${submitter?.lastName || ''}`.trim() || 'Unknown User',
+            submittedAt: new Date(e.submittedAt || e.createdAt)
+          };
+        })
+      );
+      
+      // Prepare new users data
+      const newUsers = await Promise.all(
+        weeklyUsers.slice(0, 20).map(async (u) => {
+          const userSchools = await storage.getUserSchools(u.id);
+          return {
+            email: u.email,
+            schoolName: userSchools.length > 0 ? userSchools[0].name : 'No School',
+            role: u.role,
+            joinedAt: new Date(u.createdAt)
+          };
+        })
+      );
+      
+      // Prepare digest data
+      const digestData: WeeklyDigestData = {
+        evidenceCount: weeklyEvidence.length,
+        evidenceSubmissions,
+        newUsersCount: weeklyUsers.length,
+        newUsers,
+        platformStats: {
+          totalSchools,
+          totalEvidence,
+          totalUsers,
+          activeSchools
+        },
+        weekStart,
+        weekEnd
+      };
+      
+      // Get all admin users
+      const adminUsers = allUsers.filter(u => u.isAdmin);
+      
+      if (adminUsers.length === 0) {
+        return res.status(400).json({ message: "No admin users found to send digest to" });
+      }
+      
+      // Send digest to all admins
+      let sent = 0;
+      let failed = 0;
+      const results: { email: string; status: 'sent' | 'failed'; error?: string }[] = [];
+      
+      for (const admin of adminUsers) {
+        try {
+          if (!admin.email) {
+            results.push({ email: 'unknown', status: 'failed', error: 'No email address' });
+            failed++;
+            continue;
+          }
+          
+          const emailSent = await sendWeeklyAdminDigest(
+            admin.email,
+            digestData,
+            admin.preferredLanguage || 'en'
+          );
+          
+          if (emailSent) {
+            results.push({ email: admin.email, status: 'sent' });
+            sent++;
+            console.log(`[Weekly Digest] Sent digest to ${admin.email}`);
+          } else {
+            results.push({ email: admin.email, status: 'failed', error: 'Email service failed' });
+            failed++;
+          }
+        } catch (error) {
+          console.error(`[Weekly Digest] Failed to send to ${admin.email}:`, error);
+          results.push({ 
+            email: admin.email, 
+            status: 'failed', 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+          failed++;
+        }
+      }
+      
+      res.json({
+        message: "Weekly digest generation completed",
+        results: {
+          totalRecipients: adminUsers.length,
+          sent,
+          failed,
+          digestPeriod: {
+            start: weekStart.toISOString(),
+            end: weekEnd.toISOString()
+          },
+          summary: {
+            evidenceSubmissions: weeklyEvidence.length,
+            newUsers: weeklyUsers.length
+          }
+        },
+        details: results
+      });
+    } catch (error) {
+      console.error("[Weekly Digest] Error generating digest:", error);
+      res.status(500).json({ message: "Failed to generate weekly digest" });
     }
   });
 
