@@ -61,3 +61,11 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 -   **AI Integration**: OpenAI GPT-4o-mini
 -   **PDF Generation**: Puppeteer
 -   **Image Processing**: Sharp library
+
+## Recent Changes (October 2025)
+### Photo Consent Review UX Improvements
+- **Replaced Native Browser Dialogs**: Replaced outdated browser dialogs (confirm, prompt, alert) with custom shadcn/ui AlertDialog components for photo consent approval and rejection
+- **Approval Dialog**: Added a clean modal confirmation dialog matching the app's design system
+- **Rejection Dialog**: Added a modal dialog with Textarea for rejection notes, with proper validation and disabled state
+- **Consistent UX**: All dialogs now match the app's design language with proper loading spinners, cancel buttons, and action buttons
+- **Impact**: Photo consent review workflow now has a modern, consistent user experience instead of old-school browser popups
