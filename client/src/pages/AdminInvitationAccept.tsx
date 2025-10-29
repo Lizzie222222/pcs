@@ -206,11 +206,13 @@ export default function AdminInvitationAccept() {
       
       toast({
         title: "Profile updated!",
-        description: "Your profile has been updated successfully",
+        description: "Accepting your invitation...",
       });
       
-      // Also invalidate and refetch to ensure consistency
-      await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      // Automatically accept the invitation after profile update to avoid showing intermediate state
+      setTimeout(() => {
+        acceptMutation.mutate();
+      }, 500);
     },
     onError: (error: Error) => {
       const errorMessage = error.message || "Failed to update profile";
