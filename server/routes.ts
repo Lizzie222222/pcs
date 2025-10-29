@@ -3542,15 +3542,62 @@ Return JSON with:
     }
   });
 
-  // Get upload URL for evidence files (legacy, kept for backward compatibility)
-  app.post("/api/objects/upload", isAuthenticated, async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
+  // Direct file upload to object storage (for event images, etc.)
+  app.post("/api/objects/upload", isAuthenticated, uploadCompression.single('file'), async (req: any, res) => {
     try {
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
+      if (!req.file) {
+        return res.status(400).json({ error: "No file provided" });
+      }
+
+      const userId = req.user?.id;
+      const visibility = req.body.visibility || 'public';
+      const filename = req.file.originalname;
+      const mimeType = req.file.mimetype;
+      
+      let fileBuffer = req.file.buffer;
+      const originalSize = req.file.buffer.length;
+      let compressedSize = originalSize;
+      let wasCompressed = false;
+      
+      // Only compress if it's an image format we support
+      if (shouldCompressFile(mimeType)) {
+        try {
+          fileBuffer = await compressImage(fileBuffer, {
+            maxWidth: 1920,
+            maxHeight: 1920,
+            quality: 85,
+          });
+          compressedSize = fileBuffer.length;
+          wasCompressed = true;
+          
+          const savingsPercent = ((originalSize - compressedSize) / originalSize * 100).toFixed(1);
+          console.log(`Compressed ${filename}: ${(originalSize / 1024 / 1024).toFixed(2)}MB → ${(compressedSize / 1024 / 1024).toFixed(2)}MB (saved ${savingsPercent}%)`);
+        } catch (compressionError) {
+          console.warn(`Compression failed for ${filename}, uploading original:`, compressionError);
+          fileBuffer = req.file.buffer;
+          compressedSize = originalSize;
+          wasCompressed = false;
+        }
+      }
+
+      // Upload to object storage using the helper function
+      const objectPath = await uploadToObjectStorage(
+        fileBuffer,
+        mimeType,
+        filename,
+        userId,
+        visibility
+      );
+
+      res.status(200).json({ 
+        url: objectPath,
+        originalSize,
+        compressedSize,
+        wasCompressed,
+      });
     } catch (error) {
-      console.error("Error getting upload URL:", error);
-      res.status(500).json({ error: "Failed to get upload URL" });
+      console.error("Error uploading file:", error);
+      res.status(500).json({ error: "Failed to upload file" });
     }
   });
 

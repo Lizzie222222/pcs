@@ -1,5 +1,5 @@
 import { ObjectStorageService } from '../../objectStorage';
-import { ObjectPermission } from '../../objectAcl';
+import { ObjectAclPolicy } from '../../objectAcl';
 
 /**
  * Upload a file to object storage and set ACL policy
@@ -55,7 +55,7 @@ export async function uploadToObjectStorage(
 export function createAclPolicy(
   userId: string,
   visibility: 'public' | 'private' = 'private'
-): ObjectPermission {
+): ObjectAclPolicy {
   return {
     owner: userId,
     visibility,

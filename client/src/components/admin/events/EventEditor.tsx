@@ -99,7 +99,6 @@ export default function EventEditor({
 
   // Page Builder state
   const [currentEventStep, setCurrentEventStep] = useState<1 | 2 | 3>(1);
-  const [uploadingPackFiles, setUploadingPackFiles] = useState<Record<number, boolean>>({});
   const [showPageBuilderWarning, setShowPageBuilderWarning] = useState(false);
   const [eventDialogTab, setEventDialogTab] = useState<'details' | 'page-builder'>('details');
   const eventDialogContentRef = useRef<HTMLDivElement>(null);
@@ -107,26 +106,23 @@ export default function EventEditor({
   // Multi-language state
   const [selectedLanguage, setSelectedLanguage] = useState<string>('en');
   const previousLanguageRef = useRef<string>('en');
-  const supportedLanguages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'sv', 'no', 'da', 'fi', 'el', 'ar', 'zh'];
+  const supportedLanguages = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'sv', 'no', 'da', 'fi', 'el', 'ar', 'zh', 'id'];
   const languageNames: Record<string, string> = {
     en: 'English', es: 'Spanish', fr: 'French', de: 'German', it: 'Italian',
     pt: 'Portuguese', nl: 'Dutch', sv: 'Swedish', no: 'Norwegian', da: 'Danish',
-    fi: 'Finnish', el: 'Greek', ar: 'Arabic', zh: 'Chinese'
+    fi: 'Finnish', el: 'Greek', ar: 'Arabic', zh: 'Chinese', id: 'Indonesian'
   };
   
   // Translation states
   const [titleTranslations, setTitleTranslations] = useState<Record<string, string>>({});
   const [descriptionTranslations, setDescriptionTranslations] = useState<Record<string, string>>({});
   const [youtubeVideoTranslations, setYoutubeVideoTranslations] = useState<Record<string, any[]>>({ en: [] });
-  const [eventPackFileTranslations, setEventPackFileTranslations] = useState<Record<string, any[]>>({ en: [] });
   const [testimonialTranslations, setTestimonialTranslations] = useState<Record<string, any[]>>({ en: [] });
   const [evidenceSubmissionText, setEvidenceSubmissionText] = useState<Record<string, string>>({});
   
   // Configuration states
   const [featuredVideoIndex, setFeaturedVideoIndex] = useState<number>(0);
-  const [eventPackBannerImageUrl, setEventPackBannerImageUrl] = useState<string>('');
   const [showEvidenceSubmission, setShowEvidenceSubmission] = useState<boolean>(false);
-  const [isUploadingPackBanner, setIsUploadingPackBanner] = useState(false);
 
   // Page Builder form schema
   const pageBuilderSchema = z.object({
@@ -138,13 +134,6 @@ export default function EventEditor({
       }, "Must be a valid YouTube URL"),
       description: z.string().optional(),
     })).optional(),
-    eventPackFiles: z.array(z.object({
-      title: z.string().min(1, "Title is required"),
-      fileUrl: z.string().min(1, "File is required"),
-      fileName: z.string().optional(),
-      fileSize: z.number().optional(),
-      description: z.string().optional(),
-    })).optional(),
     testimonials: z.array(z.object({
       quote: z.string().min(1, "Quote is required"),
       author: z.string().min(1, "Author name is required"),
@@ -153,10 +142,8 @@ export default function EventEditor({
     titleTranslations: z.record(z.string()).optional(),
     descriptionTranslations: z.record(z.string()).optional(),
     youtubeVideoTranslations: z.record(z.array(z.any())).optional(),
-    eventPackFileTranslations: z.record(z.array(z.any())).optional(),
     testimonialTranslations: z.record(z.array(z.any())).optional(),
     featuredVideoIndex: z.number().optional(),
-    eventPackBannerImageUrl: z.string().optional(),
     showEvidenceSubmission: z.boolean().optional(),
     evidenceSubmissionText: z.record(z.string()).optional(),
   });
@@ -179,7 +166,6 @@ export default function EventEditor({
     defaultValues: {
       publicSlug: '',
       youtubeVideos: [],
-      eventPackFiles: [],
       testimonials: [],
     },
   });
@@ -187,11 +173,6 @@ export default function EventEditor({
   const { fields: videoFields, append: appendVideo, remove: removeVideo, move: moveVideo, replace: replaceVideos } = useFieldArray({
     control: pageBuilderForm.control,
     name: "youtubeVideos",
-  });
-
-  const { fields: packFileFields, append: appendPackFile, remove: removePackFile, replace: replacePackFiles } = useFieldArray({
-    control: pageBuilderForm.control,
-    name: "eventPackFiles",
   });
 
   const { fields: testimonialFields, append: appendTestimonial, remove: removeTestimonial, replace: replaceTestimonials } = useFieldArray({
@@ -315,14 +296,10 @@ export default function EventEditor({
       }
 
       const videoTranslations = event.youtubeVideoTranslations || {};
-      const fileTranslations = event.eventPackFileTranslations || {};
       const testTranslations = event.testimonialTranslations || {};
       
       if (!videoTranslations.en && event.youtubeVideos) {
         videoTranslations.en = event.youtubeVideos;
-      }
-      if (!fileTranslations.en && event.eventPackFiles) {
-        fileTranslations.en = event.eventPackFiles;
       }
       if (!testTranslations.en && event.testimonials) {
         testTranslations.en = event.testimonials;
@@ -341,17 +318,14 @@ export default function EventEditor({
       setTitleTranslations(loadedTitleTranslations);
       setDescriptionTranslations(loadedDescriptionTranslations);
       setYoutubeVideoTranslations(videoTranslations);
-      setEventPackFileTranslations(fileTranslations);
       setTestimonialTranslations(testTranslations);
       setFeaturedVideoIndex(event.featuredVideoIndex || 0);
-      setEventPackBannerImageUrl(event.eventPackBannerImageUrl || '');
       setShowEvidenceSubmission(event.showEvidenceSubmission || false);
       setEvidenceSubmissionText(event.evidenceSubmissionText || {});
       
       pageBuilderForm.reset({
         publicSlug: editingEvent.publicSlug || '',
         youtubeVideos: videoTranslations[selectedLanguage] || [],
-        eventPackFiles: fileTranslations[selectedLanguage] || [],
         testimonials: testTranslations[selectedLanguage] || [],
       });
     } else if (!editingEvent && isOpen) {
@@ -379,10 +353,8 @@ export default function EventEditor({
       setTitleTranslations({});
       setDescriptionTranslations({});
       setYoutubeVideoTranslations({ en: [] });
-      setEventPackFileTranslations({ en: [] });
       setTestimonialTranslations({ en: [] });
       setFeaturedVideoIndex(0);
-      setEventPackBannerImageUrl('');
       setShowEvidenceSubmission(false);
       setEvidenceSubmissionText({});
       setSelectedLanguage('en');
@@ -390,7 +362,6 @@ export default function EventEditor({
       pageBuilderForm.reset({
         publicSlug: '',
         youtubeVideos: [],
-        eventPackFiles: [],
         testimonials: [],
       });
     }
@@ -409,30 +380,23 @@ export default function EventEditor({
         ...youtubeVideoTranslations,
         [previousLang]: currentFormValues.youtubeVideos || []
       };
-      const updatedFileTranslations = {
-        ...eventPackFileTranslations,
-        [previousLang]: currentFormValues.eventPackFiles || []
-      };
       const updatedTestimonialTranslations = {
         ...testimonialTranslations,
         [previousLang]: currentFormValues.testimonials || []
       };
       
       setYoutubeVideoTranslations(updatedVideoTranslations);
-      setEventPackFileTranslations(updatedFileTranslations);
       setTestimonialTranslations(updatedTestimonialTranslations);
       
       previousLanguageRef.current = selectedLanguage;
       
       const currentVideos = updatedVideoTranslations[selectedLanguage] || [];
-      const currentFiles = updatedFileTranslations[selectedLanguage] || [];
       const currentTestimonials = updatedTestimonialTranslations[selectedLanguage] || [];
       
       replaceVideos(currentVideos);
-      replacePackFiles(currentFiles);
       replaceTestimonials(currentTestimonials);
     }
-  }, [selectedLanguage, isOpen, youtubeVideoTranslations, eventPackFileTranslations, testimonialTranslations, replaceVideos, replacePackFiles, replaceTestimonials]);
+  }, [selectedLanguage, isOpen, youtubeVideoTranslations, testimonialTranslations, replaceVideos, replaceTestimonials]);
 
   // Event image upload handler
   const handleEventImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -503,62 +467,22 @@ export default function EventEditor({
     setEventFormData(prev => ({ ...prev, imageUrl: '' }));
   };
 
-  // Pack file upload handler
-  const handlePackFileUpload = async (file: File, index: number): Promise<{ fileUrl: string; fileName: string; fileSize: number } | null> => {
-    if (!file.type.match(/application\/pdf/)) {
-      toast({
-        title: "Invalid file type",
-        description: "Please upload a PDF file.",
-        variant: "destructive",
-      });
-      return null;
+  // Helper function to normalize image URLs
+  const normalizeImageUrl = (url: string): string => {
+    // Skip normalization for absolute URLs
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      return url;
     }
-
-    if (file.size > 50 * 1024 * 1024) {
-      toast({
-        title: "File too large",
-        description: "PDF must be less than 50MB.",
-        variant: "destructive",
-      });
-      return null;
+    // Skip normalization if already has /api/objects prefix
+    if (url.startsWith('/api/objects')) {
+      return url;
     }
-
-    setUploadingPackFiles(prev => ({ ...prev, [index]: true }));
-
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await fetch('/api/objects/upload', {
-        method: 'POST',
-        body: formData,
-        credentials: 'include',
-      });
-
-      if (!response.ok) throw new Error('Upload failed');
-
-      const data = await response.json();
-      
-      toast({
-        title: "Success",
-        description: "PDF uploaded successfully.",
-      });
-
-      return {
-        fileUrl: data.url,
-        fileName: file.name,
-        fileSize: file.size,
-      };
-    } catch (error: any) {
-      toast({
-        title: "Upload Failed",
-        description: error.message || "Failed to upload PDF.",
-        variant: "destructive",
-      });
-      return null;
-    } finally {
-      setUploadingPackFiles(prev => ({ ...prev, [index]: false }));
+    // If URL starts with /objects/, prepend only /api
+    if (url.startsWith('/objects/')) {
+      return `/api${url}`;
     }
+    // For other relative paths, prepend /api/objects
+    return `/api/objects${url}`;
   };
 
   // Submit handler
@@ -586,10 +510,6 @@ export default function EventEditor({
       ...youtubeVideoTranslations,
       [selectedLanguage]: currentFormValues.youtubeVideos || []
     };
-    const finalFileTranslations = {
-      ...eventPackFileTranslations,
-      [selectedLanguage]: currentFormValues.eventPackFiles || []
-    };
     const finalTestimonialTranslations = {
       ...testimonialTranslations,
       [selectedLanguage]: currentFormValues.testimonials || []
@@ -615,15 +535,12 @@ export default function EventEditor({
       accessType: eventFormData.accessType,
       publicSlug: currentFormValues.publicSlug || (editingEvent?.publicSlug || generateSlug(eventFormData.title)),
       youtubeVideos: finalVideoTranslations.en || [],
-      eventPackFiles: finalFileTranslations.en || [],
       testimonials: finalTestimonialTranslations.en || [],
       titleTranslations,
       descriptionTranslations,
       youtubeVideoTranslations: finalVideoTranslations,
-      eventPackFileTranslations: finalFileTranslations,
       testimonialTranslations: finalTestimonialTranslations,
       featuredVideoIndex,
-      eventPackBannerImageUrl,
       showEvidenceSubmission,
       evidenceSubmissionText,
     };
@@ -873,7 +790,7 @@ export default function EventEditor({
             ) : (
               <div className="relative border border-gray-300 rounded-md overflow-hidden">
                 <img
-                  src={eventFormData.imageUrl}
+                  src={normalizeImageUrl(eventFormData.imageUrl)}
                   alt="Event preview"
                   className="w-full h-48 object-cover"
                   data-testid="image-event-preview"
@@ -1295,266 +1212,6 @@ export default function EventEditor({
                           <FormLabel>Description (optional)</FormLabel>
                           <FormControl>
                             <Textarea {...field} rows={2} data-testid={`textarea-video-description-${index}`} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {/* Event Pack Banner Section */}
-          <div className="space-y-3 pt-4 border-t">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">Event Pack Banner Image</h3>
-              <p className="text-sm text-gray-600 mt-1">
-                Optional banner image displayed above event pack files
-              </p>
-            </div>
-            
-            <div>
-              {!eventPackBannerImageUrl ? (
-                <div>
-                  <input
-                    type="file"
-                    accept="image/jpeg,image/jpg,image/png,image/webp"
-                    onChange={async (e) => {
-                      const file = e.target.files?.[0];
-                      if (!file) return;
-                      
-                      if (!file.type.match(/image\/(jpeg|jpg|png|webp)/)) {
-                        toast({
-                          title: "Invalid file type",
-                          description: "Please upload a JPG, PNG, or WEBP image.",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-
-                      if (file.size > 10 * 1024 * 1024) {
-                        toast({
-                          title: "File too large",
-                          description: "Image must be less than 10MB.",
-                          variant: "destructive",
-                        });
-                        return;
-                      }
-
-                      setIsUploadingPackBanner(true);
-                      try {
-                        const formData = new FormData();
-                        formData.append('file', file);
-                        const response = await fetch('/api/objects/upload', {
-                          method: 'POST',
-                          body: formData,
-                          credentials: 'include',
-                        });
-                        if (!response.ok) throw new Error('Upload failed');
-                        const data = await response.json();
-                        setEventPackBannerImageUrl(data.url);
-                        toast({
-                          title: "Success",
-                          description: "Banner image uploaded successfully.",
-                        });
-                      } catch (error: any) {
-                        toast({
-                          title: "Upload Failed",
-                          description: error.message || "Failed to upload banner image.",
-                          variant: "destructive",
-                        });
-                      } finally {
-                        setIsUploadingPackBanner(false);
-                      }
-                    }}
-                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-pcs_blue file:text-white hover:file:bg-pcs_blue/90"
-                    data-testid="input-pack-banner-upload"
-                    disabled={isUploadingPackBanner}
-                  />
-                  {isUploadingPackBanner && (
-                    <p className="text-sm text-gray-600 mt-2">Uploading...</p>
-                  )}
-                </div>
-              ) : (
-                <div className="space-y-3">
-                  <div className="relative border rounded-md overflow-hidden">
-                    <img
-                      src={`/api/objects${eventPackBannerImageUrl}`}
-                      alt="Event pack banner"
-                      className="w-full h-auto max-h-48 object-cover"
-                      data-testid="img-pack-banner-preview"
-                    />
-                  </div>
-                  <Button
-                    type="button"
-                    variant="destructive"
-                    size="sm"
-                    onClick={() => setEventPackBannerImageUrl('')}
-                    data-testid="button-remove-pack-banner"
-                  >
-                    <Trash className="h-4 w-4 mr-2" />
-                    Remove Banner
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Event Pack Files Section */}
-          <div className="space-y-3 pt-4 border-t">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900">Event Pack Files</h3>
-                <Badge variant="outline" className="mt-1 text-xs">
-                  For {languageNames[selectedLanguage]} users
-                </Badge>
-              </div>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => appendPackFile({ title: '', fileUrl: '', fileName: '', fileSize: 0, description: '' })}
-                data-testid="button-add-pack-file"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add File
-              </Button>
-            </div>
-            
-            {packFileFields.length === 0 ? (
-              <div className="text-center py-4 text-gray-500 border border-dashed rounded-md">
-                No files added yet. Click "Add File" to get started.
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {packFileFields.map((field, index) => (
-                  <div key={field.id} className="p-4 border rounded-md space-y-3" data-testid={`pack-file-item-${index}`}>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700">File {index + 1}</span>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => removePackFile(index)}
-                        data-testid={`button-remove-pack-file-${index}`}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    
-                    <FormField
-                      control={pageBuilderForm.control}
-                      name={`eventPackFiles.${index}.title`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Title *</FormLabel>
-                          <FormControl>
-                            <Input {...field} data-testid={`input-pack-file-title-${index}`} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={pageBuilderForm.control}
-                      name={`eventPackFiles.${index}.fileUrl`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>PDF File *</FormLabel>
-                          <FormControl>
-                            <div className="space-y-2">
-                              {!field.value ? (
-                                <div>
-                                  <input
-                                    type="file"
-                                    accept="application/pdf"
-                                    onChange={async (e) => {
-                                      const file = e.target.files?.[0];
-                                      if (file) {
-                                        const result = await handlePackFileUpload(file, index);
-                                        if (result) {
-                                          pageBuilderForm.setValue(`eventPackFiles.${index}.fileUrl`, result.fileUrl);
-                                          pageBuilderForm.setValue(`eventPackFiles.${index}.fileName`, result.fileName);
-                                          pageBuilderForm.setValue(`eventPackFiles.${index}.fileSize`, result.fileSize);
-                                        }
-                                      }
-                                      e.target.value = '';
-                                    }}
-                                    className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-pcs_blue file:text-white hover:file:bg-pcs_blue/90"
-                                    data-testid={`input-pack-file-upload-${index}`}
-                                    disabled={uploadingPackFiles[index]}
-                                  />
-                                  {uploadingPackFiles[index] && (
-                                    <p className="text-sm text-gray-600">Uploading...</p>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="space-y-2">
-                                  <div className="relative aspect-[4/3] w-full bg-gray-100 rounded-md overflow-hidden border border-gray-200">
-                                    <PDFThumbnail
-                                      url={`/api/objects${field.value}`}
-                                      className="w-full h-full"
-                                    />
-                                  </div>
-                                  <div className="flex items-center justify-between p-2 bg-gray-50 rounded-md">
-                                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                                      <FileText className="h-5 w-5 text-gray-600 flex-shrink-0" />
-                                      <div className="min-w-0 flex-1">
-                                        <p className="text-sm font-medium text-gray-900 truncate" data-testid={`text-pack-file-name-${index}`}>
-                                          {pageBuilderForm.watch(`eventPackFiles.${index}.fileName`) || 'File uploaded'}
-                                        </p>
-                                        {pageBuilderForm.watch(`eventPackFiles.${index}.fileSize`) && (
-                                          <p className="text-xs text-gray-500" data-testid={`text-pack-file-size-${index}`}>
-                                            {((pageBuilderForm.watch(`eventPackFiles.${index}.fileSize`) || 0) / 1024 / 1024).toFixed(2)} MB
-                                          </p>
-                                        )}
-                                      </div>
-                                    </div>
-                                    <div className="flex gap-2 flex-shrink-0">
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => window.open(`/api/objects${field.value}`, '_blank')}
-                                        data-testid={`button-download-pack-file-${index}`}
-                                      >
-                                        <Download className="h-4 w-4" />
-                                      </Button>
-                                      <Button
-                                        type="button"
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => {
-                                          pageBuilderForm.setValue(`eventPackFiles.${index}.fileUrl`, '');
-                                          pageBuilderForm.setValue(`eventPackFiles.${index}.fileName`, '');
-                                          pageBuilderForm.setValue(`eventPackFiles.${index}.fileSize`, 0);
-                                        }}
-                                        data-testid={`button-remove-uploaded-file-${index}`}
-                                      >
-                                        <Trash className="h-4 w-4" />
-                                      </Button>
-                                    </div>
-                                  </div>
-                                </div>
-                              )}
-                            </div>
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={pageBuilderForm.control}
-                      name={`eventPackFiles.${index}.description`}
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Description (optional)</FormLabel>
-                          <FormControl>
-                            <Textarea {...field} rows={2} data-testid={`textarea-pack-file-description-${index}`} />
                           </FormControl>
                           <FormMessage />
                         </FormItem>
