@@ -251,26 +251,23 @@ export default function Landing() {
 
         {/* Post-it Note Style News/Events Popup - Hidden on very small screens (< 375px) */}
         <div className="hidden min-[375px]:block absolute top-3 right-3 sm:top-4 sm:right-4 md:top-8 md:right-8 z-30 max-w-[280px] sm:max-w-xs">
-          <div className="relative p-6 sm:p-7 transform rotate-2 hover:rotate-0 transition-transform duration-300" 
+          <div className="relative p-6 sm:p-7 transform rotate-2 hover:rotate-0 transition-transform duration-300 bg-yellow" 
                style={{ 
-                 background: 'linear-gradient(135deg, #FFFF88 0%, #FFF5B8 100%)',
-                 boxShadow: '0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06), 2px 2px 8px rgba(0,0,0,0.15)',
-                 fontFamily: "'Caveat', 'Comic Sans MS', cursive",
+                 boxShadow: '0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06), 2px 2px 8px rgba(0,0,0,0.15)'
                }}
                data-testid="popup-news-event">
             {/* Sticky tape effect at top */}
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-yellow-200/40 rounded-sm" 
+            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-yellow-200 rounded-sm" 
                  style={{ 
-                   boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)',
-                   background: 'linear-gradient(180deg, rgba(255,255,255,0.3) 0%, rgba(255,255,255,0) 100%)'
+                   boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
                  }}>
             </div>
             
             <div className="flex items-start gap-2">
               <Star className="w-6 h-6 sm:w-6 sm:h-6 text-amber-600 flex-shrink-0 mt-0.5" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.2))' }} />
               <div>
-                <p className="text-base sm:text-lg font-bold text-gray-900 mb-2" style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive", fontSize: '1.25rem', lineHeight: '1.3' }}>{t('popup.latest_news')}</p>
-                <p className="text-sm sm:text-base text-gray-800 leading-relaxed" style={{ fontFamily: "'Caveat', 'Comic Sans MS', cursive" }}>{t('popup.community_message')}</p>
+                <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">{t('popup.latest_news')}</p>
+                <p className="text-sm sm:text-base text-gray-800 leading-relaxed">{t('popup.community_message')}</p>
               </div>
             </div>
             
@@ -336,7 +333,7 @@ export default function Landing() {
       </section>
 
       {/* Teacher Testimonial & Video Section */}
-      <section className="py-16 lg:py-24 bg-gradient-to-br from-ocean-blue/5 via-white to-teal/5">
+      <section className="py-16 lg:py-24 bg-gray-50">
         <div className="container-width">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
             {/* Teacher Testimonial - Enhanced Card */}
@@ -345,9 +342,9 @@ export default function Landing() {
               <div className="hidden md:block absolute -top-8 -left-6 text-ocean-blue/20 font-serif leading-none select-none pointer-events-none before:content-['\201C'] before:text-8xl lg:before:text-9xl" aria-hidden="true"></div>
               
               {/* Testimonial Card */}
-              <div className="relative bg-gradient-to-br from-white to-ocean-blue/5 rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl border-2 border-ocean-blue/20 hover:border-ocean-blue/40 hover:shadow-3xl transition-all duration-500 group">
+              <div className="relative bg-white rounded-3xl p-6 sm:p-8 lg:p-12 shadow-2xl border-2 border-ocean-blue/20 hover:border-ocean-blue/40 hover:shadow-3xl transition-all duration-500 group">
                 {/* Decorative Corner Element */}
-                <div className="absolute top-0 right-0 w-24 h-24 bg-gradient-to-br from-teal/10 to-ocean-blue/10 rounded-bl-[100px] rounded-tr-3xl -z-0"></div>
+                <div className="absolute top-0 right-0 w-24 h-24 bg-teal/10 rounded-bl-[100px] rounded-tr-3xl -z-0"></div>
                 
                 {/* Star Rating */}
                 <div className="flex items-center gap-1 mb-6 relative z-10">
@@ -363,7 +360,7 @@ export default function Landing() {
                 
                 {/* Author Info */}
                 <div className="flex items-center gap-4 pt-6 border-t-2 border-ocean-blue/20 relative z-10">
-                  <div className="w-16 h-16 bg-gradient-to-br from-ocean-blue to-teal rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg ring-4 ring-white group-hover:scale-105 transition-transform duration-300">
+                  <div className="w-16 h-16 bg-pcs_blue rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg ring-4 ring-white group-hover:scale-105 transition-transform duration-300">
                     JS
                   </div>
                   <div>
@@ -413,7 +410,7 @@ export default function Landing() {
       </section>
 
       {/* Three-Stage Program - Clean StreetSmart Cards with Fun Accent */}
-      <section id="how-it-works" className="py-16 lg:py-24 bg-gradient-to-b from-white to-yellow/10">
+      <section id="how-it-works" className="py-16 lg:py-24 bg-white">
         <div className="container-width">
           <div className="text-center mb-16">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4">
@@ -513,7 +510,7 @@ export default function Landing() {
       </section>
 
       {/* Upcoming Events Section */}
-      <section className="py-16 lg:py-24 bg-gradient-to-b from-teal/5 to-ocean-blue/5">
+      <section className="py-16 lg:py-24 bg-gray-50">
         <div className="container-width">
           <div className="text-center mb-12">
             <h2 className="text-2xl sm:text-3xl font-bold text-navy leading-tight mb-4" data-testid="heading-events-title">

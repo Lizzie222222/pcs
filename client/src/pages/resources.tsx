@@ -382,7 +382,7 @@ export default function Resources() {
               e.currentTarget.style.display = 'none';
               const parent = e.currentTarget.parentElement;
               if (parent) {
-                parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-pcs_blue/10 to-teal/10"><svg class="h-16 w-16 text-pcs_blue/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>';
+                parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-pcs_blue/10"><svg class="h-16 w-16 text-pcs_blue/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>';
               }
             }}
           />
@@ -403,7 +403,7 @@ export default function Resources() {
     // Video files
     if (fileType.includes('video')) {
       return (
-        <div className="w-full h-48 bg-gradient-to-br from-coral/10 to-orange/10 flex items-center justify-center">
+        <div className="w-full h-48 bg-coral/10 flex items-center justify-center">
           <Video className="h-16 w-16 text-coral/30" />
         </div>
       );
@@ -411,7 +411,7 @@ export default function Resources() {
     
     // Other file types
     return (
-      <div className="w-full h-48 bg-gradient-to-br from-pcs_blue/10 to-teal/10 flex items-center justify-center">
+      <div className="w-full h-48 bg-pcs_blue/10 flex items-center justify-center">
         <FileText className="h-16 w-16 text-pcs_blue/30" />
       </div>
     );
@@ -439,11 +439,7 @@ export default function Resources() {
             <div className="flex flex-wrap gap-2">
               {isNew && (
                 <div 
-                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0"
-                  style={{ 
-                    backgroundImage: 'linear-gradient(to right, #facc15, #f97316)',
-                    color: '#ffffff'
-                  }}
+                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0 bg-yellow text-white"
                 >
                   <Sparkles className="h-3 w-3 mr-1" />
                   NEW
@@ -451,11 +447,7 @@ export default function Resources() {
               )}
               {isRecommended && (
                 <div 
-                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg border-0"
-                  style={{ 
-                    backgroundImage: 'linear-gradient(to right, #a855f7, #ec4899)',
-                    color: '#ffffff'
-                  }}
+                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg border-0 bg-coral text-white"
                 >
                   <Star className="h-3 w-3 mr-1" />
                   RECOMMENDED
@@ -566,11 +558,7 @@ export default function Resources() {
             <div className="flex flex-wrap gap-2">
               {isNew && (
                 <div 
-                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0"
-                  style={{ 
-                    backgroundImage: 'linear-gradient(to right, #facc15, #f97316)',
-                    color: '#ffffff'
-                  }}
+                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0 bg-yellow text-white"
                 >
                   <Sparkles className="h-3 w-3 mr-1" />
                   NEW
@@ -578,11 +566,7 @@ export default function Resources() {
               )}
               {isRecommended && (
                 <div 
-                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg border-0"
-                  style={{ 
-                    backgroundImage: 'linear-gradient(to right, #a855f7, #ec4899)',
-                    color: '#ffffff'
-                  }}
+                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg border-0 bg-coral text-white"
                 >
                   <Star className="h-3 w-3 mr-1" />
                   RECOMMENDED
@@ -674,7 +658,7 @@ export default function Resources() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-20 overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 pt-20 overflow-x-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
         <div className="text-center mb-12">
@@ -1079,9 +1063,6 @@ export default function Resources() {
                     )}
                     <Badge variant="secondary">
                       {packDetail.resources.length} resources
-                    </Badge>
-                    <Badge variant="secondary">
-                      {packDetail.downloadCount} downloads
                     </Badge>
                   </div>
 
