@@ -55,7 +55,7 @@ export function Footer() {
         <div className="border-t border-gray-700 mt-8 pt-8 text-center text-sm text-gray-400">
           <p>
             {t('footer.copyright')} | 
-            <a href="https://commonseas.com/privacy" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors ml-1">{t('footer.privacy')}</a> | 
+            <a href="/privacy" className="hover:text-teal transition-colors ml-1">{t('footer.privacy')}</a> | 
             <a href="/terms" className="hover:text-teal transition-colors ml-1">{t('footer.terms')}</a>
           </p>
         </div>

@@ -107,3 +107,13 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 - **Footer Simplification**: Removed "Registered Charity: 1179917" text from footer across all 11 language translations
 - **Testimonial Cleanup**: Removed "JS" initials avatar from landing page testimonial section for cleaner presentation
 - **Impact**: Achieved clean, professional PCS branding throughout the application with consistent use of solid brand colors and professional typography, eliminating all "AI-looking" design elements
+
+### School Registration Enhancement
+- **Under 5s Age Option**: Added "Under 5" age range option to school registration for all countries (Nursery/Reception for UK, Pre-K for US, Ages 0-4 for other countries)
+- **Impact**: Schools with nursery and pre-kindergarten programs can now properly register and select appropriate age ranges
+
+### GDPR Privacy Policy
+- **Privacy Policy Page**: Comprehensive GDPR-compliant privacy policy page accessible at /privacy with full internationalization support
+- **Footer Links Updated**: Changed footer privacy links from external Common Seas privacy policy to internal GDPR-compliant privacy policy
+- **GDPR Compliance**: Includes all required GDPR sections: Legal Basis for Processing, Your Rights, Data Security, Data Retention, International Data Transfers, Cookies and Tracking, Children's Privacy
+- **Impact**: Users can access comprehensive privacy information directly on the platform, meeting GDPR transparency requirements
