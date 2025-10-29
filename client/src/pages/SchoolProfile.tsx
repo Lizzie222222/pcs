@@ -227,8 +227,8 @@ export default function SchoolProfile() {
       {/* Main Content */}
       <div className="container mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Tabs Navigation */}
-          <div className="bg-white rounded-lg shadow-sm border p-1.5">
+          {/* Tabs Navigation - Sticky positioned below header */}
+          <div className="bg-white rounded-lg shadow-sm border p-1.5 sticky top-48 z-10">
             <TabsList className="bg-transparent w-full grid grid-cols-5 gap-1">
               <TabsTrigger 
                 value="overview" 
