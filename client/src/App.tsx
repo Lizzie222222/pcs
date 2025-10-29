@@ -125,14 +125,15 @@ function Router() {
       {/* Global Event Banner */}
       {activeBanner && (
         <div 
-          className="w-full py-3 px-3 text-center fixed top-0 left-0 right-0 z-[60] shadow-md"
+          className="w-full px-3 text-center fixed top-0 left-0 right-0 z-[60] shadow-md flex items-center justify-center"
           style={{
             backgroundImage: getGradientById(activeBanner.gradient)?.gradient || `linear-gradient(135deg, ${activeBanner.backgroundColor} 0%, ${activeBanner.backgroundColor} 100%)`,
             color: activeBanner.textColor,
+            height: '48px',
           }}
           data-testid="event-banner"
         >
-          <div className="max-w-7xl mx-auto flex flex-row items-center justify-center gap-2 text-sm">
+          <div className="max-w-7xl mx-auto flex flex-row items-center justify-center gap-2 text-sm h-full">
             <Badge 
               className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-2 py-0.5 text-[10px] leading-tight font-bold shadow-sm border-0"
               data-testid="badge-new-event-banner"
