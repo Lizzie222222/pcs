@@ -112,3 +112,19 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 - **Filter Dropdowns**: Fixed country/language/stage filter dropdowns opening behind event banner by adding `position="popper"` and `sideOffset={5}` to SelectContent components
 - **Max Height Limits**: Applied 300px max height to long dropdowns (country, language) to prevent off-screen extension
 - **Impact**: All admin UI elements now properly positioned below fixed headers, ensuring accessibility and usability
+
+### Admin Event Setup Page Bug Fixes
+- **Event Pack Files Removal**: Completely removed Event Pack Files and Event Pack Banner sections from admin event editor (removed schema fields, state management, upload handlers, and UI components). Only Event Resources from library remain.
+- **Image Upload Fix**: Fixed `/api/objects/upload` endpoint to handle direct multipart file uploads with multer middleware, automatic image compression via Sharp library, and return correct `{ url: objectPath }` format where objectPath is `/objects/uploads/{uuid}`.
+- **URL Normalization Enhancement**: Implemented robust `normalizeImageUrl` helper function in both EventEditor.tsx and event-live.tsx that correctly handles multiple URL formats:
+  - Absolute URLs (http/https): returned as-is
+  - Vite dev paths (/@fs/, /@assets/): returned as-is for legacy image support
+  - API-prefixed paths (/api/objects): returned as-is
+  - Object storage paths (/objects/): prepend /api to create /api/objects/...
+  - Other relative paths: prepend /api/objects
+  - Prevents double-prefixing issues like /api/objects/objects/ or /api/objects/api/objects/
+- **Indonesian Translation Support**: Added Indonesian ('id': 'Indonesian') to supportedLanguages and languageNames in EventEditor for multi-language content creation. Auto-translate feature now supports Indonesian for event titles, descriptions, and testimonials.
+- **Date Validation Fix**: Corrected event date validation logic in PUT /api/admin/events/:id endpoint. Previous logic blocked all date updates if existing event had started; new logic only prevents setting NEW dates to the past (for non-draft events). Draft events can have any dates. Error messages updated from "Cannot reschedule events that have already started" to "Cannot set start/end date to the past".
+- **Translation Persistence**: Ensured titleTranslations and descriptionTranslations (JSONB fields) are included in event save payload from EventEditor, enabling proper storage of multi-language content.
+- **TypeScript Fix**: Corrected ObjectAclPolicy vs ObjectPermission type error in server/routes/utils/objectStorage.ts.
+- **Impact**: Admin event creation workflow now functions correctly with image uploads displaying properly in both admin preview and public pages, Indonesian language support for content translations, and proper date validation that allows updating events to future dates.
