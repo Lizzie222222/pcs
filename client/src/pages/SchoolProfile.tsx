@@ -185,8 +185,8 @@ export default function SchoolProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header - Add top padding to push content below fixed navigation */}
-      <div className="bg-white border-b shadow-sm sticky top-32 z-20 mt-16">
+      {/* Header - Sticky positioned below navigation and banner */}
+      <div className="bg-white border-b shadow-sm sticky top-32 z-10">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
@@ -227,8 +227,8 @@ export default function SchoolProfile() {
       {/* Main Content */}
       <div className="container mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          {/* Tabs Navigation - Sticky positioned below header */}
-          <div className="bg-white rounded-lg shadow-sm border p-1.5 sticky top-48 z-10">
+          {/* Tabs Navigation - Sticky positioned below header (nav 64px + banner 48px + header ~96px = ~208px) */}
+          <div className="bg-white rounded-lg shadow-sm border p-1.5 sticky top-52 z-10">
             <TabsList className="bg-transparent w-full grid grid-cols-5 gap-1">
               <TabsTrigger 
                 value="overview" 
