@@ -656,8 +656,7 @@ export default function Inspiration() {
             <CardContent className="p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div>
-                  <div className="flex items-center gap-2 mb-4">
-                    <Star className="h-5 w-5 text-yellow-400 fill-current" />
+                  <div className="mb-4">
                     <Badge className="bg-white/20 text-white">{t('featured.badge')}</Badge>
                   </div>
                   <h2 className="text-3xl font-bold mb-4" data-testid="text-featured-title">

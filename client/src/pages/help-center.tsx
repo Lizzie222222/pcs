@@ -138,8 +138,7 @@ export default function HelpCenter() {
         {/* Category Filter Pills */}
         {!searchQuery && (
           <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <Sparkles className="h-5 w-5 text-pcs_blue" />
+            <div className="mb-4">
               <h2 className="text-xl font-semibold text-navy">{t('page.browse_by_category')}</h2>
             </div>
             <div className="flex flex-wrap gap-3">

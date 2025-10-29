@@ -851,14 +851,9 @@ export default function Resources() {
                 {/* Recommended Resources Section */}
                 {isAuthenticated && recommended.length > 0 && (
                   <div className="mb-12">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="bg-purple-500 rounded-lg p-3 shadow-lg">
-                        <Star className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-navy">{t('recommendations.recommended_for_you')}</h2>
-                        <p className="text-gray-600">{t('recommendations.resources_matching_stage', { stage: dashboardData?.school?.currentStage })}</p>
-                      </div>
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-bold text-navy">{t('recommendations.recommended_for_you')}</h2>
+                      <p className="text-gray-600">{t('recommendations.resources_matching_stage', { stage: dashboardData?.school?.currentStage })}</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="recommended-resources-section">
                       {recommended.map((resource) => (
@@ -872,14 +867,9 @@ export default function Resources() {
                 {(others.length > 0 || !isAuthenticated) && (
                   <div>
                     {isAuthenticated && recommended.length > 0 && (
-                      <div className="flex items-center gap-3 mb-6 mt-12">
-                        <div className="bg-pcs_blue rounded-lg p-3 shadow-lg">
-                          <BookOpen className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <h2 className="text-2xl font-bold text-navy">All Resources</h2>
-                          <p className="text-gray-600">Browse all available resources</p>
-                        </div>
+                      <div className="mb-6 mt-12">
+                        <h2 className="text-2xl font-bold text-navy">All Resources</h2>
+                        <p className="text-gray-600">Browse all available resources</p>
                       </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -953,14 +943,9 @@ export default function Resources() {
                 {/* Recommended Packs Section */}
                 {isAuthenticated && recommendedPacks.length > 0 && (
                   <div className="mb-12">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="bg-purple-500 rounded-lg p-3 shadow-lg">
-                        <Star className="h-6 w-6 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-2xl font-bold text-navy">Recommended Packs for Your School</h2>
-                        <p className="text-gray-600">Resource packs matching your current stage: {dashboardData?.school?.currentStage}</p>
-                      </div>
+                    <div className="mb-6">
+                      <h2 className="text-2xl font-bold text-navy">Recommended Packs for Your School</h2>
+                      <p className="text-gray-600">Resource packs matching your current stage: {dashboardData?.school?.currentStage}</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="recommended-packs-section">
                       {recommendedPacks.map((pack) => (
@@ -974,14 +959,9 @@ export default function Resources() {
                 {(otherPacks.length > 0 || !isAuthenticated) && (
                   <div>
                     {isAuthenticated && recommendedPacks.length > 0 && (
-                      <div className="flex items-center gap-3 mb-6 mt-12">
-                        <div className="bg-pcs_blue rounded-lg p-3 shadow-lg">
-                          <Package className="h-6 w-6 text-white" />
-                        </div>
-                        <div>
-                          <h2 className="text-2xl font-bold text-navy">All Resource Packs</h2>
-                          <p className="text-gray-600">Browse all available resource packs</p>
-                        </div>
+                      <div className="mb-6 mt-12">
+                        <h2 className="text-2xl font-bold text-navy">All Resource Packs</h2>
+                        <p className="text-gray-600">Browse all available resource packs</p>
                       </div>
                     )}
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

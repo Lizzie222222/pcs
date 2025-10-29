@@ -263,12 +263,9 @@ export default function Landing() {
                }}
                data-testid="popup-news-event">
             
-            <div className="flex items-start gap-2">
-              <Star className="w-6 h-6 sm:w-6 sm:h-6 text-amber-600 flex-shrink-0 mt-0.5" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.2))' }} />
-              <div>
-                <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">{t('popup.latest_news')}</p>
-                <p className="text-sm sm:text-base text-gray-800 leading-relaxed">{t('popup.community_message')}</p>
-              </div>
+            <div>
+              <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">{t('popup.latest_news')}</p>
+              <p className="text-sm sm:text-base text-gray-800 leading-relaxed">{t('popup.community_message')}</p>
             </div>
           </div>
         </div>
