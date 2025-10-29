@@ -85,3 +85,18 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 - **Replaced Old Title**: Previous title "Empower Your School to Lead the Way in Reducing Plastic Waste" has been replaced with the new award-focused messaging
 - **Consistent Branding**: Hero title now consistently emphasizes the award nature and student-centered approach across all languages
 - **Impact**: Landing page hero section now delivers unified messaging that highlights the program as an award with students at its core
+
+### School Management Filtering System Overhaul
+- **Fixed Search Functionality**: Backend now properly receives and processes search parameter, enabling case-insensitive search across school name, address, and admin email using SQL ILIKE
+- **Added Stage Filter**: New dropdown in admin schools management allowing filtering by program stage (Inspire, Investigate, Act)
+- **Added Language Filter**: New dropdown for filtering schools by primary language with code-to-name mapping (e.g., "en" → "English")
+- **Fixed Country Filtering**: Resolved issue where country filter returned no results by handling database's inconsistent storage (mix of full names like "United Kingdom" and country codes like "GR", "ID")
+- **Fixed Backend Route**: Updated /api/admin/schools endpoint to pass all filter parameters (search, language, country, stage, type) to storage layer
+- **Filter Logic Improvements**: Added explicit "all" value handling throughout filtering pipeline to prevent empty results when clearing filters
+- **Impact**: School management filtering now works end-to-end, allowing admins to search and filter 1600+ schools by multiple criteria simultaneously
+
+### Admin UI Positioning Fixes
+- **Collaboration Sidebar**: Fixed "Online Admins" panel positioning to account for event banner height (moved from top-20 to top-32, 128px from top)
+- **Filter Dropdowns**: Fixed country/language/stage filter dropdowns opening behind event banner by adding `position="popper"` and `sideOffset={5}` to SelectContent components
+- **Max Height Limits**: Applied 300px max height to long dropdowns (country, language) to prevent off-screen extension
+- **Impact**: All admin UI elements now properly positioned below fixed headers, ensuring accessibility and usability

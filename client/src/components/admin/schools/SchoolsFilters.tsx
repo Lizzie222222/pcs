@@ -93,7 +93,7 @@ export default function SchoolsFilters({
             <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-country-filter">
               <SelectValue placeholder={t('schools.filters.allCountries')} />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" sideOffset={5} className="max-h-[300px]">
               {countryOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}
@@ -108,7 +108,7 @@ export default function SchoolsFilters({
             <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-stage-filter">
               <SelectValue placeholder="All Stages" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" sideOffset={5}>
               <SelectItem value="all">All Stages</SelectItem>
               <SelectItem value="inspire">Inspire</SelectItem>
               <SelectItem value="investigate">Investigate</SelectItem>
@@ -122,7 +122,7 @@ export default function SchoolsFilters({
             <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-language-filter">
               <SelectValue placeholder="All Languages" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent position="popper" sideOffset={5} className="max-h-[300px]">
               <SelectItem value="all">All Languages</SelectItem>
               <SelectItem value="en">English</SelectItem>
               <SelectItem value="es">Spanish</SelectItem>
