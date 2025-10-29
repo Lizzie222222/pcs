@@ -2182,7 +2182,8 @@
       "viewDocument": "View Document",
       "buttons": {
         "approve": "Approve",
-        "reject": "Reject"
+        "reject": "Reject",
+        "cancel": "Cancel"
       },
       "confirmApprove": "Approve photo consent for {{name}}?",
       "rejectionNotes": "Rejection notes for {{name}}:",

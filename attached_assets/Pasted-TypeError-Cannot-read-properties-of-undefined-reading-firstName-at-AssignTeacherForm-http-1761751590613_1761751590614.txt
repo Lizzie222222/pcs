@@ -1,0 +1,28 @@
+TypeError: Cannot read properties of undefined (reading 'firstName')
+
+    at AssignTeacherForm (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/admin/AssignTeacherForm.tsx:28:21)
+    at div
+    at _c9 (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ui/card.tsx:114:12)
+    at div
+    at _c (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at TeamsSection (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/admin/teams/TeamsSection.tsx:24:40)
+    at div
+    at div
+    at AdminContent (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/pages/admin.tsx:78:25)
+    at Admin
+    at Route (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=6598d2e4:191:16)
+    at Switch (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=6598d2e4:247:17)
+    at Suspense
+    at ErrorBoundary (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/components/ErrorBoundary.tsx:9:5)
+    at main
+    at div
+    at CollaborationProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/contexts/CollaborationContext.tsx:20:41)
+    at Router (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/src/App.tsx?v=W7hOjbdsUgvpjI7kCfv2U:99:17)
+    at Provider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-OXZDJRWN.js?v=6598d2e4:38:15)
+    at TooltipProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=6598d2e4:62:5)
+    at QueryClientProvider (https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=6598d2e4:2805:3)
+    at App
+    at Suspense
+Try again
+Go to homepage

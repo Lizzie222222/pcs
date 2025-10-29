@@ -1980,7 +1980,8 @@
       "viewDocument": "문서 보기",
       "buttons": {
         "approve": "승인",
-        "reject": "거부"
+        "reject": "거부",
+        "cancel": "취소"
       },
       "confirmApprove": "{{name}}의 사진 동의를 승인하시겠습니까?",
       "rejectionNotes": "{{name}}에 대한 거부 노트:",

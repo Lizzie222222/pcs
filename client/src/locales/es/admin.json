@@ -2003,7 +2003,8 @@
       "viewDocument": "Ver Documento",
       "buttons": {
         "approve": "Aprobar",
-        "reject": "Rechazar"
+        "reject": "Rechazar",
+        "cancel": "Cancelar"
       },
       "confirmApprove": "¿Aprobar consentimiento fotográfico para {{name}}?",
       "rejectionNotes": "Notas de rechazo para {{name}}:",

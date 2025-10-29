@@ -1872,7 +1872,8 @@
       "viewDocument": "查看文档",
       "buttons": {
         "approve": "批准",
-        "reject": "拒绝"
+        "reject": "拒绝",
+        "cancel": "取消"
       },
       "confirmApprove": "批准 {{name}} 的照片同意？",
       "rejectionNotes": "{{name}} 的拒绝备注：",

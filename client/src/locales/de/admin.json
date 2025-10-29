@@ -2069,7 +2069,8 @@
       "viewDocument": "Dokument Anzeigen",
       "buttons": {
         "approve": "Genehmigen",
-        "reject": "Ablehnen"
+        "reject": "Ablehnen",
+        "cancel": "Abbrechen"
       },
       "confirmApprove": "Fotoeinwilligung für {{name}} genehmigen?",
       "rejectionNotes": "Ablehnungsnotizen für {{name}}:",

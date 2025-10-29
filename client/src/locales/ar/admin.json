@@ -1970,7 +1970,8 @@
       "viewDocument": "عرض المستند",
       "buttons": {
         "approve": "موافقة",
-        "reject": "رفض"
+        "reject": "رفض",
+        "cancel": "إلغاء"
       },
       "confirmApprove": "الموافقة على موافقة الصور لـ {{name}}؟",
       "rejectionNotes": "ملاحظات الرفض لـ {{name}}:",

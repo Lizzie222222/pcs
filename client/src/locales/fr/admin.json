@@ -2069,7 +2069,8 @@
       "viewDocument": "Voir le Document",
       "buttons": {
         "approve": "Approuver",
-        "reject": "Rejeter"
+        "reject": "Rejeter",
+        "cancel": "Annuler"
       },
       "confirmApprove": "Approuver l'autorisation photo pour {{name}} ?",
       "rejectionNotes": "Notes de rejet pour {{name}} :",

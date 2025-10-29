@@ -1993,7 +1993,8 @@
       "viewDocument": "Document Bekijken",
       "buttons": {
         "approve": "Goedkeuren",
-        "reject": "Afwijzen"
+        "reject": "Afwijzen",
+        "cancel": "Annuleren"
       },
       "confirmApprove": "Foto toestemming goedkeuren voor {{name}}?",
       "rejectionNotes": "Afwijzingsnotities voor {{name}}:",

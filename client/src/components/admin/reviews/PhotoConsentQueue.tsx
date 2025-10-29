@@ -181,7 +181,7 @@ export default function PhotoConsentQueue({
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel data-testid="button-cancel-approve">
-              {t('common.cancel')}
+              {t('reviews.photoConsent.buttons.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleApproveConfirm}
@@ -222,7 +222,7 @@ export default function PhotoConsentQueue({
               }}
               data-testid="button-cancel-reject"
             >
-              {t('common.cancel')}
+              {t('reviews.photoConsent.buttons.cancel')}
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRejectConfirm}

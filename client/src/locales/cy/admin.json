@@ -2049,7 +2049,8 @@
       "viewDocument": "Gweld Dogfen",
       "buttons": {
         "approve": "Cymeradwyo",
-        "reject": "Gwrthod"
+        "reject": "Gwrthod",
+        "cancel": "Canslo"
       },
       "confirmApprove": "Cymeradwyo caniatâd ffotograffau ar gyfer {{name}}?",
       "rejectionNotes": "Nodiadau gwrthod ar gyfer {{name}}:",
