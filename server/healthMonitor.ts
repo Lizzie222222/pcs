@@ -1,5 +1,6 @@
 import * as cron from 'node-cron';
 import { storage } from './storage';
+import { getBaseUrl } from './emailService';
 
 const ENDPOINTS_TO_MONITOR = [
   { name: '/', path: '/' },
@@ -19,11 +20,7 @@ async function checkEndpointHealth(endpoint: { name: string; path: string }): Pr
   const startTime = Date.now();
   
   try {
-    const baseUrl = process.env.REPLIT_DOMAINS
-      ? `https://${process.env.REPLIT_DOMAINS.split(',')[0].trim()}`
-      : process.env.REPLIT_DEV_DOMAIN 
-        ? `https://${process.env.REPLIT_DEV_DOMAIN}`
-        : 'http://localhost:5000';
+    const baseUrl = getBaseUrl();
     
     const response = await fetch(`${baseUrl}${endpoint.path}`, {
       method: 'GET',

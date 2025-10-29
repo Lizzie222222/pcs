@@ -4,7 +4,7 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated, isSchoolMember } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
-import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData } from "./emailService";
+import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData, getBaseUrl } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, caseStudies, importBatches, userActivityLogs } from "@shared/schema";
 import { nanoid } from 'nanoid';
@@ -1703,7 +1703,7 @@ Return JSON with:
       
       // Send invitation email
       if (school) {
-        const inviteUrl = `${process.env.FRONTEND_URL || 'http://localhost:5000'}/invitations/${token}`;
+        const inviteUrl = `${getBaseUrl()}/invitations/${token}`;
         await sendEmail({
           to: email,
           from: getFromAddress(),
@@ -2278,7 +2278,7 @@ Return JSON with:
               <p>Your request to join ${school.name} has been approved.</p>
               ${reviewNotes ? `<p><strong>Notes from reviewer:</strong> ${reviewNotes}</p>` : ''}
               <p>You can now access the school dashboard and collaborate with your team.</p>
-              <a href="${process.env.FRONTEND_URL || 'http://localhost:5000'}/dashboard" style="background: #02BBB4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Go to Dashboard</a>
+              <a href="${getBaseUrl()}/dashboard" style="background: #02BBB4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Go to Dashboard</a>
             </div>
           `,
         });
@@ -7470,7 +7470,7 @@ Return JSON with:
                   You can now access your school dashboard and participate in the Plastic Clever Schools program.
                 </p>
                 <div style="text-align: center; margin: 30px 0;">
-                  <a href="${process.env.FRONTEND_URL || 'https://plasticcleverschools.org'}/dashboard" 
+                  <a href="${getBaseUrl()}/dashboard" 
                      style="background: #02BBB4; color: white; padding: 14px 32px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: 600;">
                     Go to Dashboard
                   </a>
