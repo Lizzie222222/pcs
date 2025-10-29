@@ -249,29 +249,9 @@ export default function Landing() {
             />
           </picture>
         </div>
-
-        {/* Post-it Note Style News/Events Popup - Hidden on very small screens (< 375px) */}
-        <div className="hidden min-[375px]:block absolute top-24 right-3 sm:top-28 sm:right-4 md:top-32 md:right-8 z-30 max-w-[280px] sm:max-w-xs">
-          <div className="relative pt-20 px-12 pb-14 sm:pt-24 sm:px-14 sm:pb-16 transform hover:rotate-0 transition-transform duration-300" 
-               style={{ 
-                 backgroundImage: `url(${stickyNoteBackground})`,
-                 backgroundSize: 'cover',
-                 backgroundPosition: 'center',
-                 backgroundRepeat: 'no-repeat',
-                 minHeight: '200px',
-                 aspectRatio: '1/1'
-               }}
-               data-testid="popup-news-event">
-            
-            <div className="transform -rotate-2">
-              <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">{t('popup.latest_news')}</p>
-              <p className="text-sm sm:text-base text-gray-800 leading-relaxed">{t('popup.community_message')}</p>
-            </div>
-          </div>
-        </div>
         
         <div className="container-width relative z-20 py-12 sm:py-16 md:py-20">
-          <div className="max-w-4xl mx-auto text-center px-4">
+          <div className="max-w-4xl mx-auto text-center px-4 relative">
             {/* Hero Text Box with Semi-transparent Background */}
             <div className="bg-white/90 backdrop-blur-sm rounded-lg px-4 py-6 sm:px-8 sm:py-10 md:px-12 md:py-12 inline-block">
               {/* Hero Heading - Improved mobile scaling */}
@@ -292,6 +272,26 @@ export default function Landing() {
                 {t('hero.cta_primary')}
                 <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
               </Button>
+            </div>
+
+            {/* Post-it Note Style News/Events Popup - Perched on bottom right of hero box */}
+            <div className="hidden lg:block absolute -bottom-16 right-0 z-30 max-w-[280px]">
+              <div className="relative pt-20 px-12 pb-14 transform hover:rotate-0 transition-transform duration-300" 
+                   style={{ 
+                     backgroundImage: `url(${stickyNoteBackground})`,
+                     backgroundSize: 'cover',
+                     backgroundPosition: 'center',
+                     backgroundRepeat: 'no-repeat',
+                     minHeight: '200px',
+                     aspectRatio: '1/1'
+                   }}
+                   data-testid="popup-news-event">
+                
+                <div className="transform -rotate-2">
+                  <p className="text-base font-bold text-gray-900 mb-2">{t('popup.latest_news')}</p>
+                  <p className="text-sm text-gray-800 leading-relaxed">{t('popup.community_message')}</p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
