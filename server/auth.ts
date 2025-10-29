@@ -415,13 +415,16 @@ export async function setupAuth(app: Express) {
   if (process.env.NODE_ENV === 'development' || process.env.REPLIT_CONTEXT === 'testing') {
     app.post('/api/test-auth/login', async (req, res) => {
       try {
-        const { email, firstName, lastName, sub, isAdmin } = req.body;
+        const { email, firstName, lastName, sub, isAdmin, role } = req.body;
         
         if (!email || !firstName || !lastName || !sub) {
           return res.status(400).json({ error: 'Missing required fields: email, firstName, lastName, sub' });
         }
         
-        console.log(`[Test Auth] Logging in test user: ${email}`);
+        // Check if role indicates admin (for OIDC testing compatibility)
+        const shouldBeAdmin = isAdmin || (role && role.toLowerCase().includes('admin'));
+        
+        console.log(`[Test Auth] Logging in test user: ${email}, admin: ${shouldBeAdmin}`);
         
         // Find or create user by email
         let user = await storage.findUserByEmail(email);
@@ -437,13 +440,13 @@ export async function setupAuth(app: Express) {
             passwordHash,
             emailVerified: true,
             role: 'teacher',
-            isAdmin: isAdmin || false,
+            isAdmin: shouldBeAdmin,
             preferredLanguage: 'en'
           });
         } else {
           console.log(`[Test Auth] Found existing user: ${email}`);
           // Set isAdmin if specified and different from current value
-          if (isAdmin && !user.isAdmin) {
+          if (shouldBeAdmin && !user.isAdmin) {
             const { db } = await import('./db');
             const { users } = await import('@shared/schema');
             const { eq } = await import('drizzle-orm');

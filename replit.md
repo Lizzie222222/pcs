@@ -64,6 +64,18 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 
 ## Recent Changes (October 2025)
 
+### Comprehensive School Profile Page
+- **Full-Page Profile**: Replaced popup dialog with dedicated profile page at `/admin/school/:id` for viewing comprehensive school information
+- **Tabbed Interface**: Five organized tabs for different aspects (Overview, Teachers, Evidence, Analytics, Settings)
+- **Overview Tab**: Displays school details, contact information, stage progression timeline, and key statistics (teachers count, evidence submissions, reduction promises)
+- **Teachers Tab**: Lists all teachers associated with the school in a sortable table with role, verification status, and join date
+- **Evidence Tab**: Shows all evidence submissions with filtering by status and requirement, includes approval actions
+- **Analytics Tab**: Displays progress metrics, completion statistics, and reduction promise visualizations
+- **Settings Tab**: Allows admins to update school language preferences, manually progress schools between stages, and manage photo consent status
+- **Navigation**: Added "View Profile" button in schools management table for easy access
+- **API Endpoints**: Created three new admin endpoints (`/api/admin/schools/:id`, `/api/admin/schools/:id/teachers`, `/api/admin/schools/:id/evidence`) with proper authentication and authorization
+- **Impact**: Provides comprehensive single-page view of all school-related information, improving admin workflow efficiency and reducing need for multiple popup dialogs
+
 ### Welcome Email Copy Update
 - **Changed "oceans" to "ocean"**: Updated welcome email text from "protecting our oceans" to "protecting our ocean" for grammatical consistency
 - **Impact**: More accurate messaging in automated welcome emails sent to new school registrations
