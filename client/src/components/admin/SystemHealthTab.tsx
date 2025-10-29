@@ -121,10 +121,7 @@ export default function SystemHealthTab() {
 
   const clearCacheMutation = useMutation({
     mutationFn: async () => {
-      return await apiRequest('/api/admin/cache/clear', {
-        method: 'POST',
-        body: JSON.stringify({}),
-      });
+      return await apiRequest('POST', '/api/admin/cache/clear', {});
     },
     onSuccess: () => {
       toast({
