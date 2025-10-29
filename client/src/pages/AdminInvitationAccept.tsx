@@ -900,18 +900,29 @@ export default function AdminInvitationAccept() {
                       try {
                         await apiRequest("POST", "/api/auth/logout", {});
                         queryClient.setQueryData(["/api/auth/user"], null);
+                        await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+                        
                         toast({
                           title: "Logged out successfully",
-                          description: "Please sign in with the invited email address to continue",
+                          description: "Redirecting to login page...",
                         });
-                        // Force page reload to update auth state
-                        window.location.reload();
+                        
+                        // Small delay to ensure state updates, then redirect
+                        setTimeout(() => {
+                          window.location.href = '/login';
+                        }, 500);
                       } catch (error) {
+                        console.error('Logout error:', error);
                         toast({
                           title: "Logout failed",
-                          description: "Please try again",
+                          description: "Redirecting to login page anyway...",
                           variant: "destructive",
                         });
+                        
+                        // Even if logout fails, redirect to login
+                        setTimeout(() => {
+                          window.location.href = '/login';
+                        }, 1000);
                       }
                     }}
                     className="w-full bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300"
