@@ -1702,25 +1702,18 @@ Return JSON with:
       const inviter = await storage.getUser(userId);
       
       // Send invitation email
-      if (school) {
-        const inviteUrl = `${getBaseUrl()}/invitations/${token}`;
-        await sendEmail({
-          to: email,
-          from: getFromAddress(),
-          subject: `You're invited to join ${school.name} on Plastic Clever Schools`,
-          html: `
-            <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-              <h2>You've been invited to join ${school.name}!</h2>
-              <p>${inviter?.firstName || 'A colleague'} has invited you to join their school team on Plastic Clever Schools.</p>
-              <p><strong>School:</strong> ${school.name}</p>
-              <p><strong>Country:</strong> ${school.country}</p>
-              <p>Click the link below to accept this invitation:</p>
-              <a href="${inviteUrl}" style="background: #02BBB4; color: white; padding: 12px 24px; text-decoration: none; border-radius: 4px; display: inline-block;">Accept Invitation</a>
-              <p style="color: #666; margin-top: 20px;">This invitation will expire in 7 days.</p>
-            </div>
-          `,
-        });
-        console.log(`[Teacher Invitation] Sent invitation email to ${email}`);
+      if (school && inviter) {
+        const inviterName = `${inviter.firstName || ''} ${inviter.lastName || ''}`.trim() || 'A colleague';
+        const expiresInDays = 7;
+        
+        await sendTeacherInvitationEmail(
+          email,
+          school.name,
+          inviterName,
+          token,
+          expiresInDays
+        );
+        console.log(`[Teacher Invitation] Sent vibrant invitation email to ${email}`);
       }
       
       res.status(201).json({ 
