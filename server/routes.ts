@@ -4370,13 +4370,13 @@ Return JSON with:
   });
 
   /**
-   * @description PUT /api/admin/evidence/:id/review - Admin-only endpoint for approving or rejecting evidence submissions. Updates school progression on approval and sends notification emails (approval or revision request).
+   * @description PATCH /api/admin/evidence/:id/review - Admin-only endpoint for approving or rejecting evidence submissions. Updates school progression on approval and sends notification emails (approval or revision request).
    * @param {string} id - Evidence ID from URL params
    * @returns {Evidence} Updated evidence object with review status
    * @location server/routes.ts#L2655
    * @related shared/schema.ts (evidence table), server/email.ts (sendEvidenceApprovalEmail, sendEvidenceRejectionEmail), client/src/pages/admin.tsx (evidence review handlers)
    */
-  app.put('/api/admin/evidence/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.patch('/api/admin/evidence/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const { status, reviewNotes } = req.body;
       const reviewerId = req.user.id;
