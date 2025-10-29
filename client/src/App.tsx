@@ -49,6 +49,9 @@ const AdminInvitationAccept = lazy(() => import("@/pages/AdminInvitationAccept")
 const MigrateAccount = lazy(() => import("@/pages/MigrateAccount"));
 const MigratedUserOnboarding = lazy(() => import("@/pages/MigratedUserOnboarding"));
 const TestLogin = lazy(() => import("@/pages/TestLogin"));
+const HowItWorks = lazy(() => import("@/pages/how-it-works"));
+const AwardCriteria = lazy(() => import("@/pages/award-criteria"));
+const Partners = lazy(() => import("@/pages/partners"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
@@ -178,6 +181,9 @@ function Router() {
               <Route path="/help-center" component={HelpCenter} />
               <Route path="/terms" component={Terms} />
               <Route path="/privacy" component={Privacy} />
+              <Route path="/how-it-works" component={HowItWorks} />
+              <Route path="/award-criteria" component={AwardCriteria} />
+              <Route path="/partners" component={Partners} />
               <Route path="/invitations/:token" component={InvitationAccept} />
               <Route path="/admin-invitations/:token" component={AdminInvitationAccept} />
               {import.meta.env.DEV && <Route path="/test-login" component={TestLogin} />}

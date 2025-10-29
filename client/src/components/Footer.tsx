@@ -24,10 +24,10 @@ export function Footer() {
           <div>
             <h4 className="font-semibold mb-4">{t('footer.program_title')}</h4>
             <ul className="space-y-2 text-sm text-gray-300">
-              <li><a href="/#how-it-works" className="hover:text-teal transition-colors">{t('footer.program_how_it_works')}</a></li>
+              <li><a href="/how-it-works" className="hover:text-teal transition-colors">{t('footer.program_how_it_works')}</a></li>
               <li><a href="/resources" className="hover:text-teal transition-colors">{t('footer.program_resources')}</a></li>
               <li><a href="/inspiration" className="hover:text-teal transition-colors">{t('footer.program_success_stories')}</a></li>
-              <li><a href="/#how-it-works" className="hover:text-teal transition-colors">{t('footer.program_award_criteria')}</a></li>
+              <li><a href="/award-criteria" className="hover:text-teal transition-colors">{t('footer.program_award_criteria')}</a></li>
             </ul>
           </div>
           
@@ -47,7 +47,7 @@ export function Footer() {
               <li><a href="/register" className="hover:text-teal transition-colors">{t('footer.connect_newsletter')}</a></li>
               <li><a href="https://www.instagram.com/plasticcleverschools/" target="_blank" rel="noopener noreferrer" className="hover:text-teal transition-colors">{t('footer.connect_social_media')}</a></li>
               <li><a href="/events" className="hover:text-teal transition-colors">{t('footer.connect_events')}</a></li>
-              <li><a href="/#partners" className="hover:text-teal transition-colors">{t('footer.connect_partners')}</a></li>
+              <li><a href="/partners" className="hover:text-teal transition-colors">{t('footer.connect_partners')}</a></li>
             </ul>
           </div>
         </div>
