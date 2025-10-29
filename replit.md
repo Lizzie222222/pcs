@@ -79,3 +79,9 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 - **Updated Footer Copy**: Changed footer description from "Empowering schools worldwide to create plastic-free environments through education, investigation, and action" to "An award to reduce waste with students at the heart of the action" across all 14 language translations (English, Spanish, French, German, Italian, Portuguese, Dutch, Russian, Arabic, Indonesian, Chinese, Korean, Greek, Welsh)
 - **Consistent Messaging**: Footer now emphasizes the award nature of the program and student-centered approach
 - **Impact**: Footer messaging aligns with the updated hero copy and reinforces the student-focused nature of the program
+
+### Hero Title Translation Update
+- **Updated Hero Title**: Translated "An award to reduce waste with students at the heart of the action." across all 14 supported languages (English, Spanish, French, German, Italian, Portuguese, Dutch, Russian, Arabic, Indonesian, Chinese, Korean, Greek, Welsh)
+- **Replaced Old Title**: Previous title "Empower Your School to Lead the Way in Reducing Plastic Waste" has been replaced with the new award-focused messaging
+- **Consistent Branding**: Hero title now consistently emphasizes the award nature and student-centered approach across all languages
+- **Impact**: Landing page hero section now delivers unified messaging that highlights the program as an award with students at its core
