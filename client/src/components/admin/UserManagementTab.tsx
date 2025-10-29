@@ -342,6 +342,9 @@ export default function UserManagementTab() {
   });
 
   const filteredUsers = usersWithSchools.filter((item) => {
+    // Skip items with invalid user data
+    if (!item || !item.user) return false;
+    
     const user = item.user;
     const fullName = `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase();
     const email = user.email?.toLowerCase() || '';
@@ -363,7 +366,7 @@ export default function UserManagementTab() {
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       const selectableUserIds = filteredUsers
-        .filter(item => item.user.id !== user?.id)
+        .filter(item => item?.user?.id && item.user.id !== user?.id)
         .map(item => item.user.id);
       setSelectedUserIds(new Set(selectableUserIds));
     } else {
@@ -621,8 +624,8 @@ export default function UserManagementTab() {
                       <Checkbox
                         checked={
                           filteredUsers.length > 0 &&
-                          filteredUsers.filter(item => item.user.id !== user?.id).length > 0 &&
-                          filteredUsers.filter(item => item.user.id !== user?.id).every(item => selectedUserIds.has(item.user.id))
+                          filteredUsers.filter(item => item?.user?.id !== user?.id).length > 0 &&
+                          filteredUsers.filter(item => item?.user?.id !== user?.id).every(item => selectedUserIds.has(item.user.id))
                         }
                         onCheckedChange={handleSelectAll}
                         data-testid="checkbox-select-all"
@@ -638,6 +641,9 @@ export default function UserManagementTab() {
                 </thead>
                 <tbody>
                   {filteredUsers.map((item) => {
+                    // Skip rendering if user data is invalid
+                    if (!item || !item.user) return null;
+                    
                     const currentUser = item.user;
                     const fullName = `${currentUser.firstName || ''} ${currentUser.lastName || ''}`.trim();
                     const canDelete = currentUser.id !== user?.id;
