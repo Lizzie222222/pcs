@@ -30,7 +30,7 @@ The application employs a modern web architecture with distinct frontend and bac
 -   **User Management**: Hierarchical school team management and token-based admin invitation system.
 
 ### Key Data Models
-Core entities include Users, Schools, Evidence (with approval workflows and assignment), Audit Logs (activity history tracking), Reduction Promises (Action Plans), Resources, Case Studies, Events, Event Banners, Media Assets, Printable Form Submissions, Import Batches, Migration Logs (legacy user migration tracking), Notifications, Document Locks (real-time collaboration), and Chat Messages.
+Core entities include Users, Schools, Evidence (with approval workflows and assignment), Audit Logs (activity history tracking), Reduction Promises (Action Plans), Resources, Case Studies, Events, Event Banners, Media Assets, Printable Form Submissions, Import Batches, Migration Logs (legacy user migration tracking), Notifications, Document Locks (real-time collaboration), Chat Messages, Health Checks, and Uptime Metrics.
 
 ### UI/UX Decisions
 -   **Design System**: PCS brand colors, specific fonts (Gilroy Bold, Century Gothic Regular), and a component-based design using Radix UI and shadcn/ui. Custom favicon using the official PCS logo.
@@ -83,6 +83,13 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
     - **Activity History System**: Comprehensive audit logging of all admin actions (approvals, edits, deletions, force unlocks) with filterable UI
     - **Evidence Assignment**: Workload distribution system allowing admins to assign evidence submissions to specific reviewers with notification support
     - **Technical Implementation**: CollaborationProvider properly integrated in App.tsx, context value memoized to prevent re-renders, presence updates with deduplication, ChatPanel optimized to prevent infinite loops
+-   **Health Monitoring System**: Internal uptime monitoring accessible via admin dashboard to ensure website reliability:
+    - **Background Monitoring**: Node-cron service pings public endpoints every minute (/, /api/countries, /api/case-studies, /api/events)
+    - **Status Tracking**: Records health checks with response times and status codes, categorizing endpoints as healthy (<1s), degraded (1-3s), or down (>3s or errors)
+    - **Hourly Aggregation**: Automatically calculates uptime percentages and average response times per endpoint every hour
+    - **System Health Dashboard Tab**: Real-time status cards, uptime percentages, response time charts (Recharts), and incident timeline with resolution tracking
+    - **Data Persistence**: PostgreSQL tables (healthChecks, uptimeMetrics) store historical data for trend analysis
+    - **Admin-Only Access**: Internal monitoring visible only to platform administrators, not exposed publicly
 
 ## External Dependencies
 -   **Database**: Neon PostgreSQL
