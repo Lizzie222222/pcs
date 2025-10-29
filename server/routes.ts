@@ -1102,7 +1102,7 @@ Return JSON with:
       // Transform the response to match the expected frontend interface
       const transformedCaseStudy = {
         ...caseStudy,
-        location: caseStudy.schoolCountry || '', // Map schoolCountry to location
+        location: (caseStudy as any).schoolCountry || '', // Map schoolCountry to location
         createdByName, // Add creator name
         evidenceLink, // From evidence table
         evidenceFiles, // From evidence table
@@ -6374,13 +6374,16 @@ Return JSON with:
       // Get all evidence submissions from the past week
       const allEvidence = await storage.getAllEvidence({});
       const weeklyEvidence = allEvidence.filter(e => {
-        const submittedAt = new Date(e.submittedAt || e.createdAt);
+        const submittedAtDate = e.submittedAt || (e as any).createdAt;
+        if (!submittedAtDate) return false;
+        const submittedAt = new Date(submittedAtDate);
         return submittedAt >= weekStart && submittedAt <= weekEnd;
       });
       
       // Get all users created in the past week
       const allUsers = await storage.getAllUsers();
       const weeklyUsers = allUsers.filter(u => {
+        if (!u.createdAt) return false;
         const joinedAt = new Date(u.createdAt);
         return joinedAt >= weekStart && joinedAt <= weekEnd;
       });
@@ -6388,7 +6391,6 @@ Return JSON with:
       // Get platform stats
       const stats = await storage.getSchoolStats();
       const totalSchools = stats.totalSchools || 0;
-      const activeSchools = stats.activeSchools || 0;
       
       // Count total evidence and users
       const totalEvidence = allEvidence.length;
@@ -6399,19 +6401,21 @@ Return JSON with:
         weeklyEvidence.slice(0, 20).map(async (e) => {
           const school = await storage.getSchool(e.schoolId);
           const submitter = await storage.getUser(e.submittedBy);
+          const submittedAtDate = e.submittedAt || (e as any).createdAt;
           return {
             schoolName: school?.name || 'Unknown School',
             evidenceTitle: e.title,
             submitterName: `${submitter?.firstName || ''} ${submitter?.lastName || ''}`.trim() || 'Unknown User',
-            submittedAt: new Date(e.submittedAt || e.createdAt)
+            submittedAt: submittedAtDate ? new Date(submittedAtDate) : new Date()
           };
         })
       );
       
       // Prepare new users data
-      const newUsers = await Promise.all(
+      const newUsers = (await Promise.all(
         weeklyUsers.slice(0, 20).map(async (u) => {
           const userSchools = await storage.getUserSchools(u.id);
+          if (!u.email || !u.role || !u.createdAt) return null;
           return {
             email: u.email,
             schoolName: userSchools.length > 0 ? userSchools[0].name : 'No School',
@@ -6419,7 +6423,7 @@ Return JSON with:
             joinedAt: new Date(u.createdAt)
           };
         })
-      );
+      )).filter((u): u is { email: string; schoolName: string; role: string; joinedAt: Date } => u !== null);
       
       // Prepare digest data
       const digestData: WeeklyDigestData = {
@@ -6431,7 +6435,7 @@ Return JSON with:
           totalSchools,
           totalEvidence,
           totalUsers,
-          activeSchools
+          activeSchools: totalSchools
         },
         weekStart,
         weekEnd
@@ -6458,23 +6462,23 @@ Return JSON with:
           }
           
           const emailSent = await sendWeeklyAdminDigest(
-            admin.email,
+            admin.email as string,
             digestData,
             admin.preferredLanguage || 'en'
           );
           
           if (emailSent) {
-            results.push({ email: admin.email, status: 'sent' });
+            results.push({ email: admin.email as string, status: 'sent' });
             sent++;
             console.log(`[Weekly Digest] Sent digest to ${admin.email}`);
           } else {
-            results.push({ email: admin.email, status: 'failed', error: 'Email service failed' });
+            results.push({ email: admin.email as string, status: 'failed', error: 'Email service failed' });
             failed++;
           }
         } catch (error) {
           console.error(`[Weekly Digest] Failed to send to ${admin.email}:`, error);
           results.push({ 
-            email: admin.email, 
+            email: admin.email as string, 
             status: 'failed', 
             error: error instanceof Error ? error.message : 'Unknown error' 
           });
@@ -6554,8 +6558,8 @@ Return JSON with:
   // Send welcome emails to migrated users with temporary passwords
   app.post('/api/admin/send-migrated-user-emails', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const users = await storage.getAllUsers();
-      const migratedUsers = users.filter(user => user.isMigrated && user.needsPasswordReset);
+      const allUsers = await storage.getAllUsers();
+      const migratedUsers = allUsers.filter(user => user.isMigrated && user.needsPasswordReset);
 
       if (migratedUsers.length === 0) {
         return res.status(400).json({ message: "No migrated users awaiting welcome emails" });
@@ -7411,6 +7415,7 @@ Return JSON with:
       if (!user) {
         // Create new user account using upsertUser
         user = await storage.upsertUser({
+          id: nanoid(),
           email,
           firstName: email.split('@')[0] || 'Teacher',
           lastName: '',
@@ -8548,7 +8553,9 @@ Return JSON with:
       const event = await storage.updateEvent(eventId, processedUpdates);
 
       // Log audit action
-      await logAuditAction(req.user.id, 'edited', 'event', eventId, { changes });
+      if (req.user) {
+        await logAuditAction(req.user.id, 'edited', 'event', eventId, { changes });
+      }
       
       // Send update emails to registered users (only if there are meaningful changes)
       if (event && changes.length > 0 && existingEvent.status === 'published') {
@@ -8670,10 +8677,10 @@ Return JSON with:
         
         // Copy multi-language fields
         titleTranslations: titleTranslations,
-        descriptionTranslations: originalEvent.descriptionTranslations,
-        youtubeVideoTranslations: originalEvent.youtubeVideoTranslations,
-        eventPackFileTranslations: originalEvent.eventPackFileTranslations,
-        testimonialTranslations: originalEvent.testimonialTranslations,
+        descriptionTranslations: originalEvent.descriptionTranslations as any,
+        youtubeVideoTranslations: originalEvent.youtubeVideoTranslations as any,
+        eventPackFileTranslations: originalEvent.eventPackFileTranslations as any,
+        testimonialTranslations: originalEvent.testimonialTranslations as any,
         
         // Copy page builder content
         youtubeVideos: originalEvent.youtubeVideos as any,
@@ -10545,6 +10552,61 @@ If you don't know something specific about the program, be honest and suggest co
         error: 'Failed to process chat message',
         details: error.message 
       });
+    }
+  });
+
+  // Health Monitoring Routes (Admin only)
+  app.get('/api/admin/health/status', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const latestStatus = await storage.getLatestHealthStatus();
+      res.json(latestStatus);
+    } catch (error) {
+      console.error('Error fetching health status:', error);
+      res.status(500).json({ message: 'Failed to fetch health status' });
+    }
+  });
+
+  app.get('/api/admin/health/incidents', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const hours = req.query.hours ? parseInt(req.query.hours as string) : 24;
+      const incidents = await storage.getHealthIncidents(hours);
+      res.json(incidents);
+    } catch (error) {
+      console.error('Error fetching health incidents:', error);
+      res.status(500).json({ message: 'Failed to fetch health incidents' });
+    }
+  });
+
+  app.get('/api/admin/health/stats', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const days = req.query.days ? parseInt(req.query.days as string) : 7;
+      const stats = await storage.getUptimeStats(days);
+      res.json(stats);
+    } catch (error) {
+      console.error('Error fetching uptime stats:', error);
+      res.status(500).json({ message: 'Failed to fetch uptime stats' });
+    }
+  });
+
+  app.get('/api/admin/health/metrics', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const filters: any = {};
+      
+      if (req.query.endpoint) {
+        filters.endpoint = req.query.endpoint as string;
+      }
+      if (req.query.startDate) {
+        filters.startDate = new Date(req.query.startDate as string);
+      }
+      if (req.query.endDate) {
+        filters.endDate = new Date(req.query.endDate as string);
+      }
+
+      const metrics = await storage.getUptimeMetrics(filters);
+      res.json(metrics);
+    } catch (error) {
+      console.error('Error fetching uptime metrics:', error);
+      res.status(500).json({ message: 'Failed to fetch uptime metrics' });
     }
   });
 

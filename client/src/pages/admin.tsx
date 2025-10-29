@@ -88,7 +88,8 @@ import {
   Languages,
   Sparkles,
   AlertTriangle,
-  MessageSquare
+  MessageSquare,
+  Activity
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -108,6 +109,7 @@ import PrintableFormsTab from "@/components/admin/PrintableFormsTab";
 import DataImport from "@/components/admin/DataImport";
 import TeamsSection from '@/components/admin/teams/TeamsSection';
 import EvidenceRequirementsSection from '@/components/admin/evidence-requirements/EvidenceRequirementsSection';
+import SystemHealthTab from '@/components/admin/SystemHealthTab';
 import CollaborationSidebar from '@/components/admin/CollaborationSidebar';
 import ChatPanel from '@/components/admin/ChatPanel';
 import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
@@ -132,7 +134,7 @@ import type {
  * @location client/src/pages/admin.tsx#L731
  * @related server/routes.ts (registerRoutes), shared/schema.ts (users, schools, evidence, caseStudies, events), server/auth.ts (isAuthenticated)
  */
-function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' }) {
+function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' | 'system-health' }) {
   const { t } = useTranslation('admin');
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
@@ -140,7 +142,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
   const { data: countryOptions = [] } = useCountries();
   const [location] = useLocation();
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library' | 'data-import' | 'activity'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library' | 'data-import' | 'activity' | 'system-health'>(initialTab);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<'csv' | 'excel'>('csv');
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
@@ -950,6 +952,20 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
           >
             {t('tabs.communications')}
           </button>
+
+          {/* System Health - No dropdown */}
+          <button
+            className={`px-3 sm:px-4 py-3 sm:py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap flex-shrink-0 min-h-11 flex items-center gap-2 ${
+              activeTab === 'system-health' 
+                ? 'bg-white text-navy shadow-sm' 
+                : 'text-gray-600 hover:text-navy'
+            }`}
+            onClick={() => setActiveTab('system-health')}
+            data-testid="tab-system-health"
+          >
+            <Activity className="w-4 h-4" />
+            System Health
+          </button>
         </div>
 
         {/* Overview Tab (Analytics Content) */}
@@ -1101,6 +1117,9 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
 
         {/* Evidence Gallery Tab */}
         {activeTab === 'media-library' && <EvidenceGalleryTab />}
+
+        {/* System Health Tab */}
+        {activeTab === 'system-health' && <SystemHealthTab />}
       </div>
 
       {/* Collaboration Components */}

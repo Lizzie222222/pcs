@@ -36,6 +36,8 @@ import {
   importBatches,
   chatMessages,
   documentLocks,
+  healthChecks,
+  uptimeMetrics,
   type User,
   type UpsertUser,
   type School,
@@ -111,6 +113,10 @@ import {
   auditLogs,
   type AuditLog,
   type InsertAuditLog,
+  type HealthCheck,
+  type InsertHealthCheck,
+  type UptimeMetric,
+  type InsertUptimeMetric,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne, gte } from "drizzle-orm";
@@ -727,6 +733,56 @@ export interface IStorage {
     targetId?: string;
     limit?: number;
   }): Promise<Array<AuditLog & { user: { firstName: string | null, lastName: string | null } }>>;
+
+  // Health Monitoring operations
+  createHealthCheck(check: {
+    endpoint: string;
+    status: 'healthy' | 'degraded' | 'down';
+    responseTime?: number;
+    errorMessage?: string;
+  }): Promise<void>;
+  getRecentHealthChecks(endpoint: string, limit?: number): Promise<any[]>;
+  getLatestHealthStatus(): Promise<Array<{
+    endpoint: string;
+    status: string;
+    responseTime: number | null;
+    checkedAt: Date;
+  }>>;
+  getHealthIncidents(hours?: number): Promise<Array<{
+    endpoint: string;
+    status: string;
+    errorMessage: string | null;
+    checkedAt: Date;
+  }>>;
+  updateUptimeMetric(metric: {
+    date: Date;
+    endpoint: string;
+    totalChecks: number;
+    successfulChecks: number;
+    failedChecks: number;
+    avgResponseTime: string;
+    uptimePercentage: string;
+  }): Promise<void>;
+  getUptimeMetrics(filters?: {
+    endpoint?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<any[]>;
+  getUptimeStats(days?: number): Promise<{
+    overall: {
+      uptimePercentage: number;
+      avgResponseTime: number;
+      totalChecks: number;
+      successfulChecks: number;
+      failedChecks: number;
+    };
+    byEndpoint: Array<{
+      endpoint: string;
+      uptimePercentage: number;
+      avgResponseTime: number;
+      totalChecks: number;
+    }>;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1009,10 +1065,10 @@ export class DatabaseStorage implements IStorage {
           .set({ invitedBy: null })
           .where(eq(schoolUsers.invitedBy, id));
         
-        // Delete user activity logs (these are just logs, not content)
+        // Delete audit logs (these are just logs, not content)
         await db
-          .delete(userActivityLogs)
-          .where(eq(userActivityLogs.userId, id));
+          .delete(auditLogs)
+          .where(eq(auditLogs.userId, id));
         
         // Finally, delete the user
         const result = await db
@@ -1706,27 +1762,7 @@ export class DatabaseStorage implements IStorage {
 
   async getUserSchools(userId: string): Promise<School[]> {
     return await db
-      .select({
-        id: schools.id,
-        name: schools.name,
-        type: schools.type,
-        country: schools.country,
-        address: schools.address,
-        studentCount: schools.studentCount,
-        latitude: schools.latitude,
-        longitude: schools.longitude,
-        currentStage: schools.currentStage,
-        progressPercentage: schools.progressPercentage,
-        inspireCompleted: schools.inspireCompleted,
-        investigateCompleted: schools.investigateCompleted,
-        actCompleted: schools.actCompleted,
-        awardCompleted: schools.awardCompleted,
-        featuredSchool: schools.featuredSchool,
-        showOnMap: schools.showOnMap,
-        primaryContactId: schools.primaryContactId,
-        createdAt: schools.createdAt,
-        updatedAt: schools.updatedAt,
-      })
+      .select(getTableColumns(schools))
       .from(schools)
       .innerJoin(schoolUsers, eq(schoolUsers.schoolId, schools.id))
       .where(eq(schoolUsers.userId, userId));
@@ -2075,16 +2111,11 @@ export class DatabaseStorage implements IStorage {
       }
     }
     
-    let query = db.select().from(resources)
+    const query = db.select().from(resources)
       .where(and(...conditions))
-      .orderBy(desc(resources.createdAt));
-    
-    if (filters.limit) {
-      query = query.limit(filters.limit);
-    }
-    if (filters.offset) {
-      query = query.offset(filters.offset);
-    }
+      .orderBy(desc(resources.createdAt))
+      .limit(filters.limit ?? 1000)
+      .offset(filters.offset ?? 0);
     
     return await query;
   }
@@ -2449,6 +2480,7 @@ export class DatabaseStorage implements IStorage {
         reviewedBy: evidence.reviewedBy,
         reviewedAt: evidence.reviewedAt,
         reviewNotes: evidence.reviewNotes,
+        assignedTo: evidence.assignedTo,
         isFeatured: evidence.isFeatured,
         isAuditQuiz: evidence.isAuditQuiz,
         roundNumber: evidence.roundNumber,
@@ -2550,12 +2582,11 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(schools, eq(evidence.schoolId, schools.id))
       .leftJoin(users, eq(evidence.reviewedBy, users.id));
 
-    if (conditions.length > 0) {
-      const school = query.where(and(...conditions));
-      return school ? await school.orderBy(desc(evidence.submittedAt)) : [];
-    }
+    const results = conditions.length > 0
+      ? await query.where(and(...conditions)).orderBy(desc(evidence.submittedAt))
+      : await query.orderBy(desc(evidence.submittedAt));
     
-    return await query.orderBy(desc(evidence.submittedAt));
+    return results.filter(r => r.school !== null) as Array<EvidenceWithSchool>;
   }
 
   async getApprovedPublicEvidence(): Promise<Evidence[]> {
@@ -3465,7 +3496,7 @@ export class DatabaseStorage implements IStorage {
     if (audienceId) conditions.push(eq(mailchimpSubscriptions.audienceId, audienceId));
     if (email) conditions.push(eq(mailchimpSubscriptions.email, email));
     
-    let query = db.select().from(mailchimpSubscriptions);
+    let query = db.select().from(mailchimpSubscriptions).$dynamic();
     
     if (conditions.length > 0) {
       query = query.where(and(...conditions));
@@ -3496,37 +3527,6 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(mailchimpSubscriptions)
       .where(eq(mailchimpSubscriptions.userId, userId))
       .orderBy(desc(mailchimpSubscriptions.subscribedAt));
-  }
-
-  // Advanced search operations
-  async searchGlobal(query: string, options?: {
-    contentTypes?: ('resources' | 'schools' | 'evidence' | 'caseStudies')[];
-    limit?: number;
-    offset?: number;
-  }): Promise<{
-    resources: Resource[];
-    schools: School[];
-    evidence: Evidence[];
-    caseStudies: CaseStudy[];
-    totalResults: number;
-  }> {
-    // Placeholder implementation
-    return {
-      resources: [],
-      schools: [],
-      evidence: [],
-      caseStudies: [],
-      totalResults: 0
-    };
-  }
-
-  async searchWithRanking(
-    query: string,
-    contentType: 'resources' | 'schools' | 'evidence' | 'caseStudies',
-    options?: { limit?: number; offset?: number; }
-  ): Promise<any[]> {
-    // Placeholder implementation
-    return [];
   }
 
   // Admin operations
@@ -3575,20 +3575,7 @@ export class DatabaseStorage implements IStorage {
       allUsers.map(async (user) => {
         const userSchools = await db
           .select({
-            id: schools.id,
-            name: schools.name,
-            type: schools.type,
-            country: schools.country,
-            address: schools.address,
-            studentCount: schools.studentCount,
-            currentStage: schools.currentStage,
-            progressPercentage: schools.progressPercentage,
-            latitude: schools.latitude,
-            longitude: schools.longitude,
-            showOnMap: schools.showOnMap,
-            primaryContactId: schools.primaryContactId,
-            createdAt: schools.createdAt,
-            updatedAt: schools.updatedAt,
+            ...getTableColumns(schools),
             role: schoolUsers.role,
           })
           .from(schools)
@@ -3597,7 +3584,10 @@ export class DatabaseStorage implements IStorage {
 
         return {
           user,
-          schools: userSchools,
+          schools: userSchools.map(s => ({
+            ...s,
+            role: s.role || 'teacher',
+          })),
         };
       })
     );
@@ -3744,7 +3734,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(count()));
 
     return {
-      stageDistribution: stageDistribution ?? [],
+      stageDistribution: stageDistribution.map(s => ({ stage: s.stage || '', count: s.count })),
       progressRanges: progressRanges ?? [],
       completionRates: completionRates ?? [],
       monthlyRegistrations: monthlyRegistrations ?? [],
@@ -4001,7 +3991,7 @@ export class DatabaseStorage implements IStorage {
     const popularResources = await db
       .select({
         title: resources.title,
-        downloads: resources.downloadCount,
+        downloads: sql<number>`COALESCE(${resources.downloadCount}, 0)`,
         stage: resources.stage
       })
       .from(resources)
@@ -4034,7 +4024,11 @@ export class DatabaseStorage implements IStorage {
 
     return {
       downloadTrends: downloadTrends ?? [],
-      popularResources: popularResources ?? [],
+      popularResources: popularResources.map(r => ({ 
+        title: r.title, 
+        downloads: r.downloads, 
+        stage: r.stage || '' 
+      })),
       resourcesByStage: resourcesByStage ?? [],
       resourcesByCountry: resourcesByCountry ?? []
     };
@@ -4074,7 +4068,7 @@ export class DatabaseStorage implements IStorage {
         date: sql<string>`TO_CHAR(sent_at, 'YYYY-MM-DD HH24:MI')`,
         template: sql<string>`COALESCE(template, 'Direct Email')`,
         recipient: emailLogs.recipientEmail,
-        status: emailLogs.status
+        status: sql<string>`COALESCE(${emailLogs.status}, 'unknown')`
       })
       .from(emailLogs)
       .orderBy(desc(emailLogs.sentAt))
@@ -5922,6 +5916,20 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(eventAnnouncements.sentAt));
   }
 
+  async getEventAnnouncementsByAudience(audienceId: string): Promise<Array<EventAnnouncement & { event: Event }>> {
+    const results = await db
+      .select({
+        ...getTableColumns(eventAnnouncements),
+        event: events
+      })
+      .from(eventAnnouncements)
+      .leftJoin(events, eq(eventAnnouncements.eventId, events.id))
+      .where(eq(eventAnnouncements.eventId, audienceId))
+      .orderBy(desc(eventAnnouncements.sentAt));
+    
+    return results as Array<EventAnnouncement & { event: Event }>;
+  }
+
   async getEventAnnouncementsByRecipientType(recipientType: 'all_teachers' | 'custom'): Promise<Array<EventAnnouncement & { event: Event }>> {
     const results = await db
       .select({
@@ -6651,7 +6659,250 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(auditLogs.createdAt))
       .limit(limit);
     
-    return results;
+    return results.map(r => ({
+      ...r,
+      user: r.user || { firstName: null, lastName: null }
+    }));
+  }
+
+  // Health Monitoring implementation
+  async createHealthCheck(check: {
+    endpoint: string;
+    status: 'healthy' | 'degraded' | 'down';
+    responseTime?: number;
+    errorMessage?: string;
+  }): Promise<void> {
+    const { nanoid } = await import('nanoid');
+    await db.insert(healthChecks).values({
+      id: nanoid(),
+      endpoint: check.endpoint,
+      status: check.status,
+      responseTime: check.responseTime,
+      errorMessage: check.errorMessage,
+    });
+  }
+
+  async getRecentHealthChecks(endpoint: string, limit: number = 100): Promise<any[]> {
+    return await db
+      .select()
+      .from(healthChecks)
+      .where(eq(healthChecks.endpoint, endpoint))
+      .orderBy(desc(healthChecks.checkedAt))
+      .limit(limit);
+  }
+
+  async getLatestHealthStatus(): Promise<Array<{
+    endpoint: string;
+    status: string;
+    responseTime: number | null;
+    checkedAt: Date;
+  }>> {
+    const latestChecks = await db
+      .select({
+        endpoint: healthChecks.endpoint,
+        status: healthChecks.status,
+        responseTime: healthChecks.responseTime,
+        checkedAt: healthChecks.checkedAt,
+      })
+      .from(healthChecks)
+      .orderBy(desc(healthChecks.checkedAt))
+      .limit(100);
+
+    const endpointMap = new Map<string, any>();
+    for (const check of latestChecks) {
+      if (!endpointMap.has(check.endpoint)) {
+        endpointMap.set(check.endpoint, check);
+      }
+    }
+
+    return Array.from(endpointMap.values());
+  }
+
+  async getHealthIncidents(hours: number = 24): Promise<Array<{
+    endpoint: string;
+    status: string;
+    errorMessage: string | null;
+    checkedAt: Date;
+  }>> {
+    const cutoffTime = new Date();
+    cutoffTime.setHours(cutoffTime.getHours() - hours);
+
+    return await db
+      .select({
+        endpoint: healthChecks.endpoint,
+        status: healthChecks.status,
+        errorMessage: healthChecks.errorMessage,
+        checkedAt: healthChecks.checkedAt,
+      })
+      .from(healthChecks)
+      .where(
+        and(
+          gte(healthChecks.checkedAt, cutoffTime),
+          or(
+            eq(healthChecks.status, 'degraded'),
+            eq(healthChecks.status, 'down')
+          )
+        )
+      )
+      .orderBy(desc(healthChecks.checkedAt));
+  }
+
+  async updateUptimeMetric(metric: {
+    date: Date;
+    endpoint: string;
+    totalChecks: number;
+    successfulChecks: number;
+    failedChecks: number;
+    avgResponseTime: string;
+    uptimePercentage: string;
+  }): Promise<void> {
+    const { nanoid } = await import('nanoid');
+    
+    const existing = await db
+      .select()
+      .from(uptimeMetrics)
+      .where(
+        and(
+          eq(uptimeMetrics.date, metric.date),
+          eq(uptimeMetrics.endpoint, metric.endpoint)
+        )
+      )
+      .limit(1);
+
+    if (existing.length > 0) {
+      await db
+        .update(uptimeMetrics)
+        .set({
+          totalChecks: metric.totalChecks,
+          successfulChecks: metric.successfulChecks,
+          failedChecks: metric.failedChecks,
+          avgResponseTime: metric.avgResponseTime,
+          uptimePercentage: metric.uptimePercentage,
+        })
+        .where(eq(uptimeMetrics.id, existing[0].id));
+    } else {
+      await db.insert(uptimeMetrics).values({
+        id: nanoid(),
+        date: metric.date,
+        endpoint: metric.endpoint,
+        totalChecks: metric.totalChecks,
+        successfulChecks: metric.successfulChecks,
+        failedChecks: metric.failedChecks,
+        avgResponseTime: metric.avgResponseTime,
+        uptimePercentage: metric.uptimePercentage,
+      });
+    }
+  }
+
+  async getUptimeMetrics(filters?: {
+    endpoint?: string;
+    startDate?: Date;
+    endDate?: Date;
+  }): Promise<any[]> {
+    let query = db.select().from(uptimeMetrics).$dynamic();
+
+    const conditions = [];
+    if (filters?.endpoint) {
+      conditions.push(eq(uptimeMetrics.endpoint, filters.endpoint));
+    }
+    if (filters?.startDate) {
+      conditions.push(gte(uptimeMetrics.date, filters.startDate));
+    }
+    if (filters?.endDate) {
+      conditions.push(sql`${uptimeMetrics.date} <= ${filters.endDate}`);
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions));
+    }
+
+    return await query.orderBy(desc(uptimeMetrics.date));
+  }
+
+  async getUptimeStats(days: number = 7): Promise<{
+    overall: {
+      uptimePercentage: number;
+      avgResponseTime: number;
+      totalChecks: number;
+      successfulChecks: number;
+      failedChecks: number;
+    };
+    byEndpoint: Array<{
+      endpoint: string;
+      uptimePercentage: number;
+      avgResponseTime: number;
+      totalChecks: number;
+    }>;
+  }> {
+    const startDate = new Date();
+    startDate.setDate(startDate.getDate() - days);
+
+    const metrics = await this.getUptimeMetrics({ startDate });
+
+    let totalChecks = 0;
+    let totalSuccessful = 0;
+    let totalFailed = 0;
+    let totalResponseTime = 0;
+    let responseTimeCount = 0;
+
+    const endpointStats = new Map<string, {
+      totalChecks: number;
+      successfulChecks: number;
+      totalResponseTime: number;
+      responseTimeCount: number;
+    }>();
+
+    for (const metric of metrics) {
+      totalChecks += metric.totalChecks || 0;
+      totalSuccessful += metric.successfulChecks || 0;
+      totalFailed += metric.failedChecks || 0;
+
+      if (metric.avgResponseTime) {
+        const avgRT = parseFloat(metric.avgResponseTime);
+        if (!isNaN(avgRT)) {
+          totalResponseTime += avgRT * (metric.totalChecks || 0);
+          responseTimeCount += metric.totalChecks || 0;
+        }
+      }
+
+      if (!endpointStats.has(metric.endpoint)) {
+        endpointStats.set(metric.endpoint, {
+          totalChecks: 0,
+          successfulChecks: 0,
+          totalResponseTime: 0,
+          responseTimeCount: 0,
+        });
+      }
+
+      const epStats = endpointStats.get(metric.endpoint)!;
+      epStats.totalChecks += metric.totalChecks || 0;
+      epStats.successfulChecks += metric.successfulChecks || 0;
+
+      if (metric.avgResponseTime) {
+        const avgRT = parseFloat(metric.avgResponseTime);
+        if (!isNaN(avgRT)) {
+          epStats.totalResponseTime += avgRT * (metric.totalChecks || 0);
+          epStats.responseTimeCount += metric.totalChecks || 0;
+        }
+      }
+    }
+
+    const overall = {
+      uptimePercentage: totalChecks > 0 ? (totalSuccessful / totalChecks) * 100 : 0,
+      avgResponseTime: responseTimeCount > 0 ? totalResponseTime / responseTimeCount : 0,
+      totalChecks,
+      successfulChecks: totalSuccessful,
+      failedChecks: totalFailed,
+    };
+
+    const byEndpoint = Array.from(endpointStats.entries()).map(([endpoint, stats]) => ({
+      endpoint,
+      uptimePercentage: stats.totalChecks > 0 ? (stats.successfulChecks / stats.totalChecks) * 100 : 0,
+      avgResponseTime: stats.responseTimeCount > 0 ? stats.totalResponseTime / stats.responseTimeCount : 0,
+      totalChecks: stats.totalChecks,
+    }));
+
+    return { overall, byEndpoint };
   }
 }
 

@@ -116,6 +116,12 @@ export const photoConsentStatusEnum = pgEnum('photo_consent_status', [
   'rejected'
 ]);
 
+export const healthCheckStatusEnum = pgEnum('health_check_status', [
+  'healthy',
+  'degraded',
+  'down'
+]);
+
 /**
  * @description Core users table supporting email/password authentication. Central entity linking to schools, evidence submissions, and all user-generated content.
  * @location shared/schema.ts#L73
@@ -1917,6 +1923,48 @@ export interface EventAnalytics {
   upcomingEventsCount: number;
   pastEventsCount: number;
 }
+
+// Health Monitoring Tables
+export const healthChecks = pgTable("health_checks", {
+  id: varchar("id").primaryKey(),
+  endpoint: varchar("endpoint").notNull(),
+  status: healthCheckStatusEnum("status").notNull(),
+  responseTime: integer("response_time"),
+  errorMessage: text("error_message"),
+  checkedAt: timestamp("checked_at").notNull().defaultNow(),
+}, (table) => [
+  index("idx_health_checks_endpoint").on(table.endpoint),
+  index("idx_health_checks_checked_at").on(table.checkedAt),
+]);
+
+export const uptimeMetrics = pgTable("uptime_metrics", {
+  id: varchar("id").primaryKey(),
+  date: timestamp("date").notNull(),
+  endpoint: varchar("endpoint").notNull(),
+  totalChecks: integer("total_checks").notNull().default(0),
+  successfulChecks: integer("successful_checks").notNull().default(0),
+  failedChecks: integer("failed_checks").notNull().default(0),
+  avgResponseTime: decimal("avg_response_time", { precision: 10, scale: 2 }),
+  uptimePercentage: decimal("uptime_percentage", { precision: 5, scale: 2 }),
+}, (table) => [
+  index("idx_uptime_metrics_date").on(table.date),
+  index("idx_uptime_metrics_endpoint").on(table.endpoint),
+  uniqueIndex("idx_uptime_metrics_unique").on(table.date, table.endpoint),
+]);
+
+export const insertHealthCheckSchema = createInsertSchema(healthChecks).omit({
+  id: true,
+  checkedAt: true,
+});
+
+export const insertUptimeMetricSchema = createInsertSchema(uptimeMetrics).omit({
+  id: true,
+});
+
+export type HealthCheck = typeof healthChecks.$inferSelect;
+export type InsertHealthCheck = z.infer<typeof insertHealthCheckSchema>;
+export type UptimeMetric = typeof uptimeMetrics.$inferSelect;
+export type InsertUptimeMetric = z.infer<typeof insertUptimeMetricSchema>;
 
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;
