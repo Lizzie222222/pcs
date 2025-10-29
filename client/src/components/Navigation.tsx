@@ -77,6 +77,7 @@ export default function Navigation() {
     { href: "/inspiration", label: t('navigation.inspiration'), public: true },
     { href: "/schools-map", label: t('navigation.schools_map'), public: true },
     { href: "/search", label: t('navigation.search'), public: true },
+    { href: "/help-center", label: t('navigation.help_center'), public: true },
   ];
 
   // Add dashboard link if user is authenticated
