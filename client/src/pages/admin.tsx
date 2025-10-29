@@ -369,7 +369,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
   // Photo consent mutations (shared with Reviews and Schools)
   const approvePhotoConsentMutation = useMutation({
     mutationFn: async ({ schoolId, notes }: { schoolId: string; notes: string }) => {
-      return await apiRequest('POST', `/api/admin/schools/${schoolId}/photo-consent/approve`, { notes });
+      return await apiRequest('PATCH', `/api/schools/${schoolId}/photo-consent/approve`, { notes });
     },
     onMutate: async (variables) => {
       // Cancel outgoing refetches to avoid race conditions
@@ -413,7 +413,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
 
   const rejectPhotoConsentMutation = useMutation({
     mutationFn: async ({ schoolId, notes }: { schoolId: string; notes: string }) => {
-      return await apiRequest('POST', `/api/admin/schools/${schoolId}/photo-consent/reject`, { notes });
+      return await apiRequest('PATCH', `/api/schools/${schoolId}/photo-consent/reject`, { notes });
     },
     onMutate: async (variables) => {
       // Cancel outgoing refetches to avoid race conditions
