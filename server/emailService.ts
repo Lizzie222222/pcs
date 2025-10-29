@@ -298,7 +298,7 @@ export async function sendWelcomeEmail(
       </p>
       
       <p style="margin: 0 0 20px 0;">
-        Welcome to <strong>Plastic Clever Schools</strong>! We're thrilled to have <strong>${schoolName}</strong> join our global community of schools committed to reducing plastic waste and protecting our oceans.
+        Welcome to <strong>Plastic Clever Schools</strong>! We're thrilled to have <strong>${schoolName}</strong> join our global community of schools committed to reducing plastic waste and protecting our ocean.
       </p>
       
       <p style="margin: 0 0 20px 0;">

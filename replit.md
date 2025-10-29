@@ -61,3 +61,21 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 -   **AI Integration**: OpenAI GPT-4o-mini
 -   **PDF Generation**: Puppeteer
 -   **Image Processing**: Sharp library
+
+## Recent Changes (October 2025)
+
+### Welcome Email Copy Update
+- **Changed "oceans" to "ocean"**: Updated welcome email text from "protecting our oceans" to "protecting our ocean" for grammatical consistency
+- **Impact**: More accurate messaging in automated welcome emails sent to new school registrations
+
+### Event Banner Layout Fix
+- **Eliminated Gap**: Fixed spacing issue between event banner and navigation bar
+- **Banner Height**: Set exact 48px height using inline style and flexbox centering (removed padding conflicts)
+- **Navigation Position**: Updated navigation top position to exactly 48px when banner is active
+- **Seamless Layout**: Banner and navigation now touch perfectly with 0px gap
+- **Impact**: Clean, professional appearance with no visible spacing issues between fixed elements
+
+### Footer Description Update
+- **Updated Footer Copy**: Changed footer description from "Empowering schools worldwide to create plastic-free environments through education, investigation, and action" to "An award to reduce waste with students at the heart of the action" across all 14 language translations (English, Spanish, French, German, Italian, Portuguese, Dutch, Russian, Arabic, Indonesian, Chinese, Korean, Greek, Welsh)
+- **Consistent Messaging**: Footer now emphasizes the award nature of the program and student-centered approach
+- **Impact**: Footer messaging aligns with the updated hero copy and reinforces the student-focused nature of the program
