@@ -90,7 +90,7 @@ export default function SchoolsFilters({
             value={schoolFilters.country} 
             onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, country: value }))}
           >
-            <SelectTrigger className="w-full sm:w-48 min-h-11">
+            <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-country-filter">
               <SelectValue placeholder={t('schools.filters.allCountries')} />
             </SelectTrigger>
             <SelectContent>
@@ -99,6 +99,41 @@ export default function SchoolsFilters({
                   {option.label}
                 </SelectItem>
               ))}
+            </SelectContent>
+          </Select>
+          <Select 
+            value={schoolFilters.stage} 
+            onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, stage: value }))}
+          >
+            <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-stage-filter">
+              <SelectValue placeholder="All Stages" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Stages</SelectItem>
+              <SelectItem value="inspire">Inspire</SelectItem>
+              <SelectItem value="investigate">Investigate</SelectItem>
+              <SelectItem value="act">Act</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select 
+            value={schoolFilters.language} 
+            onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, language: value }))}
+          >
+            <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-language-filter">
+              <SelectValue placeholder="All Languages" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Languages</SelectItem>
+              <SelectItem value="en">English</SelectItem>
+              <SelectItem value="es">Spanish</SelectItem>
+              <SelectItem value="fr">French</SelectItem>
+              <SelectItem value="de">German</SelectItem>
+              <SelectItem value="it">Italian</SelectItem>
+              <SelectItem value="pt">Portuguese</SelectItem>
+              <SelectItem value="nl">Dutch</SelectItem>
+              <SelectItem value="el">Greek</SelectItem>
+              <SelectItem value="id">Indonesian</SelectItem>
+              <SelectItem value="zh">Chinese</SelectItem>
             </SelectContent>
           </Select>
         </div>
