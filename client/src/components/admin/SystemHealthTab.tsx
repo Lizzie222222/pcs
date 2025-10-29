@@ -25,17 +25,6 @@ interface HealthStats {
   uptimePercentage: number;
 }
 
-interface Incident {
-  id: string;
-  endpoint: string;
-  status: 'degraded' | 'down';
-  message: string;
-  timestamp: string;
-  duration?: number;
-  resolved: boolean;
-  resolvedAt?: string;
-}
-
 interface MetricDataPoint {
   timestamp: string;
   endpoint: string;
@@ -102,7 +91,6 @@ const CHART_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6
 export default function SystemHealthTab() {
   // All hooks must be at the top level before any early returns
   const [uptimeRange, setUptimeRange] = useState<'7' | '30'>('7');
-  const [incidentRange, setIncidentRange] = useState<'24' | '48'>('24');
 
   const { data: endpointStatuses, isLoading: statusLoading, error: statusError } = useQuery<EndpointStatus[]>({
     queryKey: ['/api/admin/health/status'],
@@ -114,32 +102,27 @@ export default function SystemHealthTab() {
     refetchInterval: 60000,
   });
 
-  const { data: incidents, isLoading: incidentsLoading, error: incidentsError } = useQuery<Incident[]>({
-    queryKey: ['/api/admin/health/incidents', { hours: incidentRange }],
-    refetchInterval: 60000,
-  });
-
   const { data: metrics, isLoading: metricsLoading, error: metricsError } = useQuery<MetricDataPoint[]>({
     queryKey: ['/api/admin/health/metrics'],
     refetchInterval: 60000,
   });
 
   // Early returns only after all hooks are called
-  if (statusError || statsError || incidentsError || metricsError) {
+  if (statusError || statsError || metricsError) {
     return (
       <Alert variant="destructive" data-testid="alert-error">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Error loading health data</AlertTitle>
         <AlertDescription>
           {(statusError as Error)?.message || (statsError as Error)?.message || 
-           (incidentsError as Error)?.message || (metricsError as Error)?.message || 
+           (metricsError as Error)?.message || 
            'Failed to fetch system health information'}
         </AlertDescription>
       </Alert>
     );
   }
 
-  const isLoading = statusLoading || statsLoading || incidentsLoading || metricsLoading;
+  const isLoading = statusLoading || statsLoading || metricsLoading;
 
   if (isLoading) {
     return <LoadingSpinner message="Loading system health data..." />;
@@ -328,80 +311,6 @@ export default function SystemHealthTab() {
           ) : (
             <div className="flex items-center justify-center h-64 text-gray-500" data-testid="text-no-chart-data">
               No metric data available
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Incident Timeline */}
-      <Card data-testid="card-incidents">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-          <CardTitle className="text-base font-semibold">Recent Incidents</CardTitle>
-          <Select value={incidentRange} onValueChange={(value: '24' | '48') => setIncidentRange(value)}>
-            <SelectTrigger className="w-32" data-testid="select-incident-range">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="24" data-testid="option-incident-24">Last 24 hours</SelectItem>
-              <SelectItem value="48" data-testid="option-incident-48">Last 48 hours</SelectItem>
-            </SelectContent>
-          </Select>
-        </CardHeader>
-        <CardContent>
-          {incidents && incidents.length > 0 ? (
-            <div className="space-y-4">
-              {incidents.map((incident) => (
-                <div
-                  key={incident.id}
-                  className="flex items-start gap-3 pb-4 border-b last:border-b-0"
-                  data-testid={`incident-${incident.id}`}
-                >
-                  <div className="mt-1">
-                    {incident.status === 'down' ? (
-                      <XCircle className="w-5 h-5 text-red-500" />
-                    ) : (
-                      <AlertTriangle className="w-5 h-5 text-yellow-500" />
-                    )}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium" data-testid={`text-incident-endpoint-${incident.id}`}>
-                        {incident.endpoint}
-                      </span>
-                      {getStatusBadge(incident.status)}
-                      {incident.resolved && (
-                        <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200" data-testid={`badge-incident-resolved-${incident.id}`}>
-                          Resolved
-                        </Badge>
-                      )}
-                    </div>
-                    <p className="text-sm text-gray-600 mb-1" data-testid={`text-incident-message-${incident.id}`}>
-                      {incident.message}
-                    </p>
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
-                      <span className="flex items-center gap-1" data-testid={`text-incident-timestamp-${incident.id}`}>
-                        <Clock className="w-3 h-3" />
-                        {safeFormatDistanceToNow(incident.timestamp)}
-                      </span>
-                      {incident.duration && (
-                        <span data-testid={`text-incident-duration-${incident.id}`}>
-                          Duration: {formatResponseTime(incident.duration)}
-                        </span>
-                      )}
-                      {incident.resolvedAt && (
-                        <span data-testid={`text-incident-resolved-at-${incident.id}`}>
-                          Resolved: {safeFormatDistanceToNow(incident.resolvedAt)}
-                        </span>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="flex flex-col items-center justify-center py-8 text-gray-500" data-testid="text-no-incidents">
-              <CheckCircle className="w-12 h-12 text-green-500 mb-2" />
-              <p>No incidents in the selected time range</p>
             </div>
           )}
         </CardContent>
