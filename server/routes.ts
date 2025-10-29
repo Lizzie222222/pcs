@@ -10610,6 +10610,28 @@ If you don't know something specific about the program, be honest and suggest co
     }
   });
 
+  // Clear API cache (admin only)
+  app.post('/api/admin/cache/clear', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { cacheKey } = req.body;
+      
+      if (cacheKey) {
+        // Clear specific cache key
+        apiCache.clear(cacheKey);
+        console.log(`[Cache] Cleared specific cache key: ${cacheKey}`);
+        res.json({ message: `Cache key "${cacheKey}" cleared successfully` });
+      } else {
+        // Clear all cache
+        apiCache.clearAll();
+        console.log('[Cache] Cleared all API cache');
+        res.json({ message: 'All cache cleared successfully' });
+      }
+    } catch (error) {
+      console.error('Error clearing cache:', error);
+      res.status(500).json({ message: 'Failed to clear cache' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

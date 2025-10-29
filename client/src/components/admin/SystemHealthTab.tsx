@@ -1,13 +1,16 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { LoadingSpinner } from "@/components/ui/states";
-import { Activity, AlertTriangle, CheckCircle, XCircle, Clock, TrendingUp, TrendingDown } from "lucide-react";
+import { Activity, AlertTriangle, CheckCircle, XCircle, Clock, TrendingUp, TrendingDown, Trash2 } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { formatDistanceToNow } from "date-fns";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 interface EndpointStatus {
   endpoint: string;
@@ -99,6 +102,7 @@ const CHART_COLORS = ['#0B3D5D', '#019ADE', '#02BBB4', '#FFC557', '#FF595A', '#6
 export default function SystemHealthTab() {
   // All hooks must be at the top level before any early returns
   const [uptimeRange, setUptimeRange] = useState<'7' | '30'>('7');
+  const { toast } = useToast();
 
   const { data: endpointStatuses, isLoading: statusLoading, error: statusError } = useQuery<EndpointStatus[]>({
     queryKey: ['/api/admin/health/status'],
@@ -113,6 +117,30 @@ export default function SystemHealthTab() {
   const { data: metrics, isLoading: metricsLoading, error: metricsError } = useQuery<MetricDataPoint[]>({
     queryKey: ['/api/admin/health/metrics'],
     refetchInterval: 60000,
+  });
+
+  const clearCacheMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('/api/admin/cache/clear', {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Cache Cleared",
+        description: "All API cache has been cleared successfully. The map and other data will refresh with the latest database values.",
+      });
+      // Invalidate all queries to force refetch
+      queryClient.invalidateQueries();
+    },
+    onError: (error) => {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to clear cache",
+        variant: "destructive",
+      });
+    },
   });
 
   // Early returns only after all hooks are called
@@ -167,9 +195,22 @@ export default function SystemHealthTab() {
           <h2 className="text-2xl font-bold text-navy" data-testid="heading-system-health">System Health</h2>
           <p className="text-gray-600 mt-1">Monitor system status and performance metrics</p>
         </div>
-        <div className="flex items-center gap-2 text-sm text-gray-500">
-          <Activity className="w-4 h-4" />
-          <span data-testid="text-last-updated">Last updated: {formatDistanceToNow(new Date(), { addSuffix: true })}</span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+          <div className="flex items-center gap-2 text-sm text-gray-500">
+            <Activity className="w-4 h-4" />
+            <span data-testid="text-last-updated">Last updated: {formatDistanceToNow(new Date(), { addSuffix: true })}</span>
+          </div>
+          <Button
+            onClick={() => clearCacheMutation.mutate()}
+            disabled={clearCacheMutation.isPending}
+            variant="outline"
+            size="sm"
+            className="gap-2"
+            data-testid="button-clear-cache"
+          >
+            <Trash2 className="w-4 h-4" />
+            {clearCacheMutation.isPending ? 'Clearing...' : 'Clear Cache'}
+          </Button>
         </div>
       </div>
 
