@@ -116,7 +116,7 @@ export default function CollaborationSidebar() {
       )}
 
       {/* Sidebar */}
-      <div className={`fixed right-0 top-0 lg:top-32 z-50 lg:z-40 w-full sm:w-80 md:w-72 lg:w-64 xl:w-80 bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 lg:rounded-l-lg h-screen lg:max-h-[calc(100vh-8rem)] flex flex-col transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
+      <div className={`fixed right-0 top-0 lg:top-32 z-50 lg:z-40 w-full sm:w-80 md:w-72 lg:w-64 xl:w-80 bg-white dark:bg-gray-800 shadow-lg border-l border-gray-200 dark:border-gray-700 lg:rounded-l-lg h-screen lg:h-auto lg:max-h-[calc(100vh-8rem)] flex flex-col transition-transform duration-300 ${isMobileOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}`}>
         <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-gray-600 dark:text-gray-400" />
@@ -154,7 +154,7 @@ export default function CollaborationSidebar() {
         </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto lg:flex-initial">
         <div className="p-2">
           {connectionState === 'connecting' && (
             <div className="text-center py-4 text-sm text-gray-500 dark:text-gray-400">
