@@ -43,6 +43,7 @@ import commonSeasLogo from "@assets/common-seas_1759934515099.png";
 import kidsAgainstPlasticLogo from "@assets/KAP-logo-png-300x300_1759934515099.png";
 import riverCleanupLogo from "@assets/RiverCleanup_logo_rgb_pos-WhiteBG-01-2-256x256_1759934515099.png";
 import blueWaveBackground from "@assets/BlueWave_1760462619618.png";
+import stickyNoteBackground from "@assets/Stickynote_1761755454463.png";
 import { 
   Star,
   ArrowRight,
@@ -251,17 +252,16 @@ export default function Landing() {
 
         {/* Post-it Note Style News/Events Popup - Hidden on very small screens (< 375px) */}
         <div className="hidden min-[375px]:block absolute top-3 right-3 sm:top-4 sm:right-4 md:top-8 md:right-8 z-30 max-w-[280px] sm:max-w-xs">
-          <div className="relative p-6 sm:p-7 transform rotate-2 hover:rotate-0 transition-transform duration-300 bg-yellow" 
+          <div className="relative p-6 sm:p-7 transform hover:rotate-0 transition-transform duration-300" 
                style={{ 
-                 boxShadow: '0 4px 6px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06), 2px 2px 8px rgba(0,0,0,0.15)'
+                 backgroundImage: `url(${stickyNoteBackground})`,
+                 backgroundSize: 'cover',
+                 backgroundPosition: 'center',
+                 backgroundRepeat: 'no-repeat',
+                 minHeight: '200px',
+                 aspectRatio: '1/1'
                }}
                data-testid="popup-news-event">
-            {/* Sticky tape effect at top */}
-            <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-16 h-4 bg-yellow-200 rounded-sm" 
-                 style={{ 
-                   boxShadow: 'inset 0 1px 2px rgba(0,0,0,0.1)'
-                 }}>
-            </div>
             
             <div className="flex items-start gap-2">
               <Star className="w-6 h-6 sm:w-6 sm:h-6 text-amber-600 flex-shrink-0 mt-0.5" style={{ filter: 'drop-shadow(0 1px 1px rgba(0,0,0,0.2))' }} />
@@ -269,16 +269,6 @@ export default function Landing() {
                 <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">{t('popup.latest_news')}</p>
                 <p className="text-sm sm:text-base text-gray-800 leading-relaxed">{t('popup.community_message')}</p>
               </div>
-            </div>
-            
-            {/* Subtle corner curl effect */}
-            <div className="absolute bottom-0 right-0 w-0 h-0" 
-                 style={{ 
-                   borderStyle: 'solid',
-                   borderWidth: '0 0 20px 20px',
-                   borderColor: 'transparent transparent #f0f0f0 transparent',
-                   filter: 'drop-shadow(-1px -1px 2px rgba(0,0,0,0.1))'
-                 }}>
             </div>
           </div>
         </div>
