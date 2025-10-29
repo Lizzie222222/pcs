@@ -263,7 +263,7 @@ export default function Landing() {
                }}
                data-testid="popup-news-event">
             
-            <div>
+            <div className="transform -rotate-2">
               <p className="text-base sm:text-lg font-bold text-gray-900 mb-2">{t('popup.latest_news')}</p>
               <p className="text-sm sm:text-base text-gray-800 leading-relaxed">{t('popup.community_message')}</p>
             </div>
