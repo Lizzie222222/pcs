@@ -2,7 +2,7 @@ import { useTranslation } from "react-i18next";
 import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 
 export function Footer() {
-  const { t } = useTranslation('landing');
+  const { t } = useTranslation('common');
 
   return (
     <footer className="bg-navy text-white py-12 mt-16" data-testid="footer">
