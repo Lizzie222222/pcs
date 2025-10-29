@@ -712,7 +712,7 @@ export default function SchoolDetailsDialog({
                         
                         {photoConsentStatus.uploadedAt && (
                           <p className="text-sm text-gray-600" data-testid="text-photo-consent-upload-date">
-                            <strong>{t('schools.school_details.photoConsent.uploaded')}:</strong> {new Date(photoConsentStatus.uploadedAt).toLocaleDateString()}
+                            <strong>{t('schools.school_details.photoConsent.uploadedAt')}</strong> {new Date(photoConsentStatus.uploadedAt).toLocaleDateString()}
                           </p>
                         )}
 
@@ -765,11 +765,11 @@ export default function SchoolDetailsDialog({
                     {photoConsentStatus.status === 'approved' && photoConsentStatus.approvedAt && (
                       <div className="border-t pt-3 text-sm text-gray-600" data-testid="info-photo-consent-approval">
                         <p>
-                          <strong>{t('schools.school_details.photoConsent.approved')}:</strong> {new Date(photoConsentStatus.approvedAt).toLocaleDateString()}
+                          <strong>{t('schools.school_details.photoConsent.approvedAt')}</strong> {new Date(photoConsentStatus.approvedAt).toLocaleDateString()}
                         </p>
                         {photoConsentStatus.approvedBy && (
                           <p>
-                            <strong>{t('schools.school_details.photoConsent.approvedBy')}:</strong> {photoConsentStatus.approvedBy}
+                            <strong>{t('schools.school_details.photoConsent.approvedBy')}</strong> {photoConsentStatus.approvedBy}
                           </p>
                         )}
                       </div>
