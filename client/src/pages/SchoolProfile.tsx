@@ -186,23 +186,25 @@ export default function SchoolProfile() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
-        <div className="container mx-auto px-4 py-4">
+      <div className="bg-white border-b shadow-sm sticky top-16 z-10">
+        <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
+                size="sm"
                 onClick={() => setLocation('/admin?tab=schools')}
                 data-testid="button-back-to-schools"
+                className="hover:bg-gray-100"
               >
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Schools
               </Button>
-              <div>
+              <div className="border-l pl-4">
                 <h1 className="text-2xl font-bold text-navy" data-testid="text-school-name">
                   {school.name}
                 </h1>
-                <p className="text-sm text-gray-600 flex items-center gap-2">
+                <p className="text-sm text-gray-600 flex items-center gap-2 mt-1">
                   <MapPin className="h-3 w-3" />
                   {school.country}
                   {school.type && <span className="capitalize">• {school.type}</span>}
@@ -211,42 +213,65 @@ export default function SchoolProfile() {
             </div>
             <div className="flex items-center gap-2">
               <Badge className={
-                school.currentStage === 'inspire' ? 'bg-pcs_blue' :
-                school.currentStage === 'investigate' ? 'bg-teal' :
-                'bg-coral'
+                school.currentStage === 'inspire' ? 'bg-pcs_blue text-white' :
+                school.currentStage === 'investigate' ? 'bg-teal text-white' :
+                'bg-coral text-white'
               } data-testid="badge-current-stage">
-                {school.currentStage}
+                <span className="capitalize">{school.currentStage}</span>
               </Badge>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="container mx-auto px-4 py-6">
+      {/* Main Content */}
+      <div className="container mx-auto px-6 py-8">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-white p-1 rounded-lg shadow-sm">
-            <TabsTrigger value="overview" className="gap-2" data-testid="tab-overview">
-              <School className="h-4 w-4" />
-              Overview
-            </TabsTrigger>
-            <TabsTrigger value="teachers" className="gap-2" data-testid="tab-teachers">
-              <Users className="h-4 w-4" />
-              Teachers
-            </TabsTrigger>
-            <TabsTrigger value="evidence" className="gap-2" data-testid="tab-evidence">
-              <FileText className="h-4 w-4" />
-              Evidence
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="gap-2" data-testid="tab-analytics">
-              <BarChart3 className="h-4 w-4" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="settings" className="gap-2" data-testid="tab-settings">
-              <Settings className="h-4 w-4" />
-              Settings
-            </TabsTrigger>
-          </TabsList>
+          {/* Tabs Navigation */}
+          <div className="bg-white rounded-lg shadow-sm border p-1.5">
+            <TabsList className="bg-transparent w-full grid grid-cols-5 gap-1">
+              <TabsTrigger 
+                value="overview" 
+                className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
+                data-testid="tab-overview"
+              >
+                <School className="h-4 w-4" />
+                <span className="hidden sm:inline">Overview</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="teachers" 
+                className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
+                data-testid="tab-teachers"
+              >
+                <Users className="h-4 w-4" />
+                <span className="hidden sm:inline">Teachers</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="evidence" 
+                className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
+                data-testid="tab-evidence"
+              >
+                <FileText className="h-4 w-4" />
+                <span className="hidden sm:inline">Evidence</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="analytics" 
+                className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
+                data-testid="tab-analytics"
+              >
+                <BarChart3 className="h-4 w-4" />
+                <span className="hidden sm:inline">Analytics</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="settings" 
+                className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
+                data-testid="tab-settings"
+              >
+                <Settings className="h-4 w-4" />
+                <span className="hidden sm:inline">Settings</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
