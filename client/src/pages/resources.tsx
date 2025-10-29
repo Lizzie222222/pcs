@@ -493,10 +493,6 @@ export default function Resources() {
             <span className="text-xs">{formatFileSize(resource.fileSize || 0)}</span>
           </div>
           <div className="flex flex-col gap-2 pt-2">
-            <span className="text-xs text-gray-500 flex items-center gap-1">
-              <Download className="h-3 w-3" />
-              {resource.downloadCount} {t('resource_card.downloads', { defaultValue: 'downloads' })}
-            </span>
             <div className="flex flex-col gap-2 w-full">
               <div className="flex gap-2 w-full">
                 <Link href={`/resources/view/${resource.id}`} className="flex-1">
@@ -622,10 +618,6 @@ export default function Resources() {
               <BookOpen className="h-4 w-4" />
               <span className="font-medium">{pack.resourceCount} resources</span>
             </div>
-            <span className="text-xs flex items-center gap-1">
-              <Download className="h-3 w-3" />
-              {pack.downloadCount} downloads
-            </span>
           </div>
           <div className="flex flex-col gap-2 pt-2">
             <div className="flex gap-2">
@@ -800,6 +792,7 @@ export default function Resources() {
                   <SelectItem value="geography">Geography</SelectItem>
                   <SelectItem value="cross_curricular">Cross-curricular</SelectItem>
                   <SelectItem value="enrichment">Enrichment</SelectItem>
+                  <SelectItem value="student_action">Student Action</SelectItem>
                 </SelectContent>
               </Select>
             </div>

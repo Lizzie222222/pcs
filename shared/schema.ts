@@ -90,7 +90,8 @@ export const resourceThemeEnum = pgEnum('resource_theme', [
   'design_technology',
   'geography',
   'cross_curricular',
-  'enrichment'
+  'enrichment',
+  'student_action'
 ]);
 
 export const schoolRoleEnum = pgEnum('school_role', [
@@ -313,6 +314,8 @@ export const resources = pgTable("resources", {
   country: varchar("country"),
   resourceType: resourceTypeEnum("resource_type"),
   theme: resourceThemeEnum("theme"),
+  themes: text("themes").array(),
+  tags: text("tags").array(),
   fileUrl: varchar("file_url"),
   fileType: varchar("file_type"),
   fileSize: integer("file_size"),

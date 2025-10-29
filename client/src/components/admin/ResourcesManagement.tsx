@@ -52,7 +52,8 @@ interface Resource {
 // All 14 supported language codes
 const SUPPORTED_LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ar', 'zh', 'el', 'ru', 'ko', 'id', 'cy'];
 const RESOURCE_TYPES = ['lesson_plan', 'assembly', 'teacher_toolkit', 'student_workbook', 'printable_activities', 'none'];
-const RESOURCE_THEMES = ['ocean_literacy', 'climate_change', 'plastic_pollution', 'science', 'design_technology', 'geography', 'cross_curricular', 'enrichment', 'none'];
+const RESOURCE_THEMES = ['ocean_literacy', 'climate_change', 'plastic_pollution', 'science', 'design_technology', 'geography', 'cross_curricular', 'enrichment', 'student_action', 'none'];
+const RESOURCE_TAGS = ['all_stages', 'beginner', 'advanced', 'featured'];
 
 function ResourceForm({ resource, onClose, onSuccess }: {
   resource?: Resource;
@@ -72,6 +73,8 @@ function ResourceForm({ resource, onClose, onSuccess }: {
     ageRange: resource?.ageRange || '',
     resourceType: (resource as any)?.resourceType || 'none',
     theme: (resource as any)?.theme || 'none',
+    themes: (resource as any)?.themes || [],
+    tags: (resource as any)?.tags || [],
     languages: resource?.languages || (() => {
       if (resource?.language) {
         const code = languageCodeFromName(resource.language);
@@ -107,6 +110,44 @@ function ResourceForm({ resource, onClose, onSuccess }: {
         return {
           ...prev,
           languages: [...currentLanguages, languageCode]
+        };
+      }
+    });
+  };
+
+  const handleThemeToggle = (themeValue: string) => {
+    setFormData(prev => {
+      const currentThemes = prev.themes as string[];
+      const isSelected = currentThemes.includes(themeValue);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          themes: currentThemes.filter(t => t !== themeValue)
+        };
+      } else {
+        return {
+          ...prev,
+          themes: [...currentThemes, themeValue]
+        };
+      }
+    });
+  };
+
+  const handleTagToggle = (tagValue: string) => {
+    setFormData(prev => {
+      const currentTags = prev.tags as string[];
+      const isSelected = currentTags.includes(tagValue);
+      
+      if (isSelected) {
+        return {
+          ...prev,
+          tags: currentTags.filter(t => t !== tagValue)
+        };
+      } else {
+        return {
+          ...prev,
+          tags: [...currentTags, tagValue]
         };
       }
     });
@@ -606,28 +647,57 @@ function ResourceForm({ resource, onClose, onSuccess }: {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Theme
+                  Themes (Multiple Selection)
                 </label>
-                <Select 
-                  value={formData.theme} 
-                  onValueChange={(value) => handleInputChange('theme', value)}
-                >
-                  <SelectTrigger data-testid="select-resource-theme">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    <SelectItem value="ocean_literacy">Ocean Literacy</SelectItem>
-                    <SelectItem value="climate_change">Climate Change</SelectItem>
-                    <SelectItem value="plastic_pollution">Plastic Pollution</SelectItem>
-                    <SelectItem value="science">Science</SelectItem>
-                    <SelectItem value="design_technology">Design Technology</SelectItem>
-                    <SelectItem value="geography">Geography</SelectItem>
-                    <SelectItem value="cross_curricular">Cross Curricular</SelectItem>
-                    <SelectItem value="enrichment">Enrichment</SelectItem>
-                  </SelectContent>
-                </Select>
+                <div className="border rounded-lg p-3 bg-gray-50 max-h-48 overflow-y-auto">
+                  <div className="grid grid-cols-2 gap-2">
+                    {RESOURCE_THEMES.filter(t => t !== 'none').map(theme => (
+                      <label key={theme} className="flex items-center gap-2 cursor-pointer hover:bg-white p-2 rounded">
+                        <input
+                          type="checkbox"
+                          checked={(formData.themes as string[]).includes(theme)}
+                          onChange={() => handleThemeToggle(theme)}
+                          className="rounded border-gray-300"
+                          data-testid={`checkbox-theme-${theme}`}
+                        />
+                        <span className="text-sm capitalize">
+                          {theme.replace(/_/g, ' ')}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 mt-1">
+                  {(formData.themes as string[]).length} theme(s) selected
+                </p>
               </div>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tags (Optional)
+              </label>
+              <div className="border rounded-lg p-3 bg-gray-50">
+                <div className="flex flex-wrap gap-2">
+                  {RESOURCE_TAGS.map(tag => (
+                    <label key={tag} className="flex items-center gap-2 cursor-pointer hover:bg-white px-3 py-1.5 rounded-full border border-gray-200">
+                      <input
+                        type="checkbox"
+                        checked={(formData.tags as string[]).includes(tag)}
+                        onChange={() => handleTagToggle(tag)}
+                        className="rounded border-gray-300"
+                        data-testid={`checkbox-tag-${tag}`}
+                      />
+                      <span className="text-sm capitalize">
+                        {tag.replace(/_/g, ' ')}
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                {(formData.tags as string[]).length} tag(s) selected
+              </p>
             </div>
 
             <div className="flex items-center gap-2">

@@ -2096,7 +2096,14 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(resources.resourceType, filters.resourceType as any));
     }
     if (filters.theme) {
-      conditions.push(eq(resources.theme, filters.theme as any));
+      // Support both old single theme field and new themes array
+      const themeCondition = or(
+        eq(resources.theme, filters.theme as any),
+        sql`${filters.theme} = ANY(${resources.themes})`
+      );
+      if (themeCondition) {
+        conditions.push(themeCondition);
+      }
     }
     if (filters.visibility) {
       conditions.push(eq(resources.visibility, filters.visibility as any));
@@ -2139,6 +2146,11 @@ export class DatabaseStorage implements IStorage {
         'id': 'Indonesian', 'cy': 'Welsh'
       };
       updatesWithSync.language = languageNames[updates.languages[0]] || 'English';
+    }
+    
+    // If themes array is provided, sync the old theme field with the first theme
+    if (updates.themes && Array.isArray(updates.themes) && updates.themes.length > 0) {
+      updatesWithSync.theme = updates.themes[0] as any;
     }
     
     const [resource] = await db
