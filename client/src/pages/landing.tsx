@@ -359,10 +359,7 @@ export default function Landing() {
                 </blockquote>
                 
                 {/* Author Info */}
-                <div className="flex items-center gap-4 pt-6 border-t-2 border-ocean-blue/20 relative z-10">
-                  <div className="w-16 h-16 bg-pcs_blue rounded-full flex items-center justify-center text-white font-bold text-xl shadow-lg ring-4 ring-white group-hover:scale-105 transition-transform duration-300">
-                    JS
-                  </div>
+                <div className="pt-6 border-t-2 border-ocean-blue/20 relative z-10">
                   <div>
                     <p className="font-bold text-navy text-lg">{t('testimonial.author_name')}</p>
                     <p className="text-ocean-blue text-sm font-medium">{t('testimonial.author_title')}</p>

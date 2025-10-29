@@ -104,4 +104,6 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 - **Removed Emojis**: Eliminated emojis from loading messages, UI text, and test content for professional presentation
 - **Professional Typography**: Updated post-it note on landing page from Comic Sans/Caveat to Inter font for consistency with PCS brand
 - **Image Placeholders**: Changed from gradient backgrounds to solid color backgrounds
+- **Footer Simplification**: Removed "Registered Charity: 1179917" text from footer across all 11 language translations
+- **Testimonial Cleanup**: Removed "JS" initials avatar from landing page testimonial section for cleaner presentation
 - **Impact**: Achieved clean, professional PCS branding throughout the application with consistent use of solid brand colors and professional typography, eliminating all "AI-looking" design elements
