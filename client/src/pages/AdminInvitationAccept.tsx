@@ -88,6 +88,7 @@ export default function AdminInvitationAccept() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
+  const [isAutoAccepting, setIsAutoAccepting] = useState(false);
   
   const loginSchema = createLoginSchema(t);
   
@@ -204,12 +205,15 @@ export default function AdminInvitationAccept() {
       // Update auth cache immediately with the returned user data
       queryClient.setQueryData(["/api/auth/user"], updatedUser);
       
+      // Set auto-accepting state to prevent showing intermediate UI
+      setIsAutoAccepting(true);
+      
       toast({
         title: "Profile updated!",
         description: "Accepting your invitation...",
       });
       
-      // Automatically accept the invitation after profile update to avoid showing intermediate state
+      // Automatically accept the invitation after profile update
       setTimeout(() => {
         acceptMutation.mutate();
       }, 500);
@@ -221,6 +225,7 @@ export default function AdminInvitationAccept() {
         description: errorMessage,
         variant: "destructive",
       });
+      setIsAutoAccepting(false);
     },
   });
 
@@ -770,7 +775,7 @@ export default function AdminInvitationAccept() {
           </div>
 
           {/* Check if logged in with correct email FIRST, before showing any forms */}
-          {user && user.email.toLowerCase() !== invitation.email.toLowerCase() ? (
+          {user && user.email && user.email.toLowerCase() !== invitation.email.toLowerCase() ? (
             <>
               <div className="bg-red-50 border border-red-200 rounded-lg p-4 space-y-3">
                 <div className="flex items-start gap-2">
@@ -923,6 +928,16 @@ export default function AdminInvitationAccept() {
                   </Button>
                 </form>
               </Form>
+            </>
+          ) : isAutoAccepting || (profileMutation.isSuccess && acceptMutation.isPending) ? (
+            <>
+              {/* Show loading state during auto-acceptance flow */}
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 flex items-center justify-center gap-3">
+                <ButtonSpinner size="sm" />
+                <p className="text-sm text-blue-800 font-medium">
+                  Accepting your invitation...
+                </p>
+              </div>
             </>
           ) : (
             <>
