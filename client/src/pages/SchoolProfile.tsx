@@ -184,9 +184,9 @@ export default function SchoolProfile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 pt-32">
       {/* Header - Sticky positioned below navigation and banner */}
-      <div className="bg-white border-b shadow-sm sticky top-32 z-10">
+      <div className="bg-white border-b shadow-sm sticky top-32 z-10 mb-6">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
