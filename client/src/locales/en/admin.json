@@ -2108,9 +2108,13 @@
         "approveTitle": "Approve Evidence",
         "rejectTitle": "Reject Evidence",
         "reviewNotes": "Review Notes",
+        "required": "*",
         "reviewNotesRequired": "*",
         "feedbackOptional": "Optional feedback for the school...",
-        "feedbackRequired": "Please provide feedback on why this evidence was rejected..."
+        "feedbackRequired": "Please provide feedback on why this evidence was rejected...",
+        "cancel": "Cancel",
+        "confirm": "Confirm",
+        "processing": "Processing..."
       },
       "consentWarning": {
         "title": "Approve Without Photo Consent? 📸",

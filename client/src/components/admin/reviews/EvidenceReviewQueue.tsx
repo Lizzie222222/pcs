@@ -40,7 +40,7 @@ import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
 import { EvidenceAssignment } from "./EvidenceAssignment";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-import { useTranslation } from 'react-i18next';
+import { useTranslation, Trans } from 'react-i18next';
 import type { PendingEvidence } from "@/components/admin/shared/types";
 import type { User } from "@shared/schema";
 
@@ -571,7 +571,9 @@ export default function EvidenceReviewQueue({
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3 pt-2">
               <p className="text-base">
-                {t('reviews.evidence.consentWarning.noConsent')}
+                <Trans i18nKey="reviews.evidence.consentWarning.noConsent" ns="admin">
+                  This school has <strong>not provided approved photo consent</strong>.
+                </Trans>
               </p>
               <p className="text-sm text-gray-600">
                 {pendingApprovalEvidence?.school?.photoConsentStatus === 'pending'
@@ -581,7 +583,9 @@ export default function EvidenceReviewQueue({
                   : t('reviews.evidence.consentWarning.statusNone')}
               </p>
               <p className="text-sm text-gray-600">
-                {t('reviews.evidence.consentWarning.disclaimer')}
+                <Trans i18nKey="reviews.evidence.consentWarning.disclaimer" ns="admin">
+                  Approving this evidence means it <strong>will not be eligible</strong> for use in public case studies or promotional materials unless photo consent is later approved.
+                </Trans>
               </p>
               <p className="font-medium text-gray-900">
                 {t('reviews.evidence.consentWarning.confirmQuestion')}

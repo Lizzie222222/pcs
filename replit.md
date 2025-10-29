@@ -101,3 +101,10 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 -   **AI Integration**: OpenAI GPT-4o-mini
 -   **PDF Generation**: Puppeteer
 -   **Image Processing**: Sharp library
+
+## Recent Changes (October 2025)
+### Evidence Approval Bug Fixes
+- **Fixed HTTP Method Mismatch**: Changed evidence review endpoint from PUT to PATCH to match frontend requests (`/api/admin/evidence/:id/review`), resolving the issue where approve button would "bounce" without taking action
+- **Fixed Missing Translations**: Added missing translation keys (`cancel`, `confirm`, `processing`) to `reviews.evidence.modal` section in admin.json, preventing translation keys from displaying instead of button text
+- **Fixed HTML Rendering**: Updated EvidenceReviewQueue component to use Trans component from react-i18next for proper HTML rendering in photo consent warning dialog, ensuring `<strong>` tags render as bold text instead of displaying as literal tags
+- **Testing**: Verified complete admin evidence approval flow end-to-end with automated tests
