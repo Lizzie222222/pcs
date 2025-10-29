@@ -1590,9 +1590,9 @@ export class DatabaseStorage implements IStorage {
       return {
         countryCode: isoCode,
         countryName: normalizedName,
-        totalSchools: row.totalSchools,
-        completedAwards: row.completedAwards,
-        featuredSchools: row.featuredSchools,
+        totalSchools: Number(row.totalSchools),
+        completedAwards: Number(row.completedAwards),
+        featuredSchools: Number(row.featuredSchools),
       };
     });
   }
