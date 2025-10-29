@@ -532,7 +532,7 @@ export default function Resources() {
                 ) : (
                   <Button
                     size="sm"
-                    className="w-full bg-gradient-to-r from-coral to-orange-500 hover:from-coral/90 hover:to-orange-600 text-white shadow-md"
+                    className="w-full bg-coral hover:bg-coral/90 text-white shadow-md"
                     onClick={() => handleDownload(resource.id, resource.fileUrl, resource.title, resource.visibility)}
                     data-testid={`button-download-${resource.id}`}
                   >
@@ -644,7 +644,7 @@ export default function Resources() {
             </div>
             <Button
               size="sm"
-              className="w-full bg-gradient-to-r from-coral to-orange-500 hover:from-coral/90 hover:to-orange-600 text-white shadow-md"
+              className="w-full bg-coral hover:bg-coral/90 text-white shadow-md"
               onClick={() => {
                 if (isLocked) {
                   alert(t('register_to_access') || 'Please register or log in to access this resource pack');
@@ -688,7 +688,7 @@ export default function Resources() {
 
         {/* Filters */}
         <Card className="mb-8 shadow-lg border-2">
-          <CardHeader className="bg-gradient-to-r from-pcs_blue/5 to-teal/5">
+          <CardHeader className="bg-pcs_blue/5">
             <CardTitle className="flex items-center gap-2 text-navy">
               <Filter className="h-5 w-5" />
               {t('search.title')}
@@ -801,7 +801,7 @@ export default function Resources() {
               <Button
                 variant={filters.stage === '' ? 'default' : 'outline'}
                 onClick={() => handleFilterChange('stage', '')}
-                className={filters.stage === '' ? 'bg-gradient-to-r from-pcs_blue to-teal' : ''}
+                className={filters.stage === '' ? 'bg-pcs_blue hover:bg-pcs_blue/90' : ''}
                 data-testid="filter-all-stages"
               >
                 {t('search.all_stages')}
@@ -868,7 +868,7 @@ export default function Resources() {
                 {isAuthenticated && recommended.length > 0 && (
                   <div className="mb-12">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-3 shadow-lg">
+                      <div className="bg-purple-500 rounded-lg p-3 shadow-lg">
                         <Star className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -889,7 +889,7 @@ export default function Resources() {
                   <div>
                     {isAuthenticated && recommended.length > 0 && (
                       <div className="flex items-center gap-3 mb-6 mt-12">
-                        <div className="bg-gradient-to-r from-pcs_blue to-teal rounded-lg p-3 shadow-lg">
+                        <div className="bg-pcs_blue rounded-lg p-3 shadow-lg">
                           <BookOpen className="h-6 w-6 text-white" />
                         </div>
                         <div>
@@ -970,7 +970,7 @@ export default function Resources() {
                 {isAuthenticated && recommendedPacks.length > 0 && (
                   <div className="mb-12">
                     <div className="flex items-center gap-3 mb-6">
-                      <div className="bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg p-3 shadow-lg">
+                      <div className="bg-purple-500 rounded-lg p-3 shadow-lg">
                         <Star className="h-6 w-6 text-white" />
                       </div>
                       <div>
@@ -991,7 +991,7 @@ export default function Resources() {
                   <div>
                     {isAuthenticated && recommendedPacks.length > 0 && (
                       <div className="flex items-center gap-3 mb-6 mt-12">
-                        <div className="bg-gradient-to-r from-pcs_blue to-teal rounded-lg p-3 shadow-lg">
+                        <div className="bg-pcs_blue rounded-lg p-3 shadow-lg">
                           <Package className="h-6 w-6 text-white" />
                         </div>
                         <div>
@@ -1087,7 +1087,7 @@ export default function Resources() {
 
                   {/* Download All Button */}
                   <Button
-                    className="w-full bg-gradient-to-r from-coral to-orange-500 hover:from-coral/90 hover:to-orange-600 text-white shadow-md"
+                    className="w-full bg-coral hover:bg-coral/90 text-white shadow-md"
                     onClick={() => {
                       handleDownloadAllResources(packDetail.id, packDetail.resources);
                       setSelectedPack(null);

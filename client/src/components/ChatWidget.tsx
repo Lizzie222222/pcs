@@ -98,7 +98,7 @@ export function ChatWidget() {
       {!isOpen && (
         <Button
           onClick={() => setIsOpen(true)}
-          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white z-50 transition-all duration-300 hover:scale-110"
+          className="fixed bottom-6 right-6 h-14 w-14 rounded-full shadow-lg bg-teal hover:bg-teal/90 text-white z-50 transition-all duration-300 hover:scale-110"
           data-testid="button-open-chat"
           aria-label={t('chat.open', { defaultValue: 'Open chat' })}
         >
@@ -109,7 +109,7 @@ export function ChatWidget() {
       {/* Chat Window */}
       {isOpen && (
         <Card className="fixed bottom-6 right-6 w-96 h-[500px] shadow-2xl z-50 flex flex-col border-2 border-teal/20 animate-in slide-in-from-bottom-5 duration-300">
-          <CardHeader className="bg-gradient-to-r from-teal to-pcs_blue text-white rounded-t-lg p-4 flex-shrink-0">
+          <CardHeader className="bg-teal text-white rounded-t-lg p-4 flex-shrink-0">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <div className="h-8 w-8 rounded-full bg-white/20 flex items-center justify-center">
@@ -152,7 +152,7 @@ export function ChatWidget() {
                       className={cn(
                         "max-w-[80%] rounded-lg px-4 py-2 text-sm",
                         message.role === 'user'
-                          ? 'bg-gradient-to-r from-teal to-pcs_blue text-white'
+                          ? 'bg-teal text-white'
                           : 'bg-gray-100 text-gray-900'
                       )}
                     >
@@ -186,7 +186,7 @@ export function ChatWidget() {
                 <Button
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
-                  className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white"
+                  className="bg-teal hover:bg-teal/90 text-white"
                   data-testid="button-send-message"
                   aria-label={t('chat.send', { defaultValue: 'Send message' })}
                 >

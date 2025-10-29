@@ -504,7 +504,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                         ${userRegistration.status === 'attended' ? 'bg-blue-500' : ''}
                         text-white
                       `} data-testid={`badge-registration-status-${event.id}`}>
-                        {userRegistration.status === 'registered' && '✓ Registered'}
+                        {userRegistration.status === 'registered' && 'Registered'}
                         {userRegistration.status === 'waitlisted' && 'Waitlisted'}
                         {userRegistration.status === 'attended' && 'Attended'}
                       </Badge>
@@ -519,7 +519,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
             <div className="text-center pt-6">
               <Button
                 onClick={() => setShowAllEvents(true)}
-                className="bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white px-8 py-6 text-lg shadow-lg"
+                className="bg-pcs_blue hover:bg-pcs_blue/90 text-white px-8 py-6 text-lg shadow-lg"
                 data-testid="button-view-all-events"
               >
                 <ExternalLink className="h-5 w-5 mr-2" />
@@ -657,7 +657,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                             <Button
                               size="sm"
                               onClick={(e) => handleAccessEvent(registration.event, e)}
-                              className="bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white"
+                              className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
                               data-testid={`button-access-event-${registration.id}`}
                             >
                               <PlayCircle className="h-4 w-4 mr-1" />
@@ -1064,7 +1064,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                 return (
                   <Button
                     onClick={handleRegisterForEvent}
-                    className="bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white"
+                    className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
                     data-testid="button-register-event"
                   >
                     {isFull ? 'Join Waitlist' : 'Register for Event'}

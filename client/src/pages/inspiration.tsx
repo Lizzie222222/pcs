@@ -652,7 +652,7 @@ export default function Inspiration() {
 
         {/* Featured Story */}
         {featuredStory && !filters.featuredOnly && (
-          <Card className="mb-8 bg-gradient-to-r from-pcs_blue to-teal text-white overflow-hidden animate-fade-in">
+          <Card className="mb-8 bg-pcs_blue text-white overflow-hidden animate-fade-in">
             <CardContent className="p-8">
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
                 <div>

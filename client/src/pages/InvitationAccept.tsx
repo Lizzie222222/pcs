@@ -299,7 +299,7 @@ export default function InvitationAccept() {
             </p>
             <Button 
               onClick={() => setLocation("/")}
-              className="bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
+              className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
               data-testid="button-go-home"
             >
               Go to Home
@@ -325,7 +325,7 @@ export default function InvitationAccept() {
             </p>
             <Button 
               onClick={() => setLocation("/")}
-              className="bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
+              className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
               data-testid="button-go-home-no-invitation"
             >
               Go to Home
@@ -354,7 +354,7 @@ export default function InvitationAccept() {
             <CardTitle className="text-2xl font-bold text-navy mb-2" data-testid="text-invitation-title">
               You've Been Invited to Join Your School!
             </CardTitle>
-            <p className="text-xl font-semibold bg-gradient-to-r from-teal to-pcs_blue bg-clip-text text-transparent mb-3" data-testid="text-teacher-welcome">
+            <p className="text-xl font-semibold text-teal mb-3" data-testid="text-teacher-welcome">
               Welcome to the Team!
             </p>
             <CardDescription className="text-base" data-testid="text-invitation-subtitle">
@@ -545,7 +545,7 @@ export default function InvitationAccept() {
                     <Button 
                       type="submit"
                       disabled={registrationMutation.isPending}
-                      className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-pcs_blue hover:bg-pcs_blue/90 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       data-testid="button-teacher-register-submit"
                     >
                       {registrationMutation.isPending ? (
@@ -638,7 +638,7 @@ export default function InvitationAccept() {
                     <Button 
                       type="submit"
                       disabled={loginMutation.isPending}
-                      className="w-full bg-gradient-to-r from-teal to-teal/80 hover:from-teal hover:to-teal/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-teal hover:bg-teal/90 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                       data-testid="button-teacher-login-submit"
                     >
                       {loginMutation.isPending ? (

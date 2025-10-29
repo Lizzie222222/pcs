@@ -421,7 +421,7 @@ export default function ProgressTracker({
                                   {auditStatus === 'not_started' && (
                                     <Button
                                       size="sm"
-                                      className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90"
+                                      className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 bg-pcs_blue hover:bg-pcs_blue/90"
                                       onClick={handleOpenAudit}
                                       data-testid="button-do-audit"
                                     >
@@ -443,7 +443,7 @@ export default function ProgressTracker({
                                     <Button
                                       size="sm"
                                       variant="destructive"
-                                      className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700"
+                                      className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300"
                                       onClick={handleOpenAudit}
                                       data-testid="button-redo-audit"
                                     >
@@ -516,8 +516,8 @@ export default function ProgressTracker({
                                   variant={evidenceStatus === 'rejected' ? 'destructive' : 'default'}
                                   className={`text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 ${
                                     evidenceStatus === 'rejected' 
-                                      ? 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700' 
-                                      : 'bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90'
+                                      ? '' 
+                                      : 'bg-pcs_blue hover:bg-pcs_blue/90'
                                   }`}
                                   onClick={() => handleSubmitEvidence(requirement.id, stage.id)}
                                   data-testid={`button-submit-${requirement.id}`}

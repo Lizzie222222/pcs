@@ -371,7 +371,7 @@ export default function AdminInvitationAccept() {
             </p>
             <Button 
               onClick={() => setLocation("/")}
-              className="bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
+              className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
               data-testid="button-admin-go-home"
             >
               Go to Home
@@ -397,7 +397,7 @@ export default function AdminInvitationAccept() {
             </p>
             <Button 
               onClick={() => setLocation("/")}
-              className="bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
+              className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
               data-testid="button-admin-go-home-no-invitation"
             >
               Go to Home
@@ -430,7 +430,7 @@ export default function AdminInvitationAccept() {
                 ? "You've Been Invited to be a Partner!"
                 : "You've Been Invited to be an Administrator!"}
             </CardTitle>
-            <p className={`text-xl font-semibold bg-gradient-to-r ${isPartner ? 'from-teal to-pcs_blue' : 'from-pcs_blue to-teal'} bg-clip-text text-transparent mb-3`} data-testid="text-admin-lucky-you">
+            <p className={`text-xl font-semibold ${isPartner ? 'text-teal' : 'text-pcs_blue'} mb-3`} data-testid="text-admin-lucky-you">
               {isPartner ? "You're Making a Difference!" : "Lucky You!"}
             </p>
             <CardDescription className="text-base" data-testid="text-admin-invitation-subtitle">
@@ -604,7 +604,7 @@ export default function AdminInvitationAccept() {
                       <Button
                         type="submit"
                         size="lg"
-                        className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
+                        className="w-full bg-pcs_blue hover:bg-pcs_blue/90 text-white"
                         disabled={registrationMutation.isPending}
                         data-testid="button-admin-register-submit"
                       >
@@ -701,7 +701,7 @@ export default function AdminInvitationAccept() {
                       <Button
                         type="submit"
                         size="lg"
-                        className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
+                        className="w-full bg-pcs_blue hover:bg-pcs_blue/90 text-white"
                         disabled={loginMutation.isPending}
                         data-testid="button-admin-login-submit"
                       >
@@ -745,7 +745,7 @@ export default function AdminInvitationAccept() {
           <CardTitle className="text-2xl font-bold text-navy mb-2" data-testid="text-admin-invitation-title-auth">
             You've Been Invited to be an Administrator!
           </CardTitle>
-          <p className="text-xl font-semibold bg-gradient-to-r from-pcs_blue to-teal bg-clip-text text-transparent mb-3" data-testid="text-admin-lucky-you-auth">
+          <p className="text-xl font-semibold text-pcs_blue mb-3" data-testid="text-admin-lucky-you-auth">
             Lucky You!
           </p>
           <CardDescription className="text-base" data-testid="text-admin-invitation-subtitle-auth">
@@ -910,7 +910,7 @@ export default function AdminInvitationAccept() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-full bg-gradient-to-r from-pcs_blue to-pcs_blue/80 hover:from-pcs_blue hover:to-pcs_blue/70 text-white"
+                    className="w-full bg-pcs_blue hover:bg-pcs_blue/90 text-white"
                     disabled={profileMutation.isPending}
                     data-testid="button-submit-onboarding"
                   >
@@ -951,7 +951,7 @@ export default function AdminInvitationAccept() {
               <Button 
                 onClick={handleAccept}
                 disabled={acceptMutation.isPending}
-                className="w-full bg-gradient-to-r from-[#019ADE] to-[#019ADE]/80 hover:from-[#019ADE] hover:to-[#019ADE]/70 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-pcs_blue hover:bg-pcs_blue/90 text-white py-6 text-lg font-semibold shadow-lg hover:shadow-xl transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 data-testid="button-accept-admin-invitation"
               >
                 {acceptMutation.isPending ? (

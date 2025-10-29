@@ -931,7 +931,7 @@ export default function Home() {
               variant={activeTab === 'progress' ? 'default' : 'ghost'}
               className={`flex-1 transition-all duration-300 font-semibold min-w-[44px] ${
                 activeTab === 'progress' 
-                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  ? 'bg-pcs_blue text-white shadow-lg scale-105' 
                   : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
               }`}
               onClick={() => setActiveTab('progress')}
@@ -945,7 +945,7 @@ export default function Home() {
               variant={activeTab === 'resources' ? 'default' : 'ghost'}
               className={`flex-1 transition-all duration-300 font-semibold min-w-[44px] ${
                 activeTab === 'resources' 
-                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  ? 'bg-pcs_blue text-white shadow-lg scale-105' 
                   : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
               }`}
               onClick={() => setActiveTab('resources')}
@@ -959,7 +959,7 @@ export default function Home() {
               variant={activeTab === 'team' ? 'default' : 'ghost'}
               className={`flex-1 transition-all duration-300 font-semibold min-w-[44px] ${
                 activeTab === 'team' 
-                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  ? 'bg-pcs_blue text-white shadow-lg scale-105' 
                   : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
               }`}
               onClick={() => setActiveTab('team')}
@@ -973,7 +973,7 @@ export default function Home() {
               variant={activeTab === 'promises' ? 'default' : 'ghost'}
               className={`flex-1 transition-all duration-300 font-semibold min-w-[44px] ${
                 activeTab === 'promises' 
-                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  ? 'bg-pcs_blue text-white shadow-lg scale-105' 
                   : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
               }`}
               onClick={() => setActiveTab('promises')}
@@ -987,7 +987,7 @@ export default function Home() {
               variant={activeTab === 'events' ? 'default' : 'ghost'}
               className={`flex-1 transition-all duration-300 font-semibold min-w-[44px] ${
                 activeTab === 'events' 
-                  ? 'bg-gradient-to-r from-pcs_blue to-teal text-white shadow-lg scale-105' 
+                  ? 'bg-pcs_blue text-white shadow-lg scale-105' 
                   : 'text-gray-600 hover:text-navy hover:bg-gray-50 hover:scale-102'
               }`}
               onClick={() => setActiveTab('events')}
@@ -1035,7 +1035,7 @@ export default function Home() {
              auditPromises.length === 0 && 
              !dismissedPromiseNotification && (
               <div className="mb-6" data-testid="missing-promises-notification">
-                <Alert className="bg-gradient-to-r from-teal/10 to-pcs_blue/10 border-l-4 border-teal shadow-lg">
+                <Alert className="bg-teal/10 border-l-4 border-teal shadow-lg">
                   <button
                     onClick={dismissPromiseNotification}
                     className="absolute top-4 right-4 p-1 rounded-full hover:bg-teal/20 transition-colors"
@@ -1057,7 +1057,7 @@ export default function Home() {
                       </div>
                       <Button
                         onClick={() => setActiveTab('promises')}
-                        className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white w-fit"
+                        className="bg-teal hover:bg-teal/90 text-white w-fit"
                         data-testid="button-make-promises-now"
                       >
                         <Target className="h-4 w-4 mr-2" />
@@ -1349,7 +1349,7 @@ export default function Home() {
                       <h3 className="text-lg font-semibold text-gray-700 mb-2">{t('activity_feed.no_activity_title')}</h3>
                       <p className="text-gray-500 mb-6">{t('activity_feed.no_activity_description')}</p>
                       <Button 
-                        className="bg-gradient-to-r from-coral to-coral/80 hover:from-coral hover:to-coral/70 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
+                        className="bg-coral hover:bg-coral/90 text-white px-6 py-3 rounded-full font-semibold shadow-lg hover:shadow-xl transition-all duration-300 group"
                         onClick={() => setShowEvidenceForm(true)}
                         data-testid="button-upload-evidence-empty"
                       >
@@ -1546,7 +1546,7 @@ export default function Home() {
                               {resource.fileUrl && (
                                 <Button
                                   size="sm"
-                                  className="bg-gradient-to-r from-pcs_blue to-teal hover:from-pcs_blue/90 hover:to-teal/90 text-white"
+                                  className="bg-pcs_blue hover:bg-pcs_blue/90 text-white"
                                   onClick={() => window.open(resource.fileUrl!, '_blank')}
                                   data-testid={`button-view-resource-${resource.id}`}
                                 >
@@ -1606,7 +1606,7 @@ export default function Home() {
                   <div className="flex flex-col sm:flex-row gap-3 justify-center">
                     <Button
                       onClick={handleAddPromiseClick}
-                      className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white px-6 py-3 text-lg shadow-lg"
+                      className="bg-teal hover:bg-teal/90 text-white px-6 py-3 text-lg shadow-lg"
                       data-testid="button-add-first-promise"
                     >
                       <Plus className="h-5 w-5 mr-2" />
@@ -1635,7 +1635,7 @@ export default function Home() {
                         <h2 className="text-3xl font-bold text-navy">{t('action_plan.impact_title', { ns: 'dashboard' })}</h2>
                         <Button
                           onClick={handleAddPromiseClick}
-                          className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white shadow-lg"
+                          className="bg-teal hover:bg-teal/90 text-white shadow-lg"
                           data-testid="button-add-promise"
                         >
                           <Plus className="h-5 w-5 mr-2" />
@@ -2154,7 +2154,7 @@ export default function Home() {
                 </Button>
                 <Button
                   type="submit"
-                  className="bg-gradient-to-r from-teal to-pcs_blue hover:from-teal/90 hover:to-pcs_blue/90 text-white"
+                  className="bg-teal hover:bg-teal/90 text-white"
                   disabled={createPromiseMutation.isPending || updatePromiseMutation.isPending}
                   data-testid="button-save-promise"
                 >

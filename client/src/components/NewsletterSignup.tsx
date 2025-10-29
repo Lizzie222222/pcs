@@ -120,7 +120,7 @@ export function NewsletterSignup({
 
   if (variant === "hero") {
     return (
-      <div className={`bg-gradient-to-r from-coral to-yellow text-navy p-6 rounded-xl shadow-lg border border-coral/20 ${className}`}>
+      <div className={`bg-coral text-navy p-6 rounded-xl shadow-lg border border-coral/20 ${className}`}>
         <div className="max-w-md mx-auto text-center">
           <Mail className="h-10 w-10 mx-auto mb-3 text-navy/80" />
           <h3 className="text-xl font-bold mb-2 text-navy">Stay Connected</h3>
