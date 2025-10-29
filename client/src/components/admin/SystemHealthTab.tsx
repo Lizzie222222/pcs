@@ -79,7 +79,7 @@ const getStatusIcon = (status: 'healthy' | 'degraded' | 'down') => {
 };
 
 const formatResponseTime = (ms: number) => {
-  if (ms < 1000) return `${ms}ms`;
+  if (ms < 1000) return `${Math.round(ms)}ms`;
   return `${(ms / 1000).toFixed(2)}s`;
 };
 
