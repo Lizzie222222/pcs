@@ -25,8 +25,8 @@ interface EvidenceRequirement {
   title: string;
   description: string;
   orderIndex: number;
-  resourceUrl?: string;
-  resourceId?: string;
+  resourceIds?: string[];
+  customLinks?: Array<{ title: string; url: string }>;
 }
 
 interface Evidence {
@@ -528,67 +528,44 @@ export default function ProgressTracker({
                             </div>
                           )}
 
-                          {/* Resource Link - Check resourceId first, then fallback to resourceUrl */}
-                          {(requirement.resourceId || requirement.resourceUrl) && (() => {
-                            // If resourceId is set, find the resource from the library
-                            if (requirement.resourceId) {
-                              const resource = allResources.find(r => r.id === requirement.resourceId);
-                              if (resource) {
+                          {/* Help Resources - Show all library resources and custom links */}
+                          {((requirement.resourceIds && requirement.resourceIds.length > 0) || 
+                            (requirement.customLinks && requirement.customLinks.length > 0)) && (
+                            <div className="mt-2 pt-2 border-t space-y-1">
+                              {/* Library resources */}
+                              {requirement.resourceIds?.map(resourceId => {
+                                const resource = allResources.find(r => r.id === resourceId);
+                                if (!resource) return null;
                                 return (
-                                  <div className="mt-2 pt-2 border-t">
-                                    <a
-                                      href={resource.fileUrl || ''}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 hover:underline"
-                                      data-testid={`link-resource-${requirement.id}`}
-                                    >
-                                      <ExternalLink className="h-3 w-3" />
-                                      {resource.title}
-                                    </a>
-                                  </div>
-                                );
-                              }
-                              // If resourceId is set but resource not found, try resourceUrl
-                              if (requirement.resourceUrl) {
-                                return (
-                                  <div className="mt-2 pt-2 border-t">
-                                    <a
-                                      href={requirement.resourceUrl}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 hover:underline"
-                                      data-testid={`link-resource-${requirement.id}`}
-                                    >
-                                      <ExternalLink className="h-3 w-3" />
-                                      View Helpful Resource
-                                    </a>
-                                  </div>
-                                );
-                              }
-                              return null;
-                            }
-                            
-                            // Fallback to resourceUrl if resourceId is not set
-                            if (requirement.resourceUrl) {
-                              return (
-                                <div className="mt-2 pt-2 border-t">
                                   <a
-                                    href={requirement.resourceUrl}
+                                    key={resourceId}
+                                    href={resource.fileUrl || ''}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 hover:underline"
-                                    data-testid={`link-resource-${requirement.id}`}
+                                    data-testid={`link-resource-${resourceId}`}
                                   >
                                     <ExternalLink className="h-3 w-3" />
-                                    View Helpful Resource
+                                    {resource.title}
                                   </a>
-                                </div>
-                              );
-                            }
-                            
-                            return null;
-                          })()}
+                                );
+                              })}
+                              {/* Custom links */}
+                              {requirement.customLinks?.map((link, idx) => (
+                                <a
+                                  key={idx}
+                                  href={link.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-xs text-blue-600 hover:text-blue-800 flex items-center gap-1 hover:underline"
+                                  data-testid={`link-custom-${idx}`}
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  {link.title}
+                                </a>
+                              ))}
+                            </div>
+                          )}
                         </div>
                       );
                     })

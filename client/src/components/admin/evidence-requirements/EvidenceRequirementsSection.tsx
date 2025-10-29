@@ -29,6 +29,8 @@ import {
   Check,
   ImageIcon,
   FileVideo,
+  Link as LinkIcon,
+  X,
 } from "lucide-react";
 import { Tabs } from "@/components/ui/tabs";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
@@ -54,12 +56,20 @@ export default function EvidenceRequirementsSection({
   const [requirementDialogOpen, setRequirementDialogOpen] = useState(false);
   const [deletingRequirement, setDeletingRequirement] = useState<EvidenceRequirement | null>(null);
   const [requirementDeleteDialogOpen, setRequirementDeleteDialogOpen] = useState(false);
-  const [requirementFormData, setRequirementFormData] = useState({
+  const [requirementFormData, setRequirementFormData] = useState<{
+    title: string;
+    description: string;
+    resourceIds: string[];
+    customLinks: Array<{ title: string; url: string }>;
+  }>({
     title: '',
     description: '',
-    resourceUrl: '',
-    resourceId: '',
+    resourceIds: [],
+    customLinks: [],
   });
+  
+  const [newLinkTitle, setNewLinkTitle] = useState('');
+  const [newLinkUrl, setNewLinkUrl] = useState('');
 
   // Evidence Requirements query
   const { data: evidenceRequirements = [], isLoading: requirementsLoading } = useQuery<EvidenceRequirement[]>({
@@ -68,7 +78,7 @@ export default function EvidenceRequirementsSection({
 
   // Evidence Requirements mutations
   const createRequirementMutation = useMutation({
-    mutationFn: async (data: { title: string; description: string; resourceUrl?: string; resourceId?: string; stage: string; orderIndex: number }) => {
+    mutationFn: async (data: { title: string; description: string; resourceIds?: string[]; customLinks?: Array<{ title: string; url: string }>; stage: string; orderIndex: number }) => {
       return await apiRequest('POST', '/api/evidence-requirements', data);
     },
     onSuccess: () => {
@@ -78,7 +88,9 @@ export default function EvidenceRequirementsSection({
       });
       queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
       setRequirementDialogOpen(false);
-      setRequirementFormData({ title: '', description: '', resourceUrl: '', resourceId: '' });
+      setRequirementFormData({ title: '', description: '', resourceIds: [], customLinks: [] });
+      setNewLinkTitle('');
+      setNewLinkUrl('');
     },
     onError: (error: any) => {
       toast({
@@ -90,7 +102,7 @@ export default function EvidenceRequirementsSection({
   });
 
   const updateRequirementMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<{ title: string; description: string; resourceUrl: string; resourceId: string }> }) => {
+    mutationFn: async ({ id, data }: { id: string; data: Partial<{ title: string; description: string; resourceIds: string[]; customLinks: Array<{ title: string; url: string }> }> }) => {
       return await apiRequest('PATCH', `/api/evidence-requirements/${id}`, data);
     },
     onSuccess: () => {
@@ -101,7 +113,9 @@ export default function EvidenceRequirementsSection({
       queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
       setRequirementDialogOpen(false);
       setEditingRequirement(null);
-      setRequirementFormData({ title: '', description: '', resourceUrl: '', resourceId: '' });
+      setRequirementFormData({ title: '', description: '', resourceIds: [], customLinks: [] });
+      setNewLinkTitle('');
+      setNewLinkUrl('');
     },
     onError: (error: any) => {
       toast({
@@ -209,7 +223,9 @@ export default function EvidenceRequirementsSection({
               <Button
                 onClick={() => {
                   setEditingRequirement(null);
-                  setRequirementFormData({ title: '', description: '', resourceUrl: '', resourceId: '' });
+                  setRequirementFormData({ title: '', description: '', resourceIds: [], customLinks: [] });
+                  setNewLinkTitle('');
+                  setNewLinkUrl('');
                   setRequirementDialogOpen(true);
                 }}
                 className="bg-pcs_blue hover:bg-pcs_blue/90"
@@ -288,69 +304,43 @@ export default function EvidenceRequirementsSection({
                                 <p className="text-sm text-gray-600 whitespace-pre-wrap" data-testid={`text-description-${requirement.id}`}>
                                   {requirement.description}
                                 </p>
-                                {requirement.resourceId && (() => {
-                                  const resource = allResources.find(r => r.id === requirement.resourceId);
-                                  if (!resource) {
-                                    return requirement.resourceUrl && (
-                                      <a
-                                        href={requirement.resourceUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 mt-2 text-sm text-blue-600 hover:text-blue-700 hover:underline"
-                                        data-testid={`link-resource-${requirement.id}`}
-                                      >
-                                        <BookOpen className="h-3 w-3" />
-                                        {t('evidenceRequirements.resource.link')}
-                                      </a>
-                                    );
-                                  }
-                                  
-                                  const urlWithoutQuery = resource.fileUrl?.split('?')[0] || '';
-                                  const urlExtension = urlWithoutQuery.split('.').pop()?.toLowerCase() || '';
-                                  const isPdf = resource.fileType?.includes('pdf') || urlExtension === 'pdf';
-                                  
-                                  const getProxyUrl = (url: string | null) => {
-                                    if (!url) return '';
-                                    try {
-                                      const urlObj = new URL(url);
-                                      const pathname = decodeURIComponent(urlObj.pathname);
-                                      const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
-                                      if (privateUploadsMatch) return `/objects/uploads/${privateUploadsMatch[1]}`;
-                                      const publicMatch = pathname.match(/\/public\/(.+)$/);
-                                      if (publicMatch) return `/objects/public/${publicMatch[1]}`;
-                                      if (url.startsWith('/objects/')) return url;
-                                      return url;
-                                    } catch {
-                                      return url;
-                                    }
-                                  };
-                                  
-                                  const pdfProxyUrl = isPdf ? getProxyUrl(resource.fileUrl) : '';
-                                  
-                                  return (
-                                    <div className="mt-3 space-y-2">
-                                      <p className="text-xs font-semibold text-gray-700">{t('evidenceRequirements.resource.helpful')}</p>
-                                      {isPdf && pdfProxyUrl && (
-                                        <div className="relative aspect-video max-w-xs bg-gray-100 rounded-md overflow-hidden border border-gray-200">
-                                          <PDFThumbnail
-                                            url={pdfProxyUrl}
-                                            className="w-full h-full"
-                                          />
-                                        </div>
-                                      )}
-                                      <a
-                                        href={resource.fileUrl || ''}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline"
-                                        data-testid={`link-resource-${requirement.id}`}
-                                      >
-                                        <BookOpen className="h-3 w-3" />
-                                        {resource.title}
-                                      </a>
+                                {(requirement.resourceIds && requirement.resourceIds.length > 0) || (requirement.customLinks && requirement.customLinks.length > 0) ? (
+                                  <div className="mt-3 space-y-2">
+                                    <p className="text-xs font-semibold text-gray-700">{t('evidenceRequirements.resource.helpful')}</p>
+                                    <div className="space-y-1">
+                                      {requirement.resourceIds?.map(resourceId => {
+                                        const resource = allResources.find(r => r.id === resourceId);
+                                        if (!resource) return null;
+                                        return (
+                                          <a
+                                            key={resourceId}
+                                            href={resource.fileUrl || ''}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline block"
+                                            data-testid={`link-resource-${resourceId}`}
+                                          >
+                                            <BookOpen className="h-3 w-3" />
+                                            {resource.title}
+                                          </a>
+                                        );
+                                      })}
+                                      {requirement.customLinks?.map((link, idx) => (
+                                        <a
+                                          key={idx}
+                                          href={link.url}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="inline-flex items-center gap-1 text-sm text-blue-600 hover:text-blue-700 hover:underline block"
+                                          data-testid={`link-custom-${idx}`}
+                                        >
+                                          <LinkIcon className="h-3 w-3" />
+                                          {link.title}
+                                        </a>
+                                      ))}
                                     </div>
-                                  );
-                                })()}
+                                  </div>
+                                ) : null}
                               </div>
                             </div>
                           </div>
@@ -363,9 +353,11 @@ export default function EvidenceRequirementsSection({
                                 setRequirementFormData({
                                   title: requirement.title,
                                   description: requirement.description,
-                                  resourceUrl: requirement.resourceUrl || '',
-                                  resourceId: requirement.resourceId || '',
+                                  resourceIds: requirement.resourceIds || [],
+                                  customLinks: requirement.customLinks || [],
                                 });
+                                setNewLinkTitle('');
+                                setNewLinkUrl('');
                                 setRequirementDialogOpen(true);
                               }}
                               data-testid={`button-edit-${requirement.id}`}
@@ -447,7 +439,7 @@ export default function EvidenceRequirementsSection({
               ) : (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto p-1">
                   {allResources.map((resource) => {
-                    const isSelected = requirementFormData.resourceId === resource.id;
+                    const isSelected = requirementFormData.resourceIds.includes(resource.id);
                     
                     const urlWithoutQuery = resource.fileUrl?.split('?')[0] || '';
                     const urlExtension = urlWithoutQuery.split('.').pop()?.toLowerCase() || '';
@@ -493,11 +485,18 @@ export default function EvidenceRequirementsSection({
                         className={`cursor-pointer transition-all hover:shadow-md overflow-hidden ${
                           isSelected ? 'border-2 border-pcs_blue bg-blue-50' : 'border hover:border-gray-400'
                         }`}
-                        onClick={() => {
-                          setRequirementFormData(prev => ({
-                            ...prev,
-                            resourceId: isSelected ? '' : resource.id,
-                          }));
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setRequirementFormData(prev => {
+                            const currentlySelected = prev.resourceIds.includes(resource.id);
+                            return {
+                              ...prev,
+                              resourceIds: currentlySelected
+                                ? prev.resourceIds.filter(id => id !== resource.id)
+                                : [...prev.resourceIds, resource.id],
+                            };
+                          });
                         }}
                         data-testid={`button-resource-${resource.id}`}
                       >
@@ -555,6 +554,84 @@ export default function EvidenceRequirementsSection({
                 </div>
               )}
             </div>
+            
+            {/* Custom Links Section */}
+            <div className="space-y-3 border-t pt-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-700">Custom Links</h3>
+                <p className="text-xs text-gray-600 mt-1">
+                  Add external links (e.g., YouTube videos, websites)
+                </p>
+              </div>
+              
+              {/* Display existing custom links */}
+              {requirementFormData.customLinks.length > 0 && (
+                <div className="space-y-2">
+                  {requirementFormData.customLinks.map((link, idx) => (
+                    <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
+                      <LinkIcon className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{link.title}</p>
+                        <p className="text-xs text-gray-500 truncate">{link.url}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setRequirementFormData(prev => ({
+                            ...prev,
+                            customLinks: prev.customLinks.filter((_, i) => i !== idx),
+                          }));
+                        }}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                        data-testid={`button-remove-link-${idx}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Add new link form */}
+              <div className="space-y-2">
+                <Input
+                  placeholder="Link title (e.g., Watch our assembly)"
+                  value={newLinkTitle}
+                  onChange={(e) => setNewLinkTitle(e.target.value)}
+                  data-testid="input-link-title"
+                />
+                <Input
+                  placeholder="URL (e.g., https://youtube.com/...)"
+                  value={newLinkUrl}
+                  onChange={(e) => setNewLinkUrl(e.target.value)}
+                  data-testid="input-link-url"
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => {
+                    if (newLinkTitle.trim() && newLinkUrl.trim()) {
+                      setRequirementFormData(prev => ({
+                        ...prev,
+                        customLinks: [...prev.customLinks, { title: newLinkTitle, url: newLinkUrl }],
+                      }));
+                      setNewLinkTitle('');
+                      setNewLinkUrl('');
+                    }
+                  }}
+                  disabled={!newLinkTitle.trim() || !newLinkUrl.trim()}
+                  className="w-full"
+                  data-testid="button-add-link"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Link
+                </Button>
+              </div>
+            </div>
+            
             <div className="flex gap-3 pt-4">
               <Button
                 type="button"
@@ -562,7 +639,9 @@ export default function EvidenceRequirementsSection({
                 onClick={() => {
                   setRequirementDialogOpen(false);
                   setEditingRequirement(null);
-                  setRequirementFormData({ title: '', description: '', resourceUrl: '', resourceId: '' });
+                  setRequirementFormData({ title: '', description: '', resourceIds: [], customLinks: [] });
+                  setNewLinkTitle('');
+                  setNewLinkUrl('');
                 }}
                 className="flex-1"
                 data-testid="button-cancel"
@@ -580,8 +659,8 @@ export default function EvidenceRequirementsSection({
                       data: {
                         title: requirementFormData.title,
                         description: requirementFormData.description,
-                        resourceId: requirementFormData.resourceId || undefined,
-                        resourceUrl: requirementFormData.resourceUrl || undefined,
+                        resourceIds: requirementFormData.resourceIds.length > 0 ? requirementFormData.resourceIds : undefined,
+                        customLinks: requirementFormData.customLinks.length > 0 ? requirementFormData.customLinks : undefined,
                       },
                     });
                   } else {
@@ -593,8 +672,8 @@ export default function EvidenceRequirementsSection({
                     createRequirementMutation.mutate({
                       title: requirementFormData.title,
                       description: requirementFormData.description,
-                      resourceId: requirementFormData.resourceId || undefined,
-                      resourceUrl: requirementFormData.resourceUrl || undefined,
+                      resourceIds: requirementFormData.resourceIds.length > 0 ? requirementFormData.resourceIds : undefined,
+                      customLinks: requirementFormData.customLinks.length > 0 ? requirementFormData.customLinks : undefined,
                       stage: activeEvidenceStage,
                       orderIndex: maxOrder + 1,
                     });
