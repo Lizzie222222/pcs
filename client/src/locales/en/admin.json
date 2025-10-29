@@ -62,6 +62,10 @@
       }
     }
   },
+  "weeklyDigest": {
+    "buttonLabel": "Send Weekly Digest",
+    "sending": "Sending..."
+  },
   "loading": {
     "dashboard": "Loading admin dashboard...",
     "caseStudies": "Loading case studies..."
@@ -1171,6 +1175,14 @@
     "photoConsentRejectionFailed": {
       "title": "Rejection Failed",
       "description": "Failed to reject photo consent. Changes have been reverted."
+    },
+    "weeklyDigestSent": {
+      "title": "Weekly Digest Sent",
+      "description": "Weekly digest sent successfully to {{sent}} of {{total}} admins."
+    },
+    "weeklyDigestFailed": {
+      "title": "Digest Send Failed",
+      "description": "Failed to send weekly digest. Please try again."
     }
   },
   "case_study": {

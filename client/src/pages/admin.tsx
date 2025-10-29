@@ -455,6 +455,29 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
     },
   });
 
+  // Weekly digest mutation
+  const sendWeeklyDigestMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('POST', '/api/admin/send-weekly-digest', {});
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: t('toasts.weeklyDigestSent.title'),
+        description: t('toasts.weeklyDigestSent.description', { 
+          sent: data.results?.sent || 0,
+          total: data.results?.totalRecipients || 0
+        }),
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: t('toasts.weeklyDigestFailed.title'),
+        description: error.message || t('toasts.weeklyDigestFailed.description'),
+        variant: "destructive",
+      });
+    },
+  });
+
   // Export function
   const handleExport = async (type: 'schools' | 'evidence' | 'users') => {
     try {
@@ -712,6 +735,25 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                     </div>
                   </DialogContent>
                 </Dialog>
+                )}
+                
+                {/* Send Weekly Digest Button */}
+                {!isPartner && (
+                  <Button
+                    onClick={() => sendWeeklyDigestMutation.mutate()}
+                    disabled={sendWeeklyDigestMutation.isPending}
+                    variant="outline"
+                    className="min-h-11 text-xs sm:text-sm px-3 sm:px-4"
+                    data-testid="button-send-digest"
+                  >
+                    <Mail className="h-4 w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">
+                      {sendWeeklyDigestMutation.isPending ? t('weeklyDigest.sending') : t('weeklyDigest.buttonLabel')}
+                    </span>
+                    <span className="sm:hidden">
+                      {sendWeeklyDigestMutation.isPending ? '...' : 'Digest'}
+                    </span>
+                  </Button>
                 )}
               </div>
             </div>

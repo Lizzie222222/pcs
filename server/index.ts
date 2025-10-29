@@ -4,6 +4,7 @@ import compression from "compression";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { initializeWebSocket } from "./websocket";
+import { initScheduler } from "./scheduler";
 
 const app = express();
 
@@ -134,5 +135,8 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
+    
+    // Initialize automated weekly digest scheduler
+    initScheduler();
   });
 })();
