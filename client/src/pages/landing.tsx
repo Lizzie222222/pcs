@@ -275,14 +275,14 @@ export default function Landing() {
             </div>
 
             {/* Post-it Note Style News/Events Popup - Perched on bottom right of hero box */}
-            <div className="hidden lg:block absolute -bottom-16 right-0 z-30 max-w-[280px]">
-              <div className="relative pt-20 px-12 pb-14 transform hover:rotate-0 transition-transform duration-300" 
+            <div className="hidden lg:block absolute -bottom-28 right-0 z-30 max-w-[220px]">
+              <div className="relative pt-16 px-10 pb-12 transform hover:rotate-0 transition-transform duration-300" 
                    style={{ 
                      backgroundImage: `url(${stickyNoteBackground})`,
                      backgroundSize: 'cover',
                      backgroundPosition: 'center',
                      backgroundRepeat: 'no-repeat',
-                     minHeight: '200px',
+                     minHeight: '170px',
                      aspectRatio: '1/1'
                    }}
                    data-testid="popup-news-event">
