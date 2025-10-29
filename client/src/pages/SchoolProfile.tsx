@@ -185,8 +185,8 @@ export default function SchoolProfile() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b shadow-sm sticky top-16 z-10">
+      {/* Header - Add top padding to push content below fixed navigation */}
+      <div className="bg-white border-b shadow-sm sticky top-32 z-20 mt-16">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
