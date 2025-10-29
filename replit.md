@@ -108,3 +108,8 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 - **Fixed Missing Translations**: Added missing translation keys (`cancel`, `confirm`, `processing`) to `reviews.evidence.modal` section in admin.json, preventing translation keys from displaying instead of button text
 - **Fixed HTML Rendering**: Updated EvidenceReviewQueue component to use Trans component from react-i18next for proper HTML rendering in photo consent warning dialog, ensuring `<strong>` tags render as bold text instead of displaying as literal tags
 - **Testing**: Verified complete admin evidence approval flow end-to-end with automated tests
+
+### Admin Collaboration Chat Security Fix
+- **Fixed WebSocket Authentication**: Updated `authenticateWebSocket` function in `server/websocket.ts` to restrict admin collaboration chat to only platform admins and partners
+- **Security Enhancement**: Teachers and school users are now properly excluded from the admin collaboration system (online presence, chat, document locks)
+- **Implementation**: WebSocket connections now verify user role (`isAdmin` or `role === 'admin'` or `role === 'partner'`) before allowing access, rejecting unauthorized users with code 1008
