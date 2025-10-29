@@ -63,6 +63,12 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 -   **Image Processing**: Sharp library
 
 ## Recent Changes (October 2025)
+### Teacher Invitation Email Upgrade
+- **Vibrant Email Template**: Updated teacher invitation emails from school dashboard to use the vibrant, colorful template matching admin invitations
+- **Professional Design**: Emails now feature gradient backgrounds, emojis, styled information boxes, and modern formatting
+- **Consistency**: Teacher invitations now match the engaging visual style of admin invitations for a consistent brand experience
+- **Impact**: Teacher invitation emails are now visually appealing and professional, improving the invitation experience
+
 ### AssignTeacherForm Crash Fix
 - **Fixed Undefined User Error**: Added comprehensive null safety checks to prevent crashes when user data is malformed
 - **UI Filtering**: Filter out undefined/null user objects before rendering to prevent "Cannot read properties of undefined" errors
