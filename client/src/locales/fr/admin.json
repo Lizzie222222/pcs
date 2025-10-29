@@ -1204,21 +1204,21 @@
       "dialogs": {
         "update": {
           "title": "Mise à Jour en Masse des Écoles",
-          "description": "Cette action affectera <strong>{count}</strong> écoles.",
+          "description": "Cette action affectera <strong>{{count}}</strong> écoles.",
           "updateStageLabel": "Mettre à Jour l'Étape Actuelle",
           "updateStageHelpText": "Toutes les écoles sélectionnées seront déplacées vers cette étape du programme."
         },
         "delete": {
           "title": "Suppression en Masse des Écoles",
-          "description": "Cette action affectera <strong>{count}</strong> écoles.",
+          "description": "Cette action affectera <strong>{{count}}</strong> écoles.",
           "warningTitle": "Attention :",
           "warningDescription": "Cette action ne peut pas être annulée. Toutes les écoles sélectionnées et leurs données associées seront définitivement supprimées."
         },
         "deleteSchool": {
           "title": "Supprimer l'École",
-          "description": "Êtes-vous sûr de vouloir supprimer <strong>{name}</strong> ? Cette action ne peut pas être annulée et supprimera définitivement l'école et toutes les données associées.",
+          "description": "Êtes-vous sûr de vouloir supprimer <strong>{{name}}</strong> ? Cette action ne peut pas être annulée et supprimera définitivement l'école et toutes les données associées.",
           "loadingUsers": "Chargement des utilisateurs de l'école...",
-          "warningUsers": "Attention : Cette école a {count} utilisateur{plural} associé{plural}.",
+          "warningUsers": "Attention : Cette école a {{count}} utilisateur{{plural}} associé{{plural}}.",
           "associatedUsers": "Utilisateurs Associés :",
           "deleteUsersLabel": "Supprimer également tous les comptes utilisateurs associés",
           "deleteUsersDescription": "Si non coché, les comptes utilisateurs resteront dans le système et pourront être réattribués à d'autres écoles. Si coché, les utilisateurs seront définitivement supprimés et ne pourront pas s'inscrire à nouveau avec les mêmes adresses e-mail.",
@@ -1245,7 +1245,7 @@
       },
       "bulkUpdateComplete": {
         "title": "Mise à Jour en Masse Terminée",
-        "description": "{count} écoles ont été mises à jour avec succès."
+        "description": "{{count}} écoles ont été mises à jour avec succès."
       },
       "bulkUpdateFailed": {
         "title": "Échec de la Mise à Jour en Masse",
@@ -1253,7 +1253,7 @@
       },
       "bulkDeleteComplete": {
         "title": "Suppression en Masse Terminée",
-        "description": "{count} écoles ont été supprimées avec succès."
+        "description": "{{count}} écoles ont été supprimées avec succès."
       },
       "bulkDeleteFailed": {
         "title": "Échec de la Suppression en Masse",
@@ -1950,14 +1950,14 @@
       },
       "newsletter": {
         "title": "Envoyer l'Annonce d'Événement",
-        "description": "Envoyer \"{title}\" par e-mail aux enseignants.",
+        "description": "Envoyer \"{{title}}\" par e-mail aux enseignants.",
         "labels": {
           "recipientType": "Type de Destinataire",
           "emailAddresses": "Adresses E-mail",
           "commaSeparated": "(séparées par des virgules)"
         },
         "options": {
-          "allTeachers": "Tous les Enseignants ({count} enseignants)",
+          "allTeachers": "Tous les Enseignants ({{count}} enseignants)",
           "customEmailList": "Liste d'E-mails Personnalisée"
         },
         "placeholders": {
@@ -1983,7 +1983,7 @@
     },
     "evidence": {
       "title": "File d'Attente de Révision des Preuves",
-      "selected": "{count} sélectionné{{plural}}",
+      "selected": "{{count}} sélectionné{{plural}}",
       "bulkApprove": "Approbation en Masse",
       "bulkReject": "Rejet en Masse",
       "delete": "Supprimer",
@@ -1995,7 +1995,7 @@
       "allEvidence": "Toutes les Preuves",
       "unassigned": "Non attribué",
       "assignedToMe": "Attribué à Moi",
-      "selectAll": "Tout Sélectionner ({count} éléments)",
+      "selectAll": "Tout Sélectionner ({{count}} éléments)",
       "allCaughtUp": "Tout est à Jour !",
       "noPendingEvidence": "Aucune soumission de preuves en attente de révision.",
       "badges": {
@@ -2006,9 +2006,9 @@
         "new": "NOUVEAU"
       },
       "labels": {
-        "schoolId": "ID École :",
-        "submitted": "Soumis :",
-        "files": "Fichiers :",
+        "schoolId": "ID École : {{id}}",
+        "submitted": "Soumis : {{date}}",
+        "files": "Fichiers : {{count}}",
         "assignedTo": "Attribué à :"
       },
       "buttons": {
@@ -2040,9 +2040,9 @@
       "bulkDialog": {
         "reviewTitle": "Révision en Masse des Preuves",
         "deleteTitle": "Suppression en Masse des Preuves",
-        "approveDescription": "Vous êtes sur le point d'approuver {count} soumission{{plural}} de preuves. Cela les rendra visibles selon leurs paramètres de visibilité.",
-        "rejectDescription": "Vous êtes sur le point de rejeter {count} soumission{{plural}} de preuves. Les écoles seront notifiées et pourront soumettre à nouveau.",
-        "deleteDescription": "Vous êtes sur le point de supprimer définitivement {count} soumission{{plural}} de preuves. Cette action ne peut pas être annulée.",
+        "approveDescription": "Vous êtes sur le point d'approuver {{count}} soumission{{plural}} de preuves. Cela les rendra visibles selon leurs paramètres de visibilité.",
+        "rejectDescription": "Vous êtes sur le point de rejeter {{count}} soumission{{plural}} de preuves. Les écoles seront notifiées et pourront soumettre à nouveau.",
+        "deleteDescription": "Vous êtes sur le point de supprimer définitivement {{count}} soumission{{plural}} de preuves. Cette action ne peut pas être annulée.",
         "notes": "Notes (optionnel pour approbation, requis pour rejet)",
         "notesPlaceholder": "Entrez des notes pour les écoles...",
         "confirm": "Confirmer",
@@ -2071,8 +2071,8 @@
         "approve": "Approuver",
         "reject": "Rejeter"
       },
-      "confirmApprove": "Approuver l'autorisation photo pour {name} ?",
-      "rejectionNotes": "Notes de rejet pour {name} :",
+      "confirmApprove": "Approuver l'autorisation photo pour {{name}} ?",
+      "rejectionNotes": "Notes de rejet pour {{name}} :",
       "rejectionRequired": "Les notes de rejet sont requises"
     },
     "audit": {

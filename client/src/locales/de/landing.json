@@ -30,7 +30,7 @@
   },
   "social_proof": {
     "title": "Werden Sie Teil einer Wachsenden Bewegung",
-    "description": "Mehr als {count} Schulen haben sich bereits für das Plastic Clever Schools-Programm angemeldet und leisten einen gemeinsamen Beitrag zur Abfallreduzierung und Umweltbildung.",
+    "description": "Mehr als {{count}} Schulen haben sich bereits für das Plastic Clever Schools-Programm angemeldet und leisten einen gemeinsamen Beitrag zur Abfallreduzierung und Umweltbildung.",
     "registered_schools_label": "Bisher Registrierte Schulen",
     "view_schools_cta": "Alle Registrierten Schulen Anzeigen"
   },

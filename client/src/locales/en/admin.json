@@ -941,7 +941,7 @@
       "suspended": "Suspended"
     },
     "school_details": {
-      "title": "{name}",
+      "title": "{{name}}",
       "basic_info": "Basic Information",
       "contact_info": "Contact Information",
       "progress": "Program Progress",
@@ -1047,21 +1047,21 @@
       "dialogs": {
         "update": {
           "title": "Bulk Update Schools",
-          "description": "This action will affect <strong>{count}</strong> schools.",
+          "description": "This action will affect <strong>{{count}}</strong> schools.",
           "updateStageLabel": "Update Current Stage",
           "updateStageHelpText": "All selected schools will be moved to this program stage."
         },
         "delete": {
           "title": "Bulk Delete Schools",
-          "description": "This action will affect <strong>{count}</strong> schools.",
+          "description": "This action will affect <strong>{{count}}</strong> schools.",
           "warningTitle": "Warning:",
           "warningDescription": "This action cannot be undone. All selected schools and their associated data will be permanently deleted."
         },
         "deleteSchool": {
           "title": "Delete School",
-          "description": "Are you sure you want to delete <strong>{name}</strong>? This action cannot be undone and will permanently remove the school and all associated data.",
+          "description": "Are you sure you want to delete <strong>{{name}}</strong>? This action cannot be undone and will permanently remove the school and all associated data.",
           "loadingUsers": "Loading school users...",
-          "warningUsers": "Warning: This school has {count} associated user{plural}.",
+          "warningUsers": "Warning: This school has {{count}} associated user{{plural}}.",
           "associatedUsers": "Associated Users:",
           "deleteUsersLabel": "Also delete all associated user accounts",
           "deleteUsersDescription": "If unchecked, the user accounts will remain in the system and can be reassigned to other schools. If checked, the users will be permanently deleted and won't be able to register again with the same email addresses.",
@@ -1096,7 +1096,7 @@
       },
       "bulkUpdateComplete": {
         "title": "Bulk Update Complete",
-        "description": "{count} schools have been updated successfully."
+        "description": "{{count}} schools have been updated successfully."
       },
       "bulkUpdateFailed": {
         "title": "Bulk Update Failed",
@@ -1104,7 +1104,7 @@
       },
       "bulkDeleteComplete": {
         "title": "Bulk Delete Complete",
-        "description": "{count} schools have been deleted successfully."
+        "description": "{{count}} schools have been deleted successfully."
       },
       "bulkDeleteFailed": {
         "title": "Bulk Delete Failed",
@@ -1861,7 +1861,7 @@
       }
     },
     "registrations": {
-      "title": "Registrations for {title}",
+      "title": "Registrations for {{title}}",
       "filterByStatus": "Filter by Status:",
       "exportCSV": "Export CSV",
       "noRegistrations": "No registrations yet",
@@ -1892,31 +1892,31 @@
       },
       "eventDuplicated": {
         "title": "Event Duplicated",
-        "description": "\"{title}\" has been created as a draft."
+        "description": "\"{{title}}\" has been created as a draft."
       },
       "duplicationFailed": {
         "title": "Duplication Failed",
         "description": "Failed to duplicate event",
-        "customMessage": "{message}"
+        "customMessage": "{{message}}"
       },
       "createFailed": {
         "title": "Error",
         "description": "Failed to create event.",
-        "customMessage": "{message}"
+        "customMessage": "{{message}}"
       },
       "updateFailed": {
         "title": "Error",
         "description": "Failed to update event.",
-        "customMessage": "{message}"
+        "customMessage": "{{message}}"
       },
       "deleteFailed": {
         "title": "Error",
         "description": "Failed to delete event.",
-        "customMessage": "{message}"
+        "customMessage": "{{message}}"
       },
       "attendanceUpdated": {
         "title": "Attendance Updated",
-        "description": "Registration marked as {status}."
+        "description": "Registration marked as {{status}}."
       },
       "attendanceUpdateFailed": {
         "title": "Update Failed",
@@ -1929,7 +1929,7 @@
       "announcementFailed": {
         "title": "Send Failed",
         "description": "Failed to send announcement.",
-        "customMessage": "{message}"
+        "customMessage": "{{message}}"
       },
       "resourceAttached": {
         "title": "Resource Attached",
@@ -1962,21 +1962,21 @@
       "bannerCreateFailed": {
         "title": "Error",
         "description": "Failed to create banner.",
-        "customMessage": "{message}"
+        "customMessage": "{{message}}"
       },
       "bannerUpdateFailed": {
         "title": "Error",
         "description": "Failed to update banner.",
-        "customMessage": "{message}"
+        "customMessage": "{{message}}"
       },
       "bannerDeleteFailed": {
         "title": "Error",
         "description": "Failed to delete banner.",
-        "customMessage": "{message}"
+        "customMessage": "{{message}}"
       },
       "eventLocked": {
         "title": "Event Locked",
-        "description": "This event is being edited by {lockedBy}. You can view but not edit."
+        "description": "This event is being edited by {{lockedBy}}. You can view but not edit."
       },
       "uploadSuccess": {
         "title": "Success",
@@ -1987,7 +1987,7 @@
         "title": "Upload Failed",
         "description": "Failed to upload image.",
         "pdfDescription": "Failed to upload PDF.",
-        "customMessage": "{message}"
+        "customMessage": "{{message}}"
       },
       "invalidFileType": {
         "title": "Invalid file type",
@@ -2007,7 +2007,7 @@
     "dialogs": {
       "deleteEvent": {
         "title": "Delete Event",
-        "description": "Are you sure you want to delete \"{title}\"? This action cannot be undone."
+        "description": "Are you sure you want to delete \"{{title}}\"? This action cannot be undone."
       },
       "deleteBanner": {
         "title": "Delete Banner",
@@ -2029,14 +2029,14 @@
       },
       "newsletter": {
         "title": "Send Event Announcement",
-        "description": "Send \"{title}\" via email to teachers.",
+        "description": "Send \"{{title}}\" via email to teachers.",
         "labels": {
           "recipientType": "Recipient Type",
           "emailAddresses": "Email Addresses",
           "commaSeparated": "(comma-separated)"
         },
         "options": {
-          "allTeachers": "All Teachers ({count} teachers)",
+          "allTeachers": "All Teachers ({{count}} teachers)",
           "customEmailList": "Custom Email List"
         },
         "placeholders": {
@@ -2062,8 +2062,8 @@
     },
     "evidence": {
       "title": "Evidence Review Queue",
-      "selectedCount": "{count} selected",
-      "selected": "{count} selected",
+      "selectedCount": "{{count}} selected",
+      "selected": "{{count}} selected",
       "filters": {
         "all": "All",
         "pending": "Pending",
@@ -2084,7 +2084,7 @@
         "confirm": "Confirm",
         "processing": "Processing..."
       },
-      "selectAll": "Select All ({count} items)",
+      "selectAll": "Select All ({{count}} items)",
       "allCaughtUp": "All Caught Up!",
       "noPendingEvidence": "No pending evidence submissions to review.",
       "emptyState": {
@@ -2099,9 +2099,9 @@
         "new": "NEW"
       },
       "labels": {
-        "schoolId": "School ID: {id}",
-        "submitted": "Submitted: {date}",
-        "files": "Files: {count}",
+        "schoolId": "School ID: {{id}}",
+        "submitted": "Submitted: {{date}}",
+        "files": "Files: {{count}}",
         "assignedTo": "Assigned To:"
       },
       "modal": {
@@ -2137,10 +2137,10 @@
         "rejectTitle": "Bulk Reject Evidence",
         "deleteTitle": "Bulk Delete Evidence",
         "reviewTitle": "Bulk Evidence Review",
-        "affectedCount": "{count} evidence submissions will be affected",
-        "approveDescription": "You are about to approve {count} evidence submissions. This will make them visible according to their visibility settings.",
-        "rejectDescription": "You are about to reject {count} evidence submissions. The schools will be notified and can resubmit.",
-        "deleteDescription": "You are about to permanently delete {count} evidence submissions. This action cannot be undone.",
+        "affectedCount": "{{count}} evidence submissions will be affected",
+        "approveDescription": "You are about to approve {{count}} evidence submissions. This will make them visible according to their visibility settings.",
+        "rejectDescription": "You are about to reject {{count}} evidence submissions. The schools will be notified and can resubmit.",
+        "deleteDescription": "You are about to permanently delete {{count}} evidence submissions. This action cannot be undone.",
         "deleteWarning": "⚠️ This action cannot be undone. All selected evidence will be permanently deleted.",
         "reviewNotes": "Review Notes",
         "required": "*",
@@ -2184,8 +2184,8 @@
         "approve": "Approve",
         "reject": "Reject"
       },
-      "confirmApprove": "Approve photo consent for {name}?",
-      "rejectionNotes": "Rejection notes for {name}:",
+      "confirmApprove": "Approve photo consent for {{name}}?",
+      "rejectionNotes": "Rejection notes for {{name}}:",
       "rejectionRequired": "Rejection notes are required"
     },
     "audit": {

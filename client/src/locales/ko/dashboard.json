@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "교사 제거",
-      "remove_teacher_desc": "학교에서 {name}을(를) 제거하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
+      "remove_teacher_desc": "학교에서 {{name}}을(를) 제거하시겠습니까? 이 작업은 되돌릴 수 없습니다.",
       "approve_request_title": "액세스 요청 승인",
-      "approve_request_desc": "{name}의 액세스 요청을 승인하려고 합니다.",
+      "approve_request_desc": "{{name}}의 액세스 요청을 승인하려고 합니다.",
       "reject_request_title": "액세스 요청 거부",
-      "reject_request_desc": "{name}의 액세스 요청을 거부하려고 합니다.",
+      "reject_request_desc": "{{name}}의 액세스 요청을 거부하려고 합니다.",
       "review_notes_label": "검토 노트 (선택사항)",
       "review_notes_placeholder": "이 승인에 대한 메모 추가...",
       "rejection_reason_label": "거부 사유 (필수)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "대기 중인 초대",
-      "sent_expires": "{sentDate} 전송됨 • {expiresDate} 만료"
+      "sent_expires": "{{sentDate}} 전송됨 • {{expiresDate}} 만료"
     }
   },
   "events": {

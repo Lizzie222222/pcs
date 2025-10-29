@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "Tynnu Athro",
-      "remove_teacher_desc": "Ydych chi'n siŵr eich bod am dynnu {name} o'ch ysgol? Ni ellir dadwneud y weithred hon.",
+      "remove_teacher_desc": "Ydych chi'n siŵr eich bod am dynnu {{name}} o'ch ysgol? Ni ellir dadwneud y weithred hon.",
       "approve_request_title": "Cymeradwyo Cais Mynediad",
-      "approve_request_desc": "Rydych ar fin cymeradwyo'r cais mynediad gan {name}.",
+      "approve_request_desc": "Rydych ar fin cymeradwyo'r cais mynediad gan {{name}}.",
       "reject_request_title": "Gwrthod Cais Mynediad",
-      "reject_request_desc": "Rydych ar fin gwrthod y cais mynediad gan {name}.",
+      "reject_request_desc": "Rydych ar fin gwrthod y cais mynediad gan {{name}}.",
       "review_notes_label": "Nodiadau Adolygu (Dewisol)",
       "review_notes_placeholder": "Ychwanegu nodiadau am y cymeradwyaeth hwn...",
       "rejection_reason_label": "Rheswm dros Wrthod (Angenrheidiol)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "Gwahoddiadau ar Aros",
-      "sent_expires": "Anfonwyd {sentDate} • Yn dod i ben {expiresDate}"
+      "sent_expires": "Anfonwyd {{sentDate}} • Yn dod i ben {{expiresDate}}"
     }
   },
   "events": {

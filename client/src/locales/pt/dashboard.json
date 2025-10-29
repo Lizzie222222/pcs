@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "Remover Professor",
-      "remove_teacher_desc": "Tem a certeza de que deseja remover {name} da sua escola? Esta ação não pode ser revertida.",
+      "remove_teacher_desc": "Tem a certeza de que deseja remover {{name}} da sua escola? Esta ação não pode ser revertida.",
       "approve_request_title": "Aprovar Pedido de Acesso",
-      "approve_request_desc": "Está prestes a aprovar o pedido de acesso de {name}.",
+      "approve_request_desc": "Está prestes a aprovar o pedido de acesso de {{name}}.",
       "reject_request_title": "Rejeitar Pedido de Acesso",
-      "reject_request_desc": "Está prestes a rejeitar o pedido de acesso de {name}.",
+      "reject_request_desc": "Está prestes a rejeitar o pedido de acesso de {{name}}.",
       "review_notes_label": "Notas de Revisão (Opcional)",
       "review_notes_placeholder": "Adicione notas sobre esta aprovação...",
       "rejection_reason_label": "Razão da Rejeição (Necessário)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "Convites Pendentes",
-      "sent_expires": "Enviado {sentDate} • Expira {expiresDate}"
+      "sent_expires": "Enviado {{sentDate}} • Expira {{expiresDate}}"
     }
   },
   "events": {

@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "Lehrer Entfernen",
-      "remove_teacher_desc": "Sind Sie sicher, dass Sie {name} von Ihrer Schule entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
+      "remove_teacher_desc": "Sind Sie sicher, dass Sie {{name}} von Ihrer Schule entfernen möchten? Diese Aktion kann nicht rückgängig gemacht werden.",
       "approve_request_title": "Zugriffsanfrage Genehmigen",
-      "approve_request_desc": "Sie sind dabei, die Zugriffsanfrage von {name} zu genehmigen.",
+      "approve_request_desc": "Sie sind dabei, die Zugriffsanfrage von {{name}} zu genehmigen.",
       "reject_request_title": "Zugriffsanfrage Ablehnen",
-      "reject_request_desc": "Sie sind dabei, die Zugriffsanfrage von {name} abzulehnen.",
+      "reject_request_desc": "Sie sind dabei, die Zugriffsanfrage von {{name}} abzulehnen.",
       "review_notes_label": "Überprüfungsnotizen (Optional)",
       "review_notes_placeholder": "Fügen Sie Notizen zu dieser Genehmigung hinzu...",
       "rejection_reason_label": "Ablehnungsgrund (Erforderlich)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "Ausstehende Einladungen",
-      "sent_expires": "Gesendet {sentDate} • Läuft ab {expiresDate}"
+      "sent_expires": "Gesendet {{sentDate}} • Läuft ab {{expiresDate}}"
     }
   },
   "events": {

@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "Удалить Учителя",
-      "remove_teacher_desc": "Вы уверены, что хотите удалить {name} из вашей школы? Это действие нельзя отменить.",
+      "remove_teacher_desc": "Вы уверены, что хотите удалить {{name}} из вашей школы? Это действие нельзя отменить.",
       "approve_request_title": "Одобрить Запрос на Доступ",
-      "approve_request_desc": "Вы собираетесь одобрить запрос на доступ от {name}.",
+      "approve_request_desc": "Вы собираетесь одобрить запрос на доступ от {{name}}.",
       "reject_request_title": "Отклонить Запрос на Доступ",
-      "reject_request_desc": "Вы собираетесь отклонить запрос на доступ от {name}.",
+      "reject_request_desc": "Вы собираетесь отклонить запрос на доступ от {{name}}.",
       "review_notes_label": "Примечания к Проверке (Необязательно)",
       "review_notes_placeholder": "Добавьте примечания об этом одобрении...",
       "rejection_reason_label": "Причина Отклонения (Обязательно)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "Ожидающие Приглашения",
-      "sent_expires": "Отправлено {sentDate} • Истекает {expiresDate}"
+      "sent_expires": "Отправлено {{sentDate}} • Истекает {{expiresDate}}"
     }
   },
   "events": {

@@ -866,8 +866,8 @@
     "search_schools": "Scholen zoeken...",
     "filters": {
       "allCountries": "Alle Landen",
-      "selectAll": "Alles Selecteren ({count} scholen)",
-      "selected": "{count} geselecteerd",
+      "selectAll": "Alles Selecteren ({{count}} scholen)",
+      "selected": "{{count}} geselecteerd",
       "searchPlaceholder": "Scholen zoeken..."
     },
     "buttons": {
@@ -936,7 +936,7 @@
       "suspended": "Opgeschort"
     },
     "school_details": {
-      "title": "{name}",
+      "title": "{{name}}",
       "basic_info": "Basisinformatie",
       "contact_info": "Contactinformatie",
       "progress": "Programmavordering",
@@ -1028,21 +1028,21 @@
       "dialogs": {
         "update": {
           "title": "Bulk Update Scholen",
-          "description": "Deze actie heeft invloed op <strong>{count}</strong> scholen.",
+          "description": "Deze actie heeft invloed op <strong>{{count}}</strong> scholen.",
           "updateStageLabel": "Huidige Fase Bijwerken",
           "updateStageHelpText": "Alle geselecteerde scholen worden verplaatst naar deze programmafase."
         },
         "delete": {
           "title": "Bulk Verwijder Scholen",
-          "description": "Deze actie heeft invloed op <strong>{count}</strong> scholen.",
+          "description": "Deze actie heeft invloed op <strong>{{count}}</strong> scholen.",
           "warningTitle": "Waarschuwing:",
           "warningDescription": "Deze actie kan niet ongedaan gemaakt worden. Alle geselecteerde scholen en hun bijbehorende gegevens worden permanent verwijderd."
         },
         "deleteSchool": {
           "title": "School Verwijderen",
-          "description": "Weet je zeker dat je <strong>{name}</strong> wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden en verwijdert de school en alle bijbehorende gegevens permanent.",
+          "description": "Weet je zeker dat je <strong>{{name}}</strong> wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden en verwijdert de school en alle bijbehorende gegevens permanent.",
           "loadingUsers": "School gebruikers laden...",
-          "warningUsers": "Waarschuwing: Deze school heeft {count} geassocieerde gebruiker{{plural}}.",
+          "warningUsers": "Waarschuwing: Deze school heeft {{count}} geassocieerde gebruiker{{plural}}.",
           "associatedUsers": "Geassocieerde Gebruikers:",
           "deleteUsersLabel": "Ook alle geassocieerde gebruikersaccounts verwijderen",
           "deleteUsersDescription": "Indien niet aangevinkt, blijven de gebruikersaccounts in het systeem en kunnen ze worden toegewezen aan andere scholen. Indien aangevinkt, worden de gebruikers permanent verwijderd en kunnen ze zich niet opnieuw registreren met dezelfde emailadressen.",
@@ -1069,7 +1069,7 @@
       },
       "bulkUpdateComplete": {
         "title": "Bulk Update Voltooid",
-        "description": "{count} scholen zijn succesvol bijgewerkt."
+        "description": "{{count}} scholen zijn succesvol bijgewerkt."
       },
       "bulkUpdateFailed": {
         "title": "Bulk Update Mislukt",
@@ -1077,7 +1077,7 @@
       },
       "bulkDeleteComplete": {
         "title": "Bulk Verwijdering Voltooid",
-        "description": "{count} scholen zijn succesvol verwijderd."
+        "description": "{{count}} scholen zijn succesvol verwijderd."
       },
       "bulkDeleteFailed": {
         "title": "Bulk Verwijdering Mislukt",
@@ -1852,7 +1852,7 @@
     "dialogs": {
       "deleteEvent": {
         "title": "Evenement Verwijderen",
-        "description": "Weet je zeker dat je \"{title}\" wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden."
+        "description": "Weet je zeker dat je \"{{title}}\" wilt verwijderen? Deze actie kan niet ongedaan gemaakt worden."
       },
       "deleteBanner": {
         "title": "Banner Verwijderen",
@@ -1874,14 +1874,14 @@
       },
       "newsletter": {
         "title": "Evenement Aankondiging Verzenden",
-        "description": "Verzend \"{title}\" per email naar docenten.",
+        "description": "Verzend \"{{title}}\" per email naar docenten.",
         "labels": {
           "recipientType": "Ontvanger Type",
           "emailAddresses": "Email Adressen",
           "commaSeparated": "(komma gescheiden)"
         },
         "options": {
-          "allTeachers": "Alle Docenten ({count} docenten)",
+          "allTeachers": "Alle Docenten ({{count}} docenten)",
           "customEmailList": "Aangepaste Email Lijst"
         },
         "placeholders": {
@@ -1907,7 +1907,7 @@
     },
     "evidence": {
       "title": "Bewijs Beoordelingswachtrij",
-      "selected": "{count} geselecteerd",
+      "selected": "{{count}} geselecteerd",
       "bulkApprove": "Bulk Goedkeuren",
       "bulkReject": "Bulk Afwijzen",
       "delete": "Verwijderen",
@@ -1919,7 +1919,7 @@
       "allEvidence": "Al het Bewijs",
       "unassigned": "Niet Toegewezen",
       "assignedToMe": "Toegewezen aan Mij",
-      "selectAll": "Alles Selecteren ({count} items)",
+      "selectAll": "Alles Selecteren ({{count}} items)",
       "allCaughtUp": "Helemaal Bij!",
       "noPendingEvidence": "Geen bewijs in behandeling om te beoordelen.",
       "badges": {
@@ -1930,9 +1930,9 @@
         "new": "NIEUW"
       },
       "labels": {
-        "schoolId": "School ID:",
-        "submitted": "Ingediend:",
-        "files": "Bestanden:",
+        "schoolId": "School ID: {{id}}",
+        "submitted": "Ingediend: {{date}}",
+        "files": "Bestanden: {{count}}",
         "assignedTo": "Toegewezen aan:"
       },
       "buttons": {
@@ -1964,9 +1964,9 @@
       "bulkDialog": {
         "reviewTitle": "Bulk Bewijs Beoordeling",
         "deleteTitle": "Bulk Bewijs Verwijderen",
-        "approveDescription": "Je staat op het punt om {count} bewijs inzendingen goed te keuren. Dit maakt ze zichtbaar volgens hun zichtbaarheidsinstellingen.",
-        "rejectDescription": "Je staat op het punt om {count} bewijs inzendingen af te wijzen. De scholen worden geïnformeerd en kunnen opnieuw indienen.",
-        "deleteDescription": "Je staat op het punt om {count} bewijs inzendingen permanent te verwijderen. Deze actie kan niet ongedaan gemaakt worden.",
+        "approveDescription": "Je staat op het punt om {{count}} bewijs inzendingen goed te keuren. Dit maakt ze zichtbaar volgens hun zichtbaarheidsinstellingen.",
+        "rejectDescription": "Je staat op het punt om {{count}} bewijs inzendingen af te wijzen. De scholen worden geïnformeerd en kunnen opnieuw indienen.",
+        "deleteDescription": "Je staat op het punt om {{count}} bewijs inzendingen permanent te verwijderen. Deze actie kan niet ongedaan gemaakt worden.",
         "notes": "Notities (optioneel voor goedkeuring, vereist voor afwijzing)",
         "notesPlaceholder": "Voer notities in voor de scholen...",
         "confirm": "Bevestigen",
@@ -1995,8 +1995,8 @@
         "approve": "Goedkeuren",
         "reject": "Afwijzen"
       },
-      "confirmApprove": "Foto toestemming goedkeuren voor {name}?",
-      "rejectionNotes": "Afwijzingsnotities voor {name}:",
+      "confirmApprove": "Foto toestemming goedkeuren voor {{name}}?",
+      "rejectionNotes": "Afwijzingsnotities voor {{name}}:",
       "rejectionRequired": "Afwijzingsnotities zijn vereist"
     },
     "audit": {

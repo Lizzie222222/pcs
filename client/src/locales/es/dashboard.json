@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "Eliminar Profesor",
-      "remove_teacher_desc": "¿Está seguro de que desea eliminar a {name} de su escuela? Esta acción no se puede deshacer.",
+      "remove_teacher_desc": "¿Está seguro de que desea eliminar a {{name}} de su escuela? Esta acción no se puede deshacer.",
       "approve_request_title": "Aprobar Solicitud de Acceso",
-      "approve_request_desc": "Está a punto de aprobar la solicitud de acceso de {name}.",
+      "approve_request_desc": "Está a punto de aprobar la solicitud de acceso de {{name}}.",
       "reject_request_title": "Rechazar Solicitud de Acceso",
-      "reject_request_desc": "Está a punto de rechazar la solicitud de acceso de {name}.",
+      "reject_request_desc": "Está a punto de rechazar la solicitud de acceso de {{name}}.",
       "review_notes_label": "Notas de Revisión (Opcional)",
       "review_notes_placeholder": "Añada notas sobre esta aprobación...",
       "rejection_reason_label": "Razón del Rechazo (Requerido)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "Invitaciones Pendientes",
-      "sent_expires": "Enviado {sentDate} • Expira {expiresDate}"
+      "sent_expires": "Enviado {{sentDate}} • Expira {{expiresDate}}"
     }
   },
   "events": {

@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "移除教师",
-      "remove_teacher_desc": "您确定要从学校移除 {name} 吗?此操作无法撤消。",
+      "remove_teacher_desc": "您确定要从学校移除 {{name}} 吗?此操作无法撤消。",
       "approve_request_title": "批准访问请求",
-      "approve_request_desc": "您即将批准来自 {name} 的访问请求。",
+      "approve_request_desc": "您即将批准来自 {{name}} 的访问请求。",
       "reject_request_title": "拒绝访问请求",
-      "reject_request_desc": "您即将拒绝来自 {name} 的访问请求。",
+      "reject_request_desc": "您即将拒绝来自 {{name}} 的访问请求。",
       "review_notes_label": "审核备注 (可选)",
       "review_notes_placeholder": "添加有关此批准的备注...",
       "rejection_reason_label": "拒绝原因 (必填)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "待处理邀请",
-      "sent_expires": "已发送 {sentDate} • 过期 {expiresDate}"
+      "sent_expires": "已发送 {{sentDate}} • 过期 {{expiresDate}}"
     }
   },
   "events": {

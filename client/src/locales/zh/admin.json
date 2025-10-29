@@ -866,8 +866,8 @@
     "search_schools": "搜索学校...",
     "filters": {
       "allCountries": "所有国家",
-      "selectAll": "全选（{count} 所学校）",
-      "selected": "已选 {count} 所",
+      "selectAll": "全选（{{count}} 所学校）",
+      "selected": "已选 {{count}} 所",
       "searchPlaceholder": "搜索学校..."
     },
     "buttons": {
@@ -936,7 +936,7 @@
       "suspended": "已暂停"
     },
     "school_details": {
-      "title": "{name}",
+      "title": "{{name}}",
       "basic_info": "基本信息",
       "contact_info": "联系信息",
       "progress": "项目进度",
@@ -1028,21 +1028,21 @@
       "dialogs": {
         "update": {
           "title": "批量更新学校",
-          "description": "此操作将影响 <strong>{count}</strong> 所学校。",
+          "description": "此操作将影响 <strong>{{count}}</strong> 所学校。",
           "updateStageLabel": "更新当前阶段",
           "updateStageHelpText": "所有选定的学校将被移至此项目阶段。"
         },
         "delete": {
           "title": "批量删除学校",
-          "description": "此操作将影响 <strong>{count}</strong> 所学校。",
+          "description": "此操作将影响 <strong>{{count}}</strong> 所学校。",
           "warningTitle": "警告：",
           "warningDescription": "此操作无法撤消。所有选定的学校及其关联数据将被永久删除。"
         },
         "deleteSchool": {
           "title": "删除学校",
-          "description": "您确定要删除 <strong>{name}</strong> 吗？此操作无法撤消，将永久删除学校及所有关联数据。",
+          "description": "您确定要删除 <strong>{{name}}</strong> 吗？此操作无法撤消，将永久删除学校及所有关联数据。",
           "loadingUsers": "正在加载学校用户...",
-          "warningUsers": "警告：此学校有 {count} 个关联用户{plural}。",
+          "warningUsers": "警告：此学校有 {{count}} 个关联用户{{plural}}。",
           "associatedUsers": "关联用户：",
           "deleteUsersLabel": "同时删除所有关联用户账户",
           "deleteUsersDescription": "如果未选中，用户账户将保留在系统中，可以重新分配给其他学校。如果选中，用户将被永久删除，并且无法使用相同的电子邮件地址再次注册。",
@@ -1069,7 +1069,7 @@
       },
       "bulkUpdateComplete": {
         "title": "批量更新完成",
-        "description": "{count} 所学校已成功更新。"
+        "description": "{{count}} 所学校已成功更新。"
       },
       "bulkUpdateFailed": {
         "title": "批量更新失败",
@@ -1077,7 +1077,7 @@
       },
       "bulkDeleteComplete": {
         "title": "批量删除完成",
-        "description": "{count} 所学校已成功删除。"
+        "description": "{{count}} 所学校已成功删除。"
       },
       "bulkDeleteFailed": {
         "title": "批量删除失败",
@@ -1753,14 +1753,14 @@
       },
       "newsletter": {
         "title": "发送活动公告",
-        "description": "通过电子邮件向教师发送\"{title}\"。",
+        "description": "通过电子邮件向教师发送\"{{title}}\"。",
         "labels": {
           "recipientType": "收件人类型",
           "emailAddresses": "电子邮件地址",
           "commaSeparated": "（逗号分隔）"
         },
         "options": {
-          "allTeachers": "所有教师（{count} 位教师）",
+          "allTeachers": "所有教师（{{count}} 位教师）",
           "customEmailList": "自定义电子邮件列表"
         },
         "placeholders": {
@@ -1786,7 +1786,7 @@
     },
     "evidence": {
       "title": "证据审核队列",
-      "selected": "已选 {count} 个",
+      "selected": "已选 {{count}} 个",
       "bulkApprove": "批量批准",
       "bulkReject": "批量拒绝",
       "delete": "删除",
@@ -1798,7 +1798,7 @@
       "allEvidence": "所有证据",
       "unassigned": "未分配",
       "assignedToMe": "分配给我",
-      "selectAll": "全选（{count} 个项目）",
+      "selectAll": "全选（{{count}} 个项目）",
       "allCaughtUp": "全部完成！",
       "noPendingEvidence": "没有待审核的证据提交。",
       "badges": {
@@ -1809,9 +1809,9 @@
         "new": "新"
       },
       "labels": {
-        "schoolId": "学校 ID：",
-        "submitted": "提交时间：",
-        "files": "文件：",
+        "schoolId": "学校 ID：{{id}}",
+        "submitted": "提交时间：{{date}}",
+        "files": "文件：{{count}}",
         "assignedTo": "分配给："
       },
       "buttons": {
@@ -1843,9 +1843,9 @@
       "bulkDialog": {
         "reviewTitle": "批量证据审核",
         "deleteTitle": "批量删除证据",
-        "approveDescription": "您即将批准 {count} 个证据提交。这将根据其可见性设置使其可见。",
-        "rejectDescription": "您即将拒绝 {count} 个证据提交。学校将收到通知并可以重新提交。",
-        "deleteDescription": "您即将永久删除 {count} 个证据提交。此操作无法撤消。",
+        "approveDescription": "您即将批准 {{count}} 个证据提交。这将根据其可见性设置使其可见。",
+        "rejectDescription": "您即将拒绝 {{count}} 个证据提交。学校将收到通知并可以重新提交。",
+        "deleteDescription": "您即将永久删除 {{count}} 个证据提交。此操作无法撤消。",
         "notes": "备注（批准时可选，拒绝时必填）",
         "notesPlaceholder": "为学校输入备注...",
         "confirm": "确认",
@@ -1874,8 +1874,8 @@
         "approve": "批准",
         "reject": "拒绝"
       },
-      "confirmApprove": "批准 {name} 的照片同意？",
-      "rejectionNotes": "{name} 的拒绝备注：",
+      "confirmApprove": "批准 {{name}} 的照片同意？",
+      "rejectionNotes": "{{name}} 的拒绝备注：",
       "rejectionRequired": "拒绝备注为必填项"
     },
     "audit": {

@@ -866,8 +866,8 @@
     "search_schools": "학교 검색...",
     "filters": {
       "allCountries": "모든 국가",
-      "selectAll": "모두 선택 ({count}개 학교)",
-      "selected": "{count}개 선택됨",
+      "selectAll": "모두 선택 ({{count}}개 학교)",
+      "selected": "{{count}}개 선택됨",
       "searchPlaceholder": "학교 검색..."
     },
     "buttons": {
@@ -936,7 +936,7 @@
       "suspended": "정지됨"
     },
     "school_details": {
-      "title": "{name}",
+      "title": "{{name}}",
       "basic_info": "기본 정보",
       "contact_info": "연락처 정보",
       "progress": "프로그램 진행 상황",
@@ -1028,21 +1028,21 @@
       "dialogs": {
         "update": {
           "title": "학교 일괄 업데이트",
-          "description": "이 작업은 <strong>{count}</strong>개 학교에 영향을 미칩니다.",
+          "description": "이 작업은 <strong>{{count}}</strong>개 학교에 영향을 미칩니다.",
           "updateStageLabel": "현재 단계 업데이트",
           "updateStageHelpText": "선택한 모든 학교가 이 프로그램 단계로 이동됩니다."
         },
         "delete": {
           "title": "학교 일괄 삭제",
-          "description": "이 작업은 <strong>{count}</strong>개 학교에 영향을 미칩니다.",
+          "description": "이 작업은 <strong>{{count}}</strong>개 학교에 영향을 미칩니다.",
           "warningTitle": "경고:",
           "warningDescription": "이 작업은 취소할 수 없습니다. 선택한 모든 학교 및 관련 데이터가 영구적으로 삭제됩니다."
         },
         "deleteSchool": {
           "title": "학교 삭제",
-          "description": "<strong>{name}</strong>을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없으며 학교 및 모든 관련 데이터가 영구적으로 제거됩니다.",
+          "description": "<strong>{{name}}</strong>을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없으며 학교 및 모든 관련 데이터가 영구적으로 제거됩니다.",
           "loadingUsers": "학교 사용자 로딩 중...",
-          "warningUsers": "경고: 이 학교에는 {count}명의 관련 사용자{plural}가 있습니다.",
+          "warningUsers": "경고: 이 학교에는 {{count}}명의 관련 사용자{{plural}}가 있습니다.",
           "associatedUsers": "관련 사용자:",
           "deleteUsersLabel": "모든 관련 사용자 계정도 삭제",
           "deleteUsersDescription": "선택하지 않으면 사용자 계정이 시스템에 남아 있으며 다른 학교에 재할당될 수 있습니다. 선택하면 사용자가 영구적으로 삭제되며 동일한 이메일 주소로 다시 등록할 수 없습니다.",
@@ -1069,7 +1069,7 @@
       },
       "bulkUpdateComplete": {
         "title": "일괄 업데이트 완료",
-        "description": "{count}개 학교가 성공적으로 업데이트되었습니다."
+        "description": "{{count}}개 학교가 성공적으로 업데이트되었습니다."
       },
       "bulkUpdateFailed": {
         "title": "일괄 업데이트 실패",
@@ -1077,7 +1077,7 @@
       },
       "bulkDeleteComplete": {
         "title": "일괄 삭제 완료",
-        "description": "{count}개 학교가 성공적으로 삭제되었습니다."
+        "description": "{{count}}개 학교가 성공적으로 삭제되었습니다."
       },
       "bulkDeleteFailed": {
         "title": "일괄 삭제 실패",
@@ -1822,7 +1822,7 @@
     "dialogs": {
       "deleteEvent": {
         "title": "이벤트 삭제",
-        "description": "\"{title}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+        "description": "\"{{title}}\"을(를) 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
       },
       "deleteBanner": {
         "title": "배너 삭제",
@@ -1844,14 +1844,14 @@
       },
       "newsletter": {
         "title": "이벤트 공지 보내기",
-        "description": "\"{title}\"을(를) 교사에게 이메일로 보냅니다.",
+        "description": "\"{{title}}\"을(를) 교사에게 이메일로 보냅니다.",
         "labels": {
           "recipientType": "수신자 유형",
           "emailAddresses": "이메일 주소",
           "commaSeparated": "(쉼표로 구분)"
         },
         "options": {
-          "allTeachers": "모든 교사 ({count}명)",
+          "allTeachers": "모든 교사 ({{count}}명)",
           "customEmailList": "사용자 정의 이메일 목록"
         },
         "placeholders": {
@@ -1894,7 +1894,7 @@
     },
     "evidence": {
       "title": "증거 검토 대기열",
-      "selected": "{count}개 선택됨",
+      "selected": "{{count}}개 선택됨",
       "bulkApprove": "일괄 승인",
       "bulkReject": "일괄 거부",
       "delete": "삭제",
@@ -1906,7 +1906,7 @@
       "allEvidence": "모든 증거",
       "unassigned": "미할당",
       "assignedToMe": "나에게 할당됨",
-      "selectAll": "모두 선택 ({count}개 항목)",
+      "selectAll": "모두 선택 ({{count}}개 항목)",
       "allCaughtUp": "모두 완료!",
       "noPendingEvidence": "검토할 대기 중인 증거 제출물이 없습니다.",
       "badges": {
@@ -1917,9 +1917,9 @@
         "new": "새로운"
       },
       "labels": {
-        "schoolId": "학교 ID:",
-        "submitted": "제출됨:",
-        "files": "파일:",
+        "schoolId": "학교 ID: {{id}}",
+        "submitted": "제출됨: {{date}}",
+        "files": "파일: {{count}}",
         "assignedTo": "담당자:"
       },
       "buttons": {
@@ -1951,9 +1951,9 @@
       "bulkDialog": {
         "reviewTitle": "일괄 증거 검토",
         "deleteTitle": "일괄 증거 삭제",
-        "approveDescription": "{count}개의 증거 제출물을 승인하려고 합니다. 이렇게 하면 가시성 설정에 따라 표시됩니다.",
-        "rejectDescription": "{count}개의 증거 제출물을 거부하려고 합니다. 학교에 통지되며 다시 제출할 수 있습니다.",
-        "deleteDescription": "{count}개의 증거 제출물을 영구적으로 삭제하려고 합니다. 이 작업은 취소할 수 없습니다.",
+        "approveDescription": "{{count}}개의 증거 제출물을 승인하려고 합니다. 이렇게 하면 가시성 설정에 따라 표시됩니다.",
+        "rejectDescription": "{{count}}개의 증거 제출물을 거부하려고 합니다. 학교에 통지되며 다시 제출할 수 있습니다.",
+        "deleteDescription": "{{count}}개의 증거 제출물을 영구적으로 삭제하려고 합니다. 이 작업은 취소할 수 없습니다.",
         "notes": "노트 (승인의 경우 선택 사항, 거부의 경우 필수)",
         "notesPlaceholder": "학교를 위한 노트 입력...",
         "confirm": "확인",
@@ -1982,8 +1982,8 @@
         "approve": "승인",
         "reject": "거부"
       },
-      "confirmApprove": "{name}의 사진 동의를 승인하시겠습니까?",
-      "rejectionNotes": "{name}에 대한 거부 노트:",
+      "confirmApprove": "{{name}}의 사진 동의를 승인하시겠습니까?",
+      "rejectionNotes": "{{name}}에 대한 거부 노트:",
       "rejectionRequired": "거부 노트 필수"
     },
     "audit": {

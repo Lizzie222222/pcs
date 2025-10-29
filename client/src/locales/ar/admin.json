@@ -866,8 +866,8 @@
     "search_schools": "البحث عن المدارس...",
     "filters": {
       "allCountries": "جميع الدول",
-      "selectAll": "تحديد الكل ({count} مدرسة)",
-      "selected": "{count} محدد",
+      "selectAll": "تحديد الكل ({{count}} مدرسة)",
+      "selected": "{{count}} محدد",
       "searchPlaceholder": "البحث عن المدارس..."
     },
     "buttons": {
@@ -936,7 +936,7 @@
       "suspended": "معلق"
     },
     "school_details": {
-      "title": "{name}",
+      "title": "{{name}}",
       "basic_info": "المعلومات الأساسية",
       "contact_info": "معلومات الاتصال",
       "progress": "تقدم البرنامج",
@@ -1028,21 +1028,21 @@
       "dialogs": {
         "update": {
           "title": "تحديث جماعي للمدارس",
-          "description": "سيؤثر هذا الإجراء على <strong>{count}</strong> مدرسة.",
+          "description": "سيؤثر هذا الإجراء على <strong>{{count}}</strong> مدرسة.",
           "updateStageLabel": "تحديث المرحلة الحالية",
           "updateStageHelpText": "سيتم نقل جميع المدارس المحددة إلى هذه المرحلة من البرنامج."
         },
         "delete": {
           "title": "حذف جماعي للمدارس",
-          "description": "سيؤثر هذا الإجراء على <strong>{count}</strong> مدرسة.",
+          "description": "سيؤثر هذا الإجراء على <strong>{{count}}</strong> مدرسة.",
           "warningTitle": "تحذير:",
           "warningDescription": "لا يمكن التراجع عن هذا الإجراء. سيتم حذف جميع المدارس المحددة وبياناتها المرتبطة نهائياً."
         },
         "deleteSchool": {
           "title": "حذف المدرسة",
-          "description": "هل أنت متأكد من حذف <strong>{name}</strong>؟ لا يمكن التراجع عن هذا الإجراء وسيتم إزالة المدرسة وجميع البيانات المرتبطة نهائياً.",
+          "description": "هل أنت متأكد من حذف <strong>{{name}}</strong>؟ لا يمكن التراجع عن هذا الإجراء وسيتم إزالة المدرسة وجميع البيانات المرتبطة نهائياً.",
           "loadingUsers": "جارٍ تحميل مستخدمي المدرسة...",
-          "warningUsers": "تحذير: لدى هذه المدرسة {count} مستخدم{plural} مرتبط.",
+          "warningUsers": "تحذير: لدى هذه المدرسة {{count}} مستخدم{{plural}} مرتبط.",
           "associatedUsers": "المستخدمون المرتبطون:",
           "deleteUsersLabel": "حذف جميع حسابات المستخدمين المرتبطة أيضاً",
           "deleteUsersDescription": "إذا لم يتم تحديده، ستبقى حسابات المستخدمين في النظام ويمكن إعادة تعيينها لمدارس أخرى. إذا تم تحديده، سيتم حذف المستخدمين نهائياً ولن يتمكنوا من التسجيل مرة أخرى بنفس عناوين البريد الإلكتروني.",
@@ -1069,7 +1069,7 @@
       },
       "bulkUpdateComplete": {
         "title": "اكتمل التحديث الجماعي",
-        "description": "تم تحديث {count} مدرسة بنجاح."
+        "description": "تم تحديث {{count}} مدرسة بنجاح."
       },
       "bulkUpdateFailed": {
         "title": "فشل التحديث الجماعي",
@@ -1077,7 +1077,7 @@
       },
       "bulkDeleteComplete": {
         "title": "اكتمل الحذف الجماعي",
-        "description": "تم حذف {count} مدرسة بنجاح."
+        "description": "تم حذف {{count}} مدرسة بنجاح."
       },
       "bulkDeleteFailed": {
         "title": "فشل الحذف الجماعي",
@@ -1829,7 +1829,7 @@
     "dialogs": {
       "deleteEvent": {
         "title": "حذف الفعالية",
-        "description": "هل أنت متأكد من حذف \"{title}\"؟ لا يمكن التراجع عن هذا الإجراء."
+        "description": "هل أنت متأكد من حذف \"{{title}}\"؟ لا يمكن التراجع عن هذا الإجراء."
       },
       "deleteBanner": {
         "title": "حذف البانر",
@@ -1851,14 +1851,14 @@
       },
       "newsletter": {
         "title": "إرسال إعلان الفعالية",
-        "description": "إرسال \"{title}\" عبر البريد الإلكتروني للمعلمين.",
+        "description": "إرسال \"{{title}}\" عبر البريد الإلكتروني للمعلمين.",
         "labels": {
           "recipientType": "نوع المستلم",
           "emailAddresses": "عناوين البريد الإلكتروني",
           "commaSeparated": "(مفصولة بفاصلة)"
         },
         "options": {
-          "allTeachers": "جميع المعلمين ({count} معلم)",
+          "allTeachers": "جميع المعلمين ({{count}} معلم)",
           "customEmailList": "قائمة بريد إلكتروني مخصصة"
         },
         "placeholders": {
@@ -1884,7 +1884,7 @@
     },
     "evidence": {
       "title": "قائمة مراجعة الأدلة",
-      "selected": "{count} محدد",
+      "selected": "{{count}} محدد",
       "bulkApprove": "موافقة جماعية",
       "bulkReject": "رفض جماعي",
       "delete": "حذف",
@@ -1896,7 +1896,7 @@
       "allEvidence": "جميع الأدلة",
       "unassigned": "غير معين",
       "assignedToMe": "معين لي",
-      "selectAll": "تحديد الكل ({count} عنصر)",
+      "selectAll": "تحديد الكل ({{count}} عنصر)",
       "allCaughtUp": "جميعها منجزة!",
       "noPendingEvidence": "لا توجد تقديمات أدلة قيد الانتظار للمراجعة.",
       "badges": {
@@ -1907,9 +1907,9 @@
         "new": "جديد"
       },
       "labels": {
-        "schoolId": "معرف المدرسة:",
-        "submitted": "تم التقديم:",
-        "files": "الملفات:",
+        "schoolId": "معرف المدرسة: {{id}}",
+        "submitted": "تم التقديم: {{date}}",
+        "files": "الملفات: {{count}}",
         "assignedTo": "معين لـ:"
       },
       "buttons": {
@@ -1941,9 +1941,9 @@
       "bulkDialog": {
         "reviewTitle": "مراجعة الأدلة الجماعية",
         "deleteTitle": "حذف الأدلة الجماعي",
-        "approveDescription": "أنت على وشك الموافقة على {count} تقديم دليل. سيصبحون مرئيين وفقاً لإعدادات الرؤية الخاصة بهم.",
-        "rejectDescription": "أنت على وشك رفض {count} تقديم دليل. سيتم إخطار المدارس ويمكنها إعادة التقديم.",
-        "deleteDescription": "أنت على وشك حذف {count} تقديم دليل نهائياً. لا يمكن التراجع عن هذا الإجراء.",
+        "approveDescription": "أنت على وشك الموافقة على {{count}} تقديم دليل. سيصبحون مرئيين وفقاً لإعدادات الرؤية الخاصة بهم.",
+        "rejectDescription": "أنت على وشك رفض {{count}} تقديم دليل. سيتم إخطار المدارس ويمكنها إعادة التقديم.",
+        "deleteDescription": "أنت على وشك حذف {{count}} تقديم دليل نهائياً. لا يمكن التراجع عن هذا الإجراء.",
         "notes": "الملاحظات (اختياري للموافقة، مطلوب للرفض)",
         "notesPlaceholder": "أدخل الملاحظات للمدارس...",
         "confirm": "تأكيد",
@@ -1972,8 +1972,8 @@
         "approve": "موافقة",
         "reject": "رفض"
       },
-      "confirmApprove": "الموافقة على موافقة الصور لـ {name}؟",
-      "rejectionNotes": "ملاحظات الرفض لـ {name}:",
+      "confirmApprove": "الموافقة على موافقة الصور لـ {{name}}؟",
+      "rejectionNotes": "ملاحظات الرفض لـ {{name}}:",
       "rejectionRequired": "ملاحظات الرفض مطلوبة"
     },
     "audit": {

@@ -30,7 +30,7 @@
   },
   "social_proof": {
     "title": "Bergabunglah dengan Gerakan yang Berkembang",
-    "description": "Lebih dari {count} sekolah telah mendaftar untuk program Plastic Clever Schools, memberikan dampak kolektif pada pengurangan sampah dan pendidikan lingkungan.",
+    "description": "Lebih dari {{count}} sekolah telah mendaftar untuk program Plastic Clever Schools, memberikan dampak kolektif pada pengurangan sampah dan pendidikan lingkungan.",
     "registered_schools_label": "Sekolah Terdaftar Sejauh Ini",
     "view_schools_cta": "Lihat Semua Sekolah Terdaftar"
   },

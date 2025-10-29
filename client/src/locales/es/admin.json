@@ -866,8 +866,8 @@
     "search_schools": "Buscar escuelas...",
     "filters": {
       "allCountries": "Todos los Países",
-      "selectAll": "Seleccionar Todo ({count} escuelas)",
-      "selected": "{count} seleccionado",
+      "selectAll": "Seleccionar Todo ({{count}} escuelas)",
+      "selected": "{{count}} seleccionado",
       "searchPlaceholder": "Buscar escuelas..."
     },
     "buttons": {
@@ -936,7 +936,7 @@
       "suspended": "Suspendido"
     },
     "school_details": {
-      "title": "{name}",
+      "title": "{{name}}",
       "basic_info": "Información Básica",
       "contact_info": "Información de Contacto",
       "progress": "Progreso del Programa",
@@ -1028,21 +1028,21 @@
       "dialogs": {
         "update": {
           "title": "Actualización Masiva de Escuelas",
-          "description": "Esta acción afectará a <strong>{count}</strong> escuelas.",
+          "description": "Esta acción afectará a <strong>{{count}}</strong> escuelas.",
           "updateStageLabel": "Actualizar Etapa Actual",
           "updateStageHelpText": "Todas las escuelas seleccionadas se moverán a esta etapa del programa."
         },
         "delete": {
           "title": "Eliminación Masiva de Escuelas",
-          "description": "Esta acción afectará a <strong>{count}</strong> escuelas.",
+          "description": "Esta acción afectará a <strong>{{count}}</strong> escuelas.",
           "warningTitle": "Advertencia:",
           "warningDescription": "Esta acción no se puede deshacer. Todas las escuelas seleccionadas y sus datos asociados se eliminarán permanentemente."
         },
         "deleteSchool": {
           "title": "Eliminar Escuela",
-          "description": "¿Está seguro de que desea eliminar <strong>{name}</strong>? Esta acción no se puede deshacer y eliminará permanentemente la escuela y todos los datos asociados.",
+          "description": "¿Está seguro de que desea eliminar <strong>{{name}}</strong>? Esta acción no se puede deshacer y eliminará permanentemente la escuela y todos los datos asociados.",
           "loadingUsers": "Cargando usuarios de la escuela...",
-          "warningUsers": "Advertencia: Esta escuela tiene {count} usuario{plural} asociado.",
+          "warningUsers": "Advertencia: Esta escuela tiene {{count}} usuario{{plural}} asociado.",
           "associatedUsers": "Usuarios Asociados:",
           "deleteUsersLabel": "También eliminar todas las cuentas de usuario asociadas",
           "deleteUsersDescription": "Si no se marca, las cuentas de usuario permanecerán en el sistema y se pueden reasignar a otras escuelas. Si se marca, los usuarios se eliminarán permanentemente y no podrán registrarse nuevamente con las mismas direcciones de correo electrónico.",
@@ -1069,7 +1069,7 @@
       },
       "bulkUpdateComplete": {
         "title": "Actualización Masiva Completa",
-        "description": "{count} escuelas se han actualizado correctamente."
+        "description": "{{count}} escuelas se han actualizado correctamente."
       },
       "bulkUpdateFailed": {
         "title": "Actualización Masiva Fallida",
@@ -1077,7 +1077,7 @@
       },
       "bulkDeleteComplete": {
         "title": "Eliminación Masiva Completa",
-        "description": "{count} escuelas se han eliminado correctamente."
+        "description": "{{count}} escuelas se han eliminado correctamente."
       },
       "bulkDeleteFailed": {
         "title": "Eliminación Masiva Fallida",
@@ -1862,7 +1862,7 @@
     "dialogs": {
       "deleteEvent": {
         "title": "Eliminar Evento",
-        "description": "¿Está seguro de que desea eliminar \"{title}\"? Esta acción no se puede deshacer."
+        "description": "¿Está seguro de que desea eliminar \"{{title}}\"? Esta acción no se puede deshacer."
       },
       "deleteBanner": {
         "title": "Eliminar Banner",
@@ -1884,14 +1884,14 @@
       },
       "newsletter": {
         "title": "Enviar Anuncio de Evento",
-        "description": "Enviar \"{title}\" por correo electrónico a los profesores.",
+        "description": "Enviar \"{{title}}\" por correo electrónico a los profesores.",
         "labels": {
           "recipientType": "Tipo de Destinatario",
           "emailAddresses": "Direcciones de Correo Electrónico",
           "commaSeparated": "(separadas por comas)"
         },
         "options": {
-          "allTeachers": "Todos los Profesores ({count} profesores)",
+          "allTeachers": "Todos los Profesores ({{count}} profesores)",
           "customEmailList": "Lista de Correo Personalizada"
         },
         "placeholders": {
@@ -1917,7 +1917,7 @@
     },
     "evidence": {
       "title": "Cola de Revisión de Evidencia",
-      "selected": "{count} seleccionado",
+      "selected": "{{count}} seleccionado",
       "bulkApprove": "Aprobar en Masa",
       "bulkReject": "Rechazar en Masa",
       "delete": "Eliminar",
@@ -1929,7 +1929,7 @@
       "allEvidence": "Toda la Evidencia",
       "unassigned": "Sin Asignar",
       "assignedToMe": "Asignado a Mí",
-      "selectAll": "Seleccionar Todo ({count} elementos)",
+      "selectAll": "Seleccionar Todo ({{count}} elementos)",
       "allCaughtUp": "¡Todo al Día!",
       "noPendingEvidence": "No hay envíos de evidencia pendientes para revisar.",
       "badges": {
@@ -1940,9 +1940,9 @@
         "new": "NUEVO"
       },
       "labels": {
-        "schoolId": "ID de Escuela:",
-        "submitted": "Enviado:",
-        "files": "Archivos:",
+        "schoolId": "ID de Escuela: {{id}}",
+        "submitted": "Enviado: {{date}}",
+        "files": "Archivos: {{count}}",
         "assignedTo": "Asignado a:"
       },
       "buttons": {
@@ -1974,9 +1974,9 @@
       "bulkDialog": {
         "reviewTitle": "Revisión Masiva de Evidencia",
         "deleteTitle": "Eliminación Masiva de Evidencia",
-        "approveDescription": "Está a punto de aprobar {count} envíos de evidencia. Esto los hará visibles según su configuración de visibilidad.",
-        "rejectDescription": "Está a punto de rechazar {count} envíos de evidencia. Las escuelas serán notificadas y podrán volver a enviar.",
-        "deleteDescription": "Está a punto de eliminar permanentemente {count} envíos de evidencia. Esta acción no se puede deshacer.",
+        "approveDescription": "Está a punto de aprobar {{count}} envíos de evidencia. Esto los hará visibles según su configuración de visibilidad.",
+        "rejectDescription": "Está a punto de rechazar {{count}} envíos de evidencia. Las escuelas serán notificadas y podrán volver a enviar.",
+        "deleteDescription": "Está a punto de eliminar permanentemente {{count}} envíos de evidencia. Esta acción no se puede deshacer.",
         "notes": "Notas (opcional para aprobación, obligatorio para rechazo)",
         "notesPlaceholder": "Introducir notas para las escuelas...",
         "confirm": "Confirmar",
@@ -2005,8 +2005,8 @@
         "approve": "Aprobar",
         "reject": "Rechazar"
       },
-      "confirmApprove": "¿Aprobar consentimiento fotográfico para {name}?",
-      "rejectionNotes": "Notas de rechazo para {name}:",
+      "confirmApprove": "¿Aprobar consentimiento fotográfico para {{name}}?",
+      "rejectionNotes": "Notas de rechazo para {{name}}:",
       "rejectionRequired": "Las notas de rechazo son obligatorias"
     },
     "audit": {

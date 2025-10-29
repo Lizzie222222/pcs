@@ -30,7 +30,7 @@
   },
   "social_proof": {
     "title": "Sluit je Aan bij een Groeiende Beweging",
-    "description": "Meer dan {count} scholen hebben zich al geregistreerd voor het Plastic Clever Schools-programma, wat een collectieve impact heeft op afvalvermindering en milieu-educatie.",
+    "description": "Meer dan {{count}} scholen hebben zich al geregistreerd voor het Plastic Clever Schools-programma, wat een collectieve impact heeft op afvalvermindering en milieu-educatie.",
     "registered_schools_label": "Geregistreerde Scholen Tot Nu Toe",
     "view_schools_cta": "Bekijk Alle Geregistreerde Scholen"
   },

@@ -1204,21 +1204,21 @@
       "dialogs": {
         "update": {
           "title": "Schulen Massenaktualisierung",
-          "description": "Diese Aktion betrifft <strong>{count}</strong> Schulen.",
+          "description": "Diese Aktion betrifft <strong>{{count}}</strong> Schulen.",
           "updateStageLabel": "Aktuelle Phase Aktualisieren",
           "updateStageHelpText": "Alle ausgewählten Schulen werden in diese Programmphase verschoben."
         },
         "delete": {
           "title": "Schulen Massenlöschen",
-          "description": "Diese Aktion betrifft <strong>{count}</strong> Schulen.",
+          "description": "Diese Aktion betrifft <strong>{{count}}</strong> Schulen.",
           "warningTitle": "Warnung:",
           "warningDescription": "Diese Aktion kann nicht rückgängig gemacht werden. Alle ausgewählten Schulen und ihre zugehörigen Daten werden permanent gelöscht."
         },
         "deleteSchool": {
           "title": "Schule Löschen",
-          "description": "Sind Sie sicher, dass Sie <strong>{name}</strong> löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und löscht die Schule und alle zugehörigen Daten permanent.",
+          "description": "Sind Sie sicher, dass Sie <strong>{{name}}</strong> löschen möchten? Diese Aktion kann nicht rückgängig gemacht werden und löscht die Schule und alle zugehörigen Daten permanent.",
           "loadingUsers": "Lade Schulbenutzer...",
-          "warningUsers": "Warnung: Diese Schule hat {count} zugehörige Benutzer.",
+          "warningUsers": "Warnung: Diese Schule hat {{count}} zugehörige Benutzer.",
           "associatedUsers": "Zugehörige Benutzer:",
           "deleteUsersLabel": "Auch alle zugehörigen Benutzerkonten löschen",
           "deleteUsersDescription": "Wenn nicht markiert, bleiben die Benutzerkonten im System und können anderen Schulen zugewiesen werden. Wenn markiert, werden die Benutzer permanent gelöscht und können sich nicht erneut mit denselben E-Mail-Adressen registrieren.",
@@ -1245,7 +1245,7 @@
       },
       "bulkUpdateComplete": {
         "title": "Massenaktualisierung Abgeschlossen",
-        "description": "{count} Schulen wurden erfolgreich aktualisiert."
+        "description": "{{count}} Schulen wurden erfolgreich aktualisiert."
       },
       "bulkUpdateFailed": {
         "title": "Massenaktualisierung Fehlgeschlagen",
@@ -1253,7 +1253,7 @@
       },
       "bulkDeleteComplete": {
         "title": "Massenlöschen Abgeschlossen",
-        "description": "{count} Schulen wurden erfolgreich gelöscht."
+        "description": "{{count}} Schulen wurden erfolgreich gelöscht."
       },
       "bulkDeleteFailed": {
         "title": "Massenlöschen Fehlgeschlagen",
@@ -1950,14 +1950,14 @@
       },
       "newsletter": {
         "title": "Veranstaltungsankündigung Senden",
-        "description": "\"{title}\" per E-Mail an Lehrer senden.",
+        "description": "\"{{title}}\" per E-Mail an Lehrer senden.",
         "labels": {
           "recipientType": "Empfängertyp",
           "emailAddresses": "E-Mail-Adressen",
           "commaSeparated": "(durch Kommas getrennt)"
         },
         "options": {
-          "allTeachers": "Alle Lehrer ({count} Lehrer)",
+          "allTeachers": "Alle Lehrer ({{count}} Lehrer)",
           "customEmailList": "Benutzerdefinierte E-Mail-Liste"
         },
         "placeholders": {
@@ -1983,7 +1983,7 @@
     },
     "evidence": {
       "title": "Nachweisüberprüfungs-Warteschlange",
-      "selected": "{count} ausgewählt",
+      "selected": "{{count}} ausgewählt",
       "bulkApprove": "Massengenehmigung",
       "bulkReject": "Massenablehnung",
       "delete": "Löschen",
@@ -1995,7 +1995,7 @@
       "allEvidence": "Alle Nachweise",
       "unassigned": "Nicht zugewiesen",
       "assignedToMe": "Mir Zugewiesen",
-      "selectAll": "Alle Auswählen ({count} Elemente)",
+      "selectAll": "Alle Auswählen ({{count}} Elemente)",
       "allCaughtUp": "Alles Erledigt!",
       "noPendingEvidence": "Keine ausstehenden Nachweiseinreichungen zur Überprüfung.",
       "badges": {
@@ -2006,9 +2006,9 @@
         "new": "NEU"
       },
       "labels": {
-        "schoolId": "Schul-ID:",
-        "submitted": "Eingereicht:",
-        "files": "Dateien:",
+        "schoolId": "Schul-ID: {{id}}",
+        "submitted": "Eingereicht: {{date}}",
+        "files": "Dateien: {{count}}",
         "assignedTo": "Zugewiesen an:"
       },
       "buttons": {
@@ -2040,9 +2040,9 @@
       "bulkDialog": {
         "reviewTitle": "Massen-Nachweisüberprüfung",
         "deleteTitle": "Nachweise Massenlöschen",
-        "approveDescription": "Sie sind dabei, {count} Nachweiseinreichungen zu genehmigen. Dies macht sie gemäß ihren Sichtbarkeitseinstellungen sichtbar.",
-        "rejectDescription": "Sie sind dabei, {count} Nachweiseinreichungen abzulehnen. Die Schulen werden benachrichtigt und können erneut einreichen.",
-        "deleteDescription": "Sie sind dabei, {count} Nachweiseinreichungen dauerhaft zu löschen. Diese Aktion kann nicht rückgängig gemacht werden.",
+        "approveDescription": "Sie sind dabei, {{count}} Nachweiseinreichungen zu genehmigen. Dies macht sie gemäß ihren Sichtbarkeitseinstellungen sichtbar.",
+        "rejectDescription": "Sie sind dabei, {{count}} Nachweiseinreichungen abzulehnen. Die Schulen werden benachrichtigt und können erneut einreichen.",
+        "deleteDescription": "Sie sind dabei, {{count}} Nachweiseinreichungen dauerhaft zu löschen. Diese Aktion kann nicht rückgängig gemacht werden.",
         "notes": "Notizen (optional für Genehmigung, erforderlich für Ablehnung)",
         "notesPlaceholder": "Notizen für Schulen eingeben...",
         "confirm": "Bestätigen",
@@ -2071,8 +2071,8 @@
         "approve": "Genehmigen",
         "reject": "Ablehnen"
       },
-      "confirmApprove": "Fotoeinwilligung für {name} genehmigen?",
-      "rejectionNotes": "Ablehnungsnotizen für {name}:",
+      "confirmApprove": "Fotoeinwilligung für {{name}} genehmigen?",
+      "rejectionNotes": "Ablehnungsnotizen für {{name}}:",
       "rejectionRequired": "Ablehnungsnotizen sind erforderlich"
     },
     "audit": {

@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "Rimuovi Insegnante",
-      "remove_teacher_desc": "Sei sicuro di voler rimuovere {name} dalla tua scuola? Questa azione non può essere annullata.",
+      "remove_teacher_desc": "Sei sicuro di voler rimuovere {{name}} dalla tua scuola? Questa azione non può essere annullata.",
       "approve_request_title": "Approva Richiesta di Accesso",
-      "approve_request_desc": "Stai per approvare la richiesta di accesso da {name}.",
+      "approve_request_desc": "Stai per approvare la richiesta di accesso da {{name}}.",
       "reject_request_title": "Rifiuta Richiesta di Accesso",
-      "reject_request_desc": "Stai per rifiutare la richiesta di accesso da {name}.",
+      "reject_request_desc": "Stai per rifiutare la richiesta di accesso da {{name}}.",
       "review_notes_label": "Note di Revisione (Opzionale)",
       "review_notes_placeholder": "Aggiungi note su questa approvazione...",
       "rejection_reason_label": "Motivo del Rifiuto (Richiesto)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "Inviti in Sospeso",
-      "sent_expires": "Inviato {sentDate} • Scade {expiresDate}"
+      "sent_expires": "Inviato {{sentDate}} • Scade {{expiresDate}}"
     }
   },
   "events": {

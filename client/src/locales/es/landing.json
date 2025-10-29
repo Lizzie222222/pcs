@@ -30,7 +30,7 @@
   },
   "social_proof": {
     "title": "Únete a un Movimiento en Crecimiento",
-    "description": "Más de {count} escuelas ya se han registrado en el programa Plastic Clever Schools, generando un impacto colectivo en la reducción de residuos y la educación ambiental.",
+    "description": "Más de {{count}} escuelas ya se han registrado en el programa Plastic Clever Schools, generando un impacto colectivo en la reducción de residuos y la educación ambiental.",
     "registered_schools_label": "Escuelas Registradas Hasta Ahora",
     "view_schools_cta": "Ver Todas las Escuelas Registradas"
   },

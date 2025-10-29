@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "Leraar Verwijderen",
-      "remove_teacher_desc": "Weet u zeker dat u {name} wilt verwijderen van uw school? Deze actie kan niet ongedaan worden gemaakt.",
+      "remove_teacher_desc": "Weet u zeker dat u {{name}} wilt verwijderen van uw school? Deze actie kan niet ongedaan worden gemaakt.",
       "approve_request_title": "Toegangsverzoek Goedkeuren",
-      "approve_request_desc": "U staat op het punt het toegangsverzoek van {name} goed te keuren.",
+      "approve_request_desc": "U staat op het punt het toegangsverzoek van {{name}} goed te keuren.",
       "reject_request_title": "Toegangsverzoek Afwijzen",
-      "reject_request_desc": "U staat op het punt het toegangsverzoek van {name} af te wijzen.",
+      "reject_request_desc": "U staat op het punt het toegangsverzoek van {{name}} af te wijzen.",
       "review_notes_label": "Beoordelingsnotities (Optioneel)",
       "review_notes_placeholder": "Voeg notities toe over deze goedkeuring...",
       "rejection_reason_label": "Reden voor Afwijzing (Vereist)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "Openstaande Uitnodigingen",
-      "sent_expires": "Verzonden {sentDate} • Verloopt {expiresDate}"
+      "sent_expires": "Verzonden {{sentDate}} • Verloopt {{expiresDate}}"
     }
   },
   "events": {

@@ -939,8 +939,8 @@
     "search_schools": "Chwilio ysgolion...",
     "filters": {
       "allCountries": "Pob Gwlad",
-      "selectAll": "Dewis Popeth ({count} ysgol)",
-      "selected": "{count} wedi'u dewis",
+      "selectAll": "Dewis Popeth ({{count}} ysgol)",
+      "selected": "{{count}} wedi'u dewis",
       "searchPlaceholder": "Chwilio ysgolion..."
     },
     "buttons": {
@@ -1009,7 +1009,7 @@
       "suspended": "Wedi'i Atal"
     },
     "school_details": {
-      "title": "{name}",
+      "title": "{{name}}",
       "basic_info": "Gwybodaeth Sylfaenol",
       "contact_info": "Gwybodaeth Gyswllt",
       "progress": "Cynnydd y Rhaglen",
@@ -1101,21 +1101,21 @@
       "dialogs": {
         "update": {
           "title": "Diweddaru Ysgolion Swmp",
-          "description": "Bydd y weithred hon yn effeithio ar <strong>{count}</strong> ysgol.",
+          "description": "Bydd y weithred hon yn effeithio ar <strong>{{count}}</strong> ysgol.",
           "updateStageLabel": "Diweddaru Cam Presennol",
           "updateStageHelpText": "Bydd yr holl ysgolion a ddewiswyd yn cael eu symud i'r cam rhaglen hwn."
         },
         "delete": {
           "title": "Dileu Ysgolion Swmp",
-          "description": "Bydd y weithred hon yn effeithio ar <strong>{count}</strong> ysgol.",
+          "description": "Bydd y weithred hon yn effeithio ar <strong>{{count}}</strong> ysgol.",
           "warningTitle": "Rhybudd:",
           "warningDescription": "Ni ellir dadwneud y weithred hon. Bydd yr holl ysgolion a ddewiswyd a'u data cysylltiedig yn cael eu dileu'n barhaol."
         },
         "deleteSchool": {
           "title": "Dileu Ysgol",
-          "description": "Ydych chi'n siŵr eich bod am ddileu <strong>{name}</strong>? Ni ellir dadwneud y weithred hon a bydd yn dileu'r ysgol a'r holl ddata cysylltiedig yn barhaol.",
+          "description": "Ydych chi'n siŵr eich bod am ddileu <strong>{{name}}</strong>? Ni ellir dadwneud y weithred hon a bydd yn dileu'r ysgol a'r holl ddata cysylltiedig yn barhaol.",
           "loadingUsers": "Yn llwytho defnyddwyr yr ysgol...",
-          "warningUsers": "Rhybudd: Mae gan yr ysgol hon {count} defnyddiwr{plural} cysylltiedig.",
+          "warningUsers": "Rhybudd: Mae gan yr ysgol hon {{count}} defnyddiwr{{plural}} cysylltiedig.",
           "associatedUsers": "Defnyddwyr Cysylltiedig:",
           "deleteUsersLabel": "Dileu'r holl gyfrifon defnyddwyr cysylltiedig hefyd",
           "deleteUsersDescription": "Os na chaiff ei dicio, bydd y cyfrifon defnyddwyr yn aros yn y system a gellir eu hailneilltuo i ysgolion eraill. Os caiff ei dicio, bydd y defnyddwyr yn cael eu dileu'n barhaol ac ni fyddant yn gallu cofrestru eto gyda'r un cyfeiriadau e-bost.",
@@ -1142,7 +1142,7 @@
       },
       "bulkUpdateComplete": {
         "title": "Diweddariad Swmp yn Gyflawn",
-        "description": "Mae {count} ysgol wedi'u diweddaru'n llwyddiannus."
+        "description": "Mae {{count}} ysgol wedi'u diweddaru'n llwyddiannus."
       },
       "bulkUpdateFailed": {
         "title": "Diweddariad Swmp wedi Methu",
@@ -1150,7 +1150,7 @@
       },
       "bulkDeleteComplete": {
         "title": "Dileu Swmp yn Gyflawn",
-        "description": "Mae {count} ysgol wedi'u dileu'n llwyddiannus."
+        "description": "Mae {{count}} ysgol wedi'u dileu'n llwyddiannus."
       },
       "bulkDeleteFailed": {
         "title": "Dileu Swmp wedi Methu",
@@ -1908,7 +1908,7 @@
     "dialogs": {
       "deleteEvent": {
         "title": "Dileu Digwyddiad",
-        "description": "Ydych chi'n siŵr eich bod am ddileu \"{title}\"? Ni ellir dadwneud y weithred hon."
+        "description": "Ydych chi'n siŵr eich bod am ddileu \"{{title}}\"? Ni ellir dadwneud y weithred hon."
       },
       "deleteBanner": {
         "title": "Dileu Baner",
@@ -1930,14 +1930,14 @@
       },
       "newsletter": {
         "title": "Anfon Cyhoeddiad Digwyddiad",
-        "description": "Anfon \"{title}\" drwy e-bost i athrawon.",
+        "description": "Anfon \"{{title}}\" drwy e-bost i athrawon.",
         "labels": {
           "recipientType": "Math o Dderbynydd",
           "emailAddresses": "Cyfeiriadau E-bost",
           "commaSeparated": "(gwahanu â choma)"
         },
         "options": {
-          "allTeachers": "Pob Athro ({count} athro)",
+          "allTeachers": "Pob Athro ({{count}} athro)",
           "customEmailList": "Rhestr E-bost Cwstwm"
         },
         "placeholders": {
@@ -1963,7 +1963,7 @@
     },
     "evidence": {
       "title": "Ciw Adolygu Tystiolaeth",
-      "selected": "{count} wedi'u dewis",
+      "selected": "{{count}} wedi'u dewis",
       "bulkApprove": "Cymeradwyo Swmp",
       "bulkReject": "Gwrthod Swmp",
       "delete": "Dileu",
@@ -1975,7 +1975,7 @@
       "allEvidence": "Pob Tystiolaeth",
       "unassigned": "Heb ei Neilltuo",
       "assignedToMe": "Wedi'i Neilltuo i Mi",
-      "selectAll": "Dewis Popeth ({count} eitem)",
+      "selectAll": "Dewis Popeth ({{count}} eitem)",
       "allCaughtUp": "Wedi Dal i Fyny!",
       "noPendingEvidence": "Dim cyflwyniadau tystiolaeth ar aros i'w hadolygu.",
       "badges": {
@@ -1986,9 +1986,9 @@
         "new": "NEWYDD"
       },
       "labels": {
-        "schoolId": "ID Ysgol:",
-        "submitted": "Cyflwynwyd:",
-        "files": "Ffeiliau:",
+        "schoolId": "ID Ysgol: {{id}}",
+        "submitted": "Cyflwynwyd: {{date}}",
+        "files": "Ffeiliau: {{count}}",
         "assignedTo": "Wedi'i Neilltuo i:"
       },
       "buttons": {
@@ -2020,9 +2020,9 @@
       "bulkDialog": {
         "reviewTitle": "Adolygiad Tystiolaeth Swmp",
         "deleteTitle": "Dileu Tystiolaeth Swmp",
-        "approveDescription": "Rydych chi ar fin cymeradwyo {count} cyflwyniad tystiolaeth. Bydd hyn yn eu gwneud yn weladwy yn ôl eu gosodiadau gwelededd.",
-        "rejectDescription": "Rydych chi ar fin gwrthod {count} cyflwyniad tystiolaeth. Bydd yr ysgolion yn cael eu hysbysu a gallant ailgyflwyno.",
-        "deleteDescription": "Rydych chi ar fin dileu {count} cyflwyniad tystiolaeth yn barhaol. Ni ellir dadwneud y weithred hon.",
+        "approveDescription": "Rydych chi ar fin cymeradwyo {{count}} cyflwyniad tystiolaeth. Bydd hyn yn eu gwneud yn weladwy yn ôl eu gosodiadau gwelededd.",
+        "rejectDescription": "Rydych chi ar fin gwrthod {{count}} cyflwyniad tystiolaeth. Bydd yr ysgolion yn cael eu hysbysu a gallant ailgyflwyno.",
+        "deleteDescription": "Rydych chi ar fin dileu {{count}} cyflwyniad tystiolaeth yn barhaol. Ni ellir dadwneud y weithred hon.",
         "notes": "Nodiadau (dewisol ar gyfer cymeradwyaeth, gorfodol ar gyfer gwrthodiad)",
         "notesPlaceholder": "Rhowch nodiadau i ysgolion...",
         "confirm": "Cadarnhau",
@@ -2051,8 +2051,8 @@
         "approve": "Cymeradwyo",
         "reject": "Gwrthod"
       },
-      "confirmApprove": "Cymeradwyo caniatâd ffotograffau ar gyfer {name}?",
-      "rejectionNotes": "Nodiadau gwrthod ar gyfer {name}:",
+      "confirmApprove": "Cymeradwyo caniatâd ffotograffau ar gyfer {{name}}?",
+      "rejectionNotes": "Nodiadau gwrthod ar gyfer {{name}}:",
       "rejectionRequired": "Mae angen nodiadau gwrthod"
     },
     "audit": {

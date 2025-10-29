@@ -30,7 +30,7 @@
   },
   "social_proof": {
     "title": "加入不断发展的运动",
-    "description": "已有超过{count}所学校注册了Plastic Clever Schools计划，在减少废物和环境教育方面产生了集体影响。",
+    "description": "已有超过{{count}}所学校注册了Plastic Clever Schools计划，在减少废物和环境教育方面产生了集体影响。",
     "registered_schools_label": "迄今已注册学校",
     "view_schools_cta": "查看所有已注册学校"
   },

@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "Hapus Guru",
-      "remove_teacher_desc": "Apakah Anda yakin ingin menghapus {name} dari sekolah Anda? Tindakan ini tidak dapat dibatalkan.",
+      "remove_teacher_desc": "Apakah Anda yakin ingin menghapus {{name}} dari sekolah Anda? Tindakan ini tidak dapat dibatalkan.",
       "approve_request_title": "Setujui Permintaan Akses",
-      "approve_request_desc": "Anda akan menyetujui permintaan akses dari {name}.",
+      "approve_request_desc": "Anda akan menyetujui permintaan akses dari {{name}}.",
       "reject_request_title": "Tolak Permintaan Akses",
-      "reject_request_desc": "Anda akan menolak permintaan akses dari {name}.",
+      "reject_request_desc": "Anda akan menolak permintaan akses dari {{name}}.",
       "review_notes_label": "Catatan Tinjauan (Opsional)",
       "review_notes_placeholder": "Tambahkan catatan tentang persetujuan ini...",
       "rejection_reason_label": "Alasan Penolakan (Diperlukan)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "Undangan Tertunda",
-      "sent_expires": "Terkirim {sentDate} • Kedaluwarsa {expiresDate}"
+      "sent_expires": "Terkirim {{sentDate}} • Kedaluwarsa {{expiresDate}}"
     }
   },
   "events": {

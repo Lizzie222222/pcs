@@ -30,7 +30,7 @@
   },
   "social_proof": {
     "title": "Ymunwch â Mudiad sy'n Tyfu",
-    "description": "Mae dros {count} o ysgolion eisoes wedi cofrestru ar gyfer y rhaglen Plastic Clever Schools, gan greu effaith ar y cyd ar leihau gwastraff ac addysg amgylcheddol.",
+    "description": "Mae dros {{count}} o ysgolion eisoes wedi cofrestru ar gyfer y rhaglen Plastic Clever Schools, gan greu effaith ar y cyd ar leihau gwastraff ac addysg amgylcheddol.",
     "registered_schools_label": "Ysgolion Cofrestredig Hyd Yn Hyn",
     "view_schools_cta": "Gweld Pob Ysgol Gofrestredig"
   },

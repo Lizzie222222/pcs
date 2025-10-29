@@ -30,7 +30,7 @@
   },
   "social_proof": {
     "title": "Join a Growing Movement",
-    "description": "More than {count} schools have already registered for the Plastic Clever Schools program, making a collective impact on waste reduction and environmental education.",
+    "description": "More than {{count}} schools have already registered for the Plastic Clever Schools program, making a collective impact on waste reduction and environmental education.",
     "registered_schools_label": "Registered Schools So Far",
     "view_schools_cta": "View All Registered Schools"
   },

@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "إزالة المعلم",
-      "remove_teacher_desc": "هل أنت متأكد من رغبتك في إزالة {name} من مدرستك؟ لا يمكن التراجع عن هذا الإجراء.",
+      "remove_teacher_desc": "هل أنت متأكد من رغبتك في إزالة {{name}} من مدرستك؟ لا يمكن التراجع عن هذا الإجراء.",
       "approve_request_title": "الموافقة على طلب الوصول",
-      "approve_request_desc": "أنت على وشك الموافقة على طلب الوصول من {name}.",
+      "approve_request_desc": "أنت على وشك الموافقة على طلب الوصول من {{name}}.",
       "reject_request_title": "رفض طلب الوصول",
-      "reject_request_desc": "أنت على وشك رفض طلب الوصول من {name}.",
+      "reject_request_desc": "أنت على وشك رفض طلب الوصول من {{name}}.",
       "review_notes_label": "ملاحظات المراجعة (اختياري)",
       "review_notes_placeholder": "أضف أي ملاحظات حول هذه الموافقة...",
       "rejection_reason_label": "سبب الرفض (مطلوب)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "الدعوات المعلقة",
-      "sent_expires": "تم الإرسال {sentDate} • ينتهي {expiresDate}"
+      "sent_expires": "تم الإرسال {{sentDate}} • ينتهي {{expiresDate}}"
     }
   },
   "events": {

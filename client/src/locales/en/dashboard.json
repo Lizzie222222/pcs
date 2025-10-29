@@ -295,11 +295,11 @@
     },
     "dialogs": {
       "remove_teacher_title": "Remove Teacher",
-      "remove_teacher_desc": "Are you sure you want to remove {name} from your school? This action cannot be undone.",
+      "remove_teacher_desc": "Are you sure you want to remove {{name}} from your school? This action cannot be undone.",
       "approve_request_title": "Approve Access Request",
-      "approve_request_desc": "You are about to approve the access request from {name}.",
+      "approve_request_desc": "You are about to approve the access request from {{name}}.",
       "reject_request_title": "Reject Access Request",
-      "reject_request_desc": "You are about to reject the access request from {name}.",
+      "reject_request_desc": "You are about to reject the access request from {{name}}.",
       "review_notes_label": "Review Notes (Optional)",
       "review_notes_placeholder": "Add any notes about this approval...",
       "rejection_reason_label": "Rejection Reason (Required)",
@@ -364,7 +364,7 @@
     },
     "invitations": {
       "title": "Pending Invitations",
-      "sent_expires": "Sent {sentDate} • Expires {expiresDate}"
+      "sent_expires": "Sent {{sentDate}} • Expires {{expiresDate}}"
     }
   },
   "events": {
