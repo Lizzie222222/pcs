@@ -218,6 +218,16 @@
     z-index: 10000 !important;
   }
   
+  /* Ensure Radix UI dropdowns and popovers appear above Leaflet maps */
+  /* Leaflet maps have z-index around 400, so we set dropdowns much higher */
+  [data-radix-select-content],
+  [data-radix-popover-content],
+  [data-radix-dropdown-menu-content],
+  [data-radix-dialog-overlay],
+  [data-radix-dialog-content] {
+    z-index: 1000 !important;
+  }
+  
   /* Wizard sidebar - prevent body scrolling when wizard sidebar is visible */
   body.wizard-sidebar-visible {
     overflow: hidden;
