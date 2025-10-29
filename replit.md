@@ -123,3 +123,8 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 - **Sticky Note Enhancement**: Updated landing page sticky note to use authentic PNG asset with realistic tape and shadow effects
 - **Admin Chat Preserved**: Maintained admin collaboration chat system for internal team communication
 - **Impact**: Simplified user interface by removing unnecessary AI chat widget, while preserving essential admin collaboration tools
+
+### Footer Description Update
+- **Updated Footer Copy**: Changed footer description from "Empowering schools worldwide to create plastic-free environments through education, investigation, and action" to "An award to reduce waste with students at the heart of the action" across all 14 language translations (English, Spanish, French, German, Italian, Portuguese, Dutch, Russian, Arabic, Indonesian, Chinese, Korean, Greek, Welsh)
+- **Consistent Messaging**: Footer now emphasizes the award nature of the program and student-centered approach
+- **Impact**: Footer messaging aligns with the updated hero copy and reinforces the student-focused nature of the program
