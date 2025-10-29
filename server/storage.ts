@@ -1417,6 +1417,7 @@ export class DatabaseStorage implements IStorage {
     type?: string;
     showOnMap?: boolean;
     language?: string;
+    search?: string;
     lastActiveDays?: number;
     limit?: number;
     offset?: number;
@@ -1447,6 +1448,17 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.language && filters.language !== 'all') {
       conditions.push(eq(schools.primaryLanguage, filters.language));
+    }
+    if (filters.search) {
+      // Search across school name, address, and admin email (case-insensitive)
+      const searchTerm = `%${filters.search}%`;
+      conditions.push(
+        or(
+          ilike(schools.name, searchTerm),
+          ilike(schools.address, searchTerm),
+          ilike(schools.adminEmail, searchTerm)
+        )
+      );
     }
     if (filters.lastActiveDays) {
       const cutoffDate = new Date();
