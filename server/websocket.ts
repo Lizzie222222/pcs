@@ -217,7 +217,14 @@ async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
         if (session.passport && session.passport.user) {
           const userId = session.passport.user;
           const user = await storage.getUser(userId);
-          resolve(user);
+          
+          // Only allow admins and partners to connect to admin collaboration WebSocket
+          if (user && (user.isAdmin || user.role === 'admin' || user.role === 'partner')) {
+            resolve(user);
+          } else {
+            console.log('[WebSocket] Non-admin user rejected:', user?.email, user?.role);
+            resolve(null);
+          }
         } else {
           resolve(null);
         }
