@@ -63,6 +63,14 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 -   **Image Processing**: Sharp library
 
 ## Recent Changes (October 2025)
+### AssignTeacherForm Crash Fix
+- **Fixed Undefined User Error**: Added comprehensive null safety checks to prevent crashes when user data is malformed
+- **UI Filtering**: Filter out undefined/null user objects before rendering to prevent "Cannot read properties of undefined" errors
+- **Submission Guards**: Added explicit validation in handleSubmit to prevent backend errors with invalid user data
+- **Error Logging**: Added console logging to surface data integrity issues for investigation
+- **User Feedback**: Display user-friendly error messages when malformed data is encountered
+- **Impact**: AssignTeacherForm no longer crashes when encountering users with undefined data, and provides clear feedback to admins
+
 ### Photo Consent Review UX Improvements
 - **Replaced Native Browser Dialogs**: Replaced outdated browser dialogs (confirm, prompt, alert) with custom shadcn/ui AlertDialog components for photo consent approval and rejection
 - **Approval Dialog**: Added a clean modal confirmation dialog matching the app's design system
