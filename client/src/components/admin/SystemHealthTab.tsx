@@ -18,11 +18,19 @@ interface EndpointStatus {
 }
 
 interface HealthStats {
-  totalChecks: number;
-  successfulChecks: number;
-  failedChecks: number;
-  averageResponseTime: number;
-  uptimePercentage: number;
+  overall: {
+    uptimePercentage: number;
+    avgResponseTime: number;
+    totalChecks: number;
+    successfulChecks: number;
+    failedChecks: number;
+  };
+  byEndpoint: Array<{
+    endpoint: string;
+    uptimePercentage: number;
+    avgResponseTime: number;
+    totalChecks: number;
+  }>;
 }
 
 interface MetricDataPoint {
@@ -172,7 +180,7 @@ export default function SystemHealthTab() {
             <CardTitle className="text-sm font-medium text-gray-600">Total Checks</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-total-checks">{healthStats?.totalChecks || 0}</div>
+            <div className="text-2xl font-bold" data-testid="text-total-checks">{healthStats?.overall.totalChecks || 0}</div>
           </CardContent>
         </Card>
 
@@ -182,7 +190,7 @@ export default function SystemHealthTab() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600" data-testid="text-successful-checks">
-              {healthStats?.successfulChecks || 0}
+              {healthStats?.overall.successfulChecks || 0}
             </div>
           </CardContent>
         </Card>
@@ -193,7 +201,7 @@ export default function SystemHealthTab() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600" data-testid="text-failed-checks">
-              {healthStats?.failedChecks || 0}
+              {healthStats?.overall.failedChecks || 0}
             </div>
           </CardContent>
         </Card>
@@ -204,7 +212,7 @@ export default function SystemHealthTab() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold" data-testid="text-avg-response-time">
-              {formatResponseTime(healthStats?.averageResponseTime || 0)}
+              {formatResponseTime(healthStats?.overall.avgResponseTime || 0)}
             </div>
           </CardContent>
         </Card>
@@ -227,9 +235,9 @@ export default function SystemHealthTab() {
         <CardContent>
           <div className="flex items-end gap-2">
             <div className="text-4xl font-bold" data-testid="text-uptime-percentage">
-              {healthStats?.uptimePercentage?.toFixed(2) || '0.00'}%
+              {healthStats?.overall.uptimePercentage?.toFixed(2) || '0.00'}%
             </div>
-            {healthStats && healthStats.uptimePercentage >= 99 ? (
+            {healthStats && healthStats.overall.uptimePercentage >= 99 ? (
               <TrendingUp className="w-6 h-6 text-green-500 mb-1" data-testid="icon-uptime-up" />
             ) : (
               <TrendingDown className="w-6 h-6 text-red-500 mb-1" data-testid="icon-uptime-down" />
