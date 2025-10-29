@@ -89,7 +89,7 @@ export default function AssignTeacherForm() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    const selectedUser = usersWithSchools.find(u => u.user.id === selectedUserId);
+    const selectedUser = usersWithSchools.find(u => u && u.user && u.user.id === selectedUserId);
     
     if (!selectedSchool) {
       toast({
@@ -109,7 +109,18 @@ export default function AssignTeacherForm() {
       return;
     }
 
-    const userEmail = selectedUser?.user.email;
+    // Guard against malformed user data
+    if (!selectedUser || !selectedUser.user) {
+      console.error('[AssignTeacherForm] Selected user has undefined user object:', selectedUserId);
+      toast({
+        title: "Data Error",
+        description: "The selected user data is invalid. Please try selecting a different user.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const userEmail = selectedUser.user.email;
     if (!userEmail) {
       toast({
         title: "Email Missing",
@@ -122,11 +133,13 @@ export default function AssignTeacherForm() {
     assignTeacherMutation.mutate({ schoolId: selectedSchool, userEmail, role });
   };
 
-  const filteredUsers = usersWithSchools.filter(item => {
-    const fullName = `${item.user.firstName || ''} ${item.user.lastName || ''}`.toLowerCase();
-    const email = item.user.email?.toLowerCase() || '';
-    return fullName.includes(searchQuery.toLowerCase()) || email.includes(searchQuery.toLowerCase());
-  });
+  const filteredUsers = usersWithSchools
+    .filter(item => item && item.user)
+    .filter(item => {
+      const fullName = `${item.user.firstName || ''} ${item.user.lastName || ''}`.toLowerCase();
+      const email = item.user.email?.toLowerCase() || '';
+      return fullName.includes(searchQuery.toLowerCase()) || email.includes(searchQuery.toLowerCase());
+    });
 
   if (schoolsLoading || usersLoading) {
     return <LoadingSpinner message="Loading data..." />;
@@ -176,7 +189,7 @@ export default function AssignTeacherForm() {
               ) : (
                 filteredUsers.map((item) => (
                   <SelectItem key={item.user.id} value={item.user.id}>
-                    {item.user.firstName} {item.user.lastName} ({item.user.email})
+                    {item.user.firstName || ''} {item.user.lastName || ''} ({item.user.email})
                   </SelectItem>
                 ))
               )}
