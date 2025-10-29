@@ -16,6 +16,7 @@ export const COUNTRY_CONFIGS: Record<string, CountryConfig> = {
     postalCodeField: 'postcode',
     postalCodePlaceholder: 'e.g., SW1A 1AA',
     ageRangeOptions: [
+      { value: 'Nursery/Reception', label: 'Under 5' },
       { value: 'Year 1-2', label: '5-7' },
       { value: 'Year 3-6', label: '7-11' },
       { value: 'Year 7-9', label: '11-14' },
@@ -31,6 +32,7 @@ export const COUNTRY_CONFIGS: Record<string, CountryConfig> = {
     postalCodePlaceholder: 'e.g., 10001',
     postalCodePattern: '^[0-9]{5}(-[0-9]{4})?$',
     ageRangeOptions: [
+      { value: 'Pre-K', label: 'Under 5' },
       { value: 'Grades K-2', label: '5-8' },
       { value: 'Grades 3-5', label: '8-11' },
       { value: 'Grades 6-8', label: '11-14' },
@@ -47,6 +49,7 @@ export const DEFAULT_COUNTRY_CONFIG: CountryConfig = {
   postalCodeField: 'postcode',
   postalCodePlaceholder: 'Enter postal or zip code',
   ageRangeOptions: [
+    { value: 'Ages 0-4', label: 'Under 5' },
     { value: 'Ages 5-7', label: '5-7' },
     { value: 'Ages 8-11', label: '8-11' },
     { value: 'Ages 12-16', label: '12-16' },
