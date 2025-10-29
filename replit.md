@@ -40,13 +40,17 @@ Core entities include Users, Schools, Evidence (with approval workflows and assi
 -   **Mobile Responsiveness**: Full mobile optimization of admin panel for screens as small as 320px:
     - **Header**: Stacks title and export button vertically on mobile with responsive text sizing (text-xl sm:text-2xl lg:text-3xl)
     - **Navigation**: Horizontal scrolling tabs with hidden scrollbar, all tabs maintain ≥44px touch targets (min-h-11)
-    - **CollaborationSidebar**: Hidden by default on mobile (lg:flex), floating toggle button (z-50), overlay dismissal, proper z-index layering
+    - **CollaborationSidebar**: Hidden by default on mobile (lg:flex), floating toggle button (z-50), overlay dismissal, proper z-index layering, close button with stopPropagation for reliable mobile dismissal
     - **Export Buttons**: Shortened labels on mobile ("CSV" vs "Export CSV") with maintained 44px touch targets
+    - **Action Buttons**: Responsive button text using `hidden sm:inline` pattern (e.g., "Create" on mobile, "Create Case Study" on desktop) with full i18n support via `createShort` translation keys
+    - **Filter Dropdowns**: All Select components have min-h-11 for consistent 44px touch targets (ResourcesManagement, ResourcePackManagement)
     - **Tables**: All data tables wrapped in overflow-x-auto containers for horizontal scrolling
-    - **Filters**: Stack vertically on mobile (flex-col sm:flex-row) with responsive gaps
+    - **Filters**: Stack vertically on mobile (flex-col sm:flex-row) with responsive gaps and proper touch targets
     - **Forms**: Responsive grids (grid-cols-1 sm:grid-cols-2 lg:grid-cols-3) for optimal mobile layout
+    - **Card Layouts**: Case study cards use flex-wrap for proper mobile content wrapping, preventing awkward overflow
     - **Buttons**: All interactive elements have min-h-11 (44px) for accessibility and proper touch targets
     - **Padding**: Responsive padding throughout (p-3 sm:p-4 lg:p-6) for optimal spacing on all screen sizes
+    - **Internationalization**: All responsive button text fully translated across 11 languages (en, ar, cy, de, es, fr, it, ko, nl, pt, zh)
     - **11 Major Sections Optimized**: SchoolsSection, ResourcesManagement, ResourcePackManagement, ActivityLogsSection, EventsSection, EmailManagementSection, CaseStudyManagement, DataImport, MigratedUsersSection, TeamsSection, ReviewsSection
 -   **Legacy User Migration System**: Comprehensive data migration tool for importing users from the old WordPress system (accessible via Data Import page):
     - **CSV Import**: Parses legacy user data from 35,863-row CSV file with validation
