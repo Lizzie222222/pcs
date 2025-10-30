@@ -46,7 +46,7 @@ interface CaseStudy {
   schoolCountry: string;
   schoolLanguage?: string;
   createdAt: string;
-  images: { url: string; caption?: string }[];
+  images: { url: string; caption?: string; type?: string; name?: string; size?: number }[];
   videos: { url: string; title?: string; platform?: string }[];
   studentQuotes: { name: string; quote: string; photoUrl?: string; age?: number }[];
   impactMetrics: { label: string; value: string; icon?: string; color?: string }[];
@@ -185,10 +185,10 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
     >
       {/* Image Section - Never use before/after images, only regular images or imageUrl */}
       {(() => {
-        // Filter out PDFs from images array to get actual image files
+        // Filter out PDFs from images array using the type field (not URL string)
+        // Evidence files use UUID paths without .pdf extension, so we must check type metadata
         const actualImages = caseStudy.images?.filter(img => {
-          const url = img.url?.toLowerCase() || '';
-          return !(url.includes('.pdf') || url.includes('pdf'));
+          return img.type !== 'application/pdf';
         }) || [];
         
         // Check if we have actual (non-PDF) images in the array
@@ -198,8 +198,10 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
         
         // No actual images in array, check imageUrl
         if (caseStudy.imageUrl) {
-          const isPdf = caseStudy.imageUrl.toLowerCase().includes('.pdf') || 
-                        caseStudy.imageUrl.toLowerCase().includes('pdf');
+          // Check if imageUrl corresponds to a PDF by looking it up in images array
+          const matchingImage = caseStudy.images?.find(img => img.url === caseStudy.imageUrl);
+          const isPdf = matchingImage?.type === 'application/pdf' || 
+                        caseStudy.imageUrl.toLowerCase().includes('.pdf');
           
           if (isPdf) {
             // Show PDF thumbnail
