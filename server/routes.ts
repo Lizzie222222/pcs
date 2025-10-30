@@ -4242,6 +4242,91 @@ Return JSON with:
     }
   });
 
+  app.post('/api/admin/migration/legacy-evidence', isAuthenticated, requireAdmin, importUpload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'CSV file is required' });
+      }
+
+      const { parseImportFile, mapLegacyEvidenceFields } = await import('./lib/importUtils');
+      const { sumStageEvidence } = await import('./lib/phpDeserializer');
+      
+      const parsed = parseImportFile(req.file.buffer, req.file.originalname);
+      
+      let processed = 0;
+      let updated = 0;
+      let skipped = 0;
+      const errors: Array<{ row: number; email: string; error: string }> = [];
+
+      for (let i = 0; i < parsed.data.length; i++) {
+        const row = parsed.data[i];
+        processed++;
+
+        try {
+          const mapped = mapLegacyEvidenceFields(row);
+          
+          if (!mapped.email || !mapped.schoolName) {
+            skipped++;
+            continue;
+          }
+
+          const totalCount = sumStageEvidence(mapped.stage1, mapped.stage2, mapped.stage3);
+          
+          if (totalCount === 0) {
+            skipped++;
+            continue;
+          }
+
+          const user = await storage.findUserByEmail(mapped.email);
+          if (!user) {
+            skipped++;
+            errors.push({ 
+              row: i + 1, 
+              email: mapped.email, 
+              error: 'User not found' 
+            });
+            continue;
+          }
+
+          const school = await storage.getSchoolByName(mapped.schoolName);
+          if (!school) {
+            skipped++;
+            errors.push({ 
+              row: i + 1, 
+              email: mapped.email, 
+              error: `School not found: ${mapped.schoolName}` 
+            });
+            continue;
+          }
+
+          await storage.updateLegacyEvidenceCount(school.id, user.id, totalCount);
+          updated++;
+        } catch (error) {
+          errors.push({ 
+            row: i + 1, 
+            email: row.user_email || 'unknown', 
+            error: error instanceof Error ? error.message : 'Unknown error' 
+          });
+        }
+      }
+
+      res.json({
+        message: 'Legacy evidence migration completed',
+        processed,
+        updated,
+        skipped,
+        errors: errors.length > 0 ? errors.slice(0, 10) : [],
+        totalErrors: errors.length,
+      });
+    } catch (error) {
+      console.error('Legacy evidence migration error:', error);
+      res.status(500).json({ 
+        message: 'Migration failed', 
+        error: error instanceof Error ? error.message : 'Unknown error' 
+      });
+    }
+  });
+
   // AI-powered analytics insights generation
   app.post('/api/admin/analytics/generate-insights', isAuthenticated, requireAdmin, async (req, res) => {
     try {
