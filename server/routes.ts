@@ -934,10 +934,15 @@ Return JSON with:
           offset: contentType === 'case-study' ? requestedOffset : fetchOffset,
         });
         
-        // Add contentType field to case studies
+        // Add contentType field to case studies and normalize URLs
         const caseStudiesWithType = caseStudies.map(cs => ({
           ...cs,
           contentType: 'case-study',
+          imageUrl: normalizeObjectStorageUrl(cs.imageUrl),
+          images: Array.isArray(cs.images) ? cs.images.map((img: any) => ({
+            ...img,
+            url: normalizeObjectStorageUrl(img.url),
+          })) : cs.images,
         }));
         
         combinedResults = [...combinedResults, ...caseStudiesWithType];
@@ -1063,7 +1068,18 @@ Return JSON with:
         limit: limit ? parseInt(limit as string) : 20,
         offset: offset ? parseInt(offset as string) : 0,
       });
-      res.json(caseStudies);
+      
+      // Normalize URLs in case studies
+      const normalizedCaseStudies = caseStudies.map(cs => ({
+        ...cs,
+        imageUrl: normalizeObjectStorageUrl(cs.imageUrl),
+        images: Array.isArray(cs.images) ? cs.images.map((img: any) => ({
+          ...img,
+          url: normalizeObjectStorageUrl(img.url),
+        })) : cs.images,
+      }));
+      
+      res.json(normalizedCaseStudies);
     } catch (error) {
       console.error("Error fetching case studies:", error);
       res.status(500).json({ message: "Failed to fetch case studies" });
@@ -1100,7 +1116,13 @@ Return JSON with:
         const evidence = await storage.getEvidenceById(caseStudy.evidenceId);
         if (evidence) {
           evidenceLink = evidence.videoLinks || null;
-          evidenceFiles = (evidence.files as any) || null;
+          // Normalize evidence file URLs
+          evidenceFiles = Array.isArray(evidence.files) 
+            ? evidence.files.map((file: any) => ({
+                ...file,
+                url: normalizeObjectStorageUrl(file.url),
+              }))
+            : null;
         }
       }
       
@@ -1110,7 +1132,13 @@ Return JSON with:
         location: (caseStudy as any).schoolCountry || '', // Map schoolCountry to location
         createdByName, // Add creator name
         evidenceLink, // From evidence table
-        evidenceFiles, // From evidence table
+        evidenceFiles, // From evidence table (with normalized URLs)
+        // Normalize URLs
+        imageUrl: normalizeObjectStorageUrl(caseStudy.imageUrl),
+        images: Array.isArray(caseStudy.images) ? caseStudy.images.map((img: any) => ({
+          ...img,
+          url: normalizeObjectStorageUrl(img.url),
+        })) : caseStudy.images,
       };
       
       res.json(transformedCaseStudy);
@@ -1147,7 +1175,18 @@ Return JSON with:
       const { id } = req.params;
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 4;
       const relatedCaseStudies = await storage.getRelatedCaseStudies(id, limit);
-      res.json(relatedCaseStudies);
+      
+      // Normalize URLs in related case studies
+      const normalizedRelated = relatedCaseStudies.map(cs => ({
+        ...cs,
+        imageUrl: normalizeObjectStorageUrl(cs.imageUrl),
+        images: Array.isArray(cs.images) ? cs.images.map((img: any) => ({
+          ...img,
+          url: normalizeObjectStorageUrl(img.url),
+        })) : cs.images,
+      }));
+      
+      res.json(normalizedRelated);
     } catch (error) {
       console.error("Error fetching related case studies:", error);
       res.status(500).json({ message: "Failed to fetch related case studies" });
@@ -3344,6 +3383,13 @@ Return JSON with:
       // Check if object is public first (fast path for public objects)
       const aclPolicy = await getObjectAclPolicy(objectFile);
       
+      // Debug logging for ACL policy
+      if (!aclPolicy) {
+        console.log(`[ACL Debug] File ${normalizedPath} has NO ACL policy (null)`);
+      } else {
+        console.log(`[ACL Debug] File ${normalizedPath} has ACL policy with visibility: ${aclPolicy.visibility}`);
+      }
+      
       // Set CORS headers for cross-origin access (required for PDF.js and browser viewing)
       const origin = req.headers.origin || req.headers.referer || '*';
       res.set({
@@ -3356,24 +3402,94 @@ Return JSON with:
       
       // Check access permissions
       if (aclPolicy?.visibility !== 'public') {
-        // For private objects, require authentication
-        if (!req.isAuthenticated() || !req.user) {
-          return res.sendStatus(401);
-        }
-        
-        // Check access with user credentials and admin status
-        const userId = req.user.id;
-        const isAdmin = req.user.isAdmin || false;
-        
-        const canAccess = await objectStorageService.canAccessObjectEntity({
-          objectFile,
-          userId: userId,
-          requestedPermission: ObjectPermission.READ,
-          isAdmin: isAdmin,
-        });
-        
-        if (!canAccess) {
-          return res.sendStatus(403);
+        // If no ACL policy is set OR ACL is registered, check if this is a public evidence file (fallback for legacy/inconsistent data)
+        if (!aclPolicy || aclPolicy?.visibility === 'registered') {
+          const pathParts = normalizedPath.split('/');
+          const fileId = pathParts[pathParts.length - 1];
+          
+          // Check if this file is in an approved public evidence record
+          try {
+            // Check both public and registered evidence
+            const publicEvidence = await storage.getApprovedEvidenceForInspiration({
+              visibility: 'public',
+              limit: 1000,
+            });
+            const registeredEvidence = await storage.getApprovedEvidenceForInspiration({
+              visibility: 'registered',
+              limit: 1000,
+            });
+            const allEvidence = [...publicEvidence, ...registeredEvidence];
+            
+            console.log(`[ACL Fallback] Checking file ${fileId} against ${allEvidence.length} evidence records`);
+            
+            const isPublicEvidence = allEvidence.some((ev: any) => {
+              const files = Array.isArray(ev.files) ? ev.files : [];
+              const matchingFile = files.find((file: any) => 
+                file.url && (
+                  file.url.includes(fileId) || 
+                  file.url === `/objects/uploads/${fileId}` ||
+                  file.url === `/api/objects/uploads/${fileId}`
+                )
+              );
+              
+              if (matchingFile) {
+                console.log(`[ACL Fallback] Found matching file in evidence ${ev.id}, visibility: ${ev.visibility}, file url: ${matchingFile.url}`);
+              }
+              
+              return matchingFile && ev.visibility === 'public';
+            });
+            
+            console.log(`[ACL Fallback] Result for ${fileId}: ${isPublicEvidence ? 'ALLOWED' : 'DENIED'}`);
+            
+            if (isPublicEvidence) {
+              // Allow access to approved public evidence without ACL
+            } else {
+              // Not public evidence, require authentication
+              if (!req.isAuthenticated() || !req.user) {
+                return res.sendStatus(401);
+              }
+              
+              const userId = req.user.id;
+              const isAdmin = req.user.isAdmin || false;
+              
+              const canAccess = await objectStorageService.canAccessObjectEntity({
+                objectFile,
+                userId: userId,
+                requestedPermission: ObjectPermission.READ,
+                isAdmin: isAdmin,
+              });
+              
+              if (!canAccess) {
+                return res.sendStatus(403);
+              }
+            }
+          } catch (evidenceError) {
+            console.error("Error checking evidence visibility:", evidenceError);
+            // If evidence check fails, require authentication as fallback
+            if (!req.isAuthenticated() || !req.user) {
+              return res.sendStatus(401);
+            }
+          }
+        } else {
+          // For private objects with ACL policy, require authentication
+          if (!req.isAuthenticated() || !req.user) {
+            return res.sendStatus(401);
+          }
+          
+          // Check access with user credentials and admin status
+          const userId = req.user.id;
+          const isAdmin = req.user.isAdmin || false;
+          
+          const canAccess = await objectStorageService.canAccessObjectEntity({
+            objectFile,
+            userId: userId,
+            requestedPermission: ObjectPermission.READ,
+            isAdmin: isAdmin,
+          });
+          
+          if (!canAccess) {
+            return res.sendStatus(403);
+          }
         }
       }
       

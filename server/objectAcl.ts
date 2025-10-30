@@ -51,7 +51,7 @@ export interface ObjectAclRule {
 // - value: JSON string of the ObjectAclPolicy object.
 export interface ObjectAclPolicy {
   owner: string;
-  visibility: "public" | "private";
+  visibility: "public" | "private" | "registered";
   aclRules?: Array<ObjectAclRule>;
 }
 

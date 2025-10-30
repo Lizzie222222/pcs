@@ -56,7 +56,7 @@ interface CaseStudy {
   contentType?: 'case-study' | 'evidence';
 }
 
-function ImageCarousel({ images, title }: { images: { url: string; caption?: string }[]; title: string }) {
+function ImageCarousel({ images, title }: { images: { url: string; caption?: string; type?: string }[]; title: string }) {
   const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true });
   const [selectedIndex, setSelectedIndex] = useState(0);
 
@@ -77,7 +77,11 @@ function ImageCarousel({ images, title }: { images: { url: string; caption?: str
 
   if (!images || images.length === 0) return null;
 
-  const displayImages = images.slice(0, 4);
+  // Filter to only image files (exclude PDFs)
+  const displayImages = images.filter(img => !img.type || !img.type.includes('pdf')).slice(0, 4);
+
+  // If no images after filtering, don't render
+  if (displayImages.length === 0) return null;
 
   if (displayImages.length === 1) {
     return (
@@ -179,19 +183,35 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
       data-testid={`case-study-${caseStudy.id}`}
     >
       {/* Image Section - Never use before/after images, only regular images or imageUrl */}
-      {caseStudy.images?.length > 0 ? (
-        <ImageCarousel images={caseStudy.images} title={caseStudy.title} />
-      ) : caseStudy.imageUrl ? (
-        <div className="relative overflow-hidden group">
-          <OptimizedImage 
-            src={caseStudy.imageUrl} 
-            alt={caseStudy.title}
-            className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-            priority={false}
-            respectConnectionSpeed={true}
-          />
-        </div>
-      ) : null}
+      {(() => {
+        // Check if we have images array
+        if (caseStudy.images?.length > 0) {
+          return <ImageCarousel images={caseStudy.images} title={caseStudy.title} />;
+        }
+        
+        // Check if imageUrl exists and is not a PDF
+        if (caseStudy.imageUrl) {
+          const isPdf = caseStudy.imageUrl.toLowerCase().includes('.pdf') || 
+                        caseStudy.imageUrl.toLowerCase().includes('pdf');
+          
+          if (!isPdf) {
+            return (
+              <div className="relative overflow-hidden group">
+                <OptimizedImage 
+                  src={caseStudy.imageUrl} 
+                  alt={caseStudy.title}
+                  className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                  priority={false}
+                  respectConnectionSpeed={true}
+                />
+              </div>
+            );
+          }
+        }
+        
+        // No image or only PDF - don't render an image section
+        return null;
+      })()}
 
       <CardContent className="p-5">
         {/* Stage Badge, Content Type & Featured */}
