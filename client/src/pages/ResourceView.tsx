@@ -372,7 +372,7 @@ export default function ResourceView() {
             ) : (
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-coral to-orange-500 hover:from-coral/90 hover:to-orange-600 text-white shadow-md"
+                className="bg-[#faf657] hover:bg-[#e5e14d] text-navy shadow-md"
                 onClick={handleDownload}
                 data-testid="button-download"
               >
