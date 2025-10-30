@@ -150,20 +150,30 @@ export default function AuditReviewQueue({
                                 <div>
                                   <h4 className="font-semibold mb-2 text-navy">{t('reviews.audit.part2.lunchroom')}</h4>
                                   <div className="grid grid-cols-2 gap-2 text-sm">
-                                    <div>{t('reviews.audit.part2.plasticBottles')} {audit.part2Data.lunchroomPlasticBottles || 0}</div>
-                                    <div>{t('reviews.audit.part2.plasticCups')} {audit.part2Data.lunchroomPlasticCups || 0}</div>
-                                    <div>{t('reviews.audit.part2.plasticCutlery')} {audit.part2Data.lunchroomPlasticCutlery || 0}</div>
-                                    <div>{t('reviews.audit.part2.plasticStraws')} {audit.part2Data.lunchroomPlasticStraws || 0}</div>
-                                    <div>{t('reviews.audit.part2.foodPackaging')} {audit.part2Data.lunchroomFoodPackaging || 0}</div>
-                                    <div>{t('reviews.audit.part2.clingFilm')} {audit.part2Data.lunchroomClingFilm || 0}</div>
+                                    <div>{t('reviews.audit.part2.plasticBottles')} {audit.part2Data.lunchroomPlasticBottles || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.lunchroomPlasticBottles || 0) * 190})</span></div>
+                                    <div>{t('reviews.audit.part2.plasticCups')} {audit.part2Data.lunchroomPlasticCups || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.lunchroomPlasticCups || 0) * 190})</span></div>
+                                    <div>{t('reviews.audit.part2.plasticCutlery')} {audit.part2Data.lunchroomPlasticCutlery || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.lunchroomPlasticCutlery || 0) * 190})</span></div>
+                                    <div>{t('reviews.audit.part2.plasticStraws')} {audit.part2Data.lunchroomPlasticStraws || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.lunchroomPlasticStraws || 0) * 190})</span></div>
+                                    <div>Snack Wrappers: {audit.part2Data.lunchroomSnackWrappers || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.lunchroomSnackWrappers || 0) * 190})</span></div>
+                                    <div>Yoghurt Pots: {audit.part2Data.lunchroomYoghurtPots || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.lunchroomYoghurtPots || 0) * 190})</span></div>
+                                    <div>Takeaway Containers: {audit.part2Data.lunchroomTakeawayContainers || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.lunchroomTakeawayContainers || 0) * 190})</span></div>
+                                    <div>{t('reviews.audit.part2.clingFilm')} {audit.part2Data.lunchroomClingFilm || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.lunchroomClingFilm || 0) * 190})</span></div>
+                                    {audit.part2Data.lunchroomOther && (
+                                      <div className="col-span-2">Other: {audit.part2Data.lunchroomOther} - {audit.part2Data.lunchroomOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.lunchroomOtherCount || 0) * 190})</span></div>
+                                    )}
                                   </div>
                                 </div>
                                 <div>
                                   <h4 className="font-semibold mb-2 text-navy">{t('reviews.audit.part2.staffroom')}</h4>
                                   <div className="grid grid-cols-2 gap-2 text-sm">
-                                    <div>{t('reviews.audit.part2.plasticBottles')} {audit.part2Data.staffroomPlasticBottles || 0}</div>
-                                    <div>{t('reviews.audit.part2.plasticCups')} {audit.part2Data.staffroomPlasticCups || 0}</div>
-                                    <div>{t('reviews.audit.part2.foodPackaging')} {audit.part2Data.staffroomFoodPackaging || 0}</div>
+                                    <div>{t('reviews.audit.part2.plasticBottles')} {audit.part2Data.staffroomPlasticBottles || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.staffroomPlasticBottles || 0) * 190})</span></div>
+                                    <div>{t('reviews.audit.part2.plasticCups')} {audit.part2Data.staffroomPlasticCups || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.staffroomPlasticCups || 0) * 190})</span></div>
+                                    <div>Snack Wrappers: {audit.part2Data.staffroomSnackWrappers || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.staffroomSnackWrappers || 0) * 190})</span></div>
+                                    <div>Yoghurt Pots: {audit.part2Data.staffroomYoghurtPots || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.staffroomYoghurtPots || 0) * 190})</span></div>
+                                    <div>Takeaway Containers: {audit.part2Data.staffroomTakeawayContainers || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.staffroomTakeawayContainers || 0) * 190})</span></div>
+                                    {audit.part2Data.staffroomOther && (
+                                      <div className="col-span-2">Other: {audit.part2Data.staffroomOther} - {audit.part2Data.staffroomOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part2Data.staffroomOtherCount || 0) * 190})</span></div>
+                                    )}
                                   </div>
                                 </div>
                                 {audit.part2Data.lunchroomNotes && (
@@ -180,30 +190,124 @@ export default function AuditReviewQueue({
 
                         <AccordionItem value="part3" className="border-b">
                           <AccordionTrigger className="px-4 hover:bg-gray-50" data-testid={`accordion-trigger-part3-${audit.id}`}>
-                            {t('reviews.audit.parts.part3')}
+                            All School Rooms
                           </AccordionTrigger>
                           <AccordionContent className="px-4 pb-4" data-testid={`accordion-content-part3-${audit.id}`}>
                             {audit.part3Data ? (
                               <div className="space-y-4">
                                 <div>
-                                  <h4 className="font-semibold mb-2 text-navy">{t('reviews.audit.part3.classrooms')}</h4>
+                                  <h4 className="font-semibold mb-2 text-navy">Classrooms</h4>
                                   <div className="grid grid-cols-2 gap-2 text-sm">
-                                    <div>{t('reviews.audit.part3.pensPencils')} {audit.part3Data.classroomPensPencils || 0}</div>
-                                    <div>{t('reviews.audit.part3.stationeryItems')} {audit.part3Data.classroomStationery || 0}</div>
-                                    <div>{t('reviews.audit.part3.bottlesCups')} {audit.part3Data.classroomBottles || 0}</div>
-                                    <div>{t('reviews.audit.part3.otherItems')} {audit.part3Data.classroomOther || 0}</div>
+                                    <div>Pens & Pencils: {audit.part3Data.classroomPensPencils || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.classroomPensPencils || 0) * 190})</span></div>
+                                    <div>Stationery: {audit.part3Data.classroomStationery || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.classroomStationery || 0) * 190})</span></div>
+                                    <div>Display Materials: {audit.part3Data.classroomDisplayMaterials || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.classroomDisplayMaterials || 0) * 190})</span></div>
+                                    {audit.part3Data.classroomOther && (
+                                      <div className="col-span-2">Other: {audit.part3Data.classroomOther} - {audit.part3Data.classroomOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.classroomOtherCount || 0) * 190})</span></div>
+                                    )}
                                   </div>
                                 </div>
                                 <div>
-                                  <h4 className="font-semibold mb-2 text-navy">{t('reviews.audit.part3.bathrooms')}</h4>
+                                  <h4 className="font-semibold mb-2 text-navy">Toilets</h4>
                                   <div className="grid grid-cols-2 gap-2 text-sm">
-                                    <div>{t('reviews.audit.part3.soapDispensers')} {audit.part3Data.bathroomSoap || 0}</div>
-                                    <div>{t('reviews.audit.part3.otherItems')} {audit.part3Data.bathroomOther || 0}</div>
+                                    <div>Soap Bottles: {audit.part3Data.toiletSoap || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.toiletSoap || 0) * 190})</span></div>
+                                    <div>Bin Liners: {audit.part3Data.toiletBinLiners || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.toiletBinLiners || 0) * 190})</span></div>
+                                    <div>Cups/Dispensers: {audit.part3Data.toiletCups || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.toiletCups || 0) * 190})</span></div>
+                                    <div>Period Products: {audit.part3Data.toiletPeriodProducts || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.toiletPeriodProducts || 0) * 190})</span></div>
+                                    {audit.part3Data.toiletOther && (
+                                      <div className="col-span-2">Other: {audit.part3Data.toiletOther} - {audit.part3Data.toiletOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.toiletOtherCount || 0) * 190})</span></div>
+                                    )}
                                   </div>
                                 </div>
+                                {audit.part3Data.officeBottles !== undefined && (
+                                  <div>
+                                    <h4 className="font-semibold mb-2 text-navy">Office</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                      <div>Bottles: {audit.part3Data.officeBottles || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.officeBottles || 0) * 190})</span></div>
+                                      <div>Cups: {audit.part3Data.officeCups || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.officeCups || 0) * 190})</span></div>
+                                      <div>Stationery: {audit.part3Data.officeStationery || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.officeStationery || 0) * 190})</span></div>
+                                      {audit.part3Data.officeOther && (
+                                        <div className="col-span-2">Other: {audit.part3Data.officeOther} - {audit.part3Data.officeOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.officeOtherCount || 0) * 190})</span></div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {audit.part3Data.libraryBottles !== undefined && (
+                                  <div>
+                                    <h4 className="font-semibold mb-2 text-navy">Library</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                      <div>Bottles: {audit.part3Data.libraryBottles || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.libraryBottles || 0) * 190})</span></div>
+                                      <div>Stationery: {audit.part3Data.libraryStationery || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.libraryStationery || 0) * 190})</span></div>
+                                      <div>Display Materials: {audit.part3Data.libraryDisplayMaterials || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.libraryDisplayMaterials || 0) * 190})</span></div>
+                                      {audit.part3Data.libraryOther && (
+                                        <div className="col-span-2">Other: {audit.part3Data.libraryOther} - {audit.part3Data.libraryOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.libraryOtherCount || 0) * 190})</span></div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {audit.part3Data.gymBottles !== undefined && (
+                                  <div>
+                                    <h4 className="font-semibold mb-2 text-navy">Gym</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                      <div>Bottles: {audit.part3Data.gymBottles || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.gymBottles || 0) * 190})</span></div>
+                                      <div>Sport Equipment: {audit.part3Data.gymSportEquipment || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.gymSportEquipment || 0) * 190})</span></div>
+                                      {audit.part3Data.gymOther && (
+                                        <div className="col-span-2">Other: {audit.part3Data.gymOther} - {audit.part3Data.gymOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.gymOtherCount || 0) * 190})</span></div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {audit.part3Data.playgroundBottles !== undefined && (
+                                  <div>
+                                    <h4 className="font-semibold mb-2 text-navy">Playground</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                      <div>Bottles: {audit.part3Data.playgroundBottles || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.playgroundBottles || 0) * 190})</span></div>
+                                      <div>Toys/Equipment: {audit.part3Data.playgroundToysEquipment || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.playgroundToysEquipment || 0) * 190})</span></div>
+                                      {audit.part3Data.playgroundOther && (
+                                        <div className="col-span-2">Other: {audit.part3Data.playgroundOther} - {audit.part3Data.playgroundOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.playgroundOtherCount || 0) * 190})</span></div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {audit.part3Data.corridorsBottles !== undefined && (
+                                  <div>
+                                    <h4 className="font-semibold mb-2 text-navy">Corridors</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                      <div>Bottles: {audit.part3Data.corridorsBottles || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.corridorsBottles || 0) * 190})</span></div>
+                                      <div>Display Materials: {audit.part3Data.corridorsDisplayMaterials || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.corridorsDisplayMaterials || 0) * 190})</span></div>
+                                      <div>Bin Liners: {audit.part3Data.corridorsBinLiners || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.corridorsBinLiners || 0) * 190})</span></div>
+                                      {audit.part3Data.corridorsOther && (
+                                        <div className="col-span-2">Other: {audit.part3Data.corridorsOther} - {audit.part3Data.corridorsOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.corridorsOtherCount || 0) * 190})</span></div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {audit.part3Data.scienceLabsBottles !== undefined && (
+                                  <div>
+                                    <h4 className="font-semibold mb-2 text-navy">Science Labs</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                      <div>Bottles: {audit.part3Data.scienceLabsBottles || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.scienceLabsBottles || 0) * 190})</span></div>
+                                      <div>Lab Equipment: {audit.part3Data.scienceLabsLabEquipment || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.scienceLabsLabEquipment || 0) * 190})</span></div>
+                                      {audit.part3Data.scienceLabsOther && (
+                                        <div className="col-span-2">Other: {audit.part3Data.scienceLabsOther} - {audit.part3Data.scienceLabsOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.scienceLabsOtherCount || 0) * 190})</span></div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+                                {audit.part3Data.artRoomsBottles !== undefined && (
+                                  <div>
+                                    <h4 className="font-semibold mb-2 text-navy">Art Rooms</h4>
+                                    <div className="grid grid-cols-2 gap-2 text-sm">
+                                      <div>Bottles: {audit.part3Data.artRoomsBottles || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.artRoomsBottles || 0) * 190})</span></div>
+                                      <div>Art Supplies: {audit.part3Data.artRoomsArtSupplies || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.artRoomsArtSupplies || 0) * 190})</span></div>
+                                      {audit.part3Data.artRoomsOther && (
+                                        <div className="col-span-2">Other: {audit.part3Data.artRoomsOther} - {audit.part3Data.artRoomsOtherCount || 0} <span className="text-xs text-gray-500">(Annual: {(audit.part3Data.artRoomsOtherCount || 0) * 190})</span></div>
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
                                 {audit.part3Data.classroomNotes && (
                                   <div className="text-sm">
-                                    <strong>{t('reviews.audit.part3.additionalNotes')}</strong> {audit.part3Data.classroomNotes}
+                                    <strong>Additional Notes:</strong> {audit.part3Data.classroomNotes}
                                   </div>
                                 )}
                               </div>
@@ -258,7 +362,7 @@ export default function AuditReviewQueue({
                       {audit.totalPlasticItems !== undefined && (
                         <div className="mt-4 bg-gray-50 rounded-lg p-3 border">
                           <p className="text-sm font-medium text-gray-700">
-                            {t('reviews.audit.labels.totalPlasticItems')} <span className="text-pcs_blue font-semibold text-lg">{audit.totalPlasticItems}</span>
+                            {t('reviews.audit.labels.totalPlasticItems')} <span className="text-pcs_blue font-semibold text-lg">{audit.totalPlasticItems}</span> <span className="text-xs text-gray-500">(Annual: {audit.totalPlasticItems * 190} - daily × 190 school days)</span>
                           </p>
                         </div>
                       )}

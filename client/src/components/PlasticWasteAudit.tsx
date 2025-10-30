@@ -16,6 +16,7 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Plus, Trash2, Download, Upload } from "lucide-react";
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
 import type { AuditResponse, ReductionPromise } from "@shared/schema";
 
 interface PlasticWasteAuditProps {
@@ -37,22 +38,74 @@ const part2Schema = z.object({
   lunchroomPlasticCups: z.string().default("0"),
   lunchroomPlasticCutlery: z.string().default("0"),
   lunchroomPlasticStraws: z.string().default("0"),
-  lunchroomFoodPackaging: z.string().default("0"),
+  lunchroomSnackWrappers: z.string().default("0"),
+  lunchroomYoghurtPots: z.string().default("0"),
+  lunchroomTakeawayContainers: z.string().default("0"),
   lunchroomClingFilm: z.string().default("0"),
+  lunchroomOther: z.string().default("0"),
+  lunchroomOtherDescription: z.string().optional(),
   staffroomPlasticBottles: z.string().default("0"),
   staffroomPlasticCups: z.string().default("0"),
-  staffroomFoodPackaging: z.string().default("0"),
+  staffroomSnackWrappers: z.string().default("0"),
+  staffroomYoghurtPots: z.string().default("0"),
+  staffroomTakeawayContainers: z.string().default("0"),
+  staffroomOther: z.string().default("0"),
+  staffroomOtherDescription: z.string().optional(),
   lunchroomNotes: z.string().optional(),
 });
 
 const part3Schema = z.object({
+  // Classrooms
   classroomPensPencils: z.string().default("0"),
   classroomStationery: z.string().default("0"),
   classroomDisplayMaterials: z.string().default("0"),
-  classroomToys: z.string().default("0"),
-  bathroomSoapBottles: z.string().default("0"),
-  bathroomBinLiners: z.string().default("0"),
-  bathroomCupsPaper: z.string().default("0"),
+  classroomOther: z.string().default("0"),
+  classroomOtherDescription: z.string().optional(),
+  // Toilets (renamed from bathroom)
+  toiletSoapBottles: z.string().default("0"),
+  toiletBinLiners: z.string().default("0"),
+  toiletCupsPaper: z.string().default("0"),
+  toiletPeriodProducts: z.string().default("0"),
+  toiletOther: z.string().default("0"),
+  toiletOtherDescription: z.string().optional(),
+  // Office
+  officePlasticBottles: z.string().default("0"),
+  officePlasticCups: z.string().default("0"),
+  officeStationery: z.string().default("0"),
+  officeOther: z.string().default("0"),
+  officeOtherDescription: z.string().optional(),
+  // Library
+  libraryPlasticBottles: z.string().default("0"),
+  libraryStationery: z.string().default("0"),
+  libraryDisplayMaterials: z.string().default("0"),
+  libraryOther: z.string().default("0"),
+  libraryOtherDescription: z.string().optional(),
+  // Gym
+  gymPlasticBottles: z.string().default("0"),
+  gymSportEquipment: z.string().default("0"),
+  gymOther: z.string().default("0"),
+  gymOtherDescription: z.string().optional(),
+  // Playground
+  playgroundPlasticBottles: z.string().default("0"),
+  playgroundToysEquipment: z.string().default("0"),
+  playgroundOther: z.string().default("0"),
+  playgroundOtherDescription: z.string().optional(),
+  // Corridors
+  corridorsPlasticBottles: z.string().default("0"),
+  corridorsDisplayMaterials: z.string().default("0"),
+  corridorsBinLiners: z.string().default("0"),
+  corridorsOther: z.string().default("0"),
+  corridorsOtherDescription: z.string().optional(),
+  // Science Labs
+  scienceLabsPlasticBottles: z.string().default("0"),
+  scienceLabsLabEquipment: z.string().default("0"),
+  scienceLabsOther: z.string().default("0"),
+  scienceLabsOtherDescription: z.string().optional(),
+  // Art Rooms
+  artRoomsPlasticBottles: z.string().default("0"),
+  artRoomsArtSupplies: z.string().default("0"),
+  artRoomsOther: z.string().default("0"),
+  artRoomsOtherDescription: z.string().optional(),
   classroomNotes: z.string().optional(),
 });
 
@@ -75,15 +128,18 @@ const promiseItemSchema = z.object({
   notes: z.string().optional(),
 });
 
-const part5Schema = z.object({
-  promises: z.array(promiseItemSchema).min(2, "At least 2 action items required")
+const part6Schema = z.object({
+  promises: z.array(promiseItemSchema).min(0).refine(
+    (promises) => promises.length === 0 || promises.length >= 2,
+    { message: "If adding promises, you must add at least 2 action items" }
+  )
 });
 
 type Part1Data = z.infer<typeof part1Schema>;
 type Part2Data = z.infer<typeof part2Schema>;
 type Part3Data = z.infer<typeof part3Schema>;
 type Part4Data = z.infer<typeof part4Schema>;
-type Part5Data = z.infer<typeof part5Schema>;
+type Part6Data = z.infer<typeof part6Schema>;
 type PromiseItem = z.infer<typeof promiseItemSchema>;
 
 export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps) {
@@ -125,11 +181,19 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       lunchroomPlasticCups: "0",
       lunchroomPlasticCutlery: "0",
       lunchroomPlasticStraws: "0",
-      lunchroomFoodPackaging: "0",
+      lunchroomSnackWrappers: "0",
+      lunchroomYoghurtPots: "0",
+      lunchroomTakeawayContainers: "0",
       lunchroomClingFilm: "0",
+      lunchroomOther: "0",
+      lunchroomOtherDescription: "",
       staffroomPlasticBottles: "0",
       staffroomPlasticCups: "0",
-      staffroomFoodPackaging: "0",
+      staffroomSnackWrappers: "0",
+      staffroomYoghurtPots: "0",
+      staffroomTakeawayContainers: "0",
+      staffroomOther: "0",
+      staffroomOtherDescription: "",
       lunchroomNotes: "",
     },
   });
@@ -140,10 +204,45 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       classroomPensPencils: "0",
       classroomStationery: "0",
       classroomDisplayMaterials: "0",
-      classroomToys: "0",
-      bathroomSoapBottles: "0",
-      bathroomBinLiners: "0",
-      bathroomCupsPaper: "0",
+      classroomOther: "0",
+      classroomOtherDescription: "",
+      toiletSoapBottles: "0",
+      toiletBinLiners: "0",
+      toiletCupsPaper: "0",
+      toiletPeriodProducts: "0",
+      toiletOther: "0",
+      toiletOtherDescription: "",
+      officePlasticBottles: "0",
+      officePlasticCups: "0",
+      officeStationery: "0",
+      officeOther: "0",
+      officeOtherDescription: "",
+      libraryPlasticBottles: "0",
+      libraryStationery: "0",
+      libraryDisplayMaterials: "0",
+      libraryOther: "0",
+      libraryOtherDescription: "",
+      gymPlasticBottles: "0",
+      gymSportEquipment: "0",
+      gymOther: "0",
+      gymOtherDescription: "",
+      playgroundPlasticBottles: "0",
+      playgroundToysEquipment: "0",
+      playgroundOther: "0",
+      playgroundOtherDescription: "",
+      corridorsPlasticBottles: "0",
+      corridorsDisplayMaterials: "0",
+      corridorsBinLiners: "0",
+      corridorsOther: "0",
+      corridorsOtherDescription: "",
+      scienceLabsPlasticBottles: "0",
+      scienceLabsLabEquipment: "0",
+      scienceLabsOther: "0",
+      scienceLabsOtherDescription: "",
+      artRoomsPlasticBottles: "0",
+      artRoomsArtSupplies: "0",
+      artRoomsOther: "0",
+      artRoomsOtherDescription: "",
       classroomNotes: "",
     },
   });
@@ -161,8 +260,8 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     },
   });
 
-  const form5 = useForm<Part5Data>({
-    resolver: zodResolver(part5Schema),
+  const form6 = useForm<Part6Data>({
+    resolver: zodResolver(part6Schema),
     defaultValues: {
       promises: [
         {
@@ -186,7 +285,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
   });
 
   const { fields, append, remove } = useFieldArray({
-    control: form5.control,
+    control: form6.control,
     name: "promises",
   });
 
@@ -279,7 +378,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     enabled: !!auditId,
   });
 
-  // Helper function to extract audit items from part2 and part3 data
+  // Helper function to extract audit items from part2 and part3 data (daily counts)
   const extractAuditItems = () => {
     const part2 = form2.getValues();
     const part3 = form3.getValues();
@@ -303,35 +402,103 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     const lunchroomStraws = parseInt(part2.lunchroomPlasticStraws || "0");
     if (lunchroomStraws > 0) items.push({ type: "plastic_straws", label: "Plastic Straws", quantity: lunchroomStraws });
     
-    const lunchroomPackaging = parseInt(part2.lunchroomFoodPackaging || "0");
-    const staffroomPackaging = parseInt(part2.staffroomFoodPackaging || "0");
-    if (lunchroomPackaging > 0) items.push({ type: "food_packaging", label: "Food Packaging (Lunchroom)", quantity: lunchroomPackaging });
-    if (staffroomPackaging > 0) items.push({ type: "food_packaging", label: "Food Packaging (Staffroom)", quantity: staffroomPackaging });
+    const lunchroomSnackWrappers = parseInt(part2.lunchroomSnackWrappers || "0");
+    const staffroomSnackWrappers = parseInt(part2.staffroomSnackWrappers || "0");
+    if (lunchroomSnackWrappers > 0) items.push({ type: "snack_wrappers", label: "Snack Wrappers (Lunchroom)", quantity: lunchroomSnackWrappers });
+    if (staffroomSnackWrappers > 0) items.push({ type: "snack_wrappers", label: "Snack Wrappers (Staffroom)", quantity: staffroomSnackWrappers });
+    
+    const lunchroomYoghurtPots = parseInt(part2.lunchroomYoghurtPots || "0");
+    const staffroomYoghurtPots = parseInt(part2.staffroomYoghurtPots || "0");
+    if (lunchroomYoghurtPots > 0) items.push({ type: "yoghurt_pots", label: "Yoghurt Pots (Lunchroom)", quantity: lunchroomYoghurtPots });
+    if (staffroomYoghurtPots > 0) items.push({ type: "yoghurt_pots", label: "Yoghurt Pots (Staffroom)", quantity: staffroomYoghurtPots });
+    
+    const lunchroomTakeaway = parseInt(part2.lunchroomTakeawayContainers || "0");
+    const staffroomTakeaway = parseInt(part2.staffroomTakeawayContainers || "0");
+    if (lunchroomTakeaway > 0) items.push({ type: "takeaway_containers", label: "Takeaway Containers (Lunchroom)", quantity: lunchroomTakeaway });
+    if (staffroomTakeaway > 0) items.push({ type: "takeaway_containers", label: "Takeaway Containers (Staffroom)", quantity: staffroomTakeaway });
     
     const clingFilm = parseInt(part2.lunchroomClingFilm || "0");
     if (clingFilm > 0) items.push({ type: "cling_film", label: "Cling Film", quantity: clingFilm });
     
-    // Part 3 - Classroom & Bathroom items
+    // Part 3 - All rooms
     const pensPencils = parseInt(part3.classroomPensPencils || "0");
     if (pensPencils > 0) items.push({ type: "pens_pencils", label: "Pens & Pencils", quantity: pensPencils });
     
     const stationery = parseInt(part3.classroomStationery || "0");
-    if (stationery > 0) items.push({ type: "stationery", label: "Stationery Items", quantity: stationery });
+    if (stationery > 0) items.push({ type: "stationery", label: "Stationery Items (Classroom)", quantity: stationery });
     
     const displayMaterials = parseInt(part3.classroomDisplayMaterials || "0");
-    if (displayMaterials > 0) items.push({ type: "display_materials", label: "Display Materials", quantity: displayMaterials });
+    if (displayMaterials > 0) items.push({ type: "display_materials", label: "Display Materials (Classroom)", quantity: displayMaterials });
     
-    const toys = parseInt(part3.classroomToys || "0");
-    if (toys > 0) items.push({ type: "toys", label: "Toys/Equipment", quantity: toys });
-    
-    const soapBottles = parseInt(part3.bathroomSoapBottles || "0");
+    const soapBottles = parseInt(part3.toiletSoapBottles || "0");
     if (soapBottles > 0) items.push({ type: "soap_bottles", label: "Soap Bottles", quantity: soapBottles });
     
-    const binLiners = parseInt(part3.bathroomBinLiners || "0");
-    if (binLiners > 0) items.push({ type: "bin_liners", label: "Bin Liners", quantity: binLiners });
+    const binLiners = parseInt(part3.toiletBinLiners || "0");
+    if (binLiners > 0) items.push({ type: "bin_liners", label: "Bin Liners (Toilet)", quantity: binLiners });
     
-    const cupsPaper = parseInt(part3.bathroomCupsPaper || "0");
+    const cupsPaper = parseInt(part3.toiletCupsPaper || "0");
     if (cupsPaper > 0) items.push({ type: "cups_dispensers", label: "Cups/Dispensers", quantity: cupsPaper });
+    
+    const periodProducts = parseInt(part3.toiletPeriodProducts || "0");
+    if (periodProducts > 0) items.push({ type: "period_products", label: "Period Products", quantity: periodProducts });
+    
+    // Office
+    const officeBottles = parseInt(part3.officePlasticBottles || "0");
+    if (officeBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Office)", quantity: officeBottles });
+    
+    const officeCups = parseInt(part3.officePlasticCups || "0");
+    if (officeCups > 0) items.push({ type: "plastic_cups", label: "Plastic Cups (Office)", quantity: officeCups });
+    
+    const officeStationery = parseInt(part3.officeStationery || "0");
+    if (officeStationery > 0) items.push({ type: "stationery", label: "Stationery (Office)", quantity: officeStationery });
+    
+    // Library
+    const libraryBottles = parseInt(part3.libraryPlasticBottles || "0");
+    if (libraryBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Library)", quantity: libraryBottles });
+    
+    const libraryStationery = parseInt(part3.libraryStationery || "0");
+    if (libraryStationery > 0) items.push({ type: "stationery", label: "Stationery (Library)", quantity: libraryStationery });
+    
+    const libraryDisplay = parseInt(part3.libraryDisplayMaterials || "0");
+    if (libraryDisplay > 0) items.push({ type: "display_materials", label: "Display Materials (Library)", quantity: libraryDisplay });
+    
+    // Gym
+    const gymBottles = parseInt(part3.gymPlasticBottles || "0");
+    if (gymBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Gym)", quantity: gymBottles });
+    
+    const sportEquipment = parseInt(part3.gymSportEquipment || "0");
+    if (sportEquipment > 0) items.push({ type: "sport_equipment", label: "Sport Equipment", quantity: sportEquipment });
+    
+    // Playground
+    const playgroundBottles = parseInt(part3.playgroundPlasticBottles || "0");
+    if (playgroundBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Playground)", quantity: playgroundBottles });
+    
+    const toysEquipment = parseInt(part3.playgroundToysEquipment || "0");
+    if (toysEquipment > 0) items.push({ type: "toys_equipment", label: "Toys/Equipment (Playground)", quantity: toysEquipment });
+    
+    // Corridors
+    const corridorsBottles = parseInt(part3.corridorsPlasticBottles || "0");
+    if (corridorsBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Corridors)", quantity: corridorsBottles });
+    
+    const corridorsDisplay = parseInt(part3.corridorsDisplayMaterials || "0");
+    if (corridorsDisplay > 0) items.push({ type: "display_materials", label: "Display Materials (Corridors)", quantity: corridorsDisplay });
+    
+    const corridorsBinLiners = parseInt(part3.corridorsBinLiners || "0");
+    if (corridorsBinLiners > 0) items.push({ type: "bin_liners", label: "Bin Liners (Corridors)", quantity: corridorsBinLiners });
+    
+    // Science Labs
+    const scienceBottles = parseInt(part3.scienceLabsPlasticBottles || "0");
+    if (scienceBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Science Labs)", quantity: scienceBottles });
+    
+    const labEquipment = parseInt(part3.scienceLabsLabEquipment || "0");
+    if (labEquipment > 0) items.push({ type: "lab_equipment", label: "Lab Equipment", quantity: labEquipment });
+    
+    // Art Rooms
+    const artBottles = parseInt(part3.artRoomsPlasticBottles || "0");
+    if (artBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Art Rooms)", quantity: artBottles });
+    
+    const artSupplies = parseInt(part3.artRoomsArtSupplies || "0");
+    if (artSupplies > 0) items.push({ type: "art_supplies", label: "Art Supplies", quantity: artSupplies });
     
     return items;
   };
@@ -379,7 +546,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
         timeframeUnit: p.timeframeUnit as 'week' | 'month' | 'year',
         notes: p.notes || "",
       }));
-      form5.reset({ promises: formattedPromises });
+      form6.reset({ promises: formattedPromises });
     }
   }, [existingPromises]);
 
@@ -416,28 +583,86 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     },
   });
 
-  // Calculate results
+  // Calculate results (multiplied by 190 for annual figures)
   const calculateResults = () => {
     const part2Values = form2.getValues();
     const part3Values = form3.getValues();
 
-    const plasticCounts = {
-      'Plastic bottles': parseInt(part2Values.lunchroomPlasticBottles || "0") + parseInt(part2Values.staffroomPlasticBottles || "0"),
-      'Plastic cups': parseInt(part2Values.lunchroomPlasticCups || "0") + parseInt(part2Values.staffroomPlasticCups || "0"),
+    // Calculate daily counts first, then multiply by 190 for annual
+    const dailyPlasticCounts = {
+      'Plastic bottles': 
+        parseInt(part2Values.lunchroomPlasticBottles || "0") + 
+        parseInt(part2Values.staffroomPlasticBottles || "0") +
+        parseInt(part3Values.officePlasticBottles || "0") +
+        parseInt(part3Values.libraryPlasticBottles || "0") +
+        parseInt(part3Values.gymPlasticBottles || "0") +
+        parseInt(part3Values.playgroundPlasticBottles || "0") +
+        parseInt(part3Values.corridorsPlasticBottles || "0") +
+        parseInt(part3Values.scienceLabsPlasticBottles || "0") +
+        parseInt(part3Values.artRoomsPlasticBottles || "0"),
+      'Plastic cups': 
+        parseInt(part2Values.lunchroomPlasticCups || "0") + 
+        parseInt(part2Values.staffroomPlasticCups || "0") +
+        parseInt(part3Values.officePlasticCups || "0"),
       'Plastic cutlery': parseInt(part2Values.lunchroomPlasticCutlery || "0"),
       'Plastic straws': parseInt(part2Values.lunchroomPlasticStraws || "0"),
-      'Food packaging': parseInt(part2Values.lunchroomFoodPackaging || "0") + parseInt(part2Values.staffroomFoodPackaging || "0"),
+      'Snack wrappers': 
+        parseInt(part2Values.lunchroomSnackWrappers || "0") + 
+        parseInt(part2Values.staffroomSnackWrappers || "0"),
+      'Yoghurt pots': 
+        parseInt(part2Values.lunchroomYoghurtPots || "0") + 
+        parseInt(part2Values.staffroomYoghurtPots || "0"),
+      'Takeaway containers': 
+        parseInt(part2Values.lunchroomTakeawayContainers || "0") + 
+        parseInt(part2Values.staffroomTakeawayContainers || "0"),
       'Cling film': parseInt(part2Values.lunchroomClingFilm || "0"),
       'Pens & pencils': parseInt(part3Values.classroomPensPencils || "0"),
-      'Stationery items': parseInt(part3Values.classroomStationery || "0"),
-      'Display materials': parseInt(part3Values.classroomDisplayMaterials || "0"),
-      'Toys': parseInt(part3Values.classroomToys || "0"),
-      'Soap bottles': parseInt(part3Values.bathroomSoapBottles || "0"),
-      'Bin liners': parseInt(part3Values.bathroomBinLiners || "0"),
+      'Stationery items': 
+        parseInt(part3Values.classroomStationery || "0") +
+        parseInt(part3Values.officeStationery || "0") +
+        parseInt(part3Values.libraryStationery || "0"),
+      'Display materials': 
+        parseInt(part3Values.classroomDisplayMaterials || "0") +
+        parseInt(part3Values.libraryDisplayMaterials || "0") +
+        parseInt(part3Values.corridorsDisplayMaterials || "0"),
+      'Soap bottles': parseInt(part3Values.toiletSoapBottles || "0"),
+      'Bin liners': 
+        parseInt(part3Values.toiletBinLiners || "0") +
+        parseInt(part3Values.corridorsBinLiners || "0"),
+      'Toilet cups/dispensers': parseInt(part3Values.toiletCupsPaper || "0"),
+      'Period products': parseInt(part3Values.toiletPeriodProducts || "0"),
+      'Sport equipment': parseInt(part3Values.gymSportEquipment || "0"),
+      'Toys/equipment': parseInt(part3Values.playgroundToysEquipment || "0"),
+      'Lab equipment': parseInt(part3Values.scienceLabsLabEquipment || "0"),
+      'Art supplies': parseInt(part3Values.artRoomsArtSupplies || "0"),
     };
 
-    const total = Object.values(plasticCounts).reduce((sum, count) => sum + count, 0);
-    const topItems = Object.entries(plasticCounts)
+    // Group all "Other" items together
+    const otherTotal = 
+      parseInt(part2Values.lunchroomOther || "0") +
+      parseInt(part2Values.staffroomOther || "0") +
+      parseInt(part3Values.classroomOther || "0") +
+      parseInt(part3Values.toiletOther || "0") +
+      parseInt(part3Values.officeOther || "0") +
+      parseInt(part3Values.libraryOther || "0") +
+      parseInt(part3Values.gymOther || "0") +
+      parseInt(part3Values.playgroundOther || "0") +
+      parseInt(part3Values.corridorsOther || "0") +
+      parseInt(part3Values.scienceLabsOther || "0") +
+      parseInt(part3Values.artRoomsOther || "0");
+
+    if (otherTotal > 0) {
+      dailyPlasticCounts['Other plastic items'] = otherTotal;
+    }
+
+    // Multiply all counts by 190 for annual figures
+    const annualPlasticCounts: Record<string, number> = {};
+    for (const [key, value] of Object.entries(dailyPlasticCounts)) {
+      annualPlasticCounts[key] = value * 190;
+    }
+
+    const total = Object.values(annualPlasticCounts).reduce((sum, count) => sum + count, 0);
+    const topItems = Object.entries(annualPlasticCounts)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 5)
       .filter(([, count]) => count > 0);
@@ -445,7 +670,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     return {
       totalPlasticItems: total,
       topProblemPlastics: topItems.map(([name, count]) => ({ name, count })),
-      plasticCounts,
+      plasticCounts: annualPlasticCounts,
     };
   };
 
@@ -476,20 +701,23 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
   // Next step
   const handleNext = async () => {
-    const currentForm = getCurrentForm();
-    const isValid = await currentForm.trigger();
-    
-    if (!isValid) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields before continuing.",
-        variant: "destructive",
-      });
-      return;
+    // Skip validation for step 5 (results view)
+    if (currentStep !== 5) {
+      const currentForm = getCurrentForm();
+      const isValid = await currentForm.trigger();
+      
+      if (!isValid) {
+        toast({
+          title: "Validation Error",
+          description: "Please fill in all required fields before continuing.",
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     await handleSaveProgress();
-    if (currentStep < 5) {
+    if (currentStep < 6) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -501,9 +729,42 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     }
   };
 
-  // Submit audit
-  const handleSubmit = async () => {
-    const isValid = await form5.trigger();
+  // Submit audit (without promises)
+  const handleSubmitAuditOnly = async () => {
+    setIsSubmitting(true);
+    
+    try {
+      // Save audit first
+      await handleSaveProgress();
+      
+      if (!auditId) {
+        throw new Error("Audit ID not found");
+      }
+      
+      // Submit audit
+      await submitMutation.mutateAsync(auditId);
+      
+      toast({
+        title: "Audit Submitted!",
+        description: "Your plastic waste audit has been submitted for review.",
+      });
+      
+      onClose?.();
+    } catch (error) {
+      console.error("Error submitting audit:", error);
+      toast({
+        title: "Submission Error",
+        description: "There was an error submitting your audit. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Submit audit with promises
+  const handleSubmitWithPromises = async () => {
+    const isValid = await form6.trigger();
     
     if (!isValid) {
       toast({
@@ -528,7 +789,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       await submitMutation.mutateAsync(auditId);
       
       // Create promises
-      const promisesData = form5.getValues().promises;
+      const promisesData = form6.getValues().promises;
       const promisePromises = promisesData.map(promise => {
         const reductionAmount = promise.baselineQuantity - promise.targetQuantity;
         return apiRequest('POST', '/api/reduction-promises', {
@@ -572,196 +833,15 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       case 2: return form2;
       case 3: return form3;
       case 4: return form4;
-      case 5: return form5;
+      case 5: return form1; // Results view, no form
+      case 6: return form6;
       default: return form1;
     }
   };
 
-  const progress = (currentStep / 5) * 100;
+  const progress = (currentStep / 6) * 100;
 
-  // Check if audit is already submitted
-  if (existingAudit?.status === 'submitted') {
-    const part1 = existingAudit.part1Data as Part1Data | null;
-    const part2 = existingAudit.part2Data as Part2Data | null;
-    const part3 = existingAudit.part3Data as Part3Data | null;
-    const part4 = existingAudit.part4Data as Part4Data | null;
-    
-    return (
-      <Card className="border-2 border-yellow-300 bg-yellow-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-navy">
-            <ClipboardCheck className="h-6 w-6 text-yellow-600" />
-            Audit Under Review
-          </CardTitle>
-          <CardDescription className="text-gray-700">
-            Your plastic waste audit has been submitted and is currently under review by an administrator.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Accordion type="single" collapsible className="w-full bg-white rounded-lg border border-yellow-200" data-testid="accordion-audit-review">
-            <AccordionItem value="part1" className="border-b border-yellow-100">
-              <AccordionTrigger className="px-4 hover:bg-yellow-50" data-testid="accordion-trigger-part1">
-                Part 1: School Information
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4" data-testid="accordion-content-part1">
-                {part1 ? (
-                  <div className="space-y-2 text-sm">
-                    <div><strong>School Name:</strong> {part1.schoolName}</div>
-                    {part1.studentCount && <div><strong>Number of Students:</strong> {part1.studentCount}</div>}
-                    {part1.staffCount && <div><strong>Number of Staff:</strong> {part1.staffCount}</div>}
-                    <div><strong>Audit Date:</strong> {part1.auditDate}</div>
-                    {part1.auditTeam && <div><strong>Audit Team Members:</strong> {part1.auditTeam}</div>}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500">No data available</p>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="part2" className="border-b border-yellow-100">
-              <AccordionTrigger className="px-4 hover:bg-yellow-50" data-testid="accordion-trigger-part2">
-                Part 2: Lunchroom & Staffroom
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4" data-testid="accordion-content-part2">
-                {part2 ? (
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold mb-2 text-navy">Lunchroom</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>Plastic Bottles: {part2.lunchroomPlasticBottles || 0}</div>
-                        <div>Plastic Cups: {part2.lunchroomPlasticCups || 0}</div>
-                        <div>Plastic Cutlery: {part2.lunchroomPlasticCutlery || 0}</div>
-                        <div>Plastic Straws: {part2.lunchroomPlasticStraws || 0}</div>
-                        <div>Food Packaging: {part2.lunchroomFoodPackaging || 0}</div>
-                        <div>Cling Film: {part2.lunchroomClingFilm || 0}</div>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2 text-navy">Staffroom</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>Plastic Bottles: {part2.staffroomPlasticBottles || 0}</div>
-                        <div>Plastic Cups: {part2.staffroomPlasticCups || 0}</div>
-                        <div>Food Packaging: {part2.staffroomFoodPackaging || 0}</div>
-                      </div>
-                    </div>
-                    {part2.lunchroomNotes && (
-                      <div className="text-sm">
-                        <strong>Additional Notes:</strong> {part2.lunchroomNotes}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500">No data available</p>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="part3" className="border-b border-yellow-100">
-              <AccordionTrigger className="px-4 hover:bg-yellow-50" data-testid="accordion-trigger-part3">
-                Part 3: Classrooms & Bathrooms
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4" data-testid="accordion-content-part3">
-                {part3 ? (
-                  <div className="space-y-4">
-                    <div>
-                      <h4 className="font-semibold mb-2 text-navy">Classrooms</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>Pens & Pencils: {part3.classroomPensPencils || 0}</div>
-                        <div>Stationery Items: {part3.classroomStationery || 0}</div>
-                        <div>Display Materials: {part3.classroomDisplayMaterials || 0}</div>
-                        <div>Toys/Equipment: {part3.classroomToys || 0}</div>
-                      </div>
-                    </div>
-                    <div>
-                      <h4 className="font-semibold mb-2 text-navy">Bathrooms</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>Soap Bottles: {part3.bathroomSoapBottles || 0}</div>
-                        <div>Bin Liners: {part3.bathroomBinLiners || 0}</div>
-                        <div>Cups/Dispensers: {part3.bathroomCupsPaper || 0}</div>
-                      </div>
-                    </div>
-                    {part3.classroomNotes && (
-                      <div className="text-sm">
-                        <strong>Additional Notes:</strong> {part3.classroomNotes}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500">No data available</p>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-            
-            <AccordionItem value="part4" className="border-b border-yellow-100">
-              <AccordionTrigger className="px-4 hover:bg-yellow-50" data-testid="accordion-trigger-part4">
-                Part 4: Waste Management Practices
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4" data-testid="accordion-content-part4">
-                {part4 ? (
-                  <div className="space-y-3 text-sm">
-                    <div>
-                      <strong>Has Recycling Bins:</strong> {part4.hasRecyclingBins ? 'Yes' : 'No'}
-                    </div>
-                    {part4.recyclingBinLocations && (
-                      <div>
-                        <strong>Recycling Bin Locations:</strong> {part4.recyclingBinLocations}
-                      </div>
-                    )}
-                    <div>
-                      <strong>Plastic Waste Destination:</strong> {part4.plasticWasteDestination}
-                    </div>
-                    <div>
-                      <strong>Composts Organic Waste:</strong> {part4.compostsOrganicWaste ? 'Yes' : 'No'}
-                    </div>
-                    <div>
-                      <strong>Has Plastic Reduction Policy:</strong> {part4.hasPlasticReductionPolicy ? 'Yes' : 'No'}
-                    </div>
-                    {part4.reductionPolicyDetails && (
-                      <div>
-                        <strong>Policy Details:</strong> {part4.reductionPolicyDetails}
-                      </div>
-                    )}
-                    {part4.wasteManagementNotes && (
-                      <div>
-                        <strong>Additional Notes:</strong> {part4.wasteManagementNotes}
-                      </div>
-                    )}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500">No data available</p>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-
-            <AccordionItem value="promises" className="border-none">
-              <AccordionTrigger className="px-4 hover:bg-yellow-50" data-testid="accordion-trigger-promises">
-                Part 5: Reduction Promises
-              </AccordionTrigger>
-              <AccordionContent className="px-4 pb-4" data-testid="accordion-content-promises">
-                {existingPromises && existingPromises.length > 0 ? (
-                  <div className="space-y-3">
-                    {existingPromises.map((promise, idx) => (
-                      <div key={promise.id} className="bg-green-50 p-3 rounded border border-green-200 text-sm">
-                        <p className="font-semibold text-navy">{promise.plasticItemLabel}</p>
-                        <div className="mt-2 space-y-1 text-gray-700">
-                          <div>Baseline: {promise.baselineQuantity} items per {promise.timeframeUnit}</div>
-                          <div>Target: {promise.targetQuantity} items per {promise.timeframeUnit}</div>
-                          <div className="font-semibold text-green-700">Reduction: {promise.reductionAmount} items per {promise.timeframeUnit}</div>
-                          {promise.notes && <div className="mt-2 text-sm italic">{promise.notes}</div>}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                ) : (
-                  <p className="text-sm text-gray-500">No promises have been set for this audit yet.</p>
-                )}
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </CardContent>
-      </Card>
-    );
-  }
+  // Users can edit draft and submitted audits - only block editing for approved audits
 
   if (existingAudit?.status === 'approved') {
     const topPlastics = existingAudit.topProblemPlastics as Array<{ name: string; count: number }> | null;
@@ -839,12 +919,13 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               Plastic Waste Audit
             </CardTitle>
             <CardDescription>
-              Step {currentStep} of 5: {
+              Step {currentStep} of 6: {
                 currentStep === 1 ? "About Your School" :
                 currentStep === 2 ? "Lunchroom & Staffroom" :
-                currentStep === 3 ? "Classrooms & Bathrooms" :
+                currentStep === 3 ? "All Rooms" :
                 currentStep === 4 ? "Waste Management" :
-                "Action Plan"
+                currentStep === 5 ? "Audit Results" :
+                "Reduction Promises (Optional)"
               }
             </CardDescription>
           </div>
@@ -870,7 +951,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               <Upload className="h-3 w-3 mr-1" />
               {isUploading ? 'Uploading...' : 'Upload Audit'}
             </Button>
-            {currentStep === 5 && (
+            {currentStep === 6 && (
               <>
                 <Button
                   variant="outline"
@@ -997,7 +1078,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
           <Form {...form2}>
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold text-navy mb-3">Lunchroom</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Lunchroom</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form2.control}
@@ -1017,7 +1098,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomPlasticCups"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Cups</FormLabel>
+                        <FormLabel>Plastic Cups (daily count)</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-cups" />
                         </FormControl>
@@ -1030,7 +1111,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomPlasticCutlery"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Cutlery</FormLabel>
+                        <FormLabel>Plastic Cutlery (daily count)</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-cutlery" />
                         </FormControl>
@@ -1043,7 +1124,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomPlasticStraws"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Straws</FormLabel>
+                        <FormLabel>Plastic Straws (daily count)</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-straws" />
                         </FormControl>
@@ -1053,12 +1134,38 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   />
                   <FormField
                     control={form2.control}
-                    name="lunchroomFoodPackaging"
+                    name="lunchroomSnackWrappers"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Food Packaging Items</FormLabel>
+                        <FormLabel>Snack Wrappers (daily count)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} data-testid="input-lunchroom-packaging" />
+                          <Input type="number" {...field} data-testid="input-lunchroom-snack-wrappers" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="lunchroomYoghurtPots"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Yoghurt Pots (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-lunchroom-yoghurt-pots" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="lunchroomTakeawayContainers"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Takeaway Containers (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-lunchroom-takeaway-containers" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1069,7 +1176,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomClingFilm"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Cling Film Uses</FormLabel>
+                        <FormLabel>Cling Film Uses (daily count)</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-clingfilm" />
                         </FormControl>
@@ -1077,18 +1184,48 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                       </FormItem>
                     )}
                   />
+                  <FormField
+                    control={form2.control}
+                    name="lunchroomOther"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-lunchroom-other" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                 </div>
+                <FormField
+                  control={form2.control}
+                  name="lunchroomOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found in the lunchroom"
+                          data-testid="input-lunchroom-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <div>
-                <h3 className="font-semibold text-navy mb-3">Staffroom</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Staffroom</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form2.control}
                     name="staffroomPlasticBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bottles</FormLabel>
+                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-staffroom-bottles" />
                         </FormControl>
@@ -1101,7 +1238,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="staffroomPlasticCups"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Cups</FormLabel>
+                        <FormLabel>Plastic Cups (daily count)</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-staffroom-cups" />
                         </FormControl>
@@ -1111,18 +1248,74 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   />
                   <FormField
                     control={form2.control}
-                    name="staffroomFoodPackaging"
+                    name="staffroomSnackWrappers"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Food Packaging</FormLabel>
+                        <FormLabel>Snack Wrappers (daily count)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} data-testid="input-staffroom-packaging" />
+                          <Input type="number" {...field} data-testid="input-staffroom-snack-wrappers" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="staffroomYoghurtPots"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Yoghurt Pots (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-staffroom-yoghurt-pots" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="staffroomTakeawayContainers"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Takeaway Containers (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-staffroom-takeaway-containers" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form2.control}
+                    name="staffroomOther"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-staffroom-other" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+                <FormField
+                  control={form2.control}
+                  name="staffroomOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found in the staffroom"
+                          data-testid="input-staffroom-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <FormField
@@ -1146,19 +1339,20 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
           </Form>
         )}
 
-        {/* Step 3: Classrooms & Bathrooms */}
+        {/* Step 3: All Rooms */}
         {currentStep === 3 && (
           <Form {...form3}>
             <div className="space-y-6">
+              {/* Classrooms */}
               <div>
-                <h3 className="font-semibold text-navy mb-3">Classrooms</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Classrooms</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
                     name="classroomPensPencils"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Pens & Pencils</FormLabel>
+                        <FormLabel>Plastic Pens & Pencils (daily count)</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-classroom-pens" />
                         </FormControl>
@@ -1171,7 +1365,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="classroomStationery"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Stationery</FormLabel>
+                        <FormLabel>Other Plastic Stationery (daily count)</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-classroom-stationery" />
                         </FormControl>
@@ -1184,7 +1378,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="classroomDisplayMaterials"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Display Materials</FormLabel>
+                        <FormLabel>Plastic Display Materials (daily count)</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-classroom-display" />
                         </FormControl>
@@ -1194,31 +1388,49 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   />
                   <FormField
                     control={form3.control}
-                    name="classroomToys"
+                    name="classroomOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Toys/Equipment</FormLabel>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} data-testid="input-classroom-toys" />
+                          <Input type="number" {...field} data-testid="input-classroom-other" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+                <FormField
+                  control={form3.control}
+                  name="classroomOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found in classrooms"
+                          data-testid="input-classroom-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
+              {/* Toilets */}
               <div>
-                <h3 className="font-semibold text-navy mb-3">Bathrooms</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Toilets</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
-                    name="bathroomSoapBottles"
+                    name="toiletSoapBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Soap Bottles</FormLabel>
+                        <FormLabel>Plastic Soap Bottles (daily count)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} data-testid="input-bathroom-soap" />
+                          <Input type="number" {...field} data-testid="input-toilet-soap" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1226,12 +1438,12 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   />
                   <FormField
                     control={form3.control}
-                    name="bathroomBinLiners"
+                    name="toiletBinLiners"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bin Liners</FormLabel>
+                        <FormLabel>Plastic Bin Liners (daily count)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} data-testid="input-bathroom-binliners" />
+                          <Input type="number" {...field} data-testid="input-toilet-binliners" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1239,18 +1451,541 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   />
                   <FormField
                     control={form3.control}
-                    name="bathroomCupsPaper"
+                    name="toiletCupsPaper"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Cups/Dispensers</FormLabel>
+                        <FormLabel>Plastic Cups/Dispensers (daily count)</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} data-testid="input-bathroom-cups" />
+                          <Input type="number" {...field} data-testid="input-toilet-cups" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="toiletPeriodProducts"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Period Product Dispensers (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-toilet-period-products" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="toiletOther"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-toilet-other" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
                     )}
                   />
                 </div>
+                <FormField
+                  control={form3.control}
+                  name="toiletOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found in toilets"
+                          data-testid="input-toilet-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Office */}
+              <div>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Office</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form3.control}
+                    name="officePlasticBottles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-office-bottles" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="officePlasticCups"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Cups (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-office-cups" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="officeStationery"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Stationery Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-office-stationery" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="officeOther"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-office-other" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form3.control}
+                  name="officeOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found in the office"
+                          data-testid="input-office-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Library */}
+              <div>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Library</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form3.control}
+                    name="libraryPlasticBottles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-library-bottles" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="libraryStationery"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Stationery Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-library-stationery" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="libraryDisplayMaterials"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Display Materials (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-library-display" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="libraryOther"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-library-other" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form3.control}
+                  name="libraryOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found in the library"
+                          data-testid="input-library-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Gym */}
+              <div>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Gym</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form3.control}
+                    name="gymPlasticBottles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-gym-bottles" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="gymSportEquipment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Sport Equipment (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-gym-sport-equipment" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="gymOther"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-gym-other" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form3.control}
+                  name="gymOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found in the gym"
+                          data-testid="input-gym-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Playground */}
+              <div>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Playground</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form3.control}
+                    name="playgroundPlasticBottles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-playground-bottles" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="playgroundToysEquipment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Toys/Equipment (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-playground-toys-equipment" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="playgroundOther"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-playground-other" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form3.control}
+                  name="playgroundOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found on the playground"
+                          data-testid="input-playground-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Corridors */}
+              <div>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Corridors</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form3.control}
+                    name="corridorsPlasticBottles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-corridors-bottles" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="corridorsDisplayMaterials"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Display Materials (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-corridors-display" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="corridorsBinLiners"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Bin Liners (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-corridors-binliners" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="corridorsOther"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-corridors-other" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form3.control}
+                  name="corridorsOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found in corridors"
+                          data-testid="input-corridors-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Science Labs */}
+              <div>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Science Labs</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form3.control}
+                    name="scienceLabsPlasticBottles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-science-labs-bottles" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="scienceLabsLabEquipment"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Lab Equipment (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-science-labs-equipment" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="scienceLabsOther"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-science-labs-other" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form3.control}
+                  name="scienceLabsOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found in science labs"
+                          data-testid="input-science-labs-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+
+              {/* Art Rooms */}
+              <div>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Art Rooms</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form3.control}
+                    name="artRoomsPlasticBottles"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-art-rooms-bottles" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="artRoomsArtSupplies"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Art Supplies (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-art-rooms-supplies" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form3.control}
+                    name="artRoomsOther"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormControl>
+                          <Input type="number" {...field} data-testid="input-art-rooms-other" />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+                <FormField
+                  control={form3.control}
+                  name="artRoomsOtherDescription"
+                  render={({ field }) => (
+                    <FormItem className="mt-4">
+                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          {...field} 
+                          placeholder="List any other plastic items found in art rooms"
+                          data-testid="input-art-rooms-other-description"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
               </div>
 
               <FormField
@@ -1262,7 +1997,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     <FormControl>
                       <Textarea 
                         {...field} 
-                        placeholder="Any observations about plastic use in classrooms/bathrooms?"
+                        placeholder="Any observations about plastic use across all rooms?"
                         data-testid="input-classroom-notes"
                       />
                     </FormControl>
@@ -1274,11 +2009,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
           </Form>
         )}
 
-        {/* Step 4: Waste Management & Results */}
+        {/* Step 4: Waste Management */}
         {currentStep === 4 && (
           <Form {...form4}>
             <div className="space-y-6">
-              <h3 className="font-semibold text-navy mb-3">Waste Management Practices</h3>
+              <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Waste Management Practices</h3>
               
               <FormField
                 control={form4.control}
@@ -1410,36 +2145,104 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   </FormItem>
                 )}
               />
-
-              {/* Results Preview */}
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200 mt-6">
-                <h4 className="font-semibold text-navy mb-2">Audit Results Preview</h4>
-                <p className="text-sm text-gray-600 mb-3">
-                  Based on your responses, here's a summary of plastic use in your school:
-                </p>
-                <div className="bg-white p-3 rounded">
-                  <p className="text-sm font-semibold text-gray-700">
-                    Total Plastic Items: <span className="text-blue-600">{calculateResults().totalPlasticItems}</span>
-                  </p>
-                  {calculateResults().topProblemPlastics.length > 0 && (
-                    <div className="mt-2">
-                      <p className="text-sm font-semibold text-gray-700 mb-1">Top Problem Areas:</p>
-                      <ul className="text-sm text-gray-600 space-y-1">
-                        {calculateResults().topProblemPlastics.map((item, idx) => (
-                          <li key={idx}>• {item.name}: {item.count}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           </Form>
         )}
 
-        {/* Step 5: Reduction Promises */}
+        {/* Step 5: Audit Results */}
         {currentStep === 5 && (
-          <Form {...form5}>
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-lg border-2 border-blue-300 shadow-lg">
+              <h3 className="font-bold text-2xl text-navy mb-4 flex items-center gap-2">
+                <CheckCircle className="h-6 w-6 text-green-600" />
+                Audit Results
+              </h3>
+              <p className="text-gray-700 mb-4">
+                Based on your daily counts, here's your school's estimated annual plastic consumption (190 school days per year):
+              </p>
+              
+              <div className="bg-white p-5 rounded-lg shadow-md mb-6">
+                <div className="text-center mb-4">
+                  <p className="text-sm text-gray-600 uppercase tracking-wide font-semibold">Total Annual Plastic Items</p>
+                  <p className="text-5xl font-bold text-blue-600 my-2" data-testid="text-total-plastic-items">
+                    {calculateResults().totalPlasticItems.toLocaleString()}
+                  </p>
+                  <p className="text-xs text-gray-500">items per year</p>
+                </div>
+
+                {calculateResults().topProblemPlastics.length > 0 && (
+                  <div className="mt-6">
+                    <h4 className="font-semibold text-gray-800 mb-3 text-center">Top 5 Problem Plastics</h4>
+                    <div className="h-64 mb-4">
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={calculateResults().topProblemPlastics.map((item, idx) => ({
+                              name: item.name,
+                              value: item.count,
+                            }))}
+                            cx="50%"
+                            cy="50%"
+                            labelLine={false}
+                            label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
+                            outerRadius={80}
+                            fill="#8884d8"
+                            dataKey="value"
+                          >
+                            {calculateResults().topProblemPlastics.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8B5CF6'][index % 5]} />
+                            ))}
+                          </Pie>
+                          <Tooltip formatter={(value: number) => value.toLocaleString()} />
+                          <Legend />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    </div>
+                    <div className="grid grid-cols-1 gap-2">
+                      {calculateResults().topProblemPlastics.map((item, idx) => (
+                        <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded" data-testid={`result-item-${idx}`}>
+                          <span className="text-sm font-medium text-gray-700">{item.name}</span>
+                          <span className="text-sm font-bold text-blue-600">{item.count.toLocaleString()}/year</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="bg-yellow-50 border border-yellow-200 rounded p-4 mb-4">
+                <p className="text-sm text-gray-700">
+                  <strong>What's Next?</strong> You can submit your audit now, or continue to create reduction promises to show how you plan to reduce plastic waste.
+                </p>
+              </div>
+
+              <div className="flex gap-3 flex-col sm:flex-row">
+                <Button
+                  onClick={handleSubmitAuditOnly}
+                  disabled={isSubmitting}
+                  className="flex-1 bg-green-600 hover:bg-green-700"
+                  data-testid="button-submit-audit-now"
+                >
+                  <Send className="h-4 w-4 mr-2" />
+                  {isSubmitting ? 'Submitting...' : 'Submit Audit Now'}
+                </Button>
+                <Button
+                  onClick={handleNext}
+                  variant="outline"
+                  className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50"
+                  data-testid="button-continue-to-promises"
+                >
+                  Continue to Add Promises
+                  <ChevronRight className="h-4 w-4 ml-2" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 6: Reduction Promises (Optional) */}
+        {currentStep === 6 && (
+          <Form {...form6}>
             <div className="space-y-6">
               <div>
                 <h3 className="text-lg font-semibold text-navy mb-2">Your Reduction Promises</h3>
@@ -1647,49 +2450,51 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
         )}
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between pt-4 border-t">
-          <div>
-            {currentStep > 1 && (
+        {currentStep !== 5 && (
+          <div className="flex justify-between pt-4 border-t">
+            <div>
+              {currentStep > 1 && (
+                <Button
+                  variant="outline"
+                  onClick={handlePrevious}
+                  data-testid="button-previous"
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Previous
+                </Button>
+              )}
+            </div>
+            <div className="flex gap-2">
               <Button
                 variant="outline"
-                onClick={handlePrevious}
-                data-testid="button-previous"
+                onClick={handleSaveProgress}
+                disabled={saveMutation.isPending}
+                data-testid="button-save-progress"
               >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                Previous
+                <Save className="h-4 w-4 mr-1" />
+                Save Progress
               </Button>
-            )}
+              {currentStep < 6 ? (
+                <Button
+                  onClick={handleNext}
+                  data-testid="button-next"
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              ) : (
+                <Button
+                  onClick={handleSubmitWithPromises}
+                  disabled={isSubmitting || submitMutation.isPending}
+                  data-testid="button-submit-audit"
+                >
+                  <Send className="h-4 w-4 mr-1" />
+                  Submit for Review
+                </Button>
+              )}
+            </div>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant="outline"
-              onClick={handleSaveProgress}
-              disabled={saveMutation.isPending}
-              data-testid="button-save-progress"
-            >
-              <Save className="h-4 w-4 mr-1" />
-              Save Progress
-            </Button>
-            {currentStep < 5 ? (
-              <Button
-                onClick={handleNext}
-                data-testid="button-next"
-              >
-                Next
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            ) : (
-              <Button
-                onClick={handleSubmit}
-                disabled={isSubmitting || submitMutation.isPending}
-                data-testid="button-submit-audit"
-              >
-                <Send className="h-4 w-4 mr-1" />
-                Submit for Review
-              </Button>
-            )}
-          </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
