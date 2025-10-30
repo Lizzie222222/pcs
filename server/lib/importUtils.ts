@@ -421,3 +421,27 @@ export function generateRelationshipTemplate(): string {
   
   return `${headers.join(',')}\n${example.join(',')}\n`;
 }
+
+/**
+ * Map legacy evidence data from WordPress CSV
+ */
+export function mapLegacyEvidenceFields(row: Record<string, any>): {
+  email: string;
+  schoolName: string;
+  stage1: string;
+  stage2: string;
+  stage3: string;
+} {
+  const normalized: Record<string, string> = {};
+  Object.keys(row).forEach(key => {
+    normalized[normalizeColumnName(key)] = row[key];
+  });
+  
+  return {
+    email: (normalized.user_email || normalized.email || '').toLowerCase().trim(),
+    schoolName: normalized.school_name || '',
+    stage1: normalized.stage_1 || '',
+    stage2: normalized.stage_2 || '',
+    stage3: normalized.stage_3 || '',
+  };
+}

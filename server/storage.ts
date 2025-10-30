@@ -251,6 +251,7 @@ export interface IStorage {
   updateSchoolUserRole(schoolId: string, userId: string, role: 'head_teacher' | 'teacher' | 'pending_teacher'): Promise<SchoolUser | undefined>;
   removeUserFromSchool(schoolId: string, userId: string): Promise<SchoolUser | undefined>;
   getSchoolUsersWithDetails(schoolId: string, filters?: { role?: string; limit?: number; offset?: number }): Promise<Array<SchoolUser & { user: User | null }>>;
+  updateLegacyEvidenceCount(schoolId: string, userId: string, count: number): Promise<SchoolUser | undefined>;
 
   // Teacher invitation operations  
   createTeacherInvitation(invitation: InsertTeacherInvitation): Promise<TeacherInvitation>;
@@ -1890,6 +1891,22 @@ export class DatabaseStorage implements IStorage {
     }
 
     return await query;
+  }
+
+  async updateLegacyEvidenceCount(
+    schoolId: string,
+    userId: string,
+    count: number
+  ): Promise<SchoolUser | undefined> {
+    const [schoolUser] = await db
+      .update(schoolUsers)
+      .set({ 
+        legacyEvidenceCount: count,
+        updatedAt: sql`NOW()`
+      })
+      .where(and(eq(schoolUsers.schoolId, schoolId), eq(schoolUsers.userId, userId)))
+      .returning();
+    return schoolUser;
   }
 
   // Teacher invitation operations
