@@ -99,7 +99,13 @@
     "postal_code_label": "Ταχυδρομικός Κώδικας *",
     "postal_code_placeholder": "Εισάγετε τον ταχυδρομικό κώδικα",
     "button_cancel": "Ακύρωση",
-    "button_next_about_you": "Επόμενο: Σχετικά με Εσάς"
+    "button_next_about_you": "Επόμενο: Σχετικά με Εσάς",
+    "admin_email_tooltip": "Επίσημη διεύθυνση email του σχολείου για διοικητικούς σκοπούς",
+    "age_under_5": "Κάτω από 5",
+    "terms_of_service_link": "Όρους Υπηρεσίας",
+    "privacy_policy_link": "Πολιτική Απορρήτου",
+    "gdpr_consent_description_start": "Συναινώ στην επεξεργασία των προσωπικών μου δεδομένων σύμφωνα με την",
+    "gdpr_consent_description_end": "και τους κανονισμούς GDPR"
   },
   "evidence_submission": {
     "title": "Υποβολή Αποδεικτικών",
@@ -207,7 +213,8 @@
     "referral_website": "Άρθρο Ιστοσελίδας/Blog",
     "referral_other": "Άλλο",
     "button_back": "Πίσω",
-    "button_next_student_info": "Επόμενο: Πληροφορίες Μαθητών"
+    "button_next_student_info": "Επόμενο: Πληροφορίες Μαθητών",
+    "email_tooltip": "Email που χρησιμοποιείται για σύνδεση και επικοινωνία"
   },
   "student_info": {
     "section_title": "Σχετικά με τους Μαθητές σας",
@@ -218,6 +225,7 @@
     "student_count_max": "Επιτρέπονται έως 10.000 μαθητές",
     "age_ranges_label": "Ηλικιακές Ομάδες / Τάξεις *",
     "age_ranges_description": "Επιλέξτε όλα όσα ισχύουν για το σχολείο σας",
+    "student_count_tooltip": "Κατά προσέγγιση αριθμός μαθητών που συμμετέχουν σε δραστηριότητες του Plastic Clever Schools",
     "age_ranges_min": "Παρακαλώ επιλέξτε τουλάχιστον μία ηλικιακή ομάδα",
     "button_back": "Πίσω",
     "button_submit": "Ολοκλήρωση Εγγραφής",
