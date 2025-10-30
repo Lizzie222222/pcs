@@ -4,6 +4,16 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
+**October 30, 2025**: Resource page tag display enhancement
+- **Added unified tag display to resource cards**: Language is now displayed as a tag alongside other resource tags for consistent categorization.
+  - Language displays as the first tag with teal badge styling (e.g., #English, #Spanish)
+  - Additional resource tags display after the language tag (up to 3 tags shown)
+  - Tags use consistent teal badge styling matching case study tags: `bg-teal/5 text-teal border-teal/20`
+  - Tags appear in a dedicated row after the stage badge and before the resource title
+  - Replaced separate language text with file type indicator in the footer area
+  - Added `tags` field to Resource TypeScript interface for type safety
+  - Verified implementation with automated end-to-end tests
+
 **October 30, 2025**: Map page country name display fix
 - **Fixed country codes displaying instead of full names on map page**: Expanded the country code mapping to include all ISO 3166-1 alpha-2 codes used in the database.
   - Added missing country mappings including Jamaica (JM), Venezuela (VE), Dominica (DM), United Arab Emirates (AE), Albania (AL), Serbia (RS), Russia (RU), and many others
