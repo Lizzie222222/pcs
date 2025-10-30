@@ -147,7 +147,7 @@ interface Resource {
   fileType: string | null;
   fileSize: number | null;
   downloadCount: number;
-  visibility: 'public' | 'registered';
+  visibility: 'public' | 'private';
   isActive: boolean;
   createdAt: string;
   updatedAt: string;

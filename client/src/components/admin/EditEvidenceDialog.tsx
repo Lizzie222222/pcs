@@ -55,7 +55,7 @@ export function EditEvidenceDialog({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [stage, setStage] = useState<"inspire" | "investigate" | "act">("inspire");
-  const [visibility, setVisibility] = useState<"public" | "registered">("registered");
+  const [visibility, setVisibility] = useState<"public" | "private">("private");
   const [videoLinks, setVideoLinks] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<EvidenceFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -238,7 +238,7 @@ export function EditEvidenceDialog({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="public">Public</SelectItem>
-                  <SelectItem value="registered">Registered</SelectItem>
+                  <SelectItem value="private">Private</SelectItem>
                 </SelectContent>
               </Select>
             </div>

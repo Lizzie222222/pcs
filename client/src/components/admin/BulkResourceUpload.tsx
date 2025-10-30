@@ -34,7 +34,7 @@ interface UploadedResource {
   country: string | null;
   resourceType: string | null;
   theme: string | null;
-  visibility: 'public' | 'registered';
+  visibility: 'public' | 'private';
   isActive: boolean;
   fileUrl: string;
   fileType: string;
@@ -43,7 +43,7 @@ interface UploadedResource {
 
 interface BatchEditState {
   stage?: 'inspire' | 'investigate' | 'act';
-  visibility?: 'public' | 'registered';
+  visibility?: 'public' | 'private';
   resourceType?: string;
   theme?: string;
   ageRange?: string;
@@ -667,7 +667,7 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                           </SelectTrigger>
                           <SelectContent>
                             <SelectItem value="public">Public</SelectItem>
-                            <SelectItem value="registered">Registered Only</SelectItem>
+                            <SelectItem value="private">Private</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -907,7 +907,7 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
                                 </SelectTrigger>
                                 <SelectContent>
                                   <SelectItem value="public">Public</SelectItem>
-                                  <SelectItem value="registered">Registered</SelectItem>
+                                  <SelectItem value="private">Private</SelectItem>
                                 </SelectContent>
                               </Select>
                             </td>

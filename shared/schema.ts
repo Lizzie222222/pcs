@@ -71,7 +71,7 @@ export const evidenceStatusEnum = pgEnum('evidence_status', [
 
 export const visibilityEnum = pgEnum('visibility', [
   'public',
-  'registered'
+  'private'
 ]);
 
 export const resourceTypeEnum = pgEnum('resource_type', [

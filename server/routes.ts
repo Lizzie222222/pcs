@@ -375,9 +375,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Resource not found" });
       }
       
-      // Check if user is authenticated for registered-only resources
+      // Check if user is authenticated for private resources
       const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
-      if (resource.visibility === 'registered' && !isAuthenticated) {
+      if (resource.visibility === 'private' && !isAuthenticated) {
         return res.status(403).json({ message: "Authentication required to access this resource" });
       }
       
@@ -952,7 +952,8 @@ Return JSON with:
       // Fetch approved evidence
       if (shouldFetchEvidence) {
         // Determine visibility based on authentication
-        const visibilityFilter = isAuthenticated ? 'registered' : 'public';
+        // For private evidence, ACL rules will be enforced at file access level
+        const visibilityFilter = isAuthenticated ? 'private' : 'public';
         
         const evidenceList = await storage.getApprovedEvidenceForInspiration({
           stage: stage as string,
@@ -2720,7 +2721,7 @@ Return JSON with:
       // Build filters
       const filters: any = { schoolId: targetSchoolId };
       if (status) filters.status = status as 'pending' | 'approved' | 'rejected';
-      if (visibility) filters.visibility = visibility as 'public' | 'registered';
+      if (visibility) filters.visibility = visibility as 'public' | 'private';
 
       // Get evidence with school data (includes photo consent status)
       let evidence = await storage.getAllEvidence(filters);
@@ -3460,23 +3461,23 @@ Return JSON with:
       
       // Check access permissions
       if (aclPolicy?.visibility !== 'public') {
-        // If no ACL policy is set OR ACL is registered, check if this is a public evidence file (fallback for legacy/inconsistent data)
-        if (!aclPolicy || aclPolicy?.visibility === 'registered') {
+        // If no ACL policy is set OR ACL is private/registered (legacy), check if this is a public evidence file (fallback for legacy/inconsistent data)
+        if (!aclPolicy || aclPolicy?.visibility === 'private' || aclPolicy?.visibility === 'registered') {
           const pathParts = normalizedPath.split('/');
           const fileId = pathParts[pathParts.length - 1];
           
           // Check if this file is in an approved public evidence record
           try {
-            // Check both public and registered evidence
+            // Check both public and private evidence
             const publicEvidence = await storage.getApprovedEvidenceForInspiration({
               visibility: 'public',
               limit: 1000,
             });
-            const registeredEvidence = await storage.getApprovedEvidenceForInspiration({
-              visibility: 'registered',
+            const privateEvidence = await storage.getApprovedEvidenceForInspiration({
+              visibility: 'private',
               limit: 1000,
             });
-            const allEvidence = [...publicEvidence, ...registeredEvidence];
+            const allEvidence = [...publicEvidence, ...privateEvidence];
             
             console.log(`[ACL Fallback] Checking file ${fileId} against ${allEvidence.length} evidence records`);
             
@@ -10106,13 +10107,7 @@ Return JSON with:
       
       const validatedUpdates = updateSchema.parse({ altText, description, visibility });
       
-      // Map 'private' to 'registered' for database visibility enum
-      const updates: any = {
-        ...validatedUpdates,
-        visibility: validatedUpdates.visibility === 'private' ? 'registered' : validatedUpdates.visibility
-      };
-      
-      const updatedAsset = await storage.updateMediaAssetMetadata(id, updates);
+      const updatedAsset = await storage.updateMediaAssetMetadata(id, validatedUpdates);
       res.json(updatedAsset);
     } catch (error: any) {
       console.error('Error updating media asset:', error);

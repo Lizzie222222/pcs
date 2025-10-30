@@ -320,7 +320,7 @@
       "helpText": {
         "languageSelection": "Selecteer alle talen waarin deze bron beschikbaar is",
         "visibilityPublic": "Deze bron zal zichtbaar zijn voor alle sitebezoekers",
-        "visibilityRegistered": "Deze bron zal alleen zichtbaar zijn voor geregistreerde scholen",
+        "visibilityPrivate": "Deze bron zal alleen zichtbaar zijn voor uw school en admin beoordelaars",
         "uploadInstructions": "Upload een bronbestand (PDF, DOC, PPT, XLS, enz.)",
         "maxFileSize": "Maximale bestandsgrootte: 150MB",
         "replaceInstructions": "Je kunt het bestand vervangen terwijl je dezelfde bron behoudt, of het volledig verwijderen.",
@@ -343,8 +343,8 @@
     "visibility": {
       "public": "Publiek (zichtbaar voor iedereen)",
       "publicShort": "Publiek",
-      "registered": "Alleen Geregistreerd (vereist login)",
-      "registeredShort": "Alleen Geregistreerd"
+      "private": "Privé (alleen uw school en beheerders)",
+      "privateShort": "Privé"
     },
     "resourceTypes": {
       "lessonPlan": "Lesplan",

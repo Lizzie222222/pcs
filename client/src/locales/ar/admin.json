@@ -320,7 +320,7 @@
       "helpText": {
         "languageSelection": "اختر جميع اللغات التي يتوفر بها هذا المورد",
         "visibilityPublic": "سيكون هذا المورد مرئياً لجميع زوار الموقع",
-        "visibilityRegistered": "سيكون هذا المورد مرئياً فقط للمدارس المسجلة",
+        "visibilityPrivate": "سيكون هذا المورد مرئياً فقط لمدرستك ومراجعي الإدارة",
         "uploadInstructions": "تحميل ملف مورد (PDF، DOC، PPT، XLS، إلخ)",
         "maxFileSize": "الحد الأقصى لحجم الملف: 150 ميجابايت",
         "replaceInstructions": "يمكنك استبدال الملف مع الاحتفاظ بنفس المورد، أو إزالته بالكامل.",
@@ -343,8 +343,8 @@
     "visibility": {
       "public": "عام (مرئي للجميع)",
       "publicShort": "عام",
-      "registered": "للمسجلين فقط (يتطلب تسجيل الدخول)",
-      "registeredShort": "للمسجلين فقط"
+      "private": "خاص (مدرستك والمسؤولون فقط)",
+      "privateShort": "خاص"
     },
     "resourceTypes": {
       "lessonPlan": "خطة درس",

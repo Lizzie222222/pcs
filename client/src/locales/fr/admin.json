@@ -320,7 +320,7 @@
       "helpText": {
         "languageSelection": "Sélectionnez toutes les langues dans lesquelles cette ressource est disponible",
         "visibilityPublic": "Cette ressource sera visible pour tous les visiteurs du site web",
-        "visibilityRegistered": "Cette ressource ne sera visible que pour les écoles enregistrées",
+        "visibilityPrivate": "Cette ressource ne sera visible que pour votre école et les réviseurs administrateurs",
         "uploadInstructions": "Télécharger un fichier de ressource (PDF, DOC, PPT, XLS, etc.)",
         "maxFileSize": "Taille maximale du fichier : 150 Mo",
         "replaceInstructions": "Vous pouvez remplacer le fichier tout en conservant la même ressource, ou le supprimer entièrement.",
@@ -343,8 +343,8 @@
     "visibility": {
       "public": "Public (visible par tous)",
       "publicShort": "Public",
-      "registered": "Enregistrés Uniquement (connexion requise)",
-      "registeredShort": "Enregistrés Uniquement"
+      "private": "Privé (uniquement votre école et les administrateurs)",
+      "privateShort": "Privé"
     },
     "resourceTypes": {
       "lessonPlan": "Plan de Leçon",

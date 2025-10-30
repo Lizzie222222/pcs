@@ -320,7 +320,7 @@
       "helpText": {
         "languageSelection": "Wählen Sie alle Sprachen aus, in denen diese Ressource verfügbar ist",
         "visibilityPublic": "Diese Ressource wird für alle Website-Besucher sichtbar sein",
-        "visibilityRegistered": "Diese Ressource wird nur für registrierte Schulen sichtbar sein",
+        "visibilityPrivate": "Diese Ressource wird nur für Ihre Schule und Admin-Prüfer sichtbar sein",
         "uploadInstructions": "Laden Sie eine Ressourcendatei hoch (PDF, DOC, PPT, XLS usw.)",
         "maxFileSize": "Maximale Dateigröße: 150 MB",
         "replaceInstructions": "Sie können die Datei ersetzen, während Sie dieselbe Ressource beibehalten, oder sie vollständig entfernen.",
@@ -343,8 +343,8 @@
     "visibility": {
       "public": "Öffentlich (für alle sichtbar)",
       "publicShort": "Öffentlich",
-      "registered": "Nur Registrierte (Login erforderlich)",
-      "registeredShort": "Nur Registrierte"
+      "private": "Privat (nur Ihre Schule und Administratoren)",
+      "privateShort": "Privat"
     },
     "resourceTypes": {
       "lessonPlan": "Unterrichtsplan",

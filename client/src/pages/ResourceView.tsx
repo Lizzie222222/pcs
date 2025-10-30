@@ -59,7 +59,7 @@ interface Resource {
   fileType: string;
   fileSize: number;
   downloadCount: number;
-  visibility: 'public' | 'registered';
+  visibility: 'public' | 'private';
   createdAt: string;
 }
 
@@ -197,8 +197,8 @@ export default function ResourceView() {
   const handleDownload = async () => {
     if (!resource) return;
 
-    // Require authentication for registered-only resources
-    if (resource.visibility === 'registered' && !isAuthenticated) {
+    // Require authentication for private resources
+    if (resource.visibility === 'private' && !isAuthenticated) {
       alert(t('register_to_access') || 'Please register or log in to access this resource');
       navigate('/login');
       return;
@@ -291,7 +291,7 @@ export default function ResourceView() {
   }
 
   const isPdf = resource.fileType?.includes('pdf');
-  const isLocked = resource.visibility === 'registered' && !isAuthenticated;
+  const isLocked = resource.visibility === 'private' && !isAuthenticated;
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white pt-24">

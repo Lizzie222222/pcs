@@ -64,7 +64,7 @@ interface Resource {
   fileType: string;
   fileSize: number;
   downloadCount: number;
-  visibility: 'public' | 'registered';
+  visibility: 'public' | 'private';
   createdAt: string;
 }
 
@@ -74,7 +74,7 @@ interface ResourcePack {
   description: string;
   stage: 'inspire' | 'investigate' | 'act';
   theme?: string;
-  visibility: 'public' | 'registered';
+  visibility: 'public' | 'private';
   downloadCount: number;
   resourceCount: number;
   createdAt: string;
@@ -222,8 +222,8 @@ export default function Resources() {
   };
 
   const handleDownload = async (resourceId: string, fileUrl: string, title: string, visibility: string) => {
-    // Require authentication for registered-only resources
-    if (visibility === 'registered' && !isAuthenticated) {
+    // Require authentication for private resources
+    if (visibility === 'private' && !isAuthenticated) {
       alert(t('register_to_access') || 'Please register or log in to access this resource');
       return;
     }
@@ -421,7 +421,7 @@ export default function Resources() {
   const ResourceCard = ({ resource }: { resource: Resource }) => {
     const isNew = isNewResource(resource.createdAt);
     const isRecommended = isRecommendedResource(resource.stage);
-    const isLocked = resource.visibility === 'registered' && !isAuthenticated;
+    const isLocked = resource.visibility === 'private' && !isAuthenticated;
 
     return (
       <Card 
@@ -560,7 +560,7 @@ export default function Resources() {
   const ResourcePackCard = ({ pack }: { pack: ResourcePack }) => {
     const isNew = isNewResource(pack.createdAt);
     const isRecommended = isRecommendedResource(pack.stage);
-    const isLocked = pack.visibility === 'registered' && !isAuthenticated;
+    const isLocked = pack.visibility === 'private' && !isAuthenticated;
 
     return (
       <Card 

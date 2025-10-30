@@ -320,7 +320,7 @@
       "helpText": {
         "languageSelection": "Selecione todos os idiomas em que este recurso está disponível",
         "visibilityPublic": "Este recurso será visível para todos os visitantes do site",
-        "visibilityRegistered": "Este recurso será visível apenas para escolas registradas",
+        "visibilityPrivate": "Este recurso será visível apenas para sua escola e revisores administradores",
         "uploadInstructions": "Carregue um arquivo de recurso (PDF, DOC, PPT, XLS, etc.)",
         "maxFileSize": "Tamanho máximo do arquivo: 150MB",
         "replaceInstructions": "Você pode substituir o arquivo mantendo o mesmo recurso, ou removê-lo completamente.",
@@ -343,8 +343,8 @@
     "visibility": {
       "public": "Público (visível para todos)",
       "publicShort": "Público",
-      "registered": "Apenas Registrados (requer login)",
-      "registeredShort": "Apenas Registrados"
+      "private": "Privado (apenas sua escola e administradores)",
+      "privateShort": "Privado"
     },
     "resourceTypes": {
       "lessonPlan": "Plano de Aula",

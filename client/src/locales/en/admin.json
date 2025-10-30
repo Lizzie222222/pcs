@@ -324,7 +324,7 @@
       "helpText": {
         "languageSelection": "Select all languages in which this resource is available",
         "visibilityPublic": "This resource will be visible to all website visitors",
-        "visibilityRegistered": "This resource will only be visible to registered schools",
+        "visibilityPrivate": "This resource will only be visible to your school and admin reviewers",
         "uploadInstructions": "Upload a resource file (PDF, DOC, PPT, XLS, etc.)",
         "maxFileSize": "Maximum file size: 150MB",
         "replaceInstructions": "You can replace the file while keeping the same resource, or remove it entirely.",
@@ -347,8 +347,8 @@
     "visibility": {
       "public": "Public (visible to everyone)",
       "publicShort": "Public",
-      "registered": "Registered Only (requires login)",
-      "registeredShort": "Registered Only"
+      "private": "Private (only your school and admins)",
+      "privateShort": "Private"
     },
     "resourceTypes": {
       "lessonPlan": "Lesson Plan",

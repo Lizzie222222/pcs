@@ -55,7 +55,7 @@ interface ResourcePack {
   description: string | null;
   stage: 'inspire' | 'investigate' | 'act';
   theme: string | null;
-  visibility: 'public' | 'registered';
+  visibility: 'public' | 'private';
   isActive: boolean;
   downloadCount: number;
   createdBy: string;
@@ -487,7 +487,7 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="public">Public (visible to everyone)</SelectItem>
-                    <SelectItem value="registered">Registered Only (requires login)</SelectItem>
+                    <SelectItem value="private">Private (requires login)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -790,7 +790,7 @@ export default function ResourcePackManagement() {
                 <SelectContent>
                   <SelectItem value="all">All Visibility</SelectItem>
                   <SelectItem value="public">Public</SelectItem>
-                  <SelectItem value="registered">Registered Only</SelectItem>
+                  <SelectItem value="private">Private</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -858,7 +858,7 @@ export default function ResourcePackManagement() {
                             className="text-xs"
                             data-testid={`text-pack-visibility-${pack.id}`}
                           >
-                            {pack.visibility === 'public' ? 'Public' : 'Registered'}
+                            {pack.visibility === 'public' ? 'Public' : 'Private'}
                           </Badge>
                         </td>
                         <td className="p-3">

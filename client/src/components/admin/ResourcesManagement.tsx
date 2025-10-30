@@ -43,7 +43,7 @@ interface Resource {
   fileType: string | null;
   fileSize: number | null;
   downloadCount: number;
-  visibility: 'public' | 'registered';
+  visibility: 'public' | 'private';
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
@@ -501,7 +501,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="public">Public (visible to everyone)</SelectItem>
-                  <SelectItem value="registered">Registered Only (requires login)</SelectItem>
+                  <SelectItem value="private">Private (requires login)</SelectItem>
                 </SelectContent>
               </Select>
               <p className="text-xs text-gray-500 mt-1">
@@ -1107,7 +1107,7 @@ export default function ResourcesManagement() {
               <SelectContent>
                 <SelectItem value="all">All Visibility</SelectItem>
                 <SelectItem value="public">Public</SelectItem>
-                <SelectItem value="registered">Registered Only</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
               </SelectContent>
             </Select>
             <Select 
@@ -1235,7 +1235,7 @@ export default function ResourcesManagement() {
                         className={resource.visibility === 'public' ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'}
                         data-testid={`badge-visibility-${resource.id}`}
                       >
-                        {resource.visibility === 'public' ? 'Public' : 'Registered Only'}
+                        {resource.visibility === 'public' ? 'Public' : 'Private'}
                       </Badge>
                     </td>
                     <td className="px-2 py-3 text-gray-600">{resource.country || 'Global'}</td>

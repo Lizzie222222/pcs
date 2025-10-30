@@ -320,7 +320,7 @@
       "helpText": {
         "languageSelection": "이 리소스가 제공되는 모든 언어 선택",
         "visibilityPublic": "이 리소스는 모든 웹사이트 방문자에게 표시됩니다",
-        "visibilityRegistered": "이 리소스는 등록된 학교에만 표시됩니다",
+        "visibilityPrivate": "이 리소스는 귀하의 학교 및 관리자 검토자에게만 표시됩니다",
         "uploadInstructions": "리소스 파일 업로드 (PDF, DOC, PPT, XLS 등)",
         "maxFileSize": "최대 파일 크기: 150MB",
         "replaceInstructions": "동일한 리소스를 유지하면서 파일을 교체하거나 완전히 제거할 수 있습니다.",
@@ -343,8 +343,8 @@
     "visibility": {
       "public": "공개 (모두에게 표시)",
       "publicShort": "공개",
-      "registered": "등록된 사용자만 (로그인 필요)",
-      "registeredShort": "등록된 사용자만"
+      "private": "비공개 (학교 및 관리자만)",
+      "privateShort": "비공개"
     },
     "resourceTypes": {
       "lessonPlan": "수업 계획",

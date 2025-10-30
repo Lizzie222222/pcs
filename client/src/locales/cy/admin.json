@@ -393,7 +393,7 @@
       "helpText": {
         "languageSelection": "Dewis yr holl ieithoedd y mae'r adnodd hwn ar gael ynddynt",
         "visibilityPublic": "Bydd yr adnodd hwn yn weladwy i bob ymwelydd â'r wefan",
-        "visibilityRegistered": "Dim ond i ysgolion cofrestredig y bydd yr adnodd hwn yn weladwy",
+        "visibilityPrivate": "Bydd yr adnodd hwn yn weladwy i'ch ysgol ac adolygwyr gweinyddol yn unig",
         "uploadInstructions": "Llwytho ffeil adnodd (PDF, DOC, PPT, XLS, ac ati)",
         "maxFileSize": "Maint ffeil uchaf: 150MB",
         "replaceInstructions": "Gallwch ddisodli'r ffeil wrth gadw'r un adnodd, neu ei dynnu'n gyfan gwbl.",
@@ -416,8 +416,8 @@
     "visibility": {
       "public": "Cyhoeddus (gweladwy i bawb)",
       "publicShort": "Cyhoeddus",
-      "registered": "Cofrestredig yn Unig (angen mewngofnodi)",
-      "registeredShort": "Cofrestredig yn Unig"
+      "private": "Preifat (eich ysgol a gweinyddwyr yn unig)",
+      "privateShort": "Preifat"
     },
     "resourceTypes": {
       "lessonPlan": "Cynllun Gwers",

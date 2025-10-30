@@ -286,7 +286,7 @@ export interface IStorage {
     resourceType?: string;
     theme?: string;
     search?: string;
-    visibility?: 'public' | 'registered';
+    visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
   }): Promise<Resource[]>;
@@ -300,7 +300,7 @@ export interface IStorage {
   getResourcePacks(filters?: {
     stage?: string;
     theme?: string;
-    visibility?: 'public' | 'registered';
+    visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
   }): Promise<Array<ResourcePack & { resourceCount: number }>>;
@@ -333,7 +333,7 @@ export interface IStorage {
     stage?: 'inspire' | 'investigate' | 'act';
     schoolId?: string;
     country?: string;
-    visibility?: 'public' | 'registered';
+    visibility?: 'public' | 'private';
     assignedTo?: string;
   }): Promise<EvidenceWithSchool[]>;
   getApprovedPublicEvidence(): Promise<Evidence[]>;
@@ -352,7 +352,7 @@ export interface IStorage {
     stage?: string;
     country?: string;
     search?: string;
-    visibility?: 'public' | 'registered';
+    visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
   }): Promise<Array<EvidenceWithSchool & { 
@@ -2147,7 +2147,7 @@ export class DatabaseStorage implements IStorage {
     resourceType?: string;
     theme?: string;
     search?: string;
-    visibility?: 'public' | 'registered';
+    visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
   } = {}): Promise<Resource[]> {
@@ -2276,7 +2276,7 @@ export class DatabaseStorage implements IStorage {
   async getResourcePacks(filters: {
     stage?: string;
     theme?: string;
-    visibility?: 'public' | 'registered';
+    visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
   } = {}): Promise<Array<ResourcePack & { resourceCount: number }>> {
@@ -2613,7 +2613,7 @@ export class DatabaseStorage implements IStorage {
     stage?: 'inspire' | 'investigate' | 'act';
     schoolId?: string;
     country?: string;
-    visibility?: 'public' | 'registered';
+    visibility?: 'public' | 'private';
     assignedTo?: string;
   }): Promise<EvidenceWithSchool[]> {
     // Build WHERE conditions
@@ -2705,7 +2705,7 @@ export class DatabaseStorage implements IStorage {
     stage?: string;
     country?: string;
     search?: string;
-    visibility?: 'public' | 'registered';
+    visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
   }): Promise<Array<EvidenceWithSchool & { 
@@ -2720,17 +2720,11 @@ export class DatabaseStorage implements IStorage {
     
     // Visibility filter logic:
     // - If 'public': show only public evidence
-    // - If 'registered': show both public AND registered evidence (authenticated users see more)
+    // - If 'private': This filter is handled at route level with ACL checks
     if (filters?.visibility === 'public') {
       conditions.push(eq(evidence.visibility, 'public'));
-    } else if (filters?.visibility === 'registered') {
-      const visibilityCondition = or(
-        eq(evidence.visibility, 'public'),
-        eq(evidence.visibility, 'registered')
-      );
-      if (visibilityCondition) {
-        conditions.push(visibilityCondition);
-      }
+    } else if (filters?.visibility === 'private') {
+      conditions.push(eq(evidence.visibility, 'private'));
     }
     
     if (filters?.stage) {

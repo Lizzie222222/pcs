@@ -320,7 +320,7 @@
       "helpText": {
         "languageSelection": "选择此资源可用的所有语言",
         "visibilityPublic": "此资源将对所有网站访问者可见",
-        "visibilityRegistered": "此资源仅对注册学校可见",
+        "visibilityPrivate": "此资源仅对您的学校和管理员审核人员可见",
         "uploadInstructions": "上传资源文件（PDF、DOC、PPT、XLS 等）",
         "maxFileSize": "最大文件大小：150MB",
         "replaceInstructions": "您可以在保留相同资源的同时替换文件，或完全删除它。",
@@ -343,8 +343,8 @@
     "visibility": {
       "public": "公开（对所有人可见）",
       "publicShort": "公开",
-      "registered": "仅限注册（需要登录）",
-      "registeredShort": "仅限注册"
+      "private": "私密（仅限您的学校和管理员）",
+      "privateShort": "私密"
     },
     "resourceTypes": {
       "lessonPlan": "课程计划",
