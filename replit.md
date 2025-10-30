@@ -3,6 +3,14 @@
 ## Overview
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
+## Recent Changes
+**October 30, 2025**: Fixed audit approval analytics refresh
+- Corrected HTTP method mismatch: Changed audit review endpoint from PUT to PATCH to match frontend expectations
+- Added comprehensive analytics query invalidations after audit approval to ensure all statistics update in real-time:
+  - Audit-specific analytics (overview, by-school, waste trends)
+  - School progress analytics (overview and progression data)
+  - This ensures that when an admin approves an audit, all related charts and metrics refresh immediately, including cases where the school progresses to the next stage
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
