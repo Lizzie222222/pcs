@@ -45,9 +45,14 @@ import {
   Loader2,
   TrendingUp,
   Award,
+  Eye,
+  EyeOff,
 } from "lucide-react";
 import type { ReductionPromise } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
+import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
+import { UploadEvidenceDialog } from "@/components/admin/UploadEvidenceDialog";
+import { EditEvidenceDialog } from "@/components/admin/EditEvidenceDialog";
 
 interface SchoolData {
   id: string;
@@ -87,6 +92,7 @@ interface SchoolTeacher {
 
 interface Evidence {
   id: string;
+  schoolId: string;
   title: string;
   description: string;
   stage: string;
@@ -563,6 +569,8 @@ function EvidenceTab({ schoolId, evidence, isLoading }: {
 }) {
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterStage, setFilterStage] = useState<string>('all');
+  const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
+  const [editingEvidence, setEditingEvidence] = useState<Evidence | null>(null);
 
   const filteredEvidence = evidence.filter(e => {
     if (filterStatus !== 'all' && e.status !== filterStatus) return false;
@@ -575,14 +583,24 @@ function EvidenceTab({ schoolId, evidence, isLoading }: {
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <FileText className="h-5 w-5 text-pcs_blue" />
-            Evidence Submissions ({evidence.length})
-          </span>
-          <div className="flex gap-2">
+    <>
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <FileText className="h-5 w-5 text-pcs_blue" />
+              <CardTitle>Evidence Submissions ({evidence.length})</CardTitle>
+            </div>
+            <Button
+              onClick={() => setUploadDialogOpen(true)}
+              className="bg-pcs_blue hover:bg-navy"
+              data-testid="button-upload-evidence"
+            >
+              <Upload className="h-4 w-4 mr-2" />
+              Upload Evidence
+            </Button>
+          </div>
+          <div className="flex gap-2 mt-4">
             <Select value={filterStage} onValueChange={setFilterStage}>
               <SelectTrigger className="w-[150px]" data-testid="select-filter-stage">
                 <SelectValue placeholder="All Stages" />
@@ -606,61 +624,104 @@ function EvidenceTab({ schoolId, evidence, isLoading }: {
               </SelectContent>
             </Select>
           </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {filteredEvidence.length === 0 ? (
-          <EmptyState
-            icon={FileText}
-            title="No Evidence"
-            description="No evidence submissions match the selected filters."
-          />
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="border-b bg-gray-50">
-                  <th className="text-left p-3 font-semibold text-navy">Title</th>
-                  <th className="text-left p-3 font-semibold text-navy">Stage</th>
-                  <th className="text-left p-3 font-semibold text-navy">Status</th>
-                  <th className="text-left p-3 font-semibold text-navy">Submitted</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredEvidence.map((ev) => (
-                  <tr key={ev.id} className="border-b hover:bg-gray-50">
-                    <td className="p-3" data-testid={`text-evidence-title-${ev.id}`}>
-                      {ev.title}
-                    </td>
-                    <td className="p-3">
-                      <Badge className={
-                        ev.stage === 'inspire' ? 'bg-pcs_blue' :
-                        ev.stage === 'investigate' ? 'bg-teal' :
-                        'bg-coral'
-                      }>
-                        {ev.stage}
-                      </Badge>
-                    </td>
-                    <td className="p-3">
-                      <Badge className={
-                        ev.status === 'approved' ? 'bg-green-600' :
-                        ev.status === 'rejected' ? 'bg-red-600' :
-                        'bg-yellow-600'
-                      }>
-                        {ev.status}
-                      </Badge>
-                    </td>
-                    <td className="p-3 text-gray-600">
-                      {new Date(ev.submittedAt).toLocaleDateString()}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardHeader>
+        <CardContent>
+          {filteredEvidence.length === 0 ? (
+            <EmptyState
+              icon={FileText}
+              title="No Evidence"
+              description="No evidence submissions match the selected filters."
+            />
+          ) : (
+            <div className="space-y-4">
+              {filteredEvidence.map((ev) => (
+                <Card key={ev.id} className="border-2" data-testid={`evidence-card-${ev.id}`}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <h3 className="font-semibold text-lg" data-testid={`text-evidence-title-${ev.id}`}>
+                            {ev.title}
+                          </h3>
+                          <Badge
+                            variant="outline"
+                            className={`flex items-center gap-1 ${
+                              ev.visibility === 'public' 
+                                ? 'border-green-600 text-green-700 bg-green-50' 
+                                : 'border-blue-600 text-blue-700 bg-blue-50'
+                            }`}
+                            data-testid={`badge-visibility-${ev.id}`}
+                          >
+                            {ev.visibility === 'public' ? (
+                              <><Eye className="h-3 w-3" /> Public</>
+                            ) : (
+                              <><EyeOff className="h-3 w-3" /> Registered</>
+                            )}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <Badge className={
+                            ev.stage === 'inspire' ? 'bg-pcs_blue' :
+                            ev.stage === 'investigate' ? 'bg-teal' :
+                            'bg-coral'
+                          }>
+                            {ev.stage}
+                          </Badge>
+                          <Badge className={
+                            ev.status === 'approved' ? 'bg-green-600' :
+                            ev.status === 'rejected' ? 'bg-red-600' :
+                            'bg-yellow-600'
+                          }>
+                            {ev.status}
+                          </Badge>
+                          <span className="text-sm text-gray-600">
+                            {new Date(ev.submittedAt).toLocaleDateString()}
+                          </span>
+                        </div>
+                        {ev.description && (
+                          <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                            {ev.description}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setEditingEvidence(ev)}
+                        data-testid={`button-edit-${ev.id}`}
+                      >
+                        <Edit className="h-4 w-4 mr-1" />
+                        Edit
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  {ev.files && ev.files.length > 0 && (
+                    <CardContent>
+                      <div className="space-y-2">
+                        <h4 className="text-sm font-medium text-gray-700">Files ({ev.files.length})</h4>
+                        <EvidenceFilesGallery files={ev.files} />
+                      </div>
+                    </CardContent>
+                  )}
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <UploadEvidenceDialog
+        open={uploadDialogOpen}
+        onOpenChange={setUploadDialogOpen}
+        schoolId={schoolId}
+      />
+
+      <EditEvidenceDialog
+        open={!!editingEvidence}
+        onOpenChange={(open) => !open && setEditingEvidence(null)}
+        evidence={editingEvidence}
+      />
+    </>
   );
 }
 

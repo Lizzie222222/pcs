@@ -343,6 +343,7 @@ export interface IStorage {
     reviewNotes?: string
   ): Promise<Evidence | undefined>;
   assignEvidence(evidenceId: string, assignedToUserId: string | null): Promise<void>;
+  updateEvidence(id: string, updates: Partial<InsertEvidence>): Promise<Evidence | undefined>;
   updateEvidenceFiles(id: string, files: any[]): Promise<Evidence | undefined>;
   deleteEvidence(id: string): Promise<boolean>;
   deleteSchool(id: string): Promise<boolean>;
@@ -2794,6 +2795,18 @@ export class DatabaseStorage implements IStorage {
         updatedAt: new Date(),
       })
       .where(eq(evidence.id, evidenceId));
+  }
+
+  async updateEvidence(id: string, updates: Partial<InsertEvidence>): Promise<Evidence | undefined> {
+    const [evidenceRecord] = await db
+      .update(evidence)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      } as any)
+      .where(eq(evidence.id, id))
+      .returning();
+    return evidenceRecord;
   }
 
   async updateEvidenceFiles(id: string, files: any[]): Promise<Evidence | undefined> {

@@ -2798,6 +2798,31 @@ Return JSON with:
     }
   });
 
+  // Update evidence (admin only)
+  app.patch('/api/admin/evidence/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const updates = req.body;
+
+      // Get existing evidence to verify it exists
+      const evidence = await storage.getEvidence(id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+
+      // Update the evidence
+      const updatedEvidence = await storage.updateEvidence(id, updates);
+      if (!updatedEvidence) {
+        return res.status(500).json({ message: "Failed to update evidence" });
+      }
+
+      res.json(updatedEvidence);
+    } catch (error) {
+      console.error("Error updating evidence:", error);
+      res.status(500).json({ message: "Failed to update evidence" });
+    }
+  });
+
   // Evidence Requirements endpoints
 
   // Get all evidence requirements (public, optional stage filter)
