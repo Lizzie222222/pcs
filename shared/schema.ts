@@ -260,6 +260,7 @@ export const schoolUsers = pgTable("school_users", {
   invitedAt: timestamp("invited_at"),
   verifiedAt: timestamp("verified_at"),
   verificationMethod: varchar("verification_method"),
+  legacyEvidenceCount: integer("legacy_evidence_count").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => [
