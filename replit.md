@@ -4,6 +4,11 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
+**October 30, 2025**: Admin evidence management enhancements
+- **Admin evidence uploads auto-approved**: When admins upload evidence on behalf of schools, it is automatically approved (status set to "approved", reviewedBy set to admin ID, reviewedAt timestamp set) since it's already vetted content.
+- **Email notifications skipped for admin uploads**: Admin evidence uploads skip all submission confirmation emails and Mailchimp automation, preventing unnecessary notifications.
+- **Gallery layout for evidence viewing**: Evidence tab in school profiles now displays evidence as cards with thumbnail galleries instead of a table, showing visibility badges (Public/Registered), stage/status badges, and file previews using EvidenceFilesGallery component.
+- **Admin upload and edit dialogs**: Added comprehensive UploadEvidenceDialog and EditEvidenceDialog components allowing admins to create and modify evidence with full control over title, description, stage, visibility, files, and video links.
 **October 30, 2025**: Complete email template overhaul for consistency and reliability
 - **Removed ALL gradients from email templates**: Replaced all linear-gradient CSS with solid colors across all SendGrid and Mailchimp email templates for maximum compatibility across email clients (Gmail, Outlook, Apple Mail, etc.).
   - **Headers**: Changed all headers from gradients to solid navy blue (#204969) ensuring white logo visibility in all email clients and dark modes

@@ -2592,9 +2592,16 @@ Return JSON with:
       // Check if user is admin or partner
       const isAdminOrPartner = user?.isAdmin || user?.role === 'partner';
       
+      // If admin is uploading, auto-approve and set review metadata
       const evidenceData = insertEvidenceSchema.parse({
         ...req.body,
         submittedBy: userId,
+        // Auto-approve admin uploads
+        ...(user?.isAdmin ? {
+          status: 'approved',
+          reviewedBy: userId,
+          reviewedAt: new Date(),
+        } : {}),
       });
 
       // Get school to check stage lock status
@@ -2615,39 +2622,42 @@ Return JSON with:
 
       const evidence = await storage.createEvidence(evidenceData);
 
-      // Send email notifications (non-blocking)
-      try {
-        const user = await storage.getUser(userId);
-        const school = await storage.getSchool(evidenceData.schoolId);
-        
-        if (user?.email && school) {
-          // Send confirmation email to the teacher who submitted the evidence
-          await sendEvidenceSubmissionEmail(
-            user.email,
-            school.name,
-            evidence.title,
-            evidence.stage,
-            user.preferredLanguage || 'en'
-          );
+      // Skip email notifications for admin uploads
+      if (!user?.isAdmin) {
+        // Send email notifications (non-blocking) for non-admin submissions
+        try {
+          const user = await storage.getUser(userId);
+          const school = await storage.getSchool(evidenceData.schoolId);
+          
+          if (user?.email && school) {
+            // Send confirmation email to the teacher who submitted the evidence
+            await sendEvidenceSubmissionEmail(
+              user.email,
+              school.name,
+              evidence.title,
+              evidence.stage,
+              user.preferredLanguage || 'en'
+            );
 
-          // NOTE: Admin notifications replaced with weekly digest emails
-          // Admins receive a weekly summary instead of being notified on every submission
-          // Use POST /api/admin/send-weekly-digest to send the digest manually
+            // NOTE: Admin notifications replaced with weekly digest emails
+            // Admins receive a weekly summary instead of being notified on every submission
+            // Use POST /api/admin/send-weekly-digest to send the digest manually
 
-          // Add to Mailchimp evidence submission automation
-          await mailchimpService.setupEvidenceSubmissionAutomation({
-            email: user.email,
-            firstName: user.firstName || '',
-            lastName: user.lastName || '',
-            schoolName: school.name,
-            schoolCountry: school.country,
-            role: user.role || 'teacher',
-            tags: ['evidence_submitted', evidenceData.stage, user.role || 'teacher'],
-          }, evidence.title);
+            // Add to Mailchimp evidence submission automation
+            await mailchimpService.setupEvidenceSubmissionAutomation({
+              email: user.email,
+              firstName: user.firstName || '',
+              lastName: user.lastName || '',
+              schoolName: school.name,
+              schoolCountry: school.country,
+              role: user.role || 'teacher',
+              tags: ['evidence_submitted', evidenceData.stage, user.role || 'teacher'],
+            }, evidence.title);
+          }
+        } catch (emailError) {
+          // Log but don't fail evidence submission if email/Mailchimp fails
+          console.warn('Email notification failed for evidence submission:', emailError);
         }
-      } catch (emailError) {
-        // Log but don't fail evidence submission if email/Mailchimp fails
-        console.warn('Email notification failed for evidence submission:', emailError);
       }
 
       // Log evidence submission
