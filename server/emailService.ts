@@ -330,6 +330,22 @@ export async function sendWelcomeEmail(
         <li><strong>Access resources</strong> - Download toolkits and educational materials</li>
       </ul>
       
+      <!-- First Step: Inspire -->
+      <div style="background: #f0f9ff; border-left: 4px solid #009ADE; padding: 20px; margin: 25px 0; border-radius: 8px;">
+        <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 20px; font-weight: 700;">
+          🌟 Your First Step: Inspire
+        </h2>
+        <p style="margin: 0 0 15px 0; color: #333;">
+          Begin your journey by building awareness about plastic pollution within your school community. The <strong>Inspire</strong> stage helps students learn about the impact of plastic on our planet through engaging activities.
+        </p>
+        <p style="margin: 0 0 10px 0; color: #333; font-weight: 600;">Here's what to do:</p>
+        <ul style="margin: 0; padding-left: 25px; line-height: 1.8; color: #333;">
+          <li><strong>Watch educational videos</strong> about plastic pollution and ocean protection</li>
+          <li><strong>Discuss with students</strong> the effects of plastic on our environment</li>
+          <li><strong>Share evidence of learning</strong> by uploading photos and documenting activities in your dashboard</li>
+        </ul>
+      </div>
+      
       <p style="margin: 0 0 20px 0;">
         Together, we're making waves for a plastic-free future! 🌊
       </p>
