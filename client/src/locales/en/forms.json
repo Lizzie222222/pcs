@@ -103,7 +103,9 @@
     "postal_code_label": "Postal/Zip Code *",
     "postal_code_placeholder": "Enter postal or zip code",
     "button_cancel": "Cancel",
-    "button_next_about_you": "Next: About You"
+    "button_next_about_you": "Next: About You",
+    "admin_email_tooltip": "Official school email address for administrative purposes",
+    "age_under_5": "Under 5"
   },
   "teacher_info": {
     "section_title": "About You (Lead Teacher)",
@@ -126,7 +128,8 @@
     "referral_website": "Website/Blog Article",
     "referral_other": "Other",
     "button_back": "Back",
-    "button_next_student_info": "Next: Student Info"
+    "button_next_student_info": "Next: Student Info",
+    "email_tooltip": "Email used for sign in and communication"
   },
   "student_info": {
     "section_title": "About Your Students",
@@ -137,6 +140,7 @@
     "student_count_max": "Maximum 10,000 students allowed",
     "age_ranges_label": "Ages *",
     "age_ranges_description": "Select all that apply to your school",
+    "student_count_tooltip": "Approximate number of students involved in plastic clever schools activities",
     "age_ranges_min": "Please select at least one age range",
     "button_back": "Back",
     "button_submit": "Complete Registration",

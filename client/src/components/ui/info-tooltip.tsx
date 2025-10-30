@@ -1,4 +1,4 @@
-import { Eye } from "lucide-react";
+import { Info } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface InfoTooltipProps {
@@ -17,7 +17,7 @@ export function InfoTooltip({ content, dataTestId }: InfoTooltipProps) {
             aria-label={content}
             data-testid={dataTestId || "icon-info-tooltip"}
           >
-            <Eye 
+            <Info 
               className="h-4 w-4 text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 cursor-help" 
               aria-hidden="true"
             />

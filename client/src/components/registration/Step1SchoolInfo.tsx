@@ -174,9 +174,9 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
             render={({ field }) => (
               <FormItem>
                 <FormLabel>
-                  {t('forms:school_registration.admin_email_label')} *
+                  {t('forms:school_registration.admin_email_label')}
                   <InfoTooltip 
-                    content="Official school email" 
+                    content={t('forms:school_registration.admin_email_tooltip')}
                     dataTestId="tooltip-admin-email"
                   />
                 </FormLabel>
@@ -285,11 +285,11 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
                   <SelectContent>
                     {LANGUAGE_OPTIONS.map((language) => (
                       <SelectItem 
-                        key={language} 
-                        value={language}
-                        data-testid={`option-language-${language.toLowerCase().replace(/\s+/g, '-')}`}
+                        key={language.value} 
+                        value={language.value}
+                        data-testid={`option-language-${language.value.toLowerCase().replace(/\s+/g, '-')}`}
                       >
-                        {language}
+                        {language.nativeLabel}
                       </SelectItem>
                     ))}
                   </SelectContent>

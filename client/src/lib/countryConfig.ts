@@ -5,7 +5,7 @@ export interface CountryConfig {
   postalCodeField: 'postcode' | 'zipCode';
   postalCodePattern?: string;
   postalCodePlaceholder?: string;
-  ageRangeOptions: Array<{ value: string; label: string }>;
+  ageRangeOptions: Array<{ value: string; label: string; translationKey?: string }>;
 }
 
 export const COUNTRY_CONFIGS: Record<string, CountryConfig> = {
@@ -16,7 +16,7 @@ export const COUNTRY_CONFIGS: Record<string, CountryConfig> = {
     postalCodeField: 'postcode',
     postalCodePlaceholder: 'e.g., SW1A 1AA',
     ageRangeOptions: [
-      { value: 'under-5', label: 'Under 5' },
+      { value: 'under-5', label: 'Under 5', translationKey: 'forms:school_registration.age_under_5' },
       { value: '6', label: '6' },
       { value: '7', label: '7' },
       { value: '8', label: '8' },
@@ -40,7 +40,7 @@ export const COUNTRY_CONFIGS: Record<string, CountryConfig> = {
     postalCodePlaceholder: 'e.g., 10001',
     postalCodePattern: '^[0-9]{5}(-[0-9]{4})?$',
     ageRangeOptions: [
-      { value: 'under-5', label: 'Under 5' },
+      { value: 'under-5', label: 'Under 5', translationKey: 'forms:school_registration.age_under_5' },
       { value: '6', label: '6' },
       { value: '7', label: '7' },
       { value: '8', label: '8' },
@@ -84,20 +84,20 @@ export const DEFAULT_COUNTRY_CONFIG: CountryConfig = {
 };
 
 export const LANGUAGE_OPTIONS = [
-  'English',
-  'Spanish',
-  'French',
-  'German',
-  'Portuguese',
-  'Italian',
-  'Dutch',
-  'Greek',
-  'Chinese (Mandarin)',
-  'Japanese',
-  'Korean',
-  'Arabic',
-  'Hindi',
-  'Other'
+  { value: 'English', label: 'English', nativeLabel: 'English' },
+  { value: 'Spanish', label: 'Spanish', nativeLabel: 'Español' },
+  { value: 'French', label: 'French', nativeLabel: 'Français' },
+  { value: 'German', label: 'German', nativeLabel: 'Deutsch' },
+  { value: 'Portuguese', label: 'Portuguese', nativeLabel: 'Português' },
+  { value: 'Italian', label: 'Italian', nativeLabel: 'Italiano' },
+  { value: 'Dutch', label: 'Dutch', nativeLabel: 'Nederlands' },
+  { value: 'Greek', label: 'Greek', nativeLabel: 'Ελληνικά' },
+  { value: 'Chinese (Mandarin)', label: 'Chinese (Mandarin)', nativeLabel: '中文（普通话）' },
+  { value: 'Japanese', label: 'Japanese', nativeLabel: '日本語' },
+  { value: 'Korean', label: 'Korean', nativeLabel: '한국어' },
+  { value: 'Arabic', label: 'Arabic', nativeLabel: 'العربية' },
+  { value: 'Hindi', label: 'Hindi', nativeLabel: 'हिन्दी' },
+  { value: 'Other', label: 'Other', nativeLabel: 'Other' }
 ];
 
 export const REFERRAL_SOURCE_OPTIONS = [

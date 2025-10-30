@@ -115,7 +115,7 @@ export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2T
                 <FormLabel>
                   {t('forms:teacher_info.email_label')}
                   <InfoTooltip 
-                    content="Email used for sign in and communication" 
+                    content={t('forms:teacher_info.email_tooltip')}
                     dataTestId="tooltip-teacher-email"
                   />
                 </FormLabel>

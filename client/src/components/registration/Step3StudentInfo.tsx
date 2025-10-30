@@ -83,7 +83,7 @@ export default function Step3StudentInfo({
                 <FormLabel>
                   {t('forms:student_info.student_count_label')}
                   <InfoTooltip 
-                    content="Approximate number of students involved in plastic leather schools activities" 
+                    content={t('forms:student_info.student_count_tooltip')}
                     dataTestId="tooltip-student-count"
                   />
                 </FormLabel>
@@ -130,7 +130,7 @@ export default function Step3StudentInfo({
                       className="h-9 px-4 rounded-full text-sm font-medium transition-all data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm hover:bg-muted"
                       data-testid={`toggle-age-${option.value}`}
                     >
-                      {option.label}
+                      {option.translationKey ? t(option.translationKey) : option.label}
                     </Toggle>
                   ))}
                 </div>
