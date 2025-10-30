@@ -4,8 +4,15 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
-**October 30, 2025**: Navigation and authentication improvements
-- **Unlocked all program stages**: Removed stage-based restrictions on evidence submission. Users can now submit evidence for any stage (Inspire, Investigate, Act) at any time, regardless of their school's current stage or completion status. This provides more flexibility for schools to work at their own pace and submit evidence as they create it.
+**October 30, 2025**: Stage unlocking and UI improvements
+- **Fully unlocked all program stages in UI**: Completely removed all stage locking logic from the ProgressTracker component. All three stages (Inspire, Investigate, Act) now display as simultaneously accessible with colored gradients and active styling. Users can submit evidence for any stage at any time, regardless of their school's current stage or completion status.
+  - Modified `getStageStatus()` to only return 'completed' or 'accessible' (removed 'locked' and 'current' states)
+  - Updated `getProgressPercentage()` to calculate progress for all stages independently
+  - Removed "Current Stage" and "Locked" badges from the UI
+  - Removed all lock icons and locked status indicators from evidence requirements
+  - Updated card and icon styling to show all accessible stages with colored gradients (teal/yellow/blue) instead of gray locked states
+  - All Submit/Do Audit buttons now visible for non-approved evidence regardless of stage
+  - Removed "Complete previous stage to unlock" messages
 - **Streamlined navigation**: Removed Help Centre and Team Management from the main navigation bar to create a cleaner, more focused user interface. These pages remain accessible via direct URLs if needed.
 - **Improved login flow**: Schools and teachers now redirect directly to the dashboard after login instead of the landing page, providing faster access to their school workspace.
 - **Fixed photo consent cache invalidation**: When an admin approves or rejects photo consent, the evidence list now immediately refreshes to show the updated consent status, and the warning dialog no longer appears incorrectly when approving evidence.
