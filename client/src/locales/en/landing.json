@@ -2,40 +2,40 @@
   "hero": {
     "title": "An award to reduce waste with students at the heart of the action.",
     "subtitle": "Join a global movement of schools creating lasting environmental change through education, investigation, and action.",
-    "cta_primary": "Register Your School Now",
-    "cta_secondary": "Explore the Program",
-    "watch_video": "Watch Introduction Video",
+    "cta_primary": "Register your school now",
+    "cta_secondary": "Explore the program",
+    "watch_video": "Watch introduction video",
     "trust_indicators": {
-      "curriculum_aligned": "Curriculum Aligned",
-      "proven_impact": "Proven Impact",
-      "completely_free": "Completely Free"
+      "curriculum_aligned": "Curriculum aligned",
+      "proven_impact": "Proven impact",
+      "completely_free": "Completely free"
     }
   },
   "what_is_section": {
     "title": "What is a <span>Plastic Clever School</span>?",
     "description": "Plastic Clever Schools is an awards program designed to help schools reduce their single-use plastic consumption. We provide you with the tools and a simple 3-step framework to inspire change, investigate your school's plastic use, and act on solutions—all while empowering your students to become the next generation of environmental leaders.",
     "award_winning": {
-      "title": "Award-Winning Program",
+      "title": "Award-winning program",
       "description": "Recognized for our effective approach to reducing waste."
     },
     "student_led": {
-      "title": "Student-Led Action",
+      "title": "Student-led action",
       "description": "Kids are at the heart of every step, fostering a sense of ownership and responsibility."
     },
     "free_resources": {
-      "title": "Free Resources",
+      "title": "Free resources",
       "description": "Access a full toolkit of guides, worksheets, and activities to make your journey simple and effective."
     },
-    "download_sample_cta": "Download a Sample Resource"
+    "download_sample_cta": "Download a sample resource"
   },
   "social_proof": {
-    "title": "Join a Growing Movement",
+    "title": "Join a growing movement",
     "description": "More than {{count}} schools have already registered for the Plastic Clever Schools program, making a collective impact on waste reduction and environmental education.",
-    "registered_schools_label": "Registered Schools So Far",
-    "view_schools_cta": "View All Registered Schools"
+    "registered_schools_label": "Registered schools so far",
+    "view_schools_cta": "View all registered schools"
   },
   "three_stage_program": {
-    "title": "A Simple <highlight>3-Stage Journey</highlight> to a Plastic Clever School",
+    "title": "A simple <highlight>3-stage journey</highlight> to a Plastic Clever School",
     "subtitle": "Our proven framework breaks down your school's transformation into three straightforward stages.",
     "stage_1_title": "INSPIRE",
     "stage_1_description": "Learn about plastic pollution and inspire others in school to take action.",
@@ -43,24 +43,24 @@
     "stage_2_description": "Identify any problem plastics in school and make a plan to tackle them.",
     "stage_3_title": "ACT",
     "stage_3_description": "Take action to wave goodbye to single-use plastics.",
-    "recognition_title": "Earn Recognition for Your Impact",
+    "recognition_title": "Earn recognition for your impact",
     "recognition_description": "Complete each stage to earn digital badges and certificates that showcase your school's environmental leadership",
-    "digital_badges": "Digital Badges",
+    "digital_badges": "Digital badges",
     "certificates": "Certificates",
-    "progress_tracking": "Progress Tracking"
+    "progress_tracking": "Progress tracking"
   },
   "popup": {
-    "latest_news": "Latest News!",
+    "latest_news": "Latest news!",
     "community_message": "Join our growing community"
   },
   "partnership": {
-    "title": "Built on Strong Partnerships",
+    "title": "Built on strong partnerships",
     "description": "Plastic Clever Schools is a collaboration between leading environmental organizations, working together to create meaningful change in education.",
     "collaboration_title": "Plastic Clever Schools is a collaboration between",
     "partnership_with": "in partnership with"
   },
   "testimonials": {
-    "title": "Why Schools Choose Us",
+    "title": "Why schools choose us",
     "subtitle": "Hear from educators and students who have transformed their schools through our program",
     "testimonial_1": {
       "quote": "Plastic Clever Schools has completely changed the way we think. It has created passionate children who have lead the way in reducing the amount of single-use plastic in our school. Not only has it provided both staff and children with powerful knowledge, it has offered an easy, fun and engaging journey in becoming a Plastic Clever School.",
@@ -79,11 +79,11 @@
     }
   },
   "instagram": {
-    "title": "Follow <highlight>Our Journey</highlight>",
+    "title": "Follow <highlight>our journey</highlight>",
     "description": "See the latest updates from schools around the world making a difference. Real stories, real impact, shared daily on our Instagram.",
     "follow_button": "Follow on Instagram",
     "follow_handle": "Follow @plastic_clever_schools",
-    "follow_short": "Follow Us",
+    "follow_short": "Follow us",
     "hashtag_intro": "Join the conversation and share your school's plastic clever journey with",
     "main_hashtag": "#PlasticCleverSchools",
     "hashtag_sustainable": "#SustainableSchools",
@@ -92,27 +92,27 @@
     "hashtag_young_activists": "#YoungActivists"
   },
   "newsletter": {
-    "title": "Stay Connected",
+    "title": "Stay connected",
     "description": "Get the latest updates, resources, and inspiration delivered straight to your inbox."
   },
   "final_cta": {
-    "title": "Ready to Transform Your School?",
-    "subtitle": "Join the Movement Today",
+    "title": "Ready to transform your school?",
+    "subtitle": "Join the movement today",
     "description": "Thousands of schools worldwide are already making a difference. Start your Plastic Clever journey today and become part of the solution.",
-    "get_started_button": "Get Started Today",
-    "contact_support": "Questions? Contact Support"
+    "get_started_button": "Get started today",
+    "contact_support": "Questions? Contact support"
   },
   "stats": {
-    "schools_registered": "Schools Registered",
-    "students_impacted": "Students Impacted", 
-    "countries_participating": "Countries Participating",
-    "awards_completed": "Awards Completed",
+    "schools_registered": "Schools registered",
+    "students_impacted": "Students impacted", 
+    "countries_participating": "Countries participating",
+    "awards_completed": "Awards completed",
     "schools_label": "schools",
     "countries_label": "countries",
     "actions_taken_label": "actions taken"
   },
   "program": {
-    "title": "Our Three-Stage Program",
+    "title": "Our three-stage program",
     "subtitle": "Transform your school community through structured learning and action",
     "stage_1": {
       "title": "Inspire",
@@ -131,35 +131,35 @@
     }
   },
   "benefits": {
-    "title": "Why Join Plastic Clever Schools?",
+    "title": "Why join Plastic Clever Schools?",
     "subtitle": "Discover the transformative benefits for your educational community",
     "comprehensive_curriculum": {
-      "title": "Comprehensive Curriculum",
+      "title": "Comprehensive curriculum",
       "description": "Access expertly designed lesson plans and resources aligned with educational standards"
     },
     "global_network": {
-      "title": "Global Network",
+      "title": "Global network",
       "description": "Connect with schools worldwide and share best practices for environmental education"
     },
     "progress_tracking": {
-      "title": "Progress Tracking",
+      "title": "Progress tracking",
       "description": "Monitor your school's journey with detailed analytics and achievement milestones"
     },
     "expert_support": {
-      "title": "Expert Support",
+      "title": "Expert support",
       "description": "Get guidance from environmental educators and sustainability professionals"
     },
     "real_impact": {
-      "title": "Real Impact",
+      "title": "Real impact",
       "description": "Make measurable differences in plastic waste reduction and environmental awareness"
     },
     "award_recognition": {
-      "title": "Award Recognition", 
+      "title": "Award recognition", 
       "description": "Earn certificates and recognition for your school's environmental achievements"
     }
   },
   "process": {
-    "title": "How It Works",
+    "title": "How it works",
     "subtitle": "Simple steps to transform your school into an environmental leader",
     "step_1": {
       "title": "Register",
@@ -179,7 +179,7 @@
     }
   },
   "partners": {
-    "title": "Our Trusted Partners",
+    "title": "Our trusted partners",
     "subtitle": "Working together to create a plastic-free future",
     "description": "We collaborate with leading environmental organizations, educational institutions, and sustainability experts to deliver the highest quality resources and support for your school's journey."
   },
@@ -192,28 +192,28 @@
     "title": "What is Plastic Clever Schools?"
   },
   "cta_section": {
-    "title": "Ready to Make a Difference?",
+    "title": "Ready to make a difference?",
     "subtitle": "Join thousands of schools worldwide in creating a plastic-clever future",
     "description": "Your school can be part of the solution. Register today and start your journey toward becoming a Plastic Clever School.",
-    "register_now": "Register Your School",
+    "register_now": "Register your school",
     "have_questions": "Have questions?",
     "contact_support": "Contact our support team"
   },
   "footer": {
     "description": "An award to reduce waste with students at the heart of the action.",
     "program_title": "Program",
-    "program_how_it_works": "How It Works",
+    "program_how_it_works": "How it works",
     "program_resources": "Resources",
-    "program_success_stories": "Success Stories",
-    "program_award_criteria": "Award Criteria",
+    "program_success_stories": "Success stories",
+    "program_award_criteria": "Award criteria",
     "support_title": "Support",
-    "support_help_center": "Help Center",
-    "support_contact_us": "Contact Us",
+    "support_help_center": "Help center",
+    "support_contact_us": "Contact us",
     "support_community": "Community",
     "support_training": "Training",
     "connect_title": "Connect",
     "connect_newsletter": "Newsletter",
-    "connect_social_media": "Social Media",
+    "connect_social_media": "Social media",
     "connect_events": "Events",
     "connect_partners": "Partners",
     "copyright": "© 2025 Plastic Clever Schools. All rights reserved.",
@@ -235,28 +235,28 @@
     "plastic_clever_schools_logo_alt": "Plastic Clever Schools logo"
   },
   "events": {
-    "page_title": "Events & Workshops",
+    "page_title": "Events & workshops",
     "page_description": "Join our community events, workshops, and webinars to learn and connect with other Plastic Clever Schools",
-    "upcoming_events": "Upcoming Events",
-    "past_events": "Past Events",
+    "upcoming_events": "Upcoming events",
+    "past_events": "Past events",
     "no_upcoming_events": "No upcoming events at the moment. Check back soon!",
-    "event_live_now": "🎉 Event is Live Now!",
-    "join_meeting_now": "Join Meeting Now",
+    "event_live_now": "🎉 Event is live now!",
+    "join_meeting_now": "Join meeting now",
     "event_not_started": "This event hasn't started yet. Please check back on {{date}}",
     "meeting_link_available": "The meeting link will be available when the event starts.",
-    "catch_up_recording": "📺 Catch Up on the Recording",
+    "catch_up_recording": "📺 Catch up on the recording",
     "missed_event_message": "Missed this event? No worries! You can watch the full recording and access all event resources below.",
     "registered": "You're registered for this event!",
     "waitlisted": "You're on the waitlist for this event",
     "registering": "Registering...",
-    "register_event": "Register for This Event",
-    "sign_up_to_register": "Sign Up to Register",
+    "register_event": "Register for this event",
+    "sign_up_to_register": "Sign up to register",
     "badges": {
       "past_event": "PAST EVENT",
       "full": "FULL"
     },
     "location": {
-      "virtual_event": "Virtual Event"
+      "virtual_event": "Virtual event"
     },
     "capacity": {
       "registered": "{{current}} / {{total}} registered"
