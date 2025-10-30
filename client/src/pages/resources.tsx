@@ -59,6 +59,7 @@ interface Resource {
   country: string;
   resourceType?: string;
   theme?: string;
+  tags?: string[];
   fileUrl: string;
   fileType: string;
   fileSize: number;
@@ -467,6 +468,29 @@ export default function Resources() {
             </Badge>
           </div>
 
+          {/* Third row: Tags (including language) */}
+          <div className="flex flex-wrap gap-2">
+            {resource.language && (
+              <Badge 
+                variant="outline" 
+                className="text-xs bg-teal/5 text-teal border-teal/20"
+                data-testid={`tag-${resource.id}-language`}
+              >
+                #{resource.language}
+              </Badge>
+            )}
+            {resource.tags?.slice(0, 3).map((tag, index) => (
+              <Badge 
+                key={index} 
+                variant="outline" 
+                className="text-xs bg-teal/5 text-teal border-teal/20"
+                data-testid={`tag-${resource.id}-${tag}`}
+              >
+                #{tag}
+              </Badge>
+            ))}
+          </div>
+
           {/* Title */}
           <CardTitle className="text-xl text-navy line-clamp-2 font-bold pt-1">
             {resource.title}
@@ -479,7 +503,7 @@ export default function Resources() {
           <div className="flex items-center justify-between text-sm text-gray-500 pt-2 border-t">
             <div className="flex items-center gap-2">
               {getFileIcon(resource.fileType)}
-              <span className="font-medium">{resource.language}</span>
+              <span className="font-medium text-xs">{resource.fileType?.toUpperCase()}</span>
             </div>
           </div>
           <div className="flex gap-1.5 w-full mt-auto pt-2">
