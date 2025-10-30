@@ -1,0 +1,43 @@
+client:536 WebSocket connection to 'wss://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/?token=YIBSTA2pFJLR' failed: 
+setupWebSocket @ client:536
+(anonymous) @ client:531Understand this error
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=YIBSTA2pFJLR' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)
+setupWebSocket @ client:536
+fallback @ client:509
+(anonymous) @ client:555Understand this error
+i18n.ts:58 i18next: languageChanged en
+i18n.ts:58 i18next: initialized Object
+i18n.ts:58 i18next: languageChanged en
+i18n.ts:58 i18next: init: i18next is already initialized. You should call init just once!
+output @ i18next.js?v=6598d2e4:208
+warn @ i18next.js?v=6598d2e4:201
+forward @ i18next.js?v=6598d2e4:236
+warn @ i18next.js?v=6598d2e4:225
+finish @ i18next.js?v=6598d2e4:1840
+done @ i18next.js?v=6598d2e4:1973
+(anonymous) @ i18next.js?v=6598d2e4:1988
+loadResources @ i18next.js?v=6598d2e4:1886
+setLng @ i18next.js?v=6598d2e4:1987
+changeLanguage @ i18next.js?v=6598d2e4:1992
+load @ i18next.js?v=6598d2e4:1848
+init @ i18next.js?v=6598d2e4:1851
+(anonymous) @ i18n.ts:58Understand this warning
+i18n.ts:58 i18next: initialized Object
+webcomponents-ce.js:33 Uncaught Error: A custom element with name 'mce-autosize-textarea' has already been defined.
+    at Aa (webcomponents-ce.js:33:363)
+    at m.define (webcomponents-ce.js:33:133)
+    at overlay_bundle.js:149:5562
+    at C (overlay_bundle.js:45:682)
+    at overlay_bundle.js:160:392
+Aa @ webcomponents-ce.js:33
+m.define @ webcomponents-ce.js:33
+(anonymous) @ overlay_bundle.js:149
+C @ overlay_bundle.js:45
+(anonymous) @ overlay_bundle.js:160Understand this error
+api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+897d6fe6-de74-47e6-8f01-0c88c0d00584:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+1a6212a8-a420-41b3-8147-a77f8eca163a:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+6The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.
