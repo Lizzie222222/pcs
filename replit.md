@@ -16,9 +16,8 @@ This web application supports the Plastic Clever Schools program, a three-stage 
   - Added comprehensive logging of full invitation URL (acceptUrl) for production debugging
   - Updated invitation button link with `target="_blank"` and `rel="noopener noreferrer"` attributes for better email client compatibility
   - Improved URL handling to prevent broken invitation links in production
-- **Enhanced welcome email content**: Added "Your First Step: Inspire" section to guide new schools through their first actions
-  - Highlighted box explaining the Inspire stage purpose (building awareness about plastic pollution)
-  - Clear action items: watch educational videos, discuss with students, share evidence of learning
+- **Enhanced welcome email content**: Added simplified "Your First Step: Inspire" section to indicate the starting point for new schools
+  - Clean, concise message: "This is your first step: Inspire"
   - Styled with light blue background and border for visual prominence
 - **Unified branding across all email services**: Consistent navy blue (#204969) branding across SendGrid (main email service) and Mailchimp (bulk campaigns)
 
