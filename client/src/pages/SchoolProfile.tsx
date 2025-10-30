@@ -90,6 +90,7 @@ interface SchoolTeacher {
   role: string;
   isVerified: boolean;
   createdAt: string;
+  legacyEvidenceCount?: number;
 }
 
 interface Evidence {
@@ -553,6 +554,7 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
                 <th className="text-left p-3 font-semibold text-navy">Email</th>
                 <th className="text-left p-3 font-semibold text-navy">Role</th>
                 <th className="text-left p-3 font-semibold text-navy">Status</th>
+                <th className="text-left p-3 font-semibold text-navy">Legacy Evidence</th>
                 <th className="text-left p-3 font-semibold text-navy">Joined</th>
               </tr>
             </thead>
@@ -584,6 +586,9 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
                         Pending
                       </Badge>
                     )}
+                  </td>
+                  <td className="p-3 text-gray-600" data-testid={`text-legacy-evidence-${teacher.userId}`}>
+                    {teacher.legacyEvidenceCount ? `${teacher.legacyEvidenceCount} submissions` : '0 submissions'}
                   </td>
                   <td className="p-3 text-gray-600">
                     {new Date(teacher.createdAt).toLocaleDateString()}

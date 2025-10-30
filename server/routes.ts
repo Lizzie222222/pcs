@@ -6385,6 +6385,7 @@ Return JSON with:
         isVerified: su.isVerified,
         joinedAt: su.createdAt,
         createdAt: su.createdAt,
+        legacyEvidenceCount: su.legacyEvidenceCount || 0,
       }));
       
       res.json(teachers);
