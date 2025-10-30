@@ -356,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         resourceType: resourceType as string,
         theme: theme as string,
         search: search as string,
-        visibility: isAuthenticated ? undefined : 'public', // Only public resources for non-authenticated users
+        visibility: 'public', // Resources page should only show public resources
         limit: limit ? parseInt(limit as string) : 20,
         offset: offset ? parseInt(offset as string) : 0,
       });
@@ -951,9 +951,9 @@ Return JSON with:
       
       // Fetch approved evidence
       if (shouldFetchEvidence) {
-        // Determine visibility based on authentication
-        // For private evidence, ACL rules will be enforced at file access level
-        const visibilityFilter = isAuthenticated ? 'private' : 'public';
+        // IMPORTANT: Private evidence should ONLY be visible to the uploading school and admins
+        // The inspiration gallery should ONLY show public evidence to everyone
+        const visibilityFilter = 'public';
         
         const evidenceList = await storage.getApprovedEvidenceForInspiration({
           stage: stage as string,

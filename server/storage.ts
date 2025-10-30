@@ -4761,6 +4761,7 @@ export class DatabaseStorage implements IStorage {
           .where(
             and(
               eq(resources.isActive, true),
+              eq(resources.visibility, 'public'),
               ilike(resources.title, `%${query}%`)
             )
           )
@@ -4878,6 +4879,7 @@ export class DatabaseStorage implements IStorage {
           .where(
             and(
               eq(resources.isActive, true),
+              eq(resources.visibility, 'public'),
               sql`to_tsvector('english', ${resources.title} || ' ' || coalesce(${resources.description}, '')) @@ websearch_to_tsquery('english', ${query})`
             )
           )
@@ -4908,6 +4910,7 @@ export class DatabaseStorage implements IStorage {
           .where(
             and(
               eq(resources.isActive, true),
+              eq(resources.visibility, 'public'),
               or(
                 ilike(resources.title, `%${query}%`),
                 ilike(resources.description, `%${query}%`)
@@ -4927,6 +4930,7 @@ export class DatabaseStorage implements IStorage {
         .where(
           and(
             eq(resources.isActive, true),
+            eq(resources.visibility, 'public'),
             ilike(resources.title, `%${query}%`)
           )
         )
@@ -5198,6 +5202,7 @@ export class DatabaseStorage implements IStorage {
             .where(
               and(
                 eq(resources.isActive, true),
+                eq(resources.visibility, 'public'),
                 ilike(resources.title, `%${query}%`)
               )
             )
