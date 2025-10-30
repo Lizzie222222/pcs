@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -26,11 +26,18 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, ClipboardCheck } from "lucide-react";
+import { Loader2, ClipboardCheck, Plus, Trash2 } from "lucide-react";
 
 interface UploadAuditDialogProps {
   open: boolean;
@@ -81,10 +88,24 @@ const part4Schema = z.object({
   wasteManagementNotes: z.string().optional(),
 });
 
+const promiseItemSchema = z.object({
+  plasticItemType: z.string().min(1, "Item type required"),
+  plasticItemLabel: z.string().min(1, "Item label required"),
+  baselineQuantity: z.coerce.number().min(1, "Baseline must be at least 1"),
+  targetQuantity: z.coerce.number().min(0, "Target must be 0 or more"),
+  timeframeUnit: z.enum(['week', 'month', 'year']),
+  notes: z.string().optional(),
+});
+
+const part5Schema = z.object({
+  promises: z.array(promiseItemSchema).min(2, "At least 2 action items required")
+});
+
 type Part1Data = z.infer<typeof part1Schema>;
 type Part2Data = z.infer<typeof part2Schema>;
 type Part3Data = z.infer<typeof part3Schema>;
 type Part4Data = z.infer<typeof part4Schema>;
+type Part5Data = z.infer<typeof part5Schema>;
 
 export function UploadAuditDialog({
   open,
@@ -155,6 +176,35 @@ export function UploadAuditDialog({
     },
   });
 
+  const form5 = useForm<Part5Data>({
+    resolver: zodResolver(part5Schema),
+    defaultValues: {
+      promises: [
+        {
+          plasticItemType: "",
+          plasticItemLabel: "",
+          baselineQuantity: 0,
+          targetQuantity: 0,
+          timeframeUnit: "month" as const,
+          notes: "",
+        },
+        {
+          plasticItemType: "",
+          plasticItemLabel: "",
+          baselineQuantity: 0,
+          targetQuantity: 0,
+          timeframeUnit: "month" as const,
+          notes: "",
+        },
+      ],
+    },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form5.control,
+    name: "promises",
+  });
+
   // Pre-populate form with school data
   useEffect(() => {
     if (schoolData && open) {
@@ -175,8 +225,9 @@ export function UploadAuditDialog({
       const isValid2 = await form2.trigger();
       const isValid3 = await form3.trigger();
       const isValid4 = await form4.trigger();
+      const isValid5 = await form5.trigger();
 
-      if (!isValid1 || !isValid2 || !isValid3 || !isValid4) {
+      if (!isValid1 || !isValid2 || !isValid3 || !isValid4 || !isValid5) {
         throw new Error("Please fill in all required fields");
       }
 
@@ -184,6 +235,13 @@ export function UploadAuditDialog({
       const part2Data = form2.getValues();
       const part3Data = form3.getValues();
       const part4Data = form4.getValues();
+      const part5Data = form5.getValues();
+
+      // Calculate reduction promises with reductionAmount
+      const reductionPromises = part5Data.promises.map(promise => ({
+        ...promise,
+        reductionAmount: promise.baselineQuantity - promise.targetQuantity,
+      }));
 
       return await apiRequest("POST", "/api/audits", {
         schoolId,
@@ -192,6 +250,8 @@ export function UploadAuditDialog({
         part2Data,
         part3Data,
         part4Data,
+        part5Data,
+        reductionPromises,
       });
     },
     onSuccess: () => {
@@ -218,6 +278,7 @@ export function UploadAuditDialog({
     form2.reset();
     form3.reset();
     form4.reset();
+    form5.reset();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -239,7 +300,7 @@ export function UploadAuditDialog({
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
-          <Accordion type="multiple" defaultValue={["part1", "part2", "part3", "part4"]} className="w-full">
+          <Accordion type="multiple" defaultValue={["part1", "part2", "part3", "part4", "part5"]} className="w-full">
             {/* Part 1 - School Information */}
             <AccordionItem value="part1">
               <AccordionTrigger className="text-base font-semibold">
@@ -782,11 +843,188 @@ export function UploadAuditDialog({
                 </Form>
               </AccordionContent>
             </AccordionItem>
+
+            {/* Part 5 - Reduction Promises */}
+            <AccordionItem value="part5">
+              <AccordionTrigger className="text-base font-semibold">
+                Part 5: Reduction Promises (Action Plan)
+              </AccordionTrigger>
+              <AccordionContent>
+                <Form {...form5}>
+                  <div className="space-y-4 pt-2">
+                    <p className="text-sm text-muted-foreground">
+                      Create at least 2 commitments to reduce specific plastic items. These promises form your school's action plan for reducing plastic waste.
+                    </p>
+                    
+                    {fields.map((field, index) => (
+                      <div key={field.id} className="border rounded-lg p-4 space-y-3 relative">
+                        <div className="flex justify-between items-center mb-2">
+                          <h4 className="font-medium text-sm">Action Item {index + 1}</h4>
+                          {fields.length > 2 && (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => remove(index)}
+                              data-testid={`part5-remove-${index}`}
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          )}
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3">
+                          <FormField
+                            control={form5.control}
+                            name={`promises.${index}.plasticItemType`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Plastic Item Type *</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="e.g., plastic_bottles"
+                                    data-testid={`part5-itemtype-${index}`}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form5.control}
+                            name={`promises.${index}.plasticItemLabel`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Item Label *</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    {...field} 
+                                    placeholder="e.g., Plastic Water Bottles"
+                                    data-testid={`part5-itemlabel-${index}`}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <div className="grid grid-cols-3 gap-3">
+                          <FormField
+                            control={form5.control}
+                            name={`promises.${index}.baselineQuantity`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Baseline Quantity *</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    {...field}
+                                    min="1"
+                                    data-testid={`part5-baseline-${index}`}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form5.control}
+                            name={`promises.${index}.targetQuantity`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Target Quantity *</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    type="number" 
+                                    {...field}
+                                    min="0"
+                                    data-testid={`part5-target-${index}`}
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form5.control}
+                            name={`promises.${index}.timeframeUnit`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Timeframe *</FormLabel>
+                                <Select 
+                                  onValueChange={field.onChange} 
+                                  defaultValue={field.value}
+                                >
+                                  <FormControl>
+                                    <SelectTrigger data-testid={`part5-timeframe-${index}`}>
+                                      <SelectValue placeholder="Select timeframe" />
+                                    </SelectTrigger>
+                                  </FormControl>
+                                  <SelectContent>
+                                    <SelectItem value="week">Week</SelectItem>
+                                    <SelectItem value="month">Month</SelectItem>
+                                    <SelectItem value="year">Year</SelectItem>
+                                  </SelectContent>
+                                </Select>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+
+                        <FormField
+                          control={form5.control}
+                          name={`promises.${index}.notes`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Notes (Optional)</FormLabel>
+                              <FormControl>
+                                <Textarea 
+                                  {...field}
+                                  placeholder="Additional details about this commitment..."
+                                  rows={2}
+                                  data-testid={`part5-notes-${index}`}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    ))}
+
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => append({
+                        plasticItemType: "",
+                        plasticItemLabel: "",
+                        baselineQuantity: 0,
+                        targetQuantity: 0,
+                        timeframeUnit: "month" as const,
+                        notes: "",
+                      })}
+                      data-testid="part5-add-promise"
+                      className="w-full"
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      Add Another Promise
+                    </Button>
+                  </div>
+                </Form>
+              </AccordionContent>
+            </AccordionItem>
           </Accordion>
 
           <div className="bg-blue-50 border border-blue-200 rounded p-3 mt-4">
             <p className="text-sm text-blue-800">
-              <strong>Note:</strong> Admin submissions are automatically approved. Part 5 (Reduction Promises) can be added separately after the audit is submitted.
+              <strong>Note:</strong> Admin submissions are automatically approved and include all 5 parts of the audit.
             </p>
           </div>
 
