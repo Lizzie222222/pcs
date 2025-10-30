@@ -4848,7 +4848,7 @@ Return JSON with:
   });
 
   // Admin: Review audit (approve/reject)
-  app.put('/api/admin/audits/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.patch('/api/admin/audits/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const { approved, reviewNotes } = req.body;
       const reviewerId = req.user.id;
