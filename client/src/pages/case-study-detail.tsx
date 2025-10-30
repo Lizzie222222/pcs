@@ -151,13 +151,13 @@ export default function CaseStudyDetail() {
       <div className="min-h-screen bg-gray-50 pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-navy mb-4">Case Study Not Found</h1>
+            <h1 className="text-3xl font-bold text-navy mb-4">Case study not found</h1>
             <p className="text-gray-600 mb-8">
               The case study you're looking for doesn't exist or has been removed.
             </p>
             <Button onClick={() => setLocation('/inspiration')} data-testid="button-back-inspiration">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Inspiration
+              Back to inspiration
             </Button>
           </div>
         </div>
@@ -192,7 +192,7 @@ export default function CaseStudyDetail() {
           data-testid="button-back"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Success Stories
+          Back to success stories
         </Button>
 
         <div className="flex flex-wrap gap-4 mb-12 scroll-reveal">
@@ -224,7 +224,7 @@ export default function CaseStudyDetail() {
 
         <Card className="bg-gradient-to-r from-ocean-blue to-teal text-white scroll-reveal-scale">
           <CardContent className="p-8">
-            <h3 className="text-2xl font-semibold mb-3">Want to Create Your Own Success Story?</h3>
+            <h3 className="text-2xl font-semibold mb-3">Want to create your own success story?</h3>
             <p className="mb-6 opacity-90 text-lg">
               Join hundreds of schools worldwide making a real difference in the fight against plastic pollution.
               Register your school today and start your journey towards becoming a Plastic Clever School.
@@ -234,7 +234,7 @@ export default function CaseStudyDetail() {
               className="bg-white text-ocean-blue hover:bg-gray-100"
               data-testid="button-register-cta"
             >
-              Register Your School
+              Register your school
             </Button>
           </CardContent>
         </Card>
@@ -286,7 +286,7 @@ function RelatedCaseStudies({ caseStudyId, currentStage }: RelatedCaseStudiesPro
     return (
       <div className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-navy mb-8">Related Success Stories</h2>
+          <h2 className="text-3xl font-bold text-navy mb-8">Related success stories</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {[1, 2, 3, 4].map((i) => (
               <div key={i} className="animate-pulse">
@@ -310,7 +310,7 @@ function RelatedCaseStudies({ caseStudyId, currentStage }: RelatedCaseStudiesPro
   return (
     <div className="bg-gray-50 py-16">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-navy mb-8">Related Success Stories</h2>
+        <h2 className="text-3xl font-bold text-navy mb-8">Related success stories</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {relatedCaseStudies.map((relatedCase) => {
             const displayImage = relatedCase.images?.[0]?.url || relatedCase.imageUrl;

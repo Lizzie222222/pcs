@@ -18,7 +18,7 @@ export default function AwardCriteria() {
               <Award className="w-20 h-20 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="text-page-title">
-              Award Criteria
+              Award criteria
             </h1>
             <p className="text-xl md:text-2xl text-white/90 leading-relaxed">
               Clear, achievable goals for each stage of your plastic reduction journey
@@ -32,7 +32,7 @@ export default function AwardCriteria() {
         <div className="container-width">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-navy mb-4">
-              Earning Your Award
+              Earning your award
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed mb-8">
               The Plastic Clever Schools Award recognizes your commitment to reducing plastic waste. Complete all three stages to earn your official certification and join schools worldwide making a difference.
@@ -260,7 +260,7 @@ export default function AwardCriteria() {
         <div className="container-width">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-navy text-center mb-8">
-              Evidence Submission Guidelines
+              Evidence submission guidelines
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <Card>
@@ -299,7 +299,7 @@ export default function AwardCriteria() {
       <section className="py-16 bg-gradient-to-br from-teal to-ocean-blue text-white">
         <div className="container-width text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Start Your Award Journey Today
+            Start your award journey today
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
             Join schools worldwide earning recognition for their environmental action
@@ -310,7 +310,7 @@ export default function AwardCriteria() {
             onClick={() => window.location.href = '/register'}
             data-testid="button-register-cta"
           >
-            Register Your School
+            Register your school
             <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
           </Button>
         </div>

@@ -65,13 +65,13 @@ export default function EvidenceDetail() {
       <div className="min-h-screen bg-gray-50 pt-20">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <h1 className="text-3xl font-bold text-navy mb-4">Evidence Not Found</h1>
+            <h1 className="text-3xl font-bold text-navy mb-4">Evidence not found</h1>
             <p className="text-gray-600 mb-8">
               The evidence you're looking for doesn't exist or has been removed.
             </p>
             <Button onClick={() => setLocation('/inspiration')} data-testid="button-back-inspiration">
               <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Inspiration
+              Back to inspiration
             </Button>
           </div>
         </div>
@@ -89,7 +89,7 @@ export default function EvidenceDetail() {
           data-testid="button-back"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
-          Back to Inspiration
+          Back to inspiration
         </Button>
 
         <Card className="overflow-hidden">

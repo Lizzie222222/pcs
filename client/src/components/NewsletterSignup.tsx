@@ -123,7 +123,7 @@ export function NewsletterSignup({
       <div className={`bg-coral text-navy p-6 rounded-xl shadow-lg border border-coral/20 ${className}`}>
         <div className="max-w-md mx-auto text-center">
           <Mail className="h-10 w-10 mx-auto mb-3 text-navy/80" />
-          <h3 className="text-xl font-bold mb-2 text-navy">Stay Connected</h3>
+          <h3 className="text-xl font-bold mb-2 text-navy">Stay connected</h3>
           <p className="text-navy/80 mb-4 text-sm">
             Get the latest updates on plastic pollution solutions and educational resources.
           </p>
@@ -176,7 +176,7 @@ export function NewsletterSignup({
         <div className="flex items-center justify-center mb-2">
           <Mail className="h-8 w-8 text-blue-600 dark:text-blue-400" />
         </div>
-        <CardTitle className="text-xl">Join Our Newsletter</CardTitle>
+        <CardTitle className="text-xl">Join our newsletter</CardTitle>
         <CardDescription>
           Stay updated with the latest resources, success stories, and tips for tackling plastic pollution in schools.
         </CardDescription>

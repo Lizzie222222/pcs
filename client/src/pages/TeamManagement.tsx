@@ -309,7 +309,7 @@ export default function TeamManagement() {
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-navy mb-2" data-testid="text-page-title">
-            Team Management
+            Team management
           </h1>
           <p className="text-gray-600" data-testid="text-page-description">
             Manage your school's team members, review access requests, and invite new teachers

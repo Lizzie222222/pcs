@@ -20,7 +20,7 @@ export default function Partners() {
               <Heart className="w-20 h-20 text-white" />
             </div>
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="text-page-title">
-              Our Partners
+              Our partners
             </h1>
             <p className="text-xl md:text-2xl text-white/90 leading-relaxed">
               Working together to create a plastic-free future for our schools and oceans
@@ -34,7 +34,7 @@ export default function Partners() {
         <div className="container-width">
           <div className="max-w-4xl mx-auto text-center">
             <h2 className="text-3xl font-bold text-navy mb-4">
-              Stronger Together
+              Stronger together
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed">
               Plastic Clever Schools is proud to collaborate with leading organizations dedicated to tackling plastic pollution. Together, we're empowering students worldwide to take action for our planet.
@@ -48,7 +48,7 @@ export default function Partners() {
         <div className="container-width">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl font-bold text-navy text-center mb-12">
-              Founding Partners
+              Founding partners
             </h2>
             
             <div className="space-y-12">
@@ -88,7 +88,7 @@ export default function Partners() {
                         onClick={() => window.open('https://commonseas.com/', '_blank')}
                         data-testid="button-visit-common-seas"
                       >
-                        Visit Website
+                        Visit website
                         <ExternalLink className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                       </Button>
                     </div>
@@ -132,7 +132,7 @@ export default function Partners() {
                         onClick={() => window.open('https://kidsagainstplastic.co.uk/', '_blank')}
                         data-testid="button-visit-kids-against-plastic"
                       >
-                        Visit Website
+                        Visit website
                         <ExternalLink className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                       </Button>
                     </div>
@@ -149,7 +149,7 @@ export default function Partners() {
         <div className="container-width">
           <div className="max-w-5xl mx-auto">
             <h2 className="text-3xl font-bold text-navy text-center mb-12">
-              Supporting Partners
+              Supporting partners
             </h2>
             
             {/* River Cleanup */}
@@ -204,7 +204,7 @@ export default function Partners() {
         <div className="container-width">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-navy text-center mb-12">
-              Partnership Impact
+              Partnership impact
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               <Card className="text-center">
@@ -243,7 +243,7 @@ export default function Partners() {
       <section className="py-16 bg-gradient-to-br from-navy to-pcs_blue text-white">
         <div className="container-width text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Join Our Growing Community
+            Join our growing community
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
             Backed by world-class partners, supported by passionate educators
@@ -254,7 +254,7 @@ export default function Partners() {
             onClick={() => window.location.href = '/register'}
             data-testid="button-register-cta"
           >
-            Register Your School
+            Register your school
             <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
           </Button>
         </div>

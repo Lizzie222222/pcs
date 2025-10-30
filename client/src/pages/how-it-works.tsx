@@ -17,7 +17,7 @@ export default function HowItWorks() {
         <div className="container-width">
           <div className="max-w-4xl mx-auto text-center">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-6" data-testid="text-page-title">
-              How It Works
+              How it works
             </h1>
             <p className="text-xl md:text-2xl text-white/90 leading-relaxed">
               A simple three-stage journey that empowers students to make a real difference in reducing plastic waste
@@ -31,7 +31,7 @@ export default function HowItWorks() {
         <div className="container-width">
           <div className="max-w-4xl mx-auto text-center mb-12">
             <h2 className="text-3xl font-bold text-navy mb-4">
-              The Plastic Clever Schools Award
+              The Plastic Clever Schools award
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed">
               Our program is designed to be student-led, engaging, and achievable. Schools progress through three distinct stages, each building on the last to create lasting change.
@@ -155,7 +155,7 @@ export default function HowItWorks() {
         <div className="container-width">
           <div className="max-w-4xl mx-auto">
             <h2 className="text-3xl font-bold text-navy text-center mb-12">
-              What Makes Our Program Special
+              What makes our program special
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
               <div className="flex items-start gap-4">
@@ -211,7 +211,7 @@ export default function HowItWorks() {
       <section className="py-16 bg-gradient-to-br from-pcs_blue to-ocean-blue text-white">
         <div className="container-width text-center">
           <h2 className="text-3xl md:text-4xl font-bold mb-6">
-            Ready to Start Your Journey?
+            Ready to start your journey?
           </h2>
           <p className="text-xl text-white/90 mb-8 max-w-2xl mx-auto">
             Join thousands of schools worldwide making a difference
@@ -222,7 +222,7 @@ export default function HowItWorks() {
             onClick={() => window.location.href = '/register'}
             data-testid="button-register-cta"
           >
-            Register Your School
+            Register your school
             <ArrowRight className="w-5 h-5 ml-3 transition-transform duration-300 group-hover:translate-x-1" />
           </Button>
         </div>
