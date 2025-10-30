@@ -4,16 +4,23 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
-**October 30, 2025**: Welcome email template improvements
-- **Updated email header background**: Replaced gradient background with solid navy blue (#204969) to ensure the white logo is visible in all email clients, regardless of light or dark mode.
-  - Changed header from `linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%)` to solid `#204969`
-  - Added CSS meta tags (`color-scheme`, `supported-color-schemes`) for better email client compatibility
-  - Added media queries to enforce navy background in both light and dark mode
-  - Applied `!important` inline styling to header background for maximum client support
-- **Enhanced welcome email content**: Added "Your First Step: Inspire" section to guide new schools through their first actions.
+**October 30, 2025**: Complete email template overhaul for consistency and reliability
+- **Removed ALL gradients from email templates**: Replaced all linear-gradient CSS with solid colors across all SendGrid and Mailchimp email templates for maximum compatibility across email clients (Gmail, Outlook, Apple Mail, etc.).
+  - **Headers**: Changed all headers from gradients to solid navy blue (#204969) ensuring white logo visibility in all email clients and dark modes
+  - **Buttons**: Standardized all CTA buttons to solid navy blue (#204969) with white text across all email types (invitations, events, approvals, notifications, etc.)
+  - **Body backgrounds**: Replaced gradient backgrounds with solid colors (#f4f4f4 or #ffffff)
+  - **Decorative sections**: Updated all decorative elements to use solid colors appropriate to their context
+  - Added CSS meta tags and media queries for enhanced email client compatibility
+  - Applied inline !important styling for maximum client support
+- **Fixed teacher invitation email production issues**: Enhanced invitation link reliability and debugging capabilities
+  - Added comprehensive logging of full invitation URL (acceptUrl) for production debugging
+  - Updated invitation button link with `target="_blank"` and `rel="noopener noreferrer"` attributes for better email client compatibility
+  - Improved URL handling to prevent broken invitation links in production
+- **Enhanced welcome email content**: Added "Your First Step: Inspire" section to guide new schools through their first actions
   - Highlighted box explaining the Inspire stage purpose (building awareness about plastic pollution)
   - Clear action items: watch educational videos, discuss with students, share evidence of learning
   - Styled with light blue background and border for visual prominence
+- **Unified branding across all email services**: Consistent navy blue (#204969) branding across SendGrid (main email service) and Mailchimp (bulk campaigns)
 
 **October 30, 2025**: Resource page tag display enhancement
 - **Added unified tag display to resource cards**: Language is now displayed as a tag alongside other resource tags for consistent categorization.
