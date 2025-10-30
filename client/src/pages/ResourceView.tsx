@@ -317,6 +317,11 @@ export default function ResourceView() {
                 {resource.theme.replace(/_/g, ' ').toUpperCase()}
               </Badge>
             )}
+            {resource.language && (
+              <Badge variant="outline" data-testid="badge-language">
+                {resource.language}
+              </Badge>
+            )}
           </div>
 
           <h1 className="text-4xl md:text-5xl font-bold text-navy mb-4 tracking-tight" data-testid="text-resource-title">
@@ -372,12 +377,12 @@ export default function ResourceView() {
             ) : (
               <Button
                 size="lg"
-                className="bg-gradient-to-r from-teal to-ocean-blue hover:from-teal/80 hover:to-ocean-blue/80 text-white font-semibold shadow-md"
+                className="bg-coral hover:bg-coral/90 text-white font-semibold shadow-md"
                 onClick={handleDownload}
                 data-testid="button-download"
               >
                 <Download className="h-5 w-5 mr-2" />
-                Download Resource
+                Download Resource ({formatFileSize(resource.fileSize || 0)})
               </Button>
             )}
             
