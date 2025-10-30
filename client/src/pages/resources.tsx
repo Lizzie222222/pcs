@@ -523,7 +523,7 @@ export default function Resources() {
                 data-testid={`button-download-${resource.id}`}
               >
                 <Download className="h-4 w-4 sm:mr-1" />
-                <span className="hidden sm:inline truncate">{t('resource_card.download_resource', { defaultValue: 'Download' })} ({formatFileSize(resource.fileSize || 0)})</span>
+                <span className="hidden sm:inline truncate">Download ({formatFileSize(resource.fileSize || 0)})</span>
                 <span className="sm:hidden truncate">({formatFileSize(resource.fileSize || 0)})</span>
               </Button>
             )}
