@@ -2253,7 +2253,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
               {fields.map((field, index) => {
                 const availableItems = extractAuditItems();
-                const selectedItem = form5.watch(`promises.${index}.plasticItemType`);
+                const selectedItem = form6.watch(`promises.${index}.plasticItemType`);
                 const selectedItemData = availableItems.find(item => item.type === selectedItem);
 
                 return (
@@ -2275,7 +2275,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
                     <div className="grid gap-4">
                       <FormField
-                        control={form5.control}
+                        control={form6.control}
                         name={`promises.${index}.plasticItemType`}
                         render={({ field: formField }) => (
                           <FormItem>
@@ -2285,8 +2285,8 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                                 formField.onChange(value);
                                 const item = availableItems.find(i => i.type === value);
                                 if (item) {
-                                  form5.setValue(`promises.${index}.plasticItemLabel`, item.label);
-                                  form5.setValue(`promises.${index}.baselineQuantity`, item.quantity);
+                                  form6.setValue(`promises.${index}.plasticItemLabel`, item.label);
+                                  form6.setValue(`promises.${index}.baselineQuantity`, item.quantity);
                                 }
                               }}
                               value={formField.value}
@@ -2312,7 +2312,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                       {selectedItemData && (
                         <div className="grid grid-cols-2 gap-4">
                           <FormField
-                            control={form5.control}
+                            control={form6.control}
                             name={`promises.${index}.baselineQuantity`}
                             render={({ field: formField }) => (
                               <FormItem>
@@ -2331,7 +2331,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                           />
 
                           <FormField
-                            control={form5.control}
+                            control={form6.control}
                             name={`promises.${index}.targetQuantity`}
                             render={({ field: formField }) => (
                               <FormItem>
@@ -2352,7 +2352,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                       )}
 
                       <FormField
-                        control={form5.control}
+                        control={form6.control}
                         name={`promises.${index}.timeframeUnit`}
                         render={({ field: formField }) => (
                           <FormItem>
@@ -2375,7 +2375,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                       />
 
                       <FormField
-                        control={form5.control}
+                        control={form6.control}
                         name={`promises.${index}.notes`}
                         render={({ field: formField }) => (
                           <FormItem>
@@ -2392,10 +2392,10 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                         )}
                       />
 
-                      {selectedItemData && form5.watch(`promises.${index}.baselineQuantity`) > 0 && (
+                      {selectedItemData && form6.watch(`promises.${index}.baselineQuantity`) > 0 && (
                         <div className="bg-blue-50 p-3 rounded border border-blue-200">
                           <p className="text-sm font-semibold text-navy">
-                            Reduction: {form5.watch(`promises.${index}.baselineQuantity`) - form5.watch(`promises.${index}.targetQuantity`)} items per {form5.watch(`promises.${index}.timeframeUnit`)}
+                            Reduction: {form6.watch(`promises.${index}.baselineQuantity`) - form6.watch(`promises.${index}.targetQuantity`)} items per {form6.watch(`promises.${index}.timeframeUnit`)}
                           </p>
                         </div>
                       )}
@@ -2421,8 +2421,8 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 Add Another Promise
               </Button>
 
-              {form5.formState.errors.promises?.root && (
-                <p className="text-sm text-red-500">{form5.formState.errors.promises.root.message}</p>
+              {form6.formState.errors.promises?.root && (
+                <p className="text-sm text-red-500">{form6.formState.errors.promises.root.message}</p>
               )}
 
               {/* Promises Summary */}
@@ -2434,7 +2434,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   </p>
                   <div className="space-y-2">
                     {fields.map((field, index) => {
-                      const promise = form5.watch(`promises.${index}`);
+                      const promise = form6.watch(`promises.${index}`);
                       const reduction = promise.baselineQuantity - promise.targetQuantity;
                       return promise.plasticItemLabel ? (
                         <div key={field.id} className="text-sm bg-white p-2 rounded">
