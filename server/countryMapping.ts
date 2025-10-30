@@ -1,5 +1,6 @@
 // Mapping of country codes to full country names
 export const COUNTRY_CODE_TO_NAME: Record<string, string> = {
+  'AE': 'United Arab Emirates',
   'AF': 'Afghanistan',
   'AL': 'Albania',
   'AR': 'Argentina',
