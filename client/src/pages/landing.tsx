@@ -301,20 +301,18 @@ export default function Landing() {
       {/* Impact Ribbon - Database-driven stats */}
       <section className="py-6 bg-navy">
         <div className="container-width">
-          <div className="flex flex-wrap justify-center items-center gap-4 md:gap-8 text-white text-center px-4">
-            <div className="flex items-center gap-2" data-testid="impact-ribbon-schools">
-              <span className="text-xl sm:text-2xl md:text-3xl font-bold">{stats?.totalSchools?.toLocaleString() || '0'}</span>
-              <span className="text-sm md:text-base">{t('stats.schools_label')}</span>
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 text-white text-center px-4">
+            <div className="flex flex-col gap-1" data-testid="impact-ribbon-schools">
+              <span className="text-2xl sm:text-3xl md:text-4xl font-bold">{stats?.totalSchools?.toLocaleString() || '0'}</span>
+              <span className="text-base md:text-lg">{t('stats.schools_label')}</span>
             </div>
-            <div className="hidden md:block text-2xl text-white/50">|</div>
-            <div className="flex items-center gap-2" data-testid="impact-ribbon-countries">
-              <span className="text-xl sm:text-2xl md:text-3xl font-bold">{stats?.countries?.toLocaleString() || '0'}</span>
-              <span className="text-sm md:text-base">{t('stats.countries_label')}</span>
+            <div className="flex flex-col gap-1" data-testid="impact-ribbon-countries">
+              <span className="text-2xl sm:text-3xl md:text-4xl font-bold">{stats?.countries?.toLocaleString() || '0'}</span>
+              <span className="text-base md:text-lg">{t('stats.countries_label')}</span>
             </div>
-            <div className="hidden md:block text-2xl text-white/50">|</div>
-            <div className="flex items-center gap-2" data-testid="impact-ribbon-actions">
-              <span className="text-xl sm:text-2xl md:text-3xl font-bold">{stats?.completedAwards?.toLocaleString() || '0'}</span>
-              <span className="text-sm md:text-base">{t('stats.actions_taken_label')}</span>
+            <div className="flex flex-col gap-1" data-testid="impact-ribbon-actions">
+              <span className="text-2xl sm:text-3xl md:text-4xl font-bold">{stats?.completedAwards?.toLocaleString() || '0'}</span>
+              <span className="text-base md:text-lg">{t('stats.actions_taken_label')}</span>
             </div>
           </div>
         </div>
