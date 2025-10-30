@@ -1,22 +1,22 @@
 {
   "page": {
-    "title": "Inspiring Success Stories",
+    "title": "Inspiring success stories",
     "description": "Discover amazing initiatives from schools around the world making a real difference in the fight against plastic pollution"
   },
   "filters": {
-    "title": "Filter Success Stories",
-    "clear_all": "Clear All",
+    "title": "Filter success stories",
+    "clear_all": "Clear all",
     "search_placeholder": "Search by school name...",
-    "all_countries": "All Countries",
-    "all_stages": "All Stages",
-    "all_content": "All Content",
-    "all_categories": "All Categories",
-    "all_tags": "All Tags",
-    "select_categories": "Select Categories",
-    "select_tags": "Select Tags",
-    "featured_only": "Featured Only",
-    "categories_count": "{{count}} Categories",
-    "tags_count": "{{count}} Tags"
+    "all_countries": "All countries",
+    "all_stages": "All stages",
+    "all_content": "All content",
+    "all_categories": "All categories",
+    "all_tags": "All tags",
+    "select_categories": "Select categories",
+    "select_tags": "Select tags",
+    "featured_only": "Featured only",
+    "categories_count": "{{count}} categories",
+    "tags_count": "{{count}} tags"
   },
   "stages": {
     "inspire": "Inspire",
@@ -24,12 +24,12 @@
     "act": "Act"
   },
   "content_types": {
-    "case_study": "Case Studies",
-    "evidence": "School Evidence"
+    "case_study": "Case studies",
+    "evidence": "School evidence"
   },
   "badges": {
-    "case_study": "Case Study",
-    "school_evidence": "School Evidence",
+    "case_study": "Case study",
+    "school_evidence": "School evidence",
     "featured": "Featured"
   },
   "results": {
@@ -39,17 +39,17 @@
     "filtered": "(filtered)"
   },
   "featured": {
-    "badge": "Featured Success Story",
-    "read_full_story": "Read Full Story"
+    "badge": "Featured success story",
+    "read_full_story": "Read full story"
   },
   "actions": {
-    "read_more": "Read More",
-    "load_more": "Load More Stories",
+    "read_more": "Read more",
+    "load_more": "Load more stories",
     "loading": "Loading..."
   },
   "empty": {
-    "title": "No Success Stories Found",
+    "title": "No success stories found",
     "description": "Try adjusting your search criteria or check back later for new inspiring stories.",
-    "clear_filters": "Clear All Filters"
+    "clear_filters": "Clear all filters"
   }
 }

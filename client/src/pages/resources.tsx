@@ -868,7 +868,7 @@ export default function Resources() {
                   <div>
                     {isAuthenticated && recommended.length > 0 && (
                       <div className="mb-6 mt-12">
-                        <h2 className="text-2xl font-bold text-navy">All Resources</h2>
+                        <h2 className="text-2xl font-bold text-navy">All resources</h2>
                         <p className="text-gray-600">Browse all available resources</p>
                       </div>
                     )}
@@ -944,7 +944,7 @@ export default function Resources() {
                 {isAuthenticated && recommendedPacks.length > 0 && (
                   <div className="mb-12">
                     <div className="mb-6">
-                      <h2 className="text-2xl font-bold text-navy">Recommended Packs for Your School</h2>
+                      <h2 className="text-2xl font-bold text-navy">Recommended packs for your school</h2>
                       <p className="text-gray-600">Resource packs matching your current stage: {dashboardData?.school?.currentStage}</p>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" data-testid="recommended-packs-section">
@@ -960,7 +960,7 @@ export default function Resources() {
                   <div>
                     {isAuthenticated && recommendedPacks.length > 0 && (
                       <div className="mb-6 mt-12">
-                        <h2 className="text-2xl font-bold text-navy">All Resource Packs</h2>
+                        <h2 className="text-2xl font-bold text-navy">All resource packs</h2>
                         <p className="text-gray-600">Browse all available resource packs</p>
                       </div>
                     )}
@@ -982,7 +982,7 @@ export default function Resources() {
                       className="shadow-md hover:shadow-lg transition-shadow"
                       data-testid="button-load-more-packs"
                     >
-                      Load More Packs
+                      Load more packs
                     </Button>
                   </div>
                 )}
@@ -990,10 +990,10 @@ export default function Resources() {
                 {resourcePacks && resourcePacks.length === 0 && (
                   <EmptyState
                     icon={Package}
-                    title="No Resource Packs Found"
+                    title="No resource packs found"
                     description="No resource packs match your current filters. Try adjusting your search criteria."
                     action={{
-                      label: "Clear Filters",
+                      label: "Clear filters",
                       onClick: () => {
                         setFilters({
                           search: '',
@@ -1056,12 +1056,12 @@ export default function Resources() {
                     data-testid="button-download-all-pack"
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Download All {packDetail.resources.length} Resources
+                    Download all {packDetail.resources.length} resources
                   </Button>
 
                   {/* Resources List */}
                   <div>
-                    <h3 className="text-lg font-semibold text-navy mb-4">Resources in this Pack</h3>
+                    <h3 className="text-lg font-semibold text-navy mb-4">Resources in this pack</h3>
                     <div className="space-y-3">
                       {packDetail.resources.map((resource) => (
                         <Card key={resource.id} className="hover:shadow-md transition-shadow" data-testid={`pack-resource-${resource.id}`}>

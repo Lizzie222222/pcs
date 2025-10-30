@@ -369,7 +369,7 @@
   },
   "events": {
     "loading": "Loading events...",
-    "header": "Upcoming Events",
+    "header": "Upcoming events",
     "description": "Join workshops, webinars, and community events",
     "filter_placeholder": "Filter by type",
     "filter_all": "All Events",

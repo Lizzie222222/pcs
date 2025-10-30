@@ -4,22 +4,22 @@
     "subtitle": "Engaging toolkits, lessons, and resources to boost ocean, plastic, and climate literacy—empowering your journey to become Plastic Clever."
   },
   "search": {
-    "title": "Search & Filter Resources",
+    "title": "Search & filter resources",
     "placeholder": "Search resources...",
-    "all_stages": "All Stages",
-    "all_countries": "All Countries",
-    "all_languages": "All Languages",
-    "all_status": "All Status",
-    "all_ages": "All Ages",
-    "all_resource_types": "All Resource Types",
-    "all_themes": "All Themes"
+    "all_stages": "All stages",
+    "all_countries": "All countries",
+    "all_languages": "All languages",
+    "all_status": "All status",
+    "all_ages": "All ages",
+    "all_resource_types": "All resource types",
+    "all_themes": "All themes"
   },
   "filters": {
     "stage": "Stage",
     "country": "Country",
     "language": "Language",
-    "age_range": "Age Range",
-    "file_type": "File Type",
+    "age_range": "Age range",
+    "file_type": "File type",
     "status": "Status"
   },
   "stages": {
@@ -53,7 +53,7 @@
     "16_plus": "16+"
   },
   "file_types": {
-    "pdf": "PDF Document",
+    "pdf": "PDF document",
     "video": "Video",
     "image": "Image",
     "presentation": "Presentation",
@@ -66,7 +66,7 @@
     "file_size": "File size",
     "age_range": "Age range",
     "global": "Global",
-    "download_resource": "Download Resource"
+    "download_resource": "Download resource"
   },
   "units": {
     "bytes": "Bytes",
@@ -75,36 +75,36 @@
     "gb": "GB"
   },
   "empty_state": {
-    "title": "No Resources Found",
+    "title": "No resources found",
     "message": "Try adjusting your search criteria or check back later for new resources.",
-    "clear_filters": "Clear Filters"
+    "clear_filters": "Clear filters"
   },
   "categories": {
-    "lesson_plans": "Lesson Plans",
+    "lesson_plans": "Lesson plans",
     "worksheets": "Worksheets", 
     "presentations": "Presentations",
     "videos": "Videos",
     "posters": "Posters",
-    "assessment_tools": "Assessment Tools",
-    "case_studies": "Case Studies",
-    "research_materials": "Research Materials"
+    "assessment_tools": "Assessment tools",
+    "case_studies": "Case studies",
+    "research_materials": "Research materials"
   },
-  "load_more_resources": "Load More Resources",
+  "load_more_resources": "Load more resources",
   "accessibility": {
     "download_started": "Download started for {{title}}",
     "resource_unavailable": "This resource is currently unavailable",
     "large_file_warning": "This is a large file ({{size}}). Download may take some time."
   },
   "toasts": {
-    "link_copied": "Link Copied!",
+    "link_copied": "Link copied!",
     "link_copied_desc": "The resource link has been copied to your clipboard.",
-    "copy_failed": "Copy Failed",
+    "copy_failed": "Copy failed",
     "copy_failed_desc": "Unable to copy link to clipboard. Please try again.",
-    "pack_link_copied": "Pack Link Copied!",
+    "pack_link_copied": "Pack link copied!",
     "pack_link_copied_desc": "The resource pack link has been copied to your clipboard.",
-    "download_started": "Download Started",
+    "download_started": "Download started",
     "download_started_desc": "Downloading {{count}} resources from the pack...",
-    "download_failed": "Download Failed",
+    "download_failed": "Download failed",
     "download_failed_desc": "Unable to download all resources. Please try again."
   },
   "badges": {
@@ -113,9 +113,9 @@
   },
   "buttons": {
     "view": "View",
-    "copy_link": "Copy Link",
-    "download_all": "Download All",
-    "view_pack": "View Pack"
+    "copy_link": "Copy link",
+    "download_all": "Download all",
+    "view_pack": "View pack"
   },
   "dynamic_text": {
     "resource_count_one": "{{count}} resource",
@@ -125,11 +125,11 @@
   },
   "register_to_access": "Please register or log in to access this resource",
   "recommendations": {
-    "recommended_for_you": "Recommended for You",
+    "recommended_for_you": "Recommended for you",
     "resources_matching_stage": "Resources matching your current stage ({{stage}})"
   },
   "tabs": {
     "resources": "Resources",
-    "resource_packs": "Resource Packs"
+    "resource_packs": "Resource packs"
   }
 }

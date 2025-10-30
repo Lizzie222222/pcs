@@ -122,9 +122,9 @@ export default function SchoolsMap() {
         <div style="font-family: sans-serif;">
           <h3 style="margin: 0 0 8px 0; font-size: 16px; font-weight: 600;">${countryData.countryName}</h3>
           <div style="font-size: 14px; color: #4b5563;">
-            <div style="margin: 4px 0;"><strong>Total Schools:</strong> ${countryData.totalSchools}</div>
-            <div style="margin: 4px 0;"><strong>Awards Completed:</strong> ${countryData.completedAwards}</div>
-            <div style="margin: 4px 0;"><strong>Featured Schools:</strong> ${countryData.featuredSchools}</div>
+            <div style="margin: 4px 0;"><strong>Total schools:</strong> ${countryData.totalSchools}</div>
+            <div style="margin: 4px 0;"><strong>Awards completed:</strong> ${countryData.completedAwards}</div>
+            <div style="margin: 4px 0;"><strong>Featured schools:</strong> ${countryData.featuredSchools}</div>
           </div>
         </div>
       `;
@@ -166,7 +166,7 @@ export default function SchoolsMap() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-navy mb-4" data-testid="text-map-title">
-            Global School Network
+            Global school network
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Countries colored by number of participating schools in the Plastic Clever Schools program
@@ -178,7 +178,7 @@ export default function SchoolsMap() {
           <CardContent className="p-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
               <div className="flex items-center space-x-6">
-                <div className="text-sm text-gray-600 font-medium">School Count:</div>
+                <div className="text-sm text-gray-600 font-medium">School count:</div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#DBEAFE' }}></div>
                   <span className="text-sm text-gray-600">Low</span>
@@ -193,13 +193,13 @@ export default function SchoolsMap() {
                 </div>
                 <div className="flex items-center gap-2">
                   <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#1E3A8A' }}></div>
-                  <span className="text-sm text-gray-600">Very High</span>
+                  <span className="text-sm text-gray-600">Very high</span>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
                 <Select value={selectedCountry || 'all'} onValueChange={handleCountryChange}>
                   <SelectTrigger className="w-48" data-testid="select-country-filter">
-                    <SelectValue placeholder="All Countries" />
+                    <SelectValue placeholder="All countries" />
                   </SelectTrigger>
                   <SelectContent>
                     {countryOptions.map((option) => (
@@ -211,7 +211,7 @@ export default function SchoolsMap() {
                 </Select>
                 <Button variant="outline" data-testid="button-export-data">
                   <Download className="h-4 w-4 mr-2" />
-                  Export Data
+                  Export data
                 </Button>
               </div>
             </div>
@@ -287,7 +287,7 @@ export default function SchoolsMap() {
               <div className="text-2xl font-bold text-navy" data-testid="stat-total-schools">
                 {totalStats.total}
               </div>
-              <div className="text-gray-600 text-sm">Total Schools</div>
+              <div className="text-gray-600 text-sm">Total schools</div>
             </CardContent>
           </Card>
           <Card>
@@ -295,7 +295,7 @@ export default function SchoolsMap() {
               <div className="text-2xl font-bold text-navy" data-testid="stat-completed-awards">
                 {totalStats.completed}
               </div>
-              <div className="text-gray-600 text-sm">Awards Completed</div>
+              <div className="text-gray-600 text-sm">Awards completed</div>
             </CardContent>
           </Card>
           <Card>
@@ -303,7 +303,7 @@ export default function SchoolsMap() {
               <div className="text-2xl font-bold text-navy" data-testid="stat-featured">
                 {totalStats.featured}
               </div>
-              <div className="text-gray-600 text-sm">Featured Schools</div>
+              <div className="text-gray-600 text-sm">Featured schools</div>
             </CardContent>
           </Card>
         </div>
@@ -311,7 +311,7 @@ export default function SchoolsMap() {
         {/* Regional Breakdown */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-navy">Country Breakdown</CardTitle>
+            <CardTitle className="text-navy">Country breakdown</CardTitle>
           </CardHeader>
           <CardContent>
             {isLoading ? (
