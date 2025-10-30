@@ -112,7 +112,7 @@ function getEventTimingStatus(event: EventWithTranslations) {
   const minutesUntilEnd = differenceInMinutes(endDate, now);
   
   if (now >= startDate && now <= endDate) {
-    return { status: 'live', label: 'Live Now', color: 'bg-red-500 animate-pulse' };
+    return { status: 'live', label: 'Live Now', color: 'bg-red-500' };
   } else if (minutesUntilStart > 0 && minutesUntilStart <= 30) {
     return { status: 'starting-soon', label: 'Starting Soon', color: 'bg-orange-500' };
   } else if (minutesUntilStart > 30 && minutesUntilStart <= 120) {
@@ -332,7 +332,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
           <div className="flex items-center gap-3">
             <h2 className="text-3xl font-bold text-navy mb-2">{t('events.header')}</h2>
             {newEventsCount > 0 && (
-              <Badge className="bg-red-500 text-white px-2.5 py-1 text-sm animate-pulse" data-testid="badge-new-events">
+              <Badge className="bg-red-500 text-white px-2.5 py-1 text-sm" data-testid="badge-new-events">
                 {newEventsCount} New
               </Badge>
             )}
@@ -419,7 +419,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                       />
                       <div className="absolute top-3 right-3 flex gap-2 flex-wrap justify-end">
                         {isEventNew(event) && (
-                          <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg animate-pulse" data-testid={`badge-new-${event.id}`}>
+                          <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white shadow-lg" data-testid={`badge-new-${event.id}`}>
                             ✨ New
                           </Badge>
                         )}

@@ -149,7 +149,7 @@ export function NotificationDropdown({ unreadCount }: NotificationDropdownProps)
           <Bell className="h-5 w-5 text-gray-700" />
           {unreadCount > 0 && (
             <Badge 
-              className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center animate-pulse" 
+              className="absolute -top-1 -right-1 bg-red-500 text-white text-xs px-1.5 py-0.5 min-w-[20px] h-5 flex items-center justify-center" 
               data-testid="badge-notification-count"
             >
               {unreadCount > 9 ? '9+' : unreadCount}

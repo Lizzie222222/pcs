@@ -95,7 +95,7 @@ export default function ResourceNotificationBanner({ isAuthenticated }: Resource
           >
             <Bell className={`h-5 w-5 ${
               notification.type === 'new_resource' ? 'text-teal' : 'text-blue-600'
-            } ${isNew ? 'animate-pulse' : ''}`} />
+            }`} />
             <AlertDescription className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex-1">
                 <p className={`font-semibold ${

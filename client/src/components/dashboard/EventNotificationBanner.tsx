@@ -66,7 +66,7 @@ export default function EventNotificationBanner({ isAuthenticated }: EventNotifi
             className={`${isLive ? 'bg-red-50 border-red-500' : 'bg-orange-50 border-orange-500'} relative`}
             data-testid={`event-notification-${registration.event.id}`}
           >
-            <Bell className={`h-5 w-5 ${isLive ? 'text-red-600 animate-pulse' : 'text-orange-600'}`} />
+            <Bell className={`h-5 w-5 ${isLive ? 'text-red-600' : 'text-orange-600'}`} />
             <AlertDescription className="flex items-center justify-between gap-4 flex-wrap">
               <div className="flex-1">
                 <p className={`font-semibold ${isLive ? 'text-red-900' : 'text-orange-900'} mb-1`}>

@@ -867,7 +867,7 @@ export default function Home() {
                           school.currentRound === 1 ? 'bg-gradient-to-r from-blue-500 to-blue-600' :
                           school.currentRound === 2 ? 'bg-gradient-to-r from-purple-500 to-purple-600' :
                           'bg-gradient-to-r from-green-600 to-green-700'
-                        } text-white text-sm px-4 py-1.5 shadow-lg animate-pulse`}
+                        } text-white text-sm px-4 py-1.5 shadow-lg`}
                         data-testid="text-current-round"
                       >
                         Round {school.currentRound}
@@ -917,7 +917,7 @@ export default function Home() {
                 </div>
                 <div className="text-center">
                   <div className="relative inline-flex items-center justify-center w-28 h-28 mb-3">
-                    <div className="absolute inset-0 bg-gradient-to-br from-pcs_blue to-teal rounded-full opacity-20 animate-pulse"></div>
+                    <div className="absolute inset-0 bg-gradient-to-br from-pcs_blue to-teal rounded-full opacity-20"></div>
                     <div className="relative bg-white rounded-full w-24 h-24 flex items-center justify-center shadow-xl border-4 border-white">
                       <span className="text-2xl font-bold text-navy" data-testid="text-progress-percentage">
                         {school.progressPercentage}%
@@ -1017,7 +1017,7 @@ export default function Home() {
               <span className="hidden sm:inline">{t('tabs.events', { ns: 'dashboard' })}</span>
               {newEventsCount > 0 && (
                 <Badge 
-                  className="ml-1 sm:ml-2 bg-red-500 text-white px-1.5 sm:px-2 py-0.5 text-xs font-bold animate-pulse" 
+                  className="ml-1 sm:ml-2 bg-red-500 text-white px-1.5 sm:px-2 py-0.5 text-xs font-bold" 
                   data-testid="badge-new-events-tab"
                 >
                   {newEventsCount}
