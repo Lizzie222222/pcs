@@ -9,15 +9,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Plus, Trash2, Download, Upload } from "lucide-react";
+import { ClipboardCheck, ChevronRight, ChevronLeft, Save, Send, CheckCircle, Download, Upload } from "lucide-react";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from "recharts";
-import type { AuditResponse, ReductionPromise } from "@shared/schema";
+import type { AuditResponse } from "@shared/schema";
 
 interface PlasticWasteAuditProps {
   schoolId: string;
@@ -134,35 +134,10 @@ const part4Schema = z.object({
   wasteManagementNotes: z.string().optional(),
 });
 
-const promiseItemSchema = z.object({
-  plasticItemType: z.string(),
-  plasticItemLabel: z.string(),
-  baselineQuantity: z.coerce.number().min(0),
-  targetQuantity: z.coerce.number().min(0),
-  timeframeUnit: z.enum(['week', 'month', 'year']),
-  notes: z.string().optional(),
-});
-
-const part6Schema = z.object({
-  promises: z.array(promiseItemSchema).min(0).refine(
-    (promises) => {
-      const validPromises = promises.filter(p => 
-        p.plasticItemType.trim() !== "" && 
-        p.plasticItemLabel.trim() !== "" && 
-        p.baselineQuantity > 0
-      );
-      return validPromises.length === 0 || validPromises.length >= 1;
-    },
-    { message: "If adding promises, you must complete at least 1 action item" }
-  )
-});
-
 type Part1Data = z.infer<typeof part1Schema>;
 type Part2Data = z.infer<typeof part2Schema>;
 type Part3Data = z.infer<typeof part3Schema>;
 type Part4Data = z.infer<typeof part4Schema>;
-type Part6Data = z.infer<typeof part6Schema>;
-type PromiseItem = z.infer<typeof promiseItemSchema>;
 
 export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps) {
   const { t } = useTranslation('dashboard');
@@ -291,43 +266,13 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     },
   });
 
-  const form6 = useForm<Part6Data>({
-    resolver: zodResolver(part6Schema),
-    defaultValues: {
-      promises: [
-        {
-          plasticItemType: "",
-          plasticItemLabel: "",
-          baselineQuantity: 0,
-          targetQuantity: 0,
-          timeframeUnit: "month" as const,
-          notes: "",
-        },
-        {
-          plasticItemType: "",
-          plasticItemLabel: "",
-          baselineQuantity: 0,
-          targetQuantity: 0,
-          timeframeUnit: "month" as const,
-          notes: "",
-        },
-      ],
-    },
-  });
-
-  const { fields, append, remove } = useFieldArray({
-    control: form6.control,
-    name: "promises",
-  });
-
   // Upload state and refs
   const [isUploading, setIsUploading] = useState(false);
   const auditFileInputRef = useRef<HTMLInputElement>(null);
-  const actionPlanFileInputRef = useRef<HTMLInputElement>(null);
 
   // Upload mutations
   const uploadMutation = useMutation({
-    mutationFn: async ({ file, formType }: { file: File; formType: 'audit' | 'action_plan' }) => {
+    mutationFn: async ({ file }: { file: File }) => {
       // Validate file
       if (file.type !== 'application/pdf') {
         throw new Error('Only PDF files are allowed');
@@ -337,11 +282,8 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       }
 
       // Get signed URL
-      const { uploadUrl, objectPath } = await apiRequest<{ uploadUrl: string; objectPath: string }>({
-        url: '/api/uploads/printable-forms/signed-url',
-        method: 'POST',
-        body: { formType, filename: file.name, fileSize: file.size },
-      });
+      const response = await apiRequest('POST', '/api/uploads/printable-forms/signed-url', { formType: 'audit', filename: file.name, fileSize: file.size });
+      const { uploadUrl, objectPath } = await response.json() as { uploadUrl: string; objectPath: string };
 
       // Upload to GCS
       const uploadResponse = await fetch(uploadUrl, {
@@ -357,24 +299,20 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       }
 
       // Create submission record
-      const submission = await apiRequest({
-        url: '/api/printable-form-submissions',
-        method: 'POST',
-        body: {
-          schoolId,
-          formType,
-          objectPath,
-          filename: file.name,
-        },
+      const submissionResponse = await apiRequest('POST', '/api/printable-form-submissions', {
+        schoolId,
+        formType: 'audit',
+        objectPath,
+        filename: file.name,
       });
 
-      return submission;
+      return await submissionResponse.json();
     },
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/printable-form-submissions/school/${schoolId}`] });
       toast({
         title: "Upload Successful",
-        description: `${variables.formType === 'audit' ? 'Audit form' : 'Action plan'} uploaded successfully`,
+        description: "Audit form uploaded successfully",
       });
     },
     onError: (error: Error) => {
@@ -386,152 +324,21 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     },
   });
 
-  const handleFileUpload = async (formType: 'audit' | 'action_plan') => {
-    const inputRef = formType === 'audit' ? auditFileInputRef : actionPlanFileInputRef;
+  const handleFileUpload = async () => {
+    const inputRef = auditFileInputRef;
     const file = inputRef.current?.files?.[0];
     
     if (!file) return;
 
     setIsUploading(true);
     try {
-      await uploadMutation.mutateAsync({ file, formType });
+      await uploadMutation.mutateAsync({ file });
     } finally {
       setIsUploading(false);
       if (inputRef.current) {
         inputRef.current.value = '';
       }
     }
-  };
-
-  // Fetch existing promises if audit exists
-  const { data: existingPromises } = useQuery<ReductionPromise[]>({
-    queryKey: [`/api/reduction-promises/audit/${auditId}`],
-    enabled: !!auditId,
-  });
-
-  // Helper function to extract audit items from part2 and part3 data (daily counts)
-  const extractAuditItems = () => {
-    const part2 = form2.getValues();
-    const part3 = form3.getValues();
-    
-    const items: Array<{ type: string; label: string; quantity: number }> = [];
-    
-    // Part 2 - Lunchroom & Staffroom items
-    const lunchroomBottles = parseInt(part2.lunchroomPlasticBottles || "0");
-    const staffroomBottles = parseInt(part2.staffroomPlasticBottles || "0");
-    if (lunchroomBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Lunchroom)", quantity: lunchroomBottles });
-    if (staffroomBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Staffroom)", quantity: staffroomBottles });
-    
-    const lunchroomCups = parseInt(part2.lunchroomPlasticCups || "0");
-    const staffroomCups = parseInt(part2.staffroomPlasticCups || "0");
-    if (lunchroomCups > 0) items.push({ type: "plastic_cups", label: "Plastic Cups (Lunchroom)", quantity: lunchroomCups });
-    if (staffroomCups > 0) items.push({ type: "plastic_cups", label: "Plastic Cups (Staffroom)", quantity: staffroomCups });
-    
-    const lunchroomCutlery = parseInt(part2.lunchroomPlasticCutlery || "0");
-    if (lunchroomCutlery > 0) items.push({ type: "plastic_cutlery", label: "Plastic Cutlery", quantity: lunchroomCutlery });
-    
-    const lunchroomStraws = parseInt(part2.lunchroomPlasticStraws || "0");
-    if (lunchroomStraws > 0) items.push({ type: "plastic_straws", label: "Plastic Straws", quantity: lunchroomStraws });
-    
-    const lunchroomSnackWrappers = parseInt(part2.lunchroomSnackWrappers || "0");
-    const staffroomSnackWrappers = parseInt(part2.staffroomSnackWrappers || "0");
-    if (lunchroomSnackWrappers > 0) items.push({ type: "snack_wrappers", label: "Snack Wrappers (Lunchroom)", quantity: lunchroomSnackWrappers });
-    if (staffroomSnackWrappers > 0) items.push({ type: "snack_wrappers", label: "Snack Wrappers (Staffroom)", quantity: staffroomSnackWrappers });
-    
-    const lunchroomYoghurtPots = parseInt(part2.lunchroomYoghurtPots || "0");
-    const staffroomYoghurtPots = parseInt(part2.staffroomYoghurtPots || "0");
-    if (lunchroomYoghurtPots > 0) items.push({ type: "yoghurt_pots", label: "Yoghurt Pots (Lunchroom)", quantity: lunchroomYoghurtPots });
-    if (staffroomYoghurtPots > 0) items.push({ type: "yoghurt_pots", label: "Yoghurt Pots (Staffroom)", quantity: staffroomYoghurtPots });
-    
-    const lunchroomTakeaway = parseInt(part2.lunchroomTakeawayContainers || "0");
-    const staffroomTakeaway = parseInt(part2.staffroomTakeawayContainers || "0");
-    if (lunchroomTakeaway > 0) items.push({ type: "takeaway_containers", label: "Takeaway Containers (Lunchroom)", quantity: lunchroomTakeaway });
-    if (staffroomTakeaway > 0) items.push({ type: "takeaway_containers", label: "Takeaway Containers (Staffroom)", quantity: staffroomTakeaway });
-    
-    const clingFilm = parseInt(part2.lunchroomClingFilm || "0");
-    if (clingFilm > 0) items.push({ type: "cling_film", label: "Cling Film", quantity: clingFilm });
-    
-    // Part 3 - All rooms
-    const pensPencils = parseInt(part3.classroomPensPencils || "0");
-    if (pensPencils > 0) items.push({ type: "pens_pencils", label: "Pens & Pencils", quantity: pensPencils });
-    
-    const stationery = parseInt(part3.classroomStationery || "0");
-    if (stationery > 0) items.push({ type: "stationery", label: "Stationery Items (Classroom)", quantity: stationery });
-    
-    const displayMaterials = parseInt(part3.classroomDisplayMaterials || "0");
-    if (displayMaterials > 0) items.push({ type: "display_materials", label: "Display Materials (Classroom)", quantity: displayMaterials });
-    
-    const soapBottles = parseInt(part3.toiletSoapBottles || "0");
-    if (soapBottles > 0) items.push({ type: "soap_bottles", label: "Soap Bottles", quantity: soapBottles });
-    
-    const binLiners = parseInt(part3.toiletBinLiners || "0");
-    if (binLiners > 0) items.push({ type: "bin_liners", label: "Bin Liners (Toilet)", quantity: binLiners });
-    
-    const cupsPaper = parseInt(part3.toiletCupsPaper || "0");
-    if (cupsPaper > 0) items.push({ type: "cups_dispensers", label: "Cups/Dispensers", quantity: cupsPaper });
-    
-    const periodProducts = parseInt(part3.toiletPeriodProducts || "0");
-    if (periodProducts > 0) items.push({ type: "period_products", label: "Period Products", quantity: periodProducts });
-    
-    // Office
-    const officeBottles = parseInt(part3.officePlasticBottles || "0");
-    if (officeBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Office)", quantity: officeBottles });
-    
-    const officeCups = parseInt(part3.officePlasticCups || "0");
-    if (officeCups > 0) items.push({ type: "plastic_cups", label: "Plastic Cups (Office)", quantity: officeCups });
-    
-    const officeStationery = parseInt(part3.officeStationery || "0");
-    if (officeStationery > 0) items.push({ type: "stationery", label: "Stationery (Office)", quantity: officeStationery });
-    
-    // Library
-    const libraryBottles = parseInt(part3.libraryPlasticBottles || "0");
-    if (libraryBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Library)", quantity: libraryBottles });
-    
-    const libraryStationery = parseInt(part3.libraryStationery || "0");
-    if (libraryStationery > 0) items.push({ type: "stationery", label: "Stationery (Library)", quantity: libraryStationery });
-    
-    const libraryDisplay = parseInt(part3.libraryDisplayMaterials || "0");
-    if (libraryDisplay > 0) items.push({ type: "display_materials", label: "Display Materials (Library)", quantity: libraryDisplay });
-    
-    // Gym
-    const gymBottles = parseInt(part3.gymPlasticBottles || "0");
-    if (gymBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Gym)", quantity: gymBottles });
-    
-    const sportEquipment = parseInt(part3.gymSportEquipment || "0");
-    if (sportEquipment > 0) items.push({ type: "sport_equipment", label: "Sport Equipment", quantity: sportEquipment });
-    
-    // Playground
-    const playgroundBottles = parseInt(part3.playgroundPlasticBottles || "0");
-    if (playgroundBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Playground)", quantity: playgroundBottles });
-    
-    const toysEquipment = parseInt(part3.playgroundToysEquipment || "0");
-    if (toysEquipment > 0) items.push({ type: "toys_equipment", label: "Toys/Equipment (Playground)", quantity: toysEquipment });
-    
-    // Corridors
-    const corridorsBottles = parseInt(part3.corridorsPlasticBottles || "0");
-    if (corridorsBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Corridors)", quantity: corridorsBottles });
-    
-    const corridorsDisplay = parseInt(part3.corridorsDisplayMaterials || "0");
-    if (corridorsDisplay > 0) items.push({ type: "display_materials", label: "Display Materials (Corridors)", quantity: corridorsDisplay });
-    
-    const corridorsBinLiners = parseInt(part3.corridorsBinLiners || "0");
-    if (corridorsBinLiners > 0) items.push({ type: "bin_liners", label: "Bin Liners (Corridors)", quantity: corridorsBinLiners });
-    
-    // Science Labs
-    const scienceBottles = parseInt(part3.scienceLabsPlasticBottles || "0");
-    if (scienceBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Science Labs)", quantity: scienceBottles });
-    
-    const labEquipment = parseInt(part3.scienceLabsLabEquipment || "0");
-    if (labEquipment > 0) items.push({ type: "lab_equipment", label: "Lab Equipment", quantity: labEquipment });
-    
-    // Art Rooms
-    const artBottles = parseInt(part3.artRoomsPlasticBottles || "0");
-    if (artBottles > 0) items.push({ type: "plastic_bottles", label: "Plastic Bottles (Art Rooms)", quantity: artBottles });
-    
-    const artSupplies = parseInt(part3.artRoomsArtSupplies || "0");
-    if (artSupplies > 0) items.push({ type: "art_supplies", label: "Art Supplies", quantity: artSupplies });
-    
-    return items;
   };
 
   // Helper function to check if a room has any data
@@ -560,7 +367,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       }
       if (existingAudit.part3Data) {
         // Infer room selections from existing data for backward compatibility
-        const part3Data = existingAudit.part3Data;
+        const part3Data = existingAudit.part3Data as any;
         const inferredSelections = {
           selectedClassrooms: hasRoomData(part3Data, ['classroomPensPencils', 'classroomStationery', 'classroomDisplayMaterials', 'classroomOther']),
           selectedToilets: hasRoomData(part3Data, ['toiletSoapBottles', 'toiletBinLiners', 'toiletCupsPaper', 'toiletPeriodProducts', 'toiletOther']),
@@ -606,21 +413,6 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     }
   }, [existingAudit, schoolData]);
 
-  // Load existing promises
-  useEffect(() => {
-    if (existingPromises && existingPromises.length > 0) {
-      const formattedPromises = existingPromises.map(p => ({
-        plasticItemType: p.plasticItemType,
-        plasticItemLabel: p.plasticItemLabel,
-        baselineQuantity: p.baselineQuantity,
-        targetQuantity: p.targetQuantity,
-        timeframeUnit: p.timeframeUnit as 'week' | 'month' | 'year',
-        notes: p.notes || "",
-      }));
-      form6.reset({ promises: formattedPromises });
-    }
-  }, [existingPromises]);
-
   // Auto-save mutation
   const saveMutation = useMutation({
     mutationFn: async (data: any) => {
@@ -660,7 +452,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     const part3Values = form3.getValues();
 
     // Calculate daily counts first, then multiply by 190 for annual
-    const dailyPlasticCounts = {
+    const dailyPlasticCounts: Record<string, number> = {
       'Plastic bottles': 
         parseInt(part2Values.lunchroomPlasticBottles || "0") + 
         parseInt(part2Values.staffroomPlasticBottles || "0") +
@@ -788,7 +580,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     }
 
     await handleSaveProgress();
-    if (currentStep < 6) {
+    if (currentStep < 5) {
       setCurrentStep(currentStep + 1);
     }
   };
@@ -823,83 +615,6 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       onClose?.();
     } catch (error) {
       console.error("Error submitting audit:", error);
-      toast({
-        title: "Submission Error",
-        description: "There was an error submitting your audit. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Submit audit with promises
-  const handleSubmitWithPromises = async () => {
-    const isValid = await form6.trigger();
-    
-    if (!isValid) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields before submitting.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setIsSubmitting(true);
-    
-    try {
-      // Save audit first
-      await handleSaveProgress();
-      
-      if (!auditId) {
-        throw new Error("Audit ID not found");
-      }
-      
-      // Submit audit
-      await submitMutation.mutateAsync(auditId);
-      
-      // Create promises - filter out empty/incomplete promises
-      const promisesData = form6.getValues().promises;
-      console.log("[Promises] Raw promises data:", promisesData);
-      
-      const validPromises = promisesData.filter(p => 
-        p.plasticItemType.trim() !== "" && 
-        p.plasticItemLabel.trim() !== "" && 
-        p.baselineQuantity > 0
-      );
-      console.log("[Promises] Valid promises after filtering:", validPromises);
-      console.log("[Promises] Filtered out:", promisesData.length - validPromises.length, "promises");
-      
-      const promisePromises = validPromises.map(promise => {
-        const payload = {
-          schoolId,
-          auditId,
-          plasticItemType: promise.plasticItemType,
-          plasticItemLabel: promise.plasticItemLabel,
-          baselineQuantity: Number(promise.baselineQuantity),
-          targetQuantity: Number(promise.targetQuantity),
-          timeframeUnit: promise.timeframeUnit,
-          notes: promise.notes || "",
-        };
-        console.log("[Promises] Sending promise payload:", payload);
-        return apiRequest('POST', '/api/reduction-promises', payload);
-      });
-      
-      await Promise.all(promisePromises);
-      
-      queryClient.invalidateQueries({ queryKey: [`/api/reduction-promises/audit/${auditId}`] });
-      
-      toast({
-        title: "Audit and Promises Submitted!",
-        description: validPromises.length > 0 
-          ? `Your plastic waste audit and ${validPromises.length} reduction promise${validPromises.length !== 1 ? 's' : ''} have been submitted for review.`
-          : "Your plastic waste audit has been submitted for review.",
-      });
-      
-      onClose?.();
-    } catch (error) {
-      console.error("Error submitting audit and promises:", error);
       toast({
         title: "Submission Error",
         description: "There was an error submitting your audit. Please try again.",
@@ -986,61 +701,6 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     }
   };
 
-  // Download Action Plan form
-  const handleDownloadActionPlan = async () => {
-    try {
-      toast({
-        title: "Downloading",
-        description: "Your action plan form is being downloaded...",
-      });
-
-      const response = await fetch('/api/printable-forms/action-plan', {
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Action plan download failed:", response.status, errorText);
-        throw new Error(`Failed to download action plan: ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      
-      // Ensure blob is valid
-      if (!blob || blob.size === 0) {
-        throw new Error('Received empty PDF file');
-      }
-
-      // Create download link with proper cleanup
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `Action_Plan_Form_${new Date().toISOString().split('T')[0]}.pdf`;
-      
-      document.body.appendChild(a);
-      a.click();
-      
-      // Cleanup after a short delay to ensure download starts
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-      }, 100);
-
-      toast({
-        title: "Download Complete",
-        description: "Action plan form downloaded successfully.",
-      });
-    } catch (error) {
-      console.error("Error downloading action plan:", error);
-      toast({
-        title: "Download Error",
-        description: error instanceof Error ? error.message : "There was an error downloading the action plan. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
   const getCurrentForm = () => {
     switch (currentStep) {
       case 1: return form1;
@@ -1048,12 +708,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       case 3: return form3;
       case 4: return form4;
       case 5: return form1; // Results view, no form
-      case 6: return form6;
       default: return form1;
     }
   };
 
-  const progress = (currentStep / 6) * 100;
+  const progress = (currentStep / 5) * 100;
 
   // Users can edit draft and submitted audits - only block editing for approved audits
 
@@ -1133,13 +792,12 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               Plastic Waste Audit
             </CardTitle>
             <CardDescription>
-              Step {currentStep} of 6: {
+              Step {currentStep} of 5: {
                 currentStep === 1 ? "About Your School" :
                 currentStep === 2 ? "Lunchroom & Staffroom" :
                 currentStep === 3 ? "All Rooms" :
                 currentStep === 4 ? "Waste Management" :
-                currentStep === 5 ? "Audit Results" :
-                "Reduction Promises (Optional)"
+                "Audit Results"
               }
             </CardDescription>
           </div>
@@ -1165,45 +823,13 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               <Upload className="h-3 w-3 mr-1" />
               {isUploading ? 'Uploading...' : 'Upload Audit'}
             </Button>
-            {currentStep === 6 && (
-              <>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleDownloadActionPlan}
-                  data-testid="button-download-action-plan-form"
-                  className="text-xs"
-                >
-                  <Download className="h-3 w-3 mr-1" />
-                  Action Plan
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => actionPlanFileInputRef.current?.click()}
-                  disabled={isUploading}
-                  data-testid="button-upload-action-plan-form"
-                  className="text-xs"
-                >
-                  <Upload className="h-3 w-3 mr-1" />
-                  {isUploading ? 'Uploading...' : 'Upload Plan'}
-                </Button>
-              </>
-            )}
             <input
               ref={auditFileInputRef}
               type="file"
               accept="application/pdf"
-              onChange={() => handleFileUpload('audit')}
+              onChange={() => handleFileUpload()}
               className="hidden"
               data-testid="input-upload-pdf"
-            />
-            <input
-              ref={actionPlanFileInputRef}
-              type="file"
-              accept="application/pdf"
-              onChange={() => handleFileUpload('action_plan')}
-              className="hidden"
             />
           </div>
         </div>
@@ -2660,9 +2286,9 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 )}
               </div>
 
-              <div className="bg-yellow-50 border border-yellow-200 rounded p-4 mb-4">
+              <div className="bg-green-50 border border-green-200 rounded p-4 mb-4">
                 <p className="text-sm text-gray-700">
-                  <strong>What's Next?</strong> You can download your results as a PDF, submit your audit now, or continue to create reduction promises to show how you plan to reduce plastic waste.
+                  <strong>Ready to Submit?</strong> You can download your results as a PDF or submit your audit for review. Once approved, you'll be able to create an action plan to track your plastic reduction goals.
                 </p>
               </div>
 
@@ -2684,16 +2310,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     data-testid="button-submit-audit-now"
                   >
                     <Send className="h-4 w-4 mr-2" />
-                    {isSubmitting ? 'Submitting...' : 'Submit Audit Now'}
-                  </Button>
-                  <Button
-                    onClick={handleNext}
-                    variant="outline"
-                    className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50"
-                    data-testid="button-continue-to-promises"
-                  >
-                    Continue to Add Promises
-                    <ChevronRight className="h-4 w-4 ml-2" />
+                    {isSubmitting ? 'Submitting...' : 'Submit Audit for Review'}
                   </Button>
                 </div>
                 <div>
@@ -2709,215 +2326,6 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               </div>
             </div>
           </div>
-        )}
-
-        {/* Step 6: Reduction Promises (Optional) */}
-        {currentStep === 6 && (
-          <Form {...form6}>
-            <div className="space-y-6">
-              <div>
-                <h3 className="text-lg font-semibold text-navy mb-2">Your Reduction Promises</h3>
-                <p className="text-sm text-gray-600 mb-4">
-                  Based on your audit, commit to reducing at least 2 types of plastic. Set realistic targets!
-                </p>
-              </div>
-
-              {fields.map((field, index) => {
-                const availableItems = extractAuditItems();
-                const selectedItem = form6.watch(`promises.${index}.plasticItemType`);
-                const selectedItemData = availableItems.find(item => item.type === selectedItem);
-
-                return (
-                  <Card key={field.id} className="p-4 bg-gray-50 border border-gray-200" data-testid={`card-promise-${index}`}>
-                    <div className="flex justify-between items-start mb-4">
-                      <h4 className="font-semibold text-navy">Promise {index + 1}</h4>
-                      {fields.length > 2 && (
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => remove(index)}
-                          data-testid={`button-remove-promise-${index}`}
-                        >
-                          <Trash2 className="h-4 w-4 text-red-500" />
-                        </Button>
-                      )}
-                    </div>
-
-                    <div className="grid gap-4">
-                      <FormField
-                        control={form6.control}
-                        name={`promises.${index}.plasticItemType`}
-                        render={({ field: formField }) => (
-                          <FormItem>
-                            <FormLabel>Plastic Item Type</FormLabel>
-                            <Select
-                              onValueChange={(value) => {
-                                formField.onChange(value);
-                                const item = availableItems.find(i => i.type === value);
-                                if (item) {
-                                  form6.setValue(`promises.${index}.plasticItemLabel`, item.label);
-                                  form6.setValue(`promises.${index}.baselineQuantity`, item.quantity);
-                                }
-                              }}
-                              value={formField.value}
-                            >
-                              <FormControl>
-                                <SelectTrigger data-testid={`select-promise-type-${index}`}>
-                                  <SelectValue placeholder={t('audit.select_plastic_item')} />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                {availableItems.map((item) => (
-                                  <SelectItem key={item.type + item.label} value={item.type}>
-                                    {item.label} ({item.quantity} items)
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {selectedItemData && (
-                        <div className="grid grid-cols-2 gap-4">
-                          <FormField
-                            control={form6.control}
-                            name={`promises.${index}.baselineQuantity`}
-                            render={({ field: formField }) => (
-                              <FormItem>
-                                <FormLabel>Current Usage (Baseline)</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...formField}
-                                    type="number"
-                                    min="1"
-                                    data-testid={`input-promise-baseline-${index}`}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-
-                          <FormField
-                            control={form6.control}
-                            name={`promises.${index}.targetQuantity`}
-                            render={({ field: formField }) => (
-                              <FormItem>
-                                <FormLabel>Target Reduction</FormLabel>
-                                <FormControl>
-                                  <Input
-                                    {...formField}
-                                    type="number"
-                                    min="0"
-                                    data-testid={`input-promise-target-${index}`}
-                                  />
-                                </FormControl>
-                                <FormMessage />
-                              </FormItem>
-                            )}
-                          />
-                        </div>
-                      )}
-
-                      <FormField
-                        control={form6.control}
-                        name={`promises.${index}.timeframeUnit`}
-                        render={({ field: formField }) => (
-                          <FormItem>
-                            <FormLabel>Timeframe</FormLabel>
-                            <Select onValueChange={formField.onChange} value={formField.value}>
-                              <FormControl>
-                                <SelectTrigger data-testid={`select-promise-timeframe-${index}`}>
-                                  <SelectValue placeholder={t('audit.select_timeframe')} />
-                                </SelectTrigger>
-                              </FormControl>
-                              <SelectContent>
-                                <SelectItem value="week">{t('audit.timeframe_week')}</SelectItem>
-                                <SelectItem value="month">{t('audit.timeframe_month')}</SelectItem>
-                                <SelectItem value="year">{t('audit.timeframe_year')}</SelectItem>
-                              </SelectContent>
-                            </Select>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      <FormField
-                        control={form6.control}
-                        name={`promises.${index}.notes`}
-                        render={({ field: formField }) => (
-                          <FormItem>
-                            <FormLabel>Notes (Optional)</FormLabel>
-                            <FormControl>
-                              <Textarea
-                                {...formField}
-                                placeholder="How will you achieve this reduction?"
-                                data-testid={`input-promise-notes-${index}`}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-
-                      {selectedItemData && form6.watch(`promises.${index}.baselineQuantity`) > 0 && (
-                        <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                          <p className="text-sm font-semibold text-navy">
-                            Reduction: {form6.watch(`promises.${index}.baselineQuantity`) - form6.watch(`promises.${index}.targetQuantity`)} items per {form6.watch(`promises.${index}.timeframeUnit`)}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </Card>
-                );
-              })}
-
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => append({
-                  plasticItemType: "",
-                  plasticItemLabel: "",
-                  baselineQuantity: 0,
-                  targetQuantity: 0,
-                  timeframeUnit: "month" as const,
-                  notes: "",
-                })}
-                data-testid="button-add-promise"
-              >
-                <Plus className="h-4 w-4 mr-1" />
-                Add Another Promise
-              </Button>
-
-              {form6.formState.errors.promises?.root && (
-                <p className="text-sm text-red-500">{form6.formState.errors.promises.root.message}</p>
-              )}
-
-              {/* Promises Summary */}
-              {fields.length > 0 && (
-                <div className="bg-green-50 p-4 rounded-lg border border-green-200 mt-6">
-                  <h4 className="font-semibold text-navy mb-2">Your Promises Summary</h4>
-                  <p className="text-sm text-gray-600 mb-3">
-                    You're committing to reduce {fields.length} types of plastic items:
-                  </p>
-                  <div className="space-y-2">
-                    {fields.map((field, index) => {
-                      const promise = form6.watch(`promises.${index}`);
-                      const reduction = promise.baselineQuantity - promise.targetQuantity;
-                      return promise.plasticItemLabel ? (
-                        <div key={field.id} className="text-sm bg-white p-2 rounded">
-                          <span className="font-semibold">{promise.plasticItemLabel}:</span> Reduce by {reduction} items per {promise.timeframeUnit}
-                        </div>
-                      ) : null;
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </Form>
         )}
 
         {/* Navigation Buttons */}
@@ -2945,24 +2353,13 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 <Save className="h-4 w-4 mr-1" />
                 Save Progress
               </Button>
-              {currentStep < 6 ? (
-                <Button
-                  onClick={handleNext}
-                  data-testid="button-next"
-                >
-                  Next
-                  <ChevronRight className="h-4 w-4 ml-1" />
-                </Button>
-              ) : (
-                <Button
-                  onClick={handleSubmitWithPromises}
-                  disabled={isSubmitting || submitMutation.isPending}
-                  data-testid="button-submit-audit"
-                >
-                  <Send className="h-4 w-4 mr-1" />
-                  Submit for Review
-                </Button>
-              )}
+              <Button
+                onClick={handleNext}
+                data-testid="button-next"
+              >
+                Next
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
             </div>
           </div>
         )}
