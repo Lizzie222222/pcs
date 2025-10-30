@@ -409,7 +409,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                   onClick={() => handleEventClick(event)}
                   data-testid={`event-card-${event.id}`}
                 >
-                  {event.imageUrl && (
+                  {event.imageUrl && event.imageUrl.trim() !== '' && (
                     <div className="w-full h-48 overflow-hidden relative">
                       <img 
                         src={event.imageUrl} 
@@ -724,7 +724,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                     onClick={() => handleEventClick(event)}
                     data-testid={`past-event-card-${event.id}`}
                   >
-                    {event.imageUrl && (
+                    {event.imageUrl && event.imageUrl.trim() !== '' && (
                       <div className="w-full h-48 overflow-hidden relative">
                         <img 
                           src={event.imageUrl} 
