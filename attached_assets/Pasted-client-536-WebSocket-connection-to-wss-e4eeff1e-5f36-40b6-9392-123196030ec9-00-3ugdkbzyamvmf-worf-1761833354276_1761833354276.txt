@@ -1,0 +1,27 @@
+client:536 WebSocket connection to 'wss://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/?token=84RSeyxpL2h4' failed: 
+setupWebSocket @ client:536Understand this error
+client:536 Uncaught (in promise) SyntaxError: Failed to construct 'WebSocket': The URL 'wss://localhost:undefined/?token=84RSeyxpL2h4' is invalid.
+    at setupWebSocket (client:536:19)
+    at fallback (client:509:16)
+    at WebSocket.<anonymous> (client:555:7)Understand this error
+chunk-RPCDYKBN.js?v=6598d2e4:21551 Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+i18next.js?v=6598d2e4:208 i18next: languageChanged en
+i18next.js?v=6598d2e4:208 i18next: initialized Object
+i18next.js?v=6598d2e4:208 i18next: languageChanged en
+i18next.js?v=6598d2e4:208 i18next: init: i18next is already initialized. You should call init just once!
+output @ i18next.js?v=6598d2e4:208Understand this warning
+i18next.js?v=6598d2e4:208 i18next: initialized Object
+webcomponents-ce.js:33 Uncaught Error: A custom element with name 'mce-autosize-textarea' has already been defined.
+    at Aa (webcomponents-ce.js:33:363)
+    at m.define (webcomponents-ce.js:33:133)
+    at overlay_bundle.js:149:5562
+    at C (overlay_bundle.js:45:682)
+    at overlay_bundle.js:160:392Understand this error
+/api/auth/user:1  Failed to load resource: the server responded with a status of 401 (Unauthorized)Understand this error
+6The resource <URL> was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
+(index):1 The resource https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/assets/Logo_1757848498470.png was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
+(index):1 The resource https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/assets/hero-desktop.webp was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
+(index):1 The resource https://img.youtube.com/vi/jyL1lt-72HQ/maxresdefault.jpg was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
+(index):1 The resource https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/assets/Logo_1757848498470.png was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
+(index):1 The resource https://e4eeff1e-5f36-40b6-9392-123196030ec9-00-3ugdkbzyamvmf.worf.replit.dev/assets/hero-desktop.webp was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionally.Understand this warning
+(index):1 The resource https://img.youtube.com/vi/jyL1lt-72HQ/maxresdefault.jpg was preloaded using link preload but not used within a few seconds from the window's load event. Please make sure it has an appropriate `as` value and it is preloaded intentionall

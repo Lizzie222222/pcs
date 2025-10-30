@@ -564,11 +564,18 @@ export default function Landing() {
                           data-testid={`card-event-${event.id}`}
                         >
                           {event.imageUrl && event.imageUrl.trim() !== '' && (
-                            <div className="relative h-48 overflow-hidden">
+                            <div className="relative h-48 overflow-hidden bg-gray-100">
                               <img 
                                 src={normalizeObjectStorageUrl(event.imageUrl)} 
                                 alt={event.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                onError={(e) => {
+                                  console.error('Image failed to load:', event.imageUrl, 'normalized:', normalizeObjectStorageUrl(event.imageUrl));
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                                onLoad={() => {
+                                  console.log('Image loaded successfully:', event.imageUrl);
+                                }}
                               />
                               <div className="absolute top-3 right-3 bg-pcs_blue text-white px-3 py-1 rounded-full text-xs font-semibold">
                                 {event.eventType.replace('_', ' ').toUpperCase()}
