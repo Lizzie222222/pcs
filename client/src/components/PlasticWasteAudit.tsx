@@ -857,7 +857,9 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       console.log("[Promises] Raw promises data:", promisesData);
       
       const validPromises = promisesData.filter(p => 
-        p.plasticItemType.trim() !== "" && p.baselineQuantity > 0
+        p.plasticItemType.trim() !== "" && 
+        p.plasticItemLabel.trim() !== "" && 
+        p.baselineQuantity > 0
       );
       console.log("[Promises] Valid promises after filtering:", validPromises);
       console.log("[Promises] Filtered out:", promisesData.length - validPromises.length, "promises");
