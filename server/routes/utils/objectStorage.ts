@@ -1,5 +1,6 @@
 import { ObjectStorageService } from '../../objectStorage';
 import { ObjectAclPolicy } from '../../objectAcl';
+import { normalizeObjectStorageUrl } from './urlNormalization';
 
 /**
  * Upload a file to object storage and set ACL policy
@@ -8,7 +9,7 @@ import { ObjectAclPolicy } from '../../objectAcl';
  * @param filename - Original filename
  * @param userId - ID of the user uploading
  * @param visibility - ACL visibility ('public' or 'private')
- * @returns Object storage path
+ * @returns Normalized object storage URL with /api/objects prefix
  */
 export async function uploadToObjectStorage(
   fileBuffer: Buffer,
@@ -46,7 +47,8 @@ export async function uploadToObjectStorage(
     filename,
   );
 
-  return objectPath;
+  // Normalize the URL to include /api/objects prefix for CORS
+  return normalizeObjectStorageUrl(objectPath);
 }
 
 /**

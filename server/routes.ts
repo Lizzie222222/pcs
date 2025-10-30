@@ -30,6 +30,7 @@ import { stripHtml, escapeHtml, sanitizeFilename, generatePdfHtml } from './rout
 import { bulkResourceUpload, photoConsentUpload, uploadCompression, importUpload } from './routes/utils/uploads';
 import { uploadToObjectStorage } from './routes/utils/objectStorage';
 import { requireAdmin, requireAdminOrPartner } from './routes/utils/middleware';
+import { normalizeObjectStorageUrl, normalizeFileArray } from './routes/utils/urlNormalization';
 
 // Import WebSocket collaboration functions
 import { getOnlineUsers, broadcastChatMessage, notifyDocumentLock, broadcastDocumentUnlock } from './websocket';
@@ -958,11 +959,14 @@ Return JSON with:
         
         // Transform evidence to match case study format
         const evidenceWithType = evidenceList.map(ev => {
-          // Map files array to images format
+          // Map files array to images format with normalized URLs
           const files = Array.isArray(ev.files) ? ev.files : [];
           const images = files.map((file: any) => ({
-            url: file.url,
+            url: normalizeObjectStorageUrl(file.url),
             caption: file.caption || file.name,
+            type: file.type,
+            name: file.name,
+            size: file.size,
           }));
           
           return {
@@ -984,6 +988,7 @@ Return JSON with:
             categories: [],
             tags: [],
             contentType: 'evidence',
+            evidenceFiles: images, // Include evidence files with normalized URLs for PDF thumbnails
           };
         });
         
@@ -8064,11 +8069,16 @@ Return JSON with:
         offset: offset ? parseInt(offset as string) : undefined,
       });
       
-      // Add registration counts to each event
+      // Add registration counts and normalize URLs for each event
       const eventsWithCounts = await Promise.all(
         events.map(async (event) => {
           const registrationsCount = await storage.getEventRegistrationCount(event.id);
-          return { ...event, registrationsCount };
+          return { 
+            ...event, 
+            registrationsCount,
+            imageUrl: normalizeObjectStorageUrl(event.imageUrl),
+            eventPackBannerImageUrl: normalizeObjectStorageUrl(event.eventPackBannerImageUrl),
+          };
         })
       );
       
@@ -8108,7 +8118,16 @@ Return JSON with:
       const registrationsCount = await storage.getEventRegistrationCount(event.id);
       const attachedResources = await storage.getEventResources(event.id);
       
-      res.json({ ...event, registrationsCount, attachedResources });
+      // Normalize URLs
+      const normalizedEvent = {
+        ...event,
+        registrationsCount,
+        attachedResources,
+        imageUrl: normalizeObjectStorageUrl(event.imageUrl),
+        eventPackBannerImageUrl: normalizeObjectStorageUrl(event.eventPackBannerImageUrl),
+      };
+      
+      res.json(normalizedEvent);
     } catch (error) {
       console.error("Error fetching event:", error);
       res.status(500).json({ message: "Failed to fetch event" });
@@ -8128,7 +8147,16 @@ Return JSON with:
       const registrationsCount = await storage.getEventRegistrationCount(event.id);
       const attachedResources = await storage.getEventResources(event.id);
       
-      res.json({ ...event, registrationsCount, attachedResources });
+      // Normalize URLs
+      const normalizedEvent = {
+        ...event,
+        registrationsCount,
+        attachedResources,
+        imageUrl: normalizeObjectStorageUrl(event.imageUrl),
+        eventPackBannerImageUrl: normalizeObjectStorageUrl(event.eventPackBannerImageUrl),
+      };
+      
+      res.json(normalizedEvent);
     } catch (error) {
       console.error("Error fetching event by slug:", error);
       res.status(500).json({ message: "Failed to fetch event" });
