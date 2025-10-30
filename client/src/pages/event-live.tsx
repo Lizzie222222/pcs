@@ -753,7 +753,7 @@ export default function EventLivePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pcs_blue/10 via-teal/5 to-ocean-blue/10 flex flex-col pt-16">
         {/* Hero Banner with Overlay */}
-        {event.imageUrl ? (
+        {event.imageUrl && event.imageUrl.trim() !== '' ? (
           <div className="relative w-full h-[400px] overflow-hidden bg-gray-900">
             <img
               src={normalizeObjectStorageUrl(event.imageUrl)}
@@ -812,7 +812,7 @@ export default function EventLivePage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-ocean-blue/5 via-white to-teal/5 flex flex-col pt-16">
         {/* Hero Banner with Overlay */}
-        {event.imageUrl ? (
+        {event.imageUrl && event.imageUrl.trim() !== '' ? (
           <div className="relative w-full h-[400px] overflow-hidden bg-gray-900">
             <img
               src={normalizeObjectStorageUrl(event.imageUrl)}
@@ -1014,7 +1014,7 @@ export default function EventLivePage() {
   return (
     <div className="min-h-screen bg-gray-50 pt-16">
       {/* Hero Banner with Overlay */}
-      {event.imageUrl ? (
+      {event.imageUrl && event.imageUrl.trim() !== '' ? (
         <div className="relative w-full h-[500px] overflow-hidden bg-gray-900">
           {/* Background Image */}
           <img

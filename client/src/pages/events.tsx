@@ -181,7 +181,7 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
         className={`overflow-hidden group hover:shadow-xl transition-shadow duration-300 cursor-pointer ${isPast ? 'opacity-75' : ''}`}
         data-testid={`card-event-${event.id}`}
       >
-        {event.imageUrl && (
+        {event.imageUrl && event.imageUrl.trim() !== '' && (
           <div className="relative h-48 overflow-hidden">
             <img 
               src={normalizeObjectStorageUrl(event.imageUrl)} 
