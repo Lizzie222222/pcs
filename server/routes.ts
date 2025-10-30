@@ -3261,7 +3261,8 @@ Return JSON with:
       );
 
       // Update school photo consent status
-      await storage.updateSchoolPhotoConsent(schoolId, objectPath);
+      // Auto-approve if uploaded by admin
+      await storage.updateSchoolPhotoConsent(schoolId, objectPath, isAdmin ? userId : undefined);
 
       res.json({ 
         success: true, 
@@ -4889,9 +4890,14 @@ Return JSON with:
   app.post('/api/audits', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
+      const user = await storage.getUser(userId);
+      const isAdmin = user?.isAdmin;
+      
       const auditData = insertAuditResponseSchema.parse({
         ...req.body,
         submittedBy: userId,
+        // Auto-approve if submitted by admin
+        ...(isAdmin ? { status: 'approved' } : {}),
       });
 
       // Check if audit already exists for this school

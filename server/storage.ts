@@ -229,7 +229,7 @@ export interface IStorage {
   findSchoolsByEmailDomain(domain: string): Promise<Array<School & { userEmails: string[] }>>;
   
   // Photo Consent operations
-  updateSchoolPhotoConsent(schoolId: string, documentUrl: string): Promise<School | undefined>;
+  updateSchoolPhotoConsent(schoolId: string, documentUrl: string, approvedBy?: string): Promise<School | undefined>;
   reviewSchoolPhotoConsent(schoolId: string, status: 'approved' | 'rejected', reviewedBy: string, notes?: string): Promise<School | undefined>;
   getSchoolPhotoConsentStatus(schoolId: string): Promise<{ status: string | null; documentUrl: string | null; uploadedAt: Date | null; approvedAt: Date | null; reviewNotes: string | null } | undefined>;
   getSchoolsWithPendingPhotoConsent(): Promise<Array<{
@@ -1702,13 +1702,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Photo Consent operations
-  async updateSchoolPhotoConsent(schoolId: string, documentUrl: string): Promise<School | undefined> {
+  async updateSchoolPhotoConsent(schoolId: string, documentUrl: string, approvedBy?: string): Promise<School | undefined> {
     const [updated] = await db
       .update(schools)
       .set({
         photoConsentDocumentUrl: documentUrl,
-        photoConsentStatus: 'pending',
+        photoConsentStatus: approvedBy ? 'approved' : 'pending',
         photoConsentUploadedAt: new Date(),
+        // Auto-approve if uploaded by admin
+        ...(approvedBy ? {
+          photoConsentApprovedAt: new Date(),
+          photoConsentApprovedBy: approvedBy,
+        } : {}),
         updatedAt: new Date(),
       })
       .where(eq(schools.id, schoolId))

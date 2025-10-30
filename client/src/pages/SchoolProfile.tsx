@@ -53,6 +53,8 @@ import { calculateAggregateMetrics } from "@shared/plasticMetrics";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { UploadEvidenceDialog } from "@/components/admin/UploadEvidenceDialog";
 import { EditEvidenceDialog } from "@/components/admin/EditEvidenceDialog";
+import { UploadPhotoConsentDialog } from "@/components/admin/UploadPhotoConsentDialog";
+import { UploadAuditDialog } from "@/components/admin/UploadAuditDialog";
 
 interface SchoolData {
   id: string;
@@ -114,6 +116,8 @@ export default function SchoolProfile() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [activeTab, setActiveTab] = useState("overview");
+  const [photoConsentDialogOpen, setPhotoConsentDialogOpen] = useState(false);
+  const [auditDialogOpen, setAuditDialogOpen] = useState(false);
   
   // School data query
   const { data: school, isLoading: schoolLoading } = useQuery<SchoolData>({
@@ -218,6 +222,26 @@ export default function SchoolProfile() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Button
+                onClick={() => setPhotoConsentDialogOpen(true)}
+                variant="outline"
+                size="sm"
+                className="border-green-600 text-green-700 hover:bg-green-50"
+                data-testid="button-upload-photo-consent"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Photo Consent
+              </Button>
+              <Button
+                onClick={() => setAuditDialogOpen(true)}
+                variant="outline"
+                size="sm"
+                className="border-purple-600 text-purple-700 hover:bg-purple-50"
+                data-testid="button-upload-audit"
+              >
+                <Upload className="h-4 w-4 mr-2" />
+                Audit
+              </Button>
               <Badge className={
                 school.currentStage === 'inspire' ? 'bg-pcs_blue text-white' :
                 school.currentStage === 'investigate' ? 'bg-teal text-white' :
@@ -319,6 +343,19 @@ export default function SchoolProfile() {
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Upload Dialogs */}
+      <UploadPhotoConsentDialog
+        open={photoConsentDialogOpen}
+        onOpenChange={setPhotoConsentDialogOpen}
+        schoolId={id!}
+      />
+
+      <UploadAuditDialog
+        open={auditDialogOpen}
+        onOpenChange={setAuditDialogOpen}
+        schoolId={id!}
+      />
     </div>
   );
 }
