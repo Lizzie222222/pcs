@@ -145,7 +145,7 @@ export function useAuth() {
       if (user.isAdmin) {
         window.location.href = "/admin";
       } else {
-        window.location.href = "/";
+        window.location.href = "/dashboard";
       }
     },
     onError: (error: Error) => {

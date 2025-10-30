@@ -77,17 +77,11 @@ export default function Navigation() {
     { href: "/inspiration", label: t('navigation.inspiration'), public: true },
     { href: "/schools-map", label: t('navigation.schools_map'), public: true },
     { href: "/search", label: t('navigation.search'), public: true },
-    { href: "/help-center", label: t('navigation.help_center'), public: true },
   ];
 
   // Add dashboard link if user is authenticated
   if (isAuthenticated) {
     navItems.splice(1, 0, { href: "/dashboard", label: "Dashboard", public: false });
-  }
-
-  // Add team management link if user is head teacher
-  if (isHeadTeacher) {
-    navItems.splice(2, 0, { href: "/dashboard/team-management", label: "Team Management", public: false });
   }
 
   const handleNavClick = (href: string) => {
