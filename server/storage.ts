@@ -1589,7 +1589,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(schoolUsers);
     
-    const totalActions = (evidenceStats?.approvedEvidence || 0) + (legacyStats?.legacyTotal || 0);
+    const totalActions = Number(evidenceStats?.approvedEvidence || 0) + Number(legacyStats?.legacyTotal || 0);
     
     return {
       totalSchools: stats.totalSchools,
