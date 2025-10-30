@@ -5122,6 +5122,13 @@ Return JSON with:
 
       // Replace top plastics section
       if (templateData.hasTopPlastics) {
+        // Prepare chart data for Chart.js (raw numbers without formatting)
+        const chartData = topProblemPlastics.map((item: any) => ({
+          name: item.name,
+          count: item.count
+        }));
+        const chartDataJson = JSON.stringify(chartData);
+        
         let topPlasticsRows = '';
         templateData.topProblemPlastics.forEach((item) => {
           topPlasticsRows += `
@@ -5139,6 +5146,13 @@ Return JSON with:
         });
         
         const topPlasticsHtml = `
+  <div class="chart-container">
+    <h3>Plastic Waste Distribution</h3>
+    <div class="chart-wrapper">
+      <canvas id="plasticPieChart"></canvas>
+    </div>
+  </div>
+
   <div class="section">
     <div class="section-title">Top 5 Problem Plastics</div>
     
@@ -5158,8 +5172,12 @@ Return JSON with:
   </div>`;
         
         htmlTemplate = htmlTemplate.replace(/\{\{#if hasTopPlastics\}\}[\s\S]*?\{\{\/if\}\}/g, topPlasticsHtml);
+        
+        // Replace chart data JSON
+        htmlTemplate = htmlTemplate.replace(/\{\{chartDataJson\}\}/g, chartDataJson);
       } else {
         htmlTemplate = htmlTemplate.replace(/\{\{#if hasTopPlastics\}\}[\s\S]*?\{\{\/if\}\}/g, '');
+        htmlTemplate = htmlTemplate.replace(/\{\{chartDataJson\}\}/g, '[]');
       }
 
       // Replace all plastic types breakdown

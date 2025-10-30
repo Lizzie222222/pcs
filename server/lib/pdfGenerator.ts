@@ -45,7 +45,21 @@ export async function generatePDFReport(htmlContent: string): Promise<Buffer> {
       waitUntil: 'networkidle2'
     });
     
-    console.log('[PDF Generator] HTML content loaded, generating PDF...');
+    console.log('[PDF Generator] HTML content loaded, waiting for chart to render...');
+    
+    // Wait for chart to finish rendering (if present)
+    // The chart sets data-chart-ready="true" when complete
+    try {
+      await page.waitForFunction(
+        () => document.body.getAttribute('data-chart-ready') === 'true',
+        { timeout: 5000 }
+      );
+      console.log('[PDF Generator] Chart rendered successfully');
+    } catch (error) {
+      console.log('[PDF Generator] No chart or timeout waiting for chart, continuing...');
+    }
+    
+    console.log('[PDF Generator] Generating PDF...');
     
     // Generate PDF with proper configuration
     const pdfBuffer = await page.pdf({

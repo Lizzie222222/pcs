@@ -2568,34 +2568,46 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 </p>
               </div>
 
-              <div className="flex gap-3 flex-col sm:flex-row">
-                <Button
-                  onClick={handleDownloadPDF}
-                  variant="outline"
-                  className="flex-1 border-purple-600 text-purple-600 hover:bg-purple-50"
-                  data-testid="button-download-results-pdf"
-                >
-                  <Download className="h-4 w-4 mr-2" />
-                  Download PDF Results
-                </Button>
-                <Button
-                  onClick={handleSubmitAuditOnly}
-                  disabled={isSubmitting}
-                  className="flex-1 bg-green-600 hover:bg-green-700"
-                  data-testid="button-submit-audit-now"
-                >
-                  <Send className="h-4 w-4 mr-2" />
-                  {isSubmitting ? 'Submitting...' : 'Submit Audit Now'}
-                </Button>
-                <Button
-                  onClick={handleNext}
-                  variant="outline"
-                  className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50"
-                  data-testid="button-continue-to-promises"
-                >
-                  Continue to Add Promises
-                  <ChevronRight className="h-4 w-4 ml-2" />
-                </Button>
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-3 flex-col sm:flex-row">
+                  <Button
+                    onClick={handleDownloadPDF}
+                    variant="outline"
+                    className="flex-1 border-purple-600 text-purple-600 hover:bg-purple-50"
+                    data-testid="button-download-results-pdf"
+                  >
+                    <Download className="h-4 w-4 mr-2" />
+                    Download PDF Results
+                  </Button>
+                  <Button
+                    onClick={handleSubmitAuditOnly}
+                    disabled={isSubmitting}
+                    className="flex-1 bg-green-600 hover:bg-green-700"
+                    data-testid="button-submit-audit-now"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    {isSubmitting ? 'Submitting...' : 'Submit Audit Now'}
+                  </Button>
+                  <Button
+                    onClick={handleNext}
+                    variant="outline"
+                    className="flex-1 border-blue-600 text-blue-600 hover:bg-blue-50"
+                    data-testid="button-continue-to-promises"
+                  >
+                    Continue to Add Promises
+                    <ChevronRight className="h-4 w-4 ml-2" />
+                  </Button>
+                </div>
+                <div>
+                  <Button
+                    variant="outline"
+                    onClick={handlePrevious}
+                    data-testid="button-back-step-5"
+                  >
+                    <ChevronLeft className="h-4 w-4 mr-1" />
+                    Back to Waste Management
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

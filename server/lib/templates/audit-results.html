@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Plastic Waste Audit Results</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <style>
     * {
       margin: 0;
@@ -247,6 +248,30 @@
       color: #0066cc;
     }
     
+    .chart-container {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      page-break-inside: avoid;
+    }
+    
+    .chart-container h3 {
+      color: #0066cc;
+      font-size: 20px;
+      margin-bottom: 20px;
+      text-align: center;
+      font-weight: bold;
+    }
+    
+    .chart-wrapper {
+      position: relative;
+      height: 400px;
+      margin: 0 auto;
+      max-width: 500px;
+    }
+    
     .highlight-box {
       background: #fff9e6;
       border-left: 4px solid #ffcc00;
@@ -315,6 +340,13 @@
   </div>
 
   {{#if hasTopPlastics}}
+  <div class="chart-container">
+    <h3>Plastic Waste Distribution</h3>
+    <div class="chart-wrapper">
+      <canvas id="plasticPieChart"></canvas>
+    </div>
+  </div>
+
   <div class="section">
     <div class="section-title">Top 5 Problem Plastics</div>
     
@@ -386,5 +418,92 @@
     <p>Working together to reduce plastic waste in education</p>
     <p style="margin-top: 10px; font-size: 10px;">Generated on {{generatedDate}}</p>
   </div>
+
+  <script>
+    // Chart data passed from server
+    const chartData = {{chartDataJson}};
+    
+    // Wait for Chart.js to load and DOM to be ready
+    window.addEventListener('load', function() {
+      if (typeof Chart === 'undefined' || !chartData || chartData.length === 0) {
+        console.log('Chart.js not loaded or no data available');
+        document.body.setAttribute('data-chart-ready', 'true');
+        return;
+      }
+
+      const ctx = document.getElementById('plasticPieChart');
+      if (!ctx) {
+        console.log('Canvas element not found');
+        document.body.setAttribute('data-chart-ready', 'true');
+        return;
+      }
+
+      // Color palette - professional blues, greens, and complementary colors
+      const colors = [
+        '#0066cc', // Primary blue
+        '#00aaff', // Light blue
+        '#004d99', // Dark blue
+        '#00c9a7', // Teal
+        '#ff6b6b', // Coral
+        '#ffd93d', // Yellow
+        '#6c5ce7', // Purple
+        '#a29bfe', // Light purple
+        '#fd79a8', // Pink
+        '#fdcb6e'  // Orange
+      ];
+
+      const labels = chartData.map(item => item.name);
+      const data = chartData.map(item => item.count);
+      const backgroundColors = colors.slice(0, chartData.length);
+
+      new Chart(ctx, {
+        type: 'pie',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: backgroundColors,
+            borderColor: '#ffffff',
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: {
+                padding: 15,
+                font: {
+                  size: 12,
+                  family: 'Arial, sans-serif'
+                },
+                boxWidth: 15,
+                boxHeight: 15
+              }
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(1);
+                  return label + ': ' + value.toLocaleString() + ' (' + percentage + '%)';
+                }
+              }
+            }
+          }
+        },
+        plugins: [{
+          afterRender: function() {
+            // Signal that chart is ready (for Puppeteer)
+            document.body.setAttribute('data-chart-ready', 'true');
+          }
+        }]
+      });
+    });
+  </script>
 </body>
 </html>
