@@ -32,6 +32,12 @@ The application features a modern web architecture with distinct frontend and ba
 ### Key Data Models
 Core entities include Users, Schools, Evidence (with approval and assignment), Audit Logs, Reduction Promises (Action Plans), Resources, Case Studies, Events, Event Banners, Media Assets, Printable Form Submissions, Import Batches, Migration Logs, Notifications, Document Locks, Chat Messages, Health Checks, and Uptime Metrics.
 
+**Content Visibility System**: Evidence and Resources support two visibility levels:
+- **Public**: Visible to everyone including non-authenticated users
+- **Private**: Only visible to the uploading school and platform admins
+
+All public-facing endpoints (Resources page, Inspiration gallery, Search) enforce strict visibility filtering to show only public content. Private content is accessible exclusively through school dashboards and admin panels.
+
 ### UI/UX Decisions
 -   **Design System**: Component-based design using Radix UI and shadcn/ui, custom favicon, consistent PCS brand colors, and professional typography.
 -   **Navigation**: Public and authenticated routes, tab-based dashboard, enhanced admin navigation.
