@@ -4,6 +4,13 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
+**October 30, 2025**: Map page country name display fix
+- **Fixed country codes displaying instead of full names on map page**: Expanded the country code mapping to include all ISO 3166-1 alpha-2 codes used in the database.
+  - Added missing country mappings including Jamaica (JM), Venezuela (VE), Dominica (DM), United Arab Emirates (AE), Albania (AL), Serbia (RS), Russia (RU), and many others
+  - Countries now display with their full names instead of 2-letter codes in the map popup tooltips, country breakdown list, and all map-related statistics
+  - Organized country mappings alphabetically for better maintainability
+  - Verified all country names match official ISO country name standards
+
 **October 30, 2025**: Admin schools list date filtering
 - **Added date-based filtering and sorting to admin schools list**: Administrators can now sort schools by join date and filter by specific months and years for better school management and reporting.
   - Added "Sort by Date" dropdown with options for "Newest First" (default) and "Oldest First"
