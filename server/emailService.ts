@@ -110,7 +110,25 @@ function generateEmailTemplate(params: EmailTemplateParams): string {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="color-scheme" content="light dark">
+      <meta name="supported-color-schemes" content="light dark">
       <title>${title}</title>
+      <style>
+        :root {
+          color-scheme: light dark;
+          supported-color-schemes: light dark;
+        }
+        @media (prefers-color-scheme: dark) {
+          .email-header {
+            background-color: #204969 !important;
+          }
+        }
+        @media (prefers-color-scheme: light) {
+          .email-header {
+            background-color: #204969 !important;
+          }
+        }
+      </style>
     </head>
     <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f4;">
       <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f4f4f4;">
@@ -120,7 +138,7 @@ function generateEmailTemplate(params: EmailTemplateParams): string {
               
               <!-- Header with Navy Background and Logo -->
               <tr>
-                <td style="background: #204969; padding: 40px 30px; text-align: center;">
+                <td class="email-header" style="background-color: #204969 !important; padding: 40px 30px; text-align: center;">
                   <img src="${logoUrl}" alt="Plastic Clever Schools" style="height: 125px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
                   ${preTitle ? `<p style="margin: 0 0 10px 0; color: #ffffff; font-size: 16px; font-weight: 500;">${preTitle}</p>` : ''}
                   <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
