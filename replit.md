@@ -4,6 +4,14 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
+**October 30, 2025**: Complete admin audit submission with full 5-part quiz
+- **Admin can submit complete audits on behalf of schools**: Added UploadAuditDialog with all 5 parts of the audit quiz that schools normally complete, allowing admins to input comprehensive audit data including school info, plastic counts, waste management practices, and reduction promises.
+- **Full audit quiz structure**: Part 1 (School Information), Part 2 (Lunchroom & Staffroom plastic counts), Part 3 (Classrooms & Bathrooms plastic counts), Part 4 (Waste Management practices), Part 5 (Reduction Promises/Action Plan with minimum 2 commitments).
+- **Auto-approval for admin audits**: When admins submit audits on behalf of schools, they are automatically approved (status='approved') since they represent pre-vetted data.
+- **No email notifications for admin audit submissions**: Admin audit uploads skip all submission confirmation emails to avoid unnecessary notifications.
+- **Upload buttons in school profile**: Added "Photo Consent" and "Audit" upload buttons in the school profile header for quick admin access to upload dialogs.
+- **Fixed cache invalidation**: Query cache now properly refreshes after admin submissions by matching query keys between fetch and invalidation.
+
 **October 30, 2025**: Admin evidence management enhancements
 - **Admin evidence uploads auto-approved**: When admins upload evidence on behalf of schools, it is automatically approved (status set to "approved", reviewedBy set to admin ID, reviewedAt timestamp set) since it's already vetted content.
 - **Email notifications skipped for admin uploads**: Admin evidence uploads skip all submission confirmation emails and Mailchimp automation, preventing unnecessary notifications.
