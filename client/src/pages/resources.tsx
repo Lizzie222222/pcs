@@ -432,14 +432,13 @@ export default function Resources() {
       >
         {/* Resource Thumbnail */}
         <ResourceThumbnail resource={resource} />
-        
         <CardHeader className="pb-3 space-y-2">
           {/* Top row: NEW/RECOMMENDED badges (left) and Age range badge (right) */}
           <div className="flex justify-between items-start gap-3">
             <div className="flex flex-wrap gap-2">
               {isNew && (
                 <div 
-                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0 bg-yellow text-white"
+                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0 text-white bg-[#257eb5]"
                 >
                   <Sparkles className="h-3 w-3 mr-1" />
                   NEW
