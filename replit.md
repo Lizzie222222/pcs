@@ -4,12 +4,11 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
-**October 30, 2025**: Fixed audit approval analytics refresh
-- Corrected HTTP method mismatch: Changed audit review endpoint from PUT to PATCH to match frontend expectations
-- Added comprehensive analytics query invalidations after audit approval to ensure all statistics update in real-time:
-  - Audit-specific analytics (overview, by-school, waste trends)
-  - School progress analytics (overview and progression data)
-  - This ensures that when an admin approves an audit, all related charts and metrics refresh immediately, including cases where the school progresses to the next stage
+**October 30, 2025**: Multiple improvements and bug fixes
+- **Unlocked all program stages**: Removed stage-based restrictions on evidence submission. Users can now submit evidence for any stage (Inspire, Investigate, Act) at any time, regardless of their school's current stage or completion status. This provides more flexibility for schools to work at their own pace and submit evidence as they create it.
+- **Fixed photo consent cache invalidation**: When an admin approves or rejects photo consent, the evidence list now immediately refreshes to show the updated consent status, and the warning dialog no longer appears incorrectly when approving evidence.
+- **Fixed audit approval dialog centering**: The audit approval/rejection dialog is now properly centered on the screen.
+- **Fixed audit approval analytics refresh**: Added comprehensive analytics query invalidations after audit approval to ensure all statistics update in real-time, including audit-specific analytics and school progress analytics.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
