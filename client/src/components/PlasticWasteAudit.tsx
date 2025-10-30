@@ -854,13 +854,17 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       
       // Create promises - filter out empty/incomplete promises
       const promisesData = form6.getValues().promises;
+      console.log("[Promises] Raw promises data:", promisesData);
+      
       const validPromises = promisesData.filter(p => 
         p.plasticItemType.trim() !== "" && p.baselineQuantity > 0
       );
+      console.log("[Promises] Valid promises after filtering:", validPromises);
+      console.log("[Promises] Filtered out:", promisesData.length - validPromises.length, "promises");
       
       const promisePromises = validPromises.map(promise => {
         const reductionAmount = promise.baselineQuantity - promise.targetQuantity;
-        return apiRequest('POST', '/api/reduction-promises', {
+        const payload = {
           schoolId,
           auditId,
           plasticItemType: promise.plasticItemType,
@@ -870,7 +874,9 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
           reductionAmount,
           timeframeUnit: promise.timeframeUnit,
           notes: promise.notes || "",
-        });
+        };
+        console.log("[Promises] Sending promise payload:", payload);
+        return apiRequest('POST', '/api/reduction-promises', payload);
       });
       
       await Promise.all(promisePromises);

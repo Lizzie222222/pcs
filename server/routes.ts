@@ -5402,6 +5402,8 @@ Return JSON with:
     try {
       const userId = req.user.id;
       
+      console.log("[Reduction Promise] Received data:", JSON.stringify(req.body, null, 2));
+      
       // Validate request body
       const validatedData = insertReductionPromiseSchema.parse(req.body);
       
@@ -5427,6 +5429,7 @@ Return JSON with:
       res.status(201).json(promise);
     } catch (error) {
       if (error instanceof z.ZodError) {
+        console.error("[Reduction Promise] Validation failed:", JSON.stringify(error.errors, null, 2));
         return res.status(400).json({ 
           message: "Validation error", 
           errors: error.errors 
