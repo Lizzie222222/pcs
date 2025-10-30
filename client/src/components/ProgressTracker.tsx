@@ -117,8 +117,7 @@ export default function ProgressTracker({
 
   const getStageStatus = (stage: any) => {
     if (stage.completed) return 'completed';
-    if (currentStage === stage.id) return 'current';
-    return 'locked';
+    return 'accessible';
   };
 
   // Get requirements for a specific stage
@@ -130,29 +129,27 @@ export default function ProgressTracker({
 
   const getProgressPercentage = (stage: any) => {
     if (stage.completed) return 100;
-    if (currentStage === stage.id) {
-      const stageId = stage.id as keyof EvidenceCounts;
-      const counts = evidenceCounts?.[stageId];
-      if (!counts || typeof counts.approved !== 'number') return 0;
-      
-      // Get required count dynamically from fetched requirements
-      const required = getStageRequirements(stageId).length;
-      
-      // Backward compatibility: fallback to old counts if no requirements defined
-      if (required === 0) {
-        const fallbackRequired = stageId === 'inspire' ? 3 : stageId === 'investigate' ? 2 : 3;
-        return Math.round((counts.approved / fallbackRequired) * 100);
-      }
-      
-      // Special handling for investigate stage: count approved audit separately
-      if (stageId === 'investigate' && 'hasQuiz' in counts) {
-        const approvedItems = counts.approved + (counts.hasQuiz ? 1 : 0);
-        return Math.round((approvedItems / required) * 100);
-      }
-      
-      return Math.round((counts.approved / required) * 100);
+    
+    const stageId = stage.id as keyof EvidenceCounts;
+    const counts = evidenceCounts?.[stageId];
+    if (!counts || typeof counts.approved !== 'number') return 0;
+    
+    // Get required count dynamically from fetched requirements
+    const required = getStageRequirements(stageId).length;
+    
+    // Backward compatibility: fallback to old counts if no requirements defined
+    if (required === 0) {
+      const fallbackRequired = stageId === 'inspire' ? 3 : stageId === 'investigate' ? 2 : 3;
+      return Math.round((counts.approved / fallbackRequired) * 100);
     }
-    return 0;
+    
+    // Special handling for investigate stage: count approved audit separately
+    if (stageId === 'investigate' && 'hasQuiz' in counts) {
+      const approvedItems = counts.approved + (counts.hasQuiz ? 1 : 0);
+      return Math.round((approvedItems / required) * 100);
+    }
+    
+    return Math.round((counts.approved / required) * 100);
   };
 
   const getStageGradientClasses = (color: string) => {
@@ -237,8 +234,7 @@ export default function ProgressTracker({
                 key={stage.id} 
                 className={`group transition-all duration-300 hover:shadow-2xl border-0 overflow-hidden shadow-lg hover:-translate-y-2 ${
                   status === 'completed' ? 'ring-2 ring-green-400/50 bg-gradient-to-br from-green-50 to-green-100/50' :
-                  status === 'current' ? 'ring-2 ring-blue-400/50 bg-gradient-to-br from-blue-50 to-blue-100/50' :
-                  'bg-gradient-to-br from-gray-50 to-gray-100/50'
+                  'bg-gradient-to-br from-blue-50 to-blue-100/50'
                 }`}
                 data-testid={`progress-stage-${stage.id}`}
               >
@@ -248,8 +244,7 @@ export default function ProgressTracker({
                   <div className="relative inline-flex items-center justify-center mb-4">
                     <div className={`w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 group-hover:scale-110 p-4 overflow-visible ${
                       status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' :
-                      status === 'current' ? getStageGradientClasses(stage.color) :
-                      'bg-gray-300 text-gray-600'
+                      getStageGradientClasses(stage.color)
                     }`}>
                       <img src={Icon} alt={stage.title} className="w-full h-full object-contain" />
                     </div>
@@ -268,17 +263,6 @@ export default function ProgressTracker({
                     <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white text-xs px-3 py-1 shadow-md">
                       <CheckCircle className="h-3 w-3 mr-1" />
                       {t('progress.stage_completed')}
-                    </Badge>
-                  )}
-                  {status === 'current' && (
-                    <Badge className={`${getStageBadgeClasses(stage.color)} text-white text-xs px-3 py-1 shadow-md`}>
-                      {t('progress.stage_current')}
-                    </Badge>
-                  )}
-                  {status === 'locked' && (
-                    <Badge variant="secondary" className="text-gray-600 bg-gray-100 text-xs px-3 py-1">
-                      <Lock className="h-3 w-3 mr-1" />
-                      {t('progress.stage_locked')}
                     </Badge>
                   )}
                 </div>
@@ -300,7 +284,7 @@ export default function ProgressTracker({
                         strokeDasharray={`${2 * Math.PI * 34}`}
                         strokeDashoffset={`${2 * Math.PI * 34 * (1 - percentage / 100)}`}
                         strokeLinecap="round"
-                        stroke={status === 'completed' ? 'url(#greenGradient)' : status === 'current' ? 'url(#blueGradient)' : '#6b7280'}
+                        stroke={status === 'completed' ? 'url(#greenGradient)' : 'url(#blueGradient)'}
                         fill="transparent"
                         r="34"
                         cx="40"
@@ -365,7 +349,7 @@ export default function ProgressTracker({
                           {isAudit && (
                             <div className="flex items-center justify-between gap-2 mt-3">
                               <div className="flex items-center gap-1.5">
-                                {auditStatus === 'not_started' && status !== 'locked' && (
+                                {auditStatus === 'not_started' && (
                                   <>
                                     <Circle className="h-4 w-4 text-gray-400" />
                                     <span className="text-xs text-gray-500">Not started</span>
@@ -407,50 +391,40 @@ export default function ProgressTracker({
                                     </Badge>
                                   </>
                                 )}
-                                {status === 'locked' && (
-                                  <>
-                                    <Lock className="h-4 w-4 text-gray-400" />
-                                    <span className="text-xs text-gray-400">Locked</span>
-                                  </>
-                                )}
                               </div>
 
                               {/* Audit Action Buttons */}
-                              {status !== 'locked' && (
-                                <>
-                                  {auditStatus === 'not_started' && (
-                                    <Button
-                                      size="sm"
-                                      className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 bg-pcs_blue hover:bg-pcs_blue/90"
-                                      onClick={handleOpenAudit}
-                                      data-testid="button-do-audit"
-                                    >
-                                      Do Audit
-                                    </Button>
-                                  )}
-                                  {auditStatus === 'submitted' && (
-                                    <Button
-                                      size="sm"
-                                      variant="outline"
-                                      className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300"
-                                      onClick={handleOpenAudit}
-                                      data-testid="button-review-answers"
-                                    >
-                                      Review Answers
-                                    </Button>
-                                  )}
-                                  {auditStatus === 'rejected' && (
-                                    <Button
-                                      size="sm"
-                                      variant="destructive"
-                                      className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300"
-                                      onClick={handleOpenAudit}
-                                      data-testid="button-redo-audit"
-                                    >
-                                      Redo Audit
-                                    </Button>
-                                  )}
-                                </>
+                              {auditStatus === 'not_started' && (
+                                <Button
+                                  size="sm"
+                                  className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 bg-pcs_blue hover:bg-pcs_blue/90"
+                                  onClick={handleOpenAudit}
+                                  data-testid="button-do-audit"
+                                >
+                                  Do Audit
+                                </Button>
+                              )}
+                              {auditStatus === 'submitted' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300"
+                                  onClick={handleOpenAudit}
+                                  data-testid="button-review-answers"
+                                >
+                                  Review Answers
+                                </Button>
+                              )}
+                              {auditStatus === 'rejected' && (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300"
+                                  onClick={handleOpenAudit}
+                                  data-testid="button-redo-audit"
+                                >
+                                  Redo Audit
+                                </Button>
                               )}
                             </div>
                           )}
@@ -459,7 +433,7 @@ export default function ProgressTracker({
                           {!isAudit && (
                             <div className="flex items-center justify-between gap-2 mt-3">
                               <div className="flex items-center gap-1.5">
-                                {!evidenceStatus && status !== 'locked' && (
+                                {!evidenceStatus && (
                                   <>
                                     <Circle className="h-4 w-4 text-gray-400" />
                                     <span className="text-xs text-gray-500">Not started</span>
@@ -501,16 +475,10 @@ export default function ProgressTracker({
                                     </Badge>
                                   </>
                                 )}
-                                {status === 'locked' && (
-                                  <>
-                                    <Lock className="h-4 w-4 text-gray-400" />
-                                    <span className="text-xs text-gray-400">Locked</span>
-                                  </>
-                                )}
                               </div>
 
                               {/* Action Button */}
-                              {status !== 'locked' && evidenceStatus !== 'approved' && (
+                              {evidenceStatus !== 'approved' && (
                                 <Button
                                   size="sm"
                                   variant={evidenceStatus === 'rejected' ? 'destructive' : 'default'}
@@ -571,15 +539,6 @@ export default function ProgressTracker({
                     })
                   )}
                 </div>
-
-                {status === 'locked' && (
-                  <div className="text-center mt-4 pt-4 border-t flex-shrink-0">
-                    <div className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 rounded-full">
-                      <Lock className="h-3 w-3 text-gray-500" />
-                      <span className="text-xs text-gray-600">{t('progress.stage_locked')}</span>
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           );
