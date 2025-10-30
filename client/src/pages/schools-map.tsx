@@ -260,7 +260,7 @@ export default function SchoolsMap() {
                   {/* Choropleth Layer */}
                   {geoJsonData && (
                     <GeoJSON
-                      key={[...countryDataMap.values()].map(c => `${c.countryCode}:${c.totalSchools}`).join('|')}
+                      key={Array.from(countryDataMap.values()).map(c => `${c.countryCode}:${c.totalSchools}`).join('|')}
                       data={geoJsonData}
                       style={styleCountry}
                       onEachFeature={onEachCountry}
