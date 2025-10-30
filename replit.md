@@ -4,8 +4,10 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
-**October 30, 2025**: Multiple improvements and bug fixes
+**October 30, 2025**: Navigation and authentication improvements
 - **Unlocked all program stages**: Removed stage-based restrictions on evidence submission. Users can now submit evidence for any stage (Inspire, Investigate, Act) at any time, regardless of their school's current stage or completion status. This provides more flexibility for schools to work at their own pace and submit evidence as they create it.
+- **Streamlined navigation**: Removed Help Centre and Team Management from the main navigation bar to create a cleaner, more focused user interface. These pages remain accessible via direct URLs if needed.
+- **Improved login flow**: Schools and teachers now redirect directly to the dashboard after login instead of the landing page, providing faster access to their school workspace.
 - **Fixed photo consent cache invalidation**: When an admin approves or rejects photo consent, the evidence list now immediately refreshes to show the updated consent status, and the warning dialog no longer appears incorrectly when approving evidence.
 - **Fixed audit approval dialog centering**: The audit approval/rejection dialog is now properly centered on the screen.
 - **Fixed audit approval analytics refresh**: Added comprehensive analytics query invalidations after audit approval to ensure all statistics update in real-time, including audit-specific analytics and school progress analytics.
