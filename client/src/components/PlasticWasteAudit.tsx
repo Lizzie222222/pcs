@@ -55,6 +55,16 @@ const part2Schema = z.object({
 });
 
 const part3Schema = z.object({
+  // Room selections
+  selectedClassrooms: z.boolean().default(false),
+  selectedToilets: z.boolean().default(false),
+  selectedOffice: z.boolean().default(false),
+  selectedLibrary: z.boolean().default(false),
+  selectedGym: z.boolean().default(false),
+  selectedPlayground: z.boolean().default(false),
+  selectedCorridors: z.boolean().default(false),
+  selectedScienceLabs: z.boolean().default(false),
+  selectedArtRooms: z.boolean().default(false),
   // Classrooms
   classroomPensPencils: z.string().default("0"),
   classroomStationery: z.string().default("0"),
@@ -107,7 +117,12 @@ const part3Schema = z.object({
   artRoomsOther: z.string().default("0"),
   artRoomsOtherDescription: z.string().optional(),
   classroomNotes: z.string().optional(),
-});
+}).refine(
+  (data) => data.selectedClassrooms || data.selectedToilets || data.selectedOffice || 
+           data.selectedLibrary || data.selectedGym || data.selectedPlayground || 
+           data.selectedCorridors || data.selectedScienceLabs || data.selectedArtRooms,
+  { message: "Please select at least one room type", path: ["selectedClassrooms"] }
+);
 
 const part4Schema = z.object({
   hasRecyclingBins: z.boolean().default(false),
@@ -201,6 +216,15 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
   const form3 = useForm<Part3Data>({
     resolver: zodResolver(part3Schema),
     defaultValues: {
+      selectedClassrooms: false,
+      selectedToilets: false,
+      selectedOffice: false,
+      selectedLibrary: false,
+      selectedGym: false,
+      selectedPlayground: false,
+      selectedCorridors: false,
+      selectedScienceLabs: false,
+      selectedArtRooms: false,
       classroomPensPencils: "0",
       classroomStationery: "0",
       classroomDisplayMaterials: "0",
@@ -503,6 +527,18 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     return items;
   };
 
+  // Helper function to check if a room has any data
+  // A room is considered to have data if ANY of its fields have been explicitly set
+  // (even if set to 0 or "0", which is valid audit data)
+  const hasRoomData = (data: any, fields: string[]) => {
+    return fields.some(field => {
+      const value = data[field];
+      // Field exists and has been set (undefined/null = not set, empty string = not set)
+      // But "0" or 0 = valid data (user explicitly entered zero)
+      return value !== undefined && value !== null && value !== "";
+    });
+  };
+
   // Load existing audit data or pre-populate from school data
   useEffect(() => {
     if (existingAudit && !hasLoadedInitialData.current) {
@@ -516,7 +552,35 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
         form2.reset(existingAudit.part2Data);
       }
       if (existingAudit.part3Data) {
-        form3.reset(existingAudit.part3Data);
+        // Infer room selections from existing data for backward compatibility
+        const part3Data = existingAudit.part3Data;
+        const inferredSelections = {
+          selectedClassrooms: hasRoomData(part3Data, ['classroomPensPencils', 'classroomStationery', 'classroomDisplayMaterials', 'classroomOther']),
+          selectedToilets: hasRoomData(part3Data, ['toiletSoapBottles', 'toiletBinLiners', 'toiletCupsPaper', 'toiletPeriodProducts', 'toiletOther']),
+          selectedOffice: hasRoomData(part3Data, ['officePlasticBottles', 'officePlasticCups', 'officeStationery', 'officeOther']),
+          selectedLibrary: hasRoomData(part3Data, ['libraryPlasticBottles', 'libraryStationery', 'libraryDisplayMaterials', 'libraryOther']),
+          selectedGym: hasRoomData(part3Data, ['gymPlasticBottles', 'gymSportEquipment', 'gymOther']),
+          selectedPlayground: hasRoomData(part3Data, ['playgroundPlasticBottles', 'playgroundToysEquipment', 'playgroundOther']),
+          selectedCorridors: hasRoomData(part3Data, ['corridorsPlasticBottles', 'corridorsDisplayMaterials', 'corridorsBinLiners', 'corridorsOther']),
+          selectedScienceLabs: hasRoomData(part3Data, ['scienceLabsPlasticBottles', 'scienceLabsLabEquipment', 'scienceLabsOther']),
+          selectedArtRooms: hasRoomData(part3Data, ['artRoomsPlasticBottles', 'artRoomsArtSupplies', 'artRoomsOther']),
+        };
+        
+        // Merge inferred selections with existing data, but only if the selection fields don't already exist
+        const mergedData = {
+          ...part3Data,
+          selectedClassrooms: part3Data.selectedClassrooms ?? inferredSelections.selectedClassrooms,
+          selectedToilets: part3Data.selectedToilets ?? inferredSelections.selectedToilets,
+          selectedOffice: part3Data.selectedOffice ?? inferredSelections.selectedOffice,
+          selectedLibrary: part3Data.selectedLibrary ?? inferredSelections.selectedLibrary,
+          selectedGym: part3Data.selectedGym ?? inferredSelections.selectedGym,
+          selectedPlayground: part3Data.selectedPlayground ?? inferredSelections.selectedPlayground,
+          selectedCorridors: part3Data.selectedCorridors ?? inferredSelections.selectedCorridors,
+          selectedScienceLabs: part3Data.selectedScienceLabs ?? inferredSelections.selectedScienceLabs,
+          selectedArtRooms: part3Data.selectedArtRooms ?? inferredSelections.selectedArtRooms,
+        };
+        
+        form3.reset(mergedData);
       }
       if (existingAudit.part4Data) {
         form4.reset(existingAudit.part4Data);
@@ -1395,7 +1459,226 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
         {currentStep === 3 && (
           <Form {...form3}>
             <div className="space-y-6">
+              {/* Room Selection Section */}
+              <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-lg border-2 border-blue-200">
+                <h3 className="font-bold text-lg text-navy mb-2">
+                  Which rooms does your school have? (Select all that apply)
+                </h3>
+                <p className="text-sm text-gray-600 mb-4">
+                  Only selected rooms will appear in the audit form, reducing scrolling and form fatigue.
+                </p>
+                
+                {/* Academic Rooms */}
+                <div className="mb-4">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2 uppercase tracking-wide">📚 Academic Spaces</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <FormField
+                      control={form3.control}
+                      name="selectedClassrooms"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white hover:bg-blue-50 transition-colors">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-select-classrooms"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-medium cursor-pointer">
+                              🏫 Classrooms
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form3.control}
+                      name="selectedLibrary"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white hover:bg-blue-50 transition-colors">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-select-library"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-medium cursor-pointer">
+                              📚 Library
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form3.control}
+                      name="selectedScienceLabs"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white hover:bg-blue-50 transition-colors">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-select-science-labs"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-medium cursor-pointer">
+                              🔬 Science Labs
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form3.control}
+                      name="selectedArtRooms"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white hover:bg-blue-50 transition-colors">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-select-art-rooms"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-medium cursor-pointer">
+                              🎨 Art Rooms
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Common Areas */}
+                <div className="mb-4">
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2 uppercase tracking-wide">🏢 Common Areas</h4>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                    <FormField
+                      control={form3.control}
+                      name="selectedToilets"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white hover:bg-blue-50 transition-colors">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-select-toilets"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-medium cursor-pointer">
+                              🚽 Toilets
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form3.control}
+                      name="selectedOffice"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white hover:bg-blue-50 transition-colors">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-select-office"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-medium cursor-pointer">
+                              🏢 Office
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form3.control}
+                      name="selectedCorridors"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white hover:bg-blue-50 transition-colors">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-select-corridors"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-medium cursor-pointer">
+                              🚪 Corridors
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Outdoor & Sports */}
+                <div>
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2 uppercase tracking-wide">⚽ Outdoor & Sports</h4>
+                  <div className="grid grid-cols-2 gap-3">
+                    <FormField
+                      control={form3.control}
+                      name="selectedGym"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white hover:bg-blue-50 transition-colors">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-select-gym"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-medium cursor-pointer">
+                              🏋️ Gym
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form3.control}
+                      name="selectedPlayground"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-3 bg-white hover:bg-blue-50 transition-colors">
+                          <FormControl>
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={field.onChange}
+                              data-testid="checkbox-select-playground"
+                            />
+                          </FormControl>
+                          <div className="space-y-1 leading-none">
+                            <FormLabel className="text-sm font-medium cursor-pointer">
+                              🎮 Playground
+                            </FormLabel>
+                          </div>
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {/* Validation message */}
+                {form3.formState.errors.selectedClassrooms && (
+                  <p className="text-sm text-red-600 mt-3" data-testid="text-room-selection-error">
+                    {form3.formState.errors.selectedClassrooms.message}
+                  </p>
+                )}
+              </div>
+
               {/* Classrooms */}
+              {form3.watch("selectedClassrooms") && (
               <div>
                 <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Classrooms</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1470,8 +1753,10 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   )}
                 />
               </div>
+              )}
 
               {/* Toilets */}
+              {form3.watch("selectedToilets") && (
               <div>
                 <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Toilets</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1559,8 +1844,10 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   )}
                 />
               </div>
+              )}
 
               {/* Office */}
+              {form3.watch("selectedOffice") && (
               <div>
                 <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Office</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1635,8 +1922,10 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   )}
                 />
               </div>
+              )}
 
               {/* Library */}
+              {form3.watch("selectedLibrary") && (
               <div>
                 <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Library</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1711,8 +2000,10 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   )}
                 />
               </div>
+              )}
 
               {/* Gym */}
+              {form3.watch("selectedGym") && (
               <div>
                 <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Gym</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1774,8 +2065,10 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   )}
                 />
               </div>
+              )}
 
               {/* Playground */}
+              {form3.watch("selectedPlayground") && (
               <div>
                 <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Playground</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1837,8 +2130,10 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   )}
                 />
               </div>
+              )}
 
               {/* Corridors */}
+              {form3.watch("selectedCorridors") && (
               <div>
                 <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Corridors</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1913,8 +2208,10 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   )}
                 />
               </div>
+              )}
 
               {/* Science Labs */}
+              {form3.watch("selectedScienceLabs") && (
               <div>
                 <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Science Labs</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1976,8 +2273,10 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   )}
                 />
               </div>
+              )}
 
               {/* Art Rooms */}
+              {form3.watch("selectedArtRooms") && (
               <div>
                 <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Art Rooms</h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -2039,6 +2338,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   )}
                 />
               </div>
+              )}
 
               <FormField
                 control={form3.control}
