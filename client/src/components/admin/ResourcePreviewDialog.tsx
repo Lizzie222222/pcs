@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, Download, FileText, File as FileIcon, Image as ImageIcon, FileType, Sheet } from "lucide-react";
 import { LoadingSpinner } from "@/components/ui/states";
+import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 
 interface ResourcePreviewDialogProps {
   fileUrl: string;
@@ -19,6 +20,9 @@ export function ResourcePreviewDialog({
 }: ResourcePreviewDialogProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Normalize the file URL to ensure proper CORS headers via proxy
+  const normalizedFileUrl = normalizeObjectStorageUrl(fileUrl);
 
   useEffect(() => {
     setIsLoading(true);
@@ -51,7 +55,7 @@ export function ResourcePreviewDialog({
   };
 
   const handleDownload = () => {
-    window.open(`${fileUrl}?download=true`, '_blank');
+    window.open(`${normalizedFileUrl}?download=true`, '_blank');
   };
 
   return (
@@ -119,7 +123,7 @@ export function ResourcePreviewDialog({
                 
                 {isImage() ? (
                   <img
-                    src={fileUrl}
+                    src={normalizedFileUrl}
                     alt={fileName}
                     className="max-w-full max-h-full object-contain"
                     data-testid="img-resource-preview"
@@ -131,7 +135,7 @@ export function ResourcePreviewDialog({
                   />
                 ) : isPDF() ? (
                   <iframe
-                    src={fileUrl}
+                    src={normalizedFileUrl}
                     className="w-full h-full"
                     title={fileName}
                     data-testid="iframe-pdf-preview"

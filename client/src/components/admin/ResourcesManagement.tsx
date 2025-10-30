@@ -155,7 +155,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
 
   const handleGetUploadParameters = async (file: any) => {
     try {
-      const response = await fetch('/api/objects/upload', {
+      const response = await fetch('/api/case-studies/upload', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });
