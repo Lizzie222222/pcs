@@ -563,7 +563,7 @@ export default function Landing() {
                           className="block bg-white rounded-lg shadow-md hover:shadow-xl transition-shadow duration-300 overflow-hidden group cursor-pointer border border-gray-200"
                           data-testid={`card-event-${event.id}`}
                         >
-                          {event.imageUrl && (
+                          {event.imageUrl && event.imageUrl.trim() !== '' && (
                             <div className="relative h-48 overflow-hidden">
                               <img 
                                 src={normalizeObjectStorageUrl(event.imageUrl)} 
