@@ -4,6 +4,17 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
+**October 30, 2025**: Welcome email template improvements
+- **Updated email header background**: Replaced gradient background with solid navy blue (#204969) to ensure the white logo is visible in all email clients, regardless of light or dark mode.
+  - Changed header from `linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%)` to solid `#204969`
+  - Added CSS meta tags (`color-scheme`, `supported-color-schemes`) for better email client compatibility
+  - Added media queries to enforce navy background in both light and dark mode
+  - Applied `!important` inline styling to header background for maximum client support
+- **Enhanced welcome email content**: Added "Your First Step: Inspire" section to guide new schools through their first actions.
+  - Highlighted box explaining the Inspire stage purpose (building awareness about plastic pollution)
+  - Clear action items: watch educational videos, discuss with students, share evidence of learning
+  - Styled with light blue background and border for visual prominence
+
 **October 30, 2025**: Resource page tag display enhancement
 - **Added unified tag display to resource cards**: Language is now displayed as a tag alongside other resource tags for consistent categorization.
   - Language displays as the first tag with teal badge styling (e.g., #English, #Spanish)
