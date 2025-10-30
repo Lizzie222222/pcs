@@ -22,6 +22,7 @@ interface SchoolTeacher {
   name: string;
   email: string;
   role: 'head_teacher' | 'teacher';
+  teacherRole?: string;
   isVerified: boolean;
   joinedAt: string;
 }
@@ -137,7 +138,7 @@ export default function SchoolTeachersList() {
                         </td>
                         <td className="p-2 text-sm">
                           <Badge variant="outline" data-testid={`text-teacher-role-${teacher.userId}`}>
-                            {teacher.role === 'head_teacher' ? 'Head Teacher' : 'Teacher'}
+                            {teacher.teacherRole || (teacher.role === 'head_teacher' ? 'Head Teacher' : 'Teacher')}
                           </Badge>
                         </td>
                         <td className="p-2 text-sm" data-testid={`text-teacher-verified-${teacher.userId}`}>

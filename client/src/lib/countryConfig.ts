@@ -91,6 +91,7 @@ export const LANGUAGE_OPTIONS = [
   'Portuguese',
   'Italian',
   'Dutch',
+  'Greek',
   'Chinese (Mandarin)',
   'Japanese',
   'Korean',

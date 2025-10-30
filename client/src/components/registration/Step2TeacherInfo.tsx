@@ -7,6 +7,7 @@ import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDes
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAuth } from "@/hooks/useAuth";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 export interface Step2Data {
   firstName: string;
@@ -111,7 +112,13 @@ export default function Step2TeacherInfo({ initialData, onNext, onBack }: Step2T
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('forms:teacher_info.email_label')}</FormLabel>
+                <FormLabel>
+                  {t('forms:teacher_info.email_label')}
+                  <InfoTooltip 
+                    content="Email used for sign in and communication" 
+                    dataTestId="tooltip-teacher-email"
+                  />
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="email"

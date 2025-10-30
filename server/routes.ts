@@ -1610,7 +1610,7 @@ Return JSON with:
         // Step 1: School Info
         country: z.string().min(1),
         schoolName: z.string().min(1).max(200),
-        adminEmail: z.string().email().optional().or(z.literal('')),
+        adminEmail: z.string().min(1).email(),
         address: z.string().min(1),
         postcode: z.string().optional(),
         zipCode: z.string().optional(),
@@ -1631,12 +1631,33 @@ Return JSON with:
 
       const data = multiStepSchema.parse(req.body);
 
+      // Map primaryLanguage to language code for preferredLanguage
+      const languageMap: Record<string, string> = {
+        'English': 'en',
+        'Spanish': 'es',
+        'French': 'fr',
+        'German': 'de',
+        'Portuguese': 'pt',
+        'Italian': 'it',
+        'Dutch': 'nl',
+        'Greek': 'el',
+        'Chinese (Mandarin)': 'zh',
+        'Japanese': 'ja',
+        'Korean': 'ko',
+        'Arabic': 'ar',
+        'Hindi': 'hi',
+        'Other': 'en'
+      };
+      
+      const preferredLanguage = languageMap[data.primaryLanguage] || 'en';
+      
       // Update user info if different from auth
-      if (data.firstName !== req.user.firstName || data.lastName !== req.user.lastName || data.email !== req.user.email) {
+      if (data.firstName !== req.user.firstName || data.lastName !== req.user.lastName || data.email !== req.user.email || preferredLanguage !== req.user.preferredLanguage) {
         await storage.updateUser(userId, {
           firstName: data.firstName,
           lastName: data.lastName,
           email: data.email,
+          preferredLanguage: preferredLanguage,
         });
       }
 
@@ -1645,7 +1666,7 @@ Return JSON with:
         name: data.schoolName,
         country: data.country,
         address: data.address,
-        adminEmail: data.adminEmail || undefined,
+        adminEmail: data.adminEmail,
         postcode: data.postcode,
         zipCode: data.zipCode,
         primaryLanguage: data.primaryLanguage,
@@ -6016,6 +6037,7 @@ Return JSON with:
         firstName: su.user?.firstName || null,
         lastName: su.user?.lastName || null,
         role: su.role,
+        teacherRole: su.teacherRole,
         isVerified: su.isVerified,
         joinedAt: su.createdAt,
         createdAt: su.createdAt,
@@ -6121,6 +6143,7 @@ Return JSON with:
         name: su.user ? `${su.user.firstName} ${su.user.lastName}` : 'Unknown',
         email: su.user?.email || 'N/A',
         role: su.role,
+        teacherRole: su.teacherRole,
         isVerified: su.isVerified,
         joinedAt: su.createdAt,
       }));

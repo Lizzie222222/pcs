@@ -14,11 +14,12 @@ import { useState } from "react";
 import { useCountriesForRegistration } from "@/hooks/useCountries";
 import { getCountryConfig, LANGUAGE_OPTIONS } from "@/lib/countryConfig";
 import { LoadingSpinner } from "@/components/ui/states";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 export interface Step1Data {
   country: string;
   schoolName: string;
-  adminEmail?: string;
+  adminEmail: string;
   address: string;
   postcode?: string;
   zipCode?: string;
@@ -42,7 +43,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
     return z.object({
       country: z.string().min(1, t('forms:validation.required')),
       schoolName: z.string().min(1, t('forms:validation.required')).max(200),
-      adminEmail: z.string().email(t('forms:validation.email_invalid')).optional().or(z.literal('')),
+      adminEmail: z.string().min(1, t('forms:validation.required')).email(t('forms:validation.email_invalid')),
       address: z.string().min(1, t('forms:validation.required')),
       postcode: countryConfig?.postalCodeField === 'postcode' 
         ? z.string().min(1, t('forms:validation.required'))
@@ -166,13 +167,19 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
             )}
           />
 
-          {/* Admin Email - Optional */}
+          {/* Admin Email - Required */}
           <FormField
             control={form.control}
             name="adminEmail"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('forms:school_registration.admin_email_label')}</FormLabel>
+                <FormLabel>
+                  {t('forms:school_registration.admin_email_label')} *
+                  <InfoTooltip 
+                    content="Official school email" 
+                    dataTestId="tooltip-admin-email"
+                  />
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="email"

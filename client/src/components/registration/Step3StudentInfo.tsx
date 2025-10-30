@@ -9,6 +9,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Toggle } from "@/components/ui/toggle";
 import { getCountryConfig } from "@/lib/countryConfig";
 import { Loader2 } from "lucide-react";
+import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 export interface Step3Data {
   studentCount: number;
@@ -79,7 +80,13 @@ export default function Step3StudentInfo({
             name="studentCount"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>{t('forms:student_info.student_count_label')}</FormLabel>
+                <FormLabel>
+                  {t('forms:student_info.student_count_label')}
+                  <InfoTooltip 
+                    content="Approximate number of students involved in plastic leather schools activities" 
+                    dataTestId="tooltip-student-count"
+                  />
+                </FormLabel>
                 <FormControl>
                   <Input
                     type="number"
@@ -171,8 +178,19 @@ export default function Step3StudentInfo({
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel className="cursor-pointer">
-                    {t('forms:school_registration.gdpr_consent')} *
+                  <FormLabel className="cursor-pointer text-sm">
+                    {t('forms:school_registration.gdpr_consent_description_start')}{' '}
+                    <a 
+                      href="/privacy" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-pcs_blue hover:underline font-medium"
+                      data-testid="link-privacy-policy"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {t('forms:school_registration.privacy_policy_link')}
+                    </a>
+                    {' '}{t('forms:school_registration.gdpr_consent_description_end')} *
                   </FormLabel>
                   <FormMessage data-testid="error-gdpr-consent" />
                 </div>
@@ -194,8 +212,30 @@ export default function Step3StudentInfo({
                   />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel className="cursor-pointer">
-                    {t('forms:school_registration.accept_terms')} *
+                  <FormLabel className="cursor-pointer text-sm">
+                    {t('forms:school_registration.accept_terms_description_start')}{' '}
+                    <a 
+                      href="/terms" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-pcs_blue hover:underline font-medium"
+                      data-testid="link-terms-of-service"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {t('forms:school_registration.terms_of_service_link')}
+                    </a>
+                    {' '}{t('forms:school_registration.accept_terms_description_and')}{' '}
+                    <a 
+                      href="/privacy" 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-pcs_blue hover:underline font-medium"
+                      data-testid="link-privacy-policy-terms"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      {t('forms:school_registration.privacy_policy_link')}
+                    </a>
+                    {' '}*
                   </FormLabel>
                   <FormMessage data-testid="error-accept-terms" />
                 </div>
