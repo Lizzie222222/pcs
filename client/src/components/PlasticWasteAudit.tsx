@@ -135,18 +135,25 @@ const part4Schema = z.object({
 });
 
 const promiseItemSchema = z.object({
-  plasticItemType: z.string().min(1, "Item type required"),
-  plasticItemLabel: z.string().min(1, "Item label required"),
-  baselineQuantity: z.coerce.number().min(1, "Baseline must be at least 1"),
-  targetQuantity: z.coerce.number().min(0, "Target must be 0 or more"),
+  plasticItemType: z.string(),
+  plasticItemLabel: z.string(),
+  baselineQuantity: z.coerce.number().min(0),
+  targetQuantity: z.coerce.number().min(0),
   timeframeUnit: z.enum(['week', 'month', 'year']),
   notes: z.string().optional(),
 });
 
 const part6Schema = z.object({
   promises: z.array(promiseItemSchema).min(0).refine(
-    (promises) => promises.length === 0 || promises.length >= 2,
-    { message: "If adding promises, you must add at least 2 action items" }
+    (promises) => {
+      const validPromises = promises.filter(p => 
+        p.plasticItemType.trim() !== "" && 
+        p.plasticItemLabel.trim() !== "" && 
+        p.baselineQuantity > 0
+      );
+      return validPromises.length === 0 || validPromises.length >= 1;
+    },
+    { message: "If adding promises, you must complete at least 1 action item" }
   )
 });
 
@@ -865,15 +872,13 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       console.log("[Promises] Filtered out:", promisesData.length - validPromises.length, "promises");
       
       const promisePromises = validPromises.map(promise => {
-        const reductionAmount = promise.baselineQuantity - promise.targetQuantity;
         const payload = {
           schoolId,
           auditId,
           plasticItemType: promise.plasticItemType,
           plasticItemLabel: promise.plasticItemLabel,
-          baselineQuantity: promise.baselineQuantity,
-          targetQuantity: promise.targetQuantity,
-          reductionAmount,
+          baselineQuantity: Number(promise.baselineQuantity),
+          targetQuantity: Number(promise.targetQuantity),
           timeframeUnit: promise.timeframeUnit,
           notes: promise.notes || "",
         };

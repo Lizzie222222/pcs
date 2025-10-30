@@ -1689,6 +1689,9 @@ export const insertReductionPromiseSchema = createInsertSchema(reductionPromises
   id: true,
   createdAt: true,
   updatedAt: true,
+  createdBy: true,
+  status: true,
+  reductionAmount: true,
 });
 
 export const insertPrintableFormSubmissionSchema = createInsertSchema(printableFormSubmissions).omit({
