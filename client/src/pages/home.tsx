@@ -1423,7 +1423,7 @@ export default function Home() {
                   <div>
                     <CardTitle className="flex items-center gap-2">
                       <BookOpen className="h-5 w-5 text-pcs_blue" />
-                      Recommended for You
+                      Recommended for you
                     </CardTitle>
                     <p className="text-sm text-gray-600 mt-1">
                       Resources matching your current stage ({dashboardData?.school?.currentStage}) 
