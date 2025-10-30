@@ -11,6 +11,7 @@ import actIcon from "@assets/PSC - Act_1760461719847.png";
 import { useTranslation } from "react-i18next";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import { PlasticWasteAudit } from "@/components/PlasticWasteAudit";
+import { ActionPlan } from "@/components/ActionPlan";
 import type { AuditResponse } from "@shared/schema";
 
 interface EvidenceCounts {
@@ -60,6 +61,8 @@ export default function ProgressTracker({
   const [selectedRequirementId, setSelectedRequirementId] = useState<string | undefined>();
   const [selectedStage, setSelectedStage] = useState<string>('inspire');
   const [showAuditModal, setShowAuditModal] = useState(false);
+  const [showActionPlanModal, setShowActionPlanModal] = useState(false);
+  const [actionPlanRequirementId, setActionPlanRequirementId] = useState<string>('');
 
   // Fetch evidence requirements
   const { data: requirements = [], isLoading: requirementsLoading } = useQuery<EvidenceRequirement[]>({
@@ -202,6 +205,11 @@ export default function ProgressTracker({
     return requirement.title.includes("Plastic Waste Audit");
   };
 
+  // Check if requirement is Action Plan Development
+  const isActionPlanDevelopment = (requirement: EvidenceRequirement) => {
+    return requirement.title.includes("Action Plan Development");
+  };
+
   // Get audit status for display
   const getAuditStatus = () => {
     if (!auditResponse) return 'not_started';
@@ -212,6 +220,12 @@ export default function ProgressTracker({
   // Handle opening audit modal
   const handleOpenAudit = () => {
     setShowAuditModal(true);
+  };
+
+  // Handle opening action plan modal
+  const handleOpenActionPlan = (requirementId: string) => {
+    setActionPlanRequirementId(requirementId);
+    setShowActionPlanModal(true);
   };
 
   return (
@@ -319,6 +333,7 @@ export default function ProgressTracker({
                       const evidence = getRequirementEvidence(requirement.id);
                       const evidenceStatus = evidence?.status;
                       const isAudit = isPlasticWasteAudit(requirement);
+                      const isActionPlan = isActionPlanDevelopment(requirement);
                       const auditStatus = isAudit ? getAuditStatus() : null;
                       
                       return (
@@ -423,8 +438,92 @@ export default function ProgressTracker({
                             </div>
                           )}
 
+                          {/* Status & Action - Action Plan Development */}
+                          {isActionPlan && (
+                            <div className="flex items-center justify-between gap-2 mt-3">
+                              <div className="flex items-center gap-1.5">
+                                {!evidenceStatus && (
+                                  <>
+                                    <Circle className="h-4 w-4 text-gray-400" />
+                                    <span className="text-xs text-gray-500">Not started</span>
+                                  </>
+                                )}
+                                {evidenceStatus === 'pending' && (
+                                  <>
+                                    <Clock className="h-4 w-4 text-yellow-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
+                                      data-testid="status-action-plan-pending"
+                                    >
+                                      Pending Review
+                                    </Badge>
+                                  </>
+                                )}
+                                {evidenceStatus === 'approved' && (
+                                  <>
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-green-50 text-green-700 border-green-200"
+                                      data-testid="status-action-plan-approved"
+                                    >
+                                      Approved
+                                    </Badge>
+                                  </>
+                                )}
+                                {evidenceStatus === 'rejected' && (
+                                  <>
+                                    <X className="h-4 w-4 text-red-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-red-50 text-red-700 border-red-200"
+                                      data-testid="status-action-plan-rejected"
+                                    >
+                                      Rejected
+                                    </Badge>
+                                  </>
+                                )}
+                              </div>
+
+                              {/* Action Plan Action Buttons */}
+                              {!evidenceStatus && (
+                                <Button
+                                  size="sm"
+                                  className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 bg-teal hover:bg-teal/90"
+                                  onClick={() => handleOpenActionPlan(requirement.id)}
+                                  data-testid="button-create-action-plan"
+                                >
+                                  Create Plan
+                                </Button>
+                              )}
+                              {evidenceStatus === 'pending' && (
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300"
+                                  onClick={() => handleOpenActionPlan(requirement.id)}
+                                  data-testid="button-view-action-plan"
+                                >
+                                  View Plan
+                                </Button>
+                              )}
+                              {evidenceStatus === 'rejected' && (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300"
+                                  onClick={() => handleOpenActionPlan(requirement.id)}
+                                  data-testid="button-redo-action-plan"
+                                >
+                                  Revise Plan
+                                </Button>
+                              )}
+                            </div>
+                          )}
+
                           {/* Status & Action - Regular Evidence */}
-                          {!isAudit && (
+                          {!isAudit && !isActionPlan && (
                             <div className="flex items-center justify-between gap-2 mt-3">
                               <div className="flex items-center gap-1.5">
                                 {!evidenceStatus && (
@@ -559,6 +658,17 @@ export default function ProgressTracker({
           <PlasticWasteAudit 
             schoolId={schoolId}
             onClose={() => setShowAuditModal(false)}
+          />
+        </DialogContent>
+      </Dialog>
+
+      {/* Action Plan Modal */}
+      <Dialog open={showActionPlanModal} onOpenChange={setShowActionPlanModal}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <ActionPlan 
+            schoolId={schoolId}
+            evidenceRequirementId={actionPlanRequirementId}
+            onClose={() => setShowActionPlanModal(false)}
           />
         </DialogContent>
       </Dialog>
