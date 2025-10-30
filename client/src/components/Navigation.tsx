@@ -248,7 +248,7 @@ export default function Navigation() {
                   {t('navigation.login')}
                 </button>
                 <Button
-                  className="btn-primary"
+                  className="btn-primary bg-[#0375a8]"
                   onClick={() => setLocation('/register')}
                   data-testid="button-register"
                 >
