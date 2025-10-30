@@ -5,6 +5,7 @@ import type { ReductionPromise } from './schema';
  * Based on research and average weights of typical disposable plastic items
  */
 export const PLASTIC_ITEM_WEIGHTS: Record<string, number> = {
+  // Original items
   plastic_cups: 5,           // disposable cup
   plastic_bottles: 15,       // standard water bottle (500ml)
   plastic_straws: 0.42,     // single straw
@@ -30,6 +31,23 @@ export const PLASTIC_ITEM_WEIGHTS: Record<string, number> = {
   disposable_razors: 8,     // plastic razor
   toothbrushes: 18,         // plastic toothbrush
   plastic_utensils_set: 12, // fork, knife, spoon set
+  
+  // Audit-specific items
+  snack_wrappers: 2,        // snack wrapper (food packaging)
+  yoghurt_pots: 5,          // yoghurt pot
+  takeaway_containers: 12,  // takeaway container
+  cling_film: 1.5,          // cling film
+  pens_pencils: 3,          // plastic pens & pencils (average)
+  stationery: 4,            // misc stationery items
+  display_materials: 2,     // display/decoration materials
+  soap_bottles: 25,         // soap dispenser bottles
+  bin_liners: 8,            // bin bags/liners
+  cups_dispensers: 3,       // disposable cups/dispensers
+  period_products: 5,       // plastic-wrapped period products
+  sport_equipment: 50,      // plastic sports equipment (average)
+  toys_equipment: 30,       // plastic toys/equipment
+  lab_equipment: 15,        // lab plastics (pipettes, etc.)
+  art_supplies: 10,         // art plastic supplies
 };
 
 /**

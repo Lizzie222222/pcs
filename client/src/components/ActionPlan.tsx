@@ -12,7 +12,7 @@ import { z } from "zod";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
-import { ClipboardCheck, Plus, Trash2, Send, CheckCircle, Target, AlertCircle } from "lucide-react";
+import { ClipboardCheck, Plus, Trash2, Send, CheckCircle, Target, AlertCircle, Clock } from "lucide-react";
 import type { AuditResponse } from "@shared/schema";
 
 interface ActionPlanProps {
@@ -58,6 +58,12 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
   // Check if action plan already exists
   const hasExistingActionPlan = existingEvidence && Array.isArray(existingEvidence) && existingEvidence.length > 0;
   const actionPlanStatus = hasExistingActionPlan ? existingEvidence[0]?.status : null;
+
+  // Fetch reduction promises for this school
+  const { data: reductionPromises = [], isLoading: promisesLoading } = useQuery<any[]>({
+    queryKey: [`/api/reduction-promises/school/${schoolId}`],
+    enabled: !!schoolId && (actionPlanStatus === 'pending' || actionPlanStatus === 'approved'),
+  });
 
   // Form with validation
   const form = useForm<ActionPlanData>({
@@ -310,8 +316,28 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
     );
   }
 
-  // If action plan already exists and is approved
+  // If action plan already exists and is approved - show submitted promises
   if (actionPlanStatus === 'approved') {
+    if (promisesLoading) {
+      return (
+        <Card className="border-2 border-green-300 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-navy">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+              Action Plan Approved
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal"></div>
+              <p className="ml-3 text-gray-600">Loading your action plan...</p>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    if (reductionPromises.length > 0) {
     return (
       <Card className="border-2 border-green-300 bg-green-50">
         <CardHeader>
@@ -319,21 +345,91 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
             <CheckCircle className="h-6 w-6 text-green-600" />
             Action Plan Approved
           </CardTitle>
+          <CardDescription>
+            Congratulations! Your action plan with {reductionPromises.length} reduction promise{reductionPromises.length !== 1 ? 's' : ''} has been approved.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-gray-700 mb-4">
-            Your action plan has been approved! You can view your reduction promises in the "Our Action Plan" tab.
-          </p>
-          <Button onClick={onClose} data-testid="button-close">
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            {reductionPromises.map((promise: any, index: number) => (
+              <Card key={promise.id} className="bg-white border border-gray-200">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold text-navy mb-2">Promise {index + 1}: {promise.plasticItemLabel}</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-gray-600">Baseline:</span>
+                      <span className="font-semibold ml-2">{promise.baselineQuantity.toLocaleString()} per {promise.timeframeUnit}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Target:</span>
+                      <span className="font-semibold ml-2">{promise.targetQuantity.toLocaleString()} per {promise.timeframeUnit}</span>
+                    </div>
+                  </div>
+                  <div className="mt-2 bg-green-50 p-2 rounded">
+                    <span className="text-sm font-semibold text-green-700">
+                      Reduction: {promise.reductionAmount.toLocaleString()} items ({Math.round((promise.reductionAmount / promise.baselineQuantity) * 100)}%)
+                    </span>
+                  </div>
+                  {promise.notes && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      <span className="font-semibold">Plan:</span> {promise.notes}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Button onClick={onClose} data-testid="button-close" className="w-full">
             Close
           </Button>
         </CardContent>
       </Card>
     );
+    } else {
+      // Approved but no promises found (shouldn't happen, but handle gracefully)
+      return (
+        <Card className="border-2 border-green-300 bg-green-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-navy">
+              <CheckCircle className="h-6 w-6 text-green-600" />
+              Action Plan Approved
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700 mb-4">
+              Your action plan has been approved! You can view your reduction promises in the "Our Action Plan" tab.
+            </p>
+            <Button onClick={onClose} data-testid="button-close">
+              Close
+            </Button>
+          </CardContent>
+        </Card>
+      );
+    }
   }
 
-  // If action plan already exists and is pending review
+  // If action plan already exists and is pending review - show submitted promises
   if (actionPlanStatus === 'pending') {
+    if (promisesLoading) {
+      return (
+        <Card className="border-2 border-yellow-300 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-navy">
+              <Clock className="h-6 w-6 text-yellow-600" />
+              Action Plan Under Review
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-center p-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal"></div>
+              <p className="ml-3 text-gray-600">Loading your action plan...</p>
+            </div>
+          </CardContent>
+        </Card>
+      );
+    }
+    
+    if (reductionPromises.length > 0) {
     return (
       <Card className="border-2 border-yellow-300 bg-yellow-50">
         <CardHeader>
@@ -341,17 +437,67 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
             <Clock className="h-6 w-6 text-yellow-600" />
             Action Plan Under Review
           </CardTitle>
+          <CardDescription>
+            Your action plan with {reductionPromises.length} reduction promise{reductionPromises.length !== 1 ? 's' : ''} is currently under review.
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-gray-700 mb-4">
-            Your action plan has been submitted and is currently under review. You'll be notified once it's been reviewed.
-          </p>
-          <Button onClick={onClose} data-testid="button-close">
+        <CardContent className="space-y-4">
+          <div className="space-y-3">
+            {reductionPromises.map((promise: any, index: number) => (
+              <Card key={promise.id} className="bg-white border border-gray-200">
+                <CardContent className="p-4">
+                  <h4 className="font-semibold text-navy mb-2">Promise {index + 1}: {promise.plasticItemLabel}</h4>
+                  <div className="grid grid-cols-2 gap-3 text-sm">
+                    <div>
+                      <span className="text-gray-600">Baseline:</span>
+                      <span className="font-semibold ml-2">{promise.baselineQuantity.toLocaleString()} per {promise.timeframeUnit}</span>
+                    </div>
+                    <div>
+                      <span className="text-gray-600">Target:</span>
+                      <span className="font-semibold ml-2">{promise.targetQuantity.toLocaleString()} per {promise.timeframeUnit}</span>
+                    </div>
+                  </div>
+                  <div className="mt-2 bg-green-50 p-2 rounded">
+                    <span className="text-sm font-semibold text-green-700">
+                      Reduction: {promise.reductionAmount.toLocaleString()} items ({Math.round((promise.reductionAmount / promise.baselineQuantity) * 100)}%)
+                    </span>
+                  </div>
+                  {promise.notes && (
+                    <div className="mt-2 text-sm text-gray-600">
+                      <span className="font-semibold">Plan:</span> {promise.notes}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+          <Button onClick={onClose} data-testid="button-close" className="w-full">
             Close
           </Button>
         </CardContent>
       </Card>
     );
+    } else {
+      // Pending but no promises found (shouldn't happen, but handle gracefully)
+      return (
+        <Card className="border-2 border-yellow-300 bg-yellow-50">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-navy">
+              <Clock className="h-6 w-6 text-yellow-600" />
+              Action Plan Under Review
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-gray-700 mb-4">
+              Your action plan has been submitted and is currently under review.
+            </p>
+            <Button onClick={onClose} data-testid="button-close">
+              Close
+            </Button>
+          </CardContent>
+        </Card>
+      );
+    }
   }
 
   return (
