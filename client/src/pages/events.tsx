@@ -37,7 +37,20 @@ export default function Events() {
 
   const { data: events = [], isLoading } = useQuery<Event[]>({
     queryKey: ['/api/events'],
+    staleTime: 0, // Force fresh data fetch
+    gcTime: 0, // Don't cache
   });
+
+  // Debug logging
+  if (events.length > 0) {
+    console.log('First event imageUrl:', events[0].imageUrl);
+    console.log('First event imageUrl type:', typeof events[0].imageUrl);
+    console.log('First event imageUrl truthy?:', !!events[0].imageUrl);
+    if (events[0].imageUrl) {
+      console.log('First event imageUrl trimmed:', events[0].imageUrl.trim());
+      console.log('First event imageUrl trim check:', events[0].imageUrl.trim() !== '');
+    }
+  }
 
   const upcomingEvents = events.filter(event => 
     event.status === 'published' && new Date(event.startDateTime) > new Date()
