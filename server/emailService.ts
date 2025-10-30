@@ -162,7 +162,7 @@ function generateEmailTemplate(params: EmailTemplateParams): string {
                 <td style="padding: 0 30px 40px; text-align: center;">
                   <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                     <tr>
-                      <td style="border-radius: 8px; background: linear-gradient(135deg, #02BBB4 0%, #019ADE 100%); box-shadow: 0 4px 15px rgba(2, 187, 180, 0.3);">
+                      <td style="border-radius: 8px; background-color: #204969; box-shadow: 0 4px 15px rgba(32, 73, 105, 0.3);">
                         <a href="${callToActionUrl}" style="display: inline-block; padding: 15px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 700; border-radius: 8px;">
                           ${callToActionText}
                         </a>
@@ -602,7 +602,9 @@ export async function sendTeacherInvitationEmail(
   const acceptUrl = `${baseUrl}/invitations/${token}`;
   const logoUrl = `${baseUrl}/api/email-logo`;
   
-  console.log(`[Teacher Invitation Email] Sending to ${recipientEmail} for ${schoolName} with token ${token.substring(0, 8)}...`);
+  // Enhanced logging for debugging production issues
+  console.log(`[Teacher Invitation Email] Sending to ${recipientEmail} for ${schoolName}`);
+  console.log(`[Teacher Invitation Email] Full acceptUrl: ${acceptUrl}`);
   
   const html = `
     <!DOCTYPE html>
@@ -612,14 +614,14 @@ export async function sendTeacherInvitationEmail(
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Teacher Invitation - Plastic Clever Schools</title>
     </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);">
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f4;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f4f4f4;">
         <tr>
           <td style="padding: 40px 20px;">
             <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);">
               <!-- Celebration Header -->
               <tr>
-                <td style="background: linear-gradient(135deg, #02BBB4 0%, #019ADE 100%); padding: 50px 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                <td style="background-color: #204969; padding: 50px 30px; border-radius: 16px 16px 0 0; text-align: center;">
                   <img src="${logoUrl}" alt="Plastic Clever Schools" style="height: 125px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
                   <div style="font-size: 48px; margin-bottom: 15px;">🎓</div>
                   <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -634,7 +636,7 @@ export async function sendTeacherInvitationEmail(
               <!-- Welcome Banner -->
               <tr>
                 <td style="padding: 0;">
-                  <div style="background: linear-gradient(90deg, #4caf50 0%, #02BBB4 100%); padding: 20px; text-align: center;">
+                  <div style="background-color: #02BBB4; padding: 20px; text-align: center;">
                     <p style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
                       🌟 Welcome to the Team! 🌟
                     </p>
@@ -663,8 +665,8 @@ export async function sendTeacherInvitationEmail(
                       <td style="text-align: center;">
                         <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                           <tr>
-                            <td style="border-radius: 8px; background: linear-gradient(135deg, #02BBB4 0%, #4caf50 100%); box-shadow: 0 4px 15px rgba(2, 187, 180, 0.3);">
-                              <a href="${acceptUrl}" style="display: inline-block; padding: 18px 50px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px;">
+                            <td style="border-radius: 8px; background: #204969; box-shadow: 0 4px 15px rgba(32, 73, 105, 0.3);">
+                              <a href="${acceptUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 18px 50px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px;">
                                 🚀 Join Your School
                               </a>
                             </td>
@@ -683,7 +685,7 @@ export async function sendTeacherInvitationEmail(
                   </p>
                   
                   <!-- Important Info Box -->
-                  <div style="margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); border-left: 5px solid #ffc107; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);">
+                  <div style="margin: 30px 0; padding: 25px; background-color: #fff3cd; border-left: 5px solid #ffc107; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);">
                     <p style="margin: 0 0 10px 0; color: #856404; font-size: 16px; line-height: 1.6; font-weight: 700;">
                       ⏰ Time-Sensitive Invitation
                     </p>
@@ -693,7 +695,7 @@ export async function sendTeacherInvitationEmail(
                   </div>
                   
                   <!-- What You'll Do Section -->
-                  <div style="margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 8px;">
+                  <div style="margin: 30px 0; padding: 25px; background-color: #e3f2fd; border-radius: 8px;">
                     <p style="margin: 0 0 15px 0; color: #0B3D5D; font-size: 18px; font-weight: 700;">
                       🎯 What You'll Do:
                     </p>
@@ -713,7 +715,7 @@ export async function sendTeacherInvitationEmail(
               
               <!-- Footer -->
               <tr>
-                <td style="padding: 30px; background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%); text-align: center; border-top: 3px solid #02BBB4; border-radius: 0 0 16px 16px;">
+                <td style="padding: 30px; background-color: #f9fafb; text-align: center; border-top: 3px solid #02BBB4; border-radius: 0 0 16px 16px;">
                   <p style="margin: 0 0 10px 0; color: #4b5563; font-size: 14px; font-weight: 600;">
                     🌊 Plastic Clever Schools 🌊
                   </p>
@@ -759,15 +761,15 @@ export async function sendAdminInvitationEmail(
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Admin Invitation - Plastic Clever Schools</title>
     </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);">
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f4;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f4f4f4;">
         <tr>
           <td style="padding: 40px 20px;">
             <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 40px rgba(2, 187, 180, 0.3); overflow: hidden;">
               
               <!-- Header Section -->
               <tr>
-                <td style="padding: 40px 30px; text-align: center; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%);">
+                <td style="padding: 40px 30px; text-align: center; background-color: #204969;">
                   <img src="${logoUrl}" alt="Plastic Clever Schools" style="height: 125px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
                   <h2 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                     🎉 You're Invited to Lead! 🎉
@@ -810,8 +812,8 @@ export async function sendAdminInvitationEmail(
                   <div style="text-align: center; margin: 40px 0;">
                     <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                       <tr>
-                        <td style="border-radius: 50px; background: linear-gradient(135deg, #02BBB4 0%, #0284BC 100%); box-shadow: 0 8px 20px rgba(2, 187, 180, 0.4);">
-                          <a href="${acceptUrl}" style="display: inline-block; padding: 18px 50px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px;">
+                        <td style="border-radius: 50px; background-color: #204969; box-shadow: 0 8px 20px rgba(32, 73, 105, 0.4);">
+                          <a href="${acceptUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 18px 50px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 50px; text-transform: uppercase; letter-spacing: 1px;">
                             🎯 Accept Your Invitation!
                           </a>
                         </td>
@@ -833,7 +835,7 @@ export async function sendAdminInvitationEmail(
                   </div>
                   
                   <!-- Important Notice -->
-                  <div style="background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%); border-left: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 25px 0;">
+                  <div style="background-color: #fef3c7; border-left: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 25px 0;">
                     <p style="color: #92400e; margin: 0; font-size: 14px; line-height: 1.6;">
                       <strong>⏰ Time-Sensitive:</strong> This special invitation will expire in <strong>${expiresInDays} day${expiresInDays !== 1 ? 's' : ''}</strong>. Don't miss this opportunity to join our mission! 🌟
                     </p>
@@ -860,7 +862,7 @@ export async function sendAdminInvitationEmail(
               
               <!-- Footer -->
               <tr>
-                <td style="padding: 30px; background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%); text-align: center; border-top: 3px solid #02BBB4;">
+                <td style="padding: 30px; background-color: #f9fafb; text-align: center; border-top: 3px solid #02BBB4;">
                   <p style="margin: 0 0 10px 0; color: #4b5563; font-size: 14px; font-weight: 600;">
                     🌊 Plastic Clever Schools 🌊
                   </p>
@@ -906,14 +908,14 @@ export async function sendPartnerInvitationEmail(
       <meta name="viewport" content="width=device-width, initial-scale=1.0">
       <title>Partner Invitation - Plastic Clever Schools</title>
     </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);">
+    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f4f4f4;">
+      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f4f4f4;">
         <tr>
           <td style="padding: 40px 20px;">
             <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 16px; box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);">
               <!-- Celebration Header -->
               <tr>
-                <td style="background: linear-gradient(135deg, #019ADE 0%, #0B3D5D 100%); padding: 50px 30px; border-radius: 16px 16px 0 0; text-align: center;">
+                <td style="background-color: #204969; padding: 50px 30px; border-radius: 16px 16px 0 0; text-align: center;">
                   <img src="${logoUrl}" alt="Plastic Clever Schools" style="height: 125px; margin-bottom: 20px; display: block; margin-left: auto; margin-right: auto;">
                   <div style="font-size: 48px; margin-bottom: 15px;">🤝</div>
                   <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; text-shadow: 0 2px 4px rgba(0,0,0,0.1);">
@@ -928,7 +930,7 @@ export async function sendPartnerInvitationEmail(
               <!-- Lucky You Banner -->
               <tr>
                 <td style="padding: 0;">
-                  <div style="background: linear-gradient(90deg, #02BBB4 0%, #019ADE 100%); padding: 20px; text-align: center;">
+                  <div style="background-color: #02BBB4; padding: 20px; text-align: center;">
                     <p style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
                       ✨ You're Making a Difference! ✨
                     </p>
@@ -957,8 +959,8 @@ export async function sendPartnerInvitationEmail(
                       <td style="text-align: center;">
                         <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 auto;">
                           <tr>
-                            <td style="border-radius: 8px; background: linear-gradient(135deg, #019ADE 0%, #02BBB4 100%); box-shadow: 0 4px 15px rgba(1, 154, 222, 0.3);">
-                              <a href="${acceptUrl}" style="display: inline-block; padding: 18px 50px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px;">
+                            <td style="border-radius: 8px; background-color: #204969; box-shadow: 0 4px 15px rgba(32, 73, 105, 0.3);">
+                              <a href="${acceptUrl}" target="_blank" rel="noopener noreferrer" style="display: inline-block; padding: 18px 50px; color: #ffffff; text-decoration: none; font-size: 18px; font-weight: 700; border-radius: 8px; text-transform: uppercase; letter-spacing: 1px;">
                                 🎯 Accept Your Invitation
                               </a>
                             </td>
@@ -977,7 +979,7 @@ export async function sendPartnerInvitationEmail(
                   </p>
                   
                   <!-- Important Info Box -->
-                  <div style="margin: 30px 0; padding: 25px; background: linear-gradient(135deg, #fff3cd 0%, #ffe69c 100%); border-left: 5px solid #ffc107; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);">
+                  <div style="margin: 30px 0; padding: 25px; background-color: #fff3cd; border-left: 5px solid #ffc107; border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 193, 7, 0.2);">
                     <p style="margin: 0 0 10px 0; color: #856404; font-size: 16px; line-height: 1.6; font-weight: 700;">
                       ⏰ Time-Sensitive Invitation
                     </p>
@@ -1007,7 +1009,7 @@ export async function sendPartnerInvitationEmail(
               
               <!-- Footer -->
               <tr>
-                <td style="padding: 30px; background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%); text-align: center; border-top: 3px solid #02BBB4; border-radius: 0 0 16px 16px;">
+                <td style="padding: 30px; background-color: #f9fafb; text-align: center; border-top: 3px solid #02BBB4; border-radius: 0 0 16px 16px;">
                   <p style="margin: 0 0 10px 0; color: #4b5563; font-size: 14px; font-weight: 600;">
                     🌊 Plastic Clever Schools 🌊
                   </p>
@@ -2403,7 +2405,7 @@ export async function sendEventAnnouncementEmail(
             <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
               <!-- Header -->
               <tr>
-                <td style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
+                <td style="background-color: #204969; padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
                   <h1 style="margin: 0 0 10px 0; color: #ffffff; font-size: 28px; font-weight: 600;">
                     Plastic Clever Schools
                   </h1>
@@ -2622,7 +2624,7 @@ export async function sendEventDigestEmail(
             <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
               <!-- Header -->
               <tr>
-                <td style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
+                <td style="background-color: #204969; padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
                   <h1 style="margin: 0 0 10px 0; color: #ffffff; font-size: 28px; font-weight: 600;">
                     Plastic Clever Schools
                   </h1>
@@ -2738,7 +2740,7 @@ export async function sendCourseCompletionCelebrationEmail(
             <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
               <!-- Celebration Header -->
               <tr>
-                <td style="background: linear-gradient(135deg, #019ADE 0%, #0B3D5D 100%); padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
+                <td style="background-color: #204969; padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
                   <div style="font-size: 64px; margin-bottom: 20px;">🎉</div>
                   <h1 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700;">
                     Congratulations!
@@ -2784,7 +2786,7 @@ export async function sendCourseCompletionCelebrationEmail(
                       : `Completing Round ${roundNumber} shows your continued dedication to sustainability. Each round builds on your success and deepens your impact on reducing plastic waste.`}
                   </p>
                   
-                  <div style="margin: 30px 0; padding: 20px; background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%); border-left: 4px solid #f39c12; border-radius: 4px;">
+                  <div style="margin: 30px 0; padding: 20px; background-color: #fff3cd; border-left: 4px solid #f39c12; border-radius: 4px;">
                     <p style="margin: 0; color: #856404; font-size: 15px; line-height: 1.6; font-weight: 600;">
                       🏆 Your Round ${roundNumber} completion certificate ${certificateUrl ? 'is ready to view in' : 'will be available in'} your dashboard!
                     </p>
@@ -2861,7 +2863,7 @@ export async function sendContactFormEmail(
             <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
               <!-- Header -->
               <tr>
-                <td style="background: linear-gradient(135deg, #0066cc 0%, #004d99 100%); padding: 30px; text-align: center;">
+                <td style="background-color: #204969; padding: 30px; text-align: center;">
                   <h1 style="margin: 0; color: #ffffff; font-size: 24px; font-weight: 700;">
                     New Contact Form Submission
                   </h1>

@@ -16,9 +16,9 @@ export function getMigratedUserWelcomeTemplate(data: MigratedUserWelcomeData): s
   <style>
     body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
     .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #1a5490 0%, #0e3a6b 100%); color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
+    .header { background-color: #204969; color: white; padding: 30px; text-align: center; border-radius: 8px 8px 0 0; }
     .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 8px 8px; }
-    .button { display: inline-block; background: #1a5490; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+    .button { display: inline-block; background-color: #204969; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; margin: 20px 0; }
     .credentials { background: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0; }
     .warning { background: #fff3cd; border-left: 4px solid #ff6b6b; padding: 15px; margin: 20px 0; }
     .footer { text-align: center; color: #666; font-size: 12px; margin-top: 30px; }

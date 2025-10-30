@@ -326,7 +326,7 @@ export class MailchimpService {
               <table role="presentation" style="width: 600px; max-width: 90%; border-collapse: collapse; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1);">
                 <!-- Header -->
                 <tr>
-                  <td style="background: linear-gradient(135deg, #0B3D5D 0%, #019ADE 100%); padding: 40px 20px; text-align: center;">
+                  <td style="background-color: #204969; padding: 40px 20px; text-align: center;">
                     <h1 style="color: white; margin: 0; font-size: 28px; font-weight: bold;">🌱 Plastic Clever Schools</h1>
                     <p style="color: #B8E6FF; margin: 10px 0 0 0; font-size: 16px;">Making waves for a plastic-free future</p>
                   </td>
@@ -345,7 +345,7 @@ export class MailchimpService {
                 <tr>
                   <td style="padding: 0 30px 40px; text-align: center;">
                     <a href="${baseUrl}" 
-                       style="display: inline-block; background: #FF595A; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
+                       style="display: inline-block; background: #204969; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px;">
                       Visit Plastic Clever Schools
                     </a>
                   </td>
@@ -448,7 +448,7 @@ export class MailchimpService {
 
         <div style="text-align: center; margin: 30px 0;">
           <a href="${registrationUrl}" 
-             style="display: inline-block; background: #019ADE; color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px;">
+             style="display: inline-block; background: #204969; color: white; padding: 15px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 18px;">
             Register Now
           </a>
         </div>
@@ -562,7 +562,7 @@ export class MailchimpService {
               </p>
 
               <a href="${registrationUrl}" 
-                 style="display: inline-block; background: #019ADE; color: white; padding: 10px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; margin-top: 10px;">
+                 style="display: inline-block; background: #204969; color: white; padding: 10px 25px; text-decoration: none; border-radius: 6px; font-weight: bold; font-size: 14px; margin-top: 10px;">
                 Learn More & Register
               </a>
             </div>
@@ -585,7 +585,7 @@ export class MailchimpService {
             <strong>Want to see all our events?</strong>
           </p>
           <a href="${baseUrl}/events" 
-             style="display: inline-block; background: #FF595A; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px;">
+             style="display: inline-block; background: #204969; color: white; padding: 12px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; margin-top: 15px;">
             View All Events
           </a>
         </div>
