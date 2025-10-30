@@ -472,7 +472,7 @@ export default function Resources() {
             {resource.title}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 flex flex-col h-full">
           <p className="text-gray-600 line-clamp-3 text-sm leading-relaxed">
             {resource.description}
           </p>
@@ -481,58 +481,52 @@ export default function Resources() {
               {getFileIcon(resource.fileType)}
               <span className="font-medium">{resource.language}</span>
             </div>
-            <span className="text-xs">{formatFileSize(resource.fileSize || 0)}</span>
           </div>
-          <div className="flex flex-col gap-2 pt-2">
-            <div className="flex flex-col gap-2 w-full">
-              <div className="flex gap-2 w-full">
-                <Link href={`/resources/view/${resource.id}`} className="flex-1">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full"
-                    data-testid={`button-view-${resource.id}`}
-                  >
-                    <Eye className="h-4 w-4 sm:mr-1" />
-                    <span className="hidden sm:inline">View</span>
-                  </Button>
-                </Link>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="flex-1"
-                  onClick={() => handleCopyLink(resource.id)}
-                  data-testid={`button-copy-link-${resource.id}`}
-                >
-                  <Share2 className="h-4 w-4 sm:mr-1" />
-                  <span className="hidden sm:inline">Share</span>
-                </Button>
-              </div>
-              <div className="flex gap-2 w-full">
-                {isLocked ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="w-full bg-gray-100 text-gray-600 hover:bg-gray-200"
-                    onClick={() => handleDownload(resource.id, resource.fileUrl, resource.title, resource.visibility)}
-                    data-testid={`button-download-${resource.id}`}
-                  >
-                    <Lock className="h-4 w-4 mr-1" />
-                    <span className="truncate">{t('register_to_access', { defaultValue: 'Access' })}</span>
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    className="w-full bg-coral hover:bg-coral/90 text-white shadow-md"
-                    onClick={() => handleDownload(resource.id, resource.fileUrl, resource.title, resource.visibility)}
-                    data-testid={`button-download-${resource.id}`}
-                  >
-                    <Download className="h-4 w-4 mr-1" />
-                    <span className="truncate">{t('resource_card.download_resource', { defaultValue: 'Download' })}</span>
-                  </Button>
-                )}
-              </div>
-            </div>
+          <div className="flex gap-2 w-full mt-auto pt-2">
+            <Link href={`/resources/view/${resource.id}`} className="flex-1">
+              <Button
+                size="sm"
+                variant="outline"
+                className="w-full"
+                data-testid={`button-view-${resource.id}`}
+              >
+                <Eye className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline">View</span>
+              </Button>
+            </Link>
+            <Button
+              size="sm"
+              variant="outline"
+              className="flex-1"
+              onClick={() => handleCopyLink(resource.id)}
+              data-testid={`button-copy-link-${resource.id}`}
+            >
+              <Share2 className="h-4 w-4 sm:mr-1" />
+              <span className="hidden sm:inline">Share</span>
+            </Button>
+            {isLocked ? (
+              <Button
+                size="sm"
+                variant="outline"
+                className="flex-1 bg-gray-100 text-gray-600 hover:bg-gray-200"
+                onClick={() => handleDownload(resource.id, resource.fileUrl, resource.title, resource.visibility)}
+                data-testid={`button-download-${resource.id}`}
+              >
+                <Lock className="h-4 w-4 mr-1" />
+                <span className="truncate hidden sm:inline">{t('register_to_access', { defaultValue: 'Access' })}</span>
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                className="flex-1 bg-coral hover:bg-coral/90 text-white shadow-md text-xs"
+                onClick={() => handleDownload(resource.id, resource.fileUrl, resource.title, resource.visibility)}
+                data-testid={`button-download-${resource.id}`}
+              >
+                <Download className="h-4 w-4 sm:mr-1" />
+                <span className="hidden sm:inline truncate">{t('resource_card.download_resource', { defaultValue: 'Download' })} ({formatFileSize(resource.fileSize || 0)})</span>
+                <span className="sm:hidden truncate">({formatFileSize(resource.fileSize || 0)})</span>
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>
