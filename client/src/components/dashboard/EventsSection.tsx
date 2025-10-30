@@ -36,6 +36,7 @@ import {
 import { format, isPast, isFuture, differenceInMinutes } from "date-fns";
 import { useLocation } from "wouter";
 import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP } from "@/lib/languageUtils";
+import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 import type { Event, EventRegistration } from "@/../../shared/schema";
 
 // Extended Event type with properly typed translation fields
@@ -412,7 +413,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                   {event.imageUrl && event.imageUrl.trim() !== '' && (
                     <div className="w-full h-48 overflow-hidden relative">
                       <img 
-                        src={event.imageUrl} 
+                        src={normalizeObjectStorageUrl(event.imageUrl)} 
                         alt={event.title}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                       />
@@ -727,7 +728,7 @@ export default function EventsSection({ schoolId, isActive, isAuthenticated }: E
                     {event.imageUrl && event.imageUrl.trim() !== '' && (
                       <div className="w-full h-48 overflow-hidden relative">
                         <img 
-                          src={event.imageUrl} 
+                          src={normalizeObjectStorageUrl(event.imageUrl)} 
                           alt={event.title}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300 opacity-90"
                         />
