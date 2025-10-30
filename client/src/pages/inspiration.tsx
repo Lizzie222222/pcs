@@ -29,6 +29,7 @@ import { useCountries } from "@/hooks/useCountries";
 import useEmblaCarousel from "embla-carousel-react";
 import { stripHtmlTags } from "@/lib/utils";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
+import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { Footer } from "@/components/Footer";
 import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 
@@ -184,17 +185,34 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
     >
       {/* Image Section - Never use before/after images, only regular images or imageUrl */}
       {(() => {
-        // Check if we have images array
-        if (caseStudy.images?.length > 0) {
-          return <ImageCarousel images={caseStudy.images} title={caseStudy.title} />;
+        // Filter out PDFs from images array to get actual image files
+        const actualImages = caseStudy.images?.filter(img => {
+          const url = img.url?.toLowerCase() || '';
+          return !(url.includes('.pdf') || url.includes('pdf'));
+        }) || [];
+        
+        // Check if we have actual (non-PDF) images in the array
+        if (actualImages.length > 0) {
+          return <ImageCarousel images={actualImages} title={caseStudy.title} />;
         }
         
-        // Check if imageUrl exists and is not a PDF
+        // No actual images in array, check imageUrl
         if (caseStudy.imageUrl) {
           const isPdf = caseStudy.imageUrl.toLowerCase().includes('.pdf') || 
                         caseStudy.imageUrl.toLowerCase().includes('pdf');
           
-          if (!isPdf) {
+          if (isPdf) {
+            // Show PDF thumbnail
+            return (
+              <div className="relative overflow-hidden group">
+                <PDFThumbnail 
+                  url={caseStudy.imageUrl}
+                  className="w-full h-64 bg-gray-100 dark:bg-gray-800"
+                />
+              </div>
+            );
+          } else {
+            // Show regular image
             return (
               <div className="relative overflow-hidden group">
                 <OptimizedImage 
@@ -209,7 +227,7 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
           }
         }
         
-        // No image or only PDF - don't render an image section
+        // No image at all
         return null;
       })()}
 
