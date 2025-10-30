@@ -8167,8 +8167,8 @@ Return JSON with:
           return { 
             ...event, 
             registrationsCount,
-            imageUrl: normalizeObjectStorageUrl(event.imageUrl),
-            eventPackBannerImageUrl: normalizeObjectStorageUrl(event.eventPackBannerImageUrl),
+            imageUrl: event.imageUrl ? normalizeObjectStorageUrl(event.imageUrl) : null,
+            eventPackBannerImageUrl: event.eventPackBannerImageUrl ? normalizeObjectStorageUrl(event.eventPackBannerImageUrl) : null,
           };
         })
       );
@@ -8204,8 +8204,8 @@ Return JSON with:
           return { 
             ...event, 
             registrationsCount,
-            imageUrl: normalizeObjectStorageUrl(event.imageUrl),
-            eventPackBannerImageUrl: normalizeObjectStorageUrl(event.eventPackBannerImageUrl),
+            imageUrl: event.imageUrl ? normalizeObjectStorageUrl(event.imageUrl) : null,
+            eventPackBannerImageUrl: event.eventPackBannerImageUrl ? normalizeObjectStorageUrl(event.eventPackBannerImageUrl) : null,
           };
         })
       );
@@ -8226,8 +8226,8 @@ Return JSON with:
       // Normalize URLs in all events
       const normalizedEvents = pastEvents.map(event => ({
         ...event,
-        imageUrl: normalizeObjectStorageUrl(event.imageUrl),
-        eventPackBannerImageUrl: normalizeObjectStorageUrl(event.eventPackBannerImageUrl),
+        imageUrl: event.imageUrl ? normalizeObjectStorageUrl(event.imageUrl) : null,
+        eventPackBannerImageUrl: event.eventPackBannerImageUrl ? normalizeObjectStorageUrl(event.eventPackBannerImageUrl) : null,
       }));
       
       res.json(normalizedEvents);
@@ -8259,8 +8259,8 @@ Return JSON with:
         ...event,
         registrationsCount,
         attachedResources,
-        imageUrl: normalizeObjectStorageUrl(event.imageUrl),
-        eventPackBannerImageUrl: normalizeObjectStorageUrl(event.eventPackBannerImageUrl),
+        imageUrl: event.imageUrl ? normalizeObjectStorageUrl(event.imageUrl) : null,
+        eventPackBannerImageUrl: event.eventPackBannerImageUrl ? normalizeObjectStorageUrl(event.eventPackBannerImageUrl) : null,
       };
       
       res.json(normalizedEvent);
@@ -8288,8 +8288,8 @@ Return JSON with:
         ...event,
         registrationsCount,
         attachedResources,
-        imageUrl: normalizeObjectStorageUrl(event.imageUrl),
-        eventPackBannerImageUrl: normalizeObjectStorageUrl(event.eventPackBannerImageUrl),
+        imageUrl: event.imageUrl ? normalizeObjectStorageUrl(event.imageUrl) : null,
+        eventPackBannerImageUrl: event.eventPackBannerImageUrl ? normalizeObjectStorageUrl(event.eventPackBannerImageUrl) : null,
       };
       
       res.json(normalizedEvent);
