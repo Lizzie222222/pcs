@@ -4,6 +4,16 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
+**October 30, 2025**: Admin schools list date filtering
+- **Added date-based filtering and sorting to admin schools list**: Administrators can now sort schools by join date and filter by specific months and years for better school management and reporting.
+  - Added "Sort by Date" dropdown with options for "Newest First" (default) and "Oldest First"
+  - Added "Month" filter to view schools that joined in a specific month (January-December)
+  - Added "Year" filter to view schools that joined in a specific year (2018-2025)
+  - Filters work in combination: selecting both month and year shows schools from that specific month/year
+  - Backend filtering logic handles precise date ranges (start of month to end of month)
+  - All new filters integrate seamlessly with existing filters (country, stage, language, search)
+  - UI controls use consistent styling and are fully mobile-responsive
+
 **October 30, 2025**: Registration form age selection redesign
 - **Redesigned age selection in school registration**: Replaced grouped age ranges with individual age toggle buttons for more granular student demographic tracking.
   - Changed from grouped ranges (e.g., "5-7", "7-11", "11-14") to individual ages (Under 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18)
