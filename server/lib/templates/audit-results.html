@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Plastic Waste Audit Results</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      color: #333;
+      max-width: 210mm;
+      margin: 0 auto;
+      padding: 15mm;
+      background: white;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 4px solid #0066cc;
+      padding-bottom: 20px;
+    }
+    
+    .header h1 {
+      color: #0066cc;
+      font-size: 32px;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    
+    .header .subtitle {
+      color: #666;
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .school-info {
+      background: #f8f9fa;
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 30px;
+      border-left: 4px solid #0066cc;
+    }
+    
+    .school-info h2 {
+      color: #0066cc;
+      font-size: 20px;
+      margin-bottom: 15px;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+    
+    .info-item {
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .info-label {
+      font-size: 12px;
+      color: #666;
+      text-transform: uppercase;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+    
+    .info-value {
+      font-size: 16px;
+      color: #333;
+      font-weight: 500;
+    }
+    
+    .total-section {
+      background: linear-gradient(135deg, #0066cc 0%, #0088ff 100%);
+      color: white;
+      text-align: center;
+      padding: 40px;
+      border-radius: 12px;
+      margin-bottom: 30px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .total-label {
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 10px;
+      opacity: 0.9;
+    }
+    
+    .total-value {
+      font-size: 72px;
+      font-weight: bold;
+      margin: 10px 0;
+      line-height: 1;
+    }
+    
+    .total-unit {
+      font-size: 16px;
+      opacity: 0.9;
+    }
+    
+    .section {
+      margin-bottom: 30px;
+      page-break-inside: avoid;
+    }
+    
+    .section-title {
+      background: #0066cc;
+      color: white;
+      padding: 12px 20px;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      border-radius: 6px;
+    }
+    
+    .top-plastics-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .top-plastics-table th {
+      background: #0066cc;
+      color: white;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .top-plastics-table td {
+      padding: 12px;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 14px;
+    }
+    
+    .top-plastics-table tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+    
+    .top-plastics-table .rank {
+      width: 50px;
+      text-align: center;
+      font-weight: bold;
+      color: #0066cc;
+      font-size: 18px;
+    }
+    
+    .top-plastics-table .item-name {
+      font-weight: 600;
+      color: #333;
+    }
+    
+    .top-plastics-table .count {
+      text-align: right;
+      font-weight: bold;
+      color: #0066cc;
+      white-space: nowrap;
+    }
+    
+    .top-plastics-table .percentage {
+      text-align: right;
+      color: #666;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    
+    .percentage-bar {
+      background: #e0e0e0;
+      height: 8px;
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 5px;
+    }
+    
+    .percentage-fill {
+      background: linear-gradient(90deg, #0066cc, #00aaff);
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    
+    .breakdown-table {
+      width: 100%;
+      border-collapse: collapse;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    
+    .breakdown-table th {
+      background: #f8f9fa;
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 13px;
+      border-bottom: 2px solid #0066cc;
+      color: #333;
+    }
+    
+    .breakdown-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #e0e0e0;
+      font-size: 13px;
+    }
+    
+    .breakdown-table tr:hover {
+      background: #f8f9fa;
+    }
+    
+    .breakdown-table .count-cell {
+      text-align: right;
+      font-weight: 600;
+      color: #0066cc;
+    }
+    
+    .breakdown-table .zero-count {
+      color: #999;
+      font-style: italic;
+    }
+    
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 2px solid #e0e0e0;
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+    }
+    
+    .footer p {
+      margin: 5px 0;
+    }
+    
+    .footer strong {
+      color: #0066cc;
+    }
+    
+    .highlight-box {
+      background: #fff9e6;
+      border-left: 4px solid #ffcc00;
+      padding: 15px;
+      margin: 20px 0;
+      border-radius: 4px;
+    }
+    
+    .highlight-box p {
+      margin: 0;
+      color: #666;
+      font-size: 14px;
+    }
+    
+    @media print {
+      body {
+        padding: 10mm;
+      }
+      
+      .section {
+        page-break-inside: avoid;
+      }
+      
+      .total-section {
+        page-break-before: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🌊 Plastic Waste Audit Results</h1>
+    <p class="subtitle">Plastic Clever Schools Initiative</p>
+  </div>
+
+  <div class="school-info">
+    <h2>School Information</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <span class="info-label">School Name</span>
+        <span class="info-value">{{schoolName}}</span>
+      </div>
+      <div class="info-item">
+        <span class="info-label">Audit Date</span>
+        <span class="info-value">{{auditDate}}</span>
+      </div>
+      {{#if studentCount}}
+      <div class="info-item">
+        <span class="info-label">Number of Students</span>
+        <span class="info-value">{{studentCount}}</span>
+      </div>
+      {{/if}}
+      {{#if staffCount}}
+      <div class="info-item">
+        <span class="info-label">Number of Staff</span>
+        <span class="info-value">{{staffCount}}</span>
+      </div>
+      {{/if}}
+    </div>
+  </div>
+
+  <div class="total-section">
+    <div class="total-label">Total Annual Plastic Items</div>
+    <div class="total-value">{{totalPlasticItems}}</div>
+    <div class="total-unit">items per year (based on 190 school days)</div>
+  </div>
+
+  {{#if hasTopPlastics}}
+  <div class="section">
+    <div class="section-title">Top 5 Problem Plastics</div>
+    
+    <table class="top-plastics-table">
+      <thead>
+        <tr>
+          <th style="width: 50px;">Rank</th>
+          <th>Plastic Type</th>
+          <th style="width: 150px; text-align: right;">Annual Count</th>
+          <th style="width: 100px; text-align: right;">Percentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each topProblemPlastics}}
+        <tr>
+          <td class="rank">{{rank}}</td>
+          <td class="item-name">
+            {{name}}
+            <div class="percentage-bar">
+              <div class="percentage-fill" style="width: {{percentage}}%;"></div>
+            </div>
+          </td>
+          <td class="count">{{count}}</td>
+          <td class="percentage">{{percentage}}%</td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+  {{/if}}
+
+  <div class="section">
+    <div class="section-title">Complete Breakdown - All Plastic Types</div>
+    
+    <table class="breakdown-table">
+      <thead>
+        <tr>
+          <th>Plastic Type</th>
+          <th style="width: 200px; text-align: right;">Annual Quantity</th>
+        </tr>
+      </thead>
+      <tbody>
+        {{#each allPlasticTypes}}
+        <tr>
+          <td>{{name}}</td>
+          <td class="count-cell {{#if isZero}}zero-count{{/if}}">
+            {{#if isZero}}
+              0
+            {{else}}
+              {{count}}
+            {{/if}}
+          </td>
+        </tr>
+        {{/each}}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="highlight-box">
+    <p>
+      <strong>Note:</strong> These figures are based on daily counts collected during your audit, 
+      multiplied by 190 school days per year. Use these results to identify priority areas for 
+      plastic reduction and create your action plan.
+    </p>
+  </div>
+
+  <div class="footer">
+    <p><strong>Plastic Clever Schools</strong></p>
+    <p>Working together to reduce plastic waste in education</p>
+    <p style="margin-top: 10px; font-size: 10px;">Generated on {{generatedDate}}</p>
+  </div>
+</body>
+</html>

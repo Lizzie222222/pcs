@@ -31,6 +31,7 @@ import { bulkResourceUpload, photoConsentUpload, uploadCompression, importUpload
 import { uploadToObjectStorage } from './routes/utils/objectStorage';
 import { requireAdmin, requireAdminOrPartner } from './routes/utils/middleware';
 import { normalizeObjectStorageUrl, normalizeFileArray } from './routes/utils/urlNormalization';
+import { generatePDFReport } from './lib/pdfGenerator';
 
 // Import WebSocket collaboration functions
 import { getOnlineUsers, broadcastChatMessage, notifyDocumentLock, broadcastDocumentUnlock } from './websocket';
@@ -4993,6 +4994,202 @@ Return JSON with:
     } catch (error) {
       console.error("Error submitting audit:", error);
       res.status(500).json({ message: "Failed to submit audit" });
+    }
+  });
+
+  // Export audit results as PDF
+  app.get('/api/audits/:auditId/results-pdf', isAuthenticated, async (req: any, res) => {
+    try {
+      const { auditId } = req.params;
+      const userId = req.user.id;
+      
+      // Fetch audit
+      const audit = await storage.getAudit(auditId);
+      
+      if (!audit) {
+        return res.status(404).json({ message: "Audit not found" });
+      }
+
+      // Verify user has access to this audit
+      const user = await storage.getUser(userId);
+      const isAdmin = user?.isAdmin;
+      
+      // Check if user is a member of the school or is admin
+      if (!isAdmin) {
+        const schoolMember = await storage.getSchoolUser(audit.schoolId, userId);
+        if (!schoolMember) {
+          return res.status(403).json({ message: "Unauthorized to access this audit" });
+        }
+      }
+
+      // Get school data
+      const school = await storage.getSchool(audit.schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      // Parse audit data
+      const part1Data = audit.part1Data as any;
+      const resultsData = audit.resultsData as any;
+      
+      // Calculate breakdown data for all plastic types
+      const allPlasticTypes = resultsData?.plasticCounts || {};
+      const allPlasticTypesArray = Object.entries(allPlasticTypes).map(([name, count]) => ({
+        name,
+        count: Number(count).toLocaleString(),
+        isZero: Number(count) === 0
+      }));
+
+      // Sort by count descending
+      allPlasticTypesArray.sort((a, b) => {
+        const countA = Number(a.count.replace(/,/g, ''));
+        const countB = Number(b.count.replace(/,/g, ''));
+        return countB - countA;
+      });
+
+      // Prepare top 5 problem plastics with percentages
+      const topProblemPlastics = resultsData?.topProblemPlastics || [];
+      const totalPlasticItems = resultsData?.totalPlasticItems || 0;
+      
+      const topProblemsWithPercentages = topProblemPlastics.map((item: any, idx: number) => ({
+        rank: idx + 1,
+        name: item.name,
+        count: Number(item.count).toLocaleString(),
+        percentage: totalPlasticItems > 0 
+          ? ((item.count / totalPlasticItems) * 100).toFixed(1) 
+          : '0.0'
+      }));
+
+      // Prepare template data
+      const templateData = {
+        schoolName: part1Data?.schoolName || school.name || 'Unknown School',
+        auditDate: part1Data?.auditDate 
+          ? new Date(part1Data.auditDate).toLocaleDateString('en-GB', { 
+              day: 'numeric', 
+              month: 'long', 
+              year: 'numeric' 
+            }) 
+          : 'N/A',
+        studentCount: part1Data?.studentCount || '',
+        staffCount: part1Data?.staffCount || '',
+        totalPlasticItems: Number(totalPlasticItems).toLocaleString(),
+        hasTopPlastics: topProblemsWithPercentages.length > 0,
+        topProblemPlastics: topProblemsWithPercentages,
+        allPlasticTypes: allPlasticTypesArray,
+        generatedDate: new Date().toLocaleDateString('en-GB', { 
+          day: 'numeric', 
+          month: 'long', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })
+      };
+
+      // Read HTML template
+      const templatePath = path.join(import.meta.dirname, 'lib', 'templates', 'audit-results.html');
+      let htmlTemplate = await fs.readFile(templatePath, 'utf-8');
+
+      // Simple template replacement (using basic string replacement for Handlebars-like syntax)
+      // Replace simple variables
+      htmlTemplate = htmlTemplate.replace(/\{\{schoolName\}\}/g, escapeHtml(templateData.schoolName));
+      htmlTemplate = htmlTemplate.replace(/\{\{auditDate\}\}/g, escapeHtml(templateData.auditDate));
+      htmlTemplate = htmlTemplate.replace(/\{\{totalPlasticItems\}\}/g, templateData.totalPlasticItems);
+      htmlTemplate = htmlTemplate.replace(/\{\{generatedDate\}\}/g, escapeHtml(templateData.generatedDate));
+
+      // Replace conditional studentCount
+      if (templateData.studentCount) {
+        const studentCountHtml = `
+      <div class="info-item">
+        <span class="info-label">Number of Students</span>
+        <span class="info-value">${escapeHtml(templateData.studentCount)}</span>
+      </div>`;
+        htmlTemplate = htmlTemplate.replace(/\{\{#if studentCount\}\}[\s\S]*?\{\{\/if\}\}/g, studentCountHtml);
+      } else {
+        htmlTemplate = htmlTemplate.replace(/\{\{#if studentCount\}\}[\s\S]*?\{\{\/if\}\}/g, '');
+      }
+
+      // Replace conditional staffCount
+      if (templateData.staffCount) {
+        const staffCountHtml = `
+      <div class="info-item">
+        <span class="info-label">Number of Staff</span>
+        <span class="info-value">${escapeHtml(templateData.staffCount)}</span>
+      </div>`;
+        htmlTemplate = htmlTemplate.replace(/\{\{#if staffCount\}\}[\s\S]*?\{\{\/if\}\}/g, staffCountHtml);
+      } else {
+        htmlTemplate = htmlTemplate.replace(/\{\{#if staffCount\}\}[\s\S]*?\{\{\/if\}\}/g, '');
+      }
+
+      // Replace top plastics section
+      if (templateData.hasTopPlastics) {
+        let topPlasticsRows = '';
+        templateData.topProblemPlastics.forEach((item) => {
+          topPlasticsRows += `
+        <tr>
+          <td class="rank">${item.rank}</td>
+          <td class="item-name">
+            ${escapeHtml(item.name)}
+            <div class="percentage-bar">
+              <div class="percentage-fill" style="width: ${item.percentage}%;"></div>
+            </div>
+          </td>
+          <td class="count">${item.count}</td>
+          <td class="percentage">${item.percentage}%</td>
+        </tr>`;
+        });
+        
+        const topPlasticsHtml = `
+  <div class="section">
+    <div class="section-title">Top 5 Problem Plastics</div>
+    
+    <table class="top-plastics-table">
+      <thead>
+        <tr>
+          <th style="width: 50px;">Rank</th>
+          <th>Plastic Type</th>
+          <th style="width: 150px; text-align: right;">Annual Count</th>
+          <th style="width: 100px; text-align: right;">Percentage</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${topPlasticsRows}
+      </tbody>
+    </table>
+  </div>`;
+        
+        htmlTemplate = htmlTemplate.replace(/\{\{#if hasTopPlastics\}\}[\s\S]*?\{\{\/if\}\}/g, topPlasticsHtml);
+      } else {
+        htmlTemplate = htmlTemplate.replace(/\{\{#if hasTopPlastics\}\}[\s\S]*?\{\{\/if\}\}/g, '');
+      }
+
+      // Replace all plastic types breakdown
+      let allPlasticsRows = '';
+      templateData.allPlasticTypes.forEach((item) => {
+        allPlasticsRows += `
+        <tr>
+          <td>${escapeHtml(item.name)}</td>
+          <td class="count-cell ${item.isZero ? 'zero-count' : ''}">
+            ${item.isZero ? '0' : item.count}
+          </td>
+        </tr>`;
+      });
+      htmlTemplate = htmlTemplate.replace(/\{\{#each allPlasticTypes\}\}[\s\S]*?\{\{\/each\}\}/g, allPlasticsRows);
+
+      // Generate PDF
+      const pdfBuffer = await generatePDFReport(htmlTemplate);
+
+      // Set response headers for PDF download
+      const filename = `${sanitizeFilename(templateData.schoolName)}_Audit_Results_${new Date().toISOString().split('T')[0]}.pdf`;
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
+      res.setHeader('Content-Length', pdfBuffer.length);
+
+      // Send PDF
+      res.send(pdfBuffer);
+
+    } catch (error) {
+      console.error("Error generating audit results PDF:", error);
+      res.status(500).json({ message: "Failed to generate PDF" });
     }
   });
 

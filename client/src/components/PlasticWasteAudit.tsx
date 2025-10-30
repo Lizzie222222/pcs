@@ -827,6 +827,58 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     }
   };
 
+  // Download PDF results
+  const handleDownloadPDF = async () => {
+    try {
+      // Save progress first to ensure latest data
+      await handleSaveProgress();
+      
+      if (!auditId) {
+        toast({
+          title: "Error",
+          description: "Audit ID not found. Please save your audit first.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Generating PDF",
+        description: "Your audit results PDF is being generated...",
+      });
+
+      const response = await fetch(`/api/audits/${auditId}/results-pdf`, {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate PDF');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Audit_Results_${new Date().toISOString().split('T')[0]}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+
+      toast({
+        title: "PDF Downloaded",
+        description: "Your audit results have been downloaded successfully.",
+      });
+    } catch (error) {
+      console.error("Error downloading PDF:", error);
+      toast({
+        title: "Download Error",
+        description: "There was an error downloading the PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   const getCurrentForm = () => {
     switch (currentStep) {
       case 1: return form1;
@@ -2212,11 +2264,20 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
               <div className="bg-yellow-50 border border-yellow-200 rounded p-4 mb-4">
                 <p className="text-sm text-gray-700">
-                  <strong>What's Next?</strong> You can submit your audit now, or continue to create reduction promises to show how you plan to reduce plastic waste.
+                  <strong>What's Next?</strong> You can download your results as a PDF, submit your audit now, or continue to create reduction promises to show how you plan to reduce plastic waste.
                 </p>
               </div>
 
               <div className="flex gap-3 flex-col sm:flex-row">
+                <Button
+                  onClick={handleDownloadPDF}
+                  variant="outline"
+                  className="flex-1 border-purple-600 text-purple-600 hover:bg-purple-50"
+                  data-testid="button-download-results-pdf"
+                >
+                  <Download className="h-4 w-4 mr-2" />
+                  Download PDF Results
+                </Button>
                 <Button
                   onClick={handleSubmitAuditOnly}
                   disabled={isSubmitting}
