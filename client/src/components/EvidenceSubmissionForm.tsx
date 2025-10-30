@@ -14,7 +14,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { X, Upload, File, Trash2, AlertCircle, Lock, Info } from "lucide-react";
+import { X, Upload, File, Trash2, AlertCircle, Info } from "lucide-react";
 
 // Factory function for translated schema
 const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.object({
@@ -95,13 +95,6 @@ export default function EvidenceSubmissionForm({
     enabled: !!selectedSchoolId && !isAdminOrPartner,
   });
   
-  // Calculate which stages are locked based on completion status
-  const lockedStages = {
-    inspire: false, // Always unlocked
-    investigate: !schoolData?.school?.inspireCompleted,
-    act: !schoolData?.school?.investigateCompleted,
-  };
-  
   const evidenceSchema = createEvidenceSchema(t);
 
   const form = useForm<z.infer<typeof evidenceSchema>>({
@@ -140,20 +133,11 @@ export default function EvidenceSubmissionForm({
     onError: (error: any) => {
       console.error("Evidence submission error:", error);
       
-      // Check for 403 Forbidden error (locked stage)
-      if (error?.message?.includes('403') || error?.message?.includes('locked stage') || error?.message?.includes('Cannot submit evidence to locked stage')) {
-        toast({
-          title: t('forms:evidence_submission.stage_locked_title'),
-          description: t('forms:evidence_submission.stage_locked_error_message'),
-          variant: "destructive",
-        });
-      } else {
-        toast({
-          title: t('forms:evidence_submission.error_title'),
-          description: error?.message || t('forms:evidence_submission.error_message'),
-          variant: "destructive",
-        });
-      }
+      toast({
+        title: t('forms:evidence_submission.error_title'),
+        description: error?.message || t('forms:evidence_submission.error_message'),
+        variant: "destructive",
+      });
     },
   });
 
@@ -252,18 +236,6 @@ export default function EvidenceSubmissionForm({
       return;
     }
 
-    // Check if selected stage is locked
-    const selectedStage = data.stage as 'inspire' | 'investigate' | 'act';
-    if (lockedStages[selectedStage]) {
-      const previousStage = selectedStage === 'act' ? t('forms:evidence_submission.stage_name_investigate') : t('forms:evidence_submission.stage_name_inspire');
-      toast({
-        title: t('forms:evidence_submission.stage_locked_title'),
-        description: t('forms:evidence_submission.stage_locked_message', { previousStage }),
-        variant: "destructive",
-      });
-      return;
-    }
-
     submitEvidenceMutation.mutate({
       ...data,
       files: uploadedFiles,
@@ -345,36 +317,14 @@ export default function EvidenceSubmissionForm({
                           <SelectItem value="inspire">
                             {t('forms:evidence_submission.stage_inspire')}
                           </SelectItem>
-                          <SelectItem 
-                            value="investigate" 
-                            disabled={lockedStages.investigate}
-                          >
-                            <div className="flex items-center gap-2">
-                              {lockedStages.investigate && <Lock className="h-4 w-4 text-gray-400" />}
-                              {t('forms:evidence_submission.stage_investigate')}
-                            </div>
+                          <SelectItem value="investigate">
+                            {t('forms:evidence_submission.stage_investigate')}
                           </SelectItem>
-                          <SelectItem 
-                            value="act" 
-                            disabled={lockedStages.act}
-                          >
-                            <div className="flex items-center gap-2">
-                              {lockedStages.act && <Lock className="h-4 w-4 text-gray-400" />}
-                              {t('forms:evidence_submission.stage_act')}
-                            </div>
+                          <SelectItem value="act">
+                            {t('forms:evidence_submission.stage_act')}
                           </SelectItem>
                         </SelectContent>
                       </Select>
-                      {lockedStages.investigate && field.value === 'investigate' && (
-                        <p className="text-xs text-red-600 mt-1">
-                          {t('forms:evidence_submission.complete_inspire_first')}
-                        </p>
-                      )}
-                      {lockedStages.act && field.value === 'act' && (
-                        <p className="text-xs text-red-600 mt-1">
-                          {t('forms:evidence_submission.complete_investigate_first')}
-                        </p>
-                      )}
                       <FormMessage />
                     </FormItem>
                   )}
@@ -594,32 +544,13 @@ export default function EvidenceSubmissionForm({
                 </Button>
                 <Button
                   type="submit"
-                  disabled={
-                    submitEvidenceMutation.isPending || 
-                    isUploading || 
-                    (form.watch('stage') && lockedStages[form.watch('stage') as 'inspire' | 'investigate' | 'act'])
-                  }
+                  disabled={submitEvidenceMutation.isPending || isUploading}
                   className="flex-1 bg-coral hover:bg-coral/90"
                   data-testid="button-submit-evidence"
                 >
                   {submitEvidenceMutation.isPending ? t('forms:evidence_submission.submitting') : t('forms:evidence_submission.submit_button')}
                 </Button>
               </div>
-              
-              {/* Show locked stage warning below submit button */}
-              {form.watch('stage') && lockedStages[form.watch('stage') as 'inspire' | 'investigate' | 'act'] && (
-                <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <AlertCircle className="h-5 w-5 text-red-600 mt-0.5 flex-shrink-0" />
-                  <div className="text-sm text-red-700">
-                    <div className="font-medium">{t('forms:evidence_submission.stage_locked_warning_title')}</div>
-                    <div>
-                      {t('forms:evidence_submission.stage_locked_warning_message', { 
-                        stageName: form.watch('stage') === 'act' ? t('forms:evidence_submission.stage_name_investigate') : t('forms:evidence_submission.stage_name_inspire')
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
             </form>
           </Form>
         </div>

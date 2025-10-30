@@ -2548,20 +2548,6 @@ Return JSON with:
         }
       }
 
-      // Check if stage is unlocked (admins/partners can bypass this check)
-      const isStageUnlocked = (stage: string): boolean => {
-        if (stage === 'inspire') return true;
-        if (stage === 'investigate') return school.inspireCompleted === true;
-        if (stage === 'act') return school.investigateCompleted === true;
-        return false;
-      };
-
-      if (!isAdminOrPartner && !isStageUnlocked(evidenceData.stage)) {
-        return res.status(403).json({ 
-          message: "Cannot submit evidence to locked stage. Complete the previous stage first." 
-        });
-      }
-
       const evidence = await storage.createEvidence(evidenceData);
 
       // Send email notifications (non-blocking)
