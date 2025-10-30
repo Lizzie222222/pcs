@@ -887,7 +887,7 @@ export default function Home() {
                       </Button>
                     </a>
                   </div>
-                  {school.roundsCompleted && school.roundsCompleted > 0 && (
+                  {(school.roundsCompleted ?? 0) > 0 && (
                     <div className="flex items-center gap-2 text-sm">
                       <Award className="h-5 w-5 text-yellow-500" />
                       <span className="text-gray-700 font-medium">
