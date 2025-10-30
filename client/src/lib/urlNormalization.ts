@@ -1,17 +1,17 @@
 /**
  * Client-side URL normalization utility
- * Normalizes object storage URLs to ensure they use the /api/objects proxy route
+ * Normalizes object storage URLs to ensure they use the /objects proxy route
  * This ensures proper CORS headers are applied
  * 
  * Handles:
  * - Google Cloud Storage absolute URLs (https://storage.googleapis.com/...)
- * - Already normalized paths (/api/objects/...)
- * - Raw object paths (/objects/...)
+ * - Already normalized paths (/objects/...)
+ * - Legacy /api/objects paths (removes /api prefix)
  * - Legacy bucket paths
  * - External URLs (returned as-is)
  * 
  * @param url - The URL to normalize
- * @returns Normalized URL with /api/objects prefix, or original URL if external
+ * @returns Normalized URL with /objects prefix, or original URL if external
  */
 export function normalizeObjectStorageUrl(url: string | null | undefined): string {
   // Handle null/undefined
@@ -66,14 +66,14 @@ export function normalizeObjectStorageUrl(url: string | null | undefined): strin
     return url;
   }
 
-  // Skip normalization if already has /api/objects prefix
-  if (url.startsWith('/api/objects')) {
-    return url;
+  // Add /api prefix if it has /objects but no /api prefix
+  if (url.startsWith('/objects/')) {
+    return url.replace('/objects/', '/api/objects/');
   }
 
-  // If URL starts with /objects/, prepend only /api
-  if (url.startsWith('/objects/')) {
-    return `/api${url}`;
+  // Skip normalization if already has /api/objects prefix
+  if (url.startsWith('/api/objects/')) {
+    return url;
   }
 
   // For other relative paths that look like bucket paths, prepend /api/objects

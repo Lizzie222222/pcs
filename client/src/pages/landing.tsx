@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/carousel";
 import { OptimizedImage, generateBlurDataURL } from "@/components/ui/OptimizedImage";
 import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP } from "@/lib/languageUtils";
+import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 
 // Lazy load heavy components below the fold
 const SchoolSignUpForm = lazy(() => import("@/components/SchoolSignUpForm"));
@@ -565,7 +566,7 @@ export default function Landing() {
                           {event.imageUrl && (
                             <div className="relative h-48 overflow-hidden">
                               <img 
-                                src={event.imageUrl} 
+                                src={normalizeObjectStorageUrl(event.imageUrl)} 
                                 alt={event.title}
                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                               />

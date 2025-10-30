@@ -3306,8 +3306,8 @@ Return JSON with:
 
   // Object storage routes for evidence files
   
-  // Handle CORS preflight for object requests
-  app.options("/objects/:objectPath(*)", (req, res) => {
+  // Handle CORS preflight for object requests (both /objects and /api/objects)
+  app.options(["/objects/:objectPath(*)", "/api/objects/:objectPath(*)"], (req, res) => {
     const origin = req.headers.origin || req.headers.referer || '*';
     res.set({
       'Access-Control-Allow-Origin': origin,
@@ -3321,12 +3321,19 @@ Return JSON with:
   });
   
   // Serve objects with ACL check (both public and private) with range request support for PDF.js
-  app.get("/objects/:objectPath(*)", async (req: any, res) => {
+  // Support both /objects/... and /api/objects/... paths
+  app.get(["/objects/:objectPath(*)", "/api/objects/:objectPath(*)"], async (req: any, res) => {
     const objectStorageService = new ObjectStorageService();
     const shouldDownload = req.query.download === 'true';
     
     try {
-      const objectFile = await objectStorageService.getObjectEntityFile(req.path);
+      // Normalize the path: remove /api prefix if present
+      let normalizedPath = req.path;
+      if (normalizedPath.startsWith('/api/objects/')) {
+        normalizedPath = normalizedPath.replace('/api/objects/', '/objects/');
+      }
+      
+      const objectFile = await objectStorageService.getObjectEntityFile(normalizedPath);
       
       // Get file metadata early to determine content type
       const [metadata] = await objectFile.getMetadata();

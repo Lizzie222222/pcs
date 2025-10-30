@@ -1018,7 +1018,7 @@ export default function EventLivePage() {
         <div className="relative w-full h-[500px] overflow-hidden bg-gray-900">
           {/* Background Image */}
           <img
-            src={normalizeImageUrl(event.imageUrl)}
+            src={normalizeObjectStorageUrl(event.imageUrl)}
             alt={translatedTitle}
             className="w-full h-full object-cover object-center"
             data-testid="img-event-hero-banner"

@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useTranslation } from "react-i18next";
 import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP } from "@/lib/languageUtils";
 import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
+import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 
 interface Event {
   id: string;
@@ -183,7 +184,7 @@ function EventCard({ event, isPast = false }: { event: Event; isPast?: boolean }
         {event.imageUrl && (
           <div className="relative h-48 overflow-hidden">
             <img 
-              src={event.imageUrl} 
+              src={normalizeObjectStorageUrl(event.imageUrl)} 
               alt={event.title}
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
             />

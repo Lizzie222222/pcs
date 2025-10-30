@@ -30,6 +30,7 @@ import useEmblaCarousel from "embla-carousel-react";
 import { stripHtmlTags } from "@/lib/utils";
 import { OptimizedImage } from "@/components/ui/OptimizedImage";
 import { Footer } from "@/components/Footer";
+import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 
 interface CaseStudy {
   id: string;
@@ -685,7 +686,7 @@ export default function Inspiration() {
                 {(featuredStory.images?.[0]?.url || featuredStory.imageUrl) && (
                   <div className="lg:text-right">
                     <img 
-                      src={featuredStory.images?.[0]?.url || featuredStory.imageUrl} 
+                      src={normalizeObjectStorageUrl(featuredStory.images?.[0]?.url || featuredStory.imageUrl)} 
                       alt={featuredStory.title}
                       className="rounded-xl shadow-2xl w-full max-w-md ml-auto transform hover:scale-105 transition-transform duration-500"
                     />
