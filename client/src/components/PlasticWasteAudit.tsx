@@ -899,11 +899,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
   // Download PDF results
   const handleDownloadPDF = async () => {
+    console.log("[PDF Download] Function called");
     try {
       // Save progress first to ensure latest data
       await handleSaveProgress();
+      console.log("[PDF Download] Progress saved");
       
       if (!auditId) {
+        console.error("[PDF Download] No audit ID");
         toast({
           title: "Error",
           description: "Audit ID not found. Please save your audit first.",
@@ -912,6 +915,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
         return;
       }
 
+      console.log("[PDF Download] Fetching PDF for audit:", auditId);
       toast({
         title: "Generating PDF",
         description: "Your audit results PDF is being generated...",
@@ -920,6 +924,8 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       const response = await fetch(`/api/audits/${auditId}/results-pdf`, {
         credentials: 'include',
       });
+      
+      console.log("[PDF Download] Response status:", response.status, response.ok);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -928,6 +934,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       }
 
       const blob = await response.blob();
+      console.log("[PDF Download] Blob received, size:", blob.size);
       
       // Ensure blob is valid
       if (!blob || blob.size === 0) {
@@ -941,6 +948,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       a.href = url;
       a.download = `Audit_Results_${new Date().toISOString().split('T')[0]}.pdf`;
       
+      console.log("[PDF Download] Triggering download");
       document.body.appendChild(a);
       a.click();
       
@@ -948,6 +956,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       setTimeout(() => {
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
+        console.log("[PDF Download] Cleanup complete");
       }, 100);
 
       toast({
@@ -955,7 +964,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
         description: "Your audit results have been downloaded successfully.",
       });
     } catch (error) {
-      console.error("Error downloading PDF:", error);
+      console.error("[PDF Download] Error:", error);
       toast({
         title: "Download Error",
         description: error instanceof Error ? error.message : "There was an error downloading the PDF. Please try again.",
