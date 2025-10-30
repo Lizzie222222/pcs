@@ -4,6 +4,16 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
+**October 30, 2025**: Registration form age selection redesign
+- **Redesigned age selection in school registration**: Replaced grouped age ranges with individual age toggle buttons for more granular student demographic tracking.
+  - Changed from grouped ranges (e.g., "5-7", "7-11", "11-14") to individual ages (Under 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18)
+  - Replaced vertical checkbox list with modern toggle button UI styled as pills (rounded-full)
+  - Toggle buttons wrap horizontally across multiple rows with flex-wrap for clean, space-efficient layout
+  - Selected toggles show clear visual feedback with primary color background
+  - Multi-select functionality allows schools to select all applicable student ages
+  - Updated all country configs (UK, US, and default) to use consistent individual age options
+  - Verified end-to-end registration flow with automated tests
+
 **October 30, 2025**: Stage unlocking and UI improvements
 - **Fully unlocked all program stages in UI**: Completely removed all stage locking logic from the ProgressTracker component. All three stages (Inspire, Investigate, Act) now display as simultaneously accessible with colored gradients and active styling. Users can submit evidence for any stage at any time, regardless of their school's current stage or completion status.
   - Modified `getStageStatus()` to only return 'completed' or 'accessible' (removed 'locked' and 'current' states)
