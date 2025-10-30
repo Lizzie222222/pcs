@@ -1572,15 +1572,28 @@ export class DatabaseStorage implements IStorage {
     const [stats] = await db
       .select({
         totalSchools: count(),
-        completedAwards: sql<number>`count(*) filter (where award_completed = true)`,
         countries: sql<number>`count(distinct country)`,
         studentsImpacted: sql<number>`coalesce(sum(student_count), 0)`,
       })
       .from(schools);
     
+    const [evidenceStats] = await db
+      .select({
+        approvedEvidence: sql<number>`count(*) filter (where status = 'approved')`,
+      })
+      .from(evidence);
+    
+    const [legacyStats] = await db
+      .select({
+        legacyTotal: sql<number>`coalesce(sum(legacy_evidence_count), 0)`,
+      })
+      .from(schoolUsers);
+    
+    const totalActions = (evidenceStats?.approvedEvidence || 0) + (legacyStats?.legacyTotal || 0);
+    
     return {
       totalSchools: stats.totalSchools,
-      completedAwards: stats.completedAwards,
+      completedAwards: totalActions,
       countries: stats.countries,
       studentsImpacted: stats.studentsImpacted,
     };
