@@ -201,6 +201,13 @@ export default function ReviewsSection({
       // Refetch to ensure consistency (surgical invalidation)
       queryClient.invalidateQueries({ queryKey: ['/api/admin/audits/pending'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
+      // Invalidate audit analytics (affects audit overview, by-school data, and waste trends)
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/audit-overview'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/audit-by-school'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/waste-trends'] });
+      // Invalidate school progress analytics (school may have progressed to next stage)
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/overview'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/analytics/school-progress'] });
     },
   });
 
