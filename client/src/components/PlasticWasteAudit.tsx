@@ -852,9 +852,13 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       // Submit audit
       await submitMutation.mutateAsync(auditId);
       
-      // Create promises
+      // Create promises - filter out empty/incomplete promises
       const promisesData = form6.getValues().promises;
-      const promisePromises = promisesData.map(promise => {
+      const validPromises = promisesData.filter(p => 
+        p.plasticItemType.trim() !== "" && p.baselineQuantity > 0
+      );
+      
+      const promisePromises = validPromises.map(promise => {
         const reductionAmount = promise.baselineQuantity - promise.targetQuantity;
         return apiRequest('POST', '/api/reduction-promises', {
           schoolId,
@@ -875,7 +879,9 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       
       toast({
         title: "Audit and Promises Submitted!",
-        description: `Your plastic waste audit and ${promisesData.length} reduction promises have been submitted for review.`,
+        description: validPromises.length > 0 
+          ? `Your plastic waste audit and ${validPromises.length} reduction promise${validPromises.length !== 1 ? 's' : ''} have been submitted for review.`
+          : "Your plastic waste audit has been submitted for review.",
       });
       
       onClose?.();
@@ -916,18 +922,33 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate PDF');
+        const errorText = await response.text();
+        console.error("PDF generation failed:", response.status, errorText);
+        throw new Error(`Failed to generate PDF: ${response.status}`);
       }
 
       const blob = await response.blob();
+      
+      // Ensure blob is valid
+      if (!blob || blob.size === 0) {
+        throw new Error('Received empty PDF file');
+      }
+
+      // Create download link with proper cleanup
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
+      a.style.display = 'none';
       a.href = url;
       a.download = `Audit_Results_${new Date().toISOString().split('T')[0]}.pdf`;
+      
       document.body.appendChild(a);
       a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+      
+      // Cleanup after a short delay to ensure download starts
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
 
       toast({
         title: "PDF Downloaded",
@@ -937,7 +958,62 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       console.error("Error downloading PDF:", error);
       toast({
         title: "Download Error",
-        description: "There was an error downloading the PDF. Please try again.",
+        description: error instanceof Error ? error.message : "There was an error downloading the PDF. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Download Action Plan form
+  const handleDownloadActionPlan = async () => {
+    try {
+      toast({
+        title: "Downloading",
+        description: "Your action plan form is being downloaded...",
+      });
+
+      const response = await fetch('/api/printable-forms/action-plan', {
+        credentials: 'include',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error("Action plan download failed:", response.status, errorText);
+        throw new Error(`Failed to download action plan: ${response.status}`);
+      }
+
+      const blob = await response.blob();
+      
+      // Ensure blob is valid
+      if (!blob || blob.size === 0) {
+        throw new Error('Received empty PDF file');
+      }
+
+      // Create download link with proper cleanup
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.style.display = 'none';
+      a.href = url;
+      a.download = `Action_Plan_Form_${new Date().toISOString().split('T')[0]}.pdf`;
+      
+      document.body.appendChild(a);
+      a.click();
+      
+      // Cleanup after a short delay to ensure download starts
+      setTimeout(() => {
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+      }, 100);
+
+      toast({
+        title: "Download Complete",
+        description: "Action plan form downloaded successfully.",
+      });
+    } catch (error) {
+      console.error("Error downloading action plan:", error);
+      toast({
+        title: "Download Error",
+        description: error instanceof Error ? error.message : "There was an error downloading the action plan. Please try again.",
         variant: "destructive",
       });
     }
@@ -1072,7 +1148,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => window.open('/api/printable-forms/action-plan', '_blank')}
+                  onClick={handleDownloadActionPlan}
                   data-testid="button-download-action-plan-form"
                   className="text-xs"
                 >
