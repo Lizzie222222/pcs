@@ -438,7 +438,7 @@ export default function Resources() {
             <div className="flex flex-wrap gap-2">
               {isNew && (
                 <div 
-                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0 text-white bg-[#257eb5]"
+                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg border-0 text-white bg-pcs_blue"
                 >
                   <Sparkles className="h-3 w-3 mr-1" />
                   NEW
@@ -557,7 +557,7 @@ export default function Resources() {
             <div className="flex flex-wrap gap-2">
               {isNew && (
                 <div 
-                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg animate-pulse border-0 bg-yellow text-white"
+                  className="inline-flex items-center rounded-md px-2.5 py-0.5 text-xs font-semibold shadow-lg border-0 bg-pcs_blue text-white"
                 >
                   <Sparkles className="h-3 w-3 mr-1" />
                   NEW
