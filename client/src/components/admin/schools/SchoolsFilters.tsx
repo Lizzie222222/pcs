@@ -11,6 +11,9 @@ interface SchoolsFiltersProps {
     country: string;
     stage: string;
     language: string;
+    sortByDate: string;
+    joinedMonth: string;
+    joinedYear: string;
   };
   setSchoolFilters: (filters: any) => void;
   countryOptions: Array<{ value: string; label: string }>;
@@ -134,6 +137,63 @@ export default function SchoolsFilters({
               <SelectItem value="el">Greek</SelectItem>
               <SelectItem value="id">Indonesian</SelectItem>
               <SelectItem value="zh">Chinese</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
+          <Select 
+            value={schoolFilters.sortByDate} 
+            onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, sortByDate: value }))}
+          >
+            <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-sort-date-filter">
+              <SelectValue placeholder="Sort by Date" />
+            </SelectTrigger>
+            <SelectContent position="popper" sideOffset={5}>
+              <SelectItem value="newest">Newest First</SelectItem>
+              <SelectItem value="oldest">Oldest First</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select 
+            value={schoolFilters.joinedMonth} 
+            onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, joinedMonth: value }))}
+          >
+            <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-month-filter">
+              <SelectValue placeholder="All Months" />
+            </SelectTrigger>
+            <SelectContent position="popper" sideOffset={5} className="max-h-[300px]">
+              <SelectItem value="all">All Months</SelectItem>
+              <SelectItem value="1">January</SelectItem>
+              <SelectItem value="2">February</SelectItem>
+              <SelectItem value="3">March</SelectItem>
+              <SelectItem value="4">April</SelectItem>
+              <SelectItem value="5">May</SelectItem>
+              <SelectItem value="6">June</SelectItem>
+              <SelectItem value="7">July</SelectItem>
+              <SelectItem value="8">August</SelectItem>
+              <SelectItem value="9">September</SelectItem>
+              <SelectItem value="10">October</SelectItem>
+              <SelectItem value="11">November</SelectItem>
+              <SelectItem value="12">December</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select 
+            value={schoolFilters.joinedYear} 
+            onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, joinedYear: value }))}
+          >
+            <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-year-filter">
+              <SelectValue placeholder="All Years" />
+            </SelectTrigger>
+            <SelectContent position="popper" sideOffset={5} className="max-h-[300px]">
+              <SelectItem value="all">All Years</SelectItem>
+              <SelectItem value="2025">2025</SelectItem>
+              <SelectItem value="2024">2024</SelectItem>
+              <SelectItem value="2023">2023</SelectItem>
+              <SelectItem value="2022">2022</SelectItem>
+              <SelectItem value="2021">2021</SelectItem>
+              <SelectItem value="2020">2020</SelectItem>
+              <SelectItem value="2019">2019</SelectItem>
+              <SelectItem value="2018">2018</SelectItem>
             </SelectContent>
           </Select>
         </div>

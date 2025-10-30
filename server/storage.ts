@@ -1419,6 +1419,9 @@ export class DatabaseStorage implements IStorage {
     language?: string;
     search?: string;
     lastActiveDays?: number;
+    sortByDate?: 'newest' | 'oldest';
+    joinedMonth?: string;
+    joinedYear?: string;
     limit?: number;
     offset?: number;
   } = {}): Promise<Array<School & { primaryContactEmail: string | null; primaryContactFirstName: string | null; primaryContactLastName: string | null }>> {
@@ -1479,6 +1482,26 @@ export class DatabaseStorage implements IStorage {
       conditions.push(gte(schools.lastActiveAt, cutoffDate));
     }
     
+    // Filter by joined month and year
+    if (filters.joinedMonth && filters.joinedYear) {
+      const month = parseInt(filters.joinedMonth);
+      const year = parseInt(filters.joinedYear);
+      const startDate = new Date(year, month - 1, 1);
+      const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+      conditions.push(and(
+        gte(schools.createdAt, startDate),
+        sql`${schools.createdAt} <= ${endDate}`
+      ));
+    } else if (filters.joinedYear) {
+      const year = parseInt(filters.joinedYear);
+      const startDate = new Date(year, 0, 1);
+      const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+      conditions.push(and(
+        gte(schools.createdAt, startDate),
+        sql`${schools.createdAt} <= ${endDate}`
+      ));
+    }
+    
     let query = db
       .select({
         ...getTableColumns(schools),
@@ -1493,7 +1516,9 @@ export class DatabaseStorage implements IStorage {
       query = query.where(and(...conditions)) as any;
     }
     
-    query = query.orderBy(desc(schools.createdAt)) as any;
+    // Sort by date - default to newest first
+    const sortOrder = filters.sortByDate === 'oldest' ? asc : desc;
+    query = query.orderBy(sortOrder(schools.createdAt)) as any;
     
     if (filters.limit) {
       query = query.limit(filters.limit) as any;

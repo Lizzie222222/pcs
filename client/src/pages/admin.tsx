@@ -196,6 +196,9 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
     country: 'all',
     stage: 'all',
     language: 'all',
+    sortByDate: 'newest',
+    joinedMonth: 'all',
+    joinedYear: 'all',
   });
 
   // Check for welcomed parameter in URL
