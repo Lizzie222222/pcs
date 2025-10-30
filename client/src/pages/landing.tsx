@@ -306,10 +306,12 @@ export default function Landing() {
               <span className="text-2xl sm:text-3xl md:text-4xl font-bold">{stats?.totalSchools?.toLocaleString() || '0'}</span>
               <span className="text-base md:text-lg">{t('stats.schools_label')}</span>
             </div>
+            <div className="h-12 w-px bg-white/30"></div>
             <div className="flex flex-col gap-1" data-testid="impact-ribbon-countries">
               <span className="text-2xl sm:text-3xl md:text-4xl font-bold">{stats?.countries?.toLocaleString() || '0'}</span>
               <span className="text-base md:text-lg">{t('stats.countries_label')}</span>
             </div>
+            <div className="h-12 w-px bg-white/30"></div>
             <div className="flex flex-col gap-1" data-testid="impact-ribbon-actions">
               <span className="text-2xl sm:text-3xl md:text-4xl font-bold">{stats?.completedAwards?.toLocaleString() || '0'}</span>
               <span className="text-base md:text-lg">{t('stats.actions_taken_label')}</span>
