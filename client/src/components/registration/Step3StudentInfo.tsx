@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Toggle } from "@/components/ui/toggle";
 import { getCountryConfig } from "@/lib/countryConfig";
 import { Loader2 } from "lucide-react";
 
@@ -102,46 +103,28 @@ export default function Step3StudentInfo({
           <FormField
             control={form.control}
             name="ageRanges"
-            render={() => (
+            render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('forms:student_info.age_ranges_label')}</FormLabel>
                 <FormDescription>
                   {t('forms:student_info.age_ranges_description')}
                 </FormDescription>
-                <div className="space-y-2 mt-2">
+                <div className="flex flex-wrap gap-2 mt-3">
                   {countryConfig.ageRangeOptions.map((option) => (
-                    <FormField
+                    <Toggle
                       key={option.value}
-                      control={form.control}
-                      name="ageRanges"
-                      render={({ field }) => {
-                        return (
-                          <FormItem
-                            key={option.value}
-                            className="flex flex-row items-start space-x-3 space-y-0"
-                          >
-                            <FormControl>
-                              <Checkbox
-                                checked={field.value?.includes(option.value)}
-                                onCheckedChange={(checked) => {
-                                  return checked
-                                    ? field.onChange([...field.value, option.value])
-                                    : field.onChange(
-                                        field.value?.filter(
-                                          (value) => value !== option.value
-                                        )
-                                      );
-                                }}
-                                data-testid={`checkbox-age-range-${option.value.toLowerCase().replace(/\s+/g, '-')}`}
-                              />
-                            </FormControl>
-                            <FormLabel className="font-normal cursor-pointer">
-                              {option.label}
-                            </FormLabel>
-                          </FormItem>
-                        );
+                      pressed={field.value?.includes(option.value)}
+                      onPressedChange={(pressed) => {
+                        const newValue = pressed
+                          ? [...field.value, option.value]
+                          : field.value?.filter((value) => value !== option.value);
+                        field.onChange(newValue);
                       }}
-                    />
+                      className="h-9 px-4 rounded-full text-sm font-medium transition-all data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:shadow-sm hover:bg-muted"
+                      data-testid={`toggle-age-${option.value}`}
+                    >
+                      {option.label}
+                    </Toggle>
                   ))}
                 </div>
                 <FormMessage data-testid="error-age-ranges" />
