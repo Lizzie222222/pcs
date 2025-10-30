@@ -3,6 +3,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { X, Download, ChevronLeft, ChevronRight, FileText, Film, Image as ImageIcon } from "lucide-react";
 import { PDFThumbnail } from "./PDFThumbnail";
+import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 
 interface EvidenceFile {
   name: string;
@@ -62,50 +63,53 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
   return (
     <>
       <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 ${className}`}>
-        {files.map((file, index) => (
-          <button
-            key={index}
-            onClick={() => openFile(index)}
-            className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-pcs_blue transition-all group"
-            data-testid={`thumbnail-${index}`}
-          >
-            {isImage(file.type) ? (
-              <img
-                src={file.url}
-                alt={file.name}
-                className="w-full h-full object-cover"
-                loading="lazy"
-                decoding="async"
-              />
-            ) : isVideo(file.type) ? (
-              <video
-                src={file.url}
-                preload="metadata"
-                className="w-full h-full object-cover"
-                muted
-              />
-            ) : isPDF(file.type) ? (
-              <PDFThumbnail 
-                url={file.url}
-                className="w-full h-full"
-              />
-            ) : (
-              <div className="w-full h-full bg-gray-100 flex items-center justify-center">
-                <div className="text-center">
-                  <FileText className="w-8 h-8 text-gray-400 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500">{file.type.split('/')[1]?.toUpperCase() || 'File'}</p>
+        {files.map((file, index) => {
+          const normalizedUrl = normalizeObjectStorageUrl(file.url);
+          return (
+            <button
+              key={index}
+              onClick={() => openFile(index)}
+              className="relative aspect-square rounded-lg overflow-hidden border-2 border-gray-200 hover:border-pcs_blue transition-all group"
+              data-testid={`thumbnail-${index}`}
+            >
+              {isImage(file.type) ? (
+                <img
+                  src={normalizedUrl}
+                  alt={file.name}
+                  className="w-full h-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
+              ) : isVideo(file.type) ? (
+                <video
+                  src={normalizedUrl}
+                  preload="metadata"
+                  className="w-full h-full object-cover"
+                  muted
+                />
+              ) : isPDF(file.type) ? (
+                <PDFThumbnail 
+                  url={normalizedUrl}
+                  className="w-full h-full"
+                />
+              ) : (
+                <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+                  <div className="text-center">
+                    <FileText className="w-8 h-8 text-gray-400 mx-auto mb-1" />
+                    <p className="text-xs text-gray-500">{file.type.split('/')[1]?.toUpperCase() || 'File'}</p>
+                  </div>
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
+                <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="bg-white rounded-full p-2">
+                    {getFileIcon(file.type)}
+                  </div>
                 </div>
               </div>
-            )}
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-all flex items-center justify-center">
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="bg-white rounded-full p-2">
-                  {getFileIcon(file.type)}
-                </div>
-              </div>
-            </div>
-          </button>
-        ))}
+            </button>
+          );
+        })}
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -124,7 +128,7 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
               <div className="flex items-center gap-2">
                 {selectedFile && (
                   <a
-                    href={`${selectedFile.url}?download=true`}
+                    href={`${normalizeObjectStorageUrl(selectedFile.url)}?download=true`}
                     download={selectedFile.name}
                     target="_blank"
                     rel="noopener noreferrer"
@@ -152,21 +156,21 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
                 <>
                   {isImage(selectedFile.type) ? (
                     <img
-                      src={selectedFile.url}
+                      src={normalizeObjectStorageUrl(selectedFile.url)}
                       alt={selectedFile.name}
                       className="max-w-full max-h-full object-contain"
                       data-testid="img-preview"
                     />
                   ) : isVideo(selectedFile.type) ? (
                     <video
-                      src={selectedFile.url}
+                      src={normalizeObjectStorageUrl(selectedFile.url)}
                       controls
                       className="max-w-full max-h-full"
                       data-testid="video-preview"
                     />
                   ) : isPDF(selectedFile.type) ? (
                     <iframe
-                      src={selectedFile.url}
+                      src={normalizeObjectStorageUrl(selectedFile.url)}
                       className="w-full h-full"
                       data-testid="pdf-preview"
                       title={selectedFile.name}
@@ -176,7 +180,7 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
                       <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                       <p className="text-gray-600 mb-4">Preview not available for this file type</p>
                       <a
-                        href={`${selectedFile.url}?download=true`}
+                        href={`${normalizeObjectStorageUrl(selectedFile.url)}?download=true`}
                         download={selectedFile.name}
                         target="_blank"
                         rel="noopener noreferrer"

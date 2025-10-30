@@ -14,6 +14,7 @@ import { useTranslation } from "react-i18next";
 import { VideoLightbox } from "@/components/VideoLightbox";
 import { getEventAvailableLanguages, LANGUAGE_FLAG_MAP, getLanguageLabel } from "@/lib/languageUtils";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
+import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 import eventPackBannerUrl from "@assets/event-pack-2_1761297797787.png";
 
@@ -747,28 +748,6 @@ export default function EventLivePage() {
   const translatedTestimonials = testimonialsMeta.content;
   const translatedEvidenceText = evidenceTextMeta.content;
 
-  // Helper function to normalize image URLs
-  const normalizeImageUrl = (url: string): string => {
-    // Skip normalization for absolute URLs
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    // Skip normalization for Vite dev server paths (/@fs/, /@assets/, etc.)
-    if (url.startsWith('/@')) {
-      return url;
-    }
-    // Skip normalization if already has /api/objects prefix
-    if (url.startsWith('/api/objects')) {
-      return url;
-    }
-    // If URL starts with /objects/, prepend only /api
-    if (url.startsWith('/objects/')) {
-      return `/api${url}`;
-    }
-    // For other relative paths, prepend /api/objects
-    return `/api/objects${url}`;
-  };
-
   // Check if page is in coming soon status
   if (event.pagePublishedStatus === 'coming_soon') {
     return (
@@ -777,7 +756,7 @@ export default function EventLivePage() {
         {event.imageUrl ? (
           <div className="relative w-full h-[400px] overflow-hidden bg-gray-900">
             <img
-              src={normalizeImageUrl(event.imageUrl)}
+              src={normalizeObjectStorageUrl(event.imageUrl)}
               alt={translatedTitle}
               className="w-full h-full object-cover object-center"
               data-testid="img-coming-soon-hero-banner"
@@ -836,7 +815,7 @@ export default function EventLivePage() {
         {event.imageUrl ? (
           <div className="relative w-full h-[400px] overflow-hidden bg-gray-900">
             <img
-              src={normalizeImageUrl(event.imageUrl)}
+              src={normalizeObjectStorageUrl(event.imageUrl)}
               alt={translatedTitle}
               className="w-full h-full object-cover object-center"
               data-testid="img-restricted-hero-banner"

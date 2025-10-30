@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as pdfjsLib from 'pdfjs-dist';
 import workerSrc from 'pdfjs-dist/build/pdf.worker.min.mjs?url';
+import { normalizeObjectStorageUrl } from '@/lib/urlNormalization';
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerSrc;
 
@@ -22,8 +23,10 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
         setLoading(true);
         setError(false);
 
+        const normalizedUrl = normalizeObjectStorageUrl(url);
+
         const loadingTask = pdfjsLib.getDocument({
-          url,
+          url: normalizedUrl,
           httpHeaders: {
             'Accept': 'application/pdf',
           },
@@ -63,7 +66,8 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
         console.error('PDF Loading Error Details:', {
           error: err,
           message: (err as Error).message,
-          url: url,
+          originalUrl: url,
+          normalizedUrl: normalizeObjectStorageUrl(url),
           stack: (err as Error).stack
         });
         setError(true);

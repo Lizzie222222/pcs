@@ -8037,11 +8037,16 @@ Return JSON with:
       const limit = parseInt(req.query.limit as string) || 10;
       const events = await storage.getUpcomingEvents(limit);
       
-      // Add registration counts to each event
+      // Add registration counts and normalize URLs for each event
       const eventsWithCounts = await Promise.all(
         events.map(async (event) => {
           const registrationsCount = await storage.getEventRegistrationCount(event.id);
-          return { ...event, registrationsCount };
+          return { 
+            ...event, 
+            registrationsCount,
+            imageUrl: normalizeObjectStorageUrl(event.imageUrl),
+            eventPackBannerImageUrl: normalizeObjectStorageUrl(event.eventPackBannerImageUrl),
+          };
         })
       );
       
@@ -8094,7 +8099,15 @@ Return JSON with:
     try {
       const limit = req.query.limit ? parseInt(req.query.limit as string) : undefined;
       const pastEvents = await storage.getPastEvents(limit);
-      res.json(pastEvents);
+      
+      // Normalize URLs in all events
+      const normalizedEvents = pastEvents.map(event => ({
+        ...event,
+        imageUrl: normalizeObjectStorageUrl(event.imageUrl),
+        eventPackBannerImageUrl: normalizeObjectStorageUrl(event.eventPackBannerImageUrl),
+      }));
+      
+      res.json(normalizedEvents);
     } catch (error) {
       console.error("Error fetching past events:", error);
       res.status(500).json({ message: "Failed to fetch past events" });

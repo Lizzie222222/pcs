@@ -3,8 +3,15 @@
  * Normalizes object storage URLs to ensure they use the /api/objects proxy route
  * This ensures proper CORS headers are applied
  * 
+ * Handles:
+ * - Google Cloud Storage absolute URLs (https://storage.googleapis.com/...)
+ * - Already normalized paths (/api/objects/...)
+ * - Raw object paths (/objects/...)
+ * - Legacy bucket paths
+ * - External URLs (returned as-is)
+ * 
  * @param url - The URL to normalize
- * @returns Normalized URL with /api/objects prefix, or original URL if already normalized/absolute
+ * @returns Normalized URL with /api/objects prefix, or original URL if external
  */
 export function normalizeObjectStorageUrl(url: string | null | undefined): string {
   // Handle null/undefined
@@ -12,7 +19,39 @@ export function normalizeObjectStorageUrl(url: string | null | undefined): strin
     return '';
   }
 
-  // Skip normalization for absolute URLs (http/https)
+  // Handle Google Cloud Storage URLs (convert to /api/objects/... format)
+  if (url.startsWith('https://storage.googleapis.com/')) {
+    try {
+      const urlObj = new URL(url);
+      const rawObjectPath = urlObj.pathname;
+      
+      // Extract uploads path from /.private/uploads/...
+      const privateUploadsMatch = rawObjectPath.match(/\/.private\/uploads\/(.+)$/);
+      if (privateUploadsMatch) {
+        return `/api/objects/uploads/${privateUploadsMatch[1]}`;
+      }
+      
+      // Extract path from /public/...
+      const publicMatch = rawObjectPath.match(/\/public\/(.+)$/);
+      if (publicMatch) {
+        return `/api/objects/public/${publicMatch[1]}`;
+      }
+      
+      // If no pattern match, try to extract anything after the bucket name
+      // Format: /{bucketName}/{path}
+      const pathParts = rawObjectPath.split('/').filter(p => p);
+      if (pathParts.length >= 2) {
+        // Skip bucket name (first part), take the rest
+        const objectPath = pathParts.slice(1).join('/');
+        return `/api/objects/${objectPath}`;
+      }
+    } catch (error) {
+      console.error('Failed to parse Google Storage URL:', url, error);
+      // Fall through to other checks
+    }
+  }
+
+  // Skip normalization for other external absolute URLs (http/https)
   if (url.startsWith('http://') || url.startsWith('https://')) {
     return url;
   }

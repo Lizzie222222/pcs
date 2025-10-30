@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useReducedMotion } from '@/hooks/useReducedMotion';
 import { useConnectionSpeed } from '@/hooks/useConnectionSpeed';
+import { normalizeObjectStorageUrl } from '@/lib/urlNormalization';
 
 interface OptimizedImageProps {
   src: string;
@@ -63,6 +64,9 @@ export function OptimizedImage({
     return null;
   }
 
+  // Normalize object storage URLs to ensure they use the /api/objects proxy route
+  const normalizedSrc = normalizeObjectStorageUrl(src);
+
   const [isLoaded, setIsLoaded] = useState(false);
   const [isError, setIsError] = useState(false);
   const [isInView, setIsInView] = useState(priority);
@@ -84,7 +88,7 @@ export function OptimizedImage({
     { mobile: Math.min(480, breakpoints.mobile), tablet: Math.min(768, breakpoints.tablet), desktop: Math.min(1280, breakpoints.desktop) } : 
     breakpoints;
 
-  // Generate different format URLs based on the original src
+  // Generate different format URLs based on the normalized src
   const generateImageFormats = useCallback((originalSrc: string): ImageFormats => {
     // If it's an external URL, check if it's a service that supports modern formats
     if (originalSrc.startsWith('http')) {
@@ -196,8 +200,8 @@ export function OptimizedImage({
     setFailedFormats(prev => new Set(Array.from(prev).concat(format)));
   }, []);
 
-  // Generate image formats and srcsets
-  const formats = generateImageFormats(src);
+  // Generate image formats and srcsets using normalized src
+  const formats = generateImageFormats(normalizedSrc);
   const srcSet = generateSrcSet(formats, width);
 
   // Calculate sizes attribute for responsive images (respects connection speed)

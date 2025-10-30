@@ -7,6 +7,7 @@ import type { DocumentLock } from "@/hooks/useCollaboration";
 import DocumentLockWarning from "../DocumentLockWarning";
 import { ViewingIndicator } from "../ViewingIndicator";
 import { useAuth } from "@/hooks/useAuth";
+import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -467,28 +468,6 @@ export default function EventEditor({
     setEventFormData(prev => ({ ...prev, imageUrl: '' }));
   };
 
-  // Helper function to normalize image URLs
-  const normalizeImageUrl = (url: string): string => {
-    // Skip normalization for absolute URLs
-    if (url.startsWith('http://') || url.startsWith('https://')) {
-      return url;
-    }
-    // Skip normalization for Vite dev server paths (/@fs/, /@assets/, etc.)
-    if (url.startsWith('/@')) {
-      return url;
-    }
-    // Skip normalization if already has /api/objects prefix
-    if (url.startsWith('/api/objects')) {
-      return url;
-    }
-    // If URL starts with /objects/, prepend only /api
-    if (url.startsWith('/objects/')) {
-      return `/api${url}`;
-    }
-    // For other relative paths, prepend /api/objects
-    return `/api/objects${url}`;
-  };
-
   // Submit handler
   const handleSave = () => {
     if (!eventFormData.title || !eventFormData.description || !eventFormData.startDateTime || !eventFormData.endDateTime) {
@@ -794,7 +773,7 @@ export default function EventEditor({
             ) : (
               <div className="relative border border-gray-300 rounded-md overflow-hidden">
                 <img
-                  src={normalizeImageUrl(eventFormData.imageUrl)}
+                  src={normalizeObjectStorageUrl(eventFormData.imageUrl)}
                   alt="Event preview"
                   className="w-full h-48 object-cover"
                   data-testid="image-event-preview"
