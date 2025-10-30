@@ -408,6 +408,8 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
       queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
+      // Invalidate evidence queries so photo consent status updates immediately
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
     },
   });
 
@@ -454,6 +456,8 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
       queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
+      // Invalidate evidence queries so photo consent status updates immediately
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
     },
   });
 
