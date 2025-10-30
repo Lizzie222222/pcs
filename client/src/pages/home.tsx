@@ -350,6 +350,25 @@ export default function Home() {
     retry: false,
   });
 
+  // Fetch evidence requirements to find "Action Plan Development"
+  const { data: evidenceRequirements = [] } = useQuery<any[]>({
+    queryKey: ['/api/evidence-requirements'],
+    enabled: !!dashboardData?.school?.id,
+    retry: false,
+  });
+
+  // Find the Action Plan Development requirement
+  const actionPlanRequirement = evidenceRequirements.find(req => 
+    req.title.includes("Action Plan Development") && req.stage === 'investigate'
+  );
+
+  // Fetch action plan evidence if we have the requirement ID
+  const { data: actionPlanEvidence } = useQuery<any[]>({
+    queryKey: [`/api/evidence/requirement/${actionPlanRequirement?.id}/school/${dashboardData?.school?.id}`],
+    enabled: !!actionPlanRequirement?.id && !!dashboardData?.school?.id,
+    retry: false,
+  });
+
   // Fetch all promises for school via audit (for Our Action Plan tab)
   // Using audit endpoint instead of school endpoint to avoid permission issues
   const { data: schoolPromises = [], isLoading: promisesLoading } = useQuery<ReductionPromise[]>({
@@ -1033,6 +1052,10 @@ export default function Home() {
              (schoolAudit.status === 'submitted' || schoolAudit.status === 'approved') && 
              auditPromises !== undefined &&
              auditPromises.length === 0 && 
+             // Don't show if ANY action plan evidence is pending or approved
+             !(actionPlanEvidence && actionPlanEvidence.some(ev => 
+               ev.status === 'pending' || ev.status === 'approved'
+             )) &&
              !dismissedPromiseNotification && (
               <div className="mb-6" data-testid="missing-promises-notification">
                 <Alert className="bg-teal/10 border-l-4 border-teal shadow-lg">
@@ -1599,29 +1622,87 @@ export default function Home() {
                       <Target className="h-12 w-12 text-teal" />
                     </div>
                   </div>
-                  <h2 className="text-2xl font-bold text-navy mb-3">{t('action_plan.empty_title', { ns: 'dashboard' })}</h2>
-                  <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                    {t('action_plan.empty_message', { ns: 'dashboard' })}
-                  </p>
-                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                    <Button
-                      onClick={handleAddPromiseClick}
-                      className="bg-teal hover:bg-teal/90 text-white px-6 py-3 text-lg shadow-lg"
-                      data-testid="button-add-first-promise"
-                    >
-                      <Plus className="h-5 w-5 mr-2" />
-                      {t('actions.create_online_action_plan', { ns: 'dashboard' })}
-                    </Button>
-                    <Button
-                      onClick={() => window.location.href = '/api/printable-forms/action-plan'}
-                      variant="outline"
-                      className="px-6 py-3 text-lg shadow-lg border-2 border-teal text-teal hover:bg-teal hover:text-white"
-                      data-testid="button-download-action-plan-form"
-                    >
-                      <Download className="h-5 w-5 mr-2" />
-                      {t('actions.download_printable_form', { ns: 'dashboard' })}
-                    </Button>
-                  </div>
+                  
+                  {/* Check if action plan was submitted via Investigate stage */}
+                  {(() => {
+                    // Find the most recent pending or approved action plan evidence
+                    // Sort by submittedAt descending (newest first) before finding
+                    const sortedEvidence = actionPlanEvidence
+                      ? [...actionPlanEvidence].sort((a, b) => 
+                          new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+                        )
+                      : [];
+                    
+                    const pendingOrApproved = sortedEvidence.find(ev => 
+                      ev.status === 'pending' || ev.status === 'approved'
+                    );
+                    
+                    if (pendingOrApproved) {
+                      if (pendingOrApproved.status === 'pending') {
+                        return (
+                          <>
+                            <h2 className="text-2xl font-bold text-navy mb-3">{t('action_plan.under_review_title', { ns: 'dashboard' }) || 'Action Plan Under Review'}</h2>
+                            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                              {t('action_plan.under_review_message', { ns: 'dashboard' }) || 'Your action plan has been submitted and is currently under review. You\'ll be able to see your reduction promises here once it\'s approved.'}
+                            </p>
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 max-w-md mx-auto">
+                              <p className="text-sm text-gray-700">
+                                <strong>{t('common.status', { ns: 'dashboard' }) || 'Status'}:</strong> {t('status.pending_review', { ns: 'dashboard' }) || 'Pending Review'}
+                              </p>
+                              <p className="text-sm text-gray-600 mt-2">
+                                {t('action_plan.view_in_progress_tab', { ns: 'dashboard' }) || 'Visit the "Our Progress" tab to view your submission details.'}
+                              </p>
+                            </div>
+                          </>
+                        );
+                      } else {
+                        return (
+                          <>
+                            <h2 className="text-2xl font-bold text-navy mb-3">{t('action_plan.approved_title', { ns: 'dashboard' }) || 'Action Plan Approved!'}</h2>
+                            <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                              {t('action_plan.approved_message', { ns: 'dashboard' }) || 'Your action plan has been approved, but your reduction promises will appear here soon.'}
+                            </p>
+                            <Button
+                              onClick={() => setActiveTab('progress')}
+                              className="bg-teal hover:bg-teal/90 text-white px-6 py-3"
+                              data-testid="button-view-progress"
+                            >
+                              {t('actions.view_progress', { ns: 'dashboard' }) || 'View Progress'}
+                            </Button>
+                          </>
+                        );
+                      }
+                    }
+                    
+                    // No pending or approved - show create buttons
+                    return (
+                    <>
+                      <h2 className="text-2xl font-bold text-navy mb-3">{t('action_plan.empty_title', { ns: 'dashboard' })}</h2>
+                      <p className="text-gray-600 mb-6 max-w-md mx-auto">
+                        {t('action_plan.empty_message', { ns: 'dashboard' })}
+                      </p>
+                      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                        <Button
+                          onClick={handleAddPromiseClick}
+                          className="bg-teal hover:bg-teal/90 text-white px-6 py-3 text-lg shadow-lg"
+                          data-testid="button-add-first-promise"
+                        >
+                          <Plus className="h-5 w-5 mr-2" />
+                          {t('actions.create_online_action_plan', { ns: 'dashboard' })}
+                        </Button>
+                        <Button
+                          onClick={() => window.location.href = '/api/printable-forms/action-plan'}
+                          variant="outline"
+                          className="px-6 py-3 text-lg shadow-lg border-2 border-teal text-teal hover:bg-teal hover:text-white"
+                          data-testid="button-download-action-plan-form"
+                        >
+                          <Download className="h-5 w-5 mr-2" />
+                          {t('actions.download_printable_form', { ns: 'dashboard' })}
+                        </Button>
+                      </div>
+                    </>
+                    );
+                  })()}
                 </CardContent>
               </Card>
             ) : (
