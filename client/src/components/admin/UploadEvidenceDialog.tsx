@@ -152,7 +152,7 @@ export function UploadEvidenceDialog({
     setTitle("");
     setDescription("");
     setStage("inspire");
-    setVisibility("registered");
+    setVisibility("private");
     setVideoLinks("");
     setUploadedFiles([]);
   };
