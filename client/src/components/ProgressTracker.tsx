@@ -232,20 +232,14 @@ export default function ProgressTracker({
             return (
               <Card 
                 key={stage.id} 
-                className={`group transition-all duration-300 hover:shadow-2xl border-0 overflow-hidden shadow-lg hover:-translate-y-2 ${
-                  status === 'completed' ? 'ring-2 ring-green-400/50 bg-gradient-to-br from-green-50 to-green-100/50' :
-                  'bg-gradient-to-br from-blue-50 to-blue-100/50'
-                }`}
+                className="group transition-all duration-300 hover:shadow-2xl border-0 overflow-hidden shadow-lg hover:-translate-y-2 bg-transparent"
                 data-testid={`progress-stage-${stage.id}`}
               >
               <CardContent className="p-8 h-full flex flex-col">
                 {/* Header */}
                 <div className="text-center mb-6 flex-shrink-0">
                   <div className="relative inline-flex items-center justify-center mb-4">
-                    <div className={`w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 group-hover:scale-110 p-4 overflow-visible ${
-                      status === 'completed' ? 'bg-gradient-to-br from-green-500 to-green-600 text-white' :
-                      getStageGradientClasses(stage.color)
-                    }`}>
+                    <div className="w-24 h-24 rounded-full flex items-center justify-center shadow-xl transition-all duration-300 group-hover:scale-110 p-4 overflow-visible">
                       <img src={Icon} alt={stage.title} className="w-full h-full object-contain" />
                     </div>
                     {status === 'completed' && (
