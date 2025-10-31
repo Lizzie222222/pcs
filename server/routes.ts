@@ -13,7 +13,7 @@ import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
 import { eq, and, sql, desc, gte, lte, count } from "drizzle-orm";
 import { generateAnalyticsInsights } from "./lib/aiInsights";
-import { translateEmailContent, type EmailContent } from "./translationService";
+import { translateEmailContent, translateEvidenceRequirement, type EmailContent } from "./translationService";
 import { promises as fs } from 'fs';
 import path from 'path';
 import puppeteer from 'puppeteer';
@@ -2947,6 +2947,60 @@ Return JSON with:
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to update evidence requirement" });
+    }
+  });
+
+  // Generate translations for evidence requirement (admin only)
+  app.post('/api/evidence-requirements/:id/translate', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      
+      const requirement = await storage.getEvidenceRequirement(id);
+      if (!requirement) {
+        return res.status(404).json({ message: "Evidence requirement not found" });
+      }
+
+      const supportedLanguages = ['es', 'fr', 'de', 'it', 'pt', 'nl', 'ru', 'zh', 'ko', 'ar', 'id', 'el', 'cy'];
+      const translations: Record<string, { title: string; description: string }> = {
+        en: {
+          title: requirement.title,
+          description: requirement.description
+        }
+      };
+
+      for (const lang of supportedLanguages) {
+        try {
+          const translated = await translateEvidenceRequirement(
+            { title: requirement.title, description: requirement.description },
+            lang
+          );
+          translations[lang] = translated;
+        } catch (error) {
+          console.error(`Failed to translate to ${lang}:`, error);
+          translations[lang] = {
+            title: requirement.title,
+            description: requirement.description
+          };
+        }
+      }
+
+      const updated = await storage.updateEvidenceRequirement(id, { translations });
+      
+      console.log(`[Evidence Requirement Translated] ID: ${id}, Languages: ${Object.keys(translations).length}`);
+      res.json({ translations, requirement: updated });
+    } catch (error) {
+      console.error("Error translating evidence requirement:", error);
+      res.status(500).json({ message: "Failed to translate evidence requirement" });
     }
   });
 
