@@ -3078,15 +3078,23 @@ export class DatabaseStorage implements IStorage {
     const investigateEvidence = allEvidence.filter(e => e.stage === 'investigate');
     const actEvidence = allEvidence.filter(e => e.stage === 'act');
 
-    // Count unique requirements with approved evidence (not total approved evidence)
+    // Count approved evidence items:
+    // - For evidence with evidenceRequirementId: count unique requirement IDs
+    // - For evidence without evidenceRequirementId: count each item individually
     const getApprovedRequirementsCount = (stageEvidence: typeof allEvidence) => {
       const approvedEvidence = stageEvidence.filter(e => e.status === 'approved');
+      
+      // Count unique requirement IDs
       const uniqueRequirementIds = new Set(
         approvedEvidence
           .filter(e => e.evidenceRequirementId !== null)
           .map(e => e.evidenceRequirementId)
       );
-      return uniqueRequirementIds.size;
+      
+      // Count evidence items without requirement IDs (e.g., admin uploads)
+      const evidenceWithoutRequirement = approvedEvidence.filter(e => e.evidenceRequirementId === null);
+      
+      return uniqueRequirementIds.size + evidenceWithoutRequirement.length;
     };
 
     // Check if school has an approved audit
@@ -3267,7 +3275,7 @@ export class DatabaseStorage implements IStorage {
           await db.insert(certificates).values({
             schoolId,
             stage: 'act',
-            issuedBy: 'system',
+            issuedBy: null,
             certificateNumber,
             completedDate: new Date(),
             title: `Round ${currentRound} Completion Certificate`,
