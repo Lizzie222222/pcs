@@ -6,7 +6,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Languages, Loader2, Save, RefreshCw } from "lucide-react";
 import type { EvidenceRequirement } from "@/components/admin/shared/types";
@@ -44,6 +43,7 @@ export default function TranslationManagementDialog({
   const { toast } = useToast();
   const queryClient = useQueryClient();
   
+  const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [translations, setTranslations] = useState<Record<string, { title: string; description: string }>>({});
   const [languageSpecificResources, setLanguageSpecificResources] = useState<Record<string, string[]>>({});
   const [isGenerating, setIsGenerating] = useState(false);
@@ -64,6 +64,7 @@ export default function TranslationManagementDialog({
       
       setTranslations(initialTranslations);
       setLanguageSpecificResources(existingLangResources);
+      setSelectedLanguage('en');
     }
   }, [requirement]);
 
@@ -75,7 +76,10 @@ export default function TranslationManagementDialog({
     },
     onSuccess: (data: any) => {
       if (data?.translations) {
-        setTranslations(data.translations);
+        setTranslations(prev => ({
+          ...prev,
+          ...data.translations,
+        }));
       }
       toast({
         title: "Translations Generated",
@@ -152,9 +156,13 @@ export default function TranslationManagementDialog({
 
   if (!requirement) return null;
 
+  const currentTranslation = translations[selectedLanguage] || { title: '', description: '' };
+  const currentLangResources = languageSpecificResources[selectedLanguage] || [];
+  const isEnglish = selectedLanguage === 'en';
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto" data-testid="dialog-translations">
+      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto" data-testid="dialog-translations">
         <DialogHeader>
           <div className="flex items-center justify-between">
             <DialogTitle className="flex items-center gap-2">
@@ -181,92 +189,111 @@ export default function TranslationManagementDialog({
             </Button>
           </div>
           <p className="text-sm text-gray-600 mt-2">
-            Edit translations for all 14 languages. Changes are saved when you click "Save All Translations" below.
+            Select a language tab below to edit its translation. Click "Generate All Translations" to auto-translate all languages at once.
           </p>
         </DialogHeader>
 
+        {/* Language Tabs */}
+        <div className="border-b border-gray-200 -mx-6 px-6 overflow-x-auto">
+          <div className="flex gap-1 min-w-max">
+            {SUPPORTED_LANGUAGES.map((lang) => (
+              <button
+                key={lang.code}
+                onClick={() => setSelectedLanguage(lang.code)}
+                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+                  selectedLanguage === lang.code
+                    ? 'border-pcs_blue text-pcs_blue'
+                    : 'border-transparent text-gray-600 hover:text-gray-900 hover:border-gray-300'
+                }`}
+                data-testid={`tab-${lang.code}`}
+              >
+                <span className="mr-1">{lang.flag}</span>
+                {lang.name}
+                {lang.code === 'en' && (
+                  <Badge variant="outline" className="ml-2 text-xs">Original</Badge>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Translation Content */}
         <div className="space-y-4 py-4">
-          {SUPPORTED_LANGUAGES.map((lang) => {
-            const translation = translations[lang.code] || { title: '', description: '' };
-            const langResources = languageSpecificResources[lang.code] || [];
-            const isEnglish = lang.code === 'en';
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Title
+            </label>
+            <Input
+              value={currentTranslation.title}
+              onChange={(e) => updateTranslation(selectedLanguage, 'title', e.target.value)}
+              placeholder={`Title in ${SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name}`}
+              disabled={isEnglish}
+              className={isEnglish ? 'bg-gray-50 cursor-not-allowed' : ''}
+              data-testid={`input-title-${selectedLanguage}`}
+            />
+            {isEnglish && (
+              <p className="text-xs text-gray-500 mt-1">
+                English is the original language. Edit the main requirement to change this.
+              </p>
+            )}
+          </div>
 
-            return (
-              <Card key={lang.code} className="p-4" data-testid={`card-translation-${lang.code}`}>
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className="text-2xl">{lang.flag}</span>
-                    <h3 className="text-lg font-semibold">{lang.name}</h3>
-                    {isEnglish && (
-                      <Badge variant="outline" className="ml-2">Original</Badge>
-                    )}
-                  </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Description
+            </label>
+            <Textarea
+              value={currentTranslation.description}
+              onChange={(e) => updateTranslation(selectedLanguage, 'description', e.target.value)}
+              placeholder={`Description in ${SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name}`}
+              rows={4}
+              disabled={isEnglish}
+              className={isEnglish ? 'bg-gray-50 cursor-not-allowed' : ''}
+              data-testid={`input-description-${selectedLanguage}`}
+            />
+            {isEnglish && (
+              <p className="text-xs text-gray-500 mt-1">
+                English is the original language. Edit the main requirement to change this.
+              </p>
+            )}
+          </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Title
-                    </label>
-                    <Input
-                      value={translation.title}
-                      onChange={(e) => updateTranslation(lang.code, 'title', e.target.value)}
-                      placeholder={`Title in ${lang.name}`}
-                      disabled={isEnglish}
-                      data-testid={`input-title-${lang.code}`}
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Description
-                    </label>
-                    <Textarea
-                      value={translation.description}
-                      onChange={(e) => updateTranslation(lang.code, 'description', e.target.value)}
-                      placeholder={`Description in ${lang.name}`}
-                      rows={3}
-                      disabled={isEnglish}
-                      data-testid={`input-description-${lang.code}`}
-                    />
-                  </div>
-
-                  {!isEnglish && allResources.length > 0 && (
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Language-Specific Resources (optional)
-                      </label>
-                      <p className="text-xs text-gray-500 mb-2">
-                        Select resources that are unique to {lang.name} (e.g., Greek-specific materials)
-                      </p>
-                      <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border rounded-md p-2">
-                        {allResources.map((resource) => {
-                          const isSelected = langResources.includes(resource.id);
-                          return (
-                            <button
-                              key={resource.id}
-                              onClick={() => toggleResourceForLanguage(lang.code, resource.id)}
-                              className={`text-left text-xs p-2 rounded border transition-colors ${
-                                isSelected
-                                  ? 'bg-pcs_blue text-white border-pcs_blue'
-                                  : 'bg-white text-gray-700 border-gray-300 hover:border-pcs_blue'
-                              }`}
-                              data-testid={`button-resource-${lang.code}-${resource.id}`}
-                            >
-                              {resource.title}
-                            </button>
-                          );
-                        })}
-                      </div>
-                      {langResources.length > 0 && (
-                        <p className="text-xs text-gray-600 mt-1">
-                          {langResources.length} resource{langResources.length !== 1 ? 's' : ''} selected for {lang.name}
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </Card>
-            );
-          })}
+          {/* Language-Specific Resources (only for non-English) */}
+          {!isEnglish && allResources.length > 0 && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Language-Specific Resources (optional)
+              </label>
+              <p className="text-xs text-gray-500 mb-3">
+                Select resources that are unique to {SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name} (e.g., Greek-specific materials). 
+                These will be shown IN ADDITION to the general resources.
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto border rounded-md p-3 bg-gray-50">
+                {allResources.map((resource) => {
+                  const isSelected = currentLangResources.includes(resource.id);
+                  return (
+                    <button
+                      key={resource.id}
+                      onClick={() => toggleResourceForLanguage(selectedLanguage, resource.id)}
+                      className={`text-left text-xs p-2 rounded border transition-colors ${
+                        isSelected
+                          ? 'bg-pcs_blue text-white border-pcs_blue'
+                          : 'bg-white text-gray-700 border-gray-300 hover:border-pcs_blue'
+                      }`}
+                      data-testid={`button-resource-${selectedLanguage}-${resource.id}`}
+                    >
+                      {resource.title}
+                    </button>
+                  );
+                })}
+              </div>
+              {currentLangResources.length > 0 && (
+                <p className="text-xs text-gray-600 mt-2 font-medium">
+                  ✓ {currentLangResources.length} resource{currentLangResources.length !== 1 ? 's' : ''} selected for {SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name}
+                </p>
+              )}
+            </div>
+          )}
         </div>
 
         <DialogFooter>
