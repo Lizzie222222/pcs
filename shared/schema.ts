@@ -373,6 +373,8 @@ export const evidenceRequirements = pgTable("evidence_requirements", {
   orderIndex: integer("order_index").notNull(),
   resourceIds: text("resource_ids").array().default(sql`ARRAY[]::text[]`),
   customLinks: jsonb("custom_links").default('[]'),
+  translations: jsonb("translations").default('{}'),
+  languageSpecificResources: jsonb("language_specific_resources").default('{}'),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
