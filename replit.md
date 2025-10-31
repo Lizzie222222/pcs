@@ -28,6 +28,11 @@ The application features a modern web architecture with distinct frontend and ba
 -   **Identity Providers**: Local password and Google OAuth.
 -   **Role-Based Access Control (RBAC)**: Supports roles such as Teacher, Head Teacher, Pending Teacher, and Platform Admin.
 -   **User Management**: Includes hierarchical school team management and a token-based admin invitation system.
+-   **Migrated User Onboarding**: Smart two-step onboarding flow for users migrated from legacy system. Intelligently handles two scenarios:
+    - **Traditional Path**: Users receive temporary password via bulk migration email → complete password reset + profile confirmation
+    - **Forgot Password Path**: Users who use forgot password flow have `needsPasswordReset` flag cleared → skip password step and only confirm profile
+    - System prevents duplicate emails by filtering bulk sends to only users with `isMigrated=true AND needsPasswordReset=true`
+    - Standard welcome emails (without temporary passwords) sent to migrated users who reset via forgot password
 
 ### Key Data Models
 Core entities include Users, Schools, Evidence (with approval and assignment), Audit Logs, Reduction Promises (Action Plans), Resources, Case Studies, Events, Event Banners, Media Assets, Printable Form Submissions, Import Batches, Migration Logs, Notifications, Document Locks, Chat Messages, Health Checks, and Uptime Metrics.
