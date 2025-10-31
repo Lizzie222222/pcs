@@ -409,6 +409,136 @@ export async function setupAuth(app: Express) {
     }
   });
 
+  // POST /api/auth/forgot-password - Request password reset
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      if (!email || typeof email !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: "Email address is required"
+        });
+      }
+
+      // Check if user exists
+      const user = await storage.findUserByEmail(email.toLowerCase().trim());
+      
+      // For security, always return success even if user doesn't exist
+      // This prevents attackers from enumerating valid email addresses
+      if (!user) {
+        console.log(`Password reset requested for non-existent email: ${email}`);
+        return res.json({
+          success: true,
+          message: "If an account exists with this email, you will receive password reset instructions."
+        });
+      }
+
+      // Generate secure random token using crypto
+      const crypto = await import('crypto');
+      const token = crypto.randomBytes(32).toString('hex');
+      
+      // Token expires in 1 hour
+      const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+
+      // Save token to database
+      await storage.createPasswordResetToken(email.toLowerCase().trim(), token, expiresAt);
+
+      // Send password reset email
+      const { sendPasswordResetEmail } = await import('./emailService');
+      const emailSent = await sendPasswordResetEmail(
+        email.toLowerCase().trim(),
+        token,
+        user.firstName || undefined,
+        user.preferredLanguage || undefined
+      );
+
+      if (!emailSent) {
+        console.error('Failed to send password reset email');
+        return res.status(500).json({
+          success: false,
+          message: "Failed to send password reset email. Please try again later."
+        });
+      }
+
+      console.log(`Password reset email sent to: ${email}`);
+
+      res.json({
+        success: true,
+        message: "If an account exists with this email, you will receive password reset instructions."
+      });
+    } catch (error) {
+      console.error('Forgot password error:', error);
+      res.status(500).json({
+        success: false,
+        message: "An error occurred. Please try again later."
+      });
+    }
+  });
+
+  // POST /api/auth/reset-password - Reset password with token
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { token, newPassword } = req.body;
+
+      if (!token || typeof token !== 'string') {
+        return res.status(400).json({
+          success: false,
+          message: "Reset token is required"
+        });
+      }
+
+      if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
+        return res.status(400).json({
+          success: false,
+          message: "Password must be at least 8 characters long"
+        });
+      }
+
+      // Find and validate token
+      const resetToken = await storage.findValidPasswordResetToken(token);
+      
+      if (!resetToken) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid or expired reset link. Please request a new password reset."
+        });
+      }
+
+      // Find user by email from token
+      const user = await storage.findUserByEmail(resetToken.email);
+      
+      if (!user) {
+        // Delete invalid token
+        await storage.deletePasswordResetToken(token);
+        return res.status(404).json({
+          success: false,
+          message: "User account not found."
+        });
+      }
+
+      // Hash new password and update user
+      const passwordHash = await storage.hashPassword(newPassword);
+      await storage.updateUserPassword(user.id, passwordHash);
+
+      // Delete the used token
+      await storage.deletePasswordResetToken(token);
+
+      console.log(`Password successfully reset for user: ${user.email}`);
+
+      res.json({
+        success: true,
+        message: "Password reset successful. You can now log in with your new password."
+      });
+    } catch (error) {
+      console.error('Reset password error:', error);
+      res.status(500).json({
+        success: false,
+        message: "An error occurred. Please try again later."
+      });
+    }
+  });
+
 
   // TEST-ONLY: Authentication bypass for Playwright E2E tests
   // This endpoint allows tests to authenticate without external providers
