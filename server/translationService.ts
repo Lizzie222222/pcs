@@ -126,3 +126,54 @@ Return ONLY the translated JSON object with the same structure (title and descri
     return content;
   }
 }
+
+export interface EvidenceRequirementContent {
+  title: string;
+  description: string;
+}
+
+export async function translateEvidenceRequirement(
+  content: EvidenceRequirementContent,
+  targetLanguage: string
+): Promise<EvidenceRequirementContent> {
+  try {
+    const languageName = LANGUAGE_MAP[targetLanguage] || targetLanguage;
+    
+    const prompt = `You are a professional translator specializing in educational content. Translate the following evidence requirement content to ${languageName}. 
+This is educational content for a school environmental program about plastic reduction.
+Preserve all HTML tags exactly as they are. Only translate the text content, not the HTML structure.
+Return the translation in the same JSON format.
+
+Content to translate:
+${JSON.stringify(content, null, 2)}
+
+Return ONLY the translated JSON object with the same structure (title and description fields).`;
+
+    const response = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are a professional translator specializing in educational and environmental content. Always return valid JSON with the exact same structure as the input.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature: 0.3,
+      response_format: { type: 'json_object' }
+    });
+
+    const translatedContent = JSON.parse(response.choices[0].message.content || '{}');
+    
+    return {
+      title: translatedContent.title || content.title,
+      description: translatedContent.description || content.description,
+    };
+  } catch (error) {
+    console.error('Evidence requirement translation error:', error);
+    // Return original content if translation fails
+    return content;
+  }
+}
