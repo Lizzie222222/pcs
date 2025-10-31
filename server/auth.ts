@@ -30,6 +30,8 @@ declare global {
       isAdmin: boolean | null;
       preferredLanguage: string | null;
       hasSeenOnboarding: boolean | null;
+      isMigrated: boolean | null;
+      needsPasswordReset: boolean | null;
       createdAt: Date | null;
       updatedAt: Date | null;
     }
@@ -405,6 +407,8 @@ export async function setupAuth(app: Express) {
         preferredLanguage: req.user.preferredLanguage,
         hasSeenOnboarding: req.user.hasSeenOnboarding,
         hasPassword: !!req.user.passwordHash, // True if user has password authentication enabled
+        isMigrated: req.user.isMigrated,
+        needsPasswordReset: req.user.needsPasswordReset,
       }
     });
   });
@@ -556,6 +560,35 @@ export async function setupAuth(app: Express) {
       // Hash new password and update user
       const passwordHash = await storage.hashPassword(newPassword);
       await storage.updateUserPassword(user.id, passwordHash);
+
+      // If this is a migrated user, also clear the needsPasswordReset flag
+      if (user.isMigrated && user.needsPasswordReset) {
+        const { db } = await import('./db');
+        const { users } = await import('@shared/schema');
+        const { eq } = await import('drizzle-orm');
+        
+        await db
+          .update(users)
+          .set({ 
+            needsPasswordReset: false,
+            updatedAt: new Date()
+          })
+          .where(eq(users.id, user.id));
+        
+        console.log(`[Migrated User] Password reset via forgot password flow, cleared needsPasswordReset flag for user: ${user.email}`);
+        
+        // Send standard welcome email (without temp password) for migrated users
+        const { sendMigratedUserStandardWelcomeEmail } = await import('./emailService');
+        const userSchools = await storage.getUserSchools(user.id);
+        const schoolName = userSchools.length > 0 ? userSchools[0].name : 'your school';
+        
+        await sendMigratedUserStandardWelcomeEmail(
+          user.email!,
+          schoolName,
+          user.firstName || undefined,
+          user.preferredLanguage || undefined
+        );
+      }
 
       // Delete the used token
       await storage.deletePasswordResetToken(token);

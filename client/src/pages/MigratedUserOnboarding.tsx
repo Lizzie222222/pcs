@@ -25,14 +25,21 @@ export default function MigratedUserOnboarding() {
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
   
-  // State management
-  const [currentStep, setCurrentStep] = useState<1 | 2>(1);
-  const [passwordResetComplete, setPasswordResetComplete] = useState(false);
+  // State management - skip password step if already reset via forgot password
+  const needsPasswordReset = user?.needsPasswordReset ?? true;
+  const [currentStep, setCurrentStep] = useState<1 | 2>(needsPasswordReset ? 1 : 2);
+  const [passwordResetComplete, setPasswordResetComplete] = useState(!needsPasswordReset);
 
   useEffect(() => {
     if (user) {
       setFirstName(user.firstName || "");
       setLastName(user.lastName || "");
+      
+      // If user already reset password via forgot password flow, skip to step 2
+      if (!user.needsPasswordReset && currentStep === 1) {
+        setCurrentStep(2);
+        setPasswordResetComplete(true);
+      }
     }
   }, [user]);
 
@@ -140,7 +147,11 @@ export default function MigratedUserOnboarding() {
     updateProfileMutation.mutate({ firstName: firstName.trim(), lastName: lastName.trim() });
   };
 
-  const progress = currentStep === 1 ? 50 : 100;
+  // Calculate progress based on whether password reset is needed
+  const totalSteps = needsPasswordReset ? 2 : 1;
+  const progress = needsPasswordReset 
+    ? (currentStep === 1 ? 50 : 100)
+    : 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
@@ -148,11 +159,15 @@ export default function MigratedUserOnboarding() {
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back!</h1>
           <p className="text-gray-600">
-            We've migrated your account to our new system. Let's complete your setup.
+            {needsPasswordReset 
+              ? "We've migrated your account to our new system. Let's complete your setup."
+              : "We've migrated your account to our new system. Just confirm your details to get started!"}
           </p>
           <div className="mt-6">
             <Progress value={progress} className="h-2" />
-            <p className="text-sm text-gray-500 mt-2">Step {currentStep} of 2</p>
+            <p className="text-sm text-gray-500 mt-2">
+              {needsPasswordReset ? `Step ${currentStep} of ${totalSteps}` : "Almost done!"}
+            </p>
           </div>
         </div>
 
@@ -268,7 +283,7 @@ export default function MigratedUserOnboarding() {
               </div>
             </CardHeader>
             <CardContent>
-              {passwordResetComplete && (
+              {passwordResetComplete && needsPasswordReset && (
                 <Alert className="mb-6 bg-green-50 border-green-200">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
                   <AlertTitle>Password Updated!</AlertTitle>
@@ -278,30 +293,53 @@ export default function MigratedUserOnboarding() {
                 </Alert>
               )}
 
+              {!needsPasswordReset && (
+                <Alert className="mb-6 bg-blue-50 border-blue-200">
+                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
+                  <AlertTitle>Password Already Set!</AlertTitle>
+                  <AlertDescription className="text-sm text-gray-700">
+                    You've already set your password. Just confirm your details below to complete your profile setup.
+                  </AlertDescription>
+                </Alert>
+              )}
+
               <form onSubmit={handleProfileSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="firstName">First Name *</Label>
+                  <Label htmlFor="firstName">
+                    First Name * 
+                    {!firstName && <span className="text-xs text-red-600 ml-1">(Required - please add)</span>}
+                  </Label>
                   <Input
                     id="firstName"
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder="Enter your first name"
+                    placeholder={firstName ? "Update your first name" : "Enter your first name"}
                     required
                     data-testid="input-first-name"
+                    className={!firstName ? "border-red-300 focus:border-red-500" : ""}
                   />
+                  {firstName && (
+                    <p className="text-xs text-gray-500">Current: {firstName} (update if needed)</p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName">
+                    Last Name
+                    {!lastName && <span className="text-xs text-gray-500 ml-1">(Optional - recommended)</span>}
+                  </Label>
                   <Input
                     id="lastName"
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder="Enter your last name (optional)"
+                    placeholder={lastName ? "Update your last name" : "Enter your last name (optional)"}
                     data-testid="input-last-name"
                   />
+                  {lastName && (
+                    <p className="text-xs text-gray-500">Current: {lastName} (update if needed)</p>
+                  )}
                 </div>
 
                 <Alert className="bg-blue-50 border-blue-200">

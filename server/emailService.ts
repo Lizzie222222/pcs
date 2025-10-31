@@ -469,6 +469,90 @@ export async function sendMigratedUserWelcomeEmail(
   });
 }
 
+export async function sendMigratedUserStandardWelcomeEmail(
+  userEmail: string,
+  schoolName: string,
+  firstName?: string,
+  userLanguage?: string
+): Promise<boolean> {
+  const baseUrl = getBaseUrl();
+  const loginUrl = `${baseUrl}/login`;
+  
+  const englishContent: EmailContent = {
+    subject: `🎉 Welcome to the NEW Plastic Clever Schools!`,
+    title: `Welcome${firstName ? `, ${firstName}` : ''}!`,
+    preTitle: `Your account is ready!`,
+    messageContent: `
+      <div style="text-align: center; margin-bottom: 30px;">
+        <p style="font-size: 20px; color: #0B3D5D; font-weight: 600; margin: 0 0 15px 0;">
+          ✨ You're All Set! ✨
+        </p>
+        <p style="margin: 0;">
+          We're thrilled to confirm that your <strong>${schoolName}</strong> account has been successfully upgraded to the <strong>all-new Plastic Clever Schools platform</strong>! 🌊 Your password has been set and you're ready to go!
+        </p>
+      </div>
+      
+      <!-- What's New -->
+      <div style="background: #f9fafb; padding: 25px; border-radius: 12px; margin: 25px 0; border: 3px solid #02BBB4;">
+        <h2 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 20px; font-weight: 700; text-align: center;">
+          🚀 What's New & Exciting?
+        </h2>
+        <ul style="line-height: 1.8; margin: 0; padding-left: 25px;">
+          <li><strong>Modern, intuitive design</strong> - easier than ever to navigate!</li>
+          <li><strong>Enhanced dashboard</strong> - see your impact at a glance</li>
+          <li><strong>Powerful new tools</strong> - track your plastic-free journey</li>
+          <li><strong>Faster performance</strong> - lightning-quick responses</li>
+          <li><strong>Mobile-friendly</strong> - access anywhere, anytime!</li>
+        </ul>
+      </div>
+      
+      <!-- What We've Brought Over -->
+      <div style="margin: 30px 0;">
+        <h3 style="color: #0B3D5D; margin: 0 0 15px 0; font-size: 18px; font-weight: 700;">
+          📦 Everything You Love, All Here!
+        </h3>
+        <p style="margin: 0 0 10px 0;">We've carefully migrated all your valuable data:</p>
+        <ul style="line-height: 1.8; margin: 5px 0; padding-left: 25px;">
+          <li>✅ Your school information and details</li>
+          <li>✅ Your program progress (Learn, Plan, Act stages)</li>
+          <li>✅ Your team members and school associations</li>
+          <li>✅ All your achievements and milestones</li>
+        </ul>
+      </div>
+      
+      <!-- Next Steps -->
+      <div style="background: #f0f9ff; border-left: 5px solid #3b82f6; padding: 20px; border-radius: 8px; margin: 25px 0;">
+        <h3 style="color: #1e40af; margin: 0 0 10px 0; font-size: 18px; font-weight: 700;">
+          🎯 Next Steps
+        </h3>
+        <p style="margin: 0; color: #1e40af;">
+          Just log in with your email and the password you just set, then complete a quick profile setup to personalize your experience. You'll be exploring your new dashboard in no time!
+        </p>
+      </div>
+      
+      <div style="text-align: center; margin: 30px 0 20px;">
+        <p style="color: #02BBB4; font-size: 16px; font-weight: 600; margin: 0;">
+          We can't wait to see what you'll achieve! 🌟
+        </p>
+      </div>
+      
+      <p style="margin: 0; color: #666; text-align: center;">
+        <strong>Need help getting started?</strong><br>
+        Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
+    to: userEmail,
+    userLanguage,
+    englishContent,
+    callToActionText: '🚀 Access My Dashboard',
+    callToActionUrl: loginUrl,
+    footerText: 'This email was sent because your account was upgraded to our new platform.'
+  });
+}
+
 export async function sendPasswordResetEmail(
   userEmail: string,
   resetToken: string,

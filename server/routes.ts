@@ -7154,6 +7154,8 @@ Return JSON with:
   app.post('/api/admin/send-migrated-user-emails', isAuthenticated, requireAdmin, async (req, res) => {
     try {
       const allUsers = await storage.getAllUsers();
+      // IMPORTANT: Filter ensures we only email users who still need password reset
+      // Users who reset via forgot password flow will have needsPasswordReset=false and won't receive duplicate emails
       const migratedUsers = allUsers.filter(user => user.isMigrated && user.needsPasswordReset);
 
       if (migratedUsers.length === 0) {
