@@ -32,6 +32,7 @@ import {
   Link as LinkIcon,
   X,
   Languages,
+  Loader2,
 } from "lucide-react";
 import { Tabs } from "@/components/ui/tabs";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
@@ -168,16 +169,109 @@ export default function EvidenceRequirementsSection({
     },
   });
 
+  // Bulk translate all requirements with throttling
+  const [isBulkTranslating, setIsBulkTranslating] = useState(false);
+  const [translationProgress, setTranslationProgress] = useState({ current: 0, total: 0 });
+  
+  const bulkTranslateAllMutation = useMutation({
+    mutationFn: async () => {
+      const BATCH_SIZE = 3; // Process 3 requirements at a time
+      const requirements = evidenceRequirements;
+      const total = requirements.length;
+      let completed = 0;
+      
+      setTranslationProgress({ current: 0, total });
+      
+      // Process in batches to avoid overwhelming the backend
+      for (let i = 0; i < requirements.length; i += BATCH_SIZE) {
+        const batch = requirements.slice(i, i + BATCH_SIZE);
+        
+        // Process batch in parallel
+        await Promise.all(
+          batch.map(req => 
+            apiRequest('POST', `/api/evidence-requirements/${req.id}/translate`, {})
+          )
+        );
+        
+        completed += batch.length;
+        setTranslationProgress({ current: completed, total });
+        
+        // Small delay between batches to avoid rate limits
+        if (i + BATCH_SIZE < requirements.length) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+      
+      return { completed: total };
+    },
+    onSuccess: (data) => {
+      toast({
+        title: t('toasts.success'),
+        description: `Successfully translated all ${data?.completed || evidenceRequirements.length} requirements into 14 languages!`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
+      setTranslationProgress({ current: 0, total: 0 });
+    },
+    onError: (error: any) => {
+      toast({
+        title: t('toasts.error'),
+        description: error.message || 'Failed to translate all requirements',
+        variant: "destructive",
+      });
+      setTranslationProgress({ current: 0, total: 0 });
+    },
+  });
+
+  const handleBulkTranslate = async () => {
+    if (evidenceRequirements.length === 0) {
+      toast({
+        title: 'No Requirements',
+        description: 'There are no requirements to translate yet.',
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsBulkTranslating(true);
+    try {
+      await bulkTranslateAllMutation.mutateAsync();
+    } finally {
+      setIsBulkTranslating(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <Card className="mb-6">
         <CardHeader>
-          <CardTitle className="text-3xl font-bold text-navy" data-testid="text-page-title">
-            {t('evidenceRequirements.title')}
-          </CardTitle>
-          <p className="text-gray-600 mt-2" data-testid="text-page-description">
-            {t('evidenceRequirements.subtitle')}
-          </p>
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <CardTitle className="text-3xl font-bold text-navy" data-testid="text-page-title">
+                {t('evidenceRequirements.title')}
+              </CardTitle>
+              <p className="text-gray-600 mt-2" data-testid="text-page-description">
+                {t('evidenceRequirements.subtitle')}
+              </p>
+            </div>
+            <Button
+              onClick={handleBulkTranslate}
+              disabled={isBulkTranslating || evidenceRequirements.length === 0}
+              className="bg-purple-600 hover:bg-purple-700 ml-4"
+              data-testid="button-translate-all"
+            >
+              {isBulkTranslating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Translating ({translationProgress.current}/{translationProgress.total})
+                </>
+              ) : (
+                <>
+                  <Languages className="h-4 w-4 mr-2" />
+                  Translate All Requirements
+                </>
+              )}
+            </Button>
+          </div>
         </CardHeader>
       </Card>
 
