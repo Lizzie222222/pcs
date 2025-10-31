@@ -697,7 +697,7 @@ function EvidenceTab({ schoolId, evidence, isLoading }: {
                             {ev.visibility === 'public' ? (
                               <><Eye className="h-3 w-3" /> Public</>
                             ) : (
-                              <><EyeOff className="h-3 w-3" /> Registered</>
+                              <><EyeOff className="h-3 w-3" /> Private</>
                             )}
                           </Badge>
                         </div>
