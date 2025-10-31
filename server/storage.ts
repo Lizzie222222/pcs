@@ -3142,7 +3142,6 @@ export class DatabaseStorage implements IStorage {
     // Check Inspire completion (3 approved evidence)
     if (counts.inspire.approved >= 3 && !school.inspireCompleted) {
       updates.inspireCompleted = true;
-      updates.currentStage = 'investigate';
       hasChanges = true;
     }
 
@@ -3150,7 +3149,6 @@ export class DatabaseStorage implements IStorage {
     const investigateItemCount = counts.investigate.approved + (counts.investigate.hasQuiz ? 1 : 0) + (counts.investigate.hasActionPlan ? 1 : 0);
     if (investigateItemCount >= 2 && !school.investigateCompleted) {
       updates.investigateCompleted = true;
-      updates.currentStage = 'act';
       updates.auditQuizCompleted = true;
       hasChanges = true;
     }
@@ -3164,6 +3162,30 @@ export class DatabaseStorage implements IStorage {
       // Round completed! Set up for next round
       const roundsCompleted = (school.roundsCompleted || 0) + 1;
       updates.roundsCompleted = roundsCompleted;
+    }
+
+    // Always recalculate currentStage based on completion status to enforce linear progression
+    // This ensures users progress through stages linearly regardless of where they submit evidence
+    const finalInspireCompleted = updates.inspireCompleted ?? school.inspireCompleted;
+    const finalInvestigateCompleted = updates.investigateCompleted ?? school.investigateCompleted;
+    
+    let correctStage: 'inspire' | 'investigate' | 'act';
+    
+    if (!finalInspireCompleted) {
+      // If INSPIRE not completed, stay in INSPIRE regardless of other evidence
+      correctStage = 'inspire';
+    } else if (!finalInvestigateCompleted) {
+      // If INSPIRE complete but INVESTIGATE not complete, must be in INVESTIGATE
+      correctStage = 'investigate';
+    } else {
+      // Both INSPIRE and INVESTIGATE complete, move to ACT
+      correctStage = 'act';
+    }
+    
+    // Update currentStage if it's different from the correct linear stage
+    if (school.currentStage !== correctStage) {
+      updates.currentStage = correctStage;
+      hasChanges = true;
     }
 
     // Calculate granular progress percentage based on approved requirements

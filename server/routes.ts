@@ -2641,6 +2641,11 @@ Return JSON with:
 
       const evidence = await storage.createEvidence(evidenceData);
 
+      // If admin uploaded and auto-approved, check and update school progression
+      if (user?.isAdmin) {
+        await storage.checkAndUpdateSchoolProgression(evidenceData.schoolId);
+      }
+
       // Skip email notifications for admin uploads
       if (!user?.isAdmin) {
         // Send email notifications (non-blocking) for non-admin submissions
