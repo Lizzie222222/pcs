@@ -38,6 +38,7 @@ import {
   documentLocks,
   healthChecks,
   uptimeMetrics,
+  passwordResetTokens,
   type User,
   type UpsertUser,
   type School,
@@ -117,6 +118,8 @@ import {
   type InsertHealthCheck,
   type UptimeMetric,
   type InsertUptimeMetric,
+  type PasswordResetToken,
+  type InsertPasswordResetToken,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne, gte } from "drizzle-orm";
@@ -163,6 +166,11 @@ export interface IStorage {
   verifyEmail(userId: string): Promise<User | undefined>;
   verifyPassword(password: string, passwordHash: string): Promise<boolean>;
   hashPassword(password: string): Promise<string>;
+  
+  // Password reset methods
+  createPasswordResetToken(email: string, token: string, expiresAt: Date): Promise<PasswordResetToken>;
+  findValidPasswordResetToken(token: string): Promise<PasswordResetToken | undefined>;
+  deletePasswordResetToken(token: string): Promise<void>;
   
   // User management (admin operations)
   updateUser(id: string, updates: Partial<User>): Promise<User | undefined>;
@@ -848,6 +856,36 @@ export class DatabaseStorage implements IStorage {
       console.error('Error hashing password:', error);
       throw new Error('Password hashing failed');
     }
+  }
+
+  async createPasswordResetToken(email: string, token: string, expiresAt: Date): Promise<PasswordResetToken> {
+    const [resetToken] = await db
+      .insert(passwordResetTokens)
+      .values({
+        email,
+        token,
+        expiresAt,
+      })
+      .returning();
+    return resetToken;
+  }
+
+  async findValidPasswordResetToken(token: string): Promise<PasswordResetToken | undefined> {
+    const [resetToken] = await db
+      .select()
+      .from(passwordResetTokens)
+      .where(and(
+        eq(passwordResetTokens.token, token),
+        gte(passwordResetTokens.expiresAt, new Date())
+      ))
+      .limit(1);
+    return resetToken;
+  }
+
+  async deletePasswordResetToken(token: string): Promise<void> {
+    await db
+      .delete(passwordResetTokens)
+      .where(eq(passwordResetTokens.token, token));
   }
 
   async updateUser(id: string, updates: Partial<User>): Promise<User | undefined> {
