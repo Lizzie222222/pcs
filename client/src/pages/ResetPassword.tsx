@@ -70,10 +70,11 @@ export default function ResetPassword() {
 
     setIsSubmitting(true);
     try {
-      const response: any = await apiRequest("POST", "/api/auth/reset-password", {
+      const res = await apiRequest("POST", "/api/auth/reset-password", {
         token,
         newPassword: data.newPassword,
       });
+      const response = await res.json();
 
       if (response.success) {
         setResetSuccess(true);

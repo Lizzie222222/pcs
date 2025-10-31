@@ -35,7 +35,8 @@ export default function ForgotPassword() {
   const handleSubmit = async (data: ForgotPasswordForm) => {
     setIsSubmitting(true);
     try {
-      const response: any = await apiRequest("POST", "/api/auth/forgot-password", data);
+      const res = await apiRequest("POST", "/api/auth/forgot-password", data);
+      const response = await res.json();
 
       if (response.success) {
         setSubmittedEmail(data.email);
