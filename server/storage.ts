@@ -368,6 +368,11 @@ export interface IStorage {
     schoolCountry: string;
     schoolLanguage: string | null;
   }>>;
+  getEvidenceByFileUrl(fileUrl: string): Promise<(EvidenceWithSchool & { 
+    schoolName: string;
+    schoolCountry: string;
+    schoolLanguage: string | null;
+  }) | undefined>;
   
   // Evidence Requirements operations
   getEvidenceRequirements(stage?: string): Promise<EvidenceRequirement[]>;
@@ -2837,6 +2842,66 @@ export class DatabaseStorage implements IStorage {
     }
     
     return await query as any;
+  }
+
+  async getEvidenceByFileUrl(fileUrl: string): Promise<(EvidenceWithSchool & { 
+    schoolName: string;
+    schoolCountry: string;
+    schoolLanguage: string | null;
+  }) | undefined> {
+    // Extract file ID from various URL formats
+    const fileId = fileUrl.split('/').pop() || '';
+    
+    // Query evidence where the files JSON contains this file ID
+    const results = await db
+      .select({
+        id: evidence.id,
+        schoolId: evidence.schoolId,
+        submittedBy: evidence.submittedBy,
+        evidenceRequirementId: evidence.evidenceRequirementId,
+        title: evidence.title,
+        description: evidence.description,
+        stage: evidence.stage,
+        status: evidence.status,
+        visibility: evidence.visibility,
+        files: evidence.files,
+        videoLinks: evidence.videoLinks,
+        reviewedBy: evidence.reviewedBy,
+        reviewedAt: evidence.reviewedAt,
+        reviewNotes: evidence.reviewNotes,
+        isFeatured: evidence.isFeatured,
+        isAuditQuiz: evidence.isAuditQuiz,
+        roundNumber: evidence.roundNumber,
+        hasChildren: evidence.hasChildren,
+        parentalConsentFiles: evidence.parentalConsentFiles,
+        submittedAt: evidence.submittedAt,
+        updatedAt: evidence.updatedAt,
+        school: {
+          id: schools.id,
+          name: schools.name,
+          country: schools.country,
+        },
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        schoolLanguage: schools.primaryLanguage,
+      })
+      .from(evidence)
+      .leftJoin(schools, eq(evidence.schoolId, schools.id))
+      .where(eq(evidence.status, 'approved'));
+    
+    // Filter in JavaScript to check the files JSON array
+    const matchingEvidence = results.find((ev: any) => {
+      const files = Array.isArray(ev.files) ? ev.files : [];
+      return files.some((file: any) => 
+        file.url && (
+          file.url.includes(fileId) || 
+          file.url === `/objects/uploads/${fileId}` ||
+          file.url === `/api/objects/uploads/${fileId}`
+        )
+      );
+    });
+    
+    return matchingEvidence as any;
   }
 
   async updateEvidenceStatus(

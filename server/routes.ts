@@ -348,6 +348,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user is authenticated
       const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
       
+      // Show public resources to everyone, and private resources only to authenticated users
+      // If authenticated, don't filter by visibility (show all resources)
+      // If not authenticated, only show public resources
       const resources = await storage.getResources({
         stage: stage as string,
         country: country as string,
@@ -356,7 +359,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         resourceType: resourceType as string,
         theme: theme as string,
         search: search as string,
-        visibility: 'public', // Resources page should only show public resources
+        visibility: isAuthenticated ? undefined : 'public',
         limit: limit ? parseInt(limit as string) : 20,
         offset: offset ? parseInt(offset as string) : 0,
       });
@@ -3475,49 +3478,48 @@ Return JSON with:
       
       // Check access permissions
       if (aclPolicy?.visibility !== 'public') {
-        // If no ACL policy is set OR ACL is private/registered (legacy), check if this is a public evidence file (fallback for legacy/inconsistent data)
+        // For private/registered objects, check evidence-based access control
         if (!aclPolicy || aclPolicy?.visibility === 'private' || aclPolicy?.visibility === 'registered') {
           const pathParts = normalizedPath.split('/');
           const fileId = pathParts[pathParts.length - 1];
           
-          // Check if this file is in an approved public evidence record
           try {
-            // Check both public and private evidence
-            const publicEvidence = await storage.getApprovedEvidenceForInspiration({
-              visibility: 'public',
-              limit: 1000,
-            });
-            const privateEvidence = await storage.getApprovedEvidenceForInspiration({
-              visibility: 'private',
-              limit: 1000,
-            });
-            const allEvidence = [...publicEvidence, ...privateEvidence];
+            // Look up the evidence record for this file
+            const evidenceRecord = await storage.getEvidenceByFileUrl(fileId);
             
-            console.log(`[ACL Fallback] Checking file ${fileId} against ${allEvidence.length} evidence records`);
-            
-            const isPublicEvidence = allEvidence.some((ev: any) => {
-              const files = Array.isArray(ev.files) ? ev.files : [];
-              const matchingFile = files.find((file: any) => 
-                file.url && (
-                  file.url.includes(fileId) || 
-                  file.url === `/objects/uploads/${fileId}` ||
-                  file.url === `/api/objects/uploads/${fileId}`
-                )
-              );
-              
-              if (matchingFile) {
-                console.log(`[ACL Fallback] Found matching file in evidence ${ev.id}, visibility: ${ev.visibility}, file url: ${matchingFile.url}`);
+            if (evidenceRecord && evidenceRecord.visibility === 'public') {
+              // Public evidence is accessible to everyone
+            } else if (evidenceRecord && evidenceRecord.visibility === 'private') {
+              // Private evidence requires authentication
+              if (!req.isAuthenticated() || !req.user) {
+                return res.sendStatus(401);
               }
               
-              return matchingFile && ev.visibility === 'public';
-            });
-            
-            console.log(`[ACL Fallback] Result for ${fileId}: ${isPublicEvidence ? 'ALLOWED' : 'DENIED'}`);
-            
-            if (isPublicEvidence) {
-              // Allow access to approved public evidence without ACL
+              const userId = req.user.id;
+              const isAdmin = req.user.isAdmin || false;
+              
+              // Admins can access all private evidence
+              if (isAdmin) {
+                // Admin access granted
+              } else {
+                // For non-admins, check if user is a member of the school that submitted this evidence
+                const schoolUser = await storage.getSchoolUser(evidenceRecord.schoolId, userId);
+                if (!schoolUser) {
+                  // User is not a member of this school, check standard ACL as fallback
+                  const canAccess = await objectStorageService.canAccessObjectEntity({
+                    objectFile,
+                    userId: userId,
+                    requestedPermission: ObjectPermission.READ,
+                    isAdmin: false,
+                  });
+                  
+                  if (!canAccess) {
+                    return res.sendStatus(403);
+                  }
+                }
+              }
             } else {
-              // Not public evidence, require authentication
+              // File not found in evidence records, use standard ACL check
               if (!req.isAuthenticated() || !req.user) {
                 return res.sendStatus(401);
               }
