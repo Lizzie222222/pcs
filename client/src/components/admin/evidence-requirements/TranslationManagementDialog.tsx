@@ -7,7 +7,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Languages, Loader2, Save, RefreshCw } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
+import { PDFThumbnail } from "@/components/PDFThumbnail";
+import { Languages, Loader2, Save, RefreshCw, Check, Plus, X, ImageIcon, FileVideo, BookOpen, Link as LinkIcon } from "lucide-react";
 import type { EvidenceRequirement } from "@/components/admin/shared/types";
 
 interface TranslationManagementDialogProps {
@@ -46,13 +48,17 @@ export default function TranslationManagementDialog({
   const [selectedLanguage, setSelectedLanguage] = useState('en');
   const [translations, setTranslations] = useState<Record<string, { title: string; description: string }>>({});
   const [languageSpecificResources, setLanguageSpecificResources] = useState<Record<string, string[]>>({});
+  const [languageSpecificLinks, setLanguageSpecificLinks] = useState<Record<string, Array<{ title: string; url: string }>>>({});
   const [isGenerating, setIsGenerating] = useState(false);
+  const [newLinkTitle, setNewLinkTitle] = useState('');
+  const [newLinkUrl, setNewLinkUrl] = useState('');
 
   // Initialize translations when requirement changes
   useEffect(() => {
     if (requirement) {
       const existingTranslations = (requirement as any).translations || {};
       const existingLangResources = (requirement as any).languageSpecificResources || {};
+      const existingLangLinks = (requirement as any).languageSpecificLinks || {};
       
       const initialTranslations: Record<string, { title: string; description: string }> = {
         en: {
@@ -64,7 +70,10 @@ export default function TranslationManagementDialog({
       
       setTranslations(initialTranslations);
       setLanguageSpecificResources(existingLangResources);
+      setLanguageSpecificLinks(existingLangLinks);
       setSelectedLanguage('en');
+      setNewLinkTitle('');
+      setNewLinkUrl('');
     }
   }, [requirement]);
 
@@ -102,12 +111,13 @@ export default function TranslationManagementDialog({
       return await apiRequest('PATCH', `/api/evidence-requirements/${requirement.id}`, {
         translations,
         languageSpecificResources,
+        languageSpecificLinks,
       });
     },
     onSuccess: () => {
       toast({
         title: "Translations Saved",
-        description: "All translations and language-specific resources have been saved successfully.",
+        description: "All translations, language-specific resources, and custom links have been saved successfully.",
       });
       queryClient.invalidateQueries({ queryKey: ['/api/evidence-requirements'] });
       onClose();
@@ -140,6 +150,13 @@ export default function TranslationManagementDialog({
     }));
   };
 
+  if (!requirement) return null;
+
+  const currentTranslation = translations[selectedLanguage] || { title: '', description: '' };
+  const currentLangResources = languageSpecificResources[selectedLanguage] || [];
+  const currentLangLinks = languageSpecificLinks[selectedLanguage] || [];
+  const isEnglish = selectedLanguage === 'en';
+
   const toggleResourceForLanguage = (langCode: string, resourceId: string) => {
     setLanguageSpecificResources(prev => {
       const currentResources = prev[langCode] || [];
@@ -154,11 +171,49 @@ export default function TranslationManagementDialog({
     });
   };
 
-  if (!requirement) return null;
+  const addCustomLink = () => {
+    if (newLinkTitle.trim() && newLinkUrl.trim()) {
+      setLanguageSpecificLinks(prev => ({
+        ...prev,
+        [selectedLanguage]: [...(prev[selectedLanguage] || []), { title: newLinkTitle, url: newLinkUrl }],
+      }));
+      setNewLinkTitle('');
+      setNewLinkUrl('');
+    }
+  };
 
-  const currentTranslation = translations[selectedLanguage] || { title: '', description: '' };
-  const currentLangResources = languageSpecificResources[selectedLanguage] || [];
-  const isEnglish = selectedLanguage === 'en';
+  const removeCustomLink = (index: number) => {
+    setLanguageSpecificLinks(prev => ({
+      ...prev,
+      [selectedLanguage]: (prev[selectedLanguage] || []).filter((_, i) => i !== index),
+    }));
+  };
+
+  const getProxyUrl = (url: string | null) => {
+    if (!url) return '';
+    try {
+      const urlObj = new URL(url);
+      const pathname = decodeURIComponent(urlObj.pathname);
+      
+      const privateUploadsMatch = pathname.match(/\/.private\/uploads\/(.+)$/);
+      if (privateUploadsMatch) {
+        return `/objects/uploads/${privateUploadsMatch[1]}`;
+      }
+      
+      const publicMatch = pathname.match(/\/public\/(.+)$/);
+      if (publicMatch) {
+        return `/objects/public/${publicMatch[1]}`;
+      }
+      
+      if (url.startsWith('/objects/')) {
+        return url;
+      }
+      
+      return url;
+    } catch {
+      return url;
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -260,38 +315,167 @@ export default function TranslationManagementDialog({
 
           {/* Language-Specific Resources (only for non-English) */}
           {!isEnglish && allResources.length > 0 && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Language-Specific Resources (optional)
-              </label>
-              <p className="text-xs text-gray-500 mb-3">
-                Select resources that are unique to {SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name} (e.g., Greek-specific materials). 
-                These will be shown IN ADDITION to the general resources.
-              </p>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-2 max-h-60 overflow-y-auto border rounded-md p-3 bg-gray-50">
+            <div className="space-y-3">
+              <div>
+                <h3 className="text-sm font-medium text-gray-700">Language-Specific Resources (optional)</h3>
+                <p className="text-xs text-gray-500 mt-1">
+                  Select resources that are unique to {SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name} (e.g., Greek-specific materials). 
+                  These will be shown IN ADDITION to the general resources.
+                </p>
+              </div>
+              
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-96 overflow-y-auto p-1">
                 {allResources.map((resource) => {
                   const isSelected = currentLangResources.includes(resource.id);
+                  
+                  const urlWithoutQuery = resource.fileUrl?.split('?')[0] || '';
+                  const urlExtension = urlWithoutQuery.split('.').pop()?.toLowerCase() || '';
+                  
+                  const isImage = resource.fileType?.includes('image') || 
+                                 ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg', 'bmp', 'ico'].includes(urlExtension);
+                  const isPdf = resource.fileType?.includes('pdf') || urlExtension === 'pdf';
+                  const isVideo = resource.fileType?.includes('video') || 
+                                 ['mp4', 'webm', 'ogg', 'mov', 'avi', 'wmv'].includes(urlExtension);
+                  
+                  const imageProxyUrl = isImage ? getProxyUrl(resource.fileUrl) : '';
+                  const pdfProxyUrl = isPdf ? getProxyUrl(resource.fileUrl) : '';
+                  
                   return (
-                    <button
+                    <Card
                       key={resource.id}
-                      onClick={() => toggleResourceForLanguage(selectedLanguage, resource.id)}
-                      className={`text-left text-xs p-2 rounded border transition-colors ${
-                        isSelected
-                          ? 'bg-pcs_blue text-white border-pcs_blue'
-                          : 'bg-white text-gray-700 border-gray-300 hover:border-pcs_blue'
+                      className={`cursor-pointer transition-all hover:shadow-md overflow-hidden ${
+                        isSelected ? 'border-2 border-pcs_blue bg-blue-50' : 'border hover:border-gray-400'
                       }`}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        toggleResourceForLanguage(selectedLanguage, resource.id);
+                      }}
                       data-testid={`button-resource-${selectedLanguage}-${resource.id}`}
                     >
-                      {resource.title}
-                    </button>
+                      <CardContent className="p-3">
+                        <div className="flex flex-col items-center text-center space-y-2">
+                          <div className="relative w-full">
+                            {isImage && imageProxyUrl ? (
+                              <div className="aspect-video w-full bg-gray-100 rounded-md overflow-hidden flex items-center justify-center">
+                                <img 
+                                  src={imageProxyUrl} 
+                                  alt={resource.title}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                  }}
+                                />
+                                <ImageIcon className="h-10 w-10 text-gray-400 hidden" />
+                              </div>
+                            ) : isPdf && pdfProxyUrl ? (
+                              <div className="aspect-video w-full bg-gray-100 rounded-md overflow-hidden">
+                                <PDFThumbnail
+                                  url={pdfProxyUrl}
+                                  className="w-full h-full"
+                                />
+                              </div>
+                            ) : (
+                              <div className="aspect-video w-full bg-gray-100 rounded-md flex items-center justify-center">
+                                {isVideo ? (
+                                  <FileVideo className="h-10 w-10 text-gray-600" />
+                                ) : (
+                                  <BookOpen className="h-10 w-10 text-gray-600" />
+                                )}
+                              </div>
+                            )}
+                            {isSelected && (
+                              <div className="absolute top-1 right-1 bg-pcs_blue rounded-full p-1 shadow-md">
+                                <Check className="h-3 w-3 text-white" />
+                              </div>
+                            )}
+                          </div>
+                          <div className="w-full">
+                            <p className="text-xs font-medium text-gray-900 line-clamp-2">
+                              {resource.title}
+                            </p>
+                            <Badge variant="outline" className="mt-1 text-xs">
+                              {resource.stage}
+                            </Badge>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   );
                 })}
               </div>
+              
               {currentLangResources.length > 0 && (
-                <p className="text-xs text-gray-600 mt-2 font-medium">
+                <p className="text-xs text-gray-600 font-medium">
                   ✓ {currentLangResources.length} resource{currentLangResources.length !== 1 ? 's' : ''} selected for {SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name}
                 </p>
               )}
+            </div>
+          )}
+
+          {/* Custom Links Section (only for non-English) */}
+          {!isEnglish && (
+            <div className="space-y-3 border-t pt-4">
+              <div>
+                <h3 className="text-sm font-medium text-gray-700">Custom Links</h3>
+                <p className="text-xs text-gray-600 mt-1">
+                  Add external links specific to {SUPPORTED_LANGUAGES.find(l => l.code === selectedLanguage)?.name} (e.g., YouTube videos, websites)
+                </p>
+              </div>
+              
+              {/* Display existing custom links */}
+              {currentLangLinks.length > 0 && (
+                <div className="space-y-2">
+                  {currentLangLinks.map((link, idx) => (
+                    <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 rounded-md">
+                      <LinkIcon className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{link.title}</p>
+                        <p className="text-xs text-gray-500 truncate">{link.url}</p>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeCustomLink(idx)}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                        data-testid={`button-remove-link-${selectedLanguage}-${idx}`}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Add new link form */}
+              <div className="space-y-2">
+                <Input
+                  placeholder="Link title (e.g., Watch our assembly)"
+                  value={newLinkTitle}
+                  onChange={(e) => setNewLinkTitle(e.target.value)}
+                  data-testid={`input-link-title-${selectedLanguage}`}
+                />
+                <Input
+                  placeholder="URL (e.g., https://youtube.com/...)"
+                  value={newLinkUrl}
+                  onChange={(e) => setNewLinkUrl(e.target.value)}
+                  data-testid={`input-link-url-${selectedLanguage}`}
+                />
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={addCustomLink}
+                  disabled={!newLinkTitle.trim() || !newLinkUrl.trim()}
+                  className="w-full"
+                  data-testid={`button-add-link-${selectedLanguage}`}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Link
+                </Button>
+              </div>
             </div>
           )}
         </div>
