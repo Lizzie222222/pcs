@@ -71,7 +71,8 @@ export const evidenceStatusEnum = pgEnum('evidence_status', [
 
 export const visibilityEnum = pgEnum('visibility', [
   'public',
-  'private'
+  'private',
+  'registered'
 ]);
 
 export const resourceTypeEnum = pgEnum('resource_type', [
@@ -150,6 +151,18 @@ export const users = pgTable("users", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull(),
+  token: varchar("token").notNull().unique(),
+  expiresAt: timestamp("expires_at").notNull(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("idx_password_reset_email").on(table.email),
+  index("idx_password_reset_token").on(table.token),
+  index("idx_password_reset_expires").on(table.expiresAt),
+]);
 
 export const invitationStatusEnum = pgEnum('invitation_status', [
   'pending',
@@ -1972,6 +1985,15 @@ export type HealthCheck = typeof healthChecks.$inferSelect;
 export type InsertHealthCheck = z.infer<typeof insertHealthCheckSchema>;
 export type UptimeMetric = typeof uptimeMetrics.$inferSelect;
 export type InsertUptimeMetric = z.infer<typeof insertUptimeMetricSchema>;
+
+// Password Reset Token schemas
+export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type PasswordResetToken = typeof passwordResetTokens.$inferSelect;
+export type InsertPasswordResetToken = z.infer<typeof insertPasswordResetTokenSchema>;
 
 // Authentication types
 export type LoginForm = z.infer<typeof loginSchema>;
