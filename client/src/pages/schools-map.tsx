@@ -3,8 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { MapPin, School, Award, Globe, Download } from "lucide-react";
+import { MapPin, School, Award, Globe } from "lucide-react";
 import { useCountries } from "@/hooks/useCountries";
 import { MapContainer, TileLayer, GeoJSON } from "react-leaflet";
 import L from "leaflet";
@@ -209,10 +208,6 @@ export default function SchoolsMap() {
                     ))}
                   </SelectContent>
                 </Select>
-                <Button variant="outline" data-testid="button-export-data">
-                  <Download className="h-4 w-4 mr-2" />
-                  Export data
-                </Button>
               </div>
             </div>
           </CardContent>
