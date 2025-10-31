@@ -156,7 +156,9 @@ export function EditEvidenceDialog({
         title: "Evidence updated",
         description: "Evidence has been successfully updated",
       });
+      // Invalidate both evidence list and school data to update progress
       queryClient.invalidateQueries({ queryKey: ["/api/admin/schools", evidence?.schoolId, "evidence"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/schools", evidence?.schoolId] });
       onOpenChange(false);
     },
     onError: (error: Error) => {

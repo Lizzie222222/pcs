@@ -135,7 +135,9 @@ export function UploadEvidenceDialog({
         title: "Evidence uploaded",
         description: "Evidence has been successfully uploaded",
       });
+      // Invalidate both evidence list and school data to update progress
       queryClient.invalidateQueries({ queryKey: ["/api/admin/schools", schoolId, "evidence"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/admin/schools", schoolId] });
       onOpenChange(false);
       resetForm();
     },
