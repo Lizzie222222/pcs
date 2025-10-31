@@ -82,10 +82,15 @@ export default function ResetPassword() {
           navigate("/login");
         }, 3000);
       } else {
+        // Only show error page if it's specifically a token issue
+        const message = response.message || "";
+        if (message.toLowerCase().includes("invalid") || message.toLowerCase().includes("expired")) {
+          setInvalidToken(true);
+        }
         toast({
           variant: "destructive",
           title: "Error",
-          description: response.message || "Failed to reset password. The link may have expired.",
+          description: message || "Failed to reset password. Please try again.",
         });
       }
     } catch (error) {

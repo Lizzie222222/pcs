@@ -805,7 +805,11 @@ export class DatabaseStorage implements IStorage {
 
   // Authentication methods implementation
   async findUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
+    // Case-insensitive email search
+    const [user] = await db
+      .select()
+      .from(users)
+      .where(sql`LOWER(${users.email}) = LOWER(${email})`);
     return user;
   }
 
