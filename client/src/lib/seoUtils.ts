@@ -33,7 +33,7 @@ export const pageSEOData: PageSEOMap = {
     canonicalUrl: 'https://plasticcleverschools.org/inspiration'
   },
   '/schools-map': {
-    title: 'Participating Schools Map - Plastic Clever Schools',
+    title: 'Participating Schools map - Plastic Clever Schools',
     description: 'Explore over 1,500 registered Plastic Clever Schools worldwide. Find participating schools in your area and join the global movement.',
     keywords: 'schools map, registered schools, global movement, participating schools worldwide',
     ogImage: '/assets/Logo_1757848498470.png',

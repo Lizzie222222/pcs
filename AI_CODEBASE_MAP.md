@@ -100,7 +100,7 @@ plastic-clever-schools/
 | Feature | Primary File | Related Files |
 |---------|-------------|---------------|
 | Landing Page | `pages/landing.tsx` | `components/InstagramCarousel.tsx` |
-| Schools Map | `pages/map.tsx` | - |
+| Schools map | `pages/map.tsx` | - |
 | Search | `pages/search.tsx` | - |
 | Inspiration | `pages/inspiration.tsx` | - |
 | 404 Page | Use router fallback | - |
