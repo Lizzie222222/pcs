@@ -75,15 +75,15 @@ export default function AwardCriteria() {
                     </h3>
                     <div className="space-y-4">
                       <div className="bg-pcs_blue/5 p-4 rounded-lg border-l-4 border-pcs_blue">
-                        <p className="font-bold text-navy mb-1">#2 School Assembly</p>
+                        <p className="font-bold text-navy mb-1">School Assembly</p>
                         <p className="text-gray-700">Host a school-wide assembly to introduce the Plastic Clever Schools program and raise awareness about plastic pollution</p>
                       </div>
                       <div className="bg-pcs_blue/5 p-4 rounded-lg border-l-4 border-pcs_blue">
-                        <p className="font-bold text-navy mb-1">#3 Local Cleanup</p>
+                        <p className="font-bold text-navy mb-1">Local Cleanup</p>
                         <p className="text-gray-700">Conduct a litter pick around your school grounds or local area.</p>
                       </div>
                       <div className="bg-pcs_blue/5 p-4 rounded-lg border-l-4 border-pcs_blue">
-                        <p className="font-bold text-navy mb-1">#4 Plastic Clever Pledge</p>
+                        <p className="font-bold text-navy mb-1">Plastic Clever Pledge</p>
                         <p className="text-gray-700">Share why it's important to your school to become Plastic Clever.</p>
                       </div>
                     </div>
@@ -114,11 +114,11 @@ export default function AwardCriteria() {
                     </h3>
                     <div className="space-y-4">
                       <div className="bg-teal/5 p-4 rounded-lg border-l-4 border-teal">
-                        <p className="font-bold text-navy mb-1">#2 Plastic Waste Audit</p>
+                        <p className="font-bold text-navy mb-1">Plastic Waste Audit</p>
                         <p className="text-gray-700">Complete a detailed audit of plastic usage across your school. Record and analyse data about single-use plastics.</p>
                       </div>
                       <div className="bg-teal/5 p-4 rounded-lg border-l-4 border-teal">
-                        <p className="font-bold text-navy mb-1">#3 Action Plan</p>
+                        <p className="font-bold text-navy mb-1">Action Plan</p>
                         <p className="text-gray-700">Create an action plan outlining the steps your school will take to reduce plastic waste - your action plan should aim to reduce at least 2 types of plastic waste (e.g. plastic bottles & plastic cutlery)</p>
                       </div>
                     </div>
@@ -149,15 +149,15 @@ export default function AwardCriteria() {
                     </h3>
                     <div className="space-y-4">
                       <div className="bg-coral/5 p-4 rounded-lg border-l-4 border-coral">
-                        <p className="font-bold text-navy mb-1">#2 Run a Campaign</p>
+                        <p className="font-bold text-navy mb-1">Run a Campaign</p>
                         <p className="text-gray-700">Support your students' campaigns and capture them in action</p>
                       </div>
                       <div className="bg-coral/5 p-4 rounded-lg border-l-4 border-coral">
-                        <p className="font-bold text-navy mb-1">#3 Share your evidence</p>
+                        <p className="font-bold text-navy mb-1">Share your evidence</p>
                         <p className="text-gray-700">Share evidence of the plastic reductions you've made. For example, if you've swapped single-use cups for reusable bottles in the classroom, upload a picture!</p>
                       </div>
                       <div className="bg-coral/5 p-4 rounded-lg border-l-4 border-coral">
-                        <p className="font-bold text-navy mb-1">#4 Share your success!</p>
+                        <p className="font-bold text-navy mb-1">Share your success!</p>
                         <p className="text-gray-700">Celebrate the actions taken to reduce single-use plastic by sharing a video, photo montage, PowerPoint presentation, or poster showcasing your school's success.</p>
                       </div>
                     </div>
