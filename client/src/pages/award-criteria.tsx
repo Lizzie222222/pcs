@@ -41,7 +41,7 @@ export default function AwardCriteria() {
               <Star className="w-12 h-12 text-yellow fill-current" />
               <div className="text-left">
                 <p className="font-bold text-navy text-lg">Complete Recognition</p>
-                <p className="text-gray-600">Digital certificate + Physical award badge</p>
+                <p className="text-gray-600">Digital certificate</p>
               </div>
             </div>
           </div>
