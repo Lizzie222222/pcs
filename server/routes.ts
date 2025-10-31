@@ -9171,22 +9171,31 @@ Return JSON with:
       }
       
       // Auto-sync English translations when main title/description changes
+      // IMPORTANT: Preserve translations sent from frontend (e.g., auto-translated), don't overwrite with DB values
       if (processedUpdates.title) {
-        const currentTitleTranslations = (existingEvent.titleTranslations && typeof existingEvent.titleTranslations === 'object')
-          ? existingEvent.titleTranslations
-          : {};
+        // Use translations from the update request if provided, otherwise fall back to database
+        const baseTitleTranslations = (processedUpdates.titleTranslations && typeof processedUpdates.titleTranslations === 'object')
+          ? processedUpdates.titleTranslations
+          : (existingEvent.titleTranslations && typeof existingEvent.titleTranslations === 'object')
+            ? existingEvent.titleTranslations
+            : {};
+        
         processedUpdates.titleTranslations = {
-          ...currentTitleTranslations,
+          ...baseTitleTranslations,
           en: processedUpdates.title,
         };
       }
       
       if (processedUpdates.description) {
-        const currentDescriptionTranslations = (existingEvent.descriptionTranslations && typeof existingEvent.descriptionTranslations === 'object')
-          ? existingEvent.descriptionTranslations
-          : {};
+        // Use translations from the update request if provided, otherwise fall back to database
+        const baseDescriptionTranslations = (processedUpdates.descriptionTranslations && typeof processedUpdates.descriptionTranslations === 'object')
+          ? processedUpdates.descriptionTranslations
+          : (existingEvent.descriptionTranslations && typeof existingEvent.descriptionTranslations === 'object')
+            ? existingEvent.descriptionTranslations
+            : {};
+        
         processedUpdates.descriptionTranslations = {
-          ...currentDescriptionTranslations,
+          ...baseDescriptionTranslations,
           en: processedUpdates.description,
         };
       }
