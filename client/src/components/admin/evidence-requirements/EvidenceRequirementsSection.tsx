@@ -31,11 +31,13 @@ import {
   FileVideo,
   Link as LinkIcon,
   X,
+  Languages,
 } from "lucide-react";
 import { Tabs } from "@/components/ui/tabs";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { PDFThumbnail } from "@/components/PDFThumbnail";
 import type { EvidenceRequirement } from "@/components/admin/shared/types";
+import TranslationManagementDialog from "./TranslationManagementDialog";
 
 interface EvidenceRequirementsSectionProps {
   allResources: any[];
@@ -56,6 +58,8 @@ export default function EvidenceRequirementsSection({
   const [requirementDialogOpen, setRequirementDialogOpen] = useState(false);
   const [deletingRequirement, setDeletingRequirement] = useState<EvidenceRequirement | null>(null);
   const [requirementDeleteDialogOpen, setRequirementDeleteDialogOpen] = useState(false);
+  const [translatingRequirement, setTranslatingRequirement] = useState<EvidenceRequirement | null>(null);
+  const [translationDialogOpen, setTranslationDialogOpen] = useState(false);
   const [requirementFormData, setRequirementFormData] = useState<{
     title: string;
     description: string;
@@ -345,6 +349,19 @@ export default function EvidenceRequirementsSection({
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                setTranslatingRequirement(requirement);
+                                setTranslationDialogOpen(true);
+                              }}
+                              className="text-purple-600 hover:text-purple-700 hover:bg-purple-50"
+                              data-testid={`button-translations-${requirement.id}`}
+                              title="Manage translations for all 14 languages"
+                            >
+                              <Languages className="h-4 w-4" />
+                            </Button>
                             <Button
                               variant="outline"
                               size="sm"
@@ -717,6 +734,17 @@ export default function EvidenceRequirementsSection({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Translation Management Dialog */}
+      <TranslationManagementDialog
+        requirement={translatingRequirement}
+        isOpen={translationDialogOpen}
+        onClose={() => {
+          setTranslationDialogOpen(false);
+          setTranslatingRequirement(null);
+        }}
+        allResources={allResources}
+      />
     </div>
   );
 }
