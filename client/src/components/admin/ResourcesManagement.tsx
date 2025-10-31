@@ -51,8 +51,8 @@ interface Resource {
 
 // All 14 supported language codes
 const SUPPORTED_LANGUAGES = ['en', 'es', 'fr', 'de', 'it', 'pt', 'nl', 'ar', 'zh', 'el', 'ru', 'ko', 'id', 'cy'];
-const RESOURCE_TYPES = ['lesson_plan', 'assembly', 'teacher_toolkit', 'student_workbook', 'printable_activities', 'none'];
-const RESOURCE_THEMES = ['ocean_literacy', 'climate_change', 'plastic_pollution', 'science', 'design_technology', 'geography', 'cross_curricular', 'enrichment', 'student_action', 'none'];
+const RESOURCE_TYPES = ['lesson_plan', 'assembly', 'teacher_toolkit', 'student_workbook', 'printable_activities'];
+const RESOURCE_THEMES = ['ocean_literacy', 'climate_change', 'plastic_pollution', 'science', 'design_technology', 'geography', 'cross_curricular', 'enrichment', 'student_action'];
 const RESOURCE_TAGS = ['all_stages', 'beginner', 'advanced', 'featured'];
 
 function ResourceForm({ resource, onClose, onSuccess }: {
@@ -71,8 +71,8 @@ function ResourceForm({ resource, onClose, onSuccess }: {
     description: resource?.description || '',
     stage: resource?.stage || 'inspire',
     ageRange: resource?.ageRange || '',
-    resourceType: (resource as any)?.resourceType || 'none',
-    theme: (resource as any)?.theme || 'none',
+    resourceType: (resource as any)?.resourceType || '',
+    theme: (resource as any)?.theme || '',
     themes: (resource as any)?.themes || [],
     tags: (resource as any)?.tags || [],
     languages: resource?.languages || (() => {
