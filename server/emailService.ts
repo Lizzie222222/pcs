@@ -469,6 +469,79 @@ export async function sendMigratedUserWelcomeEmail(
   });
 }
 
+export async function sendPasswordResetEmail(
+  userEmail: string,
+  resetToken: string,
+  firstName?: string,
+  userLanguage?: string
+): Promise<boolean> {
+  const baseUrl = getBaseUrl();
+  const resetUrl = `${baseUrl}/reset-password?token=${resetToken}`;
+  
+  const englishContent: EmailContent = {
+    subject: `🔐 Reset Your Password - Plastic Clever Schools`,
+    title: `Reset Your Password${firstName ? `, ${firstName}` : ''}`,
+    preTitle: `Password Reset Request`,
+    messageContent: `
+      <div style="background: #eff6ff; border-left: 4px solid #3b82f6; padding: 20px; margin: 0 0 25px 0; border-radius: 8px;">
+        <p style="margin: 0; color: #1e40af; font-size: 18px; font-weight: 700;">
+          🔑 We received a request to reset your password
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 20px 0; font-size: 16px;">
+        Click the button below to create a new password for your Plastic Clever Schools account. If you didn't request this, you can safely ignore this email.
+      </p>
+      
+      <!-- Important Notice -->
+      <div style="background: #fef3c7; border-left: 5px solid #f59e0b; padding: 20px; border-radius: 8px; margin: 25px 0;">
+        <p style="margin: 0 0 10px 0; color: #92400e; font-weight: 700;">
+          ⏰ This link expires in 1 hour
+        </p>
+        <p style="margin: 0; color: #92400e;">
+          For your security, this password reset link will only work for 1 hour. After that, you'll need to request a new one.
+        </p>
+      </div>
+      
+      <p style="margin: 25px 0 10px 0; color: #666; text-align: center; font-size: 14px;">
+        Or copy and paste this link into your browser:
+      </p>
+      
+      <p style="margin: 0 0 25px 0; color: #3b82f6; font-size: 14px; word-break: break-all; text-align: center; background: #f0f9ff; padding: 15px; border-radius: 8px;">
+        ${resetUrl}
+      </p>
+      
+      <!-- Security Notice -->
+      <div style="background: #f9fafb; padding: 20px; border-radius: 8px; margin: 25px 0;">
+        <p style="margin: 0 0 10px 0; color: #0B3D5D; font-weight: 700;">
+          🛡️ Security Tip
+        </p>
+        <p style="margin: 0; color: #666; font-size: 14px; line-height: 1.6;">
+          Never share your password with anyone. Plastic Clever Schools staff will never ask for your password via email.
+        </p>
+      </div>
+      
+      <p style="margin: 20px 0 0 0; color: #666; text-align: center;">
+        <strong>Didn't request a password reset?</strong><br>
+        If you didn't request this, please ignore this email. Your password will remain unchanged.
+      </p>
+      
+      <p style="margin: 20px 0 0 0; color: #666; text-align: center;">
+        Need help? Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
+    to: userEmail,
+    userLanguage,
+    englishContent,
+    callToActionText: '🔐 Reset My Password',
+    callToActionUrl: resetUrl,
+    footerText: 'You received this email because a password reset was requested for your account.'
+  });
+}
+
 
 export async function sendEvidenceApprovalEmail(
   userEmail: string, 
