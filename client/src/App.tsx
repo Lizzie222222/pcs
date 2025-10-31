@@ -63,9 +63,9 @@ function Router() {
   const mainRef = useRef<HTMLElement>(null);
   const skipLinkRef = useRef<HTMLAnchorElement>(null);
 
-  // Redirect migrated users who need password reset
+  // Redirect migrated users who haven't completed onboarding
   useEffect(() => {
-    if (isAuthenticated && user?.isMigrated && user?.needsPasswordReset && location !== '/migrated-onboarding') {
+    if (isAuthenticated && user?.isMigrated && !user?.hasSeenOnboarding && location !== '/migrated-onboarding') {
       setLocation('/migrated-onboarding');
     }
   }, [isAuthenticated, user, location, setLocation]);

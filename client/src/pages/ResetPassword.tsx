@@ -346,7 +346,7 @@ export default function ResetPassword() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-ocean hover:bg-ocean-dark text-white"
+                  className="w-full bg-pcs_blue hover:bg-blue-600 text-white font-semibold"
                   disabled={isSubmitting}
                   data-testid="button-submit"
                 >
