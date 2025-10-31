@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "一项以学生为行动核心的减少废物奖项。",
+    "program_title": "计划",
+    "program_how_it_works": "如何运作",
+    "program_resources": "资源",
+    "program_success_stories": "成功故事",
+    "program_award_criteria": "奖项标准",
+    "support_title": "支持",
+    "support_help_center": "帮助中心",
+    "support_contact_us": "联系我们",
+    "support_community": "社区",
+    "support_training": "培训",
+    "connect_title": "联系",
+    "connect_instagram": "Instagram",
+    "connect_facebook": "Facebook",
+    "connect_linkedin": "LinkedIn",
+    "connect_email": "电子邮件",
+    "copyright": "© 2025 Plastic Clever Schools. 保留所有权利。",
+    "privacy": "隐私",
+    "terms": "条款"
   }
 }

@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "Ein Preis zur Abfallreduzierung mit Schülern im Herzen der Aktion.",
+    "program_title": "Programm",
+    "program_how_it_works": "Wie Es Funktioniert",
+    "program_resources": "Ressourcen",
+    "program_success_stories": "Erfolgsgeschichten",
+    "program_award_criteria": "Preiskriterien",
+    "support_title": "Unterstützung",
+    "support_help_center": "Hilfezentrum",
+    "support_contact_us": "Kontaktieren Sie Uns",
+    "support_community": "Gemeinschaft",
+    "support_training": "Schulung",
+    "connect_title": "Verbinden",
+    "connect_instagram": "Instagram",
+    "connect_facebook": "Facebook",
+    "connect_linkedin": "LinkedIn",
+    "connect_email": "E-Mail",
+    "copyright": "© 2025 Plastic Clever Schools. Alle Rechte vorbehalten.",
+    "privacy": "Datenschutz",
+    "terms": "Bedingungen"
   }
 }

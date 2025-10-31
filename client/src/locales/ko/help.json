@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "학생들이 행동의 중심에 있는 폐기물 감소 상.",
+    "program_title": "프로그램",
+    "program_how_it_works": "작동 방식",
+    "program_resources": "리소스",
+    "program_success_stories": "성공 사례",
+    "program_award_criteria": "시상 기준",
+    "support_title": "지원",
+    "support_help_center": "도움말 센터",
+    "support_contact_us": "문의하기",
+    "support_community": "커뮤니티",
+    "support_training": "교육",
+    "connect_title": "연결",
+    "connect_instagram": "Instagram",
+    "connect_facebook": "Facebook",
+    "connect_linkedin": "LinkedIn",
+    "connect_email": "이메일",
+    "copyright": "© 2025 Plastic Clever Schools. 모든 권리 보유.",
+    "privacy": "개인정보처리방침",
+    "terms": "약관"
   }
 }

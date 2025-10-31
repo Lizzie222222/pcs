@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "Награда за сокращение отходов со студентами в центре действия.",
+    "program_title": "Программа",
+    "program_how_it_works": "Как Это Работает",
+    "program_resources": "Ресурсы",
+    "program_success_stories": "Истории Успеха",
+    "program_award_criteria": "Критерии Награды",
+    "support_title": "Поддержка",
+    "support_help_center": "Центр Помощи",
+    "support_contact_us": "Свяжитесь с Нами",
+    "support_community": "Сообщество",
+    "support_training": "Обучение",
+    "connect_title": "Связаться",
+    "connect_instagram": "Instagram",
+    "connect_facebook": "Facebook",
+    "connect_linkedin": "LinkedIn",
+    "connect_email": "Электронная почта",
+    "copyright": "© 2025 Plastic Clever Schools. Все права защищены.",
+    "privacy": "Конфиденциальность",
+    "terms": "Условия"
   }
 }

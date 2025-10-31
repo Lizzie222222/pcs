@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "Ένα βραβείο για τη μείωση των πλαστικών με τους μαθητές στο κέντρο της δράσης.",
+    "program_title": "Πρόγραμμα",
+    "program_how_it_works": "Πώς Λειτουργεί",
+    "program_resources": "Πόροι",
+    "program_success_stories": "Ιστορίες Επιτυχίας",
+    "program_award_criteria": "Κριτήρια Βραβείου",
+    "support_title": "Υποστήριξη",
+    "support_help_center": "Κέντρο Βοήθειας",
+    "support_contact_us": "Επικοινωνήστε Μαζί Μας",
+    "support_community": "Κοινότητα",
+    "support_training": "Εκπαίδευση",
+    "connect_title": "Σύνδεση",
+    "connect_instagram": "Instagram",
+    "connect_facebook": "Facebook",
+    "connect_linkedin": "LinkedIn",
+    "connect_email": "Email",
+    "copyright": "© 2025 Plastic Clever Schools. Όλα τα δικαιώματα διατηρούνται.",
+    "privacy": "Απόρρητο",
+    "terms": "Όροι"
   }
 }

@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "Un premio para reducir residuos con los estudiantes en el corazón de la acción.",
+    "program_title": "Programa",
+    "program_how_it_works": "Cómo Funciona",
+    "program_resources": "Recursos",
+    "program_success_stories": "Historias de Éxito",
+    "program_award_criteria": "Criterios del Premio",
+    "support_title": "Soporte",
+    "support_help_center": "Centro de Ayuda",
+    "support_contact_us": "Contáctanos",
+    "support_community": "Comunidad",
+    "support_training": "Capacitación",
+    "connect_title": "Conectar",
+    "connect_instagram": "Instagram",
+    "connect_facebook": "Facebook",
+    "connect_linkedin": "LinkedIn",
+    "connect_email": "Correo Electrónico",
+    "copyright": "© 2025 Plastic Clever Schools. Todos los derechos reservados.",
+    "privacy": "Privacidad",
+    "terms": "Términos"
   }
 }

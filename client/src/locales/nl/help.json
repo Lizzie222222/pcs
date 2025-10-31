@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "Een prijs om afval te verminderen met studenten in het hart van de actie.",
+    "program_title": "Programma",
+    "program_how_it_works": "Hoe Het Werkt",
+    "program_resources": "Bronnen",
+    "program_success_stories": "Succesverhalen",
+    "program_award_criteria": "Prijscriteria",
+    "support_title": "Ondersteuning",
+    "support_help_center": "Helpcentrum",
+    "support_contact_us": "Neem Contact Op",
+    "support_community": "Gemeenschap",
+    "support_training": "Training",
+    "connect_title": "Verbinden",
+    "connect_instagram": "Instagram",
+    "connect_facebook": "Facebook",
+    "connect_linkedin": "LinkedIn",
+    "connect_email": "Email",
+    "copyright": "© 2025 Plastic Clever Schools. Alle rechten voorbehouden.",
+    "privacy": "Privacy",
+    "terms": "Voorwaarden"
   }
 }

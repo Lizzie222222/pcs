@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "Gwobr i leihau gwastraff gyda myfyrwyr wrth galon y weithred.",
+    "program_title": "Rhaglen",
+    "program_how_it_works": "Sut Mae'n Gweithio",
+    "program_resources": "Adnoddau",
+    "program_success_stories": "Straeon Llwyddiant",
+    "program_award_criteria": "Meini Prawf Gwobr",
+    "support_title": "Cymorth",
+    "support_help_center": "Canolfan Gymorth",
+    "support_contact_us": "Cysylltwch â Ni",
+    "support_community": "Cymuned",
+    "support_training": "Hyfforddiant",
+    "connect_title": "Cysylltu",
+    "connect_instagram": "Instagram",
+    "connect_facebook": "Facebook",
+    "connect_linkedin": "LinkedIn",
+    "connect_email": "E-bost",
+    "copyright": "© 2025 Plastic Clever Schools. Cedwir pob hawl.",
+    "privacy": "Preifatrwydd",
+    "terms": "Telerau"
   }
 }

@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "Penghargaan untuk mengurangi limbah dengan siswa di jantung aksi.",
+    "program_title": "Program",
+    "program_how_it_works": "Cara Kerjanya",
+    "program_resources": "Sumber Daya",
+    "program_success_stories": "Kisah Sukses",
+    "program_award_criteria": "Kriteria Penghargaan",
+    "support_title": "Dukungan",
+    "support_help_center": "Pusat Bantuan",
+    "support_contact_us": "Hubungi Kami",
+    "support_community": "Komunitas",
+    "support_training": "Pelatihan",
+    "connect_title": "Terhubung",
+    "connect_instagram": "Instagram",
+    "connect_facebook": "Facebook",
+    "connect_linkedin": "LinkedIn",
+    "connect_email": "Email",
+    "copyright": "© 2025 Plastic Clever Schools. Semua hak dilindungi.",
+    "privacy": "Privasi",
+    "terms": "Ketentuan"
   }
 }

@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "An award to reduce waste with students at the heart of the action.",
+    "program_title": "Program",
+    "program_how_it_works": "How it works",
+    "program_resources": "Resources",
+    "program_success_stories": "Success stories",
+    "program_award_criteria": "Award criteria",
+    "support_title": "Support",
+    "support_help_center": "Help center",
+    "support_contact_us": "Contact us",
+    "support_community": "Community",
+    "support_training": "Training",
+    "connect_title": "Connect",
+    "connect_instagram": "Instagram",
+    "connect_facebook": "Facebook",
+    "connect_linkedin": "LinkedIn",
+    "connect_email": "Email",
+    "copyright": "© 2025 Plastic Clever Schools. All rights reserved.",
+    "privacy": "Privacy",
+    "terms": "Terms"
   }
 }

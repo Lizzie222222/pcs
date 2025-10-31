@@ -159,5 +159,26 @@
         }
       }
     }
+  },
+  "footer": {
+    "description": "جائزة لتقليل النفايات مع الطلاب في قلب العمل.",
+    "program_title": "البرنامج",
+    "program_how_it_works": "كيف يعمل",
+    "program_resources": "الموارد",
+    "program_success_stories": "قصص النجاح",
+    "program_award_criteria": "معايير الجائزة",
+    "support_title": "الدعم",
+    "support_help_center": "مركز المساعدة",
+    "support_contact_us": "اتصل بنا",
+    "support_community": "المجتمع",
+    "support_training": "التدريب",
+    "connect_title": "تواصل",
+    "connect_instagram": "إنستغرام",
+    "connect_facebook": "فيسبوك",
+    "connect_linkedin": "لينكد إن",
+    "connect_email": "البريد الإلكتروني",
+    "copyright": "© 2025 Plastic Clever Schools. جميع الحقوق محفوظة.",
+    "privacy": "الخصوصية",
+    "terms": "الشروط"
   }
 }
