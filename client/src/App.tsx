@@ -39,6 +39,8 @@ const Admin = lazy(() => import("@/pages/admin"));
 const SchoolProfile = lazy(() => import("@/pages/SchoolProfile"));
 const Login = lazy(() => import("@/pages/login"));
 const Register = lazy(() => import("@/pages/register"));
+const ForgotPassword = lazy(() => import("@/pages/ForgotPassword"));
+const ResetPassword = lazy(() => import("@/pages/ResetPassword"));
 const Contact = lazy(() => import("@/pages/contact"));
 const HelpCenter = lazy(() => import("@/pages/help-center"));
 const Terms = lazy(() => import("@/pages/terms"));
@@ -177,6 +179,8 @@ function Router() {
               <Route path="/" component={Landing} />
               <Route path="/login" component={Login} />
               <Route path="/register" component={Register} />
+              <Route path="/forgot-password" component={ForgotPassword} />
+              <Route path="/reset-password" component={ResetPassword} />
               <Route path="/contact" component={Contact} />
               <Route path="/help-center" component={HelpCenter} />
               <Route path="/terms" component={Terms} />

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useTranslation } from "react-i18next";
+import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -119,6 +120,17 @@ export default function Login() {
                         </div>
                       </FormControl>
                       <FormMessage data-testid="error-password" />
+                      <div className="flex justify-end">
+                        <Link href="/forgot-password" data-testid="link-forgot-password">
+                          <Button
+                            type="button"
+                            variant="link"
+                            className="text-sm text-ocean hover:text-ocean-dark p-0 h-auto"
+                          >
+                            Forgot password?
+                          </Button>
+                        </Link>
+                      </div>
                     </FormItem>
                   )}
                 />
