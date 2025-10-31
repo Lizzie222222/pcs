@@ -375,6 +375,7 @@ export const evidenceRequirements = pgTable("evidence_requirements", {
   customLinks: jsonb("custom_links").default('[]'),
   translations: jsonb("translations").default('{}'),
   languageSpecificResources: jsonb("language_specific_resources").default('{}'),
+  languageSpecificLinks: jsonb("language_specific_links").default('{}'),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
