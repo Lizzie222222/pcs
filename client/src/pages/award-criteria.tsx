@@ -145,41 +145,20 @@ export default function AwardCriteria() {
                   <div>
                     <h3 className="font-bold text-lg text-navy mb-3 flex items-center gap-2">
                       <Target className="w-5 h-5 text-coral" />
-                      Completion Requirements
+                      Requirements
                     </h3>
-                    <div className="bg-coral/5 p-4 rounded-lg border-l-4 border-coral">
-                      <p className="font-semibold text-navy mb-2">
-                        Submit 3 approved pieces of evidence showing plastic reduction initiatives in action
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-bold text-lg text-navy mb-3">Evidence Examples</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-coral mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Before and after photos</span>
+                    <div className="space-y-4">
+                      <div className="bg-coral/5 p-4 rounded-lg border-l-4 border-coral">
+                        <p className="font-bold text-navy mb-1">#2 Run a Campaign</p>
+                        <p className="text-gray-700">Support your students' campaigns and capture them in action</p>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-coral mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Campaign materials</span>
+                      <div className="bg-coral/5 p-4 rounded-lg border-l-4 border-coral">
+                        <p className="font-bold text-navy mb-1">#3 Share your evidence</p>
+                        <p className="text-gray-700">Share evidence of the plastic reductions you've made. For example, if you've swapped single-use cups for reusable bottles in the classroom, upload a picture!</p>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-coral mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Implementation photos</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-coral mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Impact measurements</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-coral mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Community engagement events</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-coral mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Student testimonials</span>
+                      <div className="bg-coral/5 p-4 rounded-lg border-l-4 border-coral">
+                        <p className="font-bold text-navy mb-1">#4 Share your success!</p>
+                        <p className="text-gray-700">Celebrate the actions taken to reduce single-use plastic by sharing a video, photo montage, PowerPoint presentation, or poster showcasing your school's success.</p>
                       </div>
                     </div>
                   </div>
