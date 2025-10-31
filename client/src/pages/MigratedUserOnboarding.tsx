@@ -89,7 +89,7 @@ export default function MigratedUserOnboarding() {
         });
         queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
         setTimeout(() => {
-          window.location.href = '/home';
+          window.location.href = '/dashboard';
         }, 1500);
       } else {
         toast({
