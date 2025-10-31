@@ -36,6 +36,31 @@ declare global {
   }
 }
 
+// Password validation helper function
+function validatePassword(password: string): { valid: boolean; message?: string } {
+  if (!password || typeof password !== 'string') {
+    return { valid: false, message: "Password is required" };
+  }
+  
+  if (password.length < 8) {
+    return { valid: false, message: "Password must be at least 8 characters long" };
+  }
+  
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one uppercase letter" };
+  }
+  
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one lowercase letter" };
+  }
+  
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, message: "Password must contain at least one number" };
+  }
+  
+  return { valid: true };
+}
+
 // Validation schemas
 const registerSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -152,6 +177,15 @@ export async function setupAuth(app: Express) {
   app.post("/api/auth/register", async (req, res) => {
     try {
       const validatedData = registerSchema.parse(req.body);
+      
+      // Validate password requirements
+      const passwordValidation = validatePassword(validatedData.password);
+      if (!passwordValidation.valid) {
+        return res.status(400).json({
+          success: false,
+          message: passwordValidation.message
+        });
+      }
       
       // Check if user already exists
       const existingUser = await storage.findUserByEmail(validatedData.email);
@@ -488,10 +522,12 @@ export async function setupAuth(app: Express) {
         });
       }
 
-      if (!newPassword || typeof newPassword !== 'string' || newPassword.length < 8) {
+      // Validate password requirements
+      const passwordValidation = validatePassword(newPassword);
+      if (!passwordValidation.valid) {
         return res.status(400).json({
           success: false,
-          message: "Password must be at least 8 characters long"
+          message: passwordValidation.message
         });
       }
 
