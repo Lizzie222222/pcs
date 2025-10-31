@@ -71,41 +71,20 @@ export default function AwardCriteria() {
                   <div>
                     <h3 className="font-bold text-lg text-navy mb-3 flex items-center gap-2">
                       <Target className="w-5 h-5 text-pcs_blue" />
-                      Completion Requirements
+                      Requirements
                     </h3>
-                    <div className="bg-pcs_blue/5 p-4 rounded-lg border-l-4 border-pcs_blue">
-                      <p className="font-semibold text-navy mb-2">
-                        Submit 3 approved pieces of evidence showing student learning about plastic pollution
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-bold text-lg text-navy mb-3">Evidence Examples</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-pcs_blue mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Photos of classroom discussions</span>
+                    <div className="space-y-4">
+                      <div className="bg-pcs_blue/5 p-4 rounded-lg border-l-4 border-pcs_blue">
+                        <p className="font-bold text-navy mb-1">#2 School Assembly</p>
+                        <p className="text-gray-700">Host a school-wide assembly to introduce the Plastic Clever Schools program and raise awareness about plastic pollution</p>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-pcs_blue mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Student artwork or posters</span>
+                      <div className="bg-pcs_blue/5 p-4 rounded-lg border-l-4 border-pcs_blue">
+                        <p className="font-bold text-navy mb-1">#3 Local Cleanup</p>
+                        <p className="text-gray-700">Conduct a litter pick around your school grounds or local area.</p>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-pcs_blue mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Written reflections or essays</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-pcs_blue mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Videos of presentations</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-pcs_blue mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Assembly or event photos</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-pcs_blue mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Research projects</span>
+                      <div className="bg-pcs_blue/5 p-4 rounded-lg border-l-4 border-pcs_blue">
+                        <p className="font-bold text-navy mb-1">#4 Plastic Clever Pledge</p>
+                        <p className="text-gray-700">Share why it's important to your school to become Plastic Clever.</p>
                       </div>
                     </div>
                   </div>
