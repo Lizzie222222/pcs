@@ -28,6 +28,8 @@ interface EvidenceRequirement {
   orderIndex: number;
   resourceIds?: string[];
   customLinks?: Array<{ title: string; url: string }>;
+  translations?: Record<string, { title: string; description: string }>;
+  languageSpecificResources?: Record<string, string[]>;
 }
 
 interface Evidence {
@@ -56,13 +58,45 @@ export default function ProgressTracker({
   evidenceCounts,
   schoolId,
 }: ProgressTrackerProps) {
-  const { t } = useTranslation('dashboard');
+  const { t, i18n } = useTranslation('dashboard');
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
   const [selectedRequirementId, setSelectedRequirementId] = useState<string | undefined>();
   const [selectedStage, setSelectedStage] = useState<string>('inspire');
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [showActionPlanModal, setShowActionPlanModal] = useState(false);
   const [actionPlanRequirementId, setActionPlanRequirementId] = useState<string>('');
+
+  // Helper function to get translated content for evidence requirements
+  const getTranslatedRequirement = (requirement: EvidenceRequirement) => {
+    const currentLang = i18n.language;
+    
+    // If translations exist and the current language has a translation, use it
+    if (requirement.translations && requirement.translations[currentLang]) {
+      return {
+        title: requirement.translations[currentLang].title,
+        description: requirement.translations[currentLang].description,
+      };
+    }
+    
+    // Fall back to default (English) title and description
+    return {
+      title: requirement.title,
+      description: requirement.description,
+    };
+  };
+
+  // Helper function to get resources for the current language
+  const getResourcesForLanguage = (requirement: EvidenceRequirement) => {
+    const currentLang = i18n.language;
+    const baseResources = requirement.resourceIds || [];
+    
+    // If language-specific resources exist for current language, add them
+    if (requirement.languageSpecificResources && requirement.languageSpecificResources[currentLang]) {
+      return [...baseResources, ...requirement.languageSpecificResources[currentLang]];
+    }
+    
+    return baseResources;
+  };
 
   // Fetch evidence requirements
   const { data: requirements = [], isLoading: requirementsLoading } = useQuery<EvidenceRequirement[]>({
@@ -335,6 +369,8 @@ export default function ProgressTracker({
                       const isAudit = isPlasticWasteAudit(requirement);
                       const isActionPlan = isActionPlanDevelopment(requirement);
                       const auditStatus = isAudit ? getAuditStatus() : null;
+                      const translatedRequirement = getTranslatedRequirement(requirement);
+                      const resourcesForLang = getResourcesForLanguage(requirement);
                       
                       return (
                         <div 
@@ -346,10 +382,10 @@ export default function ProgressTracker({
                           <div className="flex items-start gap-3 mb-3">
                             <div className="flex-1 min-w-0">
                               <h4 className="font-bold text-sm text-navy leading-tight mb-1">
-                                {requirement.title}
+                                {translatedRequirement.title}
                               </h4>
                               <p className="text-xs text-gray-600 font-medium">
-                                {requirement.description}
+                                {translatedRequirement.description}
                               </p>
                             </div>
                           </div>
@@ -590,11 +626,11 @@ export default function ProgressTracker({
                           )}
 
                           {/* Help Resources - Show all library resources and custom links */}
-                          {((requirement.resourceIds && requirement.resourceIds.length > 0) || 
+                          {((resourcesForLang && resourcesForLang.length > 0) || 
                             (requirement.customLinks && requirement.customLinks.length > 0)) && (
                             <div className="mt-2 pt-2 border-t space-y-1">
-                              {/* Library resources */}
-                              {requirement.resourceIds?.map(resourceId => {
+                              {/* Library resources (includes language-specific resources) */}
+                              {resourcesForLang?.map(resourceId => {
                                 const resource = allResources.find(r => r.id === resourceId);
                                 if (!resource) return null;
                                 return (

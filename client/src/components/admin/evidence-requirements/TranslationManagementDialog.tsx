@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
@@ -49,7 +49,7 @@ export default function TranslationManagementDialog({
   const [isGenerating, setIsGenerating] = useState(false);
 
   // Initialize translations when requirement changes
-  useState(() => {
+  useEffect(() => {
     if (requirement) {
       const existingTranslations = (requirement as any).translations || {};
       const existingLangResources = (requirement as any).languageSpecificResources || {};
@@ -65,7 +65,7 @@ export default function TranslationManagementDialog({
       setTranslations(initialTranslations);
       setLanguageSpecificResources(existingLangResources);
     }
-  });
+  }, [requirement]);
 
   const generateTranslationsMutation = useMutation({
     mutationFn: async () => {
