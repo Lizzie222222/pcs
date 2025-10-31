@@ -110,59 +110,16 @@ export default function AwardCriteria() {
                   <div>
                     <h3 className="font-bold text-lg text-navy mb-3 flex items-center gap-2">
                       <Target className="w-5 h-5 text-teal" />
-                      Completion Requirements
+                      Requirements
                     </h3>
-                    <div className="bg-teal/5 p-4 rounded-lg border-l-4 border-teal space-y-3">
-                      <div className="flex items-start gap-2">
-                        <Badge className="bg-teal text-white mt-0.5">Required</Badge>
-                        <p className="font-semibold text-navy">
-                          Complete plastic waste audit quiz
-                        </p>
+                    <div className="space-y-4">
+                      <div className="bg-teal/5 p-4 rounded-lg border-l-4 border-teal">
+                        <p className="font-bold text-navy mb-1">#2 Plastic Waste Audit</p>
+                        <p className="text-gray-700">Complete a detailed audit of plastic usage across your school. Record and analyse data about single-use plastics.</p>
                       </div>
-                      <div className="flex items-start gap-2">
-                        <Badge className="bg-teal text-white mt-0.5">Required</Badge>
-                        <p className="font-semibold text-navy">
-                          Create an action plan (reduction promises)
-                        </p>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <Badge variant="outline" className="border-teal text-teal mt-0.5">Optional</Badge>
-                        <p className="font-semibold text-navy">
-                          Submit 2 additional pieces of evidence
-                        </p>
-                      </div>
-                      <p className="text-sm text-gray-600 pt-2 border-t">
-                        <strong>Note:</strong> Complete at least 2 items from the above to progress
-                      </p>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-bold text-lg text-navy mb-3">Evidence Examples</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Completed audit forms</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Data collection photos</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Charts and graphs</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Survey results</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Action plan documents</span>
-                      </div>
-                      <div className="flex items-start gap-2">
-                        <CheckCircle2 className="w-5 h-5 text-teal mt-0.5 flex-shrink-0" />
-                        <span className="text-gray-700">Team meeting photos</span>
+                      <div className="bg-teal/5 p-4 rounded-lg border-l-4 border-teal">
+                        <p className="font-bold text-navy mb-1">#3 Action Plan</p>
+                        <p className="text-gray-700">Create an action plan outlining the steps your school will take to reduce plastic waste - your action plan should aim to reduce at least 2 types of plastic waste (e.g. plastic bottles & plastic cutlery)</p>
                       </div>
                     </div>
                   </div>
