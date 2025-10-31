@@ -2930,8 +2930,22 @@ Return JSON with:
 
       const { id } = req.params;
       
-      // Validate partial update data
-      const updateData = insertEvidenceRequirementSchema.partial().parse(req.body);
+      // Extract JSONB fields before schema validation
+      const { translations, languageSpecificResources, languageSpecificLinks, ...rest } = req.body;
+      
+      // Validate partial update data (excluding JSONB fields for explicit handling)
+      const updateData = insertEvidenceRequirementSchema.partial().parse(rest);
+      
+      // Add JSONB fields to updateData if provided
+      if (translations !== undefined) {
+        updateData.translations = translations;
+      }
+      if (languageSpecificResources !== undefined) {
+        updateData.languageSpecificResources = languageSpecificResources;
+      }
+      if (languageSpecificLinks !== undefined) {
+        updateData.languageSpecificLinks = languageSpecificLinks;
+      }
       
       const requirement = await storage.updateEvidenceRequirement(id, updateData);
       
