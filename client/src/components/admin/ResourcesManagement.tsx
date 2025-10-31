@@ -632,10 +632,9 @@ function ResourceForm({ resource, onClose, onSuccess }: {
                   onValueChange={(value) => handleInputChange('resourceType', value)}
                 >
                   <SelectTrigger data-testid="select-resource-type">
-                    <SelectValue />
+                    <SelectValue placeholder="Select a type (optional)" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
                     <SelectItem value="lesson_plan">Lesson Plan</SelectItem>
                     <SelectItem value="assembly">Assembly</SelectItem>
                     <SelectItem value="teacher_toolkit">Teacher Toolkit</SelectItem>

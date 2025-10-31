@@ -406,7 +406,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      const resource = await storage.createResource(req.body);
+      // Convert empty strings to null for enum fields
+      const resourceData = {
+        ...req.body,
+        resourceType: req.body.resourceType === '' ? null : req.body.resourceType,
+        theme: req.body.theme === '' ? null : req.body.theme,
+      };
+
+      const resource = await storage.createResource(resourceData);
       
       // Create notifications for schools at this stage
       await storage.createResourceNotifications(resource.id, resource.title, resource.stage, false);
@@ -425,7 +432,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Admin access required" });
       }
 
-      const resource = await storage.updateResource(req.params.id, req.body);
+      // Convert empty strings to null for enum fields
+      const resourceData = {
+        ...req.body,
+        resourceType: req.body.resourceType === '' ? null : req.body.resourceType,
+        theme: req.body.theme === '' ? null : req.body.theme,
+      };
+
+      const resource = await storage.updateResource(req.params.id, resourceData);
       if (!resource) {
         return res.status(404).json({ message: "Resource not found" });
       }
