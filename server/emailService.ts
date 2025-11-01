@@ -1830,10 +1830,12 @@ export async function sendEventCancellationEmail(
     id: string;
     title: string;
     startDateTime: Date | string;
-  }
+  },
+  userLanguage?: string
 ): Promise<boolean> {
   const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : 'there';
   const startDate = new Date(event.startDateTime);
+  const eventsUrl = `${getBaseUrl()}/events`;
   
   const formatDate = (date: Date) => {
     return date.toLocaleDateString('en-US', { 
@@ -1844,96 +1846,42 @@ export async function sendEventCancellationEmail(
     });
   };
 
-  const eventsUrl = `${getBaseUrl()}/events`;
-
-  const html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Registration Cancelled - Plastic Clever Schools</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f5f5f5;">
-        <tr>
-          <td style="padding: 40px 20px;">
-            <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-              <!-- Header -->
-              <tr>
-                <td style="background-color: #0B3D5D; padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">
-                    Plastic Clever Schools
-                  </h1>
-                </td>
-              </tr>
-              
-              <!-- Body -->
-              <tr>
-                <td style="padding: 40px 30px;">
-                  <h2 style="margin: 0 0 20px 0; color: #0B3D5D; font-size: 24px; font-weight: 600;">
-                    Registration Cancelled
-                  </h2>
-                  
-                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    Hi ${userName},
-                  </p>
-                  
-                  <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    Your registration for <strong>${event.title}</strong> on <strong>${formatDate(startDate)}</strong> has been cancelled as requested.
-                  </p>
-                  
-                  <div style="margin: 0 0 30px 0; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #019ADE; border-radius: 4px;">
-                    <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                      We're sorry you can't make it! If you change your mind and spots are still available, you're welcome to register again.
-                    </p>
-                  </div>
-                  
-                  <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    Don't miss out on other upcoming events! Browse our event calendar to find more opportunities to connect with the Plastic Clever Schools community.
-                  </p>
-                  
-                  <!-- Action Button -->
-                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0;">
-                    <tr>
-                      <td style="border-radius: 6px; background-color: #019ADE;">
-                        <a href="${eventsUrl}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
-                          Browse Upcoming Events
-                        </a>
-                      </td>
-                    </tr>
-                  </table>
-                  
-                  <p style="margin: 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    Thank you for being part of our community!
-                  </p>
-                </td>
-              </tr>
-              
-              <!-- Footer -->
-              <tr>
-                <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center; border-top: 1px solid #e9ecef;">
-                  <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                    Plastic Clever Schools
-                  </p>
-                  <p style="margin: 0; color: #999999; font-size: 12px; line-height: 1.6;">
-                    Together, we're making schools plastic clever
-                  </p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
-
-  return await sendEmail({
-    to: to,
-    from: getFromAddress(),
+  const englishContent: EmailContent = {
     subject: `Registration Cancelled: ${event.title}`,
-    html: html,
+    title: `Registration Cancelled`,
+    preTitle: '',
+    messageContent: `
+      <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+        Hi ${userName},
+      </p>
+      
+      <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+        Your registration for <strong>${event.title}</strong> on <strong>${formatDate(startDate)}</strong> has been cancelled as requested.
+      </p>
+      
+      <div style="margin: 0 0 30px 0; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #019ADE; border-radius: 4px;">
+        <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
+          We're sorry you can't make it! If you change your mind and spots are still available, you're welcome to register again.
+        </p>
+      </div>
+      
+      <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+        Don't miss out on other upcoming events! Browse our event calendar to find more opportunities to connect with the Plastic Clever Schools community.
+      </p>
+      
+      <p style="margin: 0; color: #333333; font-size: 16px; line-height: 1.6;">
+        Thank you for being part of our community!
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
+    to,
+    userLanguage,
+    englishContent,
+    callToActionText: 'Browse Upcoming Events',
+    callToActionUrl: eventsUrl,
+    footerText: 'You received this email because your event registration was cancelled.'
   });
 }
 
@@ -1952,7 +1900,8 @@ export async function sendEventReminderEmail(
     meetingLink?: string;
     publicSlug?: string;
   },
-  hoursUntil: number
+  hoursUntil: number,
+  userLanguage?: string
 ): Promise<boolean> {
   const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : 'there';
   const startDate = new Date(event.startDateTime);
@@ -1991,114 +1940,55 @@ export async function sendEventReminderEmail(
          ${event.location || 'To be announced'}
        </p>`;
 
-  const actionButton = event.isVirtual && event.meetingLink
-    ? `<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0;">
-         <tr>
-           <td style="border-radius: 6px; background-color: #019ADE;">
-             <a href="${event.meetingLink}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
-               Join Event Now
-             </a>
-           </td>
-         </tr>
-       </table>`
-    : `<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0;">
-         <tr>
-           <td style="border-radius: 6px; background-color: #019ADE;">
-             <a href="${event.publicSlug ? getBaseUrl() + '/events/' + event.publicSlug : getBaseUrl() + '/events/' + event.id}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
-               View Event Details
-             </a>
-           </td>
-         </tr>
-       </table>`;
+  const callToActionText = event.isVirtual && event.meetingLink ? 'Join Event Now' : 'View Event Details';
+  const callToActionUrl = event.isVirtual && event.meetingLink 
+    ? event.meetingLink 
+    : event.publicSlug ? `${getBaseUrl()}/events/${event.publicSlug}` : `${getBaseUrl()}/events/${event.id}`;
 
-  const html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Event Reminder - Plastic Clever Schools</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f5f5f5;">
-        <tr>
-          <td style="padding: 40px 20px;">
-            <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-              <!-- Header -->
-              <tr>
-                <td style="background-color: #0B3D5D; padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">
-                    Plastic Clever Schools
-                  </h1>
-                </td>
-              </tr>
-              
-              <!-- Body -->
-              <tr>
-                <td style="padding: 40px 30px;">
-                  <h2 style="margin: 0 0 20px 0; color: #0B3D5D; font-size: 24px; font-weight: 600;">
-                    Event Reminder: ${event.title}
-                  </h2>
-                  
-                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    Hi ${userName},
-                  </p>
-                  
-                  <p style="margin: 0 0 30px 0; color: #333333; font-size: 18px; line-height: 1.6; font-weight: 600;">
-                    ⏰ Your event starts ${timeMessage}!
-                  </p>
-                  
-                  <!-- Event Details Card -->
-                  <div style="margin: 0 0 30px 0; padding: 25px; background-color: #f8f9fa; border-left: 4px solid #019ADE; border-radius: 4px;">
-                    <h3 style="margin: 0 0 15px 0; color: #0B3D5D; font-size: 18px; font-weight: 600;">
-                      Event Details
-                    </h3>
-                    
-                    <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                      <strong>📅 Date:</strong><br/>
-                      ${formatDate(startDate)}
-                    </p>
-                    
-                    <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                      <strong>🕐 Time:</strong><br/>
-                      ${formatTime(startDate)} - ${formatTime(endDate)}${event.timezone ? ` (${event.timezone})` : ''}
-                    </p>
-                    
-                    ${locationInfo}
-                  </div>
-                  
-                  ${actionButton}
-                  
-                  <p style="margin: 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    We look forward to seeing you there!
-                  </p>
-                </td>
-              </tr>
-              
-              <!-- Footer -->
-              <tr>
-                <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center; border-top: 1px solid #e9ecef;">
-                  <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                    Plastic Clever Schools
-                  </p>
-                  <p style="margin: 0; color: #999999; font-size: 12px; line-height: 1.6;">
-                    Together, we're making schools plastic clever
-                  </p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
-
-  return await sendEmail({
-    to: to,
-    from: getFromAddress(),
+  const englishContent: EmailContent = {
     subject: `Reminder: ${event.title} starts ${timeMessage}`,
-    html: html,
+    title: `Event Reminder: ${event.title}`,
+    preTitle: '',
+    messageContent: `
+      <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+        Hi ${userName},
+      </p>
+      
+      <p style="margin: 0 0 30px 0; color: #333333; font-size: 18px; line-height: 1.6; font-weight: 600;">
+        ⏰ Your event starts ${timeMessage}!
+      </p>
+      
+      <div style="margin: 0 0 30px 0; padding: 25px; background-color: #f8f9fa; border-left: 4px solid #019ADE; border-radius: 4px;">
+        <h3 style="margin: 0 0 15px 0; color: #0B3D5D; font-size: 18px; font-weight: 600;">
+          Event Details
+        </h3>
+        
+        <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+          <strong>📅 Date:</strong><br/>
+          ${formatDate(startDate)}
+        </p>
+        
+        <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+          <strong>🕐 Time:</strong><br/>
+          ${formatTime(startDate)} - ${formatTime(endDate)}${event.timezone ? ` (${event.timezone})` : ''}
+        </p>
+        
+        ${locationInfo}
+      </div>
+      
+      <p style="margin: 0; color: #333333; font-size: 16px; line-height: 1.6;">
+        We look forward to seeing you there!
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
+    to,
+    userLanguage,
+    englishContent,
+    callToActionText,
+    callToActionUrl,
+    footerText: 'You received this reminder because you registered for this event.'
   });
 }
 
@@ -2117,7 +2007,8 @@ export async function sendEventUpdatedEmail(
     meetingLink?: string;
     publicSlug?: string;
   },
-  changes: string[]
+  changes: string[],
+  userLanguage?: string
 ): Promise<boolean> {
   const userName = user.firstName ? `${user.firstName}${user.lastName ? ' ' + user.lastName : ''}` : 'there';
   const startDate = new Date(event.startDateTime);
@@ -2154,121 +2045,72 @@ export async function sendEventUpdatedEmail(
          ${event.location || 'To be announced'}
        </p>`;
 
-  const html = `
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <title>Event Updated - Plastic Clever Schools</title>
-    </head>
-    <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
-      <table role="presentation" cellpadding="0" cellspacing="0" style="width: 100%; background-color: #f5f5f5;">
-        <tr>
-          <td style="padding: 40px 20px;">
-            <table role="presentation" cellpadding="0" cellspacing="0" style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-              <!-- Header -->
-              <tr>
-                <td style="background-color: #0B3D5D; padding: 40px 30px; border-radius: 8px 8px 0 0; text-align: center;">
-                  <h1 style="margin: 0; color: #ffffff; font-size: 28px; font-weight: 600;">
-                    Plastic Clever Schools
-                  </h1>
-                </td>
-              </tr>
-              
-              <!-- Body -->
-              <tr>
-                <td style="padding: 40px 30px;">
-                  <h2 style="margin: 0 0 20px 0; color: #0B3D5D; font-size: 24px; font-weight: 600;">
-                    Event Updated: ${event.title}
-                  </h2>
-                  
-                  <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    Hi ${userName},
-                  </p>
-                  
-                  <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                    The event <strong>${event.title}</strong> that you're registered for has been updated. Please review the changes below:
-                  </p>
-                  
-                  <!-- Changes Card -->
-                  <div style="margin: 0 0 30px 0; padding: 20px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
-                    <h3 style="margin: 0 0 15px 0; color: #856404; font-size: 16px; font-weight: 600;">
-                      📝 What's Changed:
-                    </h3>
-                    <ul style="margin: 0; padding-left: 20px;">
-                      ${changesHtml}
-                    </ul>
-                  </div>
-                  
-                  <!-- Updated Event Details -->
-                  <div style="margin: 0 0 30px 0; padding: 25px; background-color: #f8f9fa; border-left: 4px solid #019ADE; border-radius: 4px;">
-                    <h3 style="margin: 0 0 15px 0; color: #0B3D5D; font-size: 18px; font-weight: 600;">
-                      Updated Event Details
-                    </h3>
-                    
-                    <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                      <strong>📅 Date:</strong><br/>
-                      ${formatDate(startDate)}
-                    </p>
-                    
-                    <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 1.6;">
-                      <strong>🕐 Time:</strong><br/>
-                      ${formatTime(startDate)} - ${formatTime(endDate)}${event.timezone ? ` (${event.timezone})` : ''}
-                    </p>
-                    
-                    ${locationInfo}
-                    
-                    <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                      ${event.description}
-                    </p>
-                  </div>
-                  
-                  <!-- Action Button -->
-                  <table role="presentation" cellpadding="0" cellspacing="0" style="margin: 0 0 30px 0;">
-                    <tr>
-                      <td style="border-radius: 6px; background-color: #019ADE;">
-                        <a href="${event.publicSlug ? getBaseUrl() + '/events/' + event.publicSlug : getBaseUrl() + '/events/' + event.id}" style="display: inline-block; padding: 16px 40px; color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; border-radius: 6px;">
-                          View Event Details
-                        </a>
-                      </td>
-                    </tr>
-                  </table>
-                  
-                  <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                    If these changes don't work for you, you can cancel your registration from your dashboard at any time.
-                  </p>
-                </td>
-              </tr>
-              
-              <!-- Footer -->
-              <tr>
-                <td style="padding: 30px; background-color: #f8f9fa; border-radius: 0 0 8px 8px; text-align: center; border-top: 1px solid #e9ecef;">
-                  <p style="margin: 0 0 10px 0; color: #666666; font-size: 14px; line-height: 1.6;">
-                    Plastic Clever Schools
-                  </p>
-                  <p style="margin: 0; color: #999999; font-size: 12px; line-height: 1.6;">
-                    Together, we're making schools plastic clever
-                  </p>
-                </td>
-              </tr>
-            </table>
-          </td>
-        </tr>
-      </table>
-    </body>
-    </html>
-  `;
+  const eventUrl = event.publicSlug ? `${getBaseUrl()}/events/${event.publicSlug}` : `${getBaseUrl()}/events/${event.id}`;
 
-  return await sendEmail({
-    to: to,
-    from: getFromAddress(),
+  const englishContent: EmailContent = {
     subject: `Event Updated: ${event.title}`,
-    html: html,
+    title: `Event Updated: ${event.title}`,
+    preTitle: '',
+    messageContent: `
+      <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+        Hi ${userName},
+      </p>
+      
+      <p style="margin: 0 0 30px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+        The event <strong>${event.title}</strong> that you're registered for has been updated. Please review the changes below:
+      </p>
+      
+      <div style="margin: 0 0 30px 0; padding: 20px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+        <h3 style="margin: 0 0 15px 0; color: #856404; font-size: 16px; font-weight: 600;">
+          📝 What's Changed:
+        </h3>
+        <ul style="margin: 0; padding-left: 20px;">
+          ${changesHtml}
+        </ul>
+      </div>
+      
+      <div style="margin: 0 0 30px 0; padding: 25px; background-color: #f8f9fa; border-left: 4px solid #019ADE; border-radius: 4px;">
+        <h3 style="margin: 0 0 15px 0; color: #0B3D5D; font-size: 18px; font-weight: 600;">
+          Updated Event Details
+        </h3>
+        
+        <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+          <strong>📅 Date:</strong><br/>
+          ${formatDate(startDate)}
+        </p>
+        
+        <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 1.6;">
+          <strong>🕐 Time:</strong><br/>
+          ${formatTime(startDate)} - ${formatTime(endDate)}${event.timezone ? ` (${event.timezone})` : ''}
+        </p>
+        
+        ${locationInfo}
+        
+        <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
+          ${event.description}
+        </p>
+      </div>
+      
+      <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
+        If these changes don't work for you, you can cancel your registration from your dashboard at any time.
+      </p>
+    `
+  };
+  
+  return await sendTranslatedEmail({
+    to,
+    userLanguage,
+    englishContent,
+    callToActionText: 'View Event Details',
+    callToActionUrl: eventUrl,
+    footerText: 'You received this email because an event you registered for was updated.'
   });
 }
 
 // SendGrid Event Announcement Functions
+// NOTE: Batch emails (sendEventAnnouncementEmail, sendEventDigestEmail) are kept in English for now
+// These use SendGrid BCC to send to multiple recipients at once
+// Can be enhanced with per-user language support later if needed
 
 export async function sendEventAnnouncementEmail(
   recipients: string[],
@@ -2767,6 +2609,8 @@ export async function sendCourseCompletionCelebrationEmail(
   });
 }
 
+// NOTE: sendContactFormEmail is an internal admin notification (sent TO admin, not FROM user)
+// Kept in English as it's not user-facing
 export async function sendContactFormEmail(
   fullName: string,
   email: string,
