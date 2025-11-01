@@ -18,8 +18,48 @@ import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 import whiteLogoUrl from "@assets/PCSWhite_1761216344335.png";
 import eventPackBannerUrl from "@assets/event-pack-2_1761297797787.png";
 
-// Helper function to get file type icon based on file extension
-function getFileTypeIcon(fileName: string) {
+// Helper function to get file type icon based on MIME type or file extension
+function getFileTypeIcon(fileName: string, fileType?: string | null) {
+  // Prioritize MIME type detection if available
+  if (fileType) {
+    // Check for image types
+    if (fileType.startsWith('image/')) {
+      return Image;
+    }
+    
+    // Check for PDF
+    if (fileType === 'application/pdf') {
+      return FileText;
+    }
+    
+    // Check for video types
+    if (fileType.startsWith('video/')) {
+      return Video;
+    }
+    
+    // Check for spreadsheet types
+    if (
+      fileType === 'application/vnd.ms-excel' ||
+      fileType === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+      fileType === 'text/csv'
+    ) {
+      return FileSpreadsheet;
+    }
+    
+    // Check for archive types
+    if (
+      fileType === 'application/zip' ||
+      fileType === 'application/x-zip-compressed' ||
+      fileType === 'application/x-rar-compressed' ||
+      fileType === 'application/x-7z-compressed' ||
+      fileType === 'application/x-tar' ||
+      fileType === 'application/gzip'
+    ) {
+      return FileArchive;
+    }
+  }
+  
+  // Fallback to extension parsing for backward compatibility
   const extension = fileName?.split('.').pop()?.toLowerCase() || '';
   
   switch (extension) {
@@ -1362,8 +1402,8 @@ export default function EventLivePage() {
               {/* Event Pack Files Grid */}
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {translatedEventPackFiles.map((file, index) => {
-                  // Get the appropriate file type icon
-                  const FileIcon = getFileTypeIcon(file.fileName || file.fileUrl);
+                  // Get the appropriate file type icon (prioritizes MIME type over extension)
+                  const FileIcon = getFileTypeIcon(file.fileName || file.fileUrl, file.fileType);
                   
                   // Check if file is a PDF or Image using MIME type
                   const isPdf = file.fileType === 'application/pdf';
@@ -1496,7 +1536,7 @@ export default function EventLivePage() {
               <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {event.attachedResources.map((item, index) => {
                   const resource = item.resource;
-                  const FileIcon = getFileTypeIcon(resource.fileUrl || '');
+                  const FileIcon = getFileTypeIcon(resource.fileUrl || '', resource.fileType);
                   
                   // Check if resource is a PDF or Image using MIME type
                   const isPdf = resource.fileType === 'application/pdf';
