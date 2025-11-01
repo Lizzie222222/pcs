@@ -143,6 +143,8 @@ export const users = pgTable("users", {
   hasSeenOnboarding: boolean("has_seen_onboarding").default(false),
   needsPasswordReset: boolean("needs_password_reset").default(false),
   lastViewedEventsAt: timestamp("last_viewed_events_at"),
+  lastActiveAt: timestamp("last_active_at"),
+  hasInteracted: boolean("has_interacted").default(false),
   deletedAt: timestamp("deleted_at"),
   isMigrated: boolean("is_migrated").default(false),
   legacyUserId: varchar("legacy_user_id"),

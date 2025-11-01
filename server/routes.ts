@@ -5305,7 +5305,7 @@ Return JSON with:
         const chartDataJson = JSON.stringify(chartData);
         
         let topPlasticsRows = '';
-        templateData.topProblemPlastics.forEach((item) => {
+        templateData.topProblemPlastics.forEach((item: any) => {
           topPlasticsRows += `
         <tr>
           <td class="rank">${item.rank}</td>

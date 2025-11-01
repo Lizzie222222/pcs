@@ -69,7 +69,7 @@ export default function Profile() {
   const [deleteConfirmText, setDeleteConfirmText] = useState('');
 
   // Check if user has password authentication enabled
-  const hasPassword = user?.hasPassword;
+  const hasPassword = !!user?.passwordHash;
 
   // Update profile mutation
   const updateProfileMutation = useMutation({
