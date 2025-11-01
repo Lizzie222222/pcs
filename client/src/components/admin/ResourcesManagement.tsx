@@ -791,7 +791,7 @@ export default function ResourcesManagement() {
   });
 
   const { data: resources = [], isLoading, refetch } = useQuery<Resource[]>({
-    queryKey: ['/api/resources', resourceFilters],
+    queryKey: ['/api/resources', resourceFilters, { includeHidden: true }],
     queryFn: async () => {
       const params = new URLSearchParams({
         ...resourceFilters,
@@ -1347,7 +1347,7 @@ export default function ResourcesManagement() {
           onClose={() => setShowAddForm(false)}
           onSuccess={() => {
             setShowAddForm(false);
-            refetch();
+            queryClient.invalidateQueries({ queryKey: ['/api/resources'] });
           }}
         />
       )}
@@ -1358,7 +1358,7 @@ export default function ResourcesManagement() {
           onClose={() => setEditingResource(null)}
           onSuccess={() => {
             setEditingResource(null);
-            refetch();
+            queryClient.invalidateQueries({ queryKey: ['/api/resources'] });
           }}
         />
       )}
