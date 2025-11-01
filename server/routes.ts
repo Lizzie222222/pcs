@@ -2141,27 +2141,23 @@ Return JSON with:
         return res.status(404).json({ message: "User not found" });
       }
       
-      // Validate request body
+      // Validate request body (only editable fields - schoolName and currentStage are read-only)
       const profileSchema = z.object({
         firstName: z.string().min(1, "First name is required"),
         lastName: z.string().optional(),
         preferredLanguage: z.string().optional(),
         studentCount: z.number().int().positive().optional(),
-        schoolName: z.string().min(1).optional(),
         country: z.string().min(1).optional(),
-        currentStage: z.enum(['inspire', 'investigate', 'act']).optional(),
       });
       
-      const { firstName, lastName, preferredLanguage, studentCount, schoolName, country, currentStage } = profileSchema.parse(req.body);
+      const { firstName, lastName, preferredLanguage, studentCount, country } = profileSchema.parse(req.body);
       
       console.log(`[Migrated User Onboarding] User ${userId} updating profile:`, {
         firstName,
         lastName,
         preferredLanguage,
         studentCount,
-        schoolName,
-        country,
-        currentStage
+        country
       });
       
       // Update user profile and mark onboarding as complete
@@ -2177,8 +2173,9 @@ Return JSON with:
         })
         .where(eq(users.id, userId));
       
-      // If any school fields are provided, update the user's school
-      const hasSchoolUpdates = studentCount !== undefined || schoolName !== undefined || country !== undefined || currentStage !== undefined;
+      // If any editable school fields are provided, update the user's school
+      // Note: schoolName and currentStage are read-only during onboarding
+      const hasSchoolUpdates = studentCount !== undefined || country !== undefined;
       
       if (hasSchoolUpdates) {
         console.log(`[Migrated User Onboarding] Updating school fields for user ${userId}`);
@@ -2195,15 +2192,13 @@ Return JSON with:
         if (userSchools.length > 0) {
           const schoolId = userSchools[0].schoolId;
           
-          // Build update object with only the fields that were provided
+          // Build update object with only the editable fields
           const schoolUpdates: any = {
             updatedAt: new Date()
           };
           
           if (studentCount !== undefined) schoolUpdates.studentCount = studentCount;
-          if (schoolName !== undefined) schoolUpdates.name = schoolName;
           if (country !== undefined) schoolUpdates.country = country;
-          if (currentStage !== undefined) schoolUpdates.currentStage = currentStage;
           
           // Update the school
           await db

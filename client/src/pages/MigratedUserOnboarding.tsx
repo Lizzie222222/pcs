@@ -48,14 +48,12 @@ const languages = [
   { code: 'cy', nativeName: 'Cymraeg' },
 ];
 
-// Define form schema
+// Define form schema - only editable fields
 const profileFormSchema = z.object({
   firstName: z.string().min(1, "First name is required"),
   lastName: z.string().optional(),
   preferredLanguage: z.string().min(1, "Please select a language"),
-  schoolName: z.string().min(1, "School name is required"),
   country: z.string().min(1, "Country is required"),
-  currentStage: z.enum(['inspire', 'investigate', 'act']),
   studentCount: z.union([
     z.coerce.number().positive(),
     z.literal(''),
@@ -89,16 +87,14 @@ export default function MigratedUserOnboarding() {
     queryKey: ['/api/countries'],
   });
 
-  // Initialize form with both user and school data
+  // Initialize form with user data and editable school fields only
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       firstName: user?.firstName || "",
       lastName: user?.lastName || "",
       preferredLanguage: user?.preferredLanguage || "en",
-      schoolName: "",
       country: "",
-      currentStage: 'inspire' as const,
       studentCount: null,
     },
   });
@@ -110,24 +106,20 @@ export default function MigratedUserOnboarding() {
         firstName: user?.firstName || "",
         lastName: user?.lastName || "",
         preferredLanguage: user?.preferredLanguage || "en",
-        schoolName: schoolData.schoolName || "",
         country: schoolData.country || "",
-        currentStage: (schoolData.currentStage as 'inspire' | 'investigate' | 'act') || 'inspire',
         studentCount: schoolData.studentCount || null,
       });
     }
   }, [schoolData, user, form]);
 
-  // Update profile mutation
+  // Update profile mutation - only send editable fields
   const updateProfileMutation = useMutation({
     mutationFn: async (data: ProfileFormValues) => {
       const response = await apiRequest("POST", "/api/auth/complete-migrated-onboarding", {
         firstName: data.firstName,
         lastName: data.lastName || "",
         preferredLanguage: data.preferredLanguage,
-        schoolName: data.schoolName,
         country: data.country,
-        currentStage: data.currentStage,
         studentCount: data.studentCount || null,
       });
       return response.json();
@@ -169,14 +161,50 @@ export default function MigratedUserOnboarding() {
           </p>
         </div>
 
-        {/* Evidence Resubmission Notice */}
-        <Alert variant="default" className="mb-6" data-testid="alert-evidence-notice">
-          <Info className="h-4 w-4" />
-          <AlertTitle>{t("migratedUser.onboarding.evidence_notice_title")}</AlertTitle>
-          <AlertDescription>
+        {/* Evidence Resubmission Notice - Prominent */}
+        <Alert variant="default" className="mb-6 border-amber-300 bg-amber-50" data-testid="alert-evidence-notice">
+          <AlertCircle className="h-5 w-5 text-amber-600" />
+          <AlertTitle className="text-amber-900 font-semibold">
+            {t("migratedUser.onboarding.evidence_notice_title")}
+          </AlertTitle>
+          <AlertDescription className="text-amber-800">
             {t("migratedUser.onboarding.evidence_notice_description")}
           </AlertDescription>
         </Alert>
+
+        {/* School Information - Read-Only Display */}
+        {schoolData && (
+          <Card className="mb-6 border-blue-200 bg-blue-50" data-testid="card-school-info">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-blue-100 rounded-lg">
+                  <School className="h-5 w-5 text-blue-600" />
+                </div>
+                <CardTitle className="text-lg text-blue-900">
+                  {t("migratedUser.onboarding.school_info_title")}
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div>
+                <p className="text-sm font-medium text-blue-700 mb-1">
+                  {t("migratedUser.onboarding.school_name_label")}
+                </p>
+                <p className="text-base text-blue-900 font-semibold" data-testid="text-school-name">
+                  {schoolData.schoolName}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-blue-700 mb-1">
+                  {t("migratedUser.onboarding.stage_label")}
+                </p>
+                <p className="text-base text-blue-900 font-semibold capitalize" data-testid="text-current-stage">
+                  {schoolData.currentStage}
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Profile Form */}
         <Card data-testid="card-profile-form">
@@ -205,24 +233,6 @@ export default function MigratedUserOnboarding() {
             ) : (
               <Form {...form}>
                 <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-                  <FormField
-                    control={form.control}
-                    name="schoolName"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("migratedUser.onboarding.school_name_label")} *</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            placeholder={t("migratedUser.onboarding.school_name_placeholder")}
-                            data-testid="input-schoolName"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
                   <FormField
                     control={form.control}
                     name="country"
@@ -254,28 +264,23 @@ export default function MigratedUserOnboarding() {
 
                   <FormField
                     control={form.control}
-                    name="currentStage"
+                    name="studentCount"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>{t("migratedUser.onboarding.stage_label")} *</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger data-testid="select-stage">
-                              <SelectValue placeholder={t("migratedUser.onboarding.stage_placeholder")} />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="inspire" data-testid="select-option-inspire">
-                              Inspire
-                            </SelectItem>
-                            <SelectItem value="investigate" data-testid="select-option-investigate">
-                              Investigate
-                            </SelectItem>
-                            <SelectItem value="act" data-testid="select-option-act">
-                              Act
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                        <FormLabel>{t("migratedUser.onboarding.student_count_label")}</FormLabel>
+                        <FormControl>
+                          <Input
+                            {...field}
+                            type="number"
+                            placeholder={t("migratedUser.onboarding.studentCount_placeholder")}
+                            data-testid="input-studentCount"
+                            value={field.value ?? ""}
+                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                          />
+                        </FormControl>
+                        <FormDescription>
+                          {t("migratedUser.onboarding.student_count_help")}
+                        </FormDescription>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -345,30 +350,6 @@ export default function MigratedUserOnboarding() {
                     </FormItem>
                   )}
                 />
-
-                  <FormField
-                    control={form.control}
-                    name="studentCount"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>{t("migratedUser.onboarding.student_count_label")}</FormLabel>
-                        <FormControl>
-                          <Input
-                            {...field}
-                            type="number"
-                            placeholder={t("migratedUser.onboarding.studentCount_placeholder")}
-                            data-testid="input-studentCount"
-                            value={field.value ?? ""}
-                            onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          {t("migratedUser.onboarding.student_count_help")}
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
 
                   <Button
                     type="submit"
