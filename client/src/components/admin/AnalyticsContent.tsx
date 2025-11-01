@@ -119,6 +119,8 @@ interface AdminPromiseMetrics {
     oceanPlasticBottles: number;
     fishSaved: number;
     seaTurtles: number;
+    dolphins: number;
+    plasticBags: number;
   };
   seriousMetrics: {
     co2Prevented: number;

@@ -32,6 +32,7 @@ import { uploadToObjectStorage } from './routes/utils/objectStorage';
 import { requireAdmin, requireAdminOrPartner } from './routes/utils/middleware';
 import { normalizeObjectStorageUrl, normalizeFileArray } from './routes/utils/urlNormalization';
 import { generatePDFReport } from './lib/pdfGenerator';
+import { calculateAggregateMetrics } from '@shared/plasticMetrics';
 
 // Import WebSocket collaboration functions
 import { getOnlineUsers, broadcastChatMessage, notifyDocumentLock, broadcastDocumentUnlock } from './websocket';
@@ -6007,31 +6008,43 @@ Return JSON with:
       // Get all active promises
       const activePromises = await storage.getAllActivePromises();
       
-      // Calculate aggregated metrics
-      const totalPromises = activePromises.length;
+      // Use the calculateAggregateMetrics function to get comprehensive metrics
+      const aggregateMetrics = calculateAggregateMetrics(activePromises);
       
-      // Group by item type and calculate totals
-      const itemTypeMetrics = activePromises.reduce((acc, promise) => {
-        const type = promise.plasticItemType;
-        if (!acc[type]) {
-          acc[type] = {
-            itemType: type,
-            count: 0,
-            totalReduction: 0,
-          };
-        }
-        acc[type].count += 1;
-        acc[type].totalReduction += promise.reductionAmount;
-        return acc;
-      }, {} as Record<string, { itemType: string; count: number; totalReduction: number }>);
+      // Count unique schools with promises
+      const uniqueSchoolIds = new Set(activePromises.map(p => p.schoolId));
+      const totalSchoolsWithPromises = uniqueSchoolIds.size;
       
-      const itemTypeBreakdown = Object.values(itemTypeMetrics);
-      const totalReductionAmount = activePromises.reduce((sum, p) => sum + p.reductionAmount, 0);
+      // Calculate total annualized reduction (sum of all items after frequency conversion)
+      const frequencyMultipliers: Record<string, number> = {
+        week: 52,
+        month: 12,
+        year: 1,
+      };
+      
+      const totalAnnualReduction = activePromises.reduce((sum, p) => {
+        const multiplier = frequencyMultipliers[p.timeframeUnit] || 1;
+        return sum + (p.reductionAmount * multiplier);
+      }, 0);
       
       res.json({
-        totalPromises,
-        totalReductionAmount,
-        itemTypeBreakdown,
+        totalPromises: activePromises.length,
+        totalSchoolsWithPromises,
+        totalAnnualReduction,
+        totalAnnualWeightKg: aggregateMetrics.seriousMetrics.kilograms,
+        funMetrics: {
+          oceanPlasticBottles: aggregateMetrics.funMetrics.oceanPlasticBottles,
+          fishSaved: aggregateMetrics.funMetrics.fishSaved,
+          seaTurtles: aggregateMetrics.funMetrics.seaTurtles,
+          dolphins: aggregateMetrics.funMetrics.dolphins,
+          plasticBags: aggregateMetrics.funMetrics.plasticBags,
+        },
+        seriousMetrics: {
+          co2Prevented: aggregateMetrics.seriousMetrics.co2Prevented,
+          oilSaved: aggregateMetrics.seriousMetrics.oilSaved,
+          tons: aggregateMetrics.seriousMetrics.tons,
+        },
+        byItemType: aggregateMetrics.byItemType,
       });
     } catch (error) {
       console.error("Error fetching reduction promise metrics:", error);
