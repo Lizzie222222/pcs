@@ -1485,10 +1485,15 @@ export default function EventLivePage() {
                   const resource = item.resource;
                   const FileIcon = getFileTypeIcon(resource.fileUrl || '');
                   
-                  // Check if resource is a PDF
+                  // Check if resource is a PDF or Image
                   const fileUrl = resource.fileUrl || '';
                   const isPdf = fileUrl.toLowerCase().includes('.pdf');
                   const pdfProxyUrl = isPdf ? getProxyUrl(fileUrl) : '';
+                  
+                  // Check if resource is an image
+                  const extension = fileUrl?.split('.').pop()?.toLowerCase() || '';
+                  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension);
+                  const imageProxyUrl = isImage ? getProxyUrl(fileUrl) : '';
                   
                   return (
                     <Card 
@@ -1513,6 +1518,15 @@ export default function EventLivePage() {
                             <PDFThumbnail
                               url={pdfProxyUrl}
                               className="w-full h-full"
+                            />
+                          </div>
+                        ) : isImage && imageProxyUrl ? (
+                          <div className="w-full h-full">
+                            <img
+                              src={imageProxyUrl}
+                              alt={resource.title}
+                              className="w-full h-full object-cover"
+                              data-testid={`img-resource-thumbnail-${index}`}
                             />
                           </div>
                         ) : (
