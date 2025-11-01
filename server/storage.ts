@@ -3364,7 +3364,8 @@ export class DatabaseStorage implements IStorage {
             primaryContact.email,
             school.name,
             currentRound,
-            `${getBaseUrl()}/dashboard`
+            `${getBaseUrl()}/dashboard`,
+            primaryContact.preferredLanguage
           ).catch(err => console.error('Failed to send celebration email:', err));
         }
       }
