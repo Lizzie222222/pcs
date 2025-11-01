@@ -1364,10 +1364,15 @@ export default function EventLivePage() {
                   // Get the appropriate file type icon
                   const FileIcon = getFileTypeIcon(file.fileName || file.fileUrl);
                   
-                  // Check if file is a PDF
+                  // Check if file is a PDF or Image
                   const fileName = file.fileName || file.fileUrl || '';
                   const isPdf = fileName.toLowerCase().endsWith('.pdf');
                   const pdfProxyUrl = isPdf ? getProxyUrl(file.fileUrl) : '';
+                  
+                  // Check if file is an image
+                  const extension = fileName?.split('.').pop()?.toLowerCase() || '';
+                  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension);
+                  const imageProxyUrl = isImage ? getProxyUrl(file.fileUrl) : '';
                   
                   // Determine if file has language metadata for badge
                   const fileLanguage = file.language;
@@ -1399,6 +1404,15 @@ export default function EventLivePage() {
                             <PDFThumbnail
                               url={pdfProxyUrl}
                               className="w-full h-full"
+                            />
+                          </div>
+                        ) : isImage && imageProxyUrl ? (
+                          <div className="w-full h-full">
+                            <img
+                              src={imageProxyUrl}
+                              alt={file.title}
+                              className="w-full h-full object-cover"
+                              data-testid={`img-event-pack-thumbnail-${index}`}
                             />
                           </div>
                         ) : (
