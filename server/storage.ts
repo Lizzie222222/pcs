@@ -194,6 +194,8 @@ export interface IStorage {
   getTeacherEmails(): Promise<string[]>;
   markOnboardingComplete(userId: string): Promise<User | undefined>;
   updateAdminOnboarding(userId: string, data: { firstName: string; lastName: string; preferredLanguage: string }): Promise<User | undefined>;
+  updateUserLastActive(userId: string): Promise<void>;
+  markUserAsInteracted(userId: string): Promise<void>;
   
   // School operations
   createSchool(school: InsertSchool): Promise<School>;
@@ -585,8 +587,8 @@ export interface IStorage {
   // Reduction Promise operations
   getReductionPromisesBySchool(schoolId: string): Promise<ReductionPromise[]>;
   getReductionPromisesByAudit(auditId: string): Promise<ReductionPromise[]>;
-  createReductionPromise(data: InsertReductionPromise): Promise<ReductionPromise>;
-  updateReductionPromise(id: string, data: Partial<InsertReductionPromise>): Promise<ReductionPromise>;
+  createReductionPromise(data: InsertReductionPromise, createdBy: string): Promise<ReductionPromise>;
+  updateReductionPromise(id: string, data: Partial<InsertReductionPromise>, existing?: ReductionPromise): Promise<ReductionPromise>;
   deleteReductionPromise(id: string): Promise<void>;
   getActivePromisesBySchool(schoolId: string): Promise<ReductionPromise[]>;
   getAllActivePromises(): Promise<ReductionPromise[]>;
@@ -1297,6 +1299,20 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, userId))
       .returning();
     return user;
+  }
+
+  async updateUserLastActive(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ lastActiveAt: new Date() })
+      .where(eq(users.id, userId));
+  }
+
+  async markUserAsInteracted(userId: string): Promise<void> {
+    await db
+      .update(users)
+      .set({ hasInteracted: true, lastActiveAt: new Date(), updatedAt: new Date() })
+      .where(eq(users.id, userId));
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
@@ -5782,18 +5798,33 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(reductionPromises.createdAt));
   }
 
-  async createReductionPromise(data: InsertReductionPromise): Promise<ReductionPromise> {
+  async createReductionPromise(data: InsertReductionPromise, createdBy: string): Promise<ReductionPromise> {
+    // Calculate reductionAmount from baseline and target quantities
+    const reductionAmount = data.baselineQuantity - data.targetQuantity;
+    
     const [newPromise] = await db
       .insert(reductionPromises)
-      .values(data)
+      .values({
+        ...data,
+        reductionAmount,
+        createdBy,
+      } as any)
       .returning();
     return newPromise;
   }
 
-  async updateReductionPromise(id: string, data: Partial<InsertReductionPromise>): Promise<ReductionPromise> {
+  async updateReductionPromise(id: string, data: Partial<InsertReductionPromise>, existing?: ReductionPromise): Promise<ReductionPromise> {
+    // Recalculate reductionAmount if baseline or target quantities are being updated
+    let updateData: any = { ...data };
+    if (existing && (data.baselineQuantity !== undefined || data.targetQuantity !== undefined)) {
+      const baselineQuantity = data.baselineQuantity ?? existing.baselineQuantity;
+      const targetQuantity = data.targetQuantity ?? existing.targetQuantity;
+      updateData.reductionAmount = baselineQuantity - targetQuantity;
+    }
+    
     const [updatedPromise] = await db
       .update(reductionPromises)
-      .set({ ...data, updatedAt: new Date() })
+      .set({ ...updateData, updatedAt: new Date() })
       .where(eq(reductionPromises.id, id))
       .returning();
     return updatedPromise;

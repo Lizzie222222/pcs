@@ -701,6 +701,28 @@ export const isAuthenticated: RequestHandler = (req, res, next) => {
   });
 };
 
+// Track user activity - updates lastActiveAt on every authenticated request
+export const trackUserActivity: RequestHandler = async (req, res, next) => {
+  if (req.isAuthenticated() && req.user) {
+    try {
+      await storage.updateUserLastActive(req.user.id);
+    } catch (error) {
+      // Log error but don't block the request
+      console.error('[Activity Tracking] Error updating lastActiveAt:', error);
+    }
+  }
+  next();
+};
+
+// Mark user as interacted - sets hasInteracted flag when user performs meaningful actions
+export async function markUserInteracted(userId: string): Promise<void> {
+  try {
+    await storage.markUserAsInteracted(userId);
+  } catch (error) {
+    console.error('[Interaction Tracking] Error marking user as interacted:', error);
+  }
+}
+
 // Admin middleware
 export const isAdmin: RequestHandler = (req, res, next) => {
   if (req.isAuthenticated() && req.user && req.user.isAdmin) {

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated, isSchoolMember } from "./auth";
+import { setupAuth, isAuthenticated, isSchoolMember, trackUserActivity, markUserInteracted } from "./auth";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData, getBaseUrl } from "./emailService";
@@ -5590,16 +5590,8 @@ Return JSON with:
         return res.status(403).json({ message: "Not authorized to create promises for this school" });
       }
       
-      // Calculate reduction amount
-      const reductionAmount = validatedData.baselineQuantity - validatedData.targetQuantity;
-      
-      // Create the promise
-      const promise = await storage.createReductionPromise({
-        ...validatedData,
-        reductionAmount,
-        status: 'active',
-        createdBy: userId,
-      });
+      // Create the promise (reductionAmount and status defaults are handled in storage)
+      const promise = await storage.createReductionPromise(validatedData, userId);
       
       res.status(201).json(promise);
     } catch (error) {
@@ -5642,16 +5634,8 @@ Return JSON with:
       const partialSchema = insertReductionPromiseSchema.partial();
       const validatedData = partialSchema.parse(req.body);
       
-      // Recalculate reduction amount if baseline or target quantities are being updated
-      let updateData = { ...validatedData };
-      if (validatedData.baselineQuantity !== undefined || validatedData.targetQuantity !== undefined) {
-        const baselineQuantity = validatedData.baselineQuantity ?? existingPromise.baselineQuantity;
-        const targetQuantity = validatedData.targetQuantity ?? existingPromise.targetQuantity;
-        updateData.reductionAmount = baselineQuantity - targetQuantity;
-      }
-      
-      // Update the promise
-      const updatedPromise = await storage.updateReductionPromise(id, updateData);
+      // Update the promise (reductionAmount will be recalculated in storage if needed)
+      const updatedPromise = await storage.updateReductionPromise(id, validatedData, existingPromise);
       res.json(updatedPromise);
     } catch (error) {
       if (error instanceof z.ZodError) {
