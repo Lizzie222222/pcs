@@ -6433,7 +6433,7 @@ Return JSON with:
   // Get all schools for admin management
   app.get('/api/admin/schools', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const { country, stage, type, search, language, sortByDate, joinedMonth, joinedYear, limit, offset } = req.query;
+      const { country, stage, type, search, language, sortByDate, joinedMonth, joinedYear, interactionStatus, limit, offset } = req.query;
       const schools = await storage.getSchools({
         country: country as string,
         stage: stage as string,
@@ -6443,6 +6443,7 @@ Return JSON with:
         sortByDate: sortByDate as 'newest' | 'oldest',
         joinedMonth: joinedMonth as string,
         joinedYear: joinedYear as string,
+        interactionStatus: interactionStatus as string,
         limit: limit ? parseInt(limit as string) : 10000,
         offset: offset ? parseInt(offset as string) : 0,
       });

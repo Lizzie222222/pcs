@@ -1488,6 +1488,7 @@ export class DatabaseStorage implements IStorage {
     sortByDate?: 'newest' | 'oldest';
     joinedMonth?: string;
     joinedYear?: string;
+    interactionStatus?: string;
     limit?: number;
     offset?: number;
   } = {}): Promise<Array<School & { primaryContactEmail: string | null; primaryContactFirstName: string | null; primaryContactLastName: string | null }>> {
@@ -1593,7 +1594,36 @@ export class DatabaseStorage implements IStorage {
       query = query.offset(filters.offset) as any;
     }
     
-    const results = await query;
+    let results = await query;
+    
+    // Filter by user interaction status if specified
+    if (filters.interactionStatus && filters.interactionStatus !== 'all') {
+      // Get all school IDs with their interaction status
+      const schoolInteractionQuery = await db
+        .select({
+          schoolId: schoolUsers.schoolId,
+          hasInteractedUser: sql<boolean>`EXISTS(
+            SELECT 1 FROM ${schoolUsers} su
+            JOIN ${users} u ON su.user_id = u.id
+            WHERE su.school_id = ${schoolUsers.schoolId}
+            AND u.has_interacted = true
+          )`.as('has_interacted_user')
+        })
+        .from(schoolUsers)
+        .groupBy(schoolUsers.schoolId);
+      
+      const schoolInteractionMap = new Map(
+        schoolInteractionQuery.map(row => [row.schoolId, row.hasInteractedUser])
+      );
+      
+      if (filters.interactionStatus === 'interacted') {
+        // Only include schools with at least one interacted user
+        results = results.filter(school => schoolInteractionMap.get(school.id) === true);
+      } else if (filters.interactionStatus === 'not-interacted') {
+        // Only include schools without any interacted users (or no users at all)
+        results = results.filter(school => schoolInteractionMap.get(school.id) !== true);
+      }
+    }
     
     // Normalize country codes to full names
     return results.map(school => ({
