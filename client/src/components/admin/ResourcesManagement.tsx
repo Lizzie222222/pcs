@@ -797,6 +797,7 @@ export default function ResourcesManagement() {
         ...resourceFilters,
         limit: '100',
         offset: '0',
+        includeHidden: 'true',
       });
       Object.keys(resourceFilters).forEach(key => {
         const value = resourceFilters[key as keyof typeof resourceFilters];
