@@ -224,7 +224,8 @@ export default function ForgotPassword() {
 
                 <Button
                   type="submit"
-                  className="w-full bg-ocean hover:bg-ocean-dark text-white"
+                  size="lg"
+                  className="w-full btn-primary min-h-[44px]"
                   disabled={isSubmitting}
                   data-testid="button-submit"
                 >
