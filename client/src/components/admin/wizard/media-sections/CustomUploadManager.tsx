@@ -73,49 +73,68 @@ export function CustomUploadManager({ form, templateConfig }: CustomUploadManage
 
   const handleImageComplete = async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
     if (result.successful && result.successful.length > 0) {
-      const uploadedFile = result.successful[0];
-      const uploadUrl = uploadedFile.uploadURL?.split('?')[0] || '';
-
-      // Set ACL policy for the uploaded image
       try {
         if (!user?.id) {
           throw new Error("User not authenticated");
         }
 
-        const aclResponse = await fetch('/api/case-studies/set-acl', {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            fileURL: uploadUrl,
-            visibility: 'public',
-            filename: `case-study-custom-${Date.now()}.jpg`,
-            owner: user.id,
-          }),
-        });
+        const newImages = [];
+        let failedCount = 0;
 
-        if (!aclResponse.ok) {
-          const errorData = await aclResponse.json();
-          throw new Error(errorData.message || 'Failed to set ACL');
+        // Process each uploaded file
+        for (const uploadedFile of result.successful) {
+          const uploadUrl = uploadedFile.uploadURL?.split('?')[0] || '';
+
+          try {
+            // Set ACL policy for each uploaded image
+            const aclResponse = await fetch('/api/case-studies/set-acl', {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                fileURL: uploadUrl,
+                visibility: 'public',
+                filename: `case-study-custom-${Date.now()}-${nanoid(6)}.jpg`,
+                owner: user.id,
+              }),
+            });
+
+            if (!aclResponse.ok) {
+              const errorData = await aclResponse.json();
+              throw new Error(errorData.message || 'Failed to set ACL');
+            }
+
+            const aclData = await aclResponse.json();
+            const objectPath = aclData.objectPath || uploadUrl;
+
+            newImages.push({
+              id: nanoid(),
+              url: objectPath,
+              caption: "",
+              altText: "",
+              source: 'custom',
+            });
+          } catch (error) {
+            console.error('Failed to process image:', uploadUrl, error);
+            failedCount++;
+          }
         }
 
-        const aclData = await aclResponse.json();
-        const objectPath = aclData.objectPath || uploadUrl;
+        // Add all successfully processed images to the form
+        if (newImages.length > 0) {
+          const currentImages = form.getValues("images") || [];
+          form.setValue("images", [...currentImages, ...newImages]);
 
-        const newImage = {
-          id: nanoid(),
-          url: objectPath,
-          caption: "",
-          altText: "",
-          source: 'custom',
-        };
-        
-        const currentImages = form.getValues("images") || [];
-        form.setValue("images", [...currentImages, newImage]);
-
-        toast({
-          title: "Image Uploaded",
-          description: "Custom image has been successfully uploaded",
-        });
+          toast({
+            title: "Images Uploaded",
+            description: `${newImages.length} image${newImages.length > 1 ? 's' : ''} successfully uploaded${failedCount > 0 ? ` (${failedCount} failed)` : ''}`,
+          });
+        } else {
+          toast({
+            title: "Upload Error",
+            description: "Failed to upload images. Please try again.",
+            variant: "destructive",
+          });
+        }
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to set image permissions";
         toast({

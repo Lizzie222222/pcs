@@ -37,11 +37,34 @@ export function sanitizeFilename(filename: string): string {
 }
 
 /**
+ * @description Converts relative URLs to absolute URLs for PDF generation
+ * @param {string} url - URL to convert (can be relative or absolute)
+ * @param {string} baseUrl - Base URL to use for relative URLs
+ * @returns {string} Absolute URL
+ */
+function toAbsoluteUrl(url: string | null | undefined, baseUrl: string): string {
+  if (!url) return '';
+  
+  // If already absolute, return as-is
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  
+  // Convert relative URL to absolute
+  if (url.startsWith('/')) {
+    return `${baseUrl}${url}`;
+  }
+  
+  return url;
+}
+
+/**
  * @description Generates beautifully formatted HTML for case study PDF export with embedded styles. Includes images, quotes, timeline, and metrics sections.
  * @param {any} caseStudy - Case study data object with all fields
+ * @param {string} baseUrl - Base URL for converting relative image URLs to absolute (e.g., "https://example.com")
  * @returns {string} Complete HTML document ready for PDF conversion
  */
-export function generatePdfHtml(caseStudy: any): string {
+export function generatePdfHtml(caseStudy: any, baseUrl: string = ''): string {
   return `
     <!DOCTYPE html>
     <html>
@@ -276,7 +299,7 @@ export function generatePdfHtml(caseStudy: any): string {
       </div>
       
       <!-- Main image -->
-      ${caseStudy.imageUrl ? `<img src="${caseStudy.imageUrl}" alt="Hero image" />` : ''}
+      ${caseStudy.imageUrl ? `<img src="${toAbsoluteUrl(caseStudy.imageUrl, baseUrl)}" alt="Hero image" />` : ''}
       
       <!-- Description (rich text - no escaping) -->
       ${caseStudy.description ? `
@@ -299,11 +322,11 @@ export function generatePdfHtml(caseStudy: any): string {
         <div class="before-after">
           <div class="before-after-item">
             <h3>Before</h3>
-            <img src="${caseStudy.beforeImage}" alt="Before transformation" />
+            <img src="${toAbsoluteUrl(caseStudy.beforeImage, baseUrl)}" alt="Before transformation" />
           </div>
           <div class="before-after-item">
             <h3>After</h3>
-            <img src="${caseStudy.afterImage}" alt="After transformation" />
+            <img src="${toAbsoluteUrl(caseStudy.afterImage, baseUrl)}" alt="After transformation" />
           </div>
         </div>
       ` : ''}
@@ -327,7 +350,7 @@ export function generatePdfHtml(caseStudy: any): string {
         <div class="image-gallery">
           ${caseStudy.images.map((img: any) => `
             <div>
-              <img src="${img.url || img}" alt="${escapeHtml(img.caption || 'Gallery image')}" />
+              <img src="${toAbsoluteUrl(img.url || img, baseUrl)}" alt="${escapeHtml(img.caption || 'Gallery image')}" />
               ${img.caption ? `<div class="image-caption">${escapeHtml(img.caption)}</div>` : ''}
             </div>
           `).join('')}
@@ -343,7 +366,7 @@ export function generatePdfHtml(caseStudy: any): string {
             const thumbnail = video.thumbnail || extractVideoThumbnail(videoUrl);
             return `
               <div class="video-container">
-                ${thumbnail ? `<img class="video-thumbnail" src="${thumbnail}" alt="Video thumbnail" />` : ''}
+                ${thumbnail ? `<img class="video-thumbnail" src="${toAbsoluteUrl(thumbnail, baseUrl)}" alt="Video thumbnail" />` : ''}
                 <div class="video-url">${escapeHtml(videoUrl)}</div>
                 ${video.title ? `<div style="margin-top: 5px;"><strong>${escapeHtml(video.title)}</strong></div>` : ''}
               </div>

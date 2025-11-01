@@ -1276,8 +1276,13 @@ Return JSON with:
       
       const page = await browser.newPage();
       
+      // Get base URL for converting relative image URLs to absolute
+      const protocol = req.protocol || 'https';
+      const host = req.get('host') || 'plasticcleverschools.com';
+      const baseUrl = `${protocol}://${host}`;
+      
       // Generate beautiful HTML for PDF
-      const htmlContent = generatePdfHtml(caseStudyWithEvidence);
+      const htmlContent = generatePdfHtml(caseStudyWithEvidence, baseUrl);
       await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
       
       console.log('[PDF] HTML content loaded, waiting for images...');
