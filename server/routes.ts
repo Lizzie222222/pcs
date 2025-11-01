@@ -2147,15 +2147,21 @@ Return JSON with:
         lastName: z.string().optional(),
         preferredLanguage: z.string().optional(),
         studentCount: z.number().int().positive().optional(),
+        schoolName: z.string().min(1).optional(),
+        country: z.string().min(1).optional(),
+        currentStage: z.enum(['inspire', 'investigate', 'act']).optional(),
       });
       
-      const { firstName, lastName, preferredLanguage, studentCount } = profileSchema.parse(req.body);
+      const { firstName, lastName, preferredLanguage, studentCount, schoolName, country, currentStage } = profileSchema.parse(req.body);
       
       console.log(`[Migrated User Onboarding] User ${userId} updating profile:`, {
         firstName,
         lastName,
         preferredLanguage,
-        studentCount
+        studentCount,
+        schoolName,
+        country,
+        currentStage
       });
       
       // Update user profile and mark onboarding as complete
@@ -2171,9 +2177,11 @@ Return JSON with:
         })
         .where(eq(users.id, userId));
       
-      // If studentCount is provided, update the user's school
-      if (studentCount !== undefined) {
-        console.log(`[Migrated User Onboarding] Updating student count to ${studentCount} for user ${userId}`);
+      // If any school fields are provided, update the user's school
+      const hasSchoolUpdates = studentCount !== undefined || schoolName !== undefined || country !== undefined || currentStage !== undefined;
+      
+      if (hasSchoolUpdates) {
+        console.log(`[Migrated User Onboarding] Updating school fields for user ${userId}`);
         
         // Fetch user's school via schoolUsers table
         const userSchools = await db
@@ -2187,18 +2195,25 @@ Return JSON with:
         if (userSchools.length > 0) {
           const schoolId = userSchools[0].schoolId;
           
-          // Update the school's studentCount
+          // Build update object with only the fields that were provided
+          const schoolUpdates: any = {
+            updatedAt: new Date()
+          };
+          
+          if (studentCount !== undefined) schoolUpdates.studentCount = studentCount;
+          if (schoolName !== undefined) schoolUpdates.name = schoolName;
+          if (country !== undefined) schoolUpdates.country = country;
+          if (currentStage !== undefined) schoolUpdates.currentStage = currentStage;
+          
+          // Update the school
           await db
             .update(schools)
-            .set({
-              studentCount,
-              updatedAt: new Date()
-            })
+            .set(schoolUpdates)
             .where(eq(schools.id, schoolId));
           
-          console.log(`[Migrated User Onboarding] Updated school ${schoolId} student count to ${studentCount}`);
+          console.log(`[Migrated User Onboarding] Updated school ${schoolId} with:`, schoolUpdates);
         } else {
-          console.log(`[Migrated User Onboarding] No school found for user ${userId}, skipping student count update`);
+          console.log(`[Migrated User Onboarding] No school found for user ${userId}, skipping school updates`);
         }
       }
       
