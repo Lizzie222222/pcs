@@ -24,16 +24,16 @@ interface PlasticWasteAuditProps {
   onClose?: () => void;
 }
 
-// Form schemas for each part
-const part1Schema = z.object({
-  schoolName: z.string().min(1, "School name is required"),
+// Schema factory functions that take t() for i18n support
+const createPart1Schema = (t: (key: string) => string) => z.object({
+  schoolName: z.string().min(1, t('audit.validation.schoolNameRequired')),
   studentCount: z.string().optional(),
   staffCount: z.string().optional(),
-  auditDate: z.string().min(1, "Audit date is required"),
+  auditDate: z.string().min(1, t('audit.validation.auditDateRequired')),
   auditTeam: z.string().optional(),
 });
 
-const part2Schema = z.object({
+const createPart2Schema = () => z.object({
   lunchroomPlasticBottles: z.string().default("0"),
   lunchroomPlasticCups: z.string().default("0"),
   lunchroomPlasticCutlery: z.string().default("0"),
@@ -54,7 +54,7 @@ const part2Schema = z.object({
   lunchroomNotes: z.string().optional(),
 });
 
-const part3Schema = z.object({
+const createPart3Schema = (t: (key: string) => string) => z.object({
   // Room selections
   selectedClassrooms: z.boolean().default(false),
   selectedToilets: z.boolean().default(false),
@@ -71,7 +71,7 @@ const part3Schema = z.object({
   classroomDisplayMaterials: z.string().default("0"),
   classroomOther: z.string().default("0"),
   classroomOtherDescription: z.string().optional(),
-  // Toilets (renamed from bathroom)
+  // Toilets
   toiletSoapBottles: z.string().default("0"),
   toiletBinLiners: z.string().default("0"),
   toiletCupsPaper: z.string().default("0"),
@@ -121,26 +121,26 @@ const part3Schema = z.object({
   (data) => data.selectedClassrooms || data.selectedToilets || data.selectedOffice || 
            data.selectedLibrary || data.selectedGym || data.selectedPlayground || 
            data.selectedCorridors || data.selectedScienceLabs || data.selectedArtRooms,
-  { message: "Please select at least one room type", path: ["selectedClassrooms"] }
+  { message: t('audit.validation.roomSelectionRequired'), path: ["selectedClassrooms"] }
 );
 
-const part4Schema = z.object({
+const createPart4Schema = (t: (key: string) => string) => z.object({
   hasRecyclingBins: z.boolean().default(false),
   recyclingBinLocations: z.string().optional(),
-  plasticWasteDestination: z.string().min(1, "Please specify where plastic waste goes"),
+  plasticWasteDestination: z.string().min(1, t('audit.validation.wasteDestinationRequired')),
   compostsOrganicWaste: z.boolean().default(false),
   hasPlasticReductionPolicy: z.boolean().default(false),
   reductionPolicyDetails: z.string().optional(),
   wasteManagementNotes: z.string().optional(),
 });
 
-type Part1Data = z.infer<typeof part1Schema>;
-type Part2Data = z.infer<typeof part2Schema>;
-type Part3Data = z.infer<typeof part3Schema>;
-type Part4Data = z.infer<typeof part4Schema>;
+type Part1Data = z.infer<ReturnType<typeof createPart1Schema>>;
+type Part2Data = z.infer<ReturnType<typeof createPart2Schema>>;
+type Part3Data = z.infer<ReturnType<typeof createPart3Schema>>;
+type Part4Data = z.infer<ReturnType<typeof createPart4Schema>>;
 
 export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps) {
-  const { t } = useTranslation('dashboard');
+  const { t } = useTranslation('audit');
   const [currentStep, setCurrentStep] = useState(1);
   const [auditId, setAuditId] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -161,7 +161,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
   // Forms for each part
   const form1 = useForm<Part1Data>({
-    resolver: zodResolver(part1Schema),
+    resolver: zodResolver(createPart1Schema(t)),
     defaultValues: {
       schoolName: "",
       studentCount: "",
@@ -172,7 +172,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
   });
 
   const form2 = useForm<Part2Data>({
-    resolver: zodResolver(part2Schema),
+    resolver: zodResolver(createPart2Schema()),
     defaultValues: {
       lunchroomPlasticBottles: "0",
       lunchroomPlasticCups: "0",
@@ -196,7 +196,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
   });
 
   const form3 = useForm<Part3Data>({
-    resolver: zodResolver(part3Schema),
+    resolver: zodResolver(createPart3Schema(t)),
     defaultValues: {
       selectedClassrooms: false,
       selectedToilets: false,
@@ -254,7 +254,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
   });
 
   const form4 = useForm<Part4Data>({
-    resolver: zodResolver(part4Schema),
+    resolver: zodResolver(createPart4Schema(t)),
     defaultValues: {
       hasRecyclingBins: false,
       recyclingBinLocations: "",
@@ -275,10 +275,10 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     mutationFn: async ({ file }: { file: File }) => {
       // Validate file
       if (file.type !== 'application/pdf') {
-        throw new Error('Only PDF files are allowed');
+        throw new Error(t('audit.overview.uploadFileTypeError'));
       }
       if (file.size > 10 * 1024 * 1024) { // 10MB
-        throw new Error('File size must be less than 10MB');
+        throw new Error(t('audit.overview.uploadFileSizeError'));
       }
 
       // Get signed URL
@@ -295,7 +295,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Failed to upload file to storage');
+        throw new Error(t('audit.overview.uploadStorageError'));
       }
 
       // Create submission record
@@ -311,13 +311,13 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/printable-form-submissions/school/${schoolId}`] });
       toast({
-        title: "Upload Successful",
-        description: "Audit form uploaded successfully",
+        title: t('audit.overview.uploadSuccessTitle'),
+        description: t('audit.overview.uploadSuccessDescription'),
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Upload Failed",
+        title: t('audit.overview.uploadFailedTitle'),
         description: error.message,
         variant: "destructive",
       });
@@ -342,13 +342,9 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
   };
 
   // Helper function to check if a room has any data
-  // A room is considered to have data if ANY of its fields have been explicitly set
-  // (even if set to 0 or "0", which is valid audit data)
   const hasRoomData = (data: any, fields: string[]) => {
     return fields.some(field => {
       const value = data[field];
-      // Field exists and has been set (undefined/null = not set, empty string = not set)
-      // But "0" or 0 = valid data (user explicitly entered zero)
       return value !== undefined && value !== null && value !== "";
     });
   };
@@ -380,7 +376,6 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
           selectedArtRooms: hasRoomData(part3Data, ['artRoomsPlasticBottles', 'artRoomsArtSupplies', 'artRoomsOther']),
         };
         
-        // Merge inferred selections with existing data, but only if the selection fields don't already exist
         const mergedData = {
           ...part3Data,
           selectedClassrooms: part3Data.selectedClassrooms ?? inferredSelections.selectedClassrooms,
@@ -425,8 +420,8 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       }
       queryClient.invalidateQueries({ queryKey: [`/api/audits/school/${schoolId}`] });
       toast({
-        title: "Progress saved",
-        description: "Your audit progress has been saved automatically.",
+        title: t('audit.status.progressSaved'),
+        description: t('audit.status.progressSavedDescription'),
       });
     },
   });
@@ -439,8 +434,8 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/audits/school/${schoolId}`] });
       toast({
-        title: "Audit submitted!",
-        description: "Your plastic waste audit has been submitted for review.",
+        title: t('audit.status.auditSubmitted'),
+        description: t('audit.status.auditSubmittedDescription'),
       });
       onClose?.();
     },
@@ -453,7 +448,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
     // Calculate daily counts first, then multiply by 190 for annual
     const dailyPlasticCounts: Record<string, number> = {
-      'Plastic bottles': 
+      [t('audit.plasticItems.plastic_bottles')]: 
         parseInt(part2Values.lunchroomPlasticBottles || "0") + 
         parseInt(part2Values.staffroomPlasticBottles || "0") +
         parseInt(part3Values.officePlasticBottles || "0") +
@@ -463,41 +458,41 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
         parseInt(part3Values.corridorsPlasticBottles || "0") +
         parseInt(part3Values.scienceLabsPlasticBottles || "0") +
         parseInt(part3Values.artRoomsPlasticBottles || "0"),
-      'Plastic cups': 
+      [t('audit.plasticItems.plastic_cups')]: 
         parseInt(part2Values.lunchroomPlasticCups || "0") + 
         parseInt(part2Values.staffroomPlasticCups || "0") +
         parseInt(part3Values.officePlasticCups || "0"),
-      'Plastic cutlery': parseInt(part2Values.lunchroomPlasticCutlery || "0"),
-      'Plastic straws': parseInt(part2Values.lunchroomPlasticStraws || "0"),
-      'Snack wrappers': 
+      [t('audit.plasticItems.plastic_cutlery')]: parseInt(part2Values.lunchroomPlasticCutlery || "0"),
+      [t('audit.plasticItems.plastic_straws')]: parseInt(part2Values.lunchroomPlasticStraws || "0"),
+      [t('audit.plasticItems.snack_wrappers')]: 
         parseInt(part2Values.lunchroomSnackWrappers || "0") + 
         parseInt(part2Values.staffroomSnackWrappers || "0"),
-      'Yoghurt pots': 
+      [t('audit.plasticItems.yoghurt_pots')]: 
         parseInt(part2Values.lunchroomYoghurtPots || "0") + 
         parseInt(part2Values.staffroomYoghurtPots || "0"),
-      'Takeaway containers': 
+      [t('audit.plasticItems.takeaway_containers')]: 
         parseInt(part2Values.lunchroomTakeawayContainers || "0") + 
         parseInt(part2Values.staffroomTakeawayContainers || "0"),
-      'Cling film': parseInt(part2Values.lunchroomClingFilm || "0"),
-      'Pens & pencils': parseInt(part3Values.classroomPensPencils || "0"),
-      'Stationery items': 
+      [t('audit.plasticItems.cling_film')]: parseInt(part2Values.lunchroomClingFilm || "0"),
+      [t('audit.plasticItems.pens_pencils')]: parseInt(part3Values.classroomPensPencils || "0"),
+      [t('audit.plasticItems.stationery')]: 
         parseInt(part3Values.classroomStationery || "0") +
         parseInt(part3Values.officeStationery || "0") +
         parseInt(part3Values.libraryStationery || "0"),
-      'Display materials': 
+      [t('audit.plasticItems.display_materials')]: 
         parseInt(part3Values.classroomDisplayMaterials || "0") +
         parseInt(part3Values.libraryDisplayMaterials || "0") +
         parseInt(part3Values.corridorsDisplayMaterials || "0"),
-      'Soap bottles': parseInt(part3Values.toiletSoapBottles || "0"),
-      'Bin liners': 
+      [t('audit.plasticItems.soap_bottles')]: parseInt(part3Values.toiletSoapBottles || "0"),
+      [t('audit.plasticItems.bin_liners')]: 
         parseInt(part3Values.toiletBinLiners || "0") +
         parseInt(part3Values.corridorsBinLiners || "0"),
-      'Toilet cups/dispensers': parseInt(part3Values.toiletCupsPaper || "0"),
-      'Period products': parseInt(part3Values.toiletPeriodProducts || "0"),
-      'Sport equipment': parseInt(part3Values.gymSportEquipment || "0"),
-      'Toys/equipment': parseInt(part3Values.playgroundToysEquipment || "0"),
-      'Lab equipment': parseInt(part3Values.scienceLabsLabEquipment || "0"),
-      'Art supplies': parseInt(part3Values.artRoomsArtSupplies || "0"),
+      [t('audit.plasticItems.toilet_cups_dispensers')]: parseInt(part3Values.toiletCupsPaper || "0"),
+      [t('audit.plasticItems.period_products')]: parseInt(part3Values.toiletPeriodProducts || "0"),
+      [t('audit.plasticItems.sport_equipment')]: parseInt(part3Values.gymSportEquipment || "0"),
+      [t('audit.plasticItems.toys_equipment')]: parseInt(part3Values.playgroundToysEquipment || "0"),
+      [t('audit.plasticItems.lab_equipment')]: parseInt(part3Values.scienceLabsLabEquipment || "0"),
+      [t('audit.plasticItems.art_supplies')]: parseInt(part3Values.artRoomsArtSupplies || "0"),
     };
 
     // Group all "Other" items together
@@ -515,7 +510,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       parseInt(part3Values.artRoomsOther || "0");
 
     if (otherTotal > 0) {
-      dailyPlasticCounts['Other plastic items'] = otherTotal;
+      dailyPlasticCounts[t('audit.plasticItems.other_plastic_items')] = otherTotal;
     }
 
     // Multiply all counts by 190 for annual figures
@@ -571,8 +566,8 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
       
       if (!isValid) {
         toast({
-          title: "Validation Error",
-          description: "Please fill in all required fields before continuing.",
+          title: t('audit.validation.validationError'),
+          description: t('audit.validation.fillRequiredFields'),
           variant: "destructive",
         });
         return;
@@ -592,251 +587,112 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
     }
   };
 
-  // Submit audit (without promises)
-  const handleSubmitAuditOnly = async () => {
-    setIsSubmitting(true);
-    
-    try {
-      // Save audit first
-      await handleSaveProgress();
-      
-      if (!auditId) {
-        throw new Error("Audit ID not found");
-      }
-      
-      // Submit audit
-      await submitMutation.mutateAsync(auditId);
-      
-      toast({
-        title: "Audit Submitted!",
-        description: "Your plastic waste audit has been submitted for review.",
-      });
-      
-      onClose?.();
-    } catch (error) {
-      console.error("Error submitting audit:", error);
-      toast({
-        title: "Submission Error",
-        description: "There was an error submitting your audit. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Download PDF results
-  const handleDownloadPDF = async () => {
-    console.log("[PDF Download] Function called");
-    try {
-      // Save progress first to ensure latest data
-      await handleSaveProgress();
-      console.log("[PDF Download] Progress saved");
-      
-      if (!auditId) {
-        console.error("[PDF Download] No audit ID");
-        toast({
-          title: "Error",
-          description: "Audit ID not found. Please save your audit first.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      console.log("[PDF Download] Fetching PDF for audit:", auditId);
-      toast({
-        title: "Generating PDF",
-        description: "Your audit results PDF is being generated...",
-      });
-
-      const response = await fetch(`/api/audits/${auditId}/results-pdf`, {
-        credentials: 'include',
-      });
-      
-      console.log("[PDF Download] Response status:", response.status, response.ok);
-
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error("PDF generation failed:", response.status, errorText);
-        throw new Error(`Failed to generate PDF: ${response.status}`);
-      }
-
-      const blob = await response.blob();
-      console.log("[PDF Download] Blob received, size:", blob.size);
-      
-      // Ensure blob is valid
-      if (!blob || blob.size === 0) {
-        throw new Error('Received empty PDF file');
-      }
-
-      // Create download link with proper cleanup
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.style.display = 'none';
-      a.href = url;
-      a.download = `Audit_Results_${new Date().toISOString().split('T')[0]}.pdf`;
-      
-      console.log("[PDF Download] Triggering download");
-      document.body.appendChild(a);
-      a.click();
-      
-      // Cleanup after a short delay to ensure download starts
-      setTimeout(() => {
-        window.URL.revokeObjectURL(url);
-        document.body.removeChild(a);
-        console.log("[PDF Download] Cleanup complete");
-      }, 100);
-
-      toast({
-        title: "PDF Downloaded",
-        description: "Your audit results have been downloaded successfully.",
-      });
-    } catch (error) {
-      console.error("[PDF Download] Error:", error);
-      toast({
-        title: "Download Error",
-        description: error instanceof Error ? error.message : "There was an error downloading the PDF. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
+  // Get current form based on step
   const getCurrentForm = () => {
     switch (currentStep) {
       case 1: return form1;
       case 2: return form2;
       case 3: return form3;
       case 4: return form4;
-      case 5: return form1; // Results view, no form
       default: return form1;
     }
   };
 
+  // Handle final submission
+  const handleSubmitAuditOnly = async () => {
+    // Validate all forms before submission
+    const isForm1Valid = await form1.trigger();
+    const isForm2Valid = await form2.trigger();
+    const isForm3Valid = await form3.trigger();
+    const isForm4Valid = await form4.trigger();
+
+    if (!isForm1Valid || !isForm2Valid || !isForm3Valid || !isForm4Valid) {
+      toast({
+        title: t('audit.validation.validationError'),
+        description: t('audit.validation.fillRequiredFields'),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Save first if no audit ID exists
+    if (!auditId) {
+      const results = calculateResults();
+      const auditData = {
+        schoolId,
+        currentPart: 5,
+        status: 'pending',
+        part1Data: form1.getValues(),
+        part2Data: form2.getValues(),
+        part3Data: form3.getValues(),
+        part4Data: form4.getValues(),
+        resultsData: results,
+        totalPlasticItems: results.totalPlasticItems,
+        topProblemPlastics: results.topProblemPlastics,
+      };
+
+      setIsSubmitting(true);
+      try {
+        const res = await apiRequest('POST', '/api/audits', auditData);
+        const data = await res.json() as AuditResponse;
+        setAuditId(data.id);
+        await submitMutation.mutateAsync(data.id);
+      } catch (error) {
+        toast({
+          title: t('audit.validation.validationError'),
+          description: String(error),
+          variant: "destructive",
+        });
+      } finally {
+        setIsSubmitting(false);
+      }
+    } else {
+      setIsSubmitting(true);
+      try {
+        await submitMutation.mutateAsync(auditId);
+      } finally {
+        setIsSubmitting(false);
+      }
+    }
+  };
+
+  // Download PDF handler
+  const handleDownloadPDF = () => {
+    window.open(`/api/audits/${auditId}/pdf`, '_blank');
+  };
+
+  // Calculate progress
   const progress = (currentStep / 5) * 100;
 
-  // Users can edit draft and submitted audits - only block editing for approved audits
-
-  if (existingAudit?.status === 'approved') {
-    const topPlastics = existingAudit.topProblemPlastics as Array<{ name: string; count: number }> | null;
-    
-    return (
-      <Card className="border-2 border-green-300 bg-green-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-navy">
-            <CheckCircle className="h-6 w-6 text-green-600" />
-            Audit Approved
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-700 mb-4">
-            Your plastic waste audit has been approved! Check the results below.
-          </p>
-          <div className="bg-white p-4 rounded-lg border border-green-200">
-            <h4 className="font-semibold text-navy mb-2">Audit Results</h4>
-            <p className="text-sm text-gray-600">
-              Total plastic items identified: <span className="font-bold">{existingAudit.totalPlasticItems || 0}</span>
-            </p>
-            {topPlastics && topPlastics.length > 0 && (
-              <div className="mt-3">
-                <p className="text-sm font-semibold text-gray-700 mb-1">Top Problem Plastics:</p>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  {topPlastics.map((item, idx) => (
-                    <li key={idx}>• {item.name}: {item.count}</li>
-                  ))}
-                </ul>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (existingAudit?.status === 'rejected') {
-    return (
-      <Card className="border-2 border-red-300 bg-red-50">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-navy">
-            <ClipboardCheck className="h-6 w-6 text-red-600" />
-            Audit Needs Revision
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-gray-700 mb-2">
-            Your audit submission needs revision. Please review the feedback and resubmit.
-          </p>
-          {existingAudit.reviewNotes && (
-            <div className="bg-white p-3 rounded border border-red-200 mb-4">
-              <p className="text-sm font-semibold text-gray-700">Admin Feedback:</p>
-              <p className="text-sm text-gray-600 mt-1">{existingAudit.reviewNotes}</p>
-            </div>
-          )}
-          <Button
-            onClick={() => setCurrentStep(1)}
-            data-testid="button-revise-audit"
-          >
-            Revise Audit
-          </Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
   return (
-    <Card className="border-2 border-blue-300">
+    <Card className="max-w-4xl mx-auto">
       <CardHeader>
-        <div className="flex items-start justify-between">
-          <div className="flex-1">
-            <CardTitle className="flex items-center gap-2 text-navy">
-              <ClipboardCheck className="h-6 w-6 text-blue-600" />
-              Plastic Waste Audit
+        <div className="flex items-center justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2 text-2xl">
+              <ClipboardCheck className="h-6 w-6 text-primary" />
+              {t('audit.overview.title')}
             </CardTitle>
-            <CardDescription>
-              Step {currentStep} of 5: {
-                currentStep === 1 ? "About Your School" :
-                currentStep === 2 ? "Lunchroom & Staffroom" :
-                currentStep === 3 ? "All Rooms" :
-                currentStep === 4 ? "Waste Management" :
-                "Audit Results"
-              }
+            <CardDescription className="mt-2">
+              {t('audit.overview.description')}
             </CardDescription>
           </div>
-          <div className="flex gap-2 flex-shrink-0">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => window.open('/api/printable-forms/audit', '_blank')}
-              data-testid="button-download-audit-form"
-              className="text-xs"
-            >
-              <Download className="h-3 w-3 mr-1" />
-              Audit Form
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => auditFileInputRef.current?.click()}
-              disabled={isUploading}
-              data-testid="button-upload-audit-form"
-              className="text-xs"
-            >
-              <Upload className="h-3 w-3 mr-1" />
-              {isUploading ? 'Uploading...' : 'Upload Audit'}
-            </Button>
-            <input
-              ref={auditFileInputRef}
-              type="file"
-              accept="application/pdf"
-              onChange={() => handleFileUpload()}
-              className="hidden"
-              data-testid="input-upload-pdf"
-            />
-          </div>
         </div>
-        <Progress value={progress} className="mt-2" />
+        <div className="mt-4">
+          <div className="flex justify-between items-center mb-2">
+            <span className="text-sm font-medium text-gray-600">
+              {t('audit.form.step' + currentStep + '.title')}
+            </span>
+            <span className="text-sm text-gray-500">
+              {currentStep}/5
+            </span>
+          </div>
+          <Progress value={progress} className="h-2" data-testid="progress-bar" />
+        </div>
       </CardHeader>
+      
       <CardContent className="space-y-6">
-        {/* Step 1: About Your School */}
+        {/* Step 1: General Information */}
         {currentStep === 1 && (
           <Form {...form1}>
             <div className="space-y-4">
@@ -845,7 +701,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="schoolName"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>School Name</FormLabel>
+                    <FormLabel>{t('audit.form.metadata.schoolName')}</FormLabel>
                     <FormControl>
                       <Input {...field} data-testid="input-school-name" />
                     </FormControl>
@@ -858,7 +714,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="studentCount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Number of Students</FormLabel>
+                    <FormLabel>{t('audit.form.metadata.studentCount')}</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} data-testid="input-student-count" />
                     </FormControl>
@@ -871,7 +727,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="staffCount"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Number of Staff</FormLabel>
+                    <FormLabel>{t('audit.form.metadata.staffCount')}</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} data-testid="input-staff-count" />
                     </FormControl>
@@ -884,7 +740,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="auditDate"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Audit Date</FormLabel>
+                    <FormLabel>{t('audit.form.metadata.auditDate')}</FormLabel>
                     <FormControl>
                       <Input type="date" {...field} data-testid="input-audit-date" />
                     </FormControl>
@@ -897,11 +753,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="auditTeam"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Audit Team Members</FormLabel>
+                    <FormLabel>{t('audit.form.metadata.teamMembers')}</FormLabel>
                     <FormControl>
                       <Textarea 
                         {...field} 
-                        placeholder="List the names of team members who conducted this audit"
+                        placeholder={t('audit.form.metadata.teamMembersPlaceholder')}
                         data-testid="input-audit-team"
                       />
                     </FormControl>
@@ -918,14 +774,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
           <Form {...form2}>
             <div className="space-y-6">
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Lunchroom</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.form.step2.lunchroom')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form2.control}
                     name="lunchroomPlasticBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticBottles')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-bottles" />
                         </FormControl>
@@ -938,7 +794,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomPlasticCups"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Cups (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticCups')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-cups" />
                         </FormControl>
@@ -951,7 +807,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomPlasticCutlery"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Cutlery (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticCutlery')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-cutlery" />
                         </FormControl>
@@ -964,7 +820,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomPlasticStraws"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Straws (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticStraws')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-straws" />
                         </FormControl>
@@ -977,7 +833,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomSnackWrappers"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Snack Wrappers (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.snackWrappers')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-snack-wrappers" />
                         </FormControl>
@@ -990,7 +846,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomYoghurtPots"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Yoghurt Pots (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.yoghurtPots')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-yoghurt-pots" />
                         </FormControl>
@@ -1003,7 +859,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomTakeawayContainers"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Takeaway Containers (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.takeawayContainers')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-takeaway-containers" />
                         </FormControl>
@@ -1016,7 +872,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomClingFilm"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Cling Film Uses (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.clingFilm')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-clingfilm" />
                         </FormControl>
@@ -1029,7 +885,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="lunchroomOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-lunchroom-other" />
                         </FormControl>
@@ -1043,11 +899,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="lunchroomOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step2.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found in the lunchroom"
+                          placeholder={t('audit.form.step2.lunchroomOtherPlaceholder')}
                           data-testid="input-lunchroom-other-description"
                         />
                       </FormControl>
@@ -1058,14 +914,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               </div>
 
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Staffroom</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.form.step2.staffroom')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form2.control}
                     name="staffroomPlasticBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticBottles')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-staffroom-bottles" />
                         </FormControl>
@@ -1078,7 +934,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="staffroomPlasticCups"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Cups (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticCups')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-staffroom-cups" />
                         </FormControl>
@@ -1091,7 +947,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="staffroomSnackWrappers"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Snack Wrappers (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.snackWrappers')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-staffroom-snack-wrappers" />
                         </FormControl>
@@ -1104,7 +960,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="staffroomYoghurtPots"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Yoghurt Pots (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.yoghurtPots')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-staffroom-yoghurt-pots" />
                         </FormControl>
@@ -1117,7 +973,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="staffroomTakeawayContainers"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Takeaway Containers (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.takeawayContainers')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-staffroom-takeaway-containers" />
                         </FormControl>
@@ -1130,7 +986,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="staffroomOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-staffroom-other" />
                         </FormControl>
@@ -1144,11 +1000,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="staffroomOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step2.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found in the staffroom"
+                          placeholder={t('audit.form.step2.staffroomOtherPlaceholder')}
                           data-testid="input-staffroom-other-description"
                         />
                       </FormControl>
@@ -1163,11 +1019,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="lunchroomNotes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Additional Notes (Optional)</FormLabel>
+                    <FormLabel>{t('audit.form.step2.additionalNotes')}</FormLabel>
                     <FormControl>
                       <Textarea 
                         {...field} 
-                        placeholder="Any observations about plastic use in lunchroom/staffroom areas?"
+                        placeholder={t('audit.form.step2.notesPlaceholder')}
                         data-testid="input-lunchroom-notes"
                       />
                     </FormControl>
@@ -1186,15 +1042,15 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {/* Room Selection Section */}
               <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-lg border-2 border-blue-200">
                 <h3 className="font-bold text-lg text-navy mb-2">
-                  Which rooms does your school have? (Select all that apply)
+                  {t('audit.form.step3.roomSelectionTitle')}
                 </h3>
                 <p className="text-sm text-gray-600 mb-4">
-                  Only selected rooms will appear in the audit form, reducing scrolling and form fatigue.
+                  {t('audit.form.step3.roomSelectionDescription')}
                 </p>
                 
                 {/* Academic Rooms */}
                 <div className="mb-4">
-                  <h4 className="font-semibold text-sm text-gray-700 mb-2 uppercase tracking-wide">📚 Academic Spaces</h4>
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2 uppercase tracking-wide">{t('audit.form.step3.academicSpaces')}</h4>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     <FormField
                       control={form3.control}
@@ -1210,7 +1066,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-medium cursor-pointer">
-                              🏫 Classrooms
+                              {t('audit.form.step3.classrooms')}
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -1230,7 +1086,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-medium cursor-pointer">
-                              📚 Library
+                              {t('audit.form.step3.library')}
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -1250,7 +1106,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-medium cursor-pointer">
-                              🔬 Science Labs
+                              {t('audit.form.step3.scienceLabs')}
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -1270,7 +1126,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-medium cursor-pointer">
-                              🎨 Art Rooms
+                              {t('audit.form.step3.artRooms')}
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -1281,7 +1137,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
                 {/* Common Areas */}
                 <div className="mb-4">
-                  <h4 className="font-semibold text-sm text-gray-700 mb-2 uppercase tracking-wide">🏢 Common Areas</h4>
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2 uppercase tracking-wide">{t('audit.form.step3.commonAreas')}</h4>
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
                     <FormField
                       control={form3.control}
@@ -1297,7 +1153,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-medium cursor-pointer">
-                              🚽 Toilets
+                              {t('audit.form.step3.toilets')}
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -1317,7 +1173,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-medium cursor-pointer">
-                              🏢 Office
+                              {t('audit.form.step3.office')}
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -1337,7 +1193,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-medium cursor-pointer">
-                              🚪 Corridors
+                              {t('audit.form.step3.corridors')}
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -1348,7 +1204,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
                 {/* Outdoor & Sports */}
                 <div>
-                  <h4 className="font-semibold text-sm text-gray-700 mb-2 uppercase tracking-wide">⚽ Outdoor & Sports</h4>
+                  <h4 className="font-semibold text-sm text-gray-700 mb-2 uppercase tracking-wide">{t('audit.form.step3.outdoorSports')}</h4>
                   <div className="grid grid-cols-2 gap-3">
                     <FormField
                       control={form3.control}
@@ -1364,7 +1220,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-medium cursor-pointer">
-                              🏋️ Gym
+                              {t('audit.form.step3.gym')}
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -1384,7 +1240,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                           </FormControl>
                           <div className="space-y-1 leading-none">
                             <FormLabel className="text-sm font-medium cursor-pointer">
-                              🎮 Playground
+                              {t('audit.form.step3.playground')}
                             </FormLabel>
                           </div>
                         </FormItem>
@@ -1404,14 +1260,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {/* Classrooms */}
               {form3.watch("selectedClassrooms") && (
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Classrooms</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.rooms.classrooms')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
                     name="classroomPensPencils"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Pens & Pencils (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.pensPencils')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-classroom-pens" />
                         </FormControl>
@@ -1424,7 +1280,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="classroomStationery"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Stationery (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.stationery')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-classroom-stationery" />
                         </FormControl>
@@ -1437,7 +1293,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="classroomDisplayMaterials"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Display Materials (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.displayMaterials')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-classroom-display" />
                         </FormControl>
@@ -1450,7 +1306,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="classroomOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-classroom-other" />
                         </FormControl>
@@ -1464,11 +1320,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="classroomOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step3.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found in classrooms"
+                          placeholder={t('audit.form.step3.classroomOtherPlaceholder')}
                           data-testid="input-classroom-other-description"
                         />
                       </FormControl>
@@ -1482,14 +1338,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {/* Toilets */}
               {form3.watch("selectedToilets") && (
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Toilets</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.rooms.toilets')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
                     name="toiletSoapBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Soap Bottles (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.soapBottles')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-toilet-soap" />
                         </FormControl>
@@ -1502,9 +1358,9 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="toiletBinLiners"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bin Liners (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.binLiners')}</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} data-testid="input-toilet-binliners" />
+                          <Input type="number" {...field} data-testid="input-toilet-bins" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1515,7 +1371,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="toiletCupsPaper"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Cups/Dispensers (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.cupsDispensers')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-toilet-cups" />
                         </FormControl>
@@ -1528,7 +1384,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="toiletPeriodProducts"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Period Product Dispensers (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.periodProducts')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-toilet-period-products" />
                         </FormControl>
@@ -1541,7 +1397,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="toiletOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-toilet-other" />
                         </FormControl>
@@ -1555,11 +1411,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="toiletOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step3.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found in toilets"
+                          placeholder={t('audit.form.step3.toiletOtherPlaceholder')}
                           data-testid="input-toilet-other-description"
                         />
                       </FormControl>
@@ -1573,14 +1429,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {/* Office */}
               {form3.watch("selectedOffice") && (
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Office</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.rooms.office')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
                     name="officePlasticBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticBottles')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-office-bottles" />
                         </FormControl>
@@ -1593,7 +1449,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="officePlasticCups"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Cups (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticCups')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-office-cups" />
                         </FormControl>
@@ -1606,7 +1462,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="officeStationery"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Stationery Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.stationery')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-office-stationery" />
                         </FormControl>
@@ -1619,7 +1475,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="officeOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-office-other" />
                         </FormControl>
@@ -1633,11 +1489,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="officeOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step3.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found in the office"
+                          placeholder={t('audit.form.step3.officeOtherPlaceholder')}
                           data-testid="input-office-other-description"
                         />
                       </FormControl>
@@ -1651,14 +1507,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {/* Library */}
               {form3.watch("selectedLibrary") && (
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Library</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.rooms.library')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
                     name="libraryPlasticBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticBottles')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-library-bottles" />
                         </FormControl>
@@ -1671,7 +1527,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="libraryStationery"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Stationery Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.stationery')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-library-stationery" />
                         </FormControl>
@@ -1684,7 +1540,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="libraryDisplayMaterials"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Display Materials (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.displayMaterials')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-library-display" />
                         </FormControl>
@@ -1697,7 +1553,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="libraryOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-library-other" />
                         </FormControl>
@@ -1711,11 +1567,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="libraryOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step3.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found in the library"
+                          placeholder={t('audit.form.step3.libraryOtherPlaceholder')}
                           data-testid="input-library-other-description"
                         />
                       </FormControl>
@@ -1729,14 +1585,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {/* Gym */}
               {form3.watch("selectedGym") && (
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Gym</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.rooms.gym')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
                     name="gymPlasticBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticBottles')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-gym-bottles" />
                         </FormControl>
@@ -1749,9 +1605,9 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="gymSportEquipment"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Sport Equipment (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.sportEquipment')}</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} data-testid="input-gym-sport-equipment" />
+                          <Input type="number" {...field} data-testid="input-gym-equipment" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1762,7 +1618,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="gymOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-gym-other" />
                         </FormControl>
@@ -1776,11 +1632,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="gymOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step3.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found in the gym"
+                          placeholder={t('audit.form.step3.gymOtherPlaceholder')}
                           data-testid="input-gym-other-description"
                         />
                       </FormControl>
@@ -1794,14 +1650,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {/* Playground */}
               {form3.watch("selectedPlayground") && (
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Playground</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.rooms.playground')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
                     name="playgroundPlasticBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticBottles')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-playground-bottles" />
                         </FormControl>
@@ -1814,9 +1670,9 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="playgroundToysEquipment"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Toys/Equipment (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.toysEquipment')}</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} data-testid="input-playground-toys-equipment" />
+                          <Input type="number" {...field} data-testid="input-playground-toys" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1827,7 +1683,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="playgroundOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-playground-other" />
                         </FormControl>
@@ -1841,11 +1697,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="playgroundOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step3.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found on the playground"
+                          placeholder={t('audit.form.step3.playgroundOtherPlaceholder')}
                           data-testid="input-playground-other-description"
                         />
                       </FormControl>
@@ -1859,14 +1715,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {/* Corridors */}
               {form3.watch("selectedCorridors") && (
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Corridors</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.rooms.corridors')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
                     name="corridorsPlasticBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticBottles')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-corridors-bottles" />
                         </FormControl>
@@ -1879,7 +1735,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="corridorsDisplayMaterials"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Display Materials (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.displayMaterials')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-corridors-display" />
                         </FormControl>
@@ -1892,9 +1748,9 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="corridorsBinLiners"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Bin Liners (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.binLiners')}</FormLabel>
                         <FormControl>
-                          <Input type="number" {...field} data-testid="input-corridors-binliners" />
+                          <Input type="number" {...field} data-testid="input-corridors-bins" />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -1905,7 +1761,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="corridorsOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-corridors-other" />
                         </FormControl>
@@ -1919,11 +1775,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="corridorsOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step3.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found in corridors"
+                          placeholder={t('audit.form.step3.corridorsOtherPlaceholder')}
                           data-testid="input-corridors-other-description"
                         />
                       </FormControl>
@@ -1937,14 +1793,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {/* Science Labs */}
               {form3.watch("selectedScienceLabs") && (
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Science Labs</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.rooms.science_labs')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
                     name="scienceLabsPlasticBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticBottles')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-science-labs-bottles" />
                         </FormControl>
@@ -1957,7 +1813,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="scienceLabsLabEquipment"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Lab Equipment (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.labEquipment')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-science-labs-equipment" />
                         </FormControl>
@@ -1970,7 +1826,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="scienceLabsOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-science-labs-other" />
                         </FormControl>
@@ -1984,11 +1840,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="scienceLabsOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step3.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found in science labs"
+                          placeholder={t('audit.form.step3.scienceLabsOtherPlaceholder')}
                           data-testid="input-science-labs-other-description"
                         />
                       </FormControl>
@@ -2002,14 +1858,14 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {/* Art Rooms */}
               {form3.watch("selectedArtRooms") && (
               <div>
-                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Art Rooms</h3>
+                <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.rooms.art_rooms')}</h3>
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
                     control={form3.control}
                     name="artRoomsPlasticBottles"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Plastic Bottles (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step2.plasticBottles')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-art-rooms-bottles" />
                         </FormControl>
@@ -2022,7 +1878,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="artRoomsArtSupplies"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Art Supplies (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.artSupplies')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-art-rooms-supplies" />
                         </FormControl>
@@ -2035,7 +1891,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     name="artRoomsOther"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Other Plastic Items (daily count)</FormLabel>
+                        <FormLabel>{t('audit.form.step3.otherItems')}</FormLabel>
                         <FormControl>
                           <Input type="number" {...field} data-testid="input-art-rooms-other" />
                         </FormControl>
@@ -2049,11 +1905,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   name="artRoomsOtherDescription"
                   render={({ field }) => (
                     <FormItem className="mt-4">
-                      <FormLabel>Describe Other Plastic Items (Optional)</FormLabel>
+                      <FormLabel>{t('audit.form.step3.otherDescription')}</FormLabel>
                       <FormControl>
                         <Textarea 
                           {...field} 
-                          placeholder="List any other plastic items found in art rooms"
+                          placeholder={t('audit.form.step3.artRoomsOtherPlaceholder')}
                           data-testid="input-art-rooms-other-description"
                         />
                       </FormControl>
@@ -2069,11 +1925,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="classroomNotes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Additional Notes (Optional)</FormLabel>
+                    <FormLabel>{t('audit.form.step3.additionalNotes')}</FormLabel>
                     <FormControl>
                       <Textarea 
                         {...field} 
-                        placeholder="Any observations about plastic use across all rooms?"
+                        placeholder={t('audit.form.step3.notesPlaceholder')}
                         data-testid="input-classroom-notes"
                       />
                     </FormControl>
@@ -2089,7 +1945,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
         {currentStep === 4 && (
           <Form {...form4}>
             <div className="space-y-6">
-              <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">Waste Management Practices</h3>
+              <h3 className="font-semibold text-navy mb-3 bg-blue-50 p-3 rounded">{t('audit.form.step4.title')}</h3>
               
               <FormField
                 control={form4.control}
@@ -2104,7 +1960,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>School has recycling bins</FormLabel>
+                      <FormLabel>{t('audit.form.step4.hasRecyclingBins')}</FormLabel>
                     </div>
                   </FormItem>
                 )}
@@ -2115,9 +1971,9 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="recyclingBinLocations"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Recycling Bin Locations (if applicable)</FormLabel>
+                    <FormLabel>{t('audit.form.step4.recyclingBinLocations')}</FormLabel>
                     <FormControl>
-                      <Input {...field} placeholder="E.g., classrooms, hallways, cafeteria" data-testid="input-bin-locations" />
+                      <Input {...field} placeholder={t('audit.form.step4.recyclingBinLocationsPlaceholder')} data-testid="input-bin-locations" />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -2129,18 +1985,18 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="plasticWasteDestination"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Where does plastic waste go?</FormLabel>
+                    <FormLabel>{t('audit.form.step4.plasticWasteDestination')}</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger data-testid="select-waste-destination">
-                          <SelectValue placeholder={t('audit.select_destination')} />
+                          <SelectValue placeholder={t('audit.form.step4.selectDestination')} />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        <SelectItem value="general-waste">{t('audit.waste_general')}</SelectItem>
-                        <SelectItem value="recycling-center">{t('audit.waste_recycling')}</SelectItem>
-                        <SelectItem value="mixed">{t('audit.waste_mixed')}</SelectItem>
-                        <SelectItem value="unknown">{t('audit.waste_unknown')}</SelectItem>
+                        <SelectItem value="general-waste">{t('audit.form.step4.wasteGeneral')}</SelectItem>
+                        <SelectItem value="recycling-center">{t('audit.form.step4.wasteRecycling')}</SelectItem>
+                        <SelectItem value="mixed">{t('audit.form.step4.wasteMixed')}</SelectItem>
+                        <SelectItem value="unknown">{t('audit.form.step4.wasteUnknown')}</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />
@@ -2161,7 +2017,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>School composts organic waste</FormLabel>
+                      <FormLabel>{t('audit.form.step4.compostsOrganicWaste')}</FormLabel>
                     </div>
                   </FormItem>
                 )}
@@ -2180,7 +2036,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                       />
                     </FormControl>
                     <div className="space-y-1 leading-none">
-                      <FormLabel>School has a plastic reduction policy</FormLabel>
+                      <FormLabel>{t('audit.form.step4.hasPlasticReductionPolicy')}</FormLabel>
                     </div>
                   </FormItem>
                 )}
@@ -2191,11 +2047,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="reductionPolicyDetails"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Policy Details (if applicable)</FormLabel>
+                    <FormLabel>{t('audit.form.step4.reductionPolicyDetails')}</FormLabel>
                     <FormControl>
                       <Textarea 
                         {...field} 
-                        placeholder="Describe your school's plastic reduction policy"
+                        placeholder={t('audit.form.step4.reductionPolicyPlaceholder')}
                         data-testid="input-policy-details"
                       />
                     </FormControl>
@@ -2209,11 +2065,11 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 name="wasteManagementNotes"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Additional Notes (Optional)</FormLabel>
+                    <FormLabel>{t('audit.form.step4.wasteManagementNotes')}</FormLabel>
                     <FormControl>
                       <Textarea 
                         {...field} 
-                        placeholder="Any other observations about waste management?"
+                        placeholder={t('audit.form.step4.wasteManagementNotesPlaceholder')}
                         data-testid="input-waste-notes"
                       />
                     </FormControl>
@@ -2231,24 +2087,24 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
             <div className="bg-gradient-to-br from-blue-50 to-white p-6 rounded-lg border-2 border-blue-300 shadow-lg">
               <h3 className="font-bold text-2xl text-navy mb-4 flex items-center gap-2">
                 <CheckCircle className="h-6 w-6 text-green-600" />
-                Audit Results
+                {t('audit.form.step5.title')}
               </h3>
               <p className="text-gray-700 mb-4">
-                Based on your daily counts, here's your school's estimated annual plastic consumption (190 school days per year):
+                {t('audit.form.step5.description')}
               </p>
               
               <div className="bg-white p-5 rounded-lg shadow-md mb-6">
                 <div className="text-center mb-4">
-                  <p className="text-sm text-gray-600 uppercase tracking-wide font-semibold">Total Annual Plastic Items</p>
+                  <p className="text-sm text-gray-600 uppercase tracking-wide font-semibold">{t('audit.form.step5.totalAnnualTitle')}</p>
                   <p className="text-5xl font-bold text-blue-600 my-2" data-testid="text-total-plastic-items">
                     {calculateResults().totalPlasticItems.toLocaleString()}
                   </p>
-                  <p className="text-xs text-gray-500">items per year</p>
+                  <p className="text-xs text-gray-500">{t('audit.form.step5.itemsPerYear')}</p>
                 </div>
 
                 {calculateResults().topProblemPlastics.length > 0 && (
                   <div className="mt-6">
-                    <h4 className="font-semibold text-gray-800 mb-3 text-center">Top 5 Problem Plastics</h4>
+                    <h4 className="font-semibold text-gray-800 mb-3 text-center">{t('audit.form.step5.topProblemsTitle')}</h4>
                     <div className="h-64 mb-4">
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
@@ -2278,7 +2134,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                       {calculateResults().topProblemPlastics.map((item, idx) => (
                         <div key={idx} className="flex justify-between items-center p-2 bg-gray-50 rounded" data-testid={`result-item-${idx}`}>
                           <span className="text-sm font-medium text-gray-700">{item.name}</span>
-                          <span className="text-sm font-bold text-blue-600">{item.count.toLocaleString()}/year</span>
+                          <span className="text-sm font-bold text-blue-600">{item.count.toLocaleString()}{t('audit.form.step5.yearSuffix')}</span>
                         </div>
                       ))}
                     </div>
@@ -2288,7 +2144,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
               <div className="bg-green-50 border border-green-200 rounded p-4 mb-4">
                 <p className="text-sm text-gray-700">
-                  <strong>Ready to Submit?</strong> You can download your results as a PDF or submit your audit for review. Once approved, you'll be able to create an action plan to track your plastic reduction goals.
+                  <strong>{t('audit.form.step5.readyToSubmitTitle')}</strong> {t('audit.form.step5.readyToSubmitDescription')}
                 </p>
               </div>
 
@@ -2301,7 +2157,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     data-testid="button-download-results-pdf"
                   >
                     <Download className="h-4 w-4 mr-2" />
-                    Download PDF Results
+                    {t('audit.actions.downloadPdf')}
                   </Button>
                   <Button
                     onClick={handleSubmitAuditOnly}
@@ -2310,7 +2166,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     data-testid="button-submit-audit-now"
                   >
                     <Send className="h-4 w-4 mr-2" />
-                    {isSubmitting ? 'Submitting...' : 'Submit Audit for Review'}
+                    {isSubmitting ? t('audit.actions.submitting') : t('audit.actions.submitAudit')}
                   </Button>
                 </div>
                 <div>
@@ -2320,7 +2176,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                     data-testid="button-back-step-5"
                   >
                     <ChevronLeft className="h-4 w-4 mr-1" />
-                    Back to Waste Management
+                    {t('audit.actions.backToWasteManagement')}
                   </Button>
                 </div>
               </div>
@@ -2339,7 +2195,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                   data-testid="button-previous"
                 >
                   <ChevronLeft className="h-4 w-4 mr-1" />
-                  Previous
+                  {t('audit.actions.previous')}
                 </Button>
               )}
             </div>
@@ -2351,13 +2207,13 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
                 data-testid="button-save-progress"
               >
                 <Save className="h-4 w-4 mr-1" />
-                Save Progress
+                {t('audit.actions.saveProgress')}
               </Button>
               <Button
                 onClick={handleNext}
                 data-testid="button-next"
               >
-                Next
+                {t('audit.actions.next')}
                 <ChevronRight className="h-4 w-4 ml-1" />
               </Button>
             </div>

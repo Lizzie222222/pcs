@@ -1,0 +1,329 @@
+{
+  "audit": {
+    "overview": {
+      "title": "Plastikmüll-Audit",
+      "description": "Erfassen und messen Sie den Plastikverbrauch Ihrer Schule in allen Bereichen",
+      "uploadSuccessTitle": "Upload erfolgreich",
+      "uploadSuccessDescription": "Audit-Formular erfolgreich hochgeladen",
+      "uploadFailedTitle": "Upload fehlgeschlagen",
+      "uploadFileTypeError": "Nur PDF-Dateien sind erlaubt",
+      "uploadFileSizeError": "Dateigröße muss kleiner als 10MB sein",
+      "uploadStorageError": "Fehler beim Hochladen der Datei"
+    },
+    "form": {
+      "metadata": {
+        "schoolName": "Schulname",
+        "studentCount": "Anzahl der Schüler (Optional)",
+        "staffCount": "Anzahl der Mitarbeiter (Optional)",
+        "auditDate": "Audit-Datum",
+        "teamMembers": "Teammitglieder (Optional)",
+        "teamMembersPlaceholder": "Wer hat an diesem Audit teilgenommen?"
+      },
+      "step1": {
+        "title": "Allgemeine Informationen",
+        "description": "Grundlegende Informationen über Ihre Schule und Ihr Audit-Team"
+      },
+      "step2": {
+        "title": "Plastikartikel in Mensa & Lehrerzimmer",
+        "description": "Zählen Sie tägliche Plastikartikel in Mensa und Lehrerzimmer",
+        "lunchroom": "Mensa",
+        "staffroom": "Lehrerzimmer",
+        "plasticBottles": "Plastikflaschen (tägliche Anzahl)",
+        "plasticCups": "Plastikbecher (tägliche Anzahl)",
+        "plasticCutlery": "Plastikbesteck (tägliche Anzahl)",
+        "plasticStraws": "Plastikstrohhalme (tägliche Anzahl)",
+        "snackWrappers": "Snackverpackungen (tägliche Anzahl)",
+        "yoghurtPots": "Joghurtbecher (tägliche Anzahl)",
+        "takeawayContainers": "Einwegbehälter (tägliche Anzahl)",
+        "clingFilm": "Frischhaltefolie-Nutzungen (tägliche Anzahl)",
+        "otherItems": "Andere Plastikartikel (tägliche Anzahl)",
+        "otherDescription": "Andere Plastikartikel beschreiben (Optional)",
+        "additionalNotes": "Zusätzliche Bemerkungen (Optional)",
+        "lunchroomOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die in der Mensa gefunden wurden",
+        "staffroomOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die im Lehrerzimmer gefunden wurden",
+        "notesPlaceholder": "Beobachtungen zum Plastikverbrauch in Mensa/Lehrerzimmer?"
+      },
+      "step3": {
+        "title": "Klassenzimmer & Andere Bereiche",
+        "description": "Wählen Sie Räume aus und zählen Sie Plastikartikel in jedem Bereich",
+        "roomSelectionTitle": "Welche Räume hat Ihre Schule? (Alle zutreffenden auswählen)",
+        "roomSelectionDescription": "Nur ausgewählte Räume erscheinen im Audit-Formular, was das Scrollen reduziert und Ermüdung vorbeugt.",
+        "academicSpaces": "📚 Lernbereiche",
+        "commonAreas": "🏢 Gemeinschaftsbereiche",
+        "outdoorSports": "⚽ Außenbereich & Sport",
+        "classrooms": "Klassenzimmer",
+        "toilets": "Toiletten",
+        "office": "Büro",
+        "library": "Bibliothek",
+        "gym": "Turnhalle",
+        "playground": "Pausenhof",
+        "corridors": "Flure",
+        "scienceLabs": "Naturwissenschaftsräume",
+        "artRooms": "Kunsträume",
+        "pensPencils": "Plastikkugelschreiber & Bleistifte (tägliche Anzahl)",
+        "stationery": "Andere Plastik-Schreibwaren (tägliche Anzahl)",
+        "displayMaterials": "Plastik-Präsentationsmaterialien (tägliche Anzahl)",
+        "soapBottles": "Plastik-Seifenspender (tägliche Anzahl)",
+        "binLiners": "Müllbeutel (tägliche Anzahl)",
+        "cupsDispensers": "Becher/Spender (Papier oder Plastik) (tägliche Anzahl)",
+        "periodProducts": "Periodenprodukte (tägliche Anzahl)",
+        "sportEquipment": "Sportausrüstung (tägliche Anzahl)",
+        "toysEquipment": "Spielzeug/Ausrüstung (tägliche Anzahl)",
+        "labEquipment": "Laborausrüstung (tägliche Anzahl)",
+        "artSupplies": "Kunstbedarf (tägliche Anzahl)",
+        "otherItems": "Andere Plastikartikel (tägliche Anzahl)",
+        "otherDescription": "Andere Plastikartikel beschreiben (Optional)",
+        "additionalNotes": "Zusätzliche Bemerkungen (Optional)",
+        "classroomOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die in Klassenzimmern gefunden wurden",
+        "toiletOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die in Toiletten gefunden wurden",
+        "officeOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die im Büro gefunden wurden",
+        "libraryOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die in der Bibliothek gefunden wurden",
+        "gymOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die in der Turnhalle gefunden wurden",
+        "playgroundOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die auf dem Pausenhof gefunden wurden",
+        "corridorsOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die in Fluren gefunden wurden",
+        "scienceLabsOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die in Naturwissenschaftsräumen gefunden wurden",
+        "artRoomsOtherPlaceholder": "Listen Sie weitere Plastikartikel auf, die in Kunsträumen gefunden wurden",
+        "notesPlaceholder": "Beobachtungen zum Plastikverbrauch in allen Räumen?"
+      },
+      "step4": {
+        "title": "Abfallmanagement-Praktiken",
+        "description": "Informationen zu Recycling, Kompostierung und Plastikvermeidungsrichtlinien",
+        "hasRecyclingBins": "Schule hat Recyclingbehälter",
+        "recyclingBinLocations": "Standorte der Recyclingbehälter (falls zutreffend)",
+        "recyclingBinLocationsPlaceholder": "Z.B. Klassenzimmer, Flure, Cafeteria",
+        "plasticWasteDestination": "Wohin geht der Plastikmüll?",
+        "selectDestination": "Ziel auswählen",
+        "wasteGeneral": "Restmüll/Deponie",
+        "wasteRecycling": "Recyclingzentrum",
+        "wasteMixed": "Gemischt (teilweise recycelt, teilweise Restmüll)",
+        "wasteUnknown": "Unbekannt",
+        "compostsOrganicWaste": "Schule kompostiert organische Abfälle",
+        "hasPlasticReductionPolicy": "Schule hat eine Plastikvermeidungsrichtlinie",
+        "reductionPolicyDetails": "Richtliniendetails (falls zutreffend)",
+        "reductionPolicyPlaceholder": "Beschreiben Sie die Plastikvermeidungsrichtlinie Ihrer Schule",
+        "wasteManagementNotes": "Zusätzliche Bemerkungen (Optional)",
+        "wasteManagementNotesPlaceholder": "Weitere Beobachtungen zum Abfallmanagement?"
+      },
+      "step5": {
+        "title": "Audit-Ergebnisse",
+        "description": "Basierend auf Ihren täglichen Zählungen hier der geschätzte jährliche Plastikverbrauch Ihrer Schule (190 Schultage pro Jahr):",
+        "totalAnnualTitle": "Gesamtanzahl jährlicher Plastikartikel",
+        "itemsPerYear": "Artikel pro Jahr",
+        "topProblemsTitle": "Top 5 Problemarten Plastik",
+        "yearSuffix": "/Jahr",
+        "readyToSubmitTitle": "Bereit zur Einreichung?",
+        "readyToSubmitDescription": "Sie können Ihre Ergebnisse als PDF herunterladen oder Ihr Audit zur Prüfung einreichen. Nach der Genehmigung können Sie einen Aktionsplan erstellen, um Ihre Plastikreduktionsziele zu verfolgen."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Plastikflaschen",
+      "plastic_cups": "Plastikbecher",
+      "plastic_cutlery": "Plastikbesteck",
+      "plastic_straws": "Plastikstrohhalme",
+      "snack_wrappers": "Snackverpackungen",
+      "yoghurt_pots": "Joghurtbecher",
+      "takeaway_containers": "Einwegbehälter",
+      "cling_film": "Frischhaltefolie",
+      "pens_pencils": "Kugelschreiber & Bleistifte",
+      "stationery": "Schreibwaren",
+      "display_materials": "Präsentationsmaterialien",
+      "soap_bottles": "Seifenspender",
+      "bin_liners": "Müllbeutel",
+      "toilet_cups_dispensers": "Toilettenbecher/Spender",
+      "period_products": "Periodenprodukte",
+      "sport_equipment": "Sportausrüstung",
+      "toys_equipment": "Spielzeug/Ausrüstung",
+      "lab_equipment": "Laborausrüstung",
+      "art_supplies": "Kunstbedarf",
+      "other_plastic_items": "Andere Plastikartikel"
+    },
+    "rooms": {
+      "lunchroom": "🏫 Mensa",
+      "staffroom": "☕ Lehrerzimmer",
+      "classrooms": "🏫 Klassenzimmer",
+      "toilets": "🚽 Toiletten",
+      "office": "🏢 Büro",
+      "library": "📚 Bibliothek",
+      "gym": "🏋️ Turnhalle",
+      "playground": "🎮 Pausenhof",
+      "corridors": "🚪 Flure",
+      "science_labs": "🔬 Naturwissenschaftsräume",
+      "art_rooms": "🎨 Kunsträume"
+    },
+    "validation": {
+      "schoolNameRequired": "Schulname ist erforderlich",
+      "auditDateRequired": "Audit-Datum ist erforderlich",
+      "wasteDestinationRequired": "Bitte geben Sie an, wohin der Plastikmüll geht",
+      "roomSelectionRequired": "Bitte wählen Sie mindestens einen Raumtyp aus",
+      "validationError": "Validierungsfehler",
+      "fillRequiredFields": "Bitte füllen Sie alle Pflichtfelder aus, bevor Sie fortfahren."
+    },
+    "actions": {
+      "next": "Weiter",
+      "previous": "Zurück",
+      "saveProgress": "Fortschritt speichern",
+      "submitAudit": "Audit zur Prüfung einreichen",
+      "submitting": "Wird eingereicht...",
+      "downloadPdf": "PDF-Ergebnisse herunterladen",
+      "backToWasteManagement": "Zurück zu Abfallmanagement"
+    },
+    "status": {
+      "progressSaved": "Fortschritt gespeichert",
+      "progressSavedDescription": "Ihr Audit-Fortschritt wurde automatisch gespeichert.",
+      "auditSubmitted": "Audit eingereicht!",
+      "auditSubmittedDescription": "Ihr Plastikmüll-Audit wurde zur Prüfung eingereicht."
+    },
+    "results": {
+      "totalAnnualPlasticItems": "Gesamtanzahl jährlicher Plastikartikel",
+      "topProblemPlastics": "Top 5 Problemarten Plastik",
+      "itemsPerYear": "Artikel pro Jahr",
+      "yearSuffix": "/Jahr",
+      "readyToSubmit": "Bereit zur Einreichung?",
+      "submitDescription": "Sie können Ihre Ergebnisse als PDF herunterladen oder Ihr Audit zur Prüfung einreichen. Nach der Genehmigung können Sie einen Aktionsplan erstellen, um Ihre Plastikreduktionsziele zu verfolgen.",
+      "annualConsumptionDescription": "Basierend auf Ihren täglichen Zählungen hier der geschätzte jährliche Plastikverbrauch Ihrer Schule (190 Schultage pro Jahr):"
+    }
+  },
+  "actionPlan": {
+    "overview": {
+      "title": "Erstellen Sie Ihren Aktionsplan",
+      "description": "Basierend auf Ihren Audit-Ergebnissen verpflichten Sie sich, mindestens 2 Plastikarten zu reduzieren. Setzen Sie realistische Ziele!"
+    },
+    "form": {
+      "promises": {
+        "title": "Reduktionszusage",
+        "plasticItemType": "Plastikartikel-Typ",
+        "itemLabel": "Artikelbezeichnung",
+        "baselineQuantity": "Aktueller jährlicher Verbrauch",
+        "targetQuantity": "Ziel-Jahresverbrauch",
+        "timeframe": "Zeitrahmen",
+        "notes": "Wie werden Sie dies erreichen? (Optional)"
+      },
+      "labels": {
+        "plasticItemType": "Plastikartikel-Typ",
+        "currentAnnualUsage": "Aktueller jährlicher Verbrauch",
+        "targetAnnualUsage": "Ziel-Jahresverbrauch",
+        "timeframe": "Zeitrahmen",
+        "achievementPlan": "Wie werden Sie dies erreichen? (Optional)"
+      },
+      "placeholders": {
+        "selectPlasticItem": "Wählen Sie einen Plastikartikel aus Ihrem Audit",
+        "selectTimeframe": "Zeitrahmen auswählen",
+        "describePlan": "Beschreiben Sie Ihren Plan zur Reduzierung dieses Plastikartikels..."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Plastikflaschen",
+      "plastic_cups": "Plastikbecher",
+      "plastic_cutlery": "Plastikbesteck",
+      "plastic_straws": "Plastikstrohhalme",
+      "snack_wrappers": "Snackverpackungen",
+      "yoghurt_pots": "Joghurtbecher",
+      "takeaway_containers": "Einwegbehälter",
+      "cling_film": "Frischhaltefolie",
+      "pens_pencils": "Kugelschreiber & Bleistifte",
+      "stationery": "Schreibwaren",
+      "display_materials": "Präsentationsmaterialien",
+      "soap_bottles": "Seifenspender",
+      "bin_liners": "Müllbeutel",
+      "cups_dispensers": "Becher/Spender",
+      "period_products": "Periodenprodukte",
+      "sport_equipment": "Sportausrüstung",
+      "toys_equipment": "Spielzeug/Ausrüstung",
+      "lab_equipment": "Laborausrüstung",
+      "art_supplies": "Kunstbedarf"
+    },
+    "validation": {
+      "selectPlasticItem": "Bitte wählen Sie einen Plastikartikel aus",
+      "itemLabelRequired": "Artikelbezeichnung ist erforderlich",
+      "baselineMinimum": "Ausgangswert muss mindestens 1 sein",
+      "targetNonNegative": "Zielwert darf nicht negativ sein",
+      "minimumPromises": "Mindestens 2 Reduktionszusagen sind erforderlich"
+    },
+    "status": {
+      "auditRequired": {
+        "title": "Audit erforderlich",
+        "description": "Sie müssen das Plastikmüll-Audit abschließen, bevor Sie einen Aktionsplan erstellen können."
+      },
+      "auditApprovalRequired": {
+        "title": "Audit-Genehmigung erforderlich",
+        "description": "Ihr Plastikmüll-Audit muss genehmigt werden, bevor Sie einen Aktionsplan erstellen können. Aktueller Status:"
+      },
+      "approved": {
+        "title": "Aktionsplan genehmigt",
+        "description": "Glückwunsch! Ihr Aktionsplan mit {{count}} Reduktionszusage{{plural}} wurde genehmigt.",
+        "noPromisesDescription": "Ihr Aktionsplan wurde genehmigt! Sie können Ihre Reduktionszusagen im Tab \"Unser Aktionsplan\" einsehen."
+      },
+      "pending": {
+        "title": "Aktionsplan wird geprüft",
+        "description": "Ihr Aktionsplan mit {{count}} Reduktionszusage{{plural}} wird derzeit geprüft.",
+        "loadingDescription": "Ihr Aktionsplan wird geladen...",
+        "noPromisesDescription": "Ihr Aktionsplan wurde eingereicht und wird derzeit geprüft."
+      }
+    },
+    "notifications": {
+      "submitSuccess": "Aktionsplan eingereicht!",
+      "submitSuccessDescription": "Ihr Aktionsplan mit {{count}} Reduktionszusage{{plural}} wurde zur Prüfung eingereicht.",
+      "submitError": "Einreichungsfehler",
+      "submitErrorDescription": "Beim Einreichen Ihres Aktionsplans ist ein Fehler aufgetreten. Bitte versuchen Sie es erneut.",
+      "noPlasticItems": "Keine Plastikartikel in Ihrem Audit gefunden. Bitte schließen Sie zuerst das Audit mit Plastikartikeldaten ab."
+    },
+    "actions": {
+      "submit": "Aktionsplan einreichen",
+      "submitting": "Wird eingereicht...",
+      "cancel": "Abbrechen",
+      "close": "Schließen",
+      "addPromise": "Weitere Zusage hinzufügen",
+      "removePromise": "Entfernen"
+    },
+    "display": {
+      "promise": "Zusage",
+      "baseline": "Ausgangswert:",
+      "target": "Ziel:",
+      "reduction": "Reduzierung:",
+      "plan": "Plan:",
+      "per": "pro",
+      "items": "Artikel",
+      "itemsYear": "Artikel/Jahr",
+      "reductionAmount": "Reduzierung: {{amount}} Artikel pro {{timeframe}}",
+      "reductionPercentage": "{{percent}}% Reduzierung",
+      "promisesNumber": "Reduktionszusage {{number}}",
+      "promiseLabel": "Zusage {{number}}: {{label}}",
+      "summaryTitle": "Zusammenfassung Ihrer Zusagen",
+      "summaryDescription": "Sie verpflichten sich, {{count}} Plastikarten zu reduzieren:",
+      "summaryItem": "{{label}}: Reduzierung um {{amount}} Artikel pro {{timeframe}}",
+      "quantityWithTimeframe": "{{quantity}} pro {{timeframe}}"
+    }
+  },
+  "shared": {
+    "timeframes": {
+      "week": "Woche",
+      "month": "Monat",
+      "year": "Jahr",
+      "perWeek": "Pro Woche",
+      "perMonth": "Pro Monat",
+      "perYear": "Pro Jahr"
+    },
+    "plasticItems": {
+      "plastic_bottles": "Plastikflaschen",
+      "plastic_cups": "Plastikbecher",
+      "plastic_cutlery": "Plastikbesteck",
+      "plastic_straws": "Plastikstrohhalme",
+      "snack_wrappers": "Snackverpackungen",
+      "yoghurt_pots": "Joghurtbecher",
+      "takeaway_containers": "Einwegbehälter",
+      "cling_film": "Frischhaltefolie",
+      "pens_pencils": "Kugelschreiber & Bleistifte",
+      "stationery": "Schreibwaren",
+      "display_materials": "Präsentationsmaterialien",
+      "soap_bottles": "Seifenspender",
+      "bin_liners": "Müllbeutel",
+      "cups_dispensers": "Becher/Spender",
+      "period_products": "Periodenprodukte",
+      "sport_equipment": "Sportausrüstung",
+      "toys_equipment": "Spielzeug/Ausrüstung",
+      "lab_equipment": "Laborausrüstung",
+      "art_supplies": "Kunstbedarf",
+      "other_plastic_items": "Andere Plastikartikel"
+    }
+  }
+}

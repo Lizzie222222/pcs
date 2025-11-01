@@ -1,0 +1,329 @@
+{
+  "audit": {
+    "overview": {
+      "title": "플라스틱 폐기물 점검",
+      "description": "학교의 모든 영역에서 플라스틱 사용을 추적하고 측정하세요",
+      "uploadSuccessTitle": "업로드 성공",
+      "uploadSuccessDescription": "점검 양식이 성공적으로 업로드되었습니다",
+      "uploadFailedTitle": "업로드 실패",
+      "uploadFileTypeError": "PDF 파일만 허용됩니다",
+      "uploadFileSizeError": "파일 크기는 10MB 미만이어야 합니다",
+      "uploadStorageError": "스토리지에 파일 업로드 실패"
+    },
+    "form": {
+      "metadata": {
+        "schoolName": "학교 이름",
+        "studentCount": "학생 수 (선택사항)",
+        "staffCount": "교직원 수 (선택사항)",
+        "auditDate": "점검 날짜",
+        "teamMembers": "팀 구성원 (선택사항)",
+        "teamMembersPlaceholder": "이번 점검에 누가 참여했나요?"
+      },
+      "step1": {
+        "title": "일반 정보",
+        "description": "학교와 점검 팀에 대한 기본 정보"
+      },
+      "step2": {
+        "title": "급식실 및 교무실 플라스틱 물품",
+        "description": "급식실과 교무실 영역의 일일 플라스틱 물품 수를 세어주세요",
+        "lunchroom": "급식실",
+        "staffroom": "교무실",
+        "plasticBottles": "플라스틱 병 (일일 개수)",
+        "plasticCups": "플라스틱 컵 (일일 개수)",
+        "plasticCutlery": "플라스틱 식기 (일일 개수)",
+        "plasticStraws": "플라스틱 빨대 (일일 개수)",
+        "snackWrappers": "간식 포장지 (일일 개수)",
+        "yoghurtPots": "요구르트 용기 (일일 개수)",
+        "takeawayContainers": "테이크아웃 용기 (일일 개수)",
+        "clingFilm": "랩 사용 (일일 개수)",
+        "otherItems": "기타 플라스틱 물품 (일일 개수)",
+        "otherDescription": "기타 플라스틱 물품 설명 (선택사항)",
+        "additionalNotes": "추가 메모 (선택사항)",
+        "lunchroomOtherPlaceholder": "급식실에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "staffroomOtherPlaceholder": "교무실에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "notesPlaceholder": "급식실/교무실 영역의 플라스틱 사용에 대한 관찰사항이 있나요?"
+      },
+      "step3": {
+        "title": "교실 및 기타 영역",
+        "description": "방을 선택하고 각 영역의 플라스틱 물품 수를 세어주세요",
+        "roomSelectionTitle": "학교에는 어떤 방들이 있나요? (해당하는 모든 항목 선택)",
+        "roomSelectionDescription": "선택한 방만 점검 양식에 표시되어 스크롤과 양식 작성 피로를 줄입니다.",
+        "academicSpaces": "📚 학습 공간",
+        "commonAreas": "🏢 공용 공간",
+        "outdoorSports": "⚽ 야외 및 스포츠",
+        "classrooms": "교실",
+        "toilets": "화장실",
+        "office": "사무실",
+        "library": "도서관",
+        "gym": "체육관",
+        "playground": "운동장",
+        "corridors": "복도",
+        "scienceLabs": "과학실",
+        "artRooms": "미술실",
+        "pensPencils": "플라스틱 펜 및 연필 (일일 개수)",
+        "stationery": "기타 플라스틱 문구류 (일일 개수)",
+        "displayMaterials": "플라스틱 게시 자료 (일일 개수)",
+        "soapBottles": "플라스틱 비누 용기 (일일 개수)",
+        "binLiners": "쓰레기 봉투 (일일 개수)",
+        "cupsDispensers": "컵/디스펜서 (종이 또는 플라스틱) (일일 개수)",
+        "periodProducts": "생리용품 (일일 개수)",
+        "sportEquipment": "스포츠 장비 (일일 개수)",
+        "toysEquipment": "장난감/기구 (일일 개수)",
+        "labEquipment": "실험 장비 (일일 개수)",
+        "artSupplies": "미술 용품 (일일 개수)",
+        "otherItems": "기타 플라스틱 물품 (일일 개수)",
+        "otherDescription": "기타 플라스틱 물품 설명 (선택사항)",
+        "additionalNotes": "추가 메모 (선택사항)",
+        "classroomOtherPlaceholder": "교실에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "toiletOtherPlaceholder": "화장실에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "officeOtherPlaceholder": "사무실에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "libraryOtherPlaceholder": "도서관에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "gymOtherPlaceholder": "체육관에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "playgroundOtherPlaceholder": "운동장에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "corridorsOtherPlaceholder": "복도에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "scienceLabsOtherPlaceholder": "과학실에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "artRoomsOtherPlaceholder": "미술실에서 발견된 다른 플라스틱 물품을 나열하세요",
+        "notesPlaceholder": "모든 방의 플라스틱 사용에 대한 관찰사항이 있나요?"
+      },
+      "step4": {
+        "title": "폐기물 관리 실천",
+        "description": "재활용, 퇴비화 및 플라스틱 감축 정책에 대한 정보",
+        "hasRecyclingBins": "학교에 재활용 쓰레기통이 있음",
+        "recyclingBinLocations": "재활용 쓰레기통 위치 (해당하는 경우)",
+        "recyclingBinLocationsPlaceholder": "예: 교실, 복도, 급식실",
+        "plasticWasteDestination": "플라스틱 폐기물은 어디로 가나요?",
+        "selectDestination": "목적지 선택",
+        "wasteGeneral": "일반 쓰레기/매립지",
+        "wasteRecycling": "재활용 센터",
+        "wasteMixed": "혼합 (일부 재활용, 일부 일반 쓰레기)",
+        "wasteUnknown": "알 수 없음",
+        "compostsOrganicWaste": "학교에서 유기 폐기물을 퇴비화함",
+        "hasPlasticReductionPolicy": "학교에 플라스틱 감축 정책이 있음",
+        "reductionPolicyDetails": "정책 세부사항 (해당하는 경우)",
+        "reductionPolicyPlaceholder": "학교의 플라스틱 감축 정책을 설명하세요",
+        "wasteManagementNotes": "추가 메모 (선택사항)",
+        "wasteManagementNotesPlaceholder": "폐기물 관리에 대한 다른 관찰사항이 있나요?"
+      },
+      "step5": {
+        "title": "점검 결과",
+        "description": "일일 개수를 기반으로 한 학교의 연간 플라스틱 소비량 추정치입니다 (연간 190 수업일 기준):",
+        "totalAnnualTitle": "연간 총 플라스틱 물품",
+        "itemsPerYear": "개/년",
+        "topProblemsTitle": "상위 5개 문제 플라스틱",
+        "yearSuffix": "/년",
+        "readyToSubmitTitle": "제출 준비가 되셨나요?",
+        "readyToSubmitDescription": "결과를 PDF로 다운로드하거나 검토를 위해 점검을 제출할 수 있습니다. 승인되면 플라스틱 감축 목표를 추적할 수 있는 실천 계획을 만들 수 있습니다."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "플라스틱 병",
+      "plastic_cups": "플라스틱 컵",
+      "plastic_cutlery": "플라스틱 식기",
+      "plastic_straws": "플라스틱 빨대",
+      "snack_wrappers": "간식 포장지",
+      "yoghurt_pots": "요구르트 용기",
+      "takeaway_containers": "테이크아웃 용기",
+      "cling_film": "랩",
+      "pens_pencils": "펜 및 연필",
+      "stationery": "문구류",
+      "display_materials": "게시 자료",
+      "soap_bottles": "비누 용기",
+      "bin_liners": "쓰레기 봉투",
+      "toilet_cups_dispensers": "화장실 컵/디스펜서",
+      "period_products": "생리용품",
+      "sport_equipment": "스포츠 장비",
+      "toys_equipment": "장난감/기구",
+      "lab_equipment": "실험 장비",
+      "art_supplies": "미술 용품",
+      "other_plastic_items": "기타 플라스틱 물품"
+    },
+    "rooms": {
+      "lunchroom": "🏫 급식실",
+      "staffroom": "☕ 교무실",
+      "classrooms": "🏫 교실",
+      "toilets": "🚽 화장실",
+      "office": "🏢 사무실",
+      "library": "📚 도서관",
+      "gym": "🏋️ 체육관",
+      "playground": "🎮 운동장",
+      "corridors": "🚪 복도",
+      "science_labs": "🔬 과학실",
+      "art_rooms": "🎨 미술실"
+    },
+    "validation": {
+      "schoolNameRequired": "학교 이름은 필수입니다",
+      "auditDateRequired": "점검 날짜는 필수입니다",
+      "wasteDestinationRequired": "플라스틱 폐기물의 목적지를 지정해 주세요",
+      "roomSelectionRequired": "최소 하나의 방 유형을 선택해 주세요",
+      "validationError": "유효성 검사 오류",
+      "fillRequiredFields": "계속하기 전에 모든 필수 항목을 작성해 주세요."
+    },
+    "actions": {
+      "next": "다음",
+      "previous": "이전",
+      "saveProgress": "진행 상황 저장",
+      "submitAudit": "검토를 위해 점검 제출",
+      "submitting": "제출 중...",
+      "downloadPdf": "PDF 결과 다운로드",
+      "backToWasteManagement": "폐기물 관리로 돌아가기"
+    },
+    "status": {
+      "progressSaved": "진행 상황이 저장되었습니다",
+      "progressSavedDescription": "점검 진행 상황이 자동으로 저장되었습니다.",
+      "auditSubmitted": "점검이 제출되었습니다!",
+      "auditSubmittedDescription": "플라스틱 폐기물 점검이 검토를 위해 제출되었습니다."
+    },
+    "results": {
+      "totalAnnualPlasticItems": "연간 총 플라스틱 물품",
+      "topProblemPlastics": "상위 5개 문제 플라스틱",
+      "itemsPerYear": "개/년",
+      "yearSuffix": "/년",
+      "readyToSubmit": "제출 준비가 되셨나요?",
+      "submitDescription": "결과를 PDF로 다운로드하거나 검토를 위해 점검을 제출할 수 있습니다. 승인되면 플라스틱 감축 목표를 추적할 수 있는 실천 계획을 만들 수 있습니다.",
+      "annualConsumptionDescription": "일일 개수를 기반으로 한 학교의 연간 플라스틱 소비량 추정치입니다 (연간 190 수업일 기준):"
+    }
+  },
+  "actionPlan": {
+    "overview": {
+      "title": "실천 계획 만들기",
+      "description": "점검 결과를 바탕으로 최소 2가지 유형의 플라스틱 감축을 약속하세요. 현실적인 목표를 설정하세요!"
+    },
+    "form": {
+      "promises": {
+        "title": "감축 약속",
+        "plasticItemType": "플라스틱 물품 유형",
+        "itemLabel": "물품 라벨",
+        "baselineQuantity": "현재 연간 사용량",
+        "targetQuantity": "목표 연간 사용량",
+        "timeframe": "기간",
+        "notes": "어떻게 달성하시겠습니까? (선택사항)"
+      },
+      "labels": {
+        "plasticItemType": "플라스틱 물품 유형",
+        "currentAnnualUsage": "현재 연간 사용량",
+        "targetAnnualUsage": "목표 연간 사용량",
+        "timeframe": "기간",
+        "achievementPlan": "어떻게 달성하시겠습니까? (선택사항)"
+      },
+      "placeholders": {
+        "selectPlasticItem": "점검에서 플라스틱 물품을 선택하세요",
+        "selectTimeframe": "기간 선택",
+        "describePlan": "이 플라스틱 물품을 줄이기 위한 계획을 설명하세요..."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "플라스틱 병",
+      "plastic_cups": "플라스틱 컵",
+      "plastic_cutlery": "플라스틱 식기",
+      "plastic_straws": "플라스틱 빨대",
+      "snack_wrappers": "간식 포장지",
+      "yoghurt_pots": "요구르트 용기",
+      "takeaway_containers": "테이크아웃 용기",
+      "cling_film": "랩",
+      "pens_pencils": "펜 및 연필",
+      "stationery": "문구류",
+      "display_materials": "게시 자료",
+      "soap_bottles": "비누 용기",
+      "bin_liners": "쓰레기 봉투",
+      "cups_dispensers": "컵/디스펜서",
+      "period_products": "생리용품",
+      "sport_equipment": "스포츠 장비",
+      "toys_equipment": "장난감/기구",
+      "lab_equipment": "실험 장비",
+      "art_supplies": "미술 용품"
+    },
+    "validation": {
+      "selectPlasticItem": "플라스틱 물품을 선택해 주세요",
+      "itemLabelRequired": "물품 라벨은 필수입니다",
+      "baselineMinimum": "기준치는 최소 1 이상이어야 합니다",
+      "targetNonNegative": "목표는 음수가 될 수 없습니다",
+      "minimumPromises": "최소 2개의 감축 약속이 필요합니다"
+    },
+    "status": {
+      "auditRequired": {
+        "title": "점검 필요",
+        "description": "실천 계획을 만들기 전에 플라스틱 폐기물 점검을 완료해야 합니다."
+      },
+      "auditApprovalRequired": {
+        "title": "점검 승인 필요",
+        "description": "실천 계획을 만들기 전에 플라스틱 폐기물 점검이 승인되어야 합니다. 현재 상태:"
+      },
+      "approved": {
+        "title": "실천 계획 승인됨",
+        "description": "축하합니다! {{count}}개의 감축 약속{{plural}}이 포함된 실천 계획이 승인되었습니다.",
+        "noPromisesDescription": "실천 계획이 승인되었습니다! \"우리의 실천 계획\" 탭에서 감축 약속을 확인할 수 있습니다."
+      },
+      "pending": {
+        "title": "실천 계획 검토 중",
+        "description": "{{count}}개의 감축 약속{{plural}}이 포함된 실천 계획이 현재 검토 중입니다.",
+        "loadingDescription": "실천 계획을 불러오는 중...",
+        "noPromisesDescription": "실천 계획이 제출되었으며 현재 검토 중입니다."
+      }
+    },
+    "notifications": {
+      "submitSuccess": "실천 계획 제출됨!",
+      "submitSuccessDescription": "{{count}}개의 감축 약속{{plural}}이 포함된 실천 계획이 검토를 위해 제출되었습니다.",
+      "submitError": "제출 오류",
+      "submitErrorDescription": "실천 계획 제출 중 오류가 발생했습니다. 다시 시도해 주세요.",
+      "noPlasticItems": "점검에서 플라스틱 물품을 찾을 수 없습니다. 먼저 플라스틱 물품 데이터가 포함된 점검을 완료해 주세요."
+    },
+    "actions": {
+      "submit": "실천 계획 제출",
+      "submitting": "제출 중...",
+      "cancel": "취소",
+      "close": "닫기",
+      "addPromise": "약속 추가",
+      "removePromise": "제거"
+    },
+    "display": {
+      "promise": "약속",
+      "baseline": "기준치:",
+      "target": "목표:",
+      "reduction": "감축량:",
+      "plan": "계획:",
+      "per": "당",
+      "items": "개",
+      "itemsYear": "개/년",
+      "reductionAmount": "감축량: {{timeframe}}당 {{amount}}개",
+      "reductionPercentage": "{{percent}}% 감축",
+      "promisesNumber": "감축 약속 {{number}}",
+      "promiseLabel": "약속 {{number}}: {{label}}",
+      "summaryTitle": "약속 요약",
+      "summaryDescription": "{{count}}가지 유형의 플라스틱 물품 감축을 약속하고 있습니다:",
+      "summaryItem": "{{label}}: {{timeframe}}당 {{amount}}개 감축",
+      "quantityWithTimeframe": "{{timeframe}}당 {{quantity}}개"
+    }
+  },
+  "shared": {
+    "timeframes": {
+      "week": "주",
+      "month": "월",
+      "year": "년",
+      "perWeek": "주당",
+      "perMonth": "월당",
+      "perYear": "연당"
+    },
+    "plasticItems": {
+      "plastic_bottles": "플라스틱 병",
+      "plastic_cups": "플라스틱 컵",
+      "plastic_cutlery": "플라스틱 식기",
+      "plastic_straws": "플라스틱 빨대",
+      "snack_wrappers": "간식 포장지",
+      "yoghurt_pots": "요구르트 용기",
+      "takeaway_containers": "테이크아웃 용기",
+      "cling_film": "랩",
+      "pens_pencils": "펜 및 연필",
+      "stationery": "문구류",
+      "display_materials": "게시 자료",
+      "soap_bottles": "비누 용기",
+      "bin_liners": "쓰레기 봉투",
+      "cups_dispensers": "컵/디스펜서",
+      "period_products": "생리용품",
+      "sport_equipment": "스포츠 장비",
+      "toys_equipment": "장난감/기구",
+      "lab_equipment": "실험 장비",
+      "art_supplies": "미술 용품",
+      "other_plastic_items": "기타 플라스틱 물품"
+    }
+  }
+}

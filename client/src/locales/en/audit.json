@@ -1,0 +1,329 @@
+{
+  "audit": {
+    "overview": {
+      "title": "Plastic Waste Audit",
+      "description": "Track and measure your school's plastic use across all areas",
+      "uploadSuccessTitle": "Upload Successful",
+      "uploadSuccessDescription": "Audit form uploaded successfully",
+      "uploadFailedTitle": "Upload Failed",
+      "uploadFileTypeError": "Only PDF files are allowed",
+      "uploadFileSizeError": "File size must be less than 10MB",
+      "uploadStorageError": "Failed to upload file to storage"
+    },
+    "form": {
+      "metadata": {
+        "schoolName": "School Name",
+        "studentCount": "Number of Students (Optional)",
+        "staffCount": "Number of Staff (Optional)",
+        "auditDate": "Audit Date",
+        "teamMembers": "Team Members (Optional)",
+        "teamMembersPlaceholder": "Who participated in this audit?"
+      },
+      "step1": {
+        "title": "General Information",
+        "description": "Basic information about your school and audit team"
+      },
+      "step2": {
+        "title": "Lunchroom & Staffroom Plastic Items",
+        "description": "Count daily plastic items in lunchroom and staffroom areas",
+        "lunchroom": "Lunchroom",
+        "staffroom": "Staffroom",
+        "plasticBottles": "Plastic Bottles (daily count)",
+        "plasticCups": "Plastic Cups (daily count)",
+        "plasticCutlery": "Plastic Cutlery (daily count)",
+        "plasticStraws": "Plastic Straws (daily count)",
+        "snackWrappers": "Snack Wrappers (daily count)",
+        "yoghurtPots": "Yoghurt Pots (daily count)",
+        "takeawayContainers": "Takeaway Containers (daily count)",
+        "clingFilm": "Cling Film Uses (daily count)",
+        "otherItems": "Other Plastic Items (daily count)",
+        "otherDescription": "Describe Other Plastic Items (Optional)",
+        "additionalNotes": "Additional Notes (Optional)",
+        "lunchroomOtherPlaceholder": "List any other plastic items found in the lunchroom",
+        "staffroomOtherPlaceholder": "List any other plastic items found in the staffroom",
+        "notesPlaceholder": "Any observations about plastic use in lunchroom/staffroom areas?"
+      },
+      "step3": {
+        "title": "Classrooms & Other Areas",
+        "description": "Select rooms and count plastic items in each area",
+        "roomSelectionTitle": "Which rooms does your school have? (Select all that apply)",
+        "roomSelectionDescription": "Only selected rooms will appear in the audit form, reducing scrolling and form fatigue.",
+        "academicSpaces": "📚 Academic Spaces",
+        "commonAreas": "🏢 Common Areas",
+        "outdoorSports": "⚽ Outdoor & Sports",
+        "classrooms": "Classrooms",
+        "toilets": "Toilets",
+        "office": "Office",
+        "library": "Library",
+        "gym": "Gym",
+        "playground": "Playground",
+        "corridors": "Corridors",
+        "scienceLabs": "Science Labs",
+        "artRooms": "Art Rooms",
+        "pensPencils": "Plastic Pens & Pencils (daily count)",
+        "stationery": "Other Plastic Stationery (daily count)",
+        "displayMaterials": "Plastic Display Materials (daily count)",
+        "soapBottles": "Plastic Soap Bottles (daily count)",
+        "binLiners": "Bin Liners (daily count)",
+        "cupsDispensers": "Cups/Dispensers (Paper or Plastic) (daily count)",
+        "periodProducts": "Period Products (daily count)",
+        "sportEquipment": "Sport Equipment (daily count)",
+        "toysEquipment": "Toys/Equipment (daily count)",
+        "labEquipment": "Lab Equipment (daily count)",
+        "artSupplies": "Art Supplies (daily count)",
+        "otherItems": "Other Plastic Items (daily count)",
+        "otherDescription": "Describe Other Plastic Items (Optional)",
+        "additionalNotes": "Additional Notes (Optional)",
+        "classroomOtherPlaceholder": "List any other plastic items found in classrooms",
+        "toiletOtherPlaceholder": "List any other plastic items found in toilets",
+        "officeOtherPlaceholder": "List any other plastic items found in the office",
+        "libraryOtherPlaceholder": "List any other plastic items found in the library",
+        "gymOtherPlaceholder": "List any other plastic items found in the gym",
+        "playgroundOtherPlaceholder": "List any other plastic items found on the playground",
+        "corridorsOtherPlaceholder": "List any other plastic items found in corridors",
+        "scienceLabsOtherPlaceholder": "List any other plastic items found in science labs",
+        "artRoomsOtherPlaceholder": "List any other plastic items found in art rooms",
+        "notesPlaceholder": "Any observations about plastic use across all rooms?"
+      },
+      "step4": {
+        "title": "Waste Management Practices",
+        "description": "Information about recycling, composting, and plastic reduction policies",
+        "hasRecyclingBins": "School has recycling bins",
+        "recyclingBinLocations": "Recycling Bin Locations (if applicable)",
+        "recyclingBinLocationsPlaceholder": "E.g., classrooms, hallways, cafeteria",
+        "plasticWasteDestination": "Where does plastic waste go?",
+        "selectDestination": "Select destination",
+        "wasteGeneral": "General waste/landfill",
+        "wasteRecycling": "Recycling center",
+        "wasteMixed": "Mixed (some recycled, some general waste)",
+        "wasteUnknown": "Unknown",
+        "compostsOrganicWaste": "School composts organic waste",
+        "hasPlasticReductionPolicy": "School has a plastic reduction policy",
+        "reductionPolicyDetails": "Policy Details (if applicable)",
+        "reductionPolicyPlaceholder": "Describe your school's plastic reduction policy",
+        "wasteManagementNotes": "Additional Notes (Optional)",
+        "wasteManagementNotesPlaceholder": "Any other observations about waste management?"
+      },
+      "step5": {
+        "title": "Audit Results",
+        "description": "Based on your daily counts, here's your school's estimated annual plastic consumption (190 school days per year):",
+        "totalAnnualTitle": "Total Annual Plastic Items",
+        "itemsPerYear": "items per year",
+        "topProblemsTitle": "Top 5 Problem Plastics",
+        "yearSuffix": "/year",
+        "readyToSubmitTitle": "Ready to Submit?",
+        "readyToSubmitDescription": "You can download your results as a PDF or submit your audit for review. Once approved, you'll be able to create an action plan to track your plastic reduction goals."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Plastic bottles",
+      "plastic_cups": "Plastic cups",
+      "plastic_cutlery": "Plastic cutlery",
+      "plastic_straws": "Plastic straws",
+      "snack_wrappers": "Snack wrappers",
+      "yoghurt_pots": "Yoghurt pots",
+      "takeaway_containers": "Takeaway containers",
+      "cling_film": "Cling film",
+      "pens_pencils": "Pens & pencils",
+      "stationery": "Stationery items",
+      "display_materials": "Display materials",
+      "soap_bottles": "Soap bottles",
+      "bin_liners": "Bin liners",
+      "toilet_cups_dispensers": "Toilet cups/dispensers",
+      "period_products": "Period products",
+      "sport_equipment": "Sport equipment",
+      "toys_equipment": "Toys/equipment",
+      "lab_equipment": "Lab equipment",
+      "art_supplies": "Art supplies",
+      "other_plastic_items": "Other plastic items"
+    },
+    "rooms": {
+      "lunchroom": "🏫 Lunchroom",
+      "staffroom": "☕ Staffroom",
+      "classrooms": "🏫 Classrooms",
+      "toilets": "🚽 Toilets",
+      "office": "🏢 Office",
+      "library": "📚 Library",
+      "gym": "🏋️ Gym",
+      "playground": "🎮 Playground",
+      "corridors": "🚪 Corridors",
+      "science_labs": "🔬 Science Labs",
+      "art_rooms": "🎨 Art Rooms"
+    },
+    "validation": {
+      "schoolNameRequired": "School name is required",
+      "auditDateRequired": "Audit date is required",
+      "wasteDestinationRequired": "Please specify where plastic waste goes",
+      "roomSelectionRequired": "Please select at least one room type",
+      "validationError": "Validation Error",
+      "fillRequiredFields": "Please fill in all required fields before continuing."
+    },
+    "actions": {
+      "next": "Next",
+      "previous": "Previous",
+      "saveProgress": "Save Progress",
+      "submitAudit": "Submit Audit for Review",
+      "submitting": "Submitting...",
+      "downloadPdf": "Download PDF Results",
+      "backToWasteManagement": "Back to Waste Management"
+    },
+    "status": {
+      "progressSaved": "Progress saved",
+      "progressSavedDescription": "Your audit progress has been saved automatically.",
+      "auditSubmitted": "Audit submitted!",
+      "auditSubmittedDescription": "Your plastic waste audit has been submitted for review."
+    },
+    "results": {
+      "totalAnnualPlasticItems": "Total Annual Plastic Items",
+      "topProblemPlastics": "Top 5 Problem Plastics",
+      "itemsPerYear": "items per year",
+      "yearSuffix": "/year",
+      "readyToSubmit": "Ready to Submit?",
+      "submitDescription": "You can download your results as a PDF or submit your audit for review. Once approved, you'll be able to create an action plan to track your plastic reduction goals.",
+      "annualConsumptionDescription": "Based on your daily counts, here's your school's estimated annual plastic consumption (190 school days per year):"
+    }
+  },
+  "actionPlan": {
+    "overview": {
+      "title": "Create Your Action Plan",
+      "description": "Based on your audit results, commit to reducing at least 2 types of plastic. Set realistic targets!"
+    },
+    "form": {
+      "promises": {
+        "title": "Reduction Promise",
+        "plasticItemType": "Plastic Item Type",
+        "itemLabel": "Item Label",
+        "baselineQuantity": "Current Annual Usage",
+        "targetQuantity": "Target Annual Usage",
+        "timeframe": "Timeframe",
+        "notes": "How will you achieve this? (Optional)"
+      },
+      "labels": {
+        "plasticItemType": "Plastic Item Type",
+        "currentAnnualUsage": "Current Annual Usage",
+        "targetAnnualUsage": "Target Annual Usage",
+        "timeframe": "Timeframe",
+        "achievementPlan": "How will you achieve this? (Optional)"
+      },
+      "placeholders": {
+        "selectPlasticItem": "Select a plastic item from your audit",
+        "selectTimeframe": "Select timeframe",
+        "describePlan": "Describe your plan to reduce this plastic item..."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Plastic Bottles",
+      "plastic_cups": "Plastic Cups",
+      "plastic_cutlery": "Plastic Cutlery",
+      "plastic_straws": "Plastic Straws",
+      "snack_wrappers": "Snack Wrappers",
+      "yoghurt_pots": "Yoghurt Pots",
+      "takeaway_containers": "Takeaway Containers",
+      "cling_film": "Cling Film",
+      "pens_pencils": "Pens & Pencils",
+      "stationery": "Stationery Items",
+      "display_materials": "Display Materials",
+      "soap_bottles": "Soap Bottles",
+      "bin_liners": "Bin Liners",
+      "cups_dispensers": "Cups/Dispensers",
+      "period_products": "Period Products",
+      "sport_equipment": "Sport Equipment",
+      "toys_equipment": "Toys/Equipment",
+      "lab_equipment": "Lab Equipment",
+      "art_supplies": "Art Supplies"
+    },
+    "validation": {
+      "selectPlasticItem": "Please select a plastic item",
+      "itemLabelRequired": "Item label is required",
+      "baselineMinimum": "Baseline must be at least 1",
+      "targetNonNegative": "Target cannot be negative",
+      "minimumPromises": "At least 2 reduction promises are required"
+    },
+    "status": {
+      "auditRequired": {
+        "title": "Audit Required",
+        "description": "You need to complete the Plastic Waste Audit before creating an action plan."
+      },
+      "auditApprovalRequired": {
+        "title": "Audit Approval Required",
+        "description": "Your Plastic Waste Audit must be approved before you can create an action plan. Current status:"
+      },
+      "approved": {
+        "title": "Action Plan Approved",
+        "description": "Congratulations! Your action plan with {{count}} reduction promise{{plural}} has been approved.",
+        "noPromisesDescription": "Your action plan has been approved! You can view your reduction promises in the \"Our Action Plan\" tab."
+      },
+      "pending": {
+        "title": "Action Plan Under Review",
+        "description": "Your action plan with {{count}} reduction promise{{plural}} is currently under review.",
+        "loadingDescription": "Loading your action plan...",
+        "noPromisesDescription": "Your action plan has been submitted and is currently under review."
+      }
+    },
+    "notifications": {
+      "submitSuccess": "Action Plan Submitted!",
+      "submitSuccessDescription": "Your action plan with {{count}} reduction promise{{plural}} has been submitted for review.",
+      "submitError": "Submission Error",
+      "submitErrorDescription": "There was an error submitting your action plan. Please try again.",
+      "noPlasticItems": "No plastic items found in your audit. Please complete the audit with plastic item data first."
+    },
+    "actions": {
+      "submit": "Submit Action Plan",
+      "submitting": "Submitting...",
+      "cancel": "Cancel",
+      "close": "Close",
+      "addPromise": "Add Another Promise",
+      "removePromise": "Remove"
+    },
+    "display": {
+      "promise": "Promise",
+      "baseline": "Baseline:",
+      "target": "Target:",
+      "reduction": "Reduction:",
+      "plan": "Plan:",
+      "per": "per",
+      "items": "items",
+      "itemsYear": "items/year",
+      "reductionAmount": "Reduction: {{amount}} items per {{timeframe}}",
+      "reductionPercentage": "{{percent}}% reduction",
+      "promisesNumber": "Reduction Promise {{number}}",
+      "promiseLabel": "Promise {{number}}: {{label}}",
+      "summaryTitle": "Your Promises Summary",
+      "summaryDescription": "You're committing to reduce {{count}} types of plastic items:",
+      "summaryItem": "{{label}}: Reduce by {{amount}} items per {{timeframe}}",
+      "quantityWithTimeframe": "{{quantity}} per {{timeframe}}"
+    }
+  },
+  "shared": {
+    "timeframes": {
+      "week": "week",
+      "month": "month",
+      "year": "year",
+      "perWeek": "Per Week",
+      "perMonth": "Per Month",
+      "perYear": "Per Year"
+    },
+    "plasticItems": {
+      "plastic_bottles": "Plastic Bottles",
+      "plastic_cups": "Plastic Cups",
+      "plastic_cutlery": "Plastic Cutlery",
+      "plastic_straws": "Plastic Straws",
+      "snack_wrappers": "Snack Wrappers",
+      "yoghurt_pots": "Yoghurt Pots",
+      "takeaway_containers": "Takeaway Containers",
+      "cling_film": "Cling Film",
+      "pens_pencils": "Pens & Pencils",
+      "stationery": "Stationery Items",
+      "display_materials": "Display Materials",
+      "soap_bottles": "Soap Bottles",
+      "bin_liners": "Bin Liners",
+      "cups_dispensers": "Cups/Dispensers",
+      "period_products": "Period Products",
+      "sport_equipment": "Sport Equipment",
+      "toys_equipment": "Toys/Equipment",
+      "lab_equipment": "Lab Equipment",
+      "art_supplies": "Art Supplies",
+      "other_plastic_items": "Other Plastic Items"
+    }
+  }
+}

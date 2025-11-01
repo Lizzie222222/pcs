@@ -1,0 +1,329 @@
+{
+  "audit": {
+    "overview": {
+      "title": "Audit Limbah Plastik",
+      "description": "Lacak dan ukur penggunaan plastik sekolah Anda di semua area",
+      "uploadSuccessTitle": "Unggahan Berhasil",
+      "uploadSuccessDescription": "Formulir audit berhasil diunggah",
+      "uploadFailedTitle": "Unggahan Gagal",
+      "uploadFileTypeError": "Hanya file PDF yang diizinkan",
+      "uploadFileSizeError": "Ukuran file harus kurang dari 10MB",
+      "uploadStorageError": "Gagal mengunggah file ke penyimpanan"
+    },
+    "form": {
+      "metadata": {
+        "schoolName": "Nama Sekolah",
+        "studentCount": "Jumlah Siswa (Opsional)",
+        "staffCount": "Jumlah Staf (Opsional)",
+        "auditDate": "Tanggal Audit",
+        "teamMembers": "Anggota Tim (Opsional)",
+        "teamMembersPlaceholder": "Siapa yang berpartisipasi dalam audit ini?"
+      },
+      "step1": {
+        "title": "Informasi Umum",
+        "description": "Informasi dasar tentang sekolah Anda dan tim audit"
+      },
+      "step2": {
+        "title": "Barang Plastik di Kantin & Ruang Staf",
+        "description": "Hitung barang plastik harian di area kantin dan ruang staf",
+        "lunchroom": "Kantin",
+        "staffroom": "Ruang Staf",
+        "plasticBottles": "Botol Plastik (hitungan harian)",
+        "plasticCups": "Gelas Plastik (hitungan harian)",
+        "plasticCutlery": "Alat Makan Plastik (hitungan harian)",
+        "plasticStraws": "Sedotan Plastik (hitungan harian)",
+        "snackWrappers": "Bungkus Camilan (hitungan harian)",
+        "yoghurtPots": "Wadah Yoghurt (hitungan harian)",
+        "takeawayContainers": "Wadah Bawa Pulang (hitungan harian)",
+        "clingFilm": "Penggunaan Plastik Pembungkus (hitungan harian)",
+        "otherItems": "Barang Plastik Lainnya (hitungan harian)",
+        "otherDescription": "Jelaskan Barang Plastik Lainnya (Opsional)",
+        "additionalNotes": "Catatan Tambahan (Opsional)",
+        "lunchroomOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di kantin",
+        "staffroomOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di ruang staf",
+        "notesPlaceholder": "Ada pengamatan tentang penggunaan plastik di area kantin/ruang staf?"
+      },
+      "step3": {
+        "title": "Ruang Kelas & Area Lainnya",
+        "description": "Pilih ruangan dan hitung barang plastik di setiap area",
+        "roomSelectionTitle": "Ruangan apa saja yang ada di sekolah Anda? (Pilih semua yang sesuai)",
+        "roomSelectionDescription": "Hanya ruangan yang dipilih yang akan muncul di formulir audit, mengurangi scroll dan kelelahan mengisi formulir.",
+        "academicSpaces": "📚 Ruang Akademik",
+        "commonAreas": "🏢 Area Umum",
+        "outdoorSports": "⚽ Luar Ruangan & Olahraga",
+        "classrooms": "Ruang Kelas",
+        "toilets": "Toilet",
+        "office": "Kantor",
+        "library": "Perpustakaan",
+        "gym": "Gym",
+        "playground": "Taman Bermain",
+        "corridors": "Koridor",
+        "scienceLabs": "Laboratorium Sains",
+        "artRooms": "Ruang Seni",
+        "pensPencils": "Pulpen & Pensil Plastik (hitungan harian)",
+        "stationery": "Alat Tulis Plastik Lainnya (hitungan harian)",
+        "displayMaterials": "Bahan Pajangan Plastik (hitungan harian)",
+        "soapBottles": "Botol Sabun Plastik (hitungan harian)",
+        "binLiners": "Kantong Sampah (hitungan harian)",
+        "cupsDispensers": "Gelas/Dispenser (Kertas atau Plastik) (hitungan harian)",
+        "periodProducts": "Produk Menstruasi (hitungan harian)",
+        "sportEquipment": "Peralatan Olahraga (hitungan harian)",
+        "toysEquipment": "Mainan/Peralatan (hitungan harian)",
+        "labEquipment": "Peralatan Laboratorium (hitungan harian)",
+        "artSupplies": "Perlengkapan Seni (hitungan harian)",
+        "otherItems": "Barang Plastik Lainnya (hitungan harian)",
+        "otherDescription": "Jelaskan Barang Plastik Lainnya (Opsional)",
+        "additionalNotes": "Catatan Tambahan (Opsional)",
+        "classroomOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di ruang kelas",
+        "toiletOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di toilet",
+        "officeOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di kantor",
+        "libraryOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di perpustakaan",
+        "gymOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di gym",
+        "playgroundOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di taman bermain",
+        "corridorsOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di koridor",
+        "scienceLabsOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di laboratorium sains",
+        "artRoomsOtherPlaceholder": "Sebutkan barang plastik lain yang ditemukan di ruang seni",
+        "notesPlaceholder": "Ada pengamatan tentang penggunaan plastik di semua ruangan?"
+      },
+      "step4": {
+        "title": "Praktik Pengelolaan Limbah",
+        "description": "Informasi tentang daur ulang, pengomposan, dan kebijakan pengurangan plastik",
+        "hasRecyclingBins": "Sekolah memiliki tempat sampah daur ulang",
+        "recyclingBinLocations": "Lokasi Tempat Sampah Daur Ulang (jika ada)",
+        "recyclingBinLocationsPlaceholder": "Contoh: ruang kelas, lorong, kantin",
+        "plasticWasteDestination": "Kemana limbah plastik dibuang?",
+        "selectDestination": "Pilih tujuan",
+        "wasteGeneral": "Sampah umum/TPA",
+        "wasteRecycling": "Pusat daur ulang",
+        "wasteMixed": "Campuran (sebagian didaur ulang, sebagian sampah umum)",
+        "wasteUnknown": "Tidak diketahui",
+        "compostsOrganicWaste": "Sekolah mengompos limbah organik",
+        "hasPlasticReductionPolicy": "Sekolah memiliki kebijakan pengurangan plastik",
+        "reductionPolicyDetails": "Detail Kebijakan (jika ada)",
+        "reductionPolicyPlaceholder": "Jelaskan kebijakan pengurangan plastik sekolah Anda",
+        "wasteManagementNotes": "Catatan Tambahan (Opsional)",
+        "wasteManagementNotesPlaceholder": "Pengamatan lain tentang pengelolaan limbah?"
+      },
+      "step5": {
+        "title": "Hasil Audit",
+        "description": "Berdasarkan hitungan harian Anda, berikut adalah perkiraan konsumsi plastik tahunan sekolah Anda (190 hari sekolah per tahun):",
+        "totalAnnualTitle": "Total Barang Plastik Tahunan",
+        "itemsPerYear": "barang per tahun",
+        "topProblemsTitle": "5 Plastik Bermasalah Teratas",
+        "yearSuffix": "/tahun",
+        "readyToSubmitTitle": "Siap untuk Dikirim?",
+        "readyToSubmitDescription": "Anda dapat mengunduh hasil sebagai PDF atau mengirimkan audit untuk ditinjau. Setelah disetujui, Anda akan dapat membuat rencana aksi untuk melacak tujuan pengurangan plastik Anda."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Botol plastik",
+      "plastic_cups": "Gelas plastik",
+      "plastic_cutlery": "Alat makan plastik",
+      "plastic_straws": "Sedotan plastik",
+      "snack_wrappers": "Bungkus camilan",
+      "yoghurt_pots": "Wadah yoghurt",
+      "takeaway_containers": "Wadah bawa pulang",
+      "cling_film": "Plastik pembungkus",
+      "pens_pencils": "Pulpen & pensil",
+      "stationery": "Alat tulis",
+      "display_materials": "Bahan pajangan",
+      "soap_bottles": "Botol sabun",
+      "bin_liners": "Kantong sampah",
+      "toilet_cups_dispensers": "Gelas/dispenser toilet",
+      "period_products": "Produk menstruasi",
+      "sport_equipment": "Peralatan olahraga",
+      "toys_equipment": "Mainan/peralatan",
+      "lab_equipment": "Peralatan laboratorium",
+      "art_supplies": "Perlengkapan seni",
+      "other_plastic_items": "Barang plastik lainnya"
+    },
+    "rooms": {
+      "lunchroom": "🏫 Kantin",
+      "staffroom": "☕ Ruang Staf",
+      "classrooms": "🏫 Ruang Kelas",
+      "toilets": "🚽 Toilet",
+      "office": "🏢 Kantor",
+      "library": "📚 Perpustakaan",
+      "gym": "🏋️ Gym",
+      "playground": "🎮 Taman Bermain",
+      "corridors": "🚪 Koridor",
+      "science_labs": "🔬 Laboratorium Sains",
+      "art_rooms": "🎨 Ruang Seni"
+    },
+    "validation": {
+      "schoolNameRequired": "Nama sekolah wajib diisi",
+      "auditDateRequired": "Tanggal audit wajib diisi",
+      "wasteDestinationRequired": "Harap tentukan kemana limbah plastik dibuang",
+      "roomSelectionRequired": "Harap pilih minimal satu jenis ruangan",
+      "validationError": "Kesalahan Validasi",
+      "fillRequiredFields": "Harap isi semua bidang yang wajib sebelum melanjutkan."
+    },
+    "actions": {
+      "next": "Berikutnya",
+      "previous": "Sebelumnya",
+      "saveProgress": "Simpan Kemajuan",
+      "submitAudit": "Kirim Audit untuk Ditinjau",
+      "submitting": "Mengirim...",
+      "downloadPdf": "Unduh Hasil PDF",
+      "backToWasteManagement": "Kembali ke Pengelolaan Limbah"
+    },
+    "status": {
+      "progressSaved": "Kemajuan tersimpan",
+      "progressSavedDescription": "Kemajuan audit Anda telah disimpan secara otomatis.",
+      "auditSubmitted": "Audit terkirim!",
+      "auditSubmittedDescription": "Audit limbah plastik Anda telah dikirim untuk ditinjau."
+    },
+    "results": {
+      "totalAnnualPlasticItems": "Total Barang Plastik Tahunan",
+      "topProblemPlastics": "5 Plastik Bermasalah Teratas",
+      "itemsPerYear": "barang per tahun",
+      "yearSuffix": "/tahun",
+      "readyToSubmit": "Siap untuk Dikirim?",
+      "submitDescription": "Anda dapat mengunduh hasil sebagai PDF atau mengirimkan audit untuk ditinjau. Setelah disetujui, Anda akan dapat membuat rencana aksi untuk melacak tujuan pengurangan plastik Anda.",
+      "annualConsumptionDescription": "Berdasarkan hitungan harian Anda, berikut adalah perkiraan konsumsi plastik tahunan sekolah Anda (190 hari sekolah per tahun):"
+    }
+  },
+  "actionPlan": {
+    "overview": {
+      "title": "Buat Rencana Aksi Anda",
+      "description": "Berdasarkan hasil audit Anda, berkomitmen untuk mengurangi minimal 2 jenis plastik. Tetapkan target yang realistis!"
+    },
+    "form": {
+      "promises": {
+        "title": "Janji Pengurangan",
+        "plasticItemType": "Jenis Barang Plastik",
+        "itemLabel": "Label Barang",
+        "baselineQuantity": "Penggunaan Tahunan Saat Ini",
+        "targetQuantity": "Target Penggunaan Tahunan",
+        "timeframe": "Jangka Waktu",
+        "notes": "Bagaimana Anda akan mencapainya? (Opsional)"
+      },
+      "labels": {
+        "plasticItemType": "Jenis Barang Plastik",
+        "currentAnnualUsage": "Penggunaan Tahunan Saat Ini",
+        "targetAnnualUsage": "Target Penggunaan Tahunan",
+        "timeframe": "Jangka Waktu",
+        "achievementPlan": "Bagaimana Anda akan mencapainya? (Opsional)"
+      },
+      "placeholders": {
+        "selectPlasticItem": "Pilih barang plastik dari audit Anda",
+        "selectTimeframe": "Pilih jangka waktu",
+        "describePlan": "Jelaskan rencana Anda untuk mengurangi barang plastik ini..."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Botol Plastik",
+      "plastic_cups": "Gelas Plastik",
+      "plastic_cutlery": "Alat Makan Plastik",
+      "plastic_straws": "Sedotan Plastik",
+      "snack_wrappers": "Bungkus Camilan",
+      "yoghurt_pots": "Wadah Yoghurt",
+      "takeaway_containers": "Wadah Bawa Pulang",
+      "cling_film": "Plastik Pembungkus",
+      "pens_pencils": "Pulpen & Pensil",
+      "stationery": "Alat Tulis",
+      "display_materials": "Bahan Pajangan",
+      "soap_bottles": "Botol Sabun",
+      "bin_liners": "Kantong Sampah",
+      "cups_dispensers": "Gelas/Dispenser",
+      "period_products": "Produk Menstruasi",
+      "sport_equipment": "Peralatan Olahraga",
+      "toys_equipment": "Mainan/Peralatan",
+      "lab_equipment": "Peralatan Laboratorium",
+      "art_supplies": "Perlengkapan Seni"
+    },
+    "validation": {
+      "selectPlasticItem": "Harap pilih barang plastik",
+      "itemLabelRequired": "Label barang wajib diisi",
+      "baselineMinimum": "Nilai awal minimal harus 1",
+      "targetNonNegative": "Target tidak boleh negatif",
+      "minimumPromises": "Minimal 2 janji pengurangan diperlukan"
+    },
+    "status": {
+      "auditRequired": {
+        "title": "Audit Diperlukan",
+        "description": "Anda perlu menyelesaikan Audit Limbah Plastik sebelum membuat rencana aksi."
+      },
+      "auditApprovalRequired": {
+        "title": "Persetujuan Audit Diperlukan",
+        "description": "Audit Limbah Plastik Anda harus disetujui sebelum Anda dapat membuat rencana aksi. Status saat ini:"
+      },
+      "approved": {
+        "title": "Rencana Aksi Disetujui",
+        "description": "Selamat! Rencana aksi Anda dengan {{count}} janji pengurangan{{plural}} telah disetujui.",
+        "noPromisesDescription": "Rencana aksi Anda telah disetujui! Anda dapat melihat janji pengurangan Anda di tab \"Rencana Aksi Kami\"."
+      },
+      "pending": {
+        "title": "Rencana Aksi Sedang Ditinjau",
+        "description": "Rencana aksi Anda dengan {{count}} janji pengurangan{{plural}} sedang ditinjau.",
+        "loadingDescription": "Memuat rencana aksi Anda...",
+        "noPromisesDescription": "Rencana aksi Anda telah dikirim dan sedang ditinjau."
+      }
+    },
+    "notifications": {
+      "submitSuccess": "Rencana Aksi Terkirim!",
+      "submitSuccessDescription": "Rencana aksi Anda dengan {{count}} janji pengurangan{{plural}} telah dikirim untuk ditinjau.",
+      "submitError": "Kesalahan Pengiriman",
+      "submitErrorDescription": "Terjadi kesalahan saat mengirim rencana aksi Anda. Harap coba lagi.",
+      "noPlasticItems": "Tidak ada barang plastik yang ditemukan dalam audit Anda. Harap selesaikan audit dengan data barang plastik terlebih dahulu."
+    },
+    "actions": {
+      "submit": "Kirim Rencana Aksi",
+      "submitting": "Mengirim...",
+      "cancel": "Batal",
+      "close": "Tutup",
+      "addPromise": "Tambah Janji Lain",
+      "removePromise": "Hapus"
+    },
+    "display": {
+      "promise": "Janji",
+      "baseline": "Nilai Awal:",
+      "target": "Target:",
+      "reduction": "Pengurangan:",
+      "plan": "Rencana:",
+      "per": "per",
+      "items": "barang",
+      "itemsYear": "barang/tahun",
+      "reductionAmount": "Pengurangan: {{amount}} barang per {{timeframe}}",
+      "reductionPercentage": "pengurangan {{percent}}%",
+      "promisesNumber": "Janji Pengurangan {{number}}",
+      "promiseLabel": "Janji {{number}}: {{label}}",
+      "summaryTitle": "Ringkasan Janji Anda",
+      "summaryDescription": "Anda berkomitmen untuk mengurangi {{count}} jenis barang plastik:",
+      "summaryItem": "{{label}}: Kurangi sebanyak {{amount}} barang per {{timeframe}}",
+      "quantityWithTimeframe": "{{quantity}} per {{timeframe}}"
+    }
+  },
+  "shared": {
+    "timeframes": {
+      "week": "minggu",
+      "month": "bulan",
+      "year": "tahun",
+      "perWeek": "Per Minggu",
+      "perMonth": "Per Bulan",
+      "perYear": "Per Tahun"
+    },
+    "plasticItems": {
+      "plastic_bottles": "Botol Plastik",
+      "plastic_cups": "Gelas Plastik",
+      "plastic_cutlery": "Alat Makan Plastik",
+      "plastic_straws": "Sedotan Plastik",
+      "snack_wrappers": "Bungkus Camilan",
+      "yoghurt_pots": "Wadah Yoghurt",
+      "takeaway_containers": "Wadah Bawa Pulang",
+      "cling_film": "Plastik Pembungkus",
+      "pens_pencils": "Pulpen & Pensil",
+      "stationery": "Alat Tulis",
+      "display_materials": "Bahan Pajangan",
+      "soap_bottles": "Botol Sabun",
+      "bin_liners": "Kantong Sampah",
+      "cups_dispensers": "Gelas/Dispenser",
+      "period_products": "Produk Menstruasi",
+      "sport_equipment": "Peralatan Olahraga",
+      "toys_equipment": "Mainan/Peralatan",
+      "lab_equipment": "Peralatan Laboratorium",
+      "art_supplies": "Perlengkapan Seni",
+      "other_plastic_items": "Barang Plastik Lainnya"
+    }
+  }
+}

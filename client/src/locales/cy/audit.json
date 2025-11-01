@@ -1,0 +1,329 @@
+{
+  "audit": {
+    "overview": {
+      "title": "Archwiliad Gwastraff Plastig",
+      "description": "Olrhain a mesur defnydd plastig eich ysgol ar draws pob ardal",
+      "uploadSuccessTitle": "Llwyddiant Llwytho i Fyny",
+      "uploadSuccessDescription": "Ffurflen archwiliad wedi'i llwytho i fyny'n llwyddiannus",
+      "uploadFailedTitle": "Methiant Llwytho i Fyny",
+      "uploadFileTypeError": "Dim ond ffeiliau PDF sy'n cael eu caniatáu",
+      "uploadFileSizeError": "Rhaid i faint y ffeil fod yn llai na 10MB",
+      "uploadStorageError": "Methwyd â llwytho ffeil i'r storfa"
+    },
+    "form": {
+      "metadata": {
+        "schoolName": "Enw'r Ysgol",
+        "studentCount": "Nifer y Disgyblion (Dewisol)",
+        "staffCount": "Nifer y Staff (Dewisol)",
+        "auditDate": "Dyddiad yr Archwiliad",
+        "teamMembers": "Aelodau'r Tîm (Dewisol)",
+        "teamMembersPlaceholder": "Pwy gymerodd ran yn yr archwiliad hwn?"
+      },
+      "step1": {
+        "title": "Gwybodaeth Gyffredinol",
+        "description": "Gwybodaeth sylfaenol am eich ysgol a'r tîm archwilio"
+      },
+      "step2": {
+        "title": "Eitemau Plastig yn yr Ystafell Ginio a'r Ystafell Staff",
+        "description": "Cyfrif eitemau plastig dyddiol yn ardaloedd yr ystafell ginio a'r ystafell staff",
+        "lunchroom": "Ystafell Ginio",
+        "staffroom": "Ystafell Staff",
+        "plasticBottles": "Poteli Plastig (cyfrif dyddiol)",
+        "plasticCups": "Cwpanau Plastig (cyfrif dyddiol)",
+        "plasticCutlery": "Cyllyll a Ffyrc Plastig (cyfrif dyddiol)",
+        "plasticStraws": "Gwelltyn Plastig (cyfrif dyddiol)",
+        "snackWrappers": "Lapio Byrbrydau (cyfrif dyddiol)",
+        "yoghurtPots": "Potiau Iogwrt (cyfrif dyddiol)",
+        "takeawayContainers": "Cynwysyddion Bwyd i Fynd (cyfrif dyddiol)",
+        "clingFilm": "Defnydd o Ffilm Glynu (cyfrif dyddiol)",
+        "otherItems": "Eitemau Plastig Eraill (cyfrif dyddiol)",
+        "otherDescription": "Disgrifio Eitemau Plastig Eraill (Dewisol)",
+        "additionalNotes": "Nodiadau Ychwanegol (Dewisol)",
+        "lunchroomOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd yn yr ystafell ginio",
+        "staffroomOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd yn yr ystafell staff",
+        "notesPlaceholder": "Unrhyw sylwadau am ddefnydd plastig yn ardaloedd yr ystafell ginio/ystafell staff?"
+      },
+      "step3": {
+        "title": "Ystafelloedd Dosbarth ac Ardaloedd Eraill",
+        "description": "Dewiswch ystafelloedd a chyfrif eitemau plastig ym mhob ardal",
+        "roomSelectionTitle": "Pa ystafelloedd sydd gan eich ysgol? (Dewiswch bopeth sy'n berthnasol)",
+        "roomSelectionDescription": "Dim ond yr ystafelloedd a ddewiswyd fydd yn ymddangos yn y ffurflen archwilio, gan leihau sgrolio a blinder llenwi ffurflenni.",
+        "academicSpaces": "📚 Mannau Academaidd",
+        "commonAreas": "🏢 Ardaloedd Cyffredin",
+        "outdoorSports": "⚽ Awyr Agored a Chwaraeon",
+        "classrooms": "Ystafelloedd Dosbarth",
+        "toilets": "Toiledau",
+        "office": "Swyddfa",
+        "library": "Llyfrgell",
+        "gym": "Campfa",
+        "playground": "Iard Chwarae",
+        "corridors": "Coridorau",
+        "scienceLabs": "Labordai Gwyddoniaeth",
+        "artRooms": "Ystafelloedd Celf",
+        "pensPencils": "Ysgrifbinnau a Phensiliau Plastig (cyfrif dyddiol)",
+        "stationery": "Offer Ysgrifennu Plastig Eraill (cyfrif dyddiol)",
+        "displayMaterials": "Deunyddiau Arddangos Plastig (cyfrif dyddiol)",
+        "soapBottles": "Poteli Sebon Plastig (cyfrif dyddiol)",
+        "binLiners": "Bagiau Bin (cyfrif dyddiol)",
+        "cupsDispensers": "Cwpanau/Dosbarthwyr (Papur neu Blastig) (cyfrif dyddiol)",
+        "periodProducts": "Cynhyrchion Mislif (cyfrif dyddiol)",
+        "sportEquipment": "Offer Chwaraeon (cyfrif dyddiol)",
+        "toysEquipment": "Teganau/Offer (cyfrif dyddiol)",
+        "labEquipment": "Offer Labordy (cyfrif dyddiol)",
+        "artSupplies": "Cyflenwadau Celf (cyfrif dyddiol)",
+        "otherItems": "Eitemau Plastig Eraill (cyfrif dyddiol)",
+        "otherDescription": "Disgrifio Eitemau Plastig Eraill (Dewisol)",
+        "additionalNotes": "Nodiadau Ychwanegol (Dewisol)",
+        "classroomOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd yn yr ystafelloedd dosbarth",
+        "toiletOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd yn y toiledau",
+        "officeOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd yn y swyddfa",
+        "libraryOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd yn y llyfrgell",
+        "gymOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd yn y gampfa",
+        "playgroundOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd ar yr iard chwarae",
+        "corridorsOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd yn y coridorau",
+        "scienceLabsOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd yn y labordai gwyddoniaeth",
+        "artRoomsOtherPlaceholder": "Rhestrwch unrhyw eitemau plastig eraill a welwyd yn yr ystafelloedd celf",
+        "notesPlaceholder": "Unrhyw sylwadau am ddefnydd plastig ar draws yr holl ystafelloedd?"
+      },
+      "step4": {
+        "title": "Arferion Rheoli Gwastraff",
+        "description": "Gwybodaeth am ailgylchu, compostio, a pholisïau lleihau plastig",
+        "hasRecyclingBins": "Mae gan yr ysgol finiau ailgylchu",
+        "recyclingBinLocations": "Lleoliadau Biniau Ailgylchu (os yn berthnasol)",
+        "recyclingBinLocationsPlaceholder": "E.e., ystafelloedd dosbarth, coridorau, ffreutur",
+        "plasticWasteDestination": "I ble mae gwastraff plastig yn mynd?",
+        "selectDestination": "Dewiswch gyrchfan",
+        "wasteGeneral": "Gwastraff cyffredinol/safle tirlenwi",
+        "wasteRecycling": "Canolfan ailgylchu",
+        "wasteMixed": "Cymysg (rhai wedi'u hailgylchu, rhai gwastraff cyffredinol)",
+        "wasteUnknown": "Anhysbys",
+        "compostsOrganicWaste": "Mae'r ysgol yn compostio gwastraff organig",
+        "hasPlasticReductionPolicy": "Mae gan yr ysgol bolisi lleihau plastig",
+        "reductionPolicyDetails": "Manylion y Polisi (os yn berthnasol)",
+        "reductionPolicyPlaceholder": "Disgrifiwch bolisi lleihau plastig eich ysgol",
+        "wasteManagementNotes": "Nodiadau Ychwanegol (Dewisol)",
+        "wasteManagementNotesPlaceholder": "Unrhyw sylwadau eraill am reoli gwastraff?"
+      },
+      "step5": {
+        "title": "Canlyniadau'r Archwiliad",
+        "description": "Yn seiliedig ar eich cyfrifon dyddiol, dyma amcangyfrif o ddefnydd plastig blynyddol eich ysgol (190 diwrnod ysgol y flwyddyn):",
+        "totalAnnualTitle": "Cyfanswm Eitemau Plastig Blynyddol",
+        "itemsPerYear": "eitem y flwyddyn",
+        "topProblemsTitle": "Top 5 Plastigau Problemus",
+        "yearSuffix": "/blwyddyn",
+        "readyToSubmitTitle": "Barod i Gyflwyno?",
+        "readyToSubmitDescription": "Gallwch lawrlwytho eich canlyniadau fel PDF neu gyflwyno eich archwiliad i'w adolygu. Ar ôl cael cymeradwyaeth, byddwch yn gallu creu cynllun gweithredu i olrhain eich nodau lleihau plastig."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Poteli plastig",
+      "plastic_cups": "Cwpanau plastig",
+      "plastic_cutlery": "Cyllyll a ffyrc plastig",
+      "plastic_straws": "Gwelltyn plastig",
+      "snack_wrappers": "Lapio byrbrydau",
+      "yoghurt_pots": "Potiau iogwrt",
+      "takeaway_containers": "Cynwysyddion bwyd i fynd",
+      "cling_film": "Ffilm glynu",
+      "pens_pencils": "Ysgrifbinnau a phensiliau",
+      "stationery": "Eitemau offer ysgrifennu",
+      "display_materials": "Deunyddiau arddangos",
+      "soap_bottles": "Poteli sebon",
+      "bin_liners": "Bagiau bin",
+      "toilet_cups_dispensers": "Cwpanau/dosbarthwyr toiled",
+      "period_products": "Cynhyrchion mislif",
+      "sport_equipment": "Offer chwaraeon",
+      "toys_equipment": "Teganau/offer",
+      "lab_equipment": "Offer labordy",
+      "art_supplies": "Cyflenwadau celf",
+      "other_plastic_items": "Eitemau plastig eraill"
+    },
+    "rooms": {
+      "lunchroom": "🏫 Ystafell Ginio",
+      "staffroom": "☕ Ystafell Staff",
+      "classrooms": "🏫 Ystafelloedd Dosbarth",
+      "toilets": "🚽 Toiledau",
+      "office": "🏢 Swyddfa",
+      "library": "📚 Llyfrgell",
+      "gym": "🏋️ Campfa",
+      "playground": "🎮 Iard Chwarae",
+      "corridors": "🚪 Coridorau",
+      "science_labs": "🔬 Labordai Gwyddoniaeth",
+      "art_rooms": "🎨 Ystafelloedd Celf"
+    },
+    "validation": {
+      "schoolNameRequired": "Mae angen enw'r ysgol",
+      "auditDateRequired": "Mae angen dyddiad yr archwiliad",
+      "wasteDestinationRequired": "Nodwch i ble mae gwastraff plastig yn mynd",
+      "roomSelectionRequired": "Dewiswch o leiaf un math o ystafell",
+      "validationError": "Gwall Dilysu",
+      "fillRequiredFields": "Llenwch yr holl feysydd gofynnol cyn parhau."
+    },
+    "actions": {
+      "next": "Nesaf",
+      "previous": "Blaenorol",
+      "saveProgress": "Cadw Cynnydd",
+      "submitAudit": "Cyflwyno Archwiliad i'w Adolygu",
+      "submitting": "Yn cyflwyno...",
+      "downloadPdf": "Lawrlwytho Canlyniadau PDF",
+      "backToWasteManagement": "Nôl i Reoli Gwastraff"
+    },
+    "status": {
+      "progressSaved": "Cynnydd wedi'i gadw",
+      "progressSavedDescription": "Mae cynnydd eich archwiliad wedi'i gadw'n awtomatig.",
+      "auditSubmitted": "Archwiliad wedi'i gyflwyno!",
+      "auditSubmittedDescription": "Mae eich archwiliad gwastraff plastig wedi'i gyflwyno i'w adolygu."
+    },
+    "results": {
+      "totalAnnualPlasticItems": "Cyfanswm Eitemau Plastig Blynyddol",
+      "topProblemPlastics": "Top 5 Plastigau Problemus",
+      "itemsPerYear": "eitem y flwyddyn",
+      "yearSuffix": "/blwyddyn",
+      "readyToSubmit": "Barod i Gyflwyno?",
+      "submitDescription": "Gallwch lawrlwytho eich canlyniadau fel PDF neu gyflwyno eich archwiliad i'w adolygu. Ar ôl cael cymeradwyaeth, byddwch yn gallu creu cynllun gweithredu i olrhain eich nodau lleihau plastig.",
+      "annualConsumptionDescription": "Yn seiliedig ar eich cyfrifon dyddiol, dyma amcangyfrif o ddefnydd plastig blynyddol eich ysgol (190 diwrnod ysgol y flwyddyn):"
+    }
+  },
+  "actionPlan": {
+    "overview": {
+      "title": "Creu Eich Cynllun Gweithredu",
+      "description": "Yn seiliedig ar ganlyniadau eich archwiliad, ymrwymwch i leihau o leiaf 2 fath o blastig. Gosodwch dargedau realistig!"
+    },
+    "form": {
+      "promises": {
+        "title": "Addewid Lleihau",
+        "plasticItemType": "Math o Eitem Blastig",
+        "itemLabel": "Label yr Eitem",
+        "baselineQuantity": "Defnydd Blynyddol Cyfredol",
+        "targetQuantity": "Defnydd Blynyddol Targed",
+        "timeframe": "Amserlen",
+        "notes": "Sut byddwch chi'n cyflawni hyn? (Dewisol)"
+      },
+      "labels": {
+        "plasticItemType": "Math o Eitem Blastig",
+        "currentAnnualUsage": "Defnydd Blynyddol Cyfredol",
+        "targetAnnualUsage": "Defnydd Blynyddol Targed",
+        "timeframe": "Amserlen",
+        "achievementPlan": "Sut byddwch chi'n cyflawni hyn? (Dewisol)"
+      },
+      "placeholders": {
+        "selectPlasticItem": "Dewiswch eitem blastig o'ch archwiliad",
+        "selectTimeframe": "Dewiswch amserlen",
+        "describePlan": "Disgrifiwch eich cynllun i leihau'r eitem blastig hon..."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Poteli Plastig",
+      "plastic_cups": "Cwpanau Plastig",
+      "plastic_cutlery": "Cyllyll a Ffyrc Plastig",
+      "plastic_straws": "Gwelltyn Plastig",
+      "snack_wrappers": "Lapio Byrbrydau",
+      "yoghurt_pots": "Potiau Iogwrt",
+      "takeaway_containers": "Cynwysyddion Bwyd i Fynd",
+      "cling_film": "Ffilm Glynu",
+      "pens_pencils": "Ysgrifbinnau a Phensiliau",
+      "stationery": "Eitemau Offer Ysgrifennu",
+      "display_materials": "Deunyddiau Arddangos",
+      "soap_bottles": "Poteli Sebon",
+      "bin_liners": "Bagiau Bin",
+      "cups_dispensers": "Cwpanau/Dosbarthwyr",
+      "period_products": "Cynhyrchion Mislif",
+      "sport_equipment": "Offer Chwaraeon",
+      "toys_equipment": "Teganau/Offer",
+      "lab_equipment": "Offer Labordy",
+      "art_supplies": "Cyflenwadau Celf"
+    },
+    "validation": {
+      "selectPlasticItem": "Dewiswch eitem blastig",
+      "itemLabelRequired": "Mae angen label yr eitem",
+      "baselineMinimum": "Rhaid i'r llinell sylfaen fod o leiaf 1",
+      "targetNonNegative": "Ni all y targed fod yn negyddol",
+      "minimumPromises": "Mae angen o leiaf 2 addewid lleihau"
+    },
+    "status": {
+      "auditRequired": {
+        "title": "Mae Angen Archwiliad",
+        "description": "Mae angen i chi gwblhau'r Archwiliad Gwastraff Plastig cyn creu cynllun gweithredu."
+      },
+      "auditApprovalRequired": {
+        "title": "Mae Angen Cymeradwyaeth Archwiliad",
+        "description": "Rhaid cymeradwyo eich Archwiliad Gwastraff Plastig cyn i chi allu creu cynllun gweithredu. Statws cyfredol:"
+      },
+      "approved": {
+        "title": "Cynllun Gweithredu wedi'i Gymeradwyo",
+        "description": "Llongyfarchiadau! Mae eich cynllun gweithredu gyda {{count}} addewid lleihau{{plural}} wedi'i gymeradwyo.",
+        "noPromisesDescription": "Mae eich cynllun gweithredu wedi'i gymeradwyo! Gallwch weld eich addewidion lleihau yn y tab \"Ein Cynllun Gweithredu\"."
+      },
+      "pending": {
+        "title": "Cynllun Gweithredu yn Cael ei Adolygu",
+        "description": "Mae eich cynllun gweithredu gyda {{count}} addewid lleihau{{plural}} yn cael ei adolygu ar hyn o bryd.",
+        "loadingDescription": "Yn llwytho eich cynllun gweithredu...",
+        "noPromisesDescription": "Mae eich cynllun gweithredu wedi'i gyflwyno ac yn cael ei adolygu ar hyn o bryd."
+      }
+    },
+    "notifications": {
+      "submitSuccess": "Cynllun Gweithredu wedi'i Gyflwyno!",
+      "submitSuccessDescription": "Mae eich cynllun gweithredu gyda {{count}} addewid lleihau{{plural}} wedi'i gyflwyno i'w adolygu.",
+      "submitError": "Gwall Cyflwyno",
+      "submitErrorDescription": "Bu gwall wrth gyflwyno eich cynllun gweithredu. Rhowch gynnig arall arni.",
+      "noPlasticItems": "Dim eitemau plastig wedi'u darganfod yn eich archwiliad. Cwblhewch yr archwiliad gyda data eitemau plastig yn gyntaf."
+    },
+    "actions": {
+      "submit": "Cyflwyno Cynllun Gweithredu",
+      "submitting": "Yn cyflwyno...",
+      "cancel": "Canslo",
+      "close": "Cau",
+      "addPromise": "Ychwanegu Addewid Arall",
+      "removePromise": "Tynnu"
+    },
+    "display": {
+      "promise": "Addewid",
+      "baseline": "Llinell Sylfaen:",
+      "target": "Targed:",
+      "reduction": "Gostyngiad:",
+      "plan": "Cynllun:",
+      "per": "fesul",
+      "items": "eitem",
+      "itemsYear": "eitem/blwyddyn",
+      "reductionAmount": "Gostyngiad: {{amount}} eitem fesul {{timeframe}}",
+      "reductionPercentage": "gostyngiad {{percent}}%",
+      "promisesNumber": "Addewid Lleihau {{number}}",
+      "promiseLabel": "Addewid {{number}}: {{label}}",
+      "summaryTitle": "Crynodeb o'ch Addewidion",
+      "summaryDescription": "Rydych chi'n ymrwymo i leihau {{count}} math o eitemau plastig:",
+      "summaryItem": "{{label}}: Lleihau {{amount}} eitem fesul {{timeframe}}",
+      "quantityWithTimeframe": "{{quantity}} fesul {{timeframe}}"
+    }
+  },
+  "shared": {
+    "timeframes": {
+      "week": "wythnos",
+      "month": "mis",
+      "year": "blwyddyn",
+      "perWeek": "Fesul Wythnos",
+      "perMonth": "Fesul Mis",
+      "perYear": "Fesul Blwyddyn"
+    },
+    "plasticItems": {
+      "plastic_bottles": "Poteli Plastig",
+      "plastic_cups": "Cwpanau Plastig",
+      "plastic_cutlery": "Cyllyll a Ffyrc Plastig",
+      "plastic_straws": "Gwelltyn Plastig",
+      "snack_wrappers": "Lapio Byrbrydau",
+      "yoghurt_pots": "Potiau Iogwrt",
+      "takeaway_containers": "Cynwysyddion Bwyd i Fynd",
+      "cling_film": "Ffilm Glynu",
+      "pens_pencils": "Ysgrifbinnau a Phensiliau",
+      "stationery": "Eitemau Offer Ysgrifennu",
+      "display_materials": "Deunyddiau Arddangos",
+      "soap_bottles": "Poteli Sebon",
+      "bin_liners": "Bagiau Bin",
+      "cups_dispensers": "Cwpanau/Dosbarthwyr",
+      "period_products": "Cynhyrchion Mislif",
+      "sport_equipment": "Offer Chwaraeon",
+      "toys_equipment": "Teganau/Offer",
+      "lab_equipment": "Offer Labordy",
+      "art_supplies": "Cyflenwadau Celf",
+      "other_plastic_items": "Eitemau Plastig Eraill"
+    }
+  }
+}

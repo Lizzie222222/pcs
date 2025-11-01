@@ -14,6 +14,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { ClipboardCheck, Plus, Trash2, Send, CheckCircle, Target, AlertCircle, Clock } from "lucide-react";
 import type { AuditResponse } from "@shared/schema";
+import type { TFunction } from "i18next";
 
 interface ActionPlanProps {
   schoolId: string;
@@ -21,27 +22,29 @@ interface ActionPlanProps {
   onClose?: () => void;
 }
 
-// Schema for individual promise
-const promiseSchema = z.object({
-  plasticItemType: z.string().min(1, "Please select a plastic item"),
-  plasticItemLabel: z.string().min(1, "Item label is required"),
-  baselineQuantity: z.number().min(1, "Baseline must be at least 1"),
-  targetQuantity: z.number().min(0, "Target cannot be negative"),
+// Factory function for promise schema with i18n support
+const createPromiseSchema = (t: TFunction) => z.object({
+  plasticItemType: z.string().min(1, t('actionPlan.validation.selectPlasticItem')),
+  plasticItemLabel: z.string().min(1, t('actionPlan.validation.itemLabelRequired')),
+  baselineQuantity: z.number().min(1, t('actionPlan.validation.baselineMinimum')),
+  targetQuantity: z.number().min(0, t('actionPlan.validation.targetNonNegative')),
   timeframeUnit: z.enum(["week", "month", "year"]),
   notes: z.string().optional(),
 });
 
-// Schema for the entire form (at least 2 promises required)
-const actionPlanSchema = z.object({
-  promises: z.array(promiseSchema).min(2, "At least 2 reduction promises are required"),
+// Factory function for action plan schema with i18n support
+const createActionPlanSchema = (t: TFunction) => z.object({
+  promises: z.array(createPromiseSchema(t)).min(2, t('actionPlan.validation.minimumPromises')),
 });
 
-type ActionPlanData = z.infer<typeof actionPlanSchema>;
-
 export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionPlanProps) {
-  const { t } = useTranslation(['audit', 'dashboard']);
+  const { t } = useTranslation('audit');
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Create schemas with translation support
+  const actionPlanSchema = createActionPlanSchema(t);
+  type ActionPlanData = z.infer<typeof actionPlanSchema>;
 
   // Fetch existing audit data to get plastic items
   const { data: auditResponse } = useQuery<AuditResponse>({
@@ -162,34 +165,12 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
     itemTotals['lab_equipment'] = parseInt(part3.scienceLabsLabEquipment || "0");
     itemTotals['art_supplies'] = parseInt(part3.artRoomsArtSupplies || "0");
     
-    // Convert to items array with labels
-    const labelMap: Record<string, string> = {
-      plastic_bottles: "Plastic Bottles",
-      plastic_cups: "Plastic Cups",
-      plastic_cutlery: "Plastic Cutlery",
-      plastic_straws: "Plastic Straws",
-      snack_wrappers: "Snack Wrappers",
-      yoghurt_pots: "Yoghurt Pots",
-      takeaway_containers: "Takeaway Containers",
-      cling_film: "Cling Film",
-      pens_pencils: "Pens & Pencils",
-      stationery: "Stationery Items",
-      display_materials: "Display Materials",
-      soap_bottles: "Soap Bottles",
-      bin_liners: "Bin Liners",
-      cups_dispensers: "Cups/Dispensers",
-      period_products: "Period Products",
-      sport_equipment: "Sport Equipment",
-      toys_equipment: "Toys/Equipment",
-      lab_equipment: "Lab Equipment",
-      art_supplies: "Art Supplies",
-    };
-    
+    // Convert to items array with translated labels
     for (const [type, quantity] of Object.entries(itemTotals)) {
       if (quantity > 0) {
         items.push({
           type,
-          label: labelMap[type] || type,
+          label: t(`actionPlan.plasticItems.${type}`),
           quantity: quantity * 190, // Annual amount
         });
       }
@@ -212,14 +193,17 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
       );
       
       if (validPromises.length < 2) {
-        throw new Error("At least 2 reduction promises are required");
+        throw new Error(t('actionPlan.validation.minimumPromises'));
       }
       
       // Create evidence submission for the action plan
       const evidenceResponse = await apiRequest('POST', '/api/evidence', {
         schoolId,
-        title: "Action Plan",
-        description: `School action plan with ${validPromises.length} reduction promises`,
+        title: t('actionPlan.overview.title'),
+        description: t('actionPlan.notifications.submitSuccessDescription', { 
+          count: validPromises.length, 
+          plural: validPromises.length !== 1 ? 's' : '' 
+        }),
         stage: "investigate",
         evidenceType: "action_plan",
         evidenceRequirementId,
@@ -252,16 +236,19 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
       queryClient.invalidateQueries({ queryKey: [`/api/evidence/requirement/${evidenceRequirementId}/school/${schoolId}`] });
       
       toast({
-        title: "Action Plan Submitted!",
-        description: `Your action plan with ${data.promisesCount} reduction promise${data.promisesCount !== 1 ? 's' : ''} has been submitted for review.`,
+        title: t('actionPlan.notifications.submitSuccess'),
+        description: t('actionPlan.notifications.submitSuccessDescription', { 
+          count: data.promisesCount, 
+          plural: data.promisesCount !== 1 ? 's' : '' 
+        }),
       });
       
       onClose?.();
     },
     onError: (error: Error) => {
       toast({
-        title: "Submission Error",
-        description: error.message || "There was an error submitting your action plan. Please try again.",
+        title: t('actionPlan.notifications.submitError'),
+        description: error.message || t('actionPlan.notifications.submitErrorDescription'),
         variant: "destructive",
       });
     },
@@ -279,15 +266,15 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-navy">
             <AlertCircle className="h-6 w-6 text-yellow-600" />
-            Audit Required
+            {t('actionPlan.status.auditRequired.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-gray-700 mb-4">
-            You need to complete the Plastic Waste Audit before creating an action plan.
+            {t('actionPlan.status.auditRequired.description')}
           </p>
           <Button onClick={onClose} data-testid="button-close">
-            Close
+            {t('actionPlan.actions.close')}
           </Button>
         </CardContent>
       </Card>
@@ -301,15 +288,15 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-navy">
             <AlertCircle className="h-6 w-6 text-yellow-600" />
-            Audit Approval Required
+            {t('actionPlan.status.auditApprovalRequired.title')}
           </CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-gray-700 mb-4">
-            Your Plastic Waste Audit must be approved before you can create an action plan. Current status: <strong>{auditResponse.status}</strong>
+            {t('actionPlan.status.auditApprovalRequired.description')} <strong>{auditResponse.status}</strong>
           </p>
           <Button onClick={onClose} data-testid="button-close">
-            Close
+            {t('actionPlan.actions.close')}
           </Button>
         </CardContent>
       </Card>
@@ -324,13 +311,13 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-navy">
               <CheckCircle className="h-6 w-6 text-green-600" />
-              Action Plan Approved
+              {t('actionPlan.status.approved.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center p-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal"></div>
-              <p className="ml-3 text-gray-600">Loading your action plan...</p>
+              <p className="ml-3 text-gray-600">{t('actionPlan.status.pending.loadingDescription')}</p>
             </div>
           </CardContent>
         </Card>
@@ -343,10 +330,13 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-navy">
             <CheckCircle className="h-6 w-6 text-green-600" />
-            Action Plan Approved
+            {t('actionPlan.status.approved.title')}
           </CardTitle>
           <CardDescription>
-            Congratulations! Your action plan with {reductionPromises.length} reduction promise{reductionPromises.length !== 1 ? 's' : ''} has been approved.
+            {t('actionPlan.status.approved.description', { 
+              count: reductionPromises.length, 
+              plural: reductionPromises.length !== 1 ? 's' : '' 
+            })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -354,25 +344,31 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
             {reductionPromises.map((promise: any, index: number) => (
               <Card key={promise.id} className="bg-white border border-gray-200">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold text-navy mb-2">Promise {index + 1}: {promise.plasticItemLabel}</h4>
+                  <h4 className="font-semibold text-navy mb-2">
+                    {t('actionPlan.display.promiseLabel', { number: index + 1, label: promise.plasticItemLabel })}
+                  </h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <span className="text-gray-600">Baseline:</span>
-                      <span className="font-semibold ml-2">{promise.baselineQuantity.toLocaleString()} per {promise.timeframeUnit}</span>
+                      <span className="text-gray-600">{t('actionPlan.display.baseline')}</span>
+                      <span className="font-semibold ml-2">
+                        {promise.baselineQuantity.toLocaleString()} {t('actionPlan.display.per')} {t(`shared.timeframes.${promise.timeframeUnit}`)}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Target:</span>
-                      <span className="font-semibold ml-2">{promise.targetQuantity.toLocaleString()} per {promise.timeframeUnit}</span>
+                      <span className="text-gray-600">{t('actionPlan.display.target')}</span>
+                      <span className="font-semibold ml-2">
+                        {promise.targetQuantity.toLocaleString()} {t('actionPlan.display.per')} {t(`shared.timeframes.${promise.timeframeUnit}`)}
+                      </span>
                     </div>
                   </div>
                   <div className="mt-2 bg-green-50 p-2 rounded">
                     <span className="text-sm font-semibold text-green-700">
-                      Reduction: {promise.reductionAmount.toLocaleString()} items ({Math.round((promise.reductionAmount / promise.baselineQuantity) * 100)}%)
+                      {t('actionPlan.display.reduction')} {promise.reductionAmount.toLocaleString()} {t('actionPlan.display.items')} ({Math.round((promise.reductionAmount / promise.baselineQuantity) * 100)}%)
                     </span>
                   </div>
                   {promise.notes && (
                     <div className="mt-2 text-sm text-gray-600">
-                      <span className="font-semibold">Plan:</span> {promise.notes}
+                      <span className="font-semibold">{t('actionPlan.display.plan')}</span> {promise.notes}
                     </div>
                   )}
                 </CardContent>
@@ -380,7 +376,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
             ))}
           </div>
           <Button onClick={onClose} data-testid="button-close" className="w-full">
-            Close
+            {t('actionPlan.actions.close')}
           </Button>
         </CardContent>
       </Card>
@@ -392,15 +388,15 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-navy">
               <CheckCircle className="h-6 w-6 text-green-600" />
-              Action Plan Approved
+              {t('actionPlan.status.approved.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-700 mb-4">
-              Your action plan has been approved! You can view your reduction promises in the "Our Action Plan" tab.
+              {t('actionPlan.status.approved.noPromisesDescription')}
             </p>
             <Button onClick={onClose} data-testid="button-close">
-              Close
+              {t('actionPlan.actions.close')}
             </Button>
           </CardContent>
         </Card>
@@ -416,13 +412,13 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-navy">
               <Clock className="h-6 w-6 text-yellow-600" />
-              Action Plan Under Review
+              {t('actionPlan.status.pending.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-center p-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-teal"></div>
-              <p className="ml-3 text-gray-600">Loading your action plan...</p>
+              <p className="ml-3 text-gray-600">{t('actionPlan.status.pending.loadingDescription')}</p>
             </div>
           </CardContent>
         </Card>
@@ -435,10 +431,13 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-navy">
             <Clock className="h-6 w-6 text-yellow-600" />
-            Action Plan Under Review
+            {t('actionPlan.status.pending.title')}
           </CardTitle>
           <CardDescription>
-            Your action plan with {reductionPromises.length} reduction promise{reductionPromises.length !== 1 ? 's' : ''} is currently under review.
+            {t('actionPlan.status.pending.description', { 
+              count: reductionPromises.length, 
+              plural: reductionPromises.length !== 1 ? 's' : '' 
+            })}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -446,25 +445,31 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
             {reductionPromises.map((promise: any, index: number) => (
               <Card key={promise.id} className="bg-white border border-gray-200">
                 <CardContent className="p-4">
-                  <h4 className="font-semibold text-navy mb-2">Promise {index + 1}: {promise.plasticItemLabel}</h4>
+                  <h4 className="font-semibold text-navy mb-2">
+                    {t('actionPlan.display.promiseLabel', { number: index + 1, label: promise.plasticItemLabel })}
+                  </h4>
                   <div className="grid grid-cols-2 gap-3 text-sm">
                     <div>
-                      <span className="text-gray-600">Baseline:</span>
-                      <span className="font-semibold ml-2">{promise.baselineQuantity.toLocaleString()} per {promise.timeframeUnit}</span>
+                      <span className="text-gray-600">{t('actionPlan.display.baseline')}</span>
+                      <span className="font-semibold ml-2">
+                        {promise.baselineQuantity.toLocaleString()} {t('actionPlan.display.per')} {t(`shared.timeframes.${promise.timeframeUnit}`)}
+                      </span>
                     </div>
                     <div>
-                      <span className="text-gray-600">Target:</span>
-                      <span className="font-semibold ml-2">{promise.targetQuantity.toLocaleString()} per {promise.timeframeUnit}</span>
+                      <span className="text-gray-600">{t('actionPlan.display.target')}</span>
+                      <span className="font-semibold ml-2">
+                        {promise.targetQuantity.toLocaleString()} {t('actionPlan.display.per')} {t(`shared.timeframes.${promise.timeframeUnit}`)}
+                      </span>
                     </div>
                   </div>
                   <div className="mt-2 bg-green-50 p-2 rounded">
                     <span className="text-sm font-semibold text-green-700">
-                      Reduction: {promise.reductionAmount.toLocaleString()} items ({Math.round((promise.reductionAmount / promise.baselineQuantity) * 100)}%)
+                      {t('actionPlan.display.reduction')} {promise.reductionAmount.toLocaleString()} {t('actionPlan.display.items')} ({Math.round((promise.reductionAmount / promise.baselineQuantity) * 100)}%)
                     </span>
                   </div>
                   {promise.notes && (
                     <div className="mt-2 text-sm text-gray-600">
-                      <span className="font-semibold">Plan:</span> {promise.notes}
+                      <span className="font-semibold">{t('actionPlan.display.plan')}</span> {promise.notes}
                     </div>
                   )}
                 </CardContent>
@@ -472,7 +477,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
             ))}
           </div>
           <Button onClick={onClose} data-testid="button-close" className="w-full">
-            Close
+            {t('actionPlan.actions.close')}
           </Button>
         </CardContent>
       </Card>
@@ -484,15 +489,15 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-navy">
               <Clock className="h-6 w-6 text-yellow-600" />
-              Action Plan Under Review
+              {t('actionPlan.status.pending.title')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-gray-700 mb-4">
-              Your action plan has been submitted and is currently under review.
+              {t('actionPlan.status.pending.noPromisesDescription')}
             </p>
             <Button onClick={onClose} data-testid="button-close">
-              Close
+              {t('actionPlan.actions.close')}
             </Button>
           </CardContent>
         </Card>
@@ -505,10 +510,10 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-navy">
           <Target className="h-6 w-6 text-teal" />
-          Create Your Action Plan
+          {t('actionPlan.overview.title')}
         </CardTitle>
         <CardDescription>
-          Based on your audit results, commit to reducing at least 2 types of plastic. Set realistic targets!
+          {t('actionPlan.overview.description')}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -517,7 +522,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
             {availableItems.length === 0 && (
               <div className="bg-yellow-50 border border-yellow-200 rounded p-4">
                 <p className="text-sm text-gray-700">
-                  No plastic items found in your audit. Please complete the audit with plastic item data first.
+                  {t('actionPlan.notifications.noPlasticItems')}
                 </p>
               </div>
             )}
@@ -529,7 +534,9 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
               return (
                 <Card key={field.id} className="p-4 bg-gray-50 border border-gray-200" data-testid={`card-promise-${index}`}>
                   <div className="flex justify-between items-start mb-4">
-                    <h4 className="font-semibold text-navy">Reduction Promise {index + 1}</h4>
+                    <h4 className="font-semibold text-navy">
+                      {t('actionPlan.display.promisesNumber', { number: index + 1 })}
+                    </h4>
                     {fields.length > 2 && (
                       <Button
                         type="button"
@@ -549,7 +556,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
                       name={`promises.${index}.plasticItemType`}
                       render={({ field: formField }) => (
                         <FormItem>
-                          <FormLabel>Plastic Item Type</FormLabel>
+                          <FormLabel>{t('actionPlan.form.labels.plasticItemType')}</FormLabel>
                           <Select
                             onValueChange={(value) => {
                               formField.onChange(value);
@@ -563,13 +570,13 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
                           >
                             <FormControl>
                               <SelectTrigger data-testid={`select-promise-type-${index}`}>
-                                <SelectValue placeholder="Select a plastic item from your audit" />
+                                <SelectValue placeholder={t('actionPlan.form.placeholders.selectPlasticItem')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
                               {availableItems.map((item) => (
                                 <SelectItem key={item.type + item.label} value={item.type}>
-                                  {item.label} ({item.quantity.toLocaleString()} items/year)
+                                  {item.label} ({item.quantity.toLocaleString()} {t('actionPlan.display.itemsYear')})
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -586,7 +593,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
                           name={`promises.${index}.baselineQuantity`}
                           render={({ field: formField }) => (
                             <FormItem>
-                              <FormLabel>Current Annual Usage</FormLabel>
+                              <FormLabel>{t('actionPlan.form.labels.currentAnnualUsage')}</FormLabel>
                               <FormControl>
                                 <Input
                                   {...formField}
@@ -607,7 +614,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
                           name={`promises.${index}.targetQuantity`}
                           render={({ field: formField }) => (
                             <FormItem>
-                              <FormLabel>Target Annual Usage</FormLabel>
+                              <FormLabel>{t('actionPlan.form.labels.targetAnnualUsage')}</FormLabel>
                               <FormControl>
                                 <Input
                                   {...formField}
@@ -630,17 +637,17 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
                       name={`promises.${index}.timeframeUnit`}
                       render={({ field: formField }) => (
                         <FormItem>
-                          <FormLabel>Timeframe</FormLabel>
+                          <FormLabel>{t('actionPlan.form.labels.timeframe')}</FormLabel>
                           <Select onValueChange={formField.onChange} value={formField.value}>
                             <FormControl>
                               <SelectTrigger data-testid={`select-promise-timeframe-${index}`}>
-                                <SelectValue placeholder="Select timeframe" />
+                                <SelectValue placeholder={t('actionPlan.form.placeholders.selectTimeframe')} />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              <SelectItem value="week">Per Week</SelectItem>
-                              <SelectItem value="month">Per Month</SelectItem>
-                              <SelectItem value="year">Per Year</SelectItem>
+                              <SelectItem value="week">{t('shared.timeframes.perWeek')}</SelectItem>
+                              <SelectItem value="month">{t('shared.timeframes.perMonth')}</SelectItem>
+                              <SelectItem value="year">{t('shared.timeframes.perYear')}</SelectItem>
                             </SelectContent>
                           </Select>
                           <FormMessage />
@@ -653,11 +660,11 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
                       name={`promises.${index}.notes`}
                       render={({ field: formField }) => (
                         <FormItem>
-                          <FormLabel>How will you achieve this? (Optional)</FormLabel>
+                          <FormLabel>{t('actionPlan.form.labels.achievementPlan')}</FormLabel>
                           <FormControl>
                             <Textarea
                               {...formField}
-                              placeholder="Describe your plan to reduce this plastic item..."
+                              placeholder={t('actionPlan.form.placeholders.describePlan')}
                               data-testid={`input-promise-notes-${index}`}
                             />
                           </FormControl>
@@ -669,10 +676,12 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
                     {selectedItemData && form.watch(`promises.${index}.baselineQuantity`) > 0 && (
                       <div className="bg-blue-50 p-3 rounded border border-blue-200">
                         <p className="text-sm font-semibold text-navy">
-                          Reduction: {Math.max(0, form.watch(`promises.${index}.baselineQuantity`) - form.watch(`promises.${index}.targetQuantity`))} items per {form.watch(`promises.${index}.timeframeUnit`)}
+                          {t('actionPlan.display.reduction')} {Math.max(0, form.watch(`promises.${index}.baselineQuantity`) - form.watch(`promises.${index}.targetQuantity`))} {t('actionPlan.display.items')} {t('actionPlan.display.per')} {t(`shared.timeframes.${form.watch(`promises.${index}.timeframeUnit`)}`)}
                         </p>
                         <p className="text-xs text-gray-600 mt-1">
-                          {Math.round((Math.max(0, form.watch(`promises.${index}.baselineQuantity`) - form.watch(`promises.${index}.targetQuantity`)) / form.watch(`promises.${index}.baselineQuantity`)) * 100)}% reduction
+                          {t('actionPlan.display.reductionPercentage', { 
+                            percent: Math.round((Math.max(0, form.watch(`promises.${index}.baselineQuantity`) - form.watch(`promises.${index}.targetQuantity`)) / form.watch(`promises.${index}.baselineQuantity`)) * 100)
+                          })}
                         </p>
                       </div>
                     )}
@@ -695,7 +704,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
               data-testid="button-add-promise"
             >
               <Plus className="h-4 w-4 mr-1" />
-              Add Another Promise
+              {t('actionPlan.actions.addPromise')}
             </Button>
 
             {form.formState.errors.promises?.root && (
@@ -705,9 +714,9 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
             {/* Summary */}
             {fields.length > 0 && (
               <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-navy mb-2">Your Promises Summary</h4>
+                <h4 className="font-semibold text-navy mb-2">{t('actionPlan.display.summaryTitle')}</h4>
                 <p className="text-sm text-gray-600 mb-3">
-                  You're committing to reduce {fields.length} types of plastic items:
+                  {t('actionPlan.display.summaryDescription', { count: fields.length })}
                 </p>
                 <div className="space-y-2">
                   {fields.map((field, index) => {
@@ -715,7 +724,11 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
                     const reduction = Math.max(0, promise.baselineQuantity - promise.targetQuantity);
                     return promise.plasticItemLabel ? (
                       <div key={field.id} className="text-sm bg-white p-2 rounded">
-                        <span className="font-semibold">{promise.plasticItemLabel}:</span> Reduce by {reduction} items per {promise.timeframeUnit}
+                        {t('actionPlan.display.summaryItem', { 
+                          label: promise.plasticItemLabel, 
+                          amount: reduction, 
+                          timeframe: t(`shared.timeframes.${promise.timeframeUnit}`)
+                        })}
                       </div>
                     ) : null;
                   })}
@@ -730,7 +743,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
                 onClick={onClose}
                 data-testid="button-cancel"
               >
-                Cancel
+                {t('actionPlan.actions.cancel')}
               </Button>
               <Button
                 type="button"
@@ -739,7 +752,7 @@ export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionP
                 data-testid="button-submit-action-plan"
               >
                 <Send className="h-4 w-4 mr-1" />
-                {isSubmitting ? 'Submitting...' : 'Submit Action Plan'}
+                {isSubmitting ? t('actionPlan.actions.submitting') : t('actionPlan.actions.submit')}
               </Button>
             </div>
           </div>

@@ -1,0 +1,329 @@
+{
+  "audit": {
+    "overview": {
+      "title": "Plasticafval Audit",
+      "description": "Volg en meet het plasticgebruik van uw school in alle ruimtes",
+      "uploadSuccessTitle": "Upload succesvol",
+      "uploadSuccessDescription": "Auditformulier succesvol geüpload",
+      "uploadFailedTitle": "Upload mislukt",
+      "uploadFileTypeError": "Alleen PDF-bestanden zijn toegestaan",
+      "uploadFileSizeError": "Bestandsgrootte moet kleiner zijn dan 10MB",
+      "uploadStorageError": "Fout bij uploaden van bestand"
+    },
+    "form": {
+      "metadata": {
+        "schoolName": "Schoolnaam",
+        "studentCount": "Aantal leerlingen (Optioneel)",
+        "staffCount": "Aantal personeelsleden (Optioneel)",
+        "auditDate": "Auditdatum",
+        "teamMembers": "Teamleden (Optioneel)",
+        "teamMembersPlaceholder": "Wie heeft aan deze audit deelgenomen?"
+      },
+      "step1": {
+        "title": "Algemene informatie",
+        "description": "Basisinformatie over uw school en auditteam"
+      },
+      "step2": {
+        "title": "Plasticitems in de Kantine & Personeelskamer",
+        "description": "Tel dagelijkse plasticitems in de kantine en personeelskamer",
+        "lunchroom": "Kantine",
+        "staffroom": "Personeelskamer",
+        "plasticBottles": "Plastic flessen (dagelijkse telling)",
+        "plasticCups": "Plastic bekers (dagelijkse telling)",
+        "plasticCutlery": "Plastic bestek (dagelijkse telling)",
+        "plasticStraws": "Plastic rietjes (dagelijkse telling)",
+        "snackWrappers": "Snackverpakkingen (dagelijkse telling)",
+        "yoghurtPots": "Yoghurtbakjes (dagelijkse telling)",
+        "takeawayContainers": "Wegwerpverpakkingen (dagelijkse telling)",
+        "clingFilm": "Gebruik van vershoudfolie (dagelijkse telling)",
+        "otherItems": "Andere plasticitems (dagelijkse telling)",
+        "otherDescription": "Beschrijf andere plasticitems (Optioneel)",
+        "additionalNotes": "Extra opmerkingen (Optioneel)",
+        "lunchroomOtherPlaceholder": "Som andere plasticitems op die in de kantine zijn gevonden",
+        "staffroomOtherPlaceholder": "Som andere plasticitems op die in de personeelskamer zijn gevonden",
+        "notesPlaceholder": "Opmerkingen over plasticgebruik in kantine/personeelskamer?"
+      },
+      "step3": {
+        "title": "Klaslokalen & Andere ruimtes",
+        "description": "Selecteer ruimtes en tel plasticitems in elk gebied",
+        "roomSelectionTitle": "Welke ruimtes heeft uw school? (Selecteer alle van toepassing)",
+        "roomSelectionDescription": "Alleen geselecteerde ruimtes verschijnen in het auditformulier, wat scrollen vermindert en formuliervermoeidheid voorkomt.",
+        "academicSpaces": "📚 Leerruimtes",
+        "commonAreas": "🏢 Gemeenschappelijke ruimtes",
+        "outdoorSports": "⚽ Buiten & Sport",
+        "classrooms": "Klaslokalen",
+        "toilets": "Toiletten",
+        "office": "Kantoor",
+        "library": "Bibliotheek",
+        "gym": "Gymzaal",
+        "playground": "Speelplaats",
+        "corridors": "Gangen",
+        "scienceLabs": "Scheikunde-/natuurkundelokalen",
+        "artRooms": "Tekenlokalen",
+        "pensPencils": "Plastic pennen & potloden (dagelijkse telling)",
+        "stationery": "Ander plastic kantoorartikelen (dagelijkse telling)",
+        "displayMaterials": "Plastic presentatiematerialen (dagelijkse telling)",
+        "soapBottles": "Plastic zeepflacons (dagelijkse telling)",
+        "binLiners": "Vuilniszakken (dagelijkse telling)",
+        "cupsDispensers": "Bekers/dispensers (papier of plastic) (dagelijkse telling)",
+        "periodProducts": "Maandverbandproducten (dagelijkse telling)",
+        "sportEquipment": "Sportuitrusting (dagelijkse telling)",
+        "toysEquipment": "Speelgoed/uitrusting (dagelijkse telling)",
+        "labEquipment": "Laboratoriumuitrusting (dagelijkse telling)",
+        "artSupplies": "Tekenbenodigdheden (dagelijkse telling)",
+        "otherItems": "Andere plasticitems (dagelijkse telling)",
+        "otherDescription": "Beschrijf andere plasticitems (Optioneel)",
+        "additionalNotes": "Extra opmerkingen (Optioneel)",
+        "classroomOtherPlaceholder": "Som andere plasticitems op die in klaslokalen zijn gevonden",
+        "toiletOtherPlaceholder": "Som andere plasticitems op die in toiletten zijn gevonden",
+        "officeOtherPlaceholder": "Som andere plasticitems op die in het kantoor zijn gevonden",
+        "libraryOtherPlaceholder": "Som andere plasticitems op die in de bibliotheek zijn gevonden",
+        "gymOtherPlaceholder": "Som andere plasticitems op die in de gymzaal zijn gevonden",
+        "playgroundOtherPlaceholder": "Som andere plasticitems op die op de speelplaats zijn gevonden",
+        "corridorsOtherPlaceholder": "Som andere plasticitems op die in gangen zijn gevonden",
+        "scienceLabsOtherPlaceholder": "Som andere plasticitems op die in scheikunde-/natuurkundelokalen zijn gevonden",
+        "artRoomsOtherPlaceholder": "Som andere plasticitems op die in tekenlokalen zijn gevonden",
+        "notesPlaceholder": "Opmerkingen over plasticgebruik in alle ruimtes?"
+      },
+      "step4": {
+        "title": "Afvalbeheer praktijken",
+        "description": "Informatie over recycling, compostering en plasticreductiebeleid",
+        "hasRecyclingBins": "School heeft recyclingbakken",
+        "recyclingBinLocations": "Locaties van recyclingbakken (indien van toepassing)",
+        "recyclingBinLocationsPlaceholder": "Bijv. klaslokalen, gangen, kantine",
+        "plasticWasteDestination": "Waar gaat het plasticafval naartoe?",
+        "selectDestination": "Selecteer bestemming",
+        "wasteGeneral": "Restafval/stortplaats",
+        "wasteRecycling": "Recyclingcentrum",
+        "wasteMixed": "Gemengd (deels gerecycled, deels restafval)",
+        "wasteUnknown": "Onbekend",
+        "compostsOrganicWaste": "School composteert organisch afval",
+        "hasPlasticReductionPolicy": "School heeft een plasticreductiebeleid",
+        "reductionPolicyDetails": "Beleidsdetails (indien van toepassing)",
+        "reductionPolicyPlaceholder": "Beschrijf het plasticreductiebeleid van uw school",
+        "wasteManagementNotes": "Extra opmerkingen (Optioneel)",
+        "wasteManagementNotesPlaceholder": "Andere opmerkingen over afvalbeheer?"
+      },
+      "step5": {
+        "title": "Auditresultaten",
+        "description": "Gebaseerd op uw dagelijkse tellingen, hier is het geschatte jaarlijkse plasticverbruik van uw school (190 schooldagen per jaar):",
+        "totalAnnualTitle": "Totaal jaarlijkse plasticitems",
+        "itemsPerYear": "items per jaar",
+        "topProblemsTitle": "Top 5 probleemsoorten plastic",
+        "yearSuffix": "/jaar",
+        "readyToSubmitTitle": "Klaar om in te dienen?",
+        "readyToSubmitDescription": "U kunt uw resultaten als PDF downloaden of uw audit indienen voor beoordeling. Na goedkeuring kunt u een actieplan maken om uw plasticreductiedoelen te volgen."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Plastic flessen",
+      "plastic_cups": "Plastic bekers",
+      "plastic_cutlery": "Plastic bestek",
+      "plastic_straws": "Plastic rietjes",
+      "snack_wrappers": "Snackverpakkingen",
+      "yoghurt_pots": "Yoghurtbakjes",
+      "takeaway_containers": "Wegwerpverpakkingen",
+      "cling_film": "Vershoudfolie",
+      "pens_pencils": "Pennen & potloden",
+      "stationery": "Kantoorartikelen",
+      "display_materials": "Presentatiematerialen",
+      "soap_bottles": "Zeepflacons",
+      "bin_liners": "Vuilniszakken",
+      "toilet_cups_dispensers": "Toiletbekers/dispensers",
+      "period_products": "Maandverbandproducten",
+      "sport_equipment": "Sportuitrusting",
+      "toys_equipment": "Speelgoed/uitrusting",
+      "lab_equipment": "Laboratoriumuitrusting",
+      "art_supplies": "Tekenbenodigdheden",
+      "other_plastic_items": "Andere plasticitems"
+    },
+    "rooms": {
+      "lunchroom": "🏫 Kantine",
+      "staffroom": "☕ Personeelskamer",
+      "classrooms": "🏫 Klaslokalen",
+      "toilets": "🚽 Toiletten",
+      "office": "🏢 Kantoor",
+      "library": "📚 Bibliotheek",
+      "gym": "🏋️ Gymzaal",
+      "playground": "🎮 Speelplaats",
+      "corridors": "🚪 Gangen",
+      "science_labs": "🔬 Scheikunde-/natuurkundelokalen",
+      "art_rooms": "🎨 Tekenlokalen"
+    },
+    "validation": {
+      "schoolNameRequired": "Schoolnaam is verplicht",
+      "auditDateRequired": "Auditdatum is verplicht",
+      "wasteDestinationRequired": "Geef aan waar het plasticafval naartoe gaat",
+      "roomSelectionRequired": "Selecteer ten minste één type ruimte",
+      "validationError": "Validatiefout",
+      "fillRequiredFields": "Vul alle verplichte velden in voordat u verder gaat."
+    },
+    "actions": {
+      "next": "Volgende",
+      "previous": "Vorige",
+      "saveProgress": "Voortgang opslaan",
+      "submitAudit": "Audit indienen voor beoordeling",
+      "submitting": "Wordt ingediend...",
+      "downloadPdf": "PDF-resultaten downloaden",
+      "backToWasteManagement": "Terug naar afvalbeheer"
+    },
+    "status": {
+      "progressSaved": "Voortgang opgeslagen",
+      "progressSavedDescription": "Uw auditvoortgang is automatisch opgeslagen.",
+      "auditSubmitted": "Audit ingediend!",
+      "auditSubmittedDescription": "Uw plasticafval audit is ingediend voor beoordeling."
+    },
+    "results": {
+      "totalAnnualPlasticItems": "Totaal jaarlijkse plasticitems",
+      "topProblemPlastics": "Top 5 probleemsoorten plastic",
+      "itemsPerYear": "items per jaar",
+      "yearSuffix": "/jaar",
+      "readyToSubmit": "Klaar om in te dienen?",
+      "submitDescription": "U kunt uw resultaten als PDF downloaden of uw audit indienen voor beoordeling. Na goedkeuring kunt u een actieplan maken om uw plasticreductiedoelen te volgen.",
+      "annualConsumptionDescription": "Gebaseerd op uw dagelijkse tellingen, hier is het geschatte jaarlijkse plasticverbruik van uw school (190 schooldagen per jaar):"
+    }
+  },
+  "actionPlan": {
+    "overview": {
+      "title": "Maak uw actieplan",
+      "description": "Gebaseerd op uw auditresultaten, verbind u zich ertoe om ten minste 2 soorten plastic te verminderen. Stel realistische doelen!"
+    },
+    "form": {
+      "promises": {
+        "title": "Reductietoezegging",
+        "plasticItemType": "Plasticitem type",
+        "itemLabel": "Item label",
+        "baselineQuantity": "Huidig jaarlijks gebruik",
+        "targetQuantity": "Doel jaarlijks gebruik",
+        "timeframe": "Tijdskader",
+        "notes": "Hoe gaat u dit bereiken? (Optioneel)"
+      },
+      "labels": {
+        "plasticItemType": "Plasticitem type",
+        "currentAnnualUsage": "Huidig jaarlijks gebruik",
+        "targetAnnualUsage": "Doel jaarlijks gebruik",
+        "timeframe": "Tijdskader",
+        "achievementPlan": "Hoe gaat u dit bereiken? (Optioneel)"
+      },
+      "placeholders": {
+        "selectPlasticItem": "Selecteer een plasticitem uit uw audit",
+        "selectTimeframe": "Selecteer tijdskader",
+        "describePlan": "Beschrijf uw plan om dit plasticitem te verminderen..."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Plastic flessen",
+      "plastic_cups": "Plastic bekers",
+      "plastic_cutlery": "Plastic bestek",
+      "plastic_straws": "Plastic rietjes",
+      "snack_wrappers": "Snackverpakkingen",
+      "yoghurt_pots": "Yoghurtbakjes",
+      "takeaway_containers": "Wegwerpverpakkingen",
+      "cling_film": "Vershoudfolie",
+      "pens_pencils": "Pennen & potloden",
+      "stationery": "Kantoorartikelen",
+      "display_materials": "Presentatiematerialen",
+      "soap_bottles": "Zeepflacons",
+      "bin_liners": "Vuilniszakken",
+      "cups_dispensers": "Bekers/dispensers",
+      "period_products": "Maandverbandproducten",
+      "sport_equipment": "Sportuitrusting",
+      "toys_equipment": "Speelgoed/uitrusting",
+      "lab_equipment": "Laboratoriumuitrusting",
+      "art_supplies": "Tekenbenodigdheden"
+    },
+    "validation": {
+      "selectPlasticItem": "Selecteer een plasticitem",
+      "itemLabelRequired": "Item label is verplicht",
+      "baselineMinimum": "Uitgangswaarde moet minimaal 1 zijn",
+      "targetNonNegative": "Doel kan niet negatief zijn",
+      "minimumPromises": "Ten minste 2 reductietoezeggingen zijn vereist"
+    },
+    "status": {
+      "auditRequired": {
+        "title": "Audit vereist",
+        "description": "U moet de plasticafval audit voltooien voordat u een actieplan kunt maken."
+      },
+      "auditApprovalRequired": {
+        "title": "Auditgoedkeuring vereist",
+        "description": "Uw plasticafval audit moet worden goedgekeurd voordat u een actieplan kunt maken. Huidige status:"
+      },
+      "approved": {
+        "title": "Actieplan goedgekeurd",
+        "description": "Gefeliciteerd! Uw actieplan met {{count}} reductietoezegging{{plural}} is goedgekeurd.",
+        "noPromisesDescription": "Uw actieplan is goedgekeurd! U kunt uw reductietoezeggingen bekijken in het tabblad \"Ons actieplan\"."
+      },
+      "pending": {
+        "title": "Actieplan wordt beoordeeld",
+        "description": "Uw actieplan met {{count}} reductietoezegging{{plural}} wordt momenteel beoordeeld.",
+        "loadingDescription": "Uw actieplan wordt geladen...",
+        "noPromisesDescription": "Uw actieplan is ingediend en wordt momenteel beoordeeld."
+      }
+    },
+    "notifications": {
+      "submitSuccess": "Actieplan ingediend!",
+      "submitSuccessDescription": "Uw actieplan met {{count}} reductietoezegging{{plural}} is ingediend voor beoordeling.",
+      "submitError": "Indieningsfout",
+      "submitErrorDescription": "Er is een fout opgetreden bij het indienen van uw actieplan. Probeer het opnieuw.",
+      "noPlasticItems": "Geen plasticitems gevonden in uw audit. Voltooi eerst de audit met plasticitemgegevens."
+    },
+    "actions": {
+      "submit": "Actieplan indienen",
+      "submitting": "Wordt ingediend...",
+      "cancel": "Annuleren",
+      "close": "Sluiten",
+      "addPromise": "Nog een toezegging toevoegen",
+      "removePromise": "Verwijderen"
+    },
+    "display": {
+      "promise": "Toezegging",
+      "baseline": "Uitgangswaarde:",
+      "target": "Doel:",
+      "reduction": "Reductie:",
+      "plan": "Plan:",
+      "per": "per",
+      "items": "items",
+      "itemsYear": "items/jaar",
+      "reductionAmount": "Reductie: {{amount}} items per {{timeframe}}",
+      "reductionPercentage": "{{percent}}% reductie",
+      "promisesNumber": "Reductietoezegging {{number}}",
+      "promiseLabel": "Toezegging {{number}}: {{label}}",
+      "summaryTitle": "Samenvatting van uw toezeggingen",
+      "summaryDescription": "U verbindt zich ertoe om {{count}} soorten plasticitems te verminderen:",
+      "summaryItem": "{{label}}: Verminderen met {{amount}} items per {{timeframe}}",
+      "quantityWithTimeframe": "{{quantity}} per {{timeframe}}"
+    }
+  },
+  "shared": {
+    "timeframes": {
+      "week": "week",
+      "month": "maand",
+      "year": "jaar",
+      "perWeek": "Per week",
+      "perMonth": "Per maand",
+      "perYear": "Per jaar"
+    },
+    "plasticItems": {
+      "plastic_bottles": "Plastic flessen",
+      "plastic_cups": "Plastic bekers",
+      "plastic_cutlery": "Plastic bestek",
+      "plastic_straws": "Plastic rietjes",
+      "snack_wrappers": "Snackverpakkingen",
+      "yoghurt_pots": "Yoghurtbakjes",
+      "takeaway_containers": "Wegwerpverpakkingen",
+      "cling_film": "Vershoudfolie",
+      "pens_pencils": "Pennen & potloden",
+      "stationery": "Kantoorartikelen",
+      "display_materials": "Presentatiematerialen",
+      "soap_bottles": "Zeepflacons",
+      "bin_liners": "Vuilniszakken",
+      "cups_dispensers": "Bekers/dispensers",
+      "period_products": "Maandverbandproducten",
+      "sport_equipment": "Sportuitrusting",
+      "toys_equipment": "Speelgoed/uitrusting",
+      "lab_equipment": "Laboratoriumuitrusting",
+      "art_supplies": "Tekenbenodigdheden",
+      "other_plastic_items": "Andere plasticitems"
+    }
+  }
+}

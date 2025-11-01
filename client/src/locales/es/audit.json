@@ -1,0 +1,329 @@
+{
+  "audit": {
+    "overview": {
+      "title": "Auditoría de Residuos Plásticos",
+      "description": "Rastrea y mide el uso de plástico de tu escuela en todas las áreas",
+      "uploadSuccessTitle": "Carga exitosa",
+      "uploadSuccessDescription": "Formulario de auditoría cargado exitosamente",
+      "uploadFailedTitle": "Carga fallida",
+      "uploadFileTypeError": "Solo se permiten archivos PDF",
+      "uploadFileSizeError": "El tamaño del archivo debe ser menor a 10 MB",
+      "uploadStorageError": "Error al cargar el archivo al almacenamiento"
+    },
+    "form": {
+      "metadata": {
+        "schoolName": "Nombre de la escuela",
+        "studentCount": "Número de estudiantes (opcional)",
+        "staffCount": "Número de personal (opcional)",
+        "auditDate": "Fecha de la auditoría",
+        "teamMembers": "Miembros del equipo (opcional)",
+        "teamMembersPlaceholder": "¿Quién participó en esta auditoría?"
+      },
+      "step1": {
+        "title": "Información general",
+        "description": "Información básica sobre tu escuela y equipo de auditoría"
+      },
+      "step2": {
+        "title": "Artículos de plástico del comedor y sala de profesores",
+        "description": "Cuenta los artículos de plástico diarios en el comedor y la sala de profesores",
+        "lunchroom": "Comedor",
+        "staffroom": "Sala de profesores",
+        "plasticBottles": "Botellas de plástico (conteo diario)",
+        "plasticCups": "Vasos de plástico (conteo diario)",
+        "plasticCutlery": "Cubiertos de plástico (conteo diario)",
+        "plasticStraws": "Pajitas de plástico (conteo diario)",
+        "snackWrappers": "Envoltorios de snacks (conteo diario)",
+        "yoghurtPots": "Envases de yogur (conteo diario)",
+        "takeawayContainers": "Contenedores para llevar (conteo diario)",
+        "clingFilm": "Usos de film transparente (conteo diario)",
+        "otherItems": "Otros artículos de plástico (conteo diario)",
+        "otherDescription": "Describe otros artículos de plástico (opcional)",
+        "additionalNotes": "Notas adicionales (opcional)",
+        "lunchroomOtherPlaceholder": "Enumera otros artículos de plástico encontrados en el comedor",
+        "staffroomOtherPlaceholder": "Enumera otros artículos de plástico encontrados en la sala de profesores",
+        "notesPlaceholder": "¿Alguna observación sobre el uso de plástico en el comedor/sala de profesores?"
+      },
+      "step3": {
+        "title": "Salones de clase y otras áreas",
+        "description": "Selecciona las salas y cuenta los artículos de plástico en cada área",
+        "roomSelectionTitle": "¿Qué salas tiene tu escuela? (Selecciona todas las que apliquen)",
+        "roomSelectionDescription": "Solo las salas seleccionadas aparecerán en el formulario de auditoría, reduciendo el desplazamiento y la fatiga del formulario.",
+        "academicSpaces": "📚 Espacios académicos",
+        "commonAreas": "🏢 Áreas comunes",
+        "outdoorSports": "⚽ Exterior y deportes",
+        "classrooms": "Salones de clase",
+        "toilets": "Baños",
+        "office": "Oficina",
+        "library": "Biblioteca",
+        "gym": "Gimnasio",
+        "playground": "Patio de recreo",
+        "corridors": "Pasillos",
+        "scienceLabs": "Laboratorios de ciencias",
+        "artRooms": "Salas de arte",
+        "pensPencils": "Bolígrafos y lápices de plástico (conteo diario)",
+        "stationery": "Otros artículos de papelería de plástico (conteo diario)",
+        "displayMaterials": "Materiales de exhibición de plástico (conteo diario)",
+        "soapBottles": "Botellas de jabón de plástico (conteo diario)",
+        "binLiners": "Bolsas de basura (conteo diario)",
+        "cupsDispensers": "Vasos/dispensadores (papel o plástico) (conteo diario)",
+        "periodProducts": "Productos menstruales (conteo diario)",
+        "sportEquipment": "Equipo deportivo (conteo diario)",
+        "toysEquipment": "Juguetes/equipo (conteo diario)",
+        "labEquipment": "Equipo de laboratorio (conteo diario)",
+        "artSupplies": "Suministros de arte (conteo diario)",
+        "otherItems": "Otros artículos de plástico (conteo diario)",
+        "otherDescription": "Describe otros artículos de plástico (opcional)",
+        "additionalNotes": "Notas adicionales (opcional)",
+        "classroomOtherPlaceholder": "Enumera otros artículos de plástico encontrados en los salones de clase",
+        "toiletOtherPlaceholder": "Enumera otros artículos de plástico encontrados en los baños",
+        "officeOtherPlaceholder": "Enumera otros artículos de plástico encontrados en la oficina",
+        "libraryOtherPlaceholder": "Enumera otros artículos de plástico encontrados en la biblioteca",
+        "gymOtherPlaceholder": "Enumera otros artículos de plástico encontrados en el gimnasio",
+        "playgroundOtherPlaceholder": "Enumera otros artículos de plástico encontrados en el patio de recreo",
+        "corridorsOtherPlaceholder": "Enumera otros artículos de plástico encontrados en los pasillos",
+        "scienceLabsOtherPlaceholder": "Enumera otros artículos de plástico encontrados en los laboratorios de ciencias",
+        "artRoomsOtherPlaceholder": "Enumera otros artículos de plástico encontrados en las salas de arte",
+        "notesPlaceholder": "¿Alguna observación sobre el uso de plástico en todas las salas?"
+      },
+      "step4": {
+        "title": "Prácticas de gestión de residuos",
+        "description": "Información sobre reciclaje, compostaje y políticas de reducción de plástico",
+        "hasRecyclingBins": "La escuela tiene contenedores de reciclaje",
+        "recyclingBinLocations": "Ubicaciones de los contenedores de reciclaje (si aplica)",
+        "recyclingBinLocationsPlaceholder": "Ej., salones de clase, pasillos, cafetería",
+        "plasticWasteDestination": "¿Adónde van los residuos plásticos?",
+        "selectDestination": "Seleccionar destino",
+        "wasteGeneral": "Residuos generales/vertedero",
+        "wasteRecycling": "Centro de reciclaje",
+        "wasteMixed": "Mixto (algunos reciclados, algunos residuos generales)",
+        "wasteUnknown": "Desconocido",
+        "compostsOrganicWaste": "La escuela composta residuos orgánicos",
+        "hasPlasticReductionPolicy": "La escuela tiene una política de reducción de plástico",
+        "reductionPolicyDetails": "Detalles de la política (si aplica)",
+        "reductionPolicyPlaceholder": "Describe la política de reducción de plástico de tu escuela",
+        "wasteManagementNotes": "Notas adicionales (opcional)",
+        "wasteManagementNotesPlaceholder": "¿Otras observaciones sobre la gestión de residuos?"
+      },
+      "step5": {
+        "title": "Resultados de la auditoría",
+        "description": "Basándonos en tus conteos diarios, aquí está el consumo anual estimado de plástico de tu escuela (190 días escolares por año):",
+        "totalAnnualTitle": "Total anual de artículos de plástico",
+        "itemsPerYear": "artículos por año",
+        "topProblemsTitle": "Top 5 de plásticos problemáticos",
+        "yearSuffix": "/año",
+        "readyToSubmitTitle": "¿Listo para enviar?",
+        "readyToSubmitDescription": "Puedes descargar tus resultados en PDF o enviar tu auditoría para revisión. Una vez aprobada, podrás crear un plan de acción para rastrear tus metas de reducción de plástico."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Botellas de plástico",
+      "plastic_cups": "Vasos de plástico",
+      "plastic_cutlery": "Cubiertos de plástico",
+      "plastic_straws": "Pajitas de plástico",
+      "snack_wrappers": "Envoltorios de snacks",
+      "yoghurt_pots": "Envases de yogur",
+      "takeaway_containers": "Contenedores para llevar",
+      "cling_film": "Film transparente",
+      "pens_pencils": "Bolígrafos y lápices",
+      "stationery": "Artículos de papelería",
+      "display_materials": "Materiales de exhibición",
+      "soap_bottles": "Botellas de jabón",
+      "bin_liners": "Bolsas de basura",
+      "toilet_cups_dispensers": "Vasos/dispensadores de baño",
+      "period_products": "Productos menstruales",
+      "sport_equipment": "Equipo deportivo",
+      "toys_equipment": "Juguetes/equipo",
+      "lab_equipment": "Equipo de laboratorio",
+      "art_supplies": "Suministros de arte",
+      "other_plastic_items": "Otros artículos de plástico"
+    },
+    "rooms": {
+      "lunchroom": "🏫 Comedor",
+      "staffroom": "☕ Sala de profesores",
+      "classrooms": "🏫 Salones de clase",
+      "toilets": "🚽 Baños",
+      "office": "🏢 Oficina",
+      "library": "📚 Biblioteca",
+      "gym": "🏋️ Gimnasio",
+      "playground": "🎮 Patio de recreo",
+      "corridors": "🚪 Pasillos",
+      "science_labs": "🔬 Laboratorios de ciencias",
+      "art_rooms": "🎨 Salas de arte"
+    },
+    "validation": {
+      "schoolNameRequired": "El nombre de la escuela es obligatorio",
+      "auditDateRequired": "La fecha de la auditoría es obligatoria",
+      "wasteDestinationRequired": "Por favor especifica adónde van los residuos plásticos",
+      "roomSelectionRequired": "Por favor selecciona al menos un tipo de sala",
+      "validationError": "Error de validación",
+      "fillRequiredFields": "Por favor completa todos los campos obligatorios antes de continuar."
+    },
+    "actions": {
+      "next": "Siguiente",
+      "previous": "Anterior",
+      "saveProgress": "Guardar progreso",
+      "submitAudit": "Enviar auditoría para revisión",
+      "submitting": "Enviando...",
+      "downloadPdf": "Descargar resultados en PDF",
+      "backToWasteManagement": "Volver a la gestión de residuos"
+    },
+    "status": {
+      "progressSaved": "Progreso guardado",
+      "progressSavedDescription": "El progreso de tu auditoría se ha guardado automáticamente.",
+      "auditSubmitted": "¡Auditoría enviada!",
+      "auditSubmittedDescription": "Tu auditoría de residuos plásticos ha sido enviada para revisión."
+    },
+    "results": {
+      "totalAnnualPlasticItems": "Total anual de artículos de plástico",
+      "topProblemPlastics": "Top 5 de plásticos problemáticos",
+      "itemsPerYear": "artículos por año",
+      "yearSuffix": "/año",
+      "readyToSubmit": "¿Listo para enviar?",
+      "submitDescription": "Puedes descargar tus resultados en PDF o enviar tu auditoría para revisión. Una vez aprobada, podrás crear un plan de acción para rastrear tus metas de reducción de plástico.",
+      "annualConsumptionDescription": "Basándonos en tus conteos diarios, aquí está el consumo anual estimado de plástico de tu escuela (190 días escolares por año):"
+    }
+  },
+  "actionPlan": {
+    "overview": {
+      "title": "Crea tu plan de acción",
+      "description": "Basándote en los resultados de tu auditoría, comprométete a reducir al menos 2 tipos de plástico. ¡Establece metas realistas!"
+    },
+    "form": {
+      "promises": {
+        "title": "Promesa de reducción",
+        "plasticItemType": "Tipo de artículo de plástico",
+        "itemLabel": "Etiqueta del artículo",
+        "baselineQuantity": "Uso anual actual",
+        "targetQuantity": "Uso anual objetivo",
+        "timeframe": "Plazo",
+        "notes": "¿Cómo lo lograrás? (opcional)"
+      },
+      "labels": {
+        "plasticItemType": "Tipo de artículo de plástico",
+        "currentAnnualUsage": "Uso anual actual",
+        "targetAnnualUsage": "Uso anual objetivo",
+        "timeframe": "Plazo",
+        "achievementPlan": "¿Cómo lo lograrás? (opcional)"
+      },
+      "placeholders": {
+        "selectPlasticItem": "Selecciona un artículo de plástico de tu auditoría",
+        "selectTimeframe": "Seleccionar plazo",
+        "describePlan": "Describe tu plan para reducir este artículo de plástico..."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "Botellas de plástico",
+      "plastic_cups": "Vasos de plástico",
+      "plastic_cutlery": "Cubiertos de plástico",
+      "plastic_straws": "Pajitas de plástico",
+      "snack_wrappers": "Envoltorios de snacks",
+      "yoghurt_pots": "Envases de yogur",
+      "takeaway_containers": "Contenedores para llevar",
+      "cling_film": "Film transparente",
+      "pens_pencils": "Bolígrafos y lápices",
+      "stationery": "Artículos de papelería",
+      "display_materials": "Materiales de exhibición",
+      "soap_bottles": "Botellas de jabón",
+      "bin_liners": "Bolsas de basura",
+      "cups_dispensers": "Vasos/dispensadores",
+      "period_products": "Productos menstruales",
+      "sport_equipment": "Equipo deportivo",
+      "toys_equipment": "Juguetes/equipo",
+      "lab_equipment": "Equipo de laboratorio",
+      "art_supplies": "Suministros de arte"
+    },
+    "validation": {
+      "selectPlasticItem": "Por favor selecciona un artículo de plástico",
+      "itemLabelRequired": "La etiqueta del artículo es obligatoria",
+      "baselineMinimum": "La línea base debe ser al menos 1",
+      "targetNonNegative": "El objetivo no puede ser negativo",
+      "minimumPromises": "Se requieren al menos 2 promesas de reducción"
+    },
+    "status": {
+      "auditRequired": {
+        "title": "Auditoría requerida",
+        "description": "Debes completar la auditoría de residuos plásticos antes de crear un plan de acción."
+      },
+      "auditApprovalRequired": {
+        "title": "Aprobación de auditoría requerida",
+        "description": "Tu auditoría de residuos plásticos debe ser aprobada antes de poder crear un plan de acción. Estado actual:"
+      },
+      "approved": {
+        "title": "Plan de acción aprobado",
+        "description": "¡Felicitaciones! Tu plan de acción con {{count}} promesa{{plural}} de reducción ha sido aprobado.",
+        "noPromisesDescription": "¡Tu plan de acción ha sido aprobado! Puedes ver tus promesas de reducción en la pestaña \"Nuestro plan de acción\"."
+      },
+      "pending": {
+        "title": "Plan de acción en revisión",
+        "description": "Tu plan de acción con {{count}} promesa{{plural}} de reducción está actualmente en revisión.",
+        "loadingDescription": "Cargando tu plan de acción...",
+        "noPromisesDescription": "Tu plan de acción ha sido enviado y está actualmente en revisión."
+      }
+    },
+    "notifications": {
+      "submitSuccess": "¡Plan de acción enviado!",
+      "submitSuccessDescription": "Tu plan de acción con {{count}} promesa{{plural}} de reducción ha sido enviado para revisión.",
+      "submitError": "Error de envío",
+      "submitErrorDescription": "Hubo un error al enviar tu plan de acción. Por favor intenta nuevamente.",
+      "noPlasticItems": "No se encontraron artículos de plástico en tu auditoría. Por favor completa primero la auditoría con datos de artículos de plástico."
+    },
+    "actions": {
+      "submit": "Enviar plan de acción",
+      "submitting": "Enviando...",
+      "cancel": "Cancelar",
+      "close": "Cerrar",
+      "addPromise": "Agregar otra promesa",
+      "removePromise": "Eliminar"
+    },
+    "display": {
+      "promise": "Promesa",
+      "baseline": "Línea base:",
+      "target": "Objetivo:",
+      "reduction": "Reducción:",
+      "plan": "Plan:",
+      "per": "por",
+      "items": "artículos",
+      "itemsYear": "artículos/año",
+      "reductionAmount": "Reducción: {{amount}} artículos por {{timeframe}}",
+      "reductionPercentage": "{{percent}}% de reducción",
+      "promisesNumber": "Promesa de reducción {{number}}",
+      "promiseLabel": "Promesa {{number}}: {{label}}",
+      "summaryTitle": "Resumen de tus promesas",
+      "summaryDescription": "Te estás comprometiendo a reducir {{count}} tipos de artículos de plástico:",
+      "summaryItem": "{{label}}: Reducir {{amount}} artículos por {{timeframe}}",
+      "quantityWithTimeframe": "{{quantity}} por {{timeframe}}"
+    }
+  },
+  "shared": {
+    "timeframes": {
+      "week": "semana",
+      "month": "mes",
+      "year": "año",
+      "perWeek": "Por semana",
+      "perMonth": "Por mes",
+      "perYear": "Por año"
+    },
+    "plasticItems": {
+      "plastic_bottles": "Botellas de plástico",
+      "plastic_cups": "Vasos de plástico",
+      "plastic_cutlery": "Cubiertos de plástico",
+      "plastic_straws": "Pajitas de plástico",
+      "snack_wrappers": "Envoltorios de snacks",
+      "yoghurt_pots": "Envases de yogur",
+      "takeaway_containers": "Contenedores para llevar",
+      "cling_film": "Film transparente",
+      "pens_pencils": "Bolígrafos y lápices",
+      "stationery": "Artículos de papelería",
+      "display_materials": "Materiales de exhibición",
+      "soap_bottles": "Botellas de jabón",
+      "bin_liners": "Bolsas de basura",
+      "cups_dispensers": "Vasos/dispensadores",
+      "period_products": "Productos menstruales",
+      "sport_equipment": "Equipo deportivo",
+      "toys_equipment": "Juguetes/equipo",
+      "lab_equipment": "Equipo de laboratorio",
+      "art_supplies": "Suministros de arte",
+      "other_plastic_items": "Otros artículos de plástico"
+    }
+  }
+}

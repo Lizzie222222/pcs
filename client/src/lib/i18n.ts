@@ -15,10 +15,11 @@ import enSearch from '../locales/en/search.json';
 import enNewsletter from '../locales/en/newsletter.json';
 import enHelp from '../locales/en/help.json';
 import enInspiration from '../locales/en/inspiration.json';
+import enAudit from '../locales/en/audit.json';
 
 // Generic function to load translations for any language
 const loadTranslations = async (lang: string) => {
-  const [common, landing, dashboard, resources, forms, auth, admin, map, search, newsletter, help, inspiration] = await Promise.all([
+  const [common, landing, dashboard, resources, forms, auth, admin, map, search, newsletter, help, inspiration, audit] = await Promise.all([
     import(`../locales/${lang}/common.json`),
     import(`../locales/${lang}/landing.json`),
     import(`../locales/${lang}/dashboard.json`),
@@ -31,6 +32,7 @@ const loadTranslations = async (lang: string) => {
     import(`../locales/${lang}/newsletter.json`),
     import(`../locales/${lang}/help.json`),
     import(`../locales/${lang}/inspiration.json`),
+    import(`../locales/${lang}/audit.json`),
   ]);
   
   return {
@@ -46,6 +48,7 @@ const loadTranslations = async (lang: string) => {
     newsletter: newsletter.default,
     help: help.default,
     inspiration: inspiration.default,
+    audit: audit.default,
   };
 };
 
@@ -72,6 +75,7 @@ i18n
         newsletter: enNewsletter,
         help: enHelp,
         inspiration: enInspiration,
+        audit: enAudit,
       },
       // Greek translations will be loaded on demand
     },
@@ -87,7 +91,7 @@ i18n
     
     // Default namespace
     defaultNS: 'common',
-    ns: ['common', 'landing', 'dashboard', 'resources', 'forms', 'auth', 'admin', 'map', 'search', 'newsletter', 'help', 'inspiration'],
+    ns: ['common', 'landing', 'dashboard', 'resources', 'forms', 'auth', 'admin', 'map', 'search', 'newsletter', 'help', 'inspiration', 'audit'],
     
     interpolation: {
       escapeValue: false, // React already does escaping

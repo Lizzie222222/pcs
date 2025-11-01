@@ -1,0 +1,329 @@
+{
+  "audit": {
+    "overview": {
+      "title": "塑料废物审计",
+      "description": "跟踪和测量您学校在所有区域的塑料使用情况",
+      "uploadSuccessTitle": "上传成功",
+      "uploadSuccessDescription": "审计表单上传成功",
+      "uploadFailedTitle": "上传失败",
+      "uploadFileTypeError": "仅允许PDF文件",
+      "uploadFileSizeError": "文件大小必须小于10MB",
+      "uploadStorageError": "文件上传到存储失败"
+    },
+    "form": {
+      "metadata": {
+        "schoolName": "学校名称",
+        "studentCount": "学生人数（可选）",
+        "staffCount": "教职工人数（可选）",
+        "auditDate": "审计日期",
+        "teamMembers": "团队成员（可选）",
+        "teamMembersPlaceholder": "谁参与了此次审计？"
+      },
+      "step1": {
+        "title": "基本信息",
+        "description": "关于您的学校和审计团队的基本信息"
+      },
+      "step2": {
+        "title": "餐厅和教职工休息室塑料制品",
+        "description": "统计餐厅和教职工休息室区域的日常塑料制品数量",
+        "lunchroom": "餐厅",
+        "staffroom": "教职工休息室",
+        "plasticBottles": "塑料瓶（每日数量）",
+        "plasticCups": "塑料杯（每日数量）",
+        "plasticCutlery": "塑料餐具（每日数量）",
+        "plasticStraws": "塑料吸管（每日数量）",
+        "snackWrappers": "零食包装（每日数量）",
+        "yoghurtPots": "酸奶杯（每日数量）",
+        "takeawayContainers": "外卖容器（每日数量）",
+        "clingFilm": "保鲜膜使用次数（每日数量）",
+        "otherItems": "其他塑料制品（每日数量）",
+        "otherDescription": "描述其他塑料制品（可选）",
+        "additionalNotes": "附加说明（可选）",
+        "lunchroomOtherPlaceholder": "列出餐厅中发现的其他塑料制品",
+        "staffroomOtherPlaceholder": "列出教职工休息室中发现的其他塑料制品",
+        "notesPlaceholder": "对餐厅/教职工休息室区域塑料使用情况有何观察？"
+      },
+      "step3": {
+        "title": "教室和其他区域",
+        "description": "选择房间并统计每个区域的塑料制品",
+        "roomSelectionTitle": "您的学校有哪些房间？（选择所有适用项）",
+        "roomSelectionDescription": "只有选中的房间会出现在审计表单中，减少滚动和表单疲劳。",
+        "academicSpaces": "📚 学习空间",
+        "commonAreas": "🏢 公共区域",
+        "outdoorSports": "⚽ 户外和运动",
+        "classrooms": "教室",
+        "toilets": "卫生间",
+        "office": "办公室",
+        "library": "图书馆",
+        "gym": "体育馆",
+        "playground": "操场",
+        "corridors": "走廊",
+        "scienceLabs": "科学实验室",
+        "artRooms": "美术室",
+        "pensPencils": "塑料笔和铅笔（每日数量）",
+        "stationery": "其他塑料文具（每日数量）",
+        "displayMaterials": "塑料展示材料（每日数量）",
+        "soapBottles": "塑料肥皂瓶（每日数量）",
+        "binLiners": "垃圾袋（每日数量）",
+        "cupsDispensers": "杯子/分配器（纸质或塑料）（每日数量）",
+        "periodProducts": "卫生用品（每日数量）",
+        "sportEquipment": "体育器材（每日数量）",
+        "toysEquipment": "玩具/设备（每日数量）",
+        "labEquipment": "实验室设备（每日数量）",
+        "artSupplies": "美术用品（每日数量）",
+        "otherItems": "其他塑料制品（每日数量）",
+        "otherDescription": "描述其他塑料制品（可选）",
+        "additionalNotes": "附加说明（可选）",
+        "classroomOtherPlaceholder": "列出教室中发现的其他塑料制品",
+        "toiletOtherPlaceholder": "列出卫生间中发现的其他塑料制品",
+        "officeOtherPlaceholder": "列出办公室中发现的其他塑料制品",
+        "libraryOtherPlaceholder": "列出图书馆中发现的其他塑料制品",
+        "gymOtherPlaceholder": "列出体育馆中发现的其他塑料制品",
+        "playgroundOtherPlaceholder": "列出操场上发现的其他塑料制品",
+        "corridorsOtherPlaceholder": "列出走廊中发现的其他塑料制品",
+        "scienceLabsOtherPlaceholder": "列出科学实验室中发现的其他塑料制品",
+        "artRoomsOtherPlaceholder": "列出美术室中发现的其他塑料制品",
+        "notesPlaceholder": "对所有房间的塑料使用情况有何观察？"
+      },
+      "step4": {
+        "title": "废物管理实践",
+        "description": "关于回收、堆肥和塑料减排政策的信息",
+        "hasRecyclingBins": "学校有回收箱",
+        "recyclingBinLocations": "回收箱位置（如适用）",
+        "recyclingBinLocationsPlaceholder": "例如：教室、走廊、食堂",
+        "plasticWasteDestination": "塑料废物去向何处？",
+        "selectDestination": "选择去向",
+        "wasteGeneral": "普通垃圾/垃圾填埋场",
+        "wasteRecycling": "回收中心",
+        "wasteMixed": "混合（部分回收，部分普通垃圾）",
+        "wasteUnknown": "未知",
+        "compostsOrganicWaste": "学校堆肥处理有机废物",
+        "hasPlasticReductionPolicy": "学校有塑料减排政策",
+        "reductionPolicyDetails": "政策详情（如适用）",
+        "reductionPolicyPlaceholder": "描述您学校的塑料减排政策",
+        "wasteManagementNotes": "附加说明（可选）",
+        "wasteManagementNotesPlaceholder": "对废物管理还有其他观察吗？"
+      },
+      "step5": {
+        "title": "审计结果",
+        "description": "根据您的每日统计，以下是您学校的年度塑料消耗量估算（每年190个上学日）：",
+        "totalAnnualTitle": "年度塑料制品总数",
+        "itemsPerYear": "件/年",
+        "topProblemsTitle": "前5大塑料问题",
+        "yearSuffix": "/年",
+        "readyToSubmitTitle": "准备好提交了吗？",
+        "readyToSubmitDescription": "您可以将结果下载为PDF或提交审计进行审核。获得批准后，您将能够创建行动计划来跟踪塑料减排目标。"
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "塑料瓶",
+      "plastic_cups": "塑料杯",
+      "plastic_cutlery": "塑料餐具",
+      "plastic_straws": "塑料吸管",
+      "snack_wrappers": "零食包装",
+      "yoghurt_pots": "酸奶杯",
+      "takeaway_containers": "外卖容器",
+      "cling_film": "保鲜膜",
+      "pens_pencils": "笔和铅笔",
+      "stationery": "文具",
+      "display_materials": "展示材料",
+      "soap_bottles": "肥皂瓶",
+      "bin_liners": "垃圾袋",
+      "toilet_cups_dispensers": "卫生间杯子/分配器",
+      "period_products": "卫生用品",
+      "sport_equipment": "体育器材",
+      "toys_equipment": "玩具/设备",
+      "lab_equipment": "实验室设备",
+      "art_supplies": "美术用品",
+      "other_plastic_items": "其他塑料制品"
+    },
+    "rooms": {
+      "lunchroom": "🏫 餐厅",
+      "staffroom": "☕ 教职工休息室",
+      "classrooms": "🏫 教室",
+      "toilets": "🚽 卫生间",
+      "office": "🏢 办公室",
+      "library": "📚 图书馆",
+      "gym": "🏋️ 体育馆",
+      "playground": "🎮 操场",
+      "corridors": "🚪 走廊",
+      "science_labs": "🔬 科学实验室",
+      "art_rooms": "🎨 美术室"
+    },
+    "validation": {
+      "schoolNameRequired": "学校名称为必填项",
+      "auditDateRequired": "审计日期为必填项",
+      "wasteDestinationRequired": "请指定塑料废物的去向",
+      "roomSelectionRequired": "请至少选择一种房间类型",
+      "validationError": "验证错误",
+      "fillRequiredFields": "请在继续之前填写所有必填字段。"
+    },
+    "actions": {
+      "next": "下一步",
+      "previous": "上一步",
+      "saveProgress": "保存进度",
+      "submitAudit": "提交审计进行审核",
+      "submitting": "提交中...",
+      "downloadPdf": "下载PDF结果",
+      "backToWasteManagement": "返回废物管理"
+    },
+    "status": {
+      "progressSaved": "进度已保存",
+      "progressSavedDescription": "您的审计进度已自动保存。",
+      "auditSubmitted": "审计已提交！",
+      "auditSubmittedDescription": "您的塑料废物审计已提交进行审核。"
+    },
+    "results": {
+      "totalAnnualPlasticItems": "年度塑料制品总数",
+      "topProblemPlastics": "前5大塑料问题",
+      "itemsPerYear": "件/年",
+      "yearSuffix": "/年",
+      "readyToSubmit": "准备好提交了吗？",
+      "submitDescription": "您可以将结果下载为PDF或提交审计进行审核。获得批准后，您将能够创建行动计划来跟踪塑料减排目标。",
+      "annualConsumptionDescription": "根据您的每日统计，以下是您学校的年度塑料消耗量估算（每年190个上学日）："
+    }
+  },
+  "actionPlan": {
+    "overview": {
+      "title": "创建您的行动计划",
+      "description": "根据审计结果，承诺减少至少2种塑料。设定切实可行的目标！"
+    },
+    "form": {
+      "promises": {
+        "title": "减排承诺",
+        "plasticItemType": "塑料制品类型",
+        "itemLabel": "项目标签",
+        "baselineQuantity": "当前年度使用量",
+        "targetQuantity": "目标年度使用量",
+        "timeframe": "时间范围",
+        "notes": "您将如何实现？（可选）"
+      },
+      "labels": {
+        "plasticItemType": "塑料制品类型",
+        "currentAnnualUsage": "当前年度使用量",
+        "targetAnnualUsage": "目标年度使用量",
+        "timeframe": "时间范围",
+        "achievementPlan": "您将如何实现？（可选）"
+      },
+      "placeholders": {
+        "selectPlasticItem": "从审计中选择一个塑料制品",
+        "selectTimeframe": "选择时间范围",
+        "describePlan": "描述您减少此塑料制品的计划..."
+      }
+    },
+    "plasticItems": {
+      "plastic_bottles": "塑料瓶",
+      "plastic_cups": "塑料杯",
+      "plastic_cutlery": "塑料餐具",
+      "plastic_straws": "塑料吸管",
+      "snack_wrappers": "零食包装",
+      "yoghurt_pots": "酸奶杯",
+      "takeaway_containers": "外卖容器",
+      "cling_film": "保鲜膜",
+      "pens_pencils": "笔和铅笔",
+      "stationery": "文具",
+      "display_materials": "展示材料",
+      "soap_bottles": "肥皂瓶",
+      "bin_liners": "垃圾袋",
+      "cups_dispensers": "杯子/分配器",
+      "period_products": "卫生用品",
+      "sport_equipment": "体育器材",
+      "toys_equipment": "玩具/设备",
+      "lab_equipment": "实验室设备",
+      "art_supplies": "美术用品"
+    },
+    "validation": {
+      "selectPlasticItem": "请选择一个塑料制品",
+      "itemLabelRequired": "项目标签为必填项",
+      "baselineMinimum": "基线必须至少为1",
+      "targetNonNegative": "目标不能为负数",
+      "minimumPromises": "至少需要2个减排承诺"
+    },
+    "status": {
+      "auditRequired": {
+        "title": "需要审计",
+        "description": "您需要在创建行动计划之前完成塑料废物审计。"
+      },
+      "auditApprovalRequired": {
+        "title": "需要审计批准",
+        "description": "您的塑料废物审计必须获得批准才能创建行动计划。当前状态："
+      },
+      "approved": {
+        "title": "行动计划已批准",
+        "description": "恭喜！您的行动计划包含{{count}}个减排承诺{{plural}}已获批准。",
+        "noPromisesDescription": "您的行动计划已获批准！您可以在「我们的行动计划」选项卡中查看减排承诺。"
+      },
+      "pending": {
+        "title": "行动计划审核中",
+        "description": "您的行动计划包含{{count}}个减排承诺{{plural}}正在审核中。",
+        "loadingDescription": "正在加载您的行动计划...",
+        "noPromisesDescription": "您的行动计划已提交，目前正在审核中。"
+      }
+    },
+    "notifications": {
+      "submitSuccess": "行动计划已提交！",
+      "submitSuccessDescription": "您的行动计划包含{{count}}个减排承诺{{plural}}已提交进行审核。",
+      "submitError": "提交错误",
+      "submitErrorDescription": "提交行动计划时出错。请重试。",
+      "noPlasticItems": "审计中未找到塑料制品。请先完成包含塑料制品数据的审计。"
+    },
+    "actions": {
+      "submit": "提交行动计划",
+      "submitting": "提交中...",
+      "cancel": "取消",
+      "close": "关闭",
+      "addPromise": "添加另一个承诺",
+      "removePromise": "删除"
+    },
+    "display": {
+      "promise": "承诺",
+      "baseline": "基线：",
+      "target": "目标：",
+      "reduction": "减少：",
+      "plan": "计划：",
+      "per": "每",
+      "items": "件",
+      "itemsYear": "件/年",
+      "reductionAmount": "减少：每{{timeframe}}{{amount}}件",
+      "reductionPercentage": "减少{{percent}}%",
+      "promisesNumber": "减排承诺{{number}}",
+      "promiseLabel": "承诺{{number}}：{{label}}",
+      "summaryTitle": "您的承诺摘要",
+      "summaryDescription": "您承诺减少{{count}}种塑料制品：",
+      "summaryItem": "{{label}}：每{{timeframe}}减少{{amount}}件",
+      "quantityWithTimeframe": "每{{timeframe}}{{quantity}}件"
+    }
+  },
+  "shared": {
+    "timeframes": {
+      "week": "周",
+      "month": "月",
+      "year": "年",
+      "perWeek": "每周",
+      "perMonth": "每月",
+      "perYear": "每年"
+    },
+    "plasticItems": {
+      "plastic_bottles": "塑料瓶",
+      "plastic_cups": "塑料杯",
+      "plastic_cutlery": "塑料餐具",
+      "plastic_straws": "塑料吸管",
+      "snack_wrappers": "零食包装",
+      "yoghurt_pots": "酸奶杯",
+      "takeaway_containers": "外卖容器",
+      "cling_film": "保鲜膜",
+      "pens_pencils": "笔和铅笔",
+      "stationery": "文具",
+      "display_materials": "展示材料",
+      "soap_bottles": "肥皂瓶",
+      "bin_liners": "垃圾袋",
+      "cups_dispensers": "杯子/分配器",
+      "period_products": "卫生用品",
+      "sport_equipment": "体育器材",
+      "toys_equipment": "玩具/设备",
+      "lab_equipment": "实验室设备",
+      "art_supplies": "美术用品",
+      "other_plastic_items": "其他塑料制品"
+    }
+  }
+}
