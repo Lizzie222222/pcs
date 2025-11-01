@@ -1276,9 +1276,21 @@ export default function ResourcesManagement() {
                     <td className="px-2 py-3 text-gray-600">{formatFileSize(resource.fileSize) || 'N/A'}</td>
                     <td className="px-2 py-3 text-gray-600">{resource.downloadCount || 0}</td>
                     <td className="px-2 py-3">
-                      <Badge variant={resource.isActive ? 'default' : 'secondary'}>
-                        {resource.isActive ? 'Active' : 'Inactive'}
-                      </Badge>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant={resource.isActive ? 'default' : 'secondary'}>
+                          {resource.isActive ? 'Active' : 'Inactive'}
+                        </Badge>
+                        {resource.hiddenOnResourcesPage && (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 border-yellow-300">
+                            Hidden
+                          </Badge>
+                        )}
+                        {resource.isPinned && (
+                          <Badge variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300">
+                            Pinned
+                          </Badge>
+                        )}
+                      </div>
                     </td>
                     <td className="px-2 py-3">
                       <div className="flex gap-2">
