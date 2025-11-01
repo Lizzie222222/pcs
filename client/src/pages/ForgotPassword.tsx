@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -8,10 +8,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { ButtonSpinner } from "@/components/ui/ButtonSpinner";
-import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import { Mail, ArrowLeft, CheckCircle, UserCheck } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import logoUrl from "@assets/Logo_1757848498470.png";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 const forgotPasswordSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -23,6 +24,7 @@ export default function ForgotPassword() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
+  const [isMigratedUser, setIsMigratedUser] = useState(false);
   const { toast } = useToast();
 
   const form = useForm<ForgotPasswordForm>({
@@ -31,6 +33,17 @@ export default function ForgotPassword() {
       email: "",
     },
   });
+
+  // Check for email parameter in URL (for migrated users)
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const emailParam = urlParams.get('email');
+    
+    if (emailParam) {
+      setIsMigratedUser(true);
+      form.setValue('email', emailParam);
+    }
+  }, [form]);
 
   const handleSubmit = async (data: ForgotPasswordForm) => {
     setIsSubmitting(true);
@@ -153,10 +166,12 @@ export default function ForgotPassword() {
             />
           </div>
           <h1 className="text-3xl font-bold text-navy leading-tight mb-2" data-testid="text-page-title">
-            Forgot Password?
+            {isMigratedUser ? "Welcome Back!" : "Forgot Password?"}
           </h1>
           <p className="text-base text-gray-600 leading-relaxed" data-testid="text-page-description">
-            No worries! Enter your email and we'll send you reset instructions.
+            {isMigratedUser 
+              ? "Reset your password to access your migrated account on our new platform." 
+              : "No worries! Enter your email and we'll send you reset instructions."}
           </p>
         </div>
 
@@ -169,6 +184,18 @@ export default function ForgotPassword() {
           </CardHeader>
           
           <CardContent className="space-y-4">
+            {isMigratedUser && (
+              <Alert className="bg-blue-50 border-blue-200" data-testid="alert-migrated-user">
+                <UserCheck className="h-4 w-4 text-blue-600" />
+                <AlertDescription className="text-blue-900">
+                  <strong>Account Migration Detected</strong>
+                  <p className="mt-1 text-sm">
+                    Your account has been upgraded to our new platform. Please reset your password to continue.
+                  </p>
+                </AlertDescription>
+              </Alert>
+            )}
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
                 <FormField

@@ -252,7 +252,7 @@ export async function setupAuth(app: Express) {
   });
 
   // POST /api/auth/login - Login with email/password
-  app.post("/api/auth/login", (req, res, next) => {
+  app.post("/api/auth/login", async (req, res, next) => {
     try {
       loginSchema.parse(req.body);
     } catch (error) {
@@ -265,7 +265,7 @@ export async function setupAuth(app: Express) {
       }
     }
 
-    passport.authenticate('local', (err: any, user: Express.User | false, info: any) => {
+    passport.authenticate('local', async (err: any, user: Express.User | false, info: any) => {
       if (err) {
         console.error('Login authentication error:', err);
         return res.status(500).json({ 
@@ -275,6 +275,26 @@ export async function setupAuth(app: Express) {
       }
       
       if (!user) {
+        // Check if the email belongs to a migrated user who needs password reset
+        // This helps guide users who don't know their temporary password to reset it
+        const email = req.body.email;
+        if (email) {
+          try {
+            const existingUser = await storage.findUserByEmail(email.toLowerCase().trim());
+            if (existingUser && existingUser.isMigrated && existingUser.needsPasswordReset) {
+              console.log(`[Migrated User] Login attempt with wrong password detected for migrated user: ${email}`);
+              return res.status(403).json({ 
+                success: false, 
+                message: "Password reset required",
+                isMigratedUser: true,
+                email: email.toLowerCase().trim()
+              });
+            }
+          } catch (lookupError) {
+            console.error('Error checking for migrated user:', lookupError);
+          }
+        }
+        
         return res.status(401).json({ 
           success: false, 
           message: info?.message || "Invalid credentials" 

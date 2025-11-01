@@ -118,14 +118,37 @@ export function useAuth() {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginForm) => {
-      const response = await apiRequest("POST", "/api/auth/login", credentials);
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.message || "Login failed");
+      try {
+        const response = await apiRequest("POST", "/api/auth/login", credentials);
+        const result = await response.json();
+        
+        if (!result.success) {
+          throw new Error(result.message || "Login failed");
+        }
+        
+        return result.user;
+      } catch (error: any) {
+        // Check if this is a 403 error (migrated user needs password reset)
+        if (error.message?.startsWith('403:')) {
+          try {
+            const errorBody = error.message.substring(4).trim();
+            const errorData = JSON.parse(errorBody);
+            
+            if (errorData.isMigratedUser && errorData.email) {
+              throw new Error(JSON.stringify({ 
+                type: 'MIGRATED_USER', 
+                email: errorData.email,
+                message: errorData.message 
+              }));
+            }
+          } catch (parseError) {
+            // If parsing fails, continue with normal error handling
+          }
+        }
+        
+        // Re-throw the original error for normal error handling
+        throw error;
       }
-      
-      return result.user;
     },
     onSuccess: async (user: User) => {
       // Set authentication hint and update cache
@@ -149,6 +172,23 @@ export function useAuth() {
       }
     },
     onError: (error: Error) => {
+      // Check if this is a migrated user error
+      try {
+        const errorData = JSON.parse(error.message);
+        if (errorData.type === 'MIGRATED_USER') {
+          toast({
+            title: "Welcome back!",
+            description: "We see you're from our old platform. Please reset your password to continue.",
+          });
+          // Redirect to forgot password with email pre-filled
+          const encodedEmail = encodeURIComponent(errorData.email);
+          window.location.href = `/forgot-password?email=${encodedEmail}`;
+          return;
+        }
+      } catch {
+        // Not a JSON error, continue with normal error handling
+      }
+      
       let errorMessage = "Login failed. Please try again.";
       
       // Handle validation errors or specific backend errors
