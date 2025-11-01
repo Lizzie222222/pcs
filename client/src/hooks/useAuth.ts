@@ -173,8 +173,12 @@ export function useAuth() {
         title: i18n.t("auth:login.success_title"),
         description: i18n.t("auth:login.success_description", { name: user.firstName || user.email }),
       });
-      // Redirect based on user role
-      if (user.isAdmin) {
+      
+      // Redirect based on user status
+      if (user.isMigrated && !user.hasSeenOnboarding) {
+        // Migrated users who haven't completed onboarding → go to onboarding
+        window.location.href = "/migrated-onboarding";
+      } else if (user.isAdmin) {
         window.location.href = "/admin";
       } else {
         window.location.href = "/dashboard";
