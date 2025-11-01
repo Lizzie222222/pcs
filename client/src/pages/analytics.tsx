@@ -341,7 +341,7 @@ export default function AnalyticsPage() {
                     {overviewQuery.data && (
                       <>
                         <div className="flex justify-between items-center">
-                          <span className="text-sm text-gray-600">Program Completion Rate</span>
+                          <span className="text-sm text-gray-600">Programme Completion Rate</span>
                           <span className="font-semibold">
                             {Math.round((overviewQuery.data.completedAwards / overviewQuery.data.totalSchools) * 100)}%
                           </span>
