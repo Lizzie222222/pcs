@@ -221,6 +221,7 @@
     "visibility_public_description": "May be featured in inspiration gallery after admin review",
     "review_process_title": "Review Process",
     "review_process_description": "All evidence submissions are reviewed by our admin team. You'll receive an email notification once your evidence has been reviewed.",
+    "photo_consent_reminder": "Please ensure your school has submitted the <strong>Photo Consent Confirmation</strong> form. If you haven't yet, please visit your dashboard to download the template and upload the signed document.",
     "file_upload_error": "Failed to upload files. Please try again.",
     "submit_button": "Submit Evidence",
     "submitting": "Submitting evidence...",

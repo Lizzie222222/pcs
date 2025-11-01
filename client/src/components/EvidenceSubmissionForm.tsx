@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useTranslation } from "react-i18next";
+import { useTranslation, Trans } from "react-i18next";
 import { z } from "zod";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
@@ -515,8 +515,7 @@ export default function EvidenceSubmissionForm({
               <Alert className="bg-blue-50 border-blue-200">
                 <Info className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-sm text-blue-900">
-                  Please ensure your school has submitted the <strong>Photo Consent Confirmation</strong> form. 
-                  If you haven't yet, please visit your dashboard to download the template and upload the signed document.
+                  <Trans i18nKey="evidence_submission.photo_consent_reminder" ns="forms" />
                 </AlertDescription>
               </Alert>
 
