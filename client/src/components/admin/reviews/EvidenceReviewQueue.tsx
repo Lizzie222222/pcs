@@ -571,9 +571,7 @@ export default function EvidenceReviewQueue({
             </AlertDialogTitle>
             <AlertDialogDescription className="space-y-3 pt-2">
               <p className="text-base">
-                <Trans i18nKey="reviews.evidence.consentWarning.noConsent" ns="admin">
-                  This school has <strong>not provided approved photo consent</strong>.
-                </Trans>
+                <Trans i18nKey="reviews.evidence.consentWarning.noConsent" ns="admin" />
               </p>
               <p className="text-sm text-gray-600">
                 {pendingApprovalEvidence?.school?.photoConsentStatus === 'pending'
@@ -583,9 +581,7 @@ export default function EvidenceReviewQueue({
                   : t('reviews.evidence.consentWarning.statusNone')}
               </p>
               <p className="text-sm text-gray-600">
-                <Trans i18nKey="reviews.evidence.consentWarning.disclaimer" ns="admin">
-                  Approving this evidence means it <strong>will not be eligible</strong> for use in public case studies or promotional materials unless photo consent is later approved.
-                </Trans>
+                <Trans i18nKey="reviews.evidence.consentWarning.disclaimer" ns="admin" />
               </p>
               <p className="font-medium text-gray-900">
                 {t('reviews.evidence.consentWarning.confirmQuestion')}
