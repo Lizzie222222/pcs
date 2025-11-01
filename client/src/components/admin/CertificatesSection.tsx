@@ -24,9 +24,9 @@ interface CertificatesSectionProps {
 }
 
 // Form validation schema extending insertCertificateSchema
+// Note: Stage is always 'act' since certificates are only issued for program completion
 const certificateFormSchema = insertCertificateSchema.extend({
   schoolId: z.string().min(1, "Please select a school"),
-  stage: z.enum(['inspire', 'investigate', 'act']),
   completedDate: z.string().min(1, "Completion date is required"),
   title: z.string().min(1, "Certificate title is required"),
   description: z.string().optional(),
@@ -36,6 +36,7 @@ const certificateFormSchema = insertCertificateSchema.extend({
   shareableUrl: true,
   isActive: true,
   metadata: true,
+  stage: true, // Stage is always 'act' for program completion
 });
 
 type CertificateFormData = z.infer<typeof certificateFormSchema>;
@@ -54,7 +55,6 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
     resolver: zodResolver(certificateFormSchema),
     defaultValues: {
       schoolId: '',
-      stage: 'act',
       completedDate: new Date().toISOString().split('T')[0],
       title: '',
       description: '',
@@ -82,8 +82,10 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
       const roundNumber = selectedSchool?.currentRound || 1;
       const certificateTitle = data.title || `Round ${roundNumber} Completion Certificate`;
       
+      // Always use 'act' stage since certificates are only for program completion
       return await apiRequest('POST', '/api/admin/certificates', {
         ...data,
+        stage: 'act',
         title: certificateTitle,
       });
     },
@@ -305,32 +307,6 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
                             {school.name} ({school.country})
                           </SelectItem>
                         ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="stage"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Stage</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <FormControl>
-                        <SelectTrigger data-testid="select-stage">
-                          <SelectValue />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="inspire">Inspire</SelectItem>
-                        <SelectItem value="investigate">Investigate</SelectItem>
-                        <SelectItem value="act">Act (Full Round)</SelectItem>
                       </SelectContent>
                     </Select>
                     <FormMessage />

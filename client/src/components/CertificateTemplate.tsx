@@ -46,7 +46,7 @@ export const CertificateTemplate = forwardRef<HTMLDivElement, CertificateTemplat
     return (
       <div 
         ref={ref}
-        className={`bg-gradient-to-br from-white via-gray-50 to-blue-50 ${showBorder ? 'border-4 border-pcs_blue' : ''} relative overflow-hidden`}
+        className={`bg-gradient-to-br from-blue-50 via-white to-teal-50 ${showBorder ? 'border-8 border-pcs_blue' : ''} relative overflow-hidden shadow-2xl`}
         style={{
           width: '11in',
           height: '8.5in',
@@ -55,12 +55,12 @@ export const CertificateTemplate = forwardRef<HTMLDivElement, CertificateTemplat
         data-testid="certificate-template"
       >
         {/* Decorative Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
+        <div className="absolute inset-0 opacity-[0.03]">
           <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
             <defs>
               <pattern id="cert-pattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-                <circle cx="50" cy="50" r="20" fill="#0066CC" opacity="0.1"/>
-                <circle cx="25" cy="75" r="15" fill="#00A896" opacity="0.1"/>
+                <circle cx="50" cy="50" r="20" fill="#0066CC" opacity="0.3"/>
+                <circle cx="25" cy="75" r="15" fill="#00A896" opacity="0.3"/>
               </pattern>
             </defs>
             <rect width="100%" height="100%" fill="url(#cert-pattern)" />
@@ -101,16 +101,13 @@ export const CertificateTemplate = forwardRef<HTMLDivElement, CertificateTemplat
                 This certifies that
               </div>
               
-              {/* School Name - Main Focus with Colorful Design */}
-              <div className={`py-8 px-10 bg-gradient-to-r ${config.color} rounded-2xl shadow-xl border-4 border-white relative overflow-hidden`}>
-                <div className="absolute inset-0 bg-white/20"></div>
-                <div className="relative">
-                  <div className="text-5xl font-bold text-white text-center drop-shadow-md">
-                    {school.name}
-                  </div>
-                  <div className="text-xl text-white text-center mt-3 font-medium opacity-95">
-                    {school.country}
-                  </div>
+              {/* School Name - Main Focus with SOLID Vibrant Design */}
+              <div className={`py-8 px-10 bg-gradient-to-r ${config.color} rounded-2xl shadow-2xl border-4 border-pcs_blue`}>
+                <div className="text-5xl font-bold text-white text-center drop-shadow-lg">
+                  {school.name}
+                </div>
+                <div className="text-xl text-white text-center mt-3 font-semibold drop-shadow-md">
+                  {school.country}
                 </div>
               </div>
             </div>
@@ -123,24 +120,24 @@ export const CertificateTemplate = forwardRef<HTMLDivElement, CertificateTemplat
                 has successfully completed the
               </div>
               
-              <div className={`inline-flex items-center gap-4 px-10 py-5 ${config.bgColor} ${config.borderColor} border-3 rounded-2xl shadow-lg`}>
-                <span className="text-4xl">{config.icon}</span>
+              <div className={`inline-flex items-center gap-5 px-12 py-6 ${config.bgColor} ${config.borderColor} border-4 rounded-2xl shadow-xl`}>
+                <span className="text-5xl">{config.icon}</span>
                 <div className="text-left">
                   <div className="text-3xl font-bold text-pcs_blue">{config.title}</div>
-                  <div className="text-base text-gray-700 mt-1">{config.description}</div>
+                  <div className="text-lg text-gray-800 mt-2 font-medium">{config.description}</div>
                 </div>
               </div>
             </div>
 
-            {/* Achievement Stats with Color */}
-            <div className="flex justify-center gap-6 text-center">
-              <div className={`${config.bgColor} px-8 py-5 rounded-xl border-2 ${config.borderColor} shadow-md`}>
-                <div className="text-xs text-gray-600 mb-1 uppercase tracking-wide font-semibold">Certificate Number</div>
-                <div className="text-xl font-bold text-pcs_blue">{certificate.certificateNumber}</div>
+            {/* Achievement Stats with Bold Color */}
+            <div className="flex justify-center gap-8 text-center">
+              <div className={`${config.bgColor} px-10 py-6 rounded-xl border-4 ${config.borderColor} shadow-xl`}>
+                <div className="text-xs text-gray-700 mb-2 uppercase tracking-wider font-bold">Certificate Number</div>
+                <div className="text-2xl font-bold text-pcs_blue">{certificate.certificateNumber}</div>
               </div>
-              <div className={`${config.bgColor} px-8 py-5 rounded-xl border-2 ${config.borderColor} shadow-md`}>
-                <div className="text-xs text-gray-600 mb-1 uppercase tracking-wide font-semibold">Completion Date</div>
-                <div className="text-xl font-bold text-pcs_blue">
+              <div className={`${config.bgColor} px-10 py-6 rounded-xl border-4 ${config.borderColor} shadow-xl`}>
+                <div className="text-xs text-gray-700 mb-2 uppercase tracking-wider font-bold">Completion Date</div>
+                <div className="text-2xl font-bold text-pcs_blue">
                   {completedDate.toLocaleDateString()}
                 </div>
               </div>
