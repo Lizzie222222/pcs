@@ -221,13 +221,14 @@ async function sendTranslatedEmail(params: {
   }
   
   // Generate HTML using the template
+  // Use translated button/footer text from content if available, otherwise use params
   const html = generateEmailTemplate({
     title: content.title,
     preTitle: content.preTitle,
     content: content.messageContent,
-    callToActionText,
+    callToActionText: content.callToActionText || callToActionText,
     callToActionUrl,
-    footerText
+    footerText: content.footerText || footerText
   });
   
   return await sendEmail({
@@ -344,16 +345,16 @@ export async function sendWelcomeEmail(
       <p style="margin: 0; color: #666;">
         Need help getting started? Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
       </p>
-    `
+    `,
+    callToActionText: 'Go to Dashboard',
+    footerText: 'You received this email because your school joined Plastic Clever Schools.'
   };
   
   return await sendTranslatedEmail({
     to: userEmail,
     userLanguage,
     englishContent,
-    callToActionText: '🚀 Go to Dashboard',
     callToActionUrl: baseUrl,
-    footerText: 'You received this email because your school joined Plastic Clever Schools.'
   });
 }
 
@@ -613,16 +614,16 @@ export async function sendPasswordResetEmail(
       <p style="margin: 20px 0 0 0; color: #666; text-align: center;">
         Need help? Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
       </p>
-    `
+    `,
+    callToActionText: 'Reset My Password',
+    footerText: 'You received this email because a password reset was requested for your account.'
   };
   
   return await sendTranslatedEmail({
     to: userEmail,
     userLanguage,
     englishContent,
-    callToActionText: '🔐 Reset My Password',
     callToActionUrl: resetUrl,
-    footerText: 'You received this email because a password reset was requested for your account.'
   });
 }
 

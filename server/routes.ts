@@ -2259,8 +2259,11 @@ Return JSON with:
       
       console.log(`[Migrated User School] Found school ${school.id} for user ${userId} with role ${role}`);
       
+      // Return all school fields, renaming 'name' to 'schoolName' for frontend compatibility
+      const { name, ...restSchool } = school;
       res.json({
-        ...school,
+        ...restSchool,
+        schoolName: name,
         role,
       });
     } catch (error) {

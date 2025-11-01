@@ -10,6 +10,8 @@ export interface EmailContent {
   title: string;
   preTitle?: string;
   messageContent: string;
+  callToActionText?: string;
+  footerText?: string;
 }
 
 const LANGUAGE_MAP: Record<string, string> = {
@@ -69,6 +71,8 @@ Return ONLY the translated JSON object with the same structure.`;
       title: translatedContent.title || content.title,
       preTitle: translatedContent.preTitle || content.preTitle,
       messageContent: translatedContent.messageContent || content.messageContent,
+      callToActionText: translatedContent.callToActionText || content.callToActionText,
+      footerText: translatedContent.footerText || content.footerText,
     };
   } catch (error) {
     console.error('Translation error:', error);
