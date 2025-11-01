@@ -287,10 +287,26 @@ export function generatePdfHtml(caseStudy: any, baseUrl: string = ''): string {
           border-radius: 5px;
           border: 1px solid #ddd;
         }
+        .pdf-header {
+          background-color: #204969;
+          padding: 30px;
+          text-align: center;
+          margin: -20px -20px 30px -20px;
+        }
+        .pdf-header img {
+          height: 80px;
+          margin: 0 auto;
+          display: block;
+        }
         @page { margin: 20mm; }
       </style>
     </head>
     <body>
+      <!-- Header with PCS Logo -->
+      <div class="pdf-header">
+        <img src="${toAbsoluteUrl('/api/email-logo', baseUrl)}" alt="Plastic Clever Schools" />
+      </div>
+      
       <h1>${escapeHtml(caseStudy.title)}</h1>
       <div class="meta">
         ${caseStudy.schoolName ? `<strong>School:</strong> ${escapeHtml(caseStudy.schoolName)} | ` : ''}
