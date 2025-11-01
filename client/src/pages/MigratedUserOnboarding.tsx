@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useTranslation } from "react-i18next";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
 
 export default function MigratedUserOnboarding() {
+  const { t } = useTranslation("auth");
   const { user } = useAuth();
   const { toast } = useToast();
   
@@ -55,22 +57,22 @@ export default function MigratedUserOnboarding() {
         setPasswordResetComplete(true);
         setCurrentStep(2);
         toast({
-          title: "Password Updated",
-          description: "Your new password has been set successfully.",
+          title: t("migratedUser.onboarding.toast_password_updated_title"),
+          description: t("migratedUser.onboarding.toast_password_updated_description"),
         });
         queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
       } else {
         toast({
-          title: "Error",
-          description: data.message || "Failed to update password",
+          title: t("migratedUser.onboarding.toast_password_error_title"),
+          description: data.message || t("migratedUser.onboarding.toast_password_error_description"),
           variant: "destructive",
         });
       }
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update password",
+        title: t("migratedUser.onboarding.toast_password_error_title"),
+        description: error.message || t("migratedUser.onboarding.toast_password_error_description"),
         variant: "destructive",
       });
     },
@@ -84,8 +86,8 @@ export default function MigratedUserOnboarding() {
     onSuccess: (data) => {
       if (data.success) {
         toast({
-          title: "Welcome!",
-          description: "Your profile has been updated. Redirecting to dashboard...",
+          title: t("migratedUser.onboarding.toast_welcome_title"),
+          description: t("migratedUser.onboarding.toast_welcome_description"),
         });
         queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
         setTimeout(() => {
@@ -93,16 +95,16 @@ export default function MigratedUserOnboarding() {
         }, 1500);
       } else {
         toast({
-          title: "Error",
-          description: data.message || "Failed to update profile",
+          title: t("migratedUser.onboarding.toast_profile_error_title"),
+          description: data.message || t("migratedUser.onboarding.toast_profile_error_description"),
           variant: "destructive",
         });
       }
     },
     onError: (error: Error) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to update profile",
+        title: t("migratedUser.onboarding.toast_profile_error_title"),
+        description: error.message || t("migratedUser.onboarding.toast_profile_error_description"),
         variant: "destructive",
       });
     },
@@ -113,8 +115,8 @@ export default function MigratedUserOnboarding() {
 
     if (password.length < 8) {
       toast({
-        title: "Password too short",
-        description: "Password must be at least 8 characters long",
+        title: t("migratedUser.onboarding.toast_password_short_title"),
+        description: t("migratedUser.onboarding.toast_password_short_description"),
         variant: "destructive",
       });
       return;
@@ -122,8 +124,8 @@ export default function MigratedUserOnboarding() {
 
     if (password !== confirmPassword) {
       toast({
-        title: "Passwords don't match",
-        description: "Please make sure both passwords match",
+        title: t("migratedUser.onboarding.toast_password_mismatch_title"),
+        description: t("migratedUser.onboarding.toast_password_mismatch_description"),
         variant: "destructive",
       });
       return;
@@ -137,8 +139,8 @@ export default function MigratedUserOnboarding() {
 
     if (!firstName.trim()) {
       toast({
-        title: "First name required",
-        description: "Please enter your first name",
+        title: t("migratedUser.onboarding.toast_first_name_required_title"),
+        description: t("migratedUser.onboarding.toast_first_name_required_description"),
         variant: "destructive",
       });
       return;
@@ -157,16 +159,16 @@ export default function MigratedUserOnboarding() {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
       <div className="w-full max-w-2xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back!</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("migratedUser.forgotPassword.welcome_title")}</h1>
           <p className="text-gray-600">
             {needsPasswordReset 
-              ? "We've migrated your account to our new system. Let's complete your setup."
-              : "We've migrated your account to our new system. Just confirm your details to get started!"}
+              ? t("migratedUser.onboarding.welcome_message_with_password")
+              : t("migratedUser.onboarding.welcome_message_without_password")}
           </p>
           <div className="mt-6">
             <Progress value={progress} className="h-2" />
             <p className="text-sm text-gray-500 mt-2">
-              {needsPasswordReset ? `Step ${currentStep} of ${totalSteps}` : "Almost done!"}
+              {needsPasswordReset ? t("migratedUser.onboarding.step_progress", { current: currentStep, total: totalSteps }) : t("migratedUser.onboarding.almost_done")}
             </p>
           </div>
         </div>
@@ -179,9 +181,9 @@ export default function MigratedUserOnboarding() {
                   <Lock className="h-6 w-6 text-blue-600" />
                 </div>
                 <div>
-                  <CardTitle>Set Your New Password</CardTitle>
+                  <CardTitle>{t("migratedUser.onboarding.step1_title")}</CardTitle>
                   <CardDescription>
-                    For security, please create a new password for your account
+                    {t("migratedUser.onboarding.step1_description")}
                   </CardDescription>
                 </div>
               </div>
@@ -189,21 +191,20 @@ export default function MigratedUserOnboarding() {
             <CardContent>
               <Alert className="mb-6 bg-blue-50 border-blue-200">
                 <AlertDescription className="text-sm text-gray-700">
-                  Your temporary password was sent to your email. After setting a new password, 
-                  you'll be able to log in with your email and new password.
+                  {t("migratedUser.onboarding.temp_password_info")}
                 </AlertDescription>
               </Alert>
 
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="password">New Password *</Label>
+                  <Label htmlFor="password">{t("migratedUser.onboarding.password_label")} *</Label>
                   <div className="relative">
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
-                      placeholder="Enter your new password"
+                      placeholder={t("migratedUser.onboarding.password_placeholder")}
                       className="pr-10"
                       minLength={8}
                       required
@@ -219,19 +220,19 @@ export default function MigratedUserOnboarding() {
                     </button>
                   </div>
                   <p className="text-xs text-gray-500">
-                    Minimum 8 characters
+                    {t("migratedUser.onboarding.password_requirements")}
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password *</Label>
+                  <Label htmlFor="confirmPassword">{t("migratedUser.onboarding.confirm_password_label")} *</Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
                       value={confirmPassword}
                       onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="Confirm your new password"
+                      placeholder={t("migratedUser.onboarding.confirm_password_placeholder")}
                       className="pr-10"
                       minLength={8}
                       required
@@ -255,10 +256,10 @@ export default function MigratedUserOnboarding() {
                   data-testid="button-submit-password"
                 >
                   {resetPasswordMutation.isPending ? (
-                    "Updating..."
+                    t("migratedUser.onboarding.updating_button")
                   ) : (
                     <>
-                      Continue <ArrowRight className="ml-2 h-4 w-4" />
+                      {t("migratedUser.onboarding.continue_button")} <ArrowRight className="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
@@ -275,9 +276,9 @@ export default function MigratedUserOnboarding() {
                   <UserCheck className="h-6 w-6 text-green-600" />
                 </div>
                 <div>
-                  <CardTitle>Confirm Your Details</CardTitle>
+                  <CardTitle>{t("migratedUser.onboarding.step2_title")}</CardTitle>
                   <CardDescription>
-                    Please confirm or update your name
+                    {t("migratedUser.onboarding.step2_description")}
                   </CardDescription>
                 </div>
               </div>
@@ -286,9 +287,9 @@ export default function MigratedUserOnboarding() {
               {passwordResetComplete && needsPasswordReset && (
                 <Alert className="mb-6 bg-green-50 border-green-200">
                   <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <AlertTitle>Password Updated!</AlertTitle>
+                  <AlertTitle>{t("migratedUser.onboarding.password_updated_alert_title")}</AlertTitle>
                   <AlertDescription className="text-sm text-gray-700">
-                    Your password has been successfully updated.
+                    {t("migratedUser.onboarding.password_updated_alert_description")}
                   </AlertDescription>
                 </Alert>
               )}
@@ -296,9 +297,9 @@ export default function MigratedUserOnboarding() {
               {!needsPasswordReset && (
                 <Alert className="mb-6 bg-blue-50 border-blue-200">
                   <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                  <AlertTitle>Password Already Set!</AlertTitle>
+                  <AlertTitle>{t("migratedUser.onboarding.password_already_set_alert_title")}</AlertTitle>
                   <AlertDescription className="text-sm text-gray-700">
-                    You've already set your password. Just confirm your details below to complete your profile setup.
+                    {t("migratedUser.onboarding.password_already_set_alert_description")}
                   </AlertDescription>
                 </Alert>
               )}
@@ -306,46 +307,45 @@ export default function MigratedUserOnboarding() {
               <form onSubmit={handleProfileSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">
-                    First Name * 
-                    {!firstName && <span className="text-xs text-red-600 ml-1">(Required - please add)</span>}
+                    {t("migratedUser.onboarding.first_name_label")} * 
+                    {!firstName && <span className="text-xs text-red-600 ml-1">{t("migratedUser.onboarding.first_name_required")}</span>}
                   </Label>
                   <Input
                     id="firstName"
                     type="text"
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
-                    placeholder={firstName ? "Update your first name" : "Enter your first name"}
+                    placeholder={firstName ? t("migratedUser.onboarding.first_name_placeholder_update") : t("migratedUser.onboarding.first_name_placeholder_enter")}
                     required
                     data-testid="input-first-name"
                     className={!firstName ? "border-red-300 focus:border-red-500" : ""}
                   />
                   {firstName && (
-                    <p className="text-xs text-gray-500">Current: {firstName} (update if needed)</p>
+                    <p className="text-xs text-gray-500">{t("migratedUser.onboarding.first_name_current", { name: firstName })}</p>
                   )}
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="lastName">
-                    Last Name
-                    {!lastName && <span className="text-xs text-gray-500 ml-1">(Optional - recommended)</span>}
+                    {t("migratedUser.onboarding.last_name_label")}
+                    {!lastName && <span className="text-xs text-gray-500 ml-1">{t("migratedUser.onboarding.last_name_optional")}</span>}
                   </Label>
                   <Input
                     id="lastName"
                     type="text"
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
-                    placeholder={lastName ? "Update your last name" : "Enter your last name (optional)"}
+                    placeholder={lastName ? t("migratedUser.onboarding.last_name_placeholder_update") : t("migratedUser.onboarding.last_name_placeholder_enter")}
                     data-testid="input-last-name"
                   />
                   {lastName && (
-                    <p className="text-xs text-gray-500">Current: {lastName} (update if needed)</p>
+                    <p className="text-xs text-gray-500">{t("migratedUser.onboarding.last_name_current", { name: lastName })}</p>
                   )}
                 </div>
 
                 <Alert className="bg-blue-50 border-blue-200">
                   <AlertDescription className="text-sm text-gray-700">
-                    You're all set! Your school and program progress have been migrated. 
-                    Click continue to access your dashboard.
+                    {t("migratedUser.onboarding.all_set_message")}
                   </AlertDescription>
                 </Alert>
 
@@ -356,10 +356,10 @@ export default function MigratedUserOnboarding() {
                   data-testid="button-complete-onboarding"
                 >
                   {updateProfileMutation.isPending ? (
-                    "Completing Setup..."
+                    t("migratedUser.onboarding.completing_setup_button")
                   ) : (
                     <>
-                      Complete Setup <CheckCircle2 className="ml-2 h-4 w-4" />
+                      {t("migratedUser.onboarding.complete_setup_button")} <CheckCircle2 className="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
