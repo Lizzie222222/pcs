@@ -47,6 +47,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
 
+  // Apply trackUserActivity middleware globally to all authenticated routes
+  // This updates lastActiveAt timestamp for all user activity
+  app.use(trackUserActivity);
+
   // Serve PDF resources from public folder with proper CORS headers
   app.get('/api/pdfs/:filename', async (req, res) => {
     try {
@@ -2608,6 +2612,9 @@ Return JSON with:
       const userId = req.user.id;
       const user = await storage.getUser(userId);
       
+      // Mark user as having interacted (evidence submission is a meaningful action)
+      await markUserInteracted(userId);
+      
       // Check if user is admin or partner
       const isAdminOrPartner = user?.isAdmin || user?.role === 'partner';
       
@@ -3289,6 +3296,9 @@ Return JSON with:
     try {
       const { schoolId } = req.params;
       const userId = req.user.id;
+
+      // Mark user as having interacted (file upload is a meaningful action)
+      await markUserInteracted(userId);
 
       // Check if user is admin or member of the school (verified or not)
       const isAdmin = req.user.isAdmin;
@@ -4132,7 +4142,33 @@ Return JSON with:
         startDate as string | undefined,
         endDate as string | undefined
       );
-      res.json(analytics);
+      
+      // Get user interaction metrics
+      const totalUsersResult = await db.execute(sql`
+        SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL
+      `);
+      const interactedUsersResult = await db.execute(sql`
+        SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL AND has_interacted = true
+      `);
+      const notInteractedUsersResult = await db.execute(sql`
+        SELECT COUNT(*) as count FROM users WHERE deleted_at IS NULL AND (has_interacted = false OR has_interacted IS NULL)
+      `);
+      
+      const totalUsers = Number(totalUsersResult.rows[0]?.count || 0);
+      const interactedUsers = Number(interactedUsersResult.rows[0]?.count || 0);
+      const notInteractedUsers = Number(notInteractedUsersResult.rows[0]?.count || 0);
+      const interactionRate = totalUsers > 0 ? Math.round((interactedUsers / totalUsers) * 100) : 0;
+      
+      // Merge user interaction metrics with existing analytics
+      const enrichedAnalytics = {
+        ...analytics,
+        totalUsers,
+        interactedUsers,
+        notInteractedUsers,
+        interactionRate,
+      };
+      
+      res.json(enrichedAnalytics);
     } catch (error) {
       console.error("Error fetching analytics overview:", error);
       res.status(500).json({ message: "Failed to fetch analytics overview" });
@@ -5068,6 +5104,9 @@ Return JSON with:
       const userId = req.user.id;
       const user = await storage.getUser(userId);
       const isAdmin = user?.isAdmin;
+      
+      // Mark user as having interacted (audit submission is a meaningful action)
+      await markUserInteracted(userId);
       
       const auditData = insertAuditResponseSchema.parse({
         ...req.body,
@@ -6515,7 +6554,7 @@ Return JSON with:
   app.delete('/api/admin/schools/:id', isAuthenticated, requireAdmin, async (req, res) => {
     try {
       const schoolId = req.params.id;
-      const { deleteUsers = false } = req.query;
+      const { deleteUsers = false } = req.body;
       
       // If deleteUsers is true, delete all users associated with this school
       if (deleteUsers === 'true') {

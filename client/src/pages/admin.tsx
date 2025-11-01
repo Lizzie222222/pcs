@@ -199,6 +199,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
     sortByDate: 'newest',
     joinedMonth: 'all',
     joinedYear: 'all',
+    interactionStatus: 'all',
   });
 
   // Check for welcomed parameter in URL

@@ -24,6 +24,7 @@ interface SchoolsSectionProps {
     sortByDate: string;
     joinedMonth: string;
     joinedYear: string;
+    interactionStatus: string;
   };
   setSchoolFilters: (filters: any) => void;
   countryOptions: any[];

@@ -57,6 +57,8 @@ interface UserWithSchools {
     role: string;
     isAdmin: boolean;
     createdAt: string;
+    lastActiveAt?: string;
+    hasInteracted?: boolean;
   };
   schools: Array<{
     id: string;
@@ -83,6 +85,7 @@ export default function UserManagementTab() {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'with-schools' | 'without-schools'>('all');
+  const [interactionFilter, setInteractionFilter] = useState<'all' | 'interacted' | 'not-interacted'>('all');
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedUserEmail, setSelectedUserEmail] = useState('');
   const [inviteAdminDialogOpen, setInviteAdminDialogOpen] = useState(false);
@@ -350,11 +353,22 @@ export default function UserManagementTab() {
     const email = user.email?.toLowerCase() || '';
     const matchesSearch = fullName.includes(searchQuery.toLowerCase()) || email.includes(searchQuery.toLowerCase());
 
-    if (filterStatus === 'with-schools') {
-      return matchesSearch && item.schools.length > 0;
-    } else if (filterStatus === 'without-schools') {
-      return matchesSearch && item.schools.length === 0;
+    // Apply school status filter
+    if (filterStatus === 'with-schools' && item.schools.length === 0) {
+      return false;
     }
+    if (filterStatus === 'without-schools' && item.schools.length > 0) {
+      return false;
+    }
+
+    // Apply interaction filter
+    if (interactionFilter === 'interacted' && !user.hasInteracted) {
+      return false;
+    }
+    if (interactionFilter === 'not-interacted' && user.hasInteracted) {
+      return false;
+    }
+
     return matchesSearch;
   });
 
@@ -559,7 +573,7 @@ export default function UserManagementTab() {
                 data-testid="input-user-search"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <Button
                 variant={filterStatus === 'all' ? 'default' : 'outline'}
                 onClick={() => setFilterStatus('all')}
@@ -583,6 +597,31 @@ export default function UserManagementTab() {
                 data-testid="button-filter-without-schools"
               >
                 {t('userManagement.buttons.filterWithoutSchools')}
+              </Button>
+              <div className="w-px bg-gray-300"></div>
+              <Button
+                variant={interactionFilter === 'all' ? 'default' : 'outline'}
+                onClick={() => setInteractionFilter('all')}
+                className={interactionFilter === 'all' ? 'bg-pcs_teal hover:bg-pcs_teal/90' : ''}
+                data-testid="button-filter-all-interaction"
+              >
+                All Users
+              </Button>
+              <Button
+                variant={interactionFilter === 'interacted' ? 'default' : 'outline'}
+                onClick={() => setInteractionFilter('interacted')}
+                className={interactionFilter === 'interacted' ? 'bg-pcs_teal hover:bg-pcs_teal/90' : ''}
+                data-testid="button-filter-interacted"
+              >
+                Interacted
+              </Button>
+              <Button
+                variant={interactionFilter === 'not-interacted' ? 'default' : 'outline'}
+                onClick={() => setInteractionFilter('not-interacted')}
+                className={interactionFilter === 'not-interacted' ? 'bg-pcs_teal hover:bg-pcs_teal/90' : ''}
+                data-testid="button-filter-not-interacted"
+              >
+                Not Interacted
               </Button>
             </div>
           </div>
@@ -635,6 +674,7 @@ export default function UserManagementTab() {
                     <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('userManagement.table.headers.email')}</th>
                     <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('userManagement.table.headers.role')}</th>
                     <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('userManagement.table.headers.schools')}</th>
+                    <th className="text-left p-3 text-sm font-semibold text-gray-700">Last Active</th>
                     <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('userManagement.table.headers.status')}</th>
                     <th className="text-left p-3 text-sm font-semibold text-gray-700">{t('userManagement.table.headers.actions')}</th>
                   </tr>
@@ -693,6 +733,11 @@ export default function UserManagementTab() {
                           ) : (
                             <span className="text-gray-400 text-sm">-</span>
                           )}
+                        </td>
+                        <td className="p-3 text-sm text-gray-600" data-testid={`text-last-active-${currentUser.id}`}>
+                          {currentUser.lastActiveAt 
+                            ? new Date(currentUser.lastActiveAt).toLocaleDateString()
+                            : '-'}
                         </td>
                         <td className="p-3">
                           <Badge variant="outline" className="text-green-600 border-green-600">

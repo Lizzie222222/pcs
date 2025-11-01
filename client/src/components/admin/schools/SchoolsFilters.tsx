@@ -14,6 +14,7 @@ interface SchoolsFiltersProps {
     sortByDate: string;
     joinedMonth: string;
     joinedYear: string;
+    interactionStatus: string;
   };
   setSchoolFilters: (filters: any) => void;
   countryOptions: Array<{ value: string; label: string }>;
@@ -194,6 +195,19 @@ export default function SchoolsFilters({
               <SelectItem value="2020">2020</SelectItem>
               <SelectItem value="2019">2019</SelectItem>
               <SelectItem value="2018">2018</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select 
+            value={schoolFilters.interactionStatus} 
+            onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, interactionStatus: value }))}
+          >
+            <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-interaction-filter">
+              <SelectValue placeholder="User Interaction" />
+            </SelectTrigger>
+            <SelectContent position="popper" sideOffset={5}>
+              <SelectItem value="all">All Schools</SelectItem>
+              <SelectItem value="interacted">With Interacted Users</SelectItem>
+              <SelectItem value="not-interacted">Without Interacted Users</SelectItem>
             </SelectContent>
           </Select>
         </div>

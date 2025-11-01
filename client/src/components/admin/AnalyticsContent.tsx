@@ -29,7 +29,9 @@ import {
   Heart,
   Leaf,
   Factory,
-  Trash
+  Trash,
+  UserCheck,
+  UserMinus
 } from "lucide-react";
 import { 
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, 
@@ -56,6 +58,9 @@ interface AnalyticsOverview {
   averageProgress: number;
   studentsImpacted: number;
   countriesReached: number;
+  interactedUsers?: number;
+  notInteractedUsers?: number;
+  interactionRate?: number;
 }
 
 interface SchoolProgressAnalytics {
@@ -573,47 +578,97 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
           {/* Key Metrics Summary */}
           {overviewQuery.data && (
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-gray-600 font-medium">Total Schools</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.totalSchools}</div>
-                  <p className="text-xs text-gray-500 mt-1">Participating schools</p>
-                </CardContent>
-              </Card>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium">Total Schools</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.totalSchools}</div>
+                    <p className="text-xs text-gray-500 mt-1">Participating schools</p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-gray-600 font-medium">Total Evidence</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-teal">{overviewQuery.data.totalEvidence}</div>
-                  <p className="text-xs text-gray-500 mt-1">Submissions received</p>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium">Total Evidence</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-teal">{overviewQuery.data.totalEvidence}</div>
+                    <p className="text-xs text-gray-500 mt-1">Submissions received</p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-gray-600 font-medium">Actions Taken</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-coral">{overviewQuery.data.completedAwards.toLocaleString()}</div>
-                  <p className="text-xs text-gray-500 mt-1">Evidence submissions</p>
-                </CardContent>
-              </Card>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium">Actions Taken</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-coral">{overviewQuery.data.completedAwards.toLocaleString()}</div>
+                    <p className="text-xs text-gray-500 mt-1">Evidence submissions</p>
+                  </CardContent>
+                </Card>
 
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle className="text-sm text-gray-600 font-medium">Students Impacted</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.studentsImpacted.toLocaleString()}</div>
-                  <p className="text-xs text-gray-500 mt-1">Lives changed</p>
-                </CardContent>
-              </Card>
-            </div>
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm text-gray-600 font-medium">Students Impacted</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-pcs_blue">{overviewQuery.data.studentsImpacted.toLocaleString()}</div>
+                    <p className="text-xs text-gray-500 mt-1">Lives changed</p>
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* User Interaction Metrics */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+                    <Users className="h-4 w-4 text-pcs_blue" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold" data-testid="metric-total-registered-users">
+                      {overviewQuery.data.totalUsers.toLocaleString()}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">Registered users</p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Interacted Users</CardTitle>
+                    <UserCheck className="h-4 w-4 text-green-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-green-600" data-testid="metric-interacted-users">
+                      {(overviewQuery.data.interactedUsers || 0).toLocaleString()}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {overviewQuery.data.interactionRate || 0}% interaction rate
+                    </p>
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium">Not Interacted</CardTitle>
+                    <UserMinus className="h-4 w-4 text-amber-600" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold text-amber-600" data-testid="metric-not-interacted-users">
+                      {(overviewQuery.data.notInteractedUsers || 0).toLocaleString()}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      {overviewQuery.data.totalUsers > 0 
+                        ? Math.round(((overviewQuery.data.notInteractedUsers || 0) / overviewQuery.data.totalUsers) * 100)
+                        : 0}% not yet active
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
           )}
         </TabsContent>
 
