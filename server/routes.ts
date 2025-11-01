@@ -1236,6 +1236,24 @@ Return JSON with:
         return res.status(404).json({ error: 'Case study not found' });
       }
       
+      // Get evidence data if evidenceId is present
+      let evidenceLink: string | null = null;
+      let evidenceFiles: any[] | null = null;
+      if (caseStudy.evidenceId) {
+        const evidence = await storage.getEvidenceById(caseStudy.evidenceId);
+        if (evidence) {
+          evidenceLink = evidence.videoLinks || null;
+          evidenceFiles = Array.isArray(evidence.files) ? evidence.files : null;
+        }
+      }
+      
+      // Add evidence data to case study for PDF generation
+      const caseStudyWithEvidence = {
+        ...caseStudy,
+        evidenceLink,
+        evidenceFiles
+      };
+      
       console.log('[PDF] Starting PDF generation for case study:', caseStudy.id);
       
       // Use system Chromium for Replit/NixOS compatibility
@@ -1259,10 +1277,30 @@ Return JSON with:
       const page = await browser.newPage();
       
       // Generate beautiful HTML for PDF
-      const htmlContent = generatePdfHtml(caseStudy);
+      const htmlContent = generatePdfHtml(caseStudyWithEvidence);
       await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
       
-      console.log('[PDF] HTML content loaded, generating PDF...');
+      console.log('[PDF] HTML content loaded, waiting for images...');
+      
+      // Wait for all images to load or fail
+      try {
+        await page.evaluate(() => {
+          return Promise.all(
+            Array.from(document.images).map((img) => {
+              if (img.complete) return Promise.resolve();
+              return new Promise((resolve) => {
+                img.addEventListener('load', resolve);
+                img.addEventListener('error', resolve); // Continue even if image fails
+              });
+            })
+          );
+        });
+        console.log('[PDF] All images loaded');
+      } catch (error) {
+        console.log('[PDF] Image loading timeout or error, continuing...', error);
+      }
+      
+      console.log('[PDF] Generating PDF...');
       
       // Generate PDF with options
       const pdf = await page.pdf({
