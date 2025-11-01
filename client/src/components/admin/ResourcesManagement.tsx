@@ -45,6 +45,8 @@ interface Resource {
   downloadCount: number;
   visibility: 'public' | 'private';
   isActive: boolean;
+  hiddenOnResourcesPage: boolean;
+  isPinned: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -88,6 +90,8 @@ function ResourceForm({ resource, onClose, onSuccess }: {
     fileSize: resource?.fileSize || 0,
     visibility: resource?.visibility || 'public',
     isActive: resource?.isActive ?? true,
+    hiddenOnResourcesPage: resource?.hiddenOnResourcesPage ?? false,
+    isPinned: resource?.isPinned ?? false,
   });
 
   const handleInputChange = (field: string, value: any) => {
@@ -710,6 +714,34 @@ function ResourceForm({ resource, onClose, onSuccess }: {
               />
               <label htmlFor="isActive" className="text-sm font-medium text-gray-700">
                 Active (visible to users)
+              </label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="hiddenOnResourcesPage"
+                checked={formData.hiddenOnResourcesPage}
+                onChange={(e) => handleInputChange('hiddenOnResourcesPage', e.target.checked)}
+                className="rounded border-gray-300"
+                data-testid="checkbox-resource-hidden"
+              />
+              <label htmlFor="hiddenOnResourcesPage" className="text-sm font-medium text-gray-700">
+                Hide on Resources page (searchable but not in browse)
+              </label>
+            </div>
+
+            <div className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                id="isPinned"
+                checked={formData.isPinned}
+                onChange={(e) => handleInputChange('isPinned', e.target.checked)}
+                className="rounded border-gray-300"
+                data-testid="checkbox-resource-pinned"
+              />
+              <label htmlFor="isPinned" className="text-sm font-medium text-gray-700">
+                Pin to top of Resources page
               </label>
             </div>
 
