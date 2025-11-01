@@ -297,6 +297,7 @@ export interface IStorage {
     theme?: string;
     search?: string;
     visibility?: 'public' | 'private';
+    includeHidden?: boolean;
     limit?: number;
     offset?: number;
   }): Promise<Resource[]>;
@@ -2252,10 +2253,16 @@ export class DatabaseStorage implements IStorage {
     theme?: string;
     search?: string;
     visibility?: 'public' | 'private';
+    includeHidden?: boolean;
     limit?: number;
     offset?: number;
   } = {}): Promise<Resource[]> {
     const conditions = [eq(resources.isActive, true)];
+    
+    // Filter out hidden resources unless explicitly included (for search)
+    if (!filters.includeHidden) {
+      conditions.push(eq(resources.hiddenOnResourcesPage, false));
+    }
     
     if (filters.stage) {
       conditions.push(eq(resources.stage, filters.stage as any));
@@ -2309,9 +2316,10 @@ export class DatabaseStorage implements IStorage {
       }
     }
     
+    // Sort by pinned first, then by creation date
     const query = db.select().from(resources)
       .where(and(...conditions))
-      .orderBy(desc(resources.createdAt))
+      .orderBy(desc(resources.isPinned), desc(resources.createdAt))
       .limit(filters.limit ?? 1000)
       .offset(filters.offset ?? 0);
     

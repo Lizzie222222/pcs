@@ -355,6 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Show public resources to everyone, and private resources only to authenticated users
       // If authenticated, don't filter by visibility (show all resources)
       // If not authenticated, only show public resources
+      // If there's a search query, include hidden resources (they're searchable)
       const resources = await storage.getResources({
         stage: stage as string,
         country: country as string,
@@ -364,6 +365,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         theme: theme as string,
         search: search as string,
         visibility: isAuthenticated ? undefined : 'public',
+        includeHidden: !!search,
         limit: limit ? parseInt(limit as string) : 20,
         offset: offset ? parseInt(offset as string) : 0,
       });
