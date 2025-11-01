@@ -3254,32 +3254,11 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Calculate granular progress percentage based on approved requirements
-    // Get total requirements for each stage
-    const allRequirements = await db
-      .select()
-      .from(evidenceRequirements);
-    
-    const inspireRequirements = allRequirements.filter(r => r.stage === 'inspire').length;
-    const investigateRequirements = allRequirements.filter(r => r.stage === 'investigate').length;
-    const actRequirements = allRequirements.filter(r => r.stage === 'act').length;
-    
-    // Calculate total approved items (including audit and action plan for investigate)
-    const totalApproved = 
-      counts.inspire.approved + 
-      counts.investigate.approved + 
-      (counts.investigate.hasQuiz ? 1 : 0) +
-      (counts.investigate.hasActionPlan ? 1 : 0) +
-      counts.act.approved;
-    
-    // Calculate total required items (requirements + audit + action plan)
-    const totalRequired = inspireRequirements + investigateRequirements + actRequirements + 2; // +2 for audit and action plan
-    
-    // Calculate percentage (fallback to stage-based if no requirements defined)
     let progressPercentage = 0;
-    if (totalRequired > 0) {
-      progressPercentage = Math.round((totalApproved / totalRequired) * 100);
-    } else {
-      // Fallback to old stage-based calculation
+    
+    // For migrated schools, use stage-based calculation since they have no evidence in the new platform
+    // but already have their completion flags set from the WordPress migration
+    if (school.isMigrated) {
       const inspireComplete = updates.inspireCompleted ?? school.inspireCompleted;
       const investigateComplete = updates.investigateCompleted ?? school.investigateCompleted;
       const actComplete = updates.actCompleted ?? school.actCompleted;
@@ -3290,6 +3269,45 @@ export class DatabaseStorage implements IStorage {
         progressPercentage = 67;
       } else if (inspireComplete) {
         progressPercentage = 33;
+      }
+    } else {
+      // For non-migrated schools, calculate based on evidence
+      // Get total requirements for each stage
+      const allRequirements = await db
+        .select()
+        .from(evidenceRequirements);
+      
+      const inspireRequirements = allRequirements.filter(r => r.stage === 'inspire').length;
+      const investigateRequirements = allRequirements.filter(r => r.stage === 'investigate').length;
+      const actRequirements = allRequirements.filter(r => r.stage === 'act').length;
+      
+      // Calculate total approved items (including audit and action plan for investigate)
+      const totalApproved = 
+        counts.inspire.approved + 
+        counts.investigate.approved + 
+        (counts.investigate.hasQuiz ? 1 : 0) +
+        (counts.investigate.hasActionPlan ? 1 : 0) +
+        counts.act.approved;
+      
+      // Calculate total required items (requirements + audit + action plan)
+      const totalRequired = inspireRequirements + investigateRequirements + actRequirements + 2; // +2 for audit and action plan
+      
+      // Calculate percentage (fallback to stage-based if no requirements defined)
+      if (totalRequired > 0) {
+        progressPercentage = Math.round((totalApproved / totalRequired) * 100);
+      } else {
+        // Fallback to old stage-based calculation
+        const inspireComplete = updates.inspireCompleted ?? school.inspireCompleted;
+        const investigateComplete = updates.investigateCompleted ?? school.investigateCompleted;
+        const actComplete = updates.actCompleted ?? school.actCompleted;
+        
+        if (actComplete) {
+          progressPercentage = 100;
+        } else if (investigateComplete) {
+          progressPercentage = 67;
+        } else if (inspireComplete) {
+          progressPercentage = 33;
+        }
       }
     }
     

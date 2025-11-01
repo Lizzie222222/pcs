@@ -4609,6 +4609,68 @@ Return JSON with:
     }
   });
 
+  // Fix progress percentage for migrated schools
+  app.post('/api/admin/migration/fix-progress', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      console.log('[Fix Progress] Starting progress update for migrated schools');
+      
+      // Get all migrated schools
+      const migratedSchools = await db.query.schools.findMany({
+        where: (schools, { eq }) => eq(schools.isMigrated, true),
+      });
+
+      console.log(`[Fix Progress] Found ${migratedSchools.length} migrated schools`);
+
+      let updated = 0;
+      let skipped = 0;
+      const errors: Array<{ schoolId: string; schoolName: string; error: string }> = [];
+
+      for (const school of migratedSchools) {
+        try {
+          const beforeProgress = school.progressPercentage;
+          
+          // Call checkAndUpdateSchoolProgression to recalculate progress
+          await storage.checkAndUpdateSchoolProgression(school.id);
+          
+          // Fetch the updated school to see the new progress
+          const updatedSchool = await storage.getSchool(school.id);
+          const afterProgress = updatedSchool?.progressPercentage ?? 0;
+          
+          if (beforeProgress !== afterProgress) {
+            console.log(`[Fix Progress] Updated ${school.name}: ${beforeProgress}% → ${afterProgress}%`);
+            updated++;
+          } else {
+            skipped++;
+          }
+        } catch (error) {
+          console.error(`[Fix Progress] Error updating school ${school.id}:`, error);
+          errors.push({
+            schoolId: school.id,
+            schoolName: school.name,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      console.log(`[Fix Progress] Completed: ${updated} updated, ${skipped} skipped, ${errors.length} errors`);
+
+      res.json({
+        message: 'Migrated schools progress update completed',
+        total: migratedSchools.length,
+        updated,
+        skipped,
+        errors: errors.length > 0 ? errors.slice(0, 10) : [],
+        totalErrors: errors.length,
+      });
+    } catch (error) {
+      console.error('[Fix Progress] Migration failed:', error);
+      res.status(500).json({
+        message: 'Failed to update migrated schools progress',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // AI-powered analytics insights generation
   app.post('/api/admin/analytics/generate-insights', isAuthenticated, requireAdmin, async (req, res) => {
     try {
