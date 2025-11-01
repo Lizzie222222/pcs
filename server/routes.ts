@@ -1799,7 +1799,8 @@ Return JSON with:
           school.name,
           inviterName,
           token,
-          expiresInDays
+          expiresInDays,
+          inviter.preferredLanguage || 'en'
         );
         console.log(`[Teacher Invitation] Sent vibrant invitation email to ${email}`);
       }
@@ -7709,7 +7710,8 @@ Return JSON with:
         email,
         inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : 'An administrator',
         token,
-        7
+        7,
+        inviter?.preferredLanguage || 'en'
       );
       
       if (emailSent) {
@@ -7774,7 +7776,8 @@ Return JSON with:
         email,
         inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : 'An administrator',
         token,
-        7
+        7,
+        inviter?.preferredLanguage || 'en'
       );
       
       if (emailSent) {
@@ -8500,7 +8503,7 @@ Return JSON with:
       console.log(`[Test Email] Sending teacher invitation to ${recipientEmail}`);
       
       const token = randomBytes(32).toString('hex');
-      const success = await sendTeacherInvitationEmail(recipientEmail, schoolName, inviterName, token, expiresInDays);
+      const success = await sendTeacherInvitationEmail(recipientEmail, schoolName, inviterName, token, expiresInDays, 'en');
       
       if (success) {
         res.json({ success: true, message: "Teacher invitation email sent successfully", recipient: recipientEmail });
@@ -9021,7 +9024,8 @@ Return JSON with:
         await sendEventCancellationEmail(
           req.user.email,
           { firstName: req.user.firstName, lastName: req.user.lastName },
-          registration.event
+          registration.event,
+          req.user.preferredLanguage || 'en'
         );
       } catch (emailError) {
         console.error("Failed to send cancellation confirmation email:", emailError);
@@ -9391,7 +9395,8 @@ Return JSON with:
                     meetingLink: event.meetingLink || undefined,
                     publicSlug: event.publicSlug || undefined,
                   },
-                  changes
+                  changes,
+                  registration.user.preferredLanguage || 'en'
                 );
               }
             } catch (emailError) {
@@ -10486,7 +10491,8 @@ Return JSON with:
                   meetingLink: event.meetingLink || undefined,
                   publicSlug: event.publicSlug || undefined,
                 },
-                1
+                1,
+                registration.user.preferredLanguage || 'en'
               );
               remindersSent++;
             } catch (emailError) {
