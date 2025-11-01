@@ -30,6 +30,7 @@ interface EvidenceRequirement {
   customLinks?: Array<{ title: string; url: string }>;
   translations?: Record<string, { title: string; description: string }>;
   languageSpecificResources?: Record<string, string[]>;
+  languageSpecificLinks?: Record<string, Array<{ title: string; url: string }>>;
 }
 
 interface Evidence {
@@ -96,6 +97,19 @@ export default function ProgressTracker({
     }
     
     return baseResources;
+  };
+
+  // Helper function to get custom links for the current language
+  const getCustomLinksForLanguage = (requirement: EvidenceRequirement) => {
+    const currentLang = i18n.language;
+    
+    // If language-specific links exist for current language, use them
+    if (requirement.languageSpecificLinks && requirement.languageSpecificLinks[currentLang]) {
+      return requirement.languageSpecificLinks[currentLang];
+    }
+    
+    // Fall back to default customLinks (English)
+    return requirement.customLinks || [];
   };
 
   // Fetch evidence requirements
@@ -371,6 +385,7 @@ export default function ProgressTracker({
                       const auditStatus = isAudit ? getAuditStatus() : null;
                       const translatedRequirement = getTranslatedRequirement(requirement);
                       const resourcesForLang = getResourcesForLanguage(requirement);
+                      const customLinksForLang = getCustomLinksForLanguage(requirement);
                       
                       return (
                         <div 
@@ -627,7 +642,7 @@ export default function ProgressTracker({
 
                           {/* Help Resources - Show all library resources and custom links */}
                           {((resourcesForLang && resourcesForLang.length > 0) || 
-                            (requirement.customLinks && requirement.customLinks.length > 0)) && (
+                            (customLinksForLang && customLinksForLang.length > 0)) && (
                             <div className="mt-2 pt-2 border-t space-y-1">
                               {/* Library resources (includes language-specific resources) */}
                               {resourcesForLang?.map(resourceId => {
@@ -647,8 +662,8 @@ export default function ProgressTracker({
                                   </a>
                                 );
                               })}
-                              {/* Custom links */}
-                              {requirement.customLinks?.map((link, idx) => (
+                              {/* Custom links (language-specific) */}
+                              {customLinksForLang?.map((link, idx) => (
                                 <a
                                   key={idx}
                                   href={link.url}
