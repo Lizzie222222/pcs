@@ -15,6 +15,7 @@ interface SchoolsFiltersProps {
     joinedMonth: string;
     joinedYear: string;
     interactionStatus: string;
+    completionStatus: string;
   };
   setSchoolFilters: (filters: any) => void;
   countryOptions: Array<{ value: string; label: string }>;
@@ -208,6 +209,19 @@ export default function SchoolsFilters({
               <SelectItem value="all">All Schools</SelectItem>
               <SelectItem value="interacted">With Interacted Users</SelectItem>
               <SelectItem value="not-interacted">Without Interacted Users</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select 
+            value={schoolFilters.completionStatus} 
+            onValueChange={(value) => setSchoolFilters((prev: typeof schoolFilters) => ({ ...prev, completionStatus: value }))}
+          >
+            <SelectTrigger className="w-full sm:w-48 min-h-11" data-testid="select-completion-filter">
+              <SelectValue placeholder="Completion Status" />
+            </SelectTrigger>
+            <SelectContent position="popper" sideOffset={5}>
+              <SelectItem value="all">All Schools</SelectItem>
+              <SelectItem value="plastic-clever">Plastic Clever (Completed)</SelectItem>
+              <SelectItem value="in-progress">In Progress</SelectItem>
             </SelectContent>
           </Select>
         </div>

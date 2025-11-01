@@ -3174,6 +3174,64 @@ Return JSON with:
     }
   });
 
+  // Admin certificate routes
+  app.get('/api/admin/certificates', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const certificates = await storage.getCertificates();
+      res.json(certificates);
+    } catch (error) {
+      console.error("Error fetching all certificates:", error);
+      res.status(500).json({ message: "Failed to fetch certificates" });
+    }
+  });
+
+  app.post('/api/admin/certificates', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const certificateSchema = z.object({
+        schoolId: z.string(),
+        stage: z.enum(['inspire', 'investigate', 'act']),
+        completedDate: z.string(),
+        title: z.string(),
+        description: z.string().optional(),
+        metadata: z.record(z.any()).optional(),
+      });
+      
+      const data = certificateSchema.parse(req.body);
+      
+      // Generate certificate number
+      const school = await storage.getSchool(data.schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      const currentRound = school.currentRound || 1;
+      const certificateNumber = `PCSR${currentRound}-${Date.now()}-${data.schoolId.substring(0, 8)}`;
+      
+      const certificate = await storage.createCertificate({
+        schoolId: data.schoolId,
+        stage: data.stage,
+        issuedBy: req.user.id,
+        certificateNumber,
+        completedDate: new Date(data.completedDate),
+        title: data.title,
+        description: data.description,
+        metadata: data.metadata || {
+          round: currentRound,
+          manuallyIssued: true,
+          issuedByAdmin: req.user.email,
+        },
+      });
+      
+      res.status(201).json(certificate);
+    } catch (error) {
+      console.error("Error creating certificate:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create certificate" });
+    }
+  });
+
   // School analytics route
   app.get('/api/schools/:schoolId/analytics', isSchoolMember, async (req: any, res) => {
     try {

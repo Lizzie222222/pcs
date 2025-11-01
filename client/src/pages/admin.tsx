@@ -102,6 +102,7 @@ const CaseStudyManagement = lazy(() => import("@/components/admin/CaseStudyManag
 const ReviewsSection = lazy(() => import("@/components/admin/reviews/ReviewsSection"));
 const SchoolsSection = lazy(() => import('@/components/admin/schools/SchoolsSection'));
 const EventsSection = lazy(() => import('@/components/admin/events/EventsSection'));
+const CertificatesSection = lazy(() => import('@/components/admin/CertificatesSection'));
 import EmailManagementSection from "@/components/admin/EmailManagementSection";
 import ActivityLogsSection from "@/components/admin/activity-logs/ActivityLogsSection";
 import EvidenceGalleryTab from "@/components/admin/EvidenceGalleryTab";
@@ -134,7 +135,7 @@ import type {
  * @location client/src/pages/admin.tsx#L731
  * @related server/routes.ts (registerRoutes), shared/schema.ts (users, schools, evidence, caseStudies, events), server/auth.ts (isAuthenticated)
  */
-function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' | 'system-health' }) {
+function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' | 'system-health' | 'certificates' }) {
   const { t } = useTranslation('admin');
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
@@ -142,7 +143,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
   const { data: countryOptions = [] } = useCountries();
   const [location] = useLocation();
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library' | 'data-import' | 'activity' | 'system-health'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library' | 'data-import' | 'activity' | 'system-health' | 'certificates'>(initialTab);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<'csv' | 'excel'>('csv');
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
@@ -200,6 +201,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
     joinedMonth: 'all',
     joinedYear: 'all',
     interactionStatus: 'all',
+    completionStatus: 'all',
   });
 
   // Check for welcomed parameter in URL
@@ -790,7 +792,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
             <DropdownMenuTrigger asChild>
               <button
                 className={`px-3 sm:px-4 py-3 sm:py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 whitespace-nowrap flex-shrink-0 min-h-11 ${
-                  ['schools', 'teams', 'users', 'activity', 'data-import'].includes(activeTab)
+                  ['schools', 'teams', 'users', 'certificates', 'activity', 'data-import'].includes(activeTab)
                     ? 'bg-white text-navy shadow-sm' 
                     : 'text-gray-600 hover:text-navy'
                 }`}
@@ -814,6 +816,13 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 data-testid="tab-schools-teams"
               >
                 {t('navigation.manageTeams')}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('certificates')}
+                className={activeTab === 'certificates' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-schools-certificates"
+              >
+                Certificates
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('users')}
@@ -1031,6 +1040,13 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
 
         {/* Teams Tab */}
         {activeTab === 'teams' && <TeamsSection activeTab={activeTab} />}
+
+        {/* Certificates Tab */}
+        {activeTab === 'certificates' && (
+          <Suspense fallback={<LoadingSpinner />}>
+            <CertificatesSection activeTab={activeTab} />
+          </Suspense>
+        )}
 
         {/* Resources Tab */}
         {activeTab === 'resources' && (

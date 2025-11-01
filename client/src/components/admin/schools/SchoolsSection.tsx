@@ -25,6 +25,7 @@ interface SchoolsSectionProps {
     joinedMonth: string;
     joinedYear: string;
     interactionStatus: string;
+    completionStatus: string;
   };
   setSchoolFilters: (filters: any) => void;
   countryOptions: any[];

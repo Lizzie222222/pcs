@@ -445,7 +445,7 @@ export interface IStorage {
   
   // Certificate operations
   createCertificate(certificate: InsertCertificate): Promise<Certificate>;
-  getCertificates(): Promise<Certificate[]>;
+  getCertificates(): Promise<(Certificate & { school: School })[]>;
   getCertificate(id: string): Promise<(Certificate & { school: School }) | undefined>;
   getCertificatesBySchool(schoolId: string): Promise<(Certificate & { school: School })[]>;
   getCertificateByNumber(certificateNumber: string): Promise<(Certificate & { school: School }) | undefined>;
@@ -1489,6 +1489,7 @@ export class DatabaseStorage implements IStorage {
     joinedMonth?: string;
     joinedYear?: string;
     interactionStatus?: string;
+    completionStatus?: string;
     limit?: number;
     offset?: number;
   } = {}): Promise<Array<School & { primaryContactEmail: string | null; primaryContactFirstName: string | null; primaryContactLastName: string | null }>> {
@@ -1508,6 +1509,16 @@ export class DatabaseStorage implements IStorage {
     }
     if (filters.stage && filters.stage !== 'all') {
       conditions.push(eq(schools.currentStage, filters.stage as any));
+    }
+    if (filters.completionStatus && filters.completionStatus !== 'all') {
+      // Filter by completion status
+      if (filters.completionStatus === 'plastic-clever') {
+        // Schools that have completed at least one round (awardCompleted = true)
+        conditions.push(eq(schools.awardCompleted, true));
+      } else if (filters.completionStatus === 'in-progress') {
+        // Schools that haven't completed a round yet
+        conditions.push(eq(schools.awardCompleted, false));
+      }
     }
     if (filters.type && filters.type !== 'all') {
       conditions.push(eq(schools.type, filters.type as any));
@@ -5440,8 +5451,18 @@ export class DatabaseStorage implements IStorage {
     return newCertificate;
   }
 
-  async getCertificates(): Promise<Certificate[]> {
-    return await db.select().from(certificates).where(eq(certificates.isActive, true)).orderBy(desc(certificates.issuedDate));
+  async getCertificates(): Promise<(Certificate & { school: School })[]> {
+    const results = await db
+      .select()
+      .from(certificates)
+      .innerJoin(schools, eq(certificates.schoolId, schools.id))
+      .where(eq(certificates.isActive, true))
+      .orderBy(desc(certificates.issuedDate));
+    
+    return results.map(result => ({
+      ...result.certificates,
+      school: result.schools
+    }));
   }
 
   async getCertificate(id: string): Promise<(Certificate & { school: School }) | undefined> {
