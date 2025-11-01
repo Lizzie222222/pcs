@@ -13,8 +13,8 @@ interface PageSEOMap {
 export const pageSEOData: PageSEOMap = {
   '/': {
     title: 'Home - Plastic Clever Schools',
-    description: 'Empower your school to reduce plastic waste. Join our award-winning program with free resources and expert support for environmental education.',
-    keywords: 'plastic waste reduction, school environmental programs, sustainability education, eco-friendly schools',
+    description: 'Empower your school to reduce plastic waste. Join our award-winning programme with free resources and expert support for environmental education.',
+    keywords: 'plastic waste reduction, school environmental programmes, sustainability education, eco-friendly schools',
     ogImage: '/assets/Logo_1757848498470.png',
     canonicalUrl: 'https://plasticcleverschools.org/'
   },
@@ -48,8 +48,8 @@ export const pageSEOData: PageSEOMap = {
   },
   '/register': {
     title: 'Register Your School - Plastic Clever Schools',
-    description: 'Join over 1,500 schools worldwide in the Plastic Clever Schools program. Register for free access to resources and expert support.',
-    keywords: 'register school, join program, school registration, environmental education program',
+    description: 'Join over 1,500 schools worldwide in the Plastic Clever Schools programme. Register for free access to resources and expert support.',
+    keywords: 'register school, join programme, school registration, environmental education programme',
     ogImage: '/assets/Logo_1757848498470.png',
     canonicalUrl: 'https://plasticcleverschools.org/register'
   },
@@ -62,8 +62,8 @@ export const pageSEOData: PageSEOMap = {
   },
   '/admin': {
     title: 'Admin Panel - Plastic Clever Schools',
-    description: 'Administrative dashboard for managing Plastic Clever Schools program resources, schools, and statistics.',
-    keywords: 'admin panel, dashboard, program management',
+    description: 'Administrative dashboard for managing Plastic Clever Schools programme resources, schools, and statistics.',
+    keywords: 'admin panel, dashboard, programme management',
     ogImage: '/assets/Logo_1757848498470.png',
     canonicalUrl: 'https://plasticcleverschools.org/admin'
   }
@@ -167,7 +167,7 @@ export function addStructuredData(type: 'WebSite' | 'Organization' | 'Educationa
 // Default structured data for the website
 export const defaultStructuredData = {
   name: 'Plastic Clever Schools',
-  description: 'Award-winning program helping schools reduce plastic waste through education and student-led action.',
+  description: 'Award-winning programme helping schools reduce plastic waste through education and student-led action.',
   url: 'https://plasticcleverschools.org',
   logo: 'https://plasticcleverschools.org/assets/Logo_1757848498470.png',
   sameAs: [
@@ -179,6 +179,6 @@ export const defaultStructuredData = {
     price: '0',
     priceCurrency: 'USD',
     availability: 'https://schema.org/InStock',
-    description: 'Free educational resources and program access'
+    description: 'Free educational resources and programme access'
   }
 };

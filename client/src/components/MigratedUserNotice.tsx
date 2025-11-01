@@ -31,7 +31,7 @@ export function MigratedUserNotice({ needsEvidenceResubmission }: MigratedUserNo
           </p>
           <p className="mt-1">
             Due to system changes, any evidence you previously submitted needs to be resubmitted in the new platform. 
-            Please re-upload your evidence to continue your progression through the Plastic Clever Schools program.
+            Please re-upload your evidence to continue your progression through the Plastic Clever Schools programme.
           </p>
           <div className="mt-4 flex gap-3">
             <Button

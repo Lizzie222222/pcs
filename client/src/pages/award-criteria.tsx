@@ -76,7 +76,7 @@ export default function AwardCriteria() {
                     <div className="space-y-4">
                       <div className="bg-pcs_blue/5 p-4 rounded-lg border-l-4 border-pcs_blue">
                         <p className="font-bold text-navy mb-1">School Assembly</p>
-                        <p className="text-gray-700">Host a school-wide assembly to introduce the Plastic Clever Schools program and raise awareness about plastic pollution</p>
+                        <p className="text-gray-700">Host a school-wide assembly to introduce the Plastic Clever Schools programme and raise awareness about plastic pollution</p>
                       </div>
                       <div className="bg-pcs_blue/5 p-4 rounded-lg border-l-4 border-pcs_blue">
                         <p className="font-bold text-navy mb-1">Local Cleanup</p>

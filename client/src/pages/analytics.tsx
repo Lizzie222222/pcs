@@ -686,7 +686,7 @@ export default function AnalyticsPage() {
                 {/* Resources by Stage */}
                 <Card>
                   <CardHeader>
-                    <CardTitle>Resources by Program Stage</CardTitle>
+                    <CardTitle>Resources by Programme Stage</CardTitle>
                   </CardHeader>
                   <CardContent>
                     <ResponsiveContainer width="100%" height={300}>

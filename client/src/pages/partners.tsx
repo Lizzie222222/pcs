@@ -110,7 +110,7 @@ export default function Partners() {
                     <div className="md:col-span-2 p-8">
                       <h3 className="text-2xl font-bold text-navy mb-4">Kids Against Plastic</h3>
                       <p className="text-gray-600 leading-relaxed mb-6">
-                        Kids Against Plastic is a youth-led organization founded by sisters Amy and Ella Meek when they were just 10 and 12 years old. They inspire and support young people to take action against plastic pollution through education, campaigns, and the Plastic Clever Schools program. Their passion and energy drive real change in schools and communities.
+                        Kids Against Plastic is a youth-led organisation founded by sisters Amy and Ella Meek when they were just 10 and 12 years old. They inspire and support young people to take action against plastic pollution through education, campaigns, and the Plastic Clever Schools programme. Their passion and energy drive real change in schools and communities.
                       </p>
                       <div className="space-y-3 mb-6">
                         <div className="flex items-start gap-2">
@@ -119,7 +119,7 @@ export default function Partners() {
                         </div>
                         <div className="flex items-start gap-2">
                           <Target className="w-5 h-5 text-teal mt-0.5 flex-shrink-0" />
-                          <span className="text-sm text-gray-700">Created the Plastic Clever Schools award program</span>
+                          <span className="text-sm text-gray-700">Created the Plastic Clever Schools award programme</span>
                         </div>
                         <div className="flex items-start gap-2">
                           <Users className="w-5 h-5 text-teal mt-0.5 flex-shrink-0" />
@@ -166,7 +166,7 @@ export default function Partners() {
                   <div className="md:col-span-2 p-8">
                     <h3 className="text-2xl font-bold text-navy mb-4">River Cleanup</h3>
                     <p className="text-gray-600 leading-relaxed mb-6">
-                      River Cleanup is a Belgian organization working to rid rivers and oceans of plastic waste. Through innovative cleanup technologies and community engagement, they prevent plastic from reaching our seas. Their partnership with Plastic Clever Schools helps students understand the connection between local action and global ocean health.
+                      River Cleanup is a Belgian organisation working to rid rivers and oceans of plastic waste. Through innovative cleanup technologies and community engagement, they prevent plastic from reaching our seas. Their partnership with Plastic Clever Schools helps students understand the connection between local action and global ocean health.
                     </p>
                     <div className="space-y-3 mb-6">
                       <div className="flex items-start gap-2">

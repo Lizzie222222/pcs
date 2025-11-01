@@ -299,7 +299,7 @@ export default function EvidenceSubmissionForm({
                 </div>
               )}
               
-              {/* Program Stage - only show if not pre-selected */}
+              {/* Programme Stage - only show if not pre-selected */}
               {!preSelectedStage && (
                 <FormField
                   control={form.control}

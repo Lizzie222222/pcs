@@ -409,7 +409,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Program Stage *
+                  Programme Stage *
                 </label>
                 <Select 
                   value={formData.stage} 
@@ -617,7 +617,7 @@ function ResourceForm({ resource, onClose, onSuccess }: {
                   </TooltipProvider>
                 </div>
                 <p className="text-xs text-gray-600">
-                  Let AI analyze your file and suggest metadata to save time. You can review and adjust the suggestions before saving.
+                  Let AI analyse your file and suggest metadata to save time. You can review and adjust the suggestions before saving.
                 </p>
               </div>
             )}

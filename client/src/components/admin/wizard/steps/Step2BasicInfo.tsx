@@ -162,17 +162,17 @@ export function Step2BasicInfo({ form, isEditing }: Step2BasicInfoProps) {
             )}
           />
 
-          {/* Program Stage */}
+          {/* Programme Stage */}
           <FormField
             control={form.control}
             name="stage"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Program Stage *</FormLabel>
+                <FormLabel>Programme Stage *</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger data-testid="select-stage">
-                      <SelectValue placeholder="Select program stage" />
+                      <SelectValue placeholder="Select programme stage" />
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
@@ -187,7 +187,7 @@ export function Step2BasicInfo({ form, isEditing }: Step2BasicInfoProps) {
                   </SelectContent>
                 </Select>
                 <FormDescription>
-                  Which stage of the Plastic Clever Schools program does this case study belong to?
+                  Which stage of the Plastic Clever Schools programme does this case study belong to?
                 </FormDescription>
                 <FormMessage />
               </FormItem>

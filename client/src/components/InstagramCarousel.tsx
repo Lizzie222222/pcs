@@ -52,7 +52,7 @@ function useIsMobileView() {
   return isMobile;
 }
 
-// Real posts based on Plastic Clever Schools program
+// Real posts based on Plastic Clever Schools programme
 const samplePosts = [
   {
     id: "1",

@@ -4,7 +4,7 @@
     "schools": "Schools",
     "content": "Content",
     "reviewQueue": "Review Queue",
-    "program": "Program",
+    "program": "Programme",
     "communications": "Communications"
   },
   "navigation": {
@@ -29,12 +29,12 @@
   },
   "header": {
     "title": "Admin Dashboard",
-    "subtitle": "Manage schools, review evidence, and monitor program progress"
+    "subtitle": "Manage schools, review evidence, and monitor programme progress"
   },
   "welcomeBanner": {
     "title": "Lucky You!",
     "greeting": "Welcome to the Plastic Clever Schools admin team!",
-    "description": "You now have full access to manage the program, review evidence submissions, publish case studies, and help schools on their journey to reduce plastic waste."
+    "description": "You now have full access to manage the programme, review evidence submissions, publish case studies, and help schools on their journey to reduce plastic waste."
   },
   "export": {
     "title": "Export Data",
@@ -305,7 +305,7 @@
       "labels": {
         "title": "Title *",
         "description": "Description",
-        "stage": "Program Stage *",
+        "stage": "Programme Stage *",
         "ageRange": "Age Range",
         "languages": "Available Languages *",
         "country": "Target Country",
@@ -328,8 +328,8 @@
         "uploadInstructions": "Upload a resource file (PDF, DOC, PPT, XLS, etc.)",
         "maxFileSize": "Maximum file size: 150MB",
         "replaceInstructions": "You can replace the file while keeping the same resource, or remove it entirely.",
-        "aiAutoFillTooltip": "AI analyzes your uploaded file and automatically suggests a title, description, stage, theme, age range, and resource type based on the file content and name.",
-        "aiAutoFillDescription": "Let AI analyze your file and suggest metadata to save time. You can review and adjust the suggestions before saving."
+        "aiAutoFillTooltip": "AI analyses your uploaded file and automatically suggests a title, description, stage, theme, age range, and resource type based on the file content and name.",
+        "aiAutoFillDescription": "Let AI analyse your file and suggest metadata to save time. You can review and adjust the suggestions before saving."
       }
     },
     "filters": {
@@ -502,7 +502,7 @@
   },
   "analytics": {
     "title": "Platform Analytics",
-    "subtitle": "Comprehensive insights into program effectiveness",
+    "subtitle": "Comprehensive insights into programme effectiveness",
     "dashboard": {
       "title": "Analytics Dashboard",
       "description": "Comprehensive insights and metrics for Plastic Clever Schools"
@@ -1050,7 +1050,7 @@
           "title": "Bulk Update Schools",
           "description": "This action will affect <strong>{{count}}</strong> schools.",
           "updateStageLabel": "Update Current Stage",
-          "updateStageHelpText": "All selected schools will be moved to this program stage."
+          "updateStageHelpText": "All selected schools will be moved to this programme stage."
         },
         "delete": {
           "title": "Bulk Delete Schools",
@@ -1692,7 +1692,7 @@
   },
   "evidenceRequirements": {
     "title": "Evidence Requirements Management",
-    "subtitle": "Configure required evidence for each program stage",
+    "subtitle": "Configure required evidence for each programme stage",
     "stages": {
       "inspire": "Inspire",
       "investigate": "Investigate",

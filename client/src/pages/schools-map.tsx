@@ -168,7 +168,7 @@ export default function SchoolsMap() {
             Global school network
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Countries colored by number of participating schools in the Plastic Clever Schools program
+            Countries colored by number of participating schools in the Plastic Clever Schools programme
           </p>
         </div>
 

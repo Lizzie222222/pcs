@@ -140,7 +140,7 @@
   "chat": {
     "title": "PCS Assistant",
     "subtitle": "Ask me about plastic reduction!",
-    "greeting": "Hi! I'm here to help you with the Plastic Clever Schools program. Ask me anything about reducing plastic waste in your school!",
+    "greeting": "Hi! I'm here to help you with the Plastic Clever Schools programme. Ask me anything about reducing plastic waste in your school!",
     "placeholder": "Type your question...",
     "send": "Send message",
     "open": "Open chat",
@@ -303,7 +303,7 @@
   },
   "help_center": {
     "title": "Help Center",
-    "subtitle": "Find answers to frequently asked questions about the Plastic Clever Schools program",
+    "subtitle": "Find answers to frequently asked questions about the Plastic Clever Schools programme",
     "search_placeholder": "Search for answers... (e.g., 'how to register', 'evidence submission')",
     "search_results": "Found {{count}} matching questions",
     "browse_by_category": "Browse by Category",
@@ -313,7 +313,7 @@
     "no_results_message": "We couldn't find any FAQs matching \"{{query}}\"",
     "clear_search": "Clear Search",
     "still_questions_title": "Still Have Questions?",
-    "still_questions_description": "Can't find the answer you're looking for? Our friendly support team is here to help you with any questions about the Plastic Clever Schools program.",
+    "still_questions_description": "Can't find the answer you're looking for? Our friendly support team is here to help you with any questions about the Plastic Clever Schools programme.",
     "contact_us": "Contact Us",
     "response_time": "We typically respond within 24-48 hours",
     "page_not_found": "404 Page Not Found",
@@ -528,7 +528,7 @@
         "intro": "You agree not to:",
         "items": [
           "Upload false, misleading, or fraudulent evidence",
-          "Impersonate another school, teacher, or organization",
+          "Impersonate another school, teacher, or organisation",
           "Use the platform for commercial purposes without authorization",
           "Interfere with the security or operation of the platform",
           "Upload content that infringes intellectual property rights",
@@ -540,7 +540,7 @@
       "title": "3. Program Participation",
       "subsection3_1": {
         "title": "3.1 Three-Stage Journey",
-        "content": "The Plastic Clever Schools program consists of three stages: Inspire, Investigate, and Act. Schools must complete evidence requirements for each stage in order to progress."
+        "content": "The Plastic Clever Schools programme consists of three stages: Inspire, Investigate, and Act. Schools must complete evidence requirements for each stage in order to progress."
       },
       "subsection3_2": {
         "title": "3.2 Evidence Submission",
@@ -569,7 +569,7 @@
         "items": [
           "Operating and improving the Plastic Clever Schools platform",
           "Showcasing school achievements in our inspiration gallery",
-          "Promoting the program in marketing materials (with your school's consent)",
+          "Promoting the programme in marketing materials (with your school's consent)",
           "Creating case studies to inspire other schools"
         ]
       },

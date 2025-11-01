@@ -25,7 +25,7 @@ export interface AnalyticsInsights {
 /**
  * Generate AI-powered insights from analytics data using OpenAI's GPT-5
  * 
- * This function analyzes Plastic Clever Schools program data and provides
+ * This function analyses Plastic Clever Schools programme data and provides
  * intelligent insights about school progress, engagement, and recommendations.
  * 
  * @param data - Analytics data including overview, evidence, engagement metrics
@@ -37,10 +37,10 @@ export async function generateAnalyticsInsights(data: AnalyticsData): Promise<An
     
     // Construct the user prompt with analytics data context
     const userPrompt = `
-Analyze the following analytics data from the Plastic Clever Schools (PCS) program and provide insights:
+Analyse the following analytics data from the Plastic Clever Schools (PCS) programme and provide insights:
 
-**Program Context:**
-- PCS is a plastic reduction education program with 3 stages:
+**Programme Context:**
+- PCS is a plastic reduction education programme with 3 stages:
   1. Inspire: Students learn about plastic pollution and its impact
   2. Investigate: Students conduct waste audits and research
   3. Act: Students implement plastic reduction initiatives
@@ -49,14 +49,14 @@ Analyze the following analytics data from the Plastic Clever Schools (PCS) progr
 ${JSON.stringify(data, null, 2)}
 
 Please provide:
-1. An executive summary of the overall program performance
+1. An executive summary of the overall programme performance
 2. Key insights about school participation, evidence submission, and engagement
 3. Trends in the data (growth, patterns, changes over time)
-4. Actionable recommendations for program improvement
+4. Actionable recommendations for programme improvement
 
 Return your response as a JSON object with the following structure:
 {
-  "executiveSummary": "2-3 sentence overview of program performance",
+  "executiveSummary": "2-3 sentence overview of programme performance",
   "keyInsights": ["insight 1", "insight 2", "insight 3", ...],
   "trends": ["trend 1", "trend 2", "trend 3", ...],
   "recommendations": ["recommendation 1", "recommendation 2", "recommendation 3", ...]
@@ -74,7 +74,7 @@ Return your response as a JSON object with the following structure:
       messages: [
         {
           role: "system",
-          content: "You are an educational analytics expert analyzing plastic reduction program data. Provide clear, actionable insights based on the data provided. Focus on identifying meaningful patterns, engagement metrics, and practical recommendations for program coordinators and administrators."
+          content: "You are an educational analytics expert analysing plastic reduction programme data. Provide clear, actionable insights based on the data provided. Focus on identifying meaningful patterns, engagement metrics, and practical recommendations for programme coordinators and administrators."
         },
         {
           role: "user",

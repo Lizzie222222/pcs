@@ -27,7 +27,7 @@ export function ChatWidget() {
       {
         role: 'assistant',
         content: t('chat.greeting', { 
-          defaultValue: 'Hi! I\'m here to help you with the Plastic Clever Schools program. Ask me anything about reducing plastic waste in your school!' 
+          defaultValue: 'Hi! I\'m here to help you with the Plastic Clever Schools programme. Ask me anything about reducing plastic waste in your school!' 
         })
       }
     ]);

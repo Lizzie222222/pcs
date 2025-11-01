@@ -24,7 +24,7 @@ interface CertificatesSectionProps {
 }
 
 // Form validation schema extending insertCertificateSchema
-// Note: Stage is always 'act' since certificates are only issued for program completion
+// Note: Stage is always 'act' since certificates are only issued for programme completion
 const certificateFormSchema = insertCertificateSchema.extend({
   schoolId: z.string().min(1, "Please select a school"),
   completedDate: z.string().min(1, "Completion date is required"),
@@ -36,7 +36,7 @@ const certificateFormSchema = insertCertificateSchema.extend({
   shareableUrl: true,
   isActive: true,
   metadata: true,
-  stage: true, // Stage is always 'act' for program completion
+  stage: true, // Stage is always 'act' for programme completion
 });
 
 type CertificateFormData = z.infer<typeof certificateFormSchema>;
@@ -82,7 +82,7 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
       const roundNumber = selectedSchool?.currentRound || 1;
       const certificateTitle = data.title || `Round ${roundNumber} Completion Certificate`;
       
-      // Always use 'act' stage since certificates are only for program completion
+      // Always use 'act' stage since certificates are only for programme completion
       return await apiRequest('POST', '/api/admin/certificates', {
         ...data,
         stage: 'act',

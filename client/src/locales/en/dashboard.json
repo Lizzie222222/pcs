@@ -3,7 +3,7 @@
     "title": "Welcome to Your Dashboard",
     "greeting": "Welcome back, {{name}}!",
     "default_name": "Teacher",
-    "subtitle": "Track your school's progress through the Plastic Clever Schools program",
+    "subtitle": "Track your school's progress through the Plastic Clever Schools programme",
     "loading_dashboard": "Loading your dashboard...",
     "unauthorized_title": "Unauthorized",
     "unauthorized_message": "You are logged out. Logging in again...",
@@ -74,7 +74,7 @@
     "view_certificate": "View Certificate"
   },
   "progress": {
-    "title": "Program progress",
+    "title": "Programme progress",
     "journey_description": "Progress through the three stages of environmental action",
     "overall_progress": "Overall Progress",
     "current_stage": "Current Stage",
@@ -153,10 +153,10 @@
     "photo_video_guidelines": "Photo & video guidelines",
     "documentation_tips": "Documentation tips",
     "best_practices": "Best practices",
-    "program_stages_title": "Program Stages",
-    "program_stages_description": "Understand each stage of the program",
+    "program_stages_title": "Programme Stages",
+    "program_stages_description": "Understand each stage of the programme",
     "featured_title": "Featured Resources",
-    "featured_description": "Access our curated collection of resources to help your school succeed in the Plastic Clever Schools program."
+    "featured_description": "Access our curated collection of resources to help your school succeed in the Plastic Clever Schools programme."
   },
   "tips": {
     "title": "Helpful Tips for Evidence Submission",

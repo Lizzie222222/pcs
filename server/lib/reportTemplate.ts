@@ -581,7 +581,7 @@ export function generateHTMLReport(data: ReportData): string {
         <div class="metric-card">
           <div class="metric-label">Awards Completed</div>
           <div class="metric-value">${data.overview.completedAwards.toLocaleString()}</div>
-          <div class="metric-description">Programs finished</div>
+          <div class="metric-description">Programmes finished</div>
         </div>
         
         <div class="metric-card">
@@ -593,7 +593,7 @@ export function generateHTMLReport(data: ReportData): string {
         <div class="metric-card">
           <div class="metric-label">Completion Rate</div>
           <div class="metric-value">${Math.round((data.overview.completedAwards / data.overview.totalSchools) * 100)}%</div>
-          <div class="metric-description">Schools finishing program</div>
+          <div class="metric-description">Schools finishing programme</div>
         </div>
       </div>
     </section>

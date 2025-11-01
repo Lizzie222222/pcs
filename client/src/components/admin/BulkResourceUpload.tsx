@@ -310,7 +310,7 @@ export default function BulkResourceUpload({ onClose, onSuccess }: { onClose: ()
     if (uploadedResources.length === 0) {
       toast({
         title: "No Resources",
-        description: "No resources available to analyze.",
+        description: "No resources available to analyse.",
         variant: "destructive",
       });
       return;

@@ -426,7 +426,7 @@ export async function sendMigratedUserWelcomeEmail(
         <p style="margin: 0 0 10px 0;">We've carefully migrated all your valuable data:</p>
         <ul style="line-height: 1.8; margin: 5px 0; padding-left: 25px;">
           <li>✅ Your school information and details</li>
-          <li>✅ Your program progress (Learn, Plan, Act stages)</li>
+          <li>✅ Your programme progress (Learn, Plan, Act stages)</li>
           <li>✅ Your team members and school associations</li>
           <li>✅ All your achievements and milestones</li>
         </ul>
@@ -515,7 +515,7 @@ export async function sendMigratedUserStandardWelcomeEmail(
         <p style="margin: 0 0 10px 0;">We've carefully migrated all your valuable data:</p>
         <ul style="line-height: 1.8; margin: 5px 0; padding-left: 25px;">
           <li>✅ Your school information and details</li>
-          <li>✅ Your program progress (Learn, Plan, Act stages)</li>
+          <li>✅ Your programme progress (Learn, Plan, Act stages)</li>
           <li>✅ Your team members and school associations</li>
           <li>✅ All your achievements and milestones</li>
         </ul>
@@ -2536,7 +2536,7 @@ export async function sendCourseCompletionCelebrationEmail(
           ${roundNumber === 1 ? "🌟 You've Completed Your First Round! 🌟" : `✨ You've Completed Round ${roundNumber}! ✨`}
         </p>
         <p style="font-size: 16px; color: #333333; margin: 0; line-height: 1.6;">
-          What an <strong>incredible achievement</strong>! ${schoolName} has successfully completed all three stages of the Plastic Clever Schools program! 🎊
+          What an <strong>incredible achievement</strong>! ${schoolName} has successfully completed all three stages of the Plastic Clever Schools programme! 🎊
         </p>
       </div>
                   
@@ -2599,7 +2599,7 @@ export async function sendCourseCompletionCelebrationEmail(
       </div>
     `,
     callToActionText: certificateUrl ? 'View Your Certificate' : 'Go to Dashboard',
-    footerText: 'You received this email because your school completed a program round.'
+    footerText: 'You received this email because your school completed a programme round.'
   };
   
   return await sendTranslatedEmail({

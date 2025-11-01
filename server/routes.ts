@@ -757,7 +757,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Process each resource
       for (const resource of resources) {
         try {
-          const prompt = `Analyze this educational resource for the Plastic Clever Schools program and suggest metadata:
+          const prompt = `Analyse this educational resource for the Plastic Clever Schools programme and suggest metadata:
 
 Current Title: ${resource.title}
 Filename: ${resource.filename}
@@ -4726,7 +4726,7 @@ Return JSON with:
       } else {
         // Provide default insights structure if not requested
         aiInsights = {
-          executiveSummary: "This report provides a comprehensive overview of Plastic Clever Schools program performance during the selected period.",
+          executiveSummary: "This report provides a comprehensive overview of Plastic Clever Schools programme performance during the selected period.",
           keyInsights: [],
           trends: [],
           recommendations: []
@@ -8321,7 +8321,7 @@ Return JSON with:
                   A platform administrator has added you to <strong>${school.name}</strong> as a ${role === 'head_teacher' ? 'Head Teacher' : 'Teacher'}.
                 </p>
                 <p style="color: #666; line-height: 1.6;">
-                  You can now access your school dashboard and participate in the Plastic Clever Schools program.
+                  You can now access your school dashboard and participate in the Plastic Clever Schools programme.
                 </p>
                 <div style="text-align: center; margin: 30px 0;">
                   <a href="${getBaseUrl()}/dashboard" 

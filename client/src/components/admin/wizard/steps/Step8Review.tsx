@@ -169,8 +169,8 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
   
   if (!validationChecks.hasStage) {
     validationErrors.push({
-      field: "Program Stage",
-      message: "Please select a program stage",
+      field: "Programme Stage",
+      message: "Please select a programme stage",
       stepLink: 1,
       stepName: "Template & Basics"
     });
@@ -440,7 +440,7 @@ export function Step8Review({ form, onStepChange }: Step8ReviewProps) {
               testId="summary-title"
             />
             <SummaryItem 
-              label="Program Stage" 
+              label="Programme Stage" 
               value={formValues.stage ? PROGRAM_STAGE_LABELS[formValues.stage] || formValues.stage : null} 
               testId="summary-stage"
             />

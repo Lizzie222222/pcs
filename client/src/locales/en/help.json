@@ -1,7 +1,7 @@
 {
   "page": {
     "title": "Help Center",
-    "subtitle": "Find answers to frequently asked questions about the Plastic Clever Schools program",
+    "subtitle": "Find answers to frequently asked questions about the Plastic Clever Schools programme",
     "search_placeholder": "Search for answers... (e.g., 'how to register', 'evidence submission')",
     "search_results": "Found {{count}} matching questions",
     "browse_by_category": "Browse by Category",
@@ -20,34 +20,34 @@
       "description": "Learn how to join and get started with Plastic Clever Schools",
       "faqs": {
         "register_school": {
-          "question": "How do I register my school for the Plastic Clever Schools program?",
-          "answer": "To register your school, click on the 'Register' button in the navigation menu. You'll need to provide your school details, contact information, and select your country. Once registered, you'll receive a confirmation email with next steps to complete your profile and start the program."
+          "question": "How do I register my school for the Plastic Clever Schools programme?",
+          "answer": "To register your school, click on the 'Register' button in the navigation menu. You'll need to provide your school details, contact information, and select your country. Once registered, you'll receive a confirmation email with next steps to complete your profile and start the programme."
         },
         "who_can_participate": {
-          "question": "Who can participate in the Plastic Clever Schools program?",
-          "answer": "The program is open to all schools worldwide - primary, secondary, and higher education institutions. Teachers, administrators, and school staff can register their school and create teams. Students participate through their teachers' accounts and can contribute to evidence submission and action plans."
+          "question": "Who can participate in the Plastic Clever Schools programme?",
+          "answer": "The programme is open to all schools worldwide - primary, secondary, and higher education institutions. Teachers, administrators, and school staff can register their school and create teams. Students participate through their teachers' accounts and can contribute to evidence submission and action plans."
         },
         "cost_to_join": {
-          "question": "Is there a cost to join the program?",
-          "answer": "No! The Plastic Clever Schools program is completely free for all participating schools. We believe that environmental education should be accessible to everyone. All resources, tools, certificates, and support are provided at no cost."
+          "question": "Is there a cost to join the programme?",
+          "answer": "No! The Plastic Clever Schools programme is completely free for all participating schools. We believe that environmental education should be accessible to everyone. All resources, tools, certificates, and support are provided at no cost."
         },
         "multiple_teachers": {
           "question": "Can multiple teachers from the same school participate?",
           "answer": "Absolutely! We encourage multiple teachers to join from the same school. The first teacher creates the school account, and then they can invite other teachers to join the team through the Team Management section in the dashboard. This allows for collaborative efforts across different classes and year groups."
         },
         "age_groups": {
-          "question": "What age groups is the program suitable for?",
-          "answer": "The Plastic Clever Schools program is designed for students aged 5-18 years. Resources and activities are available for different age ranges (5-7 years, 8-11 years, 12-16 years, and 17+ years), so you can choose materials appropriate for your students' level."
+          "question": "What age groups is the programme suitable for?",
+          "answer": "The Plastic Clever Schools programme is designed for students aged 5-18 years. Resources and activities are available for different age ranges (5-7 years, 8-11 years, 12-16 years, and 17+ years), so you can choose materials appropriate for your students' level."
         }
       }
     },
     "program_stages": {
-      "title": "Program Stages",
+      "title": "Programme Stages",
       "description": "Understanding the Inspire, Investigate, and Act stages",
       "faqs": {
         "three_stages": {
-          "question": "What are the three stages of the program?",
-          "answer": "The program consists of three progressive stages: 1) INSPIRE - Learn about plastic pollution and its impact through educational resources and activities. 2) INVESTIGATE - Conduct a plastic waste audit at your school to understand your current plastic usage. 3) ACT - Create and implement an action plan to reduce plastic waste at your school."
+          "question": "What are the three stages of the programme?",
+          "answer": "The programme consists of three progressive stages: 1) INSPIRE - Learn about plastic pollution and its impact through educational resources and activities. 2) INVESTIGATE - Conduct a plastic waste audit at your school to understand your current plastic usage. 3) ACT - Create and implement an action plan to reduce plastic waste at your school."
         },
         "stage_order": {
           "question": "Can we start at any stage or must we complete them in order?",
@@ -117,7 +117,7 @@
       "faqs": {
         "earn_certificate": {
           "question": "How do we earn our Plastic Clever Schools certificate?",
-          "answer": "To earn your certificate, complete all three program stages: 1) Submit and get approval for INSPIRE stage evidence, 2) Complete and submit your plastic waste audit (INVESTIGATE stage), 3) Create an action plan and submit evidence of implementation (ACT stage). Once all stages are approved, you can download your certificate from the dashboard."
+          "answer": "To earn your certificate, complete all three programme stages: 1) Submit and get approval for INSPIRE stage evidence, 2) Complete and submit your plastic waste audit (INVESTIGATE stage), 3) Create an action plan and submit evidence of implementation (ACT stage). Once all stages are approved, you can download your certificate from the dashboard."
         },
         "when_receive_certificate": {
           "question": "When will we receive our certificate?",
@@ -155,14 +155,14 @@
         },
         "data_security": {
           "question": "Is my school's data secure and private?",
-          "answer": "Yes! We take data security seriously. All data is encrypted in transit and at rest. We only collect information necessary for program participation. School information is visible in our school map, but contact details remain private. Student names and personal information are never publicly displayed. Read our Privacy Policy for full details."
+          "answer": "Yes! We take data security seriously. All data is encrypted in transit and at rest. We only collect information necessary for programme participation. School information is visible in our school map, but contact details remain private. Student names and personal information are never publicly displayed. Read our Privacy Policy for full details."
         }
       }
     }
   },
   "footer": {
     "description": "An award to reduce waste with students at the heart of the action.",
-    "program_title": "Program",
+    "program_title": "Programme",
     "program_how_it_works": "How it works",
     "program_resources": "Resources",
     "program_success_stories": "Success stories",

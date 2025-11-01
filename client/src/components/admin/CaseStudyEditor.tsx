@@ -58,7 +58,7 @@ const caseStudyFormSchema = z.object({
   title: z.string().min(1, "Title is required"),
   description: z.string().optional().nullable(),
   stage: z.enum(["inspire", "investigate", "act"], {
-    required_error: "Program stage is required",
+    required_error: "Programme stage is required",
   }),
   impact: z.string().optional().nullable(),
   imageUrl: z.string().optional().nullable(),
