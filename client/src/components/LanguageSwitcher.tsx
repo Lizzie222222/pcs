@@ -29,7 +29,7 @@ const languages = [
 
 // Function to load translations for a language
 const loadTranslations = async (lang: string) => {
-  const [common, landing, dashboard, resources, forms, auth, admin, map, search, newsletter, help, inspiration] = await Promise.all([
+  const [common, landing, dashboard, resources, forms, auth, admin, map, search, newsletter, help, inspiration, audit] = await Promise.all([
     import(`../locales/${lang}/common.json`),
     import(`../locales/${lang}/landing.json`),
     import(`../locales/${lang}/dashboard.json`),
@@ -42,6 +42,7 @@ const loadTranslations = async (lang: string) => {
     import(`../locales/${lang}/newsletter.json`),
     import(`../locales/${lang}/help.json`),
     import(`../locales/${lang}/inspiration.json`),
+    import(`../locales/${lang}/audit.json`),
   ]);
   
   return {
@@ -57,6 +58,7 @@ const loadTranslations = async (lang: string) => {
     newsletter: newsletter.default,
     help: help.default,
     inspiration: inspiration.default,
+    audit: audit.default,
   };
 };
 
