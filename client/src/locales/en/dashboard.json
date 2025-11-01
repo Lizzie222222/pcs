@@ -119,7 +119,26 @@
     "more_needed": "{{count}} more needed",
     "audit_quiz_required": "Audit Quiz: Required",
     "audit_quiz_required_bullet": "Audit quiz required",
-    "evidence_needed": "{{count}} more evidence needed"
+    "evidence_needed": "{{count}} more evidence needed",
+    "status": {
+      "not_started": "Not started",
+      "pending_review": "Pending Review",
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "buttons": {
+      "do_audit": "Do Audit",
+      "review_answers": "Review Answers",
+      "redo_audit": "Redo Audit",
+      "create_plan": "Create Plan",
+      "view_plan": "View Plan",
+      "revise_plan": "Revise Plan",
+      "submit": "Submit",
+      "resubmit": "Resubmit",
+      "teacher_toolkit": "Teacher Toolkit",
+      "student_workbook": "Student Workbook"
+    }
   },
   "stages": {
     "inspire_brief": "Inspire: Build awareness",
