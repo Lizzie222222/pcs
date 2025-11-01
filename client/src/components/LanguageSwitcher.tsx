@@ -7,6 +7,9 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Globe } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
+import { apiRequest } from '@/lib/queryClient';
+import { useQueryClient } from '@tanstack/react-query';
 
 const languages = [
   { code: 'ar', nativeName: 'العربية' },
@@ -60,6 +63,7 @@ const loadTranslations = async (lang: string) => {
 
 export function LanguageSwitcher() {
   const { t, i18n } = useTranslation();
+  const queryClient = useQueryClient();
 
   const handleLanguageChange = async (lang: string) => {
     // If not English and translations not loaded, load them first
@@ -78,6 +82,17 @@ export function LanguageSwitcher() {
     
     // Change language - React will re-render automatically
     await i18n.changeLanguage(lang);
+
+    // Try to save language preference to database (will fail silently if not authenticated)
+    try {
+      await apiRequest('PUT', '/api/user/language', { language: lang });
+      // Invalidate user query to refresh user data with new language preference
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+    } catch (error) {
+      // Silently fail if not authenticated or if request fails
+      // Language preference is still saved to localStorage via i18n
+      console.log('Language preference not saved to database (user may not be authenticated)');
+    }
   };
 
   return (

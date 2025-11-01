@@ -614,7 +614,7 @@ export async function setupAuth(app: Express) {
   if (process.env.NODE_ENV === 'development' || process.env.REPLIT_CONTEXT === 'testing') {
     app.post('/api/test-auth/login', async (req, res) => {
       try {
-        const { email, firstName, lastName, sub, isAdmin, role } = req.body;
+        const { email, firstName, lastName, sub, isAdmin, role, preferredLanguage } = req.body;
         
         if (!email || !firstName || !lastName || !sub) {
           return res.status(400).json({ error: 'Missing required fields: email, firstName, lastName, sub' });
@@ -623,7 +623,7 @@ export async function setupAuth(app: Express) {
         // Check if role indicates admin (for OIDC testing compatibility)
         const shouldBeAdmin = isAdmin || (role && role.toLowerCase().includes('admin'));
         
-        console.log(`[Test Auth] Logging in test user: ${email}, admin: ${shouldBeAdmin}`);
+        console.log(`[Test Auth] Logging in test user: ${email}, admin: ${shouldBeAdmin}, preferredLanguage: ${preferredLanguage || 'en'}`);
         
         // Find or create user by email
         let user = await storage.findUserByEmail(email);
@@ -640,11 +640,11 @@ export async function setupAuth(app: Express) {
             emailVerified: true,
             role: 'teacher',
             isAdmin: shouldBeAdmin,
-            preferredLanguage: 'en'
+            preferredLanguage: preferredLanguage || 'en'
           });
         } else {
           console.log(`[Test Auth] Found existing user: ${email}`);
-          // Set isAdmin if specified and different from current value
+          // Only update isAdmin if needed (don't override preferredLanguage - user's DB preference takes precedence)
           if (shouldBeAdmin && !user.isAdmin) {
             const { db } = await import('./db');
             const { users } = await import('@shared/schema');
