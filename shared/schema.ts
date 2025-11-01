@@ -338,6 +338,8 @@ export const resources = pgTable("resources", {
   downloadCount: integer("download_count").default(0),
   visibility: visibilityEnum("visibility").default('public'),
   isActive: boolean("is_active").default(true),
+  hiddenOnResourcesPage: boolean("hidden_on_resources_page").default(false),
+  isPinned: boolean("is_pinned").default(false),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
