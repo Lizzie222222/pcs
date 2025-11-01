@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -21,6 +22,7 @@ const forgotPasswordSchema = z.object({
 type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
 
 export default function ForgotPassword() {
+  const { t } = useTranslation("auth");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
@@ -97,13 +99,13 @@ export default function ForgotPassword() {
                 </div>
               </div>
               <CardTitle className="text-xl font-semibold text-navy">
-                Check Your Email
+                {t("migratedUser.forgotPassword.success_title")}
               </CardTitle>
             </CardHeader>
             
             <CardContent className="space-y-4 text-center">
               <p className="text-gray-600">
-                We've sent password reset instructions to:
+                {t("migratedUser.forgotPassword.success_message")}
               </p>
               
               <p className="text-navy font-semibold text-lg" data-testid="text-submitted-email">
@@ -112,13 +114,13 @@ export default function ForgotPassword() {
 
               <div className="bg-ocean-light/10 p-4 rounded-lg text-left">
                 <p className="text-sm text-gray-600">
-                  <strong>What to do next:</strong>
+                  <strong>{t("migratedUser.forgotPassword.what_next_title")}</strong>
                 </p>
                 <ul className="text-sm text-gray-600 mt-2 space-y-2 list-disc list-inside">
-                  <li>Check your inbox for an email from Plastic Clever Schools</li>
-                  <li>Click the reset link in the email (valid for 1 hour)</li>
-                  <li>Create your new password</li>
-                  <li>Check spam folder if you don't see the email</li>
+                  <li>{t("migratedUser.forgotPassword.step_1")}</li>
+                  <li>{t("migratedUser.forgotPassword.step_2")}</li>
+                  <li>{t("migratedUser.forgotPassword.step_3")}</li>
+                  <li>{t("migratedUser.forgotPassword.step_4")}</li>
                 </ul>
               </div>
 
@@ -126,14 +128,14 @@ export default function ForgotPassword() {
                 <Link href="/login" data-testid="link-back-to-login">
                   <Button variant="outline" className="w-full">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    Back to Login
+                    {t("migratedUser.forgotPassword.back_to_login_button")}
                   </Button>
                 </Link>
               </div>
 
               <div className="pt-2 border-t border-gray-200">
                 <p className="text-sm text-gray-500">
-                  Didn't receive the email?{" "}
+                  {t("migratedUser.forgotPassword.didnt_receive")}{" "}
                   <button
                     onClick={() => {
                       setEmailSent(false);
@@ -142,7 +144,7 @@ export default function ForgotPassword() {
                     className="text-ocean hover:text-ocean-dark font-medium"
                     data-testid="button-try-again"
                   >
-                    Try again
+                    {t("migratedUser.forgotPassword.try_again")}
                   </button>
                 </p>
               </div>
@@ -166,12 +168,12 @@ export default function ForgotPassword() {
             />
           </div>
           <h1 className="text-3xl font-bold text-navy leading-tight mb-2" data-testid="text-page-title">
-            {isMigratedUser ? "Welcome Back!" : "Forgot Password?"}
+            {isMigratedUser ? t("migratedUser.forgotPassword.welcome_title") : t("migratedUser.forgotPassword.normal_title")}
           </h1>
           <p className="text-base text-gray-600 leading-relaxed" data-testid="text-page-description">
             {isMigratedUser 
-              ? "Reset your password to access your migrated account on our new platform." 
-              : "No worries! Enter your email and we'll send you reset instructions."}
+              ? t("migratedUser.forgotPassword.welcome_subtitle")
+              : t("migratedUser.forgotPassword.normal_subtitle")}
           </p>
         </div>
 
@@ -179,7 +181,7 @@ export default function ForgotPassword() {
         <Card className="bg-white border border-gray-200 rounded-lg shadow-lg">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl font-semibold text-navy">
-              Reset Your Password
+              {t("migratedUser.forgotPassword.card_title")}
             </CardTitle>
           </CardHeader>
           
@@ -188,9 +190,9 @@ export default function ForgotPassword() {
               <Alert className="bg-blue-50 border-blue-200" data-testid="alert-migrated-user">
                 <UserCheck className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-900">
-                  <strong>Account Migration Detected</strong>
+                  <strong>{t("migratedUser.forgotPassword.alert_title")}</strong>
                   <p className="mt-1 text-sm">
-                    Your account has been upgraded to our new platform. Please reset your password to continue.
+                    {t("migratedUser.forgotPassword.alert_description")}
                   </p>
                 </AlertDescription>
               </Alert>
@@ -203,13 +205,13 @@ export default function ForgotPassword() {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email Address</FormLabel>
+                      <FormLabel>{t("migratedUser.forgotPassword.email_label")}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                           <Input
                             type="email"
-                            placeholder="Enter your email address"
+                            placeholder={t("migratedUser.forgotPassword.email_placeholder")}
                             className="pl-10"
                             {...field}
                             data-testid="input-email"
@@ -232,10 +234,10 @@ export default function ForgotPassword() {
                   {isSubmitting ? (
                     <>
                       <ButtonSpinner />
-                      Sending Reset Link...
+                      {t("migratedUser.forgotPassword.sending")}
                     </>
                   ) : (
-                    "Send Reset Link"
+                    t("migratedUser.forgotPassword.send_reset_button")
                   )}
                 </Button>
               </form>
@@ -245,7 +247,7 @@ export default function ForgotPassword() {
               <Link href="/login" data-testid="link-back-to-login">
                 <Button variant="link" className="text-gray-600 hover:text-navy">
                   <ArrowLeft className="mr-2 h-4 w-4" />
-                  Back to Login
+                  {t("migratedUser.forgotPassword.back_to_login")}
                 </Button>
               </Link>
             </div>
@@ -255,8 +257,7 @@ export default function ForgotPassword() {
         {/* Info Box */}
         <div className="mt-6 bg-white/80 backdrop-blur-sm rounded-lg p-4 border border-gray-200">
           <p className="text-sm text-gray-600 text-center">
-            <strong>Note:</strong> For security, the reset link will expire after 1 hour. 
-            If you need help, contact us at{" "}
+            <strong>{t("migratedUser.forgotPassword.note_title")}</strong> {t("migratedUser.forgotPassword.note_message")}{" "}
             <a href="mailto:education@commonseas.com" className="text-ocean hover:text-ocean-dark font-medium">
               education@commonseas.com
             </a>
