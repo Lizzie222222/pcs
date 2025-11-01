@@ -2254,10 +2254,16 @@ export class DatabaseStorage implements IStorage {
     search?: string;
     visibility?: 'public' | 'private';
     includeHidden?: boolean;
+    includeInactive?: boolean;
     limit?: number;
     offset?: number;
   } = {}): Promise<Resource[]> {
-    const conditions = [eq(resources.isActive, true)];
+    const conditions = [];
+    
+    // Filter out inactive resources unless explicitly included (for admin)
+    if (!filters.includeInactive) {
+      conditions.push(eq(resources.isActive, true));
+    }
     
     // Filter out hidden resources unless explicitly included (for search)
     if (!filters.includeHidden) {

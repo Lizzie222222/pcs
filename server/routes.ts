@@ -347,7 +347,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get resources with filters
   app.get('/api/resources', async (req: any, res) => {
     try {
-      const { stage, country, language, ageRange, resourceType, theme, search, limit, offset, includeHidden } = req.query;
+      const { stage, country, language, ageRange, resourceType, theme, search, limit, offset, includeHidden, includeInactive } = req.query;
       
       // Check if user is authenticated
       const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
@@ -356,6 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // If authenticated, don't filter by visibility (show all resources)
       // If not authenticated, only show public resources
       // Include hidden resources if: there's a search query OR explicitly requested (for admin panel)
+      // Include inactive resources if explicitly requested (for admin panel)
       const resources = await storage.getResources({
         stage: stage as string,
         country: country as string,
@@ -366,6 +367,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         search: search as string,
         visibility: isAuthenticated ? undefined : 'public',
         includeHidden: includeHidden === 'true' || !!search,
+        includeInactive: includeInactive === 'true',
         limit: limit ? parseInt(limit as string) : 20,
         offset: offset ? parseInt(offset as string) : 0,
       });

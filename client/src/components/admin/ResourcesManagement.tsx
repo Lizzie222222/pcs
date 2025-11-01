@@ -791,13 +791,14 @@ export default function ResourcesManagement() {
   });
 
   const { data: resources = [], isLoading, refetch } = useQuery<Resource[]>({
-    queryKey: ['/api/resources', resourceFilters, { includeHidden: true }],
+    queryKey: ['/api/resources', resourceFilters, { includeHidden: true, includeInactive: true }],
     queryFn: async () => {
       const params = new URLSearchParams({
         ...resourceFilters,
         limit: '100',
         offset: '0',
         includeHidden: 'true',
+        includeInactive: 'true',
       });
       Object.keys(resourceFilters).forEach(key => {
         const value = resourceFilters[key as keyof typeof resourceFilters];
