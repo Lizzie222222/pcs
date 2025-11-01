@@ -121,6 +121,7 @@ export interface PageBuilderFormData {
     fileUrl: string;
     fileName?: string;
     fileSize?: number;
+    fileType?: string; // MIME type for reliable file type detection
     description?: string;
   }>;
   testimonials?: Array<{

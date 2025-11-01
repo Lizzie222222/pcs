@@ -105,6 +105,7 @@ interface EventPackFile {
   fileUrl: string;
   fileName?: string;
   fileSize?: number;
+  fileType?: string; // MIME type for reliable file type detection
   description?: string;
   language?: string; // Prepare for future language metadata (e.g., 'en', 'es', 'fr')
 }
@@ -1364,14 +1365,12 @@ export default function EventLivePage() {
                   // Get the appropriate file type icon
                   const FileIcon = getFileTypeIcon(file.fileName || file.fileUrl);
                   
-                  // Check if file is a PDF or Image
-                  const fileName = file.fileName || file.fileUrl || '';
-                  const isPdf = fileName.toLowerCase().endsWith('.pdf');
+                  // Check if file is a PDF or Image using MIME type
+                  const isPdf = file.fileType === 'application/pdf';
                   const pdfProxyUrl = isPdf ? getProxyUrl(file.fileUrl) : '';
                   
-                  // Check if file is an image
-                  const extension = fileName?.split('.').pop()?.toLowerCase() || '';
-                  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension);
+                  // Check if file is an image using MIME type (more reliable than URL parsing)
+                  const isImage = file.fileType?.startsWith('image/');
                   const imageProxyUrl = isImage ? getProxyUrl(file.fileUrl) : '';
                   
                   // Determine if file has language metadata for badge
@@ -1499,15 +1498,13 @@ export default function EventLivePage() {
                   const resource = item.resource;
                   const FileIcon = getFileTypeIcon(resource.fileUrl || '');
                   
-                  // Check if resource is a PDF or Image
-                  const fileUrl = resource.fileUrl || '';
-                  const isPdf = fileUrl.toLowerCase().includes('.pdf');
-                  const pdfProxyUrl = isPdf ? getProxyUrl(fileUrl) : '';
+                  // Check if resource is a PDF or Image using MIME type
+                  const isPdf = resource.fileType === 'application/pdf';
+                  const pdfProxyUrl = isPdf ? getProxyUrl(resource.fileUrl || '') : '';
                   
-                  // Check if resource is an image
-                  const extension = fileUrl?.split('.').pop()?.toLowerCase() || '';
-                  const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension);
-                  const imageProxyUrl = isImage ? getProxyUrl(fileUrl) : '';
+                  // Check if resource is an image using MIME type (more reliable than URL parsing)
+                  const isImage = resource.fileType?.startsWith('image/');
+                  const imageProxyUrl = isImage ? getProxyUrl(resource.fileUrl || '') : '';
                   
                   return (
                     <Card 
