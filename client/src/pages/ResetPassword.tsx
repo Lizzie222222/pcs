@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Link, useLocation } from "wouter";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
@@ -13,22 +14,8 @@ import { apiRequest } from "@/lib/queryClient";
 import logoUrl from "@assets/Logo_1757848498470.png";
 import { useToast } from "@/hooks/use-toast";
 
-const resetPasswordSchema = z.object({
-  newPassword: z
-    .string()
-    .min(8, "Password must be at least 8 characters long")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
-  confirmPassword: z.string(),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
-
-type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
-
 export default function ResetPassword() {
+  const { t, i18n } = useTranslation("auth");
   const [, navigate] = useLocation();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -37,6 +24,22 @@ export default function ResetPassword() {
   const [token, setToken] = useState<string | null>(null);
   const [invalidToken, setInvalidToken] = useState(false);
   const { toast } = useToast();
+
+  // Create schema with translations - updates when language changes
+  const resetPasswordSchema = useMemo(() => z.object({
+    newPassword: z
+      .string()
+      .min(8, t("migratedUser.resetPassword.validation_password_min_length"))
+      .regex(/[A-Z]/, t("migratedUser.resetPassword.validation_password_uppercase"))
+      .regex(/[a-z]/, t("migratedUser.resetPassword.validation_password_lowercase"))
+      .regex(/[0-9]/, t("migratedUser.resetPassword.validation_password_number")),
+    confirmPassword: z.string(),
+  }).refine((data) => data.newPassword === data.confirmPassword, {
+    message: t("migratedUser.resetPassword.validation_passwords_match"),
+    path: ["confirmPassword"],
+  }), [t, i18n.language]);
+
+  type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
   useEffect(() => {
     // Extract token from URL query parameters
@@ -62,8 +65,8 @@ export default function ResetPassword() {
     if (!token) {
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "Invalid reset token. Please request a new password reset.",
+        title: t("migratedUser.resetPassword.error_title"),
+        description: t("migratedUser.resetPassword.error_invalid_token"),
       });
       return;
     }
@@ -90,16 +93,16 @@ export default function ResetPassword() {
         }
         toast({
           variant: "destructive",
-          title: "Error",
-          description: message || "Failed to reset password. Please try again.",
+          title: t("migratedUser.resetPassword.error_title"),
+          description: message || t("migratedUser.resetPassword.error_reset_failed"),
         });
       }
     } catch (error) {
       console.error("Reset password error:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An error occurred. Please try again later.",
+        title: t("migratedUser.resetPassword.error_title"),
+        description: t("migratedUser.resetPassword.error_generic"),
       });
     } finally {
       setIsSubmitting(false);
@@ -130,36 +133,36 @@ export default function ResetPassword() {
                 </div>
               </div>
               <CardTitle className="text-xl font-semibold text-navy">
-                Invalid Reset Link
+                {t("migratedUser.resetPassword.invalidToken_title")}
               </CardTitle>
             </CardHeader>
             
             <CardContent className="space-y-4 text-center">
               <p className="text-gray-600">
-                This password reset link is invalid or has expired.
+                {t("migratedUser.resetPassword.invalidToken_description")}
               </p>
 
               <div className="bg-red-50 p-4 rounded-lg text-left">
                 <p className="text-sm text-gray-600">
-                  <strong>Common reasons:</strong>
+                  <strong>{t("migratedUser.resetPassword.invalidToken_reasons_title")}</strong>
                 </p>
                 <ul className="text-sm text-gray-600 mt-2 space-y-2 list-disc list-inside">
-                  <li>The link has expired (links are valid for 1 hour)</li>
-                  <li>The link has already been used</li>
-                  <li>The link was copied incorrectly</li>
+                  <li>{t("migratedUser.resetPassword.invalidToken_reason_1")}</li>
+                  <li>{t("migratedUser.resetPassword.invalidToken_reason_2")}</li>
+                  <li>{t("migratedUser.resetPassword.invalidToken_reason_3")}</li>
                 </ul>
               </div>
 
               <div className="pt-4 space-y-2">
                 <Link href="/forgot-password" data-testid="link-request-new">
                   <Button className="w-full bg-ocean hover:bg-ocean-dark text-white">
-                    Request New Reset Link
+                    {t("migratedUser.resetPassword.invalidToken_request_new_button")}
                   </Button>
                 </Link>
                 
                 <Link href="/login" data-testid="link-back-to-login">
                   <Button variant="outline" className="w-full">
-                    Back to Login
+                    {t("migratedUser.resetPassword.invalidToken_back_to_login_button")}
                   </Button>
                 </Link>
               </div>
@@ -194,25 +197,25 @@ export default function ResetPassword() {
                 </div>
               </div>
               <CardTitle className="text-xl font-semibold text-navy">
-                Password Reset Successful!
+                {t("migratedUser.resetPassword.success_title")}
               </CardTitle>
             </CardHeader>
             
             <CardContent className="space-y-4 text-center">
               <p className="text-gray-600">
-                Your password has been reset successfully. You can now log in with your new password.
+                {t("migratedUser.resetPassword.success_description")}
               </p>
 
               <div className="bg-green-50 p-4 rounded-lg">
                 <p className="text-sm text-green-800">
-                  You will be redirected to the login page in a moment...
+                  {t("migratedUser.resetPassword.success_redirect_message")}
                 </p>
               </div>
 
               <div className="pt-4">
                 <Link href="/login" data-testid="link-login-now">
                   <Button className="w-full bg-ocean hover:bg-ocean-dark text-white">
-                    Log In Now
+                    {t("migratedUser.resetPassword.success_login_button")}
                   </Button>
                 </Link>
               </div>
@@ -236,10 +239,10 @@ export default function ResetPassword() {
             />
           </div>
           <h1 className="text-3xl font-bold text-navy leading-tight mb-2" data-testid="text-page-title">
-            Create New Password
+            {t("migratedUser.resetPassword.page_title")}
           </h1>
           <p className="text-base text-gray-600 leading-relaxed" data-testid="text-page-description">
-            Please enter your new password below.
+            {t("migratedUser.resetPassword.page_description")}
           </p>
         </div>
 
@@ -247,7 +250,7 @@ export default function ResetPassword() {
         <Card className="bg-white border border-gray-200 rounded-lg shadow-lg">
           <CardHeader className="text-center pb-4">
             <CardTitle className="text-xl font-semibold text-navy">
-              Reset Your Password
+              {t("migratedUser.resetPassword.card_title")}
             </CardTitle>
           </CardHeader>
           
@@ -259,13 +262,13 @@ export default function ResetPassword() {
                   name="newPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>New Password</FormLabel>
+                      <FormLabel>{t("migratedUser.resetPassword.new_password_label")}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                           <Input
                             type={showPassword ? "text" : "password"}
-                            placeholder="Enter new password"
+                            placeholder={t("migratedUser.resetPassword.new_password_placeholder")}
                             className="pl-10 pr-10"
                             {...field}
                             data-testid="input-new-password"
@@ -298,13 +301,13 @@ export default function ResetPassword() {
                   name="confirmPassword"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Confirm Password</FormLabel>
+                      <FormLabel>{t("migratedUser.resetPassword.confirm_password_label")}</FormLabel>
                       <FormControl>
                         <div className="relative">
                           <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                           <Input
                             type={showConfirmPassword ? "text" : "password"}
-                            placeholder="Confirm new password"
+                            placeholder={t("migratedUser.resetPassword.confirm_password_placeholder")}
                             className="pl-10 pr-10"
                             {...field}
                             data-testid="input-confirm-password"
@@ -334,13 +337,13 @@ export default function ResetPassword() {
 
                 <div className="bg-ocean-light/10 p-4 rounded-lg">
                   <p className="text-sm text-gray-600">
-                    <strong>Password requirements:</strong>
+                    <strong>{t("migratedUser.resetPassword.requirements_title")}</strong>
                   </p>
                   <ul className="text-sm text-gray-600 mt-2 space-y-1 list-disc list-inside">
-                    <li>At least 8 characters long</li>
-                    <li>Contains uppercase letter (A-Z)</li>
-                    <li>Contains lowercase letter (a-z)</li>
-                    <li>Contains number (0-9)</li>
+                    <li>{t("migratedUser.resetPassword.requirement_1")}</li>
+                    <li>{t("migratedUser.resetPassword.requirement_2")}</li>
+                    <li>{t("migratedUser.resetPassword.requirement_3")}</li>
+                    <li>{t("migratedUser.resetPassword.requirement_4")}</li>
                   </ul>
                 </div>
 
@@ -353,10 +356,10 @@ export default function ResetPassword() {
                   {isSubmitting ? (
                     <>
                       <ButtonSpinner />
-                      Resetting Password...
+                      {t("migratedUser.resetPassword.submit_button_loading")}
                     </>
                   ) : (
-                    "Reset Password"
+                    t("migratedUser.resetPassword.submit_button")
                   )}
                 </Button>
               </form>
