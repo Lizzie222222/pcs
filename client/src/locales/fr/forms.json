@@ -135,6 +135,7 @@
     "visibility_public_description": "Peut être présenté dans la galerie d'inspiration après examen par l'administrateur",
     "review_process_title": "Processus d'Examen",
     "review_process_description": "Toutes les soumissions de preuves sont examinées par notre équipe administrative. Vous recevrez une notification par e-mail une fois vos preuves examinées.",
+    "photo_consent_reminder": "Veuillez vous assurer que votre école a soumis le formulaire de <strong>Confirmation de Consentement Photographique</strong>. Si ce n'est pas encore fait, veuillez visiter votre tableau de bord pour télécharger le modèle et téléverser le document signé.",
     "file_upload_error": "Échec du téléchargement des fichiers. Veuillez réessayer.",
     "submit_button": "Soumettre les Preuves",
     "submitting": "Soumission des preuves...",

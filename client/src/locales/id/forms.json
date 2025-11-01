@@ -135,6 +135,7 @@
     "visibility_public_description": "Dapat ditampilkan di galeri inspirasi setelah tinjauan admin",
     "review_process_title": "Proses Peninjauan",
     "review_process_description": "Semua pengajuan bukti ditinjau oleh tim admin kami. Anda akan menerima notifikasi email setelah bukti Anda ditinjau.",
+    "photo_consent_reminder": "Pastikan sekolah Anda telah mengirimkan formulir <strong>Konfirmasi Persetujuan Foto</strong>. Jika belum, silakan kunjungi dashboard Anda untuk mengunduh template dan mengunggah dokumen yang telah ditandatangani.",
     "file_upload_error": "Gagal mengunggah file. Silakan coba lagi.",
     "submit_button": "Kirim Bukti",
     "submitting": "Mengirim bukti...",

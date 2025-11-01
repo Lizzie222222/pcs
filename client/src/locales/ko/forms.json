@@ -135,6 +135,7 @@
     "visibility_public_description": "관리자 검토 후 영감 갤러리에 소개될 수 있습니다",
     "review_process_title": "검토 프로세스",
     "review_process_description": "모든 증거 제출은 관리 팀에서 검토합니다. 증거가 검토되면 이메일 알림을 받게 됩니다.",
+    "photo_consent_reminder": "학교에서 <strong>사진 동의 확인서</strong> 양식을 제출했는지 확인하세요. 아직 제출하지 않았다면 대시보드를 방문하여 템플릿을 다운로드하고 서명된 문서를 업로드하세요.",
     "file_upload_error": "파일 업로드에 실패했습니다. 다시 시도해 주세요.",
     "submit_button": "증거 제출",
     "submitting": "증거 제출 중...",

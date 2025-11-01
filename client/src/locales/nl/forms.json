@@ -135,6 +135,7 @@
     "visibility_public_description": "Kan worden getoond in de inspiratiegalerij na beoordeling door beheerder",
     "review_process_title": "Beoordelingsproces",
     "review_process_description": "Alle bewijsindieningen worden beoordeeld door ons beheerteam. Je ontvangt een e-mailmelding zodra je bewijs is beoordeeld.",
+    "photo_consent_reminder": "Zorg ervoor dat je school het formulier <strong>Bevestiging Fototoestemming</strong> heeft ingediend. Als je dit nog niet hebt gedaan, ga dan naar je dashboard om de sjabloon te downloaden en het ondertekende document te uploaden.",
     "file_upload_error": "Bestanden uploaden mislukt. Probeer het opnieuw.",
     "submit_button": "Bewijs Indienen",
     "submitting": "Bewijs indienen...",

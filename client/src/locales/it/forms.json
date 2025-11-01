@@ -135,6 +135,7 @@
     "visibility_public_description": "Può essere presentato nella galleria dell'ispirazione dopo la revisione dell'amministratore",
     "review_process_title": "Processo di Revisione",
     "review_process_description": "Tutte le prove inviate sono revisionate dal nostro team amministrativo. Riceverai una notifica via email una volta che la tua prova è stata revisionata.",
+    "photo_consent_reminder": "Si prega di assicurarsi che la scuola abbia inviato il modulo di <strong>Conferma del Consenso Fotografico</strong>. Se non lo hai ancora fatto, visita la tua dashboard per scaricare il modello e caricare il documento firmato.",
     "file_upload_error": "Caricamento dei file non riuscito. Riprova.",
     "submit_button": "Invia Prova",
     "submitting": "Invio prova in corso...",

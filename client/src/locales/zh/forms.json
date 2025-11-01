@@ -135,6 +135,7 @@
     "visibility_public_description": "管理员审核后可能会在灵感画廊中展示",
     "review_process_title": "审核流程",
     "review_process_description": "所有证据提交都将由我们的管理团队审核。一旦您的证据被审核，您将收到电子邮件通知。",
+    "photo_consent_reminder": "请确保您的学校已提交<strong>照片同意确认</strong>表格。如果您尚未提交，请访问您的仪表板下载模板并上传已签署的文件。",
     "file_upload_error": "上传文件失败。请重试。",
     "submit_button": "提交证据",
     "submitting": "正在提交证据...",

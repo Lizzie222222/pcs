@@ -135,6 +135,7 @@
     "visibility_public_description": "Kann in der Inspirationsgalerie nach Administrator-Überprüfung vorgestellt werden",
     "review_process_title": "Überprüfungsprozess",
     "review_process_description": "Alle Nachweiseinreichungen werden von unserem Admin-Team überprüft. Sie erhalten eine E-Mail-Benachrichtigung, sobald Ihr Nachweis überprüft wurde.",
+    "photo_consent_reminder": "Bitte stellen Sie sicher, dass Ihre Schule das Formular <strong>Fotoeinwilligungsbestätigung</strong> eingereicht hat. Falls noch nicht geschehen, besuchen Sie bitte Ihr Dashboard, um die Vorlage herunterzuladen und das unterschriebene Dokument hochzuladen.",
     "file_upload_error": "Fehler beim Hochladen der Dateien. Bitte versuchen Sie es erneut.",
     "submit_button": "Nachweis Einreichen",
     "submitting": "Nachweis wird eingereicht...",

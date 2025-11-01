@@ -178,6 +178,7 @@
     "visibility_public_description": "Puede aparecer en la galería de inspiración después de la revisión del administrador",
     "review_process_title": "Proceso de Revisión",
     "review_process_description": "Todas las presentaciones de evidencia son revisadas por nuestro equipo administrativo. Recibirás una notificación por correo una vez que tu evidencia haya sido revisada.",
+    "photo_consent_reminder": "Por favor, asegúrese de que su escuela haya enviado el formulario de <strong>Confirmación de Consentimiento Fotográfico</strong>. Si aún no lo ha hecho, visite su panel de control para descargar la plantilla y cargar el documento firmado.",
     "file_upload_error": "Error al subir archivos. Por favor, inténtalo de nuevo.",
     "submit_button": "Enviar Evidencia",
     "submitting": "Enviando evidencia...",

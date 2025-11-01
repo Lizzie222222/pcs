@@ -135,6 +135,7 @@
     "visibility_public_description": "Pode ser apresentado na galeria de inspiração após revisão do administrador",
     "review_process_title": "Processo de Revisão",
     "review_process_description": "Todas as submissões de evidência são revistas pela nossa equipa administrativa. Receberá uma notificação por e-mail assim que a sua evidência for revista.",
+    "photo_consent_reminder": "Por favor, certifique-se de que a sua escola enviou o formulário de <strong>Confirmação de Consentimento Fotográfico</strong>. Se ainda não o fez, visite o seu painel para descarregar o modelo e carregar o documento assinado.",
     "file_upload_error": "Falha ao carregar ficheiros. Por favor, tente novamente.",
     "submit_button": "Enviar Evidência",
     "submitting": "Enviando evidência...",
