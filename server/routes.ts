@@ -6,7 +6,7 @@ import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { ObjectPermission, getObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData, getBaseUrl } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, caseStudies, importBatches, userActivityLogs } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, schools, schoolUsers, caseStudies, importBatches, userActivityLogs } from "@shared/schema";
 import { nanoid } from 'nanoid';
 import { z } from "zod";
 import { randomUUID, randomBytes } from 'crypto';
@@ -2145,9 +2145,18 @@ Return JSON with:
       const profileSchema = z.object({
         firstName: z.string().min(1, "First name is required"),
         lastName: z.string().optional(),
+        preferredLanguage: z.string().optional(),
+        studentCount: z.number().int().positive().optional(),
       });
       
-      const { firstName, lastName } = profileSchema.parse(req.body);
+      const { firstName, lastName, preferredLanguage, studentCount } = profileSchema.parse(req.body);
+      
+      console.log(`[Migrated User Onboarding] User ${userId} updating profile:`, {
+        firstName,
+        lastName,
+        preferredLanguage,
+        studentCount
+      });
       
       // Update user profile and mark onboarding as complete
       await db
@@ -2155,23 +2164,95 @@ Return JSON with:
         .set({ 
           firstName, 
           lastName: lastName || user.lastName,
+          preferredLanguage: preferredLanguage || user.preferredLanguage,
+          needsPasswordReset: false,
           hasSeenOnboarding: true,
           updatedAt: new Date() 
         })
         .where(eq(users.id, userId));
       
-      console.log(`[Migrated User] User ${userId} completed onboarding`);
+      // If studentCount is provided, update the user's school
+      if (studentCount !== undefined) {
+        console.log(`[Migrated User Onboarding] Updating student count to ${studentCount} for user ${userId}`);
+        
+        // Fetch user's school via schoolUsers table
+        const userSchools = await db
+          .select({
+            schoolId: schoolUsers.schoolId,
+          })
+          .from(schoolUsers)
+          .where(eq(schoolUsers.userId, userId))
+          .limit(1);
+        
+        if (userSchools.length > 0) {
+          const schoolId = userSchools[0].schoolId;
+          
+          // Update the school's studentCount
+          await db
+            .update(schools)
+            .set({
+              studentCount,
+              updatedAt: new Date()
+            })
+            .where(eq(schools.id, schoolId));
+          
+          console.log(`[Migrated User Onboarding] Updated school ${schoolId} student count to ${studentCount}`);
+        } else {
+          console.log(`[Migrated User Onboarding] No school found for user ${userId}, skipping student count update`);
+        }
+      }
       
-      res.json({ 
-        success: true,
-        message: "Onboarding completed successfully"
-      });
+      console.log(`[Migrated User Onboarding] User ${userId} completed onboarding successfully`);
+      
+      // Fetch and return the updated user object
+      const updatedUser = await storage.getUser(userId);
+      
+      res.json(updatedUser);
     } catch (error) {
       console.error("[Migrated User Onboarding] Error:", error);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
       res.status(500).json({ success: false, message: "Failed to complete onboarding" });
+    }
+  });
+
+  // GET /api/auth/migrated-user-school - Get school details for migrated user
+  app.get('/api/auth/migrated-user-school', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.id;
+      
+      console.log(`[Migrated User School] Fetching school for user ${userId}`);
+      
+      // Fetch school linked to the authenticated user via schoolUsers table
+      const userSchoolData = await db
+        .select({
+          school: schools,
+          role: schoolUsers.role,
+        })
+        .from(schoolUsers)
+        .innerJoin(schools, eq(schoolUsers.schoolId, schools.id))
+        .where(eq(schoolUsers.userId, userId))
+        .limit(1);
+      
+      if (userSchoolData.length === 0) {
+        console.log(`[Migrated User School] No school found for user ${userId}`);
+        return res.status(404).json({ 
+          message: "No school found for this user. Please contact support if you believe this is an error." 
+        });
+      }
+      
+      const { school, role } = userSchoolData[0];
+      
+      console.log(`[Migrated User School] Found school ${school.id} for user ${userId} with role ${role}`);
+      
+      res.json({
+        ...school,
+        role,
+      });
+    } catch (error) {
+      console.error("[Migrated User School] Error:", error);
+      res.status(500).json({ message: "Failed to fetch school details" });
     }
   });
 

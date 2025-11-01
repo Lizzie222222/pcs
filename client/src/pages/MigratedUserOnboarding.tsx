@@ -1,105 +1,118 @@
-import { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useTranslation } from "react-i18next";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { Eye, EyeOff, UserCheck, Lock, ArrowRight, CheckCircle2 } from "lucide-react";
+import { School, UserCheck, AlertCircle, CheckCircle2 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
+// Define languages array matching LanguageSwitcher
+const languages = [
+  { code: 'ar', nativeName: 'العربية' },
+  { code: 'zh', nativeName: '中文' },
+  { code: 'nl', nativeName: 'Nederlands' },
+  { code: 'en', nativeName: 'English' },
+  { code: 'fr', nativeName: 'Français' },
+  { code: 'de', nativeName: 'Deutsch' },
+  { code: 'el', nativeName: 'Ελληνικά' },
+  { code: 'id', nativeName: 'Bahasa Indonesia' },
+  { code: 'it', nativeName: 'Italiano' },
+  { code: 'ko', nativeName: '한국어' },
+  { code: 'pt', nativeName: 'Português' },
+  { code: 'ru', nativeName: 'Русский' },
+  { code: 'es', nativeName: 'Español' },
+  { code: 'cy', nativeName: 'Cymraeg' },
+];
+
+// Define form schema
+const profileFormSchema = z.object({
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().optional(),
+  preferredLanguage: z.string().min(1, "Please select a language"),
+  studentCount: z.union([
+    z.coerce.number().positive(),
+    z.literal(''),
+    z.null(),
+  ]).transform(val => (val === '' || val === null) ? null : val).optional(),
+});
+
+type ProfileFormValues = z.infer<typeof profileFormSchema>;
+
+// Define school data type
+type SchoolData = {
+  schoolName: string;
+  country: string;
+  currentStage: string;
+  studentCount: number | null;
+};
 
 export default function MigratedUserOnboarding() {
   const { t } = useTranslation("auth");
   const { user } = useAuth();
   const { toast } = useToast();
-  
-  // Step 1: Password Reset
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
-  // Step 2: Name Confirmation
-  const [firstName, setFirstName] = useState(user?.firstName || "");
-  const [lastName, setLastName] = useState(user?.lastName || "");
-  
-  // State management - skip password step if already reset via forgot password
-  const needsPasswordReset = user?.needsPasswordReset ?? true;
-  const [currentStep, setCurrentStep] = useState<1 | 2>(needsPasswordReset ? 1 : 2);
-  const [passwordResetComplete, setPasswordResetComplete] = useState(!needsPasswordReset);
 
-  useEffect(() => {
-    if (user) {
-      setFirstName(user.firstName || "");
-      setLastName(user.lastName || "");
-      
-      // If user already reset password via forgot password flow, skip to step 2
-      if (!user.needsPasswordReset && currentStep === 1) {
-        setCurrentStep(2);
-        setPasswordResetComplete(true);
-      }
-    }
-  }, [user]);
+  // Fetch school data
+  const { data: schoolData, isLoading: isLoadingSchool, error: schoolError } = useQuery<SchoolData>({
+    queryKey: ['/api/auth/migrated-user-school'],
+    enabled: !!user,
+  });
 
-  const resetPasswordMutation = useMutation({
-    mutationFn: async (newPassword: string) => {
-      const response = await apiRequest("POST", "/api/auth/reset-migrated-password", {
-        password: newPassword
-      });
-      return response.json();
-    },
-    onSuccess: (data) => {
-      if (data.success) {
-        setPasswordResetComplete(true);
-        setCurrentStep(2);
-        toast({
-          title: t("migratedUser.onboarding.toast_password_updated_title"),
-          description: t("migratedUser.onboarding.toast_password_updated_description"),
-        });
-        queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-      } else {
-        toast({
-          title: t("migratedUser.onboarding.toast_password_error_title"),
-          description: data.message || t("migratedUser.onboarding.toast_password_error_description"),
-          variant: "destructive",
-        });
-      }
-    },
-    onError: (error: Error) => {
-      toast({
-        title: t("migratedUser.onboarding.toast_password_error_title"),
-        description: error.message || t("migratedUser.onboarding.toast_password_error_description"),
-        variant: "destructive",
-      });
+  // Initialize form
+  const form = useForm<ProfileFormValues>({
+    resolver: zodResolver(profileFormSchema),
+    defaultValues: {
+      firstName: user?.firstName || "",
+      lastName: user?.lastName || "",
+      preferredLanguage: user?.preferredLanguage || "en",
+      studentCount: null,
     },
   });
 
+  // Update profile mutation
   const updateProfileMutation = useMutation({
-    mutationFn: async (data: { firstName: string; lastName: string }) => {
-      const response = await apiRequest("POST", "/api/auth/complete-migrated-onboarding", data);
+    mutationFn: async (data: ProfileFormValues) => {
+      const response = await apiRequest("POST", "/api/auth/complete-migrated-onboarding", {
+        firstName: data.firstName,
+        lastName: data.lastName || "",
+        preferredLanguage: data.preferredLanguage,
+        studentCount: data.studentCount || null,
+      });
       return response.json();
     },
-    onSuccess: (data) => {
-      if (data.success) {
-        toast({
-          title: t("migratedUser.onboarding.toast_welcome_title"),
-          description: t("migratedUser.onboarding.toast_welcome_description"),
-        });
-        queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 1500);
-      } else {
-        toast({
-          title: t("migratedUser.onboarding.toast_profile_error_title"),
-          description: data.message || t("migratedUser.onboarding.toast_profile_error_description"),
-          variant: "destructive",
-        });
-      }
+    onSuccess: (user) => {
+      // Backend now returns updated user object directly (not wrapped in {success: true})
+      toast({
+        title: t("migratedUser.onboarding.toast_welcome_title"),
+        description: t("migratedUser.onboarding.toast_welcome_description"),
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/migrated-user-school'] });
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 1500);
     },
     onError: (error: Error) => {
       toast({
@@ -110,263 +123,194 @@ export default function MigratedUserOnboarding() {
     },
   });
 
-  const handlePasswordSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (password.length < 8) {
-      toast({
-        title: t("migratedUser.onboarding.toast_password_short_title"),
-        description: t("migratedUser.onboarding.toast_password_short_description"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (password !== confirmPassword) {
-      toast({
-        title: t("migratedUser.onboarding.toast_password_mismatch_title"),
-        description: t("migratedUser.onboarding.toast_password_mismatch_description"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    resetPasswordMutation.mutate(password);
+  const onSubmit = (data: ProfileFormValues) => {
+    updateProfileMutation.mutate(data);
   };
-
-  const handleProfileSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!firstName.trim()) {
-      toast({
-        title: t("migratedUser.onboarding.toast_first_name_required_title"),
-        description: t("migratedUser.onboarding.toast_first_name_required_description"),
-        variant: "destructive",
-      });
-      return;
-    }
-
-    updateProfileMutation.mutate({ firstName: firstName.trim(), lastName: lastName.trim() });
-  };
-
-  // Calculate progress based on whether password reset is needed
-  const totalSteps = needsPasswordReset ? 2 : 1;
-  const progress = needsPasswordReset 
-    ? (currentStep === 1 ? 50 : 100)
-    : 100;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 flex items-center justify-center p-4">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-3xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">{t("migratedUser.forgotPassword.welcome_title")}</h1>
-          <p className="text-gray-600">
-            {needsPasswordReset 
-              ? t("migratedUser.onboarding.welcome_message_with_password")
-              : t("migratedUser.onboarding.welcome_message_without_password")}
+          <h1 className="text-3xl font-bold text-gray-900 mb-2" data-testid="text-page-title">
+            {t("migratedUser.onboarding.page_title")}
+          </h1>
+          <p className="text-gray-600" data-testid="text-page-description">
+            {t("migratedUser.onboarding.page_description")}
           </p>
-          <div className="mt-6">
-            <Progress value={progress} className="h-2" />
-            <p className="text-sm text-gray-500 mt-2">
-              {needsPasswordReset ? t("migratedUser.onboarding.step_progress", { current: currentStep, total: totalSteps }) : t("migratedUser.onboarding.almost_done")}
-            </p>
-          </div>
         </div>
 
-        {currentStep === 1 && (
-          <Card data-testid="card-password-reset">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Lock className="h-6 w-6 text-blue-600" />
-                </div>
-                <div>
-                  <CardTitle>{t("migratedUser.onboarding.step1_title")}</CardTitle>
-                  <CardDescription>
-                    {t("migratedUser.onboarding.step1_description")}
-                  </CardDescription>
-                </div>
+        {/* School Information Card */}
+        <Card className="mb-6" data-testid="card-school-info">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <School className="h-6 w-6 text-blue-600" />
               </div>
-            </CardHeader>
-            <CardContent>
-              <Alert className="mb-6 bg-blue-50 border-blue-200">
-                <AlertDescription className="text-sm text-gray-700">
-                  {t("migratedUser.onboarding.temp_password_info")}
+              <div>
+                <CardTitle>{t("migratedUser.onboarding.school_info_title")}</CardTitle>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {isLoadingSchool ? (
+              <div className="space-y-3">
+                <Skeleton className="h-4 w-3/4" data-testid="skeleton-school-loading" />
+                <Skeleton className="h-4 w-1/2" />
+                <Skeleton className="h-4 w-2/3" />
+              </div>
+            ) : schoolError || !schoolData ? (
+              <Alert variant="destructive" data-testid="alert-school-error">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>{t("migratedUser.onboarding.error_no_school_title")}</AlertTitle>
+                <AlertDescription>
+                  {t("migratedUser.onboarding.error_no_school_description")}
                 </AlertDescription>
               </Alert>
-
-              <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="password">{t("migratedUser.onboarding.password_label")} *</Label>
-                  <div className="relative">
-                    <Input
-                      id="password"
-                      type={showPassword ? "text" : "password"}
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      placeholder={t("migratedUser.onboarding.password_placeholder")}
-                      className="pr-10"
-                      minLength={8}
-                      required
-                      data-testid="input-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                      data-testid="button-toggle-password"
-                    >
-                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
-                  <p className="text-xs text-gray-500">
-                    {t("migratedUser.onboarding.password_requirements")}
-                  </p>
+            ) : (
+              <div className="grid grid-cols-2 gap-4">
+                <div data-testid="div-school-name">
+                  <p className="text-sm text-gray-500">{t("migratedUser.onboarding.school_name_label")}</p>
+                  <p className="font-medium" data-testid="text-school-name">{schoolData.schoolName}</p>
                 </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">{t("migratedUser.onboarding.confirm_password_label")} *</Label>
-                  <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? "text" : "password"}
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder={t("migratedUser.onboarding.confirm_password_placeholder")}
-                      className="pr-10"
-                      minLength={8}
-                      required
-                      data-testid="input-confirm-password"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                      data-testid="button-toggle-confirm-password"
-                    >
-                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                    </button>
-                  </div>
+                <div data-testid="div-school-country">
+                  <p className="text-sm text-gray-500">{t("migratedUser.onboarding.school_country_label")}</p>
+                  <p className="font-medium" data-testid="text-school-country">{schoolData.country}</p>
                 </div>
-
-                <Button
-                  type="submit"
-                  className="w-full bg-pcs_blue hover:bg-blue-600"
-                  disabled={resetPasswordMutation.isPending}
-                  data-testid="button-submit-password"
-                >
-                  {resetPasswordMutation.isPending ? (
-                    t("migratedUser.onboarding.updating_button")
-                  ) : (
-                    <>
-                      {t("migratedUser.onboarding.continue_button")} <ArrowRight className="ml-2 h-4 w-4" />
-                    </>
-                  )}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
-        )}
-
-        {currentStep === 2 && (
-          <Card data-testid="card-name-confirmation">
-            <CardHeader>
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-green-100 rounded-lg">
-                  <UserCheck className="h-6 w-6 text-green-600" />
+                <div data-testid="div-school-stage">
+                  <p className="text-sm text-gray-500">{t("migratedUser.onboarding.school_stage_label")}</p>
+                  <p className="font-medium capitalize" data-testid="text-school-stage">{schoolData.currentStage}</p>
                 </div>
-                <div>
-                  <CardTitle>{t("migratedUser.onboarding.step2_title")}</CardTitle>
-                  <CardDescription>
-                    {t("migratedUser.onboarding.step2_description")}
-                  </CardDescription>
+                <div data-testid="div-school-students">
+                  <p className="text-sm text-gray-500">{t("migratedUser.onboarding.school_students_label")}</p>
+                  <p className="font-medium" data-testid="text-school-students">{schoolData.studentCount || 'N/A'}</p>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent>
-              {passwordResetComplete && needsPasswordReset && (
-                <Alert className="mb-6 bg-green-50 border-green-200">
-                  <CheckCircle2 className="h-4 w-4 text-green-600" />
-                  <AlertTitle>{t("migratedUser.onboarding.password_updated_alert_title")}</AlertTitle>
-                  <AlertDescription className="text-sm text-gray-700">
-                    {t("migratedUser.onboarding.password_updated_alert_description")}
-                  </AlertDescription>
-                </Alert>
-              )}
+            )}
+          </CardContent>
+        </Card>
 
-              {!needsPasswordReset && (
-                <Alert className="mb-6 bg-blue-50 border-blue-200">
-                  <CheckCircle2 className="h-4 w-4 text-blue-600" />
-                  <AlertTitle>{t("migratedUser.onboarding.password_already_set_alert_title")}</AlertTitle>
-                  <AlertDescription className="text-sm text-gray-700">
-                    {t("migratedUser.onboarding.password_already_set_alert_description")}
-                  </AlertDescription>
-                </Alert>
-              )}
-
-              <form onSubmit={handleProfileSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="firstName">
-                    {t("migratedUser.onboarding.first_name_label")} * 
-                    {!firstName && <span className="text-xs text-red-600 ml-1">{t("migratedUser.onboarding.first_name_required")}</span>}
-                  </Label>
-                  <Input
-                    id="firstName"
-                    type="text"
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    placeholder={firstName ? t("migratedUser.onboarding.first_name_placeholder_update") : t("migratedUser.onboarding.first_name_placeholder_enter")}
-                    required
-                    data-testid="input-first-name"
-                    className={!firstName ? "border-red-300 focus:border-red-500" : ""}
-                  />
-                  {firstName && (
-                    <p className="text-xs text-gray-500">{t("migratedUser.onboarding.first_name_current", { name: firstName })}</p>
+        {/* Profile Form */}
+        <Card data-testid="card-profile-form">
+          <CardHeader>
+            <div className="flex items-center gap-3">
+              <div className="p-2 bg-green-100 rounded-lg">
+                <UserCheck className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <CardTitle>{t("migratedUser.onboarding.form_title")}</CardTitle>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                <FormField
+                  control={form.control}
+                  name="firstName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("migratedUser.onboarding.firstName_label")} *</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder={t("migratedUser.onboarding.firstName_placeholder")}
+                          data-testid="input-firstName"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
+                />
 
-                <div className="space-y-2">
-                  <Label htmlFor="lastName">
-                    {t("migratedUser.onboarding.last_name_label")}
-                    {!lastName && <span className="text-xs text-gray-500 ml-1">{t("migratedUser.onboarding.last_name_optional")}</span>}
-                  </Label>
-                  <Input
-                    id="lastName"
-                    type="text"
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    placeholder={lastName ? t("migratedUser.onboarding.last_name_placeholder_update") : t("migratedUser.onboarding.last_name_placeholder_enter")}
-                    data-testid="input-last-name"
-                  />
-                  {lastName && (
-                    <p className="text-xs text-gray-500">{t("migratedUser.onboarding.last_name_current", { name: lastName })}</p>
+                <FormField
+                  control={form.control}
+                  name="lastName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("migratedUser.onboarding.lastName_label")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          placeholder={t("migratedUser.onboarding.lastName_placeholder")}
+                          data-testid="input-lastName"
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
                   )}
-                </div>
+                />
 
-                <Alert className="bg-blue-50 border-blue-200">
-                  <AlertDescription className="text-sm text-gray-700">
-                    {t("migratedUser.onboarding.all_set_message")}
-                  </AlertDescription>
-                </Alert>
+                <FormField
+                  control={form.control}
+                  name="preferredLanguage"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("migratedUser.onboarding.language_label")} *</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger data-testid="select-preferredLanguage">
+                            <SelectValue placeholder={t("migratedUser.onboarding.language_placeholder")} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {languages.map((lang) => (
+                            <SelectItem
+                              key={lang.code}
+                              value={lang.code}
+                              data-testid={`select-option-${lang.code}`}
+                            >
+                              {lang.nativeName}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="studentCount"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{t("migratedUser.onboarding.studentCount_label")}</FormLabel>
+                      <FormControl>
+                        <Input
+                          {...field}
+                          type="number"
+                          placeholder={t("migratedUser.onboarding.studentCount_placeholder")}
+                          data-testid="input-studentCount"
+                          value={field.value ?? ""}
+                          onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)}
+                        />
+                      </FormControl>
+                      <FormDescription>
+                        {t("migratedUser.onboarding.studentCount_help_text")}
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
 
                 <Button
                   type="submit"
                   className="w-full bg-pcs_blue hover:bg-blue-600"
                   disabled={updateProfileMutation.isPending}
-                  data-testid="button-complete-onboarding"
+                  data-testid="button-submit-profile"
                 >
                   {updateProfileMutation.isPending ? (
-                    t("migratedUser.onboarding.completing_setup_button")
+                    t("migratedUser.onboarding.submitting_button")
                   ) : (
                     <>
-                      {t("migratedUser.onboarding.complete_setup_button")} <CheckCircle2 className="ml-2 h-4 w-4" />
+                      {t("migratedUser.onboarding.submit_button")} <CheckCircle2 className="ml-2 h-4 w-4" />
                     </>
                   )}
                 </Button>
               </form>
-            </CardContent>
-          </Card>
-        )}
+            </Form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
