@@ -129,20 +129,29 @@ export function useAuth() {
         return result.user;
       } catch (error: any) {
         // Check if this is a 403 error (migrated user needs password reset)
-        if (error.message?.startsWith('403:')) {
+        if (error.message?.includes('403:')) {
           try {
-            const errorBody = error.message.substring(4).trim();
-            const errorData = JSON.parse(errorBody);
-            
-            if (errorData.isMigratedUser && errorData.email) {
-              throw new Error(JSON.stringify({ 
-                type: 'MIGRATED_USER', 
-                email: errorData.email,
-                message: errorData.message 
-              }));
+            // Extract JSON from error message (format: "403: {...}")
+            const jsonMatch = error.message.match(/403:\s*(.+)$/);
+            if (jsonMatch) {
+              const errorData = JSON.parse(jsonMatch[1]);
+              
+              if (errorData.isMigratedUser && errorData.email) {
+                // Create a special error object that onError can detect
+                const migratedError = new Error('MIGRATED_USER');
+                (migratedError as any).email = errorData.email;
+                (migratedError as any).isMigratedUser = true;
+                throw migratedError;
+              }
             }
           } catch (parseError) {
-            // If parsing fails, continue with normal error handling
+            // Only continue if parseError is from JSON parsing, not from our throw
+            if (parseError instanceof SyntaxError) {
+              // JSON parse failed, continue with normal error handling
+            } else {
+              // This was our custom error being thrown, re-throw it
+              throw parseError;
+            }
           }
         }
         
@@ -171,22 +180,17 @@ export function useAuth() {
         window.location.href = "/dashboard";
       }
     },
-    onError: (error: Error) => {
-      // Check if this is a migrated user error
-      try {
-        const errorData = JSON.parse(error.message);
-        if (errorData.type === 'MIGRATED_USER') {
-          toast({
-            title: "Welcome back!",
-            description: "We see you're from our old platform. Please reset your password to continue.",
-          });
-          // Redirect to forgot password with email pre-filled
-          const encodedEmail = encodeURIComponent(errorData.email);
-          window.location.href = `/forgot-password?email=${encodedEmail}`;
-          return;
-        }
-      } catch {
-        // Not a JSON error, continue with normal error handling
+    onError: (error: any) => {
+      // Check if this is a migrated user error (custom error from mutationFn)
+      if (error.message === 'MIGRATED_USER' && error.isMigratedUser && error.email) {
+        toast({
+          title: "Welcome back!",
+          description: "We see you're from our old platform. Please reset your password to continue.",
+        });
+        // Redirect to forgot password with email pre-filled
+        const encodedEmail = encodeURIComponent(error.email);
+        window.location.href = `/forgot-password?email=${encodedEmail}`;
+        return;
       }
       
       let errorMessage = "Login failed. Please try again.";

@@ -253,6 +253,8 @@ export async function setupAuth(app: Express) {
 
   // POST /api/auth/login - Login with email/password
   app.post("/api/auth/login", async (req, res, next) => {
+    console.log('[Login] POST /api/auth/login request received for email:', req.body.email);
+    
     try {
       loginSchema.parse(req.body);
     } catch (error) {
