@@ -15,7 +15,7 @@ interface MultiStepSchoolRegistrationProps {
 type RegistrationData = Step1Data & Step2Data & Step3Data;
 
 export default function MultiStepSchoolRegistration({ onClose }: MultiStepSchoolRegistrationProps) {
-  const { t } = useTranslation(['forms', 'common']);
+  const { t, i18n } = useTranslation(['forms', 'common']);
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
@@ -63,10 +63,11 @@ export default function MultiStepSchoolRegistration({ onClose }: MultiStepSchool
     setIsSubmitting(true);
 
     try {
-      const registrationData: RegistrationData = {
+      const registrationData: RegistrationData & { language?: string } = {
         ...step1Data,
         ...step2Data,
         ...data,
+        language: i18n.language, // Include current UI language for welcome email
       };
 
       const response = await apiRequest("POST", "/api/schools/register-multi-step", registrationData);

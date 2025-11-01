@@ -51,7 +51,10 @@ export default function ForgotPassword() {
   const handleSubmit = async (data: ForgotPasswordForm) => {
     setIsSubmitting(true);
     try {
-      const res = await apiRequest("POST", "/api/auth/forgot-password", data);
+      const res = await apiRequest("POST", "/api/auth/forgot-password", {
+        ...data,
+        language: i18n.language, // Include current UI language
+      });
       const response = await res.json();
 
       if (response.success) {

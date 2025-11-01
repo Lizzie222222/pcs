@@ -1650,6 +1650,8 @@ Return JSON with:
         showOnMap: z.boolean().default(false),
         gdprConsent: z.boolean().refine(val => val === true, { message: "GDPR consent is required" }),
         acceptTerms: z.boolean().refine(val => val === true, { message: "Terms acceptance is required" }),
+        // Optional: Current UI language for welcome email
+        language: z.string().optional(),
       });
 
       const data = multiStepSchema.parse(req.body);
@@ -1710,8 +1712,9 @@ Return JSON with:
       });
 
       // Send welcome email (non-blocking)
+      // Use provided language from UI, otherwise fall back to user's preferredLanguage
       try {
-        await sendWelcomeEmail(req.user.email!, school.name, req.user.preferredLanguage || 'en');
+        await sendWelcomeEmail(req.user.email!, school.name, data.language || req.user.preferredLanguage || 'en');
       } catch (emailError) {
         console.warn('Welcome email failed to send:', emailError);
       }

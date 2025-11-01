@@ -472,7 +472,7 @@ export async function setupAuth(app: Express) {
   // POST /api/auth/forgot-password - Request password reset
   app.post("/api/auth/forgot-password", async (req, res) => {
     try {
-      const { email } = req.body;
+      const { email, language } = req.body;
 
       if (!email || typeof email !== 'string') {
         return res.status(400).json({
@@ -505,12 +505,13 @@ export async function setupAuth(app: Express) {
       await storage.createPasswordResetToken(email.toLowerCase().trim(), token, expiresAt);
 
       // Send password reset email
+      // Use provided language from UI, otherwise fall back to user's preferredLanguage
       const { sendPasswordResetEmail } = await import('./emailService');
       const emailSent = await sendPasswordResetEmail(
         email.toLowerCase().trim(),
         token,
         user.firstName || undefined,
-        user.preferredLanguage || undefined
+        language || user.preferredLanguage || undefined
       );
 
       if (!emailSent) {
