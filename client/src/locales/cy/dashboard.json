@@ -106,7 +106,26 @@
     "more_needed": "{{count}} yn fwy sydd eu hangen",
     "audit_quiz_required": "Cwis Archwilio: Gofynnol",
     "audit_quiz_required_bullet": "Mae angen cwis archwilio",
-    "evidence_needed": "{{count}} tystiolaeth ychwanegol sydd eu hangen"
+    "evidence_needed": "{{count}} tystiolaeth ychwanegol sydd eu hangen",
+    "status": {
+      "not_started": "Heb ddechrau",
+      "pending_review": "Yn Aros am Adolygiad",
+      "pending": "Yn Aros",
+      "approved": "Cymeradwy",
+      "rejected": "Gwrthodwyd"
+    },
+    "buttons": {
+      "do_audit": "Gwneud Archwiliad",
+      "review_answers": "Adolygu Atebion",
+      "redo_audit": "Ailwneud Archwiliad",
+      "create_plan": "Creu Cynllun",
+      "view_plan": "Gweld Cynllun",
+      "revise_plan": "Diwygio Cynllun",
+      "submit": "Cyflwyno",
+      "resubmit": "Ailgyflwyno",
+      "teacher_toolkit": "Pecyn Offer Athrawon",
+      "student_workbook": "Llyfr Gwaith Myfyrwyr"
+    }
   },
   "evidence": {
     "title": "Cyflwyniadau Tystiolaeth",

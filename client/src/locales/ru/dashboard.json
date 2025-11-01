@@ -106,7 +106,26 @@
     "more_needed": "Требуется еще {{count}}",
     "audit_quiz_required": "Тест по Аудиту: Требуется",
     "audit_quiz_required_bullet": "Требуется тест по аудиту",
-    "evidence_needed": "Требуется еще {{count}} доказательств"
+    "evidence_needed": "Требуется еще {{count}} доказательств",
+    "status": {
+      "not_started": "Не начато",
+      "pending_review": "Ожидает Проверки",
+      "pending": "В Ожидании",
+      "approved": "Одобрено",
+      "rejected": "Отклонено"
+    },
+    "buttons": {
+      "do_audit": "Провести Аудит",
+      "review_answers": "Просмотреть Ответы",
+      "redo_audit": "Повторить Аудит",
+      "create_plan": "Создать План",
+      "view_plan": "Просмотреть План",
+      "revise_plan": "Пересмотреть План",
+      "submit": "Отправить",
+      "resubmit": "Отправить Повторно",
+      "teacher_toolkit": "Инструментарий Учителя",
+      "student_workbook": "Рабочая Тетрадь Ученика"
+    }
   },
   "evidence": {
     "title": "Предоставление Доказательств",

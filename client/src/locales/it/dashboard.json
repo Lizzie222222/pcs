@@ -106,7 +106,26 @@
     "more_needed": "{{count}} in più necessari",
     "audit_quiz_required": "Quiz Audit: Richiesto",
     "audit_quiz_required_bullet": "Quiz audit richiesto",
-    "evidence_needed": "{{count}} prove aggiuntive necessarie"
+    "evidence_needed": "{{count}} prove aggiuntive necessarie",
+    "status": {
+      "not_started": "Non iniziato",
+      "pending_review": "In Attesa di Revisione",
+      "pending": "In Attesa",
+      "approved": "Approvato",
+      "rejected": "Rifiutato"
+    },
+    "buttons": {
+      "do_audit": "Esegui Audit",
+      "review_answers": "Rivedi Risposte",
+      "redo_audit": "Rifai Audit",
+      "create_plan": "Crea Piano",
+      "view_plan": "Visualizza Piano",
+      "revise_plan": "Rivedi Piano",
+      "submit": "Invia",
+      "resubmit": "Invia Nuovamente",
+      "teacher_toolkit": "Toolkit dell'Insegnante",
+      "student_workbook": "Quaderno dello Studente"
+    }
   },
   "evidence": {
     "title": "Invii Prove",

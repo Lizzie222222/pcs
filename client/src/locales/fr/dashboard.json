@@ -106,7 +106,26 @@
     "more_needed": "{{count}} de plus nécessaires",
     "audit_quiz_required": "Quiz d'Audit : Requis",
     "audit_quiz_required_bullet": "Quiz d'audit requis",
-    "evidence_needed": "{{count}} preuves supplémentaires nécessaires"
+    "evidence_needed": "{{count}} preuves supplémentaires nécessaires",
+    "status": {
+      "not_started": "Non commencé",
+      "pending_review": "En Attente de Révision",
+      "pending": "En Attente",
+      "approved": "Approuvé",
+      "rejected": "Rejeté"
+    },
+    "buttons": {
+      "do_audit": "Faire l'Audit",
+      "review_answers": "Réviser les Réponses",
+      "redo_audit": "Refaire l'Audit",
+      "create_plan": "Créer un Plan",
+      "view_plan": "Voir le Plan",
+      "revise_plan": "Réviser le Plan",
+      "submit": "Soumettre",
+      "resubmit": "Resoumettre",
+      "teacher_toolkit": "Boîte à Outils de l'Enseignant",
+      "student_workbook": "Cahier de l'Élève"
+    }
   },
   "evidence": {
     "title": "Soumissions de Preuves",

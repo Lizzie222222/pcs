@@ -106,7 +106,26 @@
     "more_needed": "{{count}} lagi diperlukan",
     "audit_quiz_required": "Kuis Audit: Diperlukan",
     "audit_quiz_required_bullet": "Kuis audit diperlukan",
-    "evidence_needed": "{{count}} bukti lagi diperlukan"
+    "evidence_needed": "{{count}} bukti lagi diperlukan",
+    "status": {
+      "not_started": "Belum dimulai",
+      "pending_review": "Menunggu Peninjauan",
+      "pending": "Menunggu",
+      "approved": "Disetujui",
+      "rejected": "Ditolak"
+    },
+    "buttons": {
+      "do_audit": "Lakukan Audit",
+      "review_answers": "Tinjau Jawaban",
+      "redo_audit": "Ulangi Audit",
+      "create_plan": "Buat Rencana",
+      "view_plan": "Lihat Rencana",
+      "revise_plan": "Revisi Rencana",
+      "submit": "Kirim",
+      "resubmit": "Kirim Ulang",
+      "teacher_toolkit": "Perangkat Guru",
+      "student_workbook": "Buku Kerja Siswa"
+    }
   },
   "evidence": {
     "title": "Pengajuan Bukti",

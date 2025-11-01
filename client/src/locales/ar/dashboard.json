@@ -106,7 +106,26 @@
     "more_needed": "{{count}} أخرى مطلوبة",
     "audit_quiz_required": "اختبار التدقيق: مطلوب",
     "audit_quiz_required_bullet": "اختبار التدقيق مطلوب",
-    "evidence_needed": "{{count}} أدلة إضافية مطلوبة"
+    "evidence_needed": "{{count}} أدلة إضافية مطلوبة",
+    "status": {
+      "not_started": "لم يبدأ",
+      "pending_review": "قيد المراجعة",
+      "pending": "قيد الانتظار",
+      "approved": "معتمد",
+      "rejected": "مرفوض"
+    },
+    "buttons": {
+      "do_audit": "إجراء التدقيق",
+      "review_answers": "مراجعة الإجابات",
+      "redo_audit": "إعادة التدقيق",
+      "create_plan": "إنشاء خطة",
+      "view_plan": "عرض الخطة",
+      "revise_plan": "مراجعة الخطة",
+      "submit": "إرسال",
+      "resubmit": "إعادة الإرسال",
+      "teacher_toolkit": "مجموعة أدوات المعلم",
+      "student_workbook": "كتاب الطالب"
+    }
   },
   "evidence": {
     "title": "تقديم الأدلة",

@@ -106,7 +106,26 @@
     "more_needed": "还需要 {{count}} 项",
     "audit_quiz_required": "审计测验:必需",
     "audit_quiz_required_bullet": "需要审计测验",
-    "evidence_needed": "还需要 {{count}} 项证据"
+    "evidence_needed": "还需要 {{count}} 项证据",
+    "status": {
+      "not_started": "未开始",
+      "pending_review": "待审核",
+      "pending": "待处理",
+      "approved": "已批准",
+      "rejected": "已拒绝"
+    },
+    "buttons": {
+      "do_audit": "进行审计",
+      "review_answers": "查看答案",
+      "redo_audit": "重做审计",
+      "create_plan": "创建计划",
+      "view_plan": "查看计划",
+      "revise_plan": "修改计划",
+      "submit": "提交",
+      "resubmit": "重新提交",
+      "teacher_toolkit": "教师工具包",
+      "student_workbook": "学生练习册"
+    }
   },
   "evidence": {
     "title": "证据提交",

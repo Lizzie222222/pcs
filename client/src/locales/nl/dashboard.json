@@ -106,7 +106,26 @@
     "more_needed": "{{count}} meer nodig",
     "audit_quiz_required": "Audit Quiz: Vereist",
     "audit_quiz_required_bullet": "Audit quiz vereist",
-    "evidence_needed": "{{count}} meer bewijzen nodig"
+    "evidence_needed": "{{count}} meer bewijzen nodig",
+    "status": {
+      "not_started": "Niet gestart",
+      "pending_review": "In Afwachting van Beoordeling",
+      "pending": "In Afwachting",
+      "approved": "Goedgekeurd",
+      "rejected": "Afgewezen"
+    },
+    "buttons": {
+      "do_audit": "Audit Uitvoeren",
+      "review_answers": "Antwoorden Bekijken",
+      "redo_audit": "Audit Opnieuw Doen",
+      "create_plan": "Plan Maken",
+      "view_plan": "Plan Bekijken",
+      "revise_plan": "Plan Herzien",
+      "submit": "Indienen",
+      "resubmit": "Opnieuw Indienen",
+      "teacher_toolkit": "Lerarentoolkit",
+      "student_workbook": "Leerlingenboek"
+    }
   },
   "evidence": {
     "title": "Bewijsindieningen",

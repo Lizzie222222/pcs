@@ -106,7 +106,26 @@
     "more_needed": "{{count}} weitere benötigt",
     "audit_quiz_required": "Audit-Quiz: Erforderlich",
     "audit_quiz_required_bullet": "Audit-Quiz erforderlich",
-    "evidence_needed": "{{count}} weitere Nachweise benötigt"
+    "evidence_needed": "{{count}} weitere Nachweise benötigt",
+    "status": {
+      "not_started": "Nicht begonnen",
+      "pending_review": "Ausstehende Überprüfung",
+      "pending": "Ausstehend",
+      "approved": "Genehmigt",
+      "rejected": "Abgelehnt"
+    },
+    "buttons": {
+      "do_audit": "Audit Durchführen",
+      "review_answers": "Antworten Überprüfen",
+      "redo_audit": "Audit Wiederholen",
+      "create_plan": "Plan Erstellen",
+      "view_plan": "Plan Ansehen",
+      "revise_plan": "Plan Überarbeiten",
+      "submit": "Einreichen",
+      "resubmit": "Erneut Einreichen",
+      "teacher_toolkit": "Lehrer-Toolkit",
+      "student_workbook": "Schüler-Arbeitsbuch"
+    }
   },
   "evidence": {
     "title": "Nachweiseinreichungen",

@@ -106,7 +106,26 @@
     "more_needed": "{{count}} más necesarias",
     "audit_quiz_required": "Cuestionario de Auditoría: Requerido",
     "audit_quiz_required_bullet": "Cuestionario de auditoría requerido",
-    "evidence_needed": "{{count}} evidencias más necesarias"
+    "evidence_needed": "{{count}} evidencias más necesarias",
+    "status": {
+      "not_started": "No iniciado",
+      "pending_review": "Revisión Pendiente",
+      "pending": "Pendiente",
+      "approved": "Aprobado",
+      "rejected": "Rechazado"
+    },
+    "buttons": {
+      "do_audit": "Hacer Auditoría",
+      "review_answers": "Revisar Respuestas",
+      "redo_audit": "Rehacer Auditoría",
+      "create_plan": "Crear Plan",
+      "view_plan": "Ver Plan",
+      "revise_plan": "Revisar Plan",
+      "submit": "Enviar",
+      "resubmit": "Reenviar",
+      "teacher_toolkit": "Kit del Profesor",
+      "student_workbook": "Cuaderno del Estudiante"
+    }
   },
   "evidence": {
     "title": "Envíos de Evidencia",
