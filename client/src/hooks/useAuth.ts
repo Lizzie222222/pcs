@@ -184,8 +184,8 @@ export function useAuth() {
       // Check if this is a migrated user error (custom error from mutationFn)
       if (error.message === 'MIGRATED_USER' && error.isMigratedUser && error.email) {
         toast({
-          title: "Welcome back!",
-          description: "We see you're from our old platform. Please reset your password to continue.",
+          title: i18n.t("auth:migratedUser.forgotPassword.redirect_toast_title"),
+          description: i18n.t("auth:migratedUser.forgotPassword.redirect_toast_description"),
         });
         // Redirect to forgot password with email pre-filled
         const encodedEmail = encodeURIComponent(error.email);
