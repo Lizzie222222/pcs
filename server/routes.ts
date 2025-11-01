@@ -918,7 +918,7 @@ Return JSON with:
    */
   app.get('/api/inspiration-content', async (req: any, res) => {
     try {
-      const { stage, country, search, contentType, limit, offset } = req.query;
+      const { stage, country, search, contentType, limit, offset, featured, categories, tags } = req.query;
       
       // Check if user is authenticated
       const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
@@ -926,6 +926,13 @@ Return JSON with:
       
       const requestedLimit = limit ? parseInt(limit as string) : 20;
       const requestedOffset = offset ? parseInt(offset as string) : 0;
+      
+      // Parse featured filter (convert string 'true' to boolean)
+      const featuredFilter = featured === 'true' ? true : undefined;
+      
+      // Parse categories and tags filters (split comma-separated values into arrays)
+      const categoriesFilter = categories ? (categories as string).split(',').map(c => c.trim()) : undefined;
+      const tagsFilter = tags ? (tags as string).split(',').map(t => t.trim()) : undefined;
       
       let combinedResults: any[] = [];
       
@@ -951,6 +958,9 @@ Return JSON with:
           stage: stage as string,
           country: country as string,
           search: search as string,
+          featured: featuredFilter,
+          categories: categoriesFilter,
+          tags: tagsFilter,
           status: statusFilter,
           limit: contentType === 'case-study' ? requestedLimit : fetchLimit,
           offset: contentType === 'case-study' ? requestedOffset : fetchOffset,
