@@ -123,7 +123,7 @@ export function useAuth() {
         const result = await response.json();
         
         if (!result.success) {
-          throw new Error(result.message || "Login failed");
+          throw new Error(result.message || i18n.t("auth:login.error_title"));
         }
         
         return result.user;
@@ -170,8 +170,8 @@ export function useAuth() {
       }
       
       toast({
-        title: "Welcome back!",
-        description: `Successfully signed in as ${user.firstName || user.email}`,
+        title: i18n.t("auth:login.success_title"),
+        description: i18n.t("auth:login.success_description", { name: user.firstName || user.email }),
       });
       // Redirect based on user role
       if (user.isAdmin) {
@@ -193,20 +193,20 @@ export function useAuth() {
         return;
       }
       
-      let errorMessage = "Login failed. Please try again.";
+      let errorMessage = i18n.t("auth:login.error_description_default");
       
       // Handle validation errors or specific backend errors
       if (error.message.includes("400:") || error.message.includes("401:")) {
         try {
           const errorData = JSON.parse(error.message.split(": ")[1]);
-          errorMessage = errorData.message || "Invalid email or password";
+          errorMessage = errorData.message || i18n.t("auth:errors.invalid_credentials");
         } catch {
-          errorMessage = "Invalid email or password";
+          errorMessage = i18n.t("auth:errors.invalid_credentials");
         }
       }
       
       toast({
-        title: "Login failed",
+        title: i18n.t("auth:login.error_title"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -219,7 +219,7 @@ export function useAuth() {
       const result = await response.json();
       
       if (!result.success) {
-        throw new Error(result.message || "Registration failed");
+        throw new Error(result.message || i18n.t("auth:register.error_registration_failed"));
       }
       
       return result.user;
@@ -235,8 +235,8 @@ export function useAuth() {
       }
       
       toast({
-        title: "Account created successfully!",
-        description: `Welcome to Plastic Clever Schools, ${user.firstName}!`,
+        title: i18n.t("auth:register.success_title"),
+        description: i18n.t("auth:register.success_description", { name: user.firstName }),
       });
       // Redirect based on user role
       if (user.isAdmin) {
@@ -246,7 +246,7 @@ export function useAuth() {
       }
     },
     onError: (error: Error) => {
-      let errorMessage = "Registration failed. Please try again.";
+      let errorMessage = i18n.t("auth:register.error_description_default");
       
       // Handle validation errors or specific backend errors
       if (error.message.includes("400:")) {
@@ -256,15 +256,15 @@ export function useAuth() {
             // Handle Zod validation errors
             errorMessage = errorData.errors.map((err: any) => err.message).join(", ");
           } else {
-            errorMessage = errorData.message || "Registration failed";
+            errorMessage = errorData.message || i18n.t("auth:register.error_registration_failed");
           }
         } catch {
-          errorMessage = "Registration failed";
+          errorMessage = i18n.t("auth:register.error_registration_failed");
         }
       }
       
       toast({
-        title: "Registration failed",
+        title: i18n.t("auth:register.error_title"),
         description: errorMessage,
         variant: "destructive",
       });
@@ -277,7 +277,7 @@ export function useAuth() {
       const result = await response.json();
       
       if (!result.success) {
-        throw new Error(result.message || "Logout failed");
+        throw new Error(result.message || i18n.t("auth:logout.error_logout_failed"));
       }
       
       return result;
@@ -289,16 +289,16 @@ export function useAuth() {
       // Invalidate all queries to clear any user-specific data
       queryClient.invalidateQueries();
       toast({
-        title: "Signed out",
-        description: "You have been successfully signed out",
+        title: i18n.t("auth:logout.success_title"),
+        description: i18n.t("auth:logout.success_description"),
       });
       // Redirect to home page
       window.location.href = "/";
     },
     onError: (error: Error) => {
       toast({
-        title: "Logout failed",
-        description: "There was an issue signing you out. Please try again.",
+        title: i18n.t("auth:logout.error_title"),
+        description: i18n.t("auth:logout.error_description"),
         variant: "destructive",
       });
     },

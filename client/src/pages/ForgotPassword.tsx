@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,19 +15,20 @@ import logoUrl from "@assets/Logo_1757848498470.png";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const forgotPasswordSchema = z.object({
-  email: z.string().email("Please enter a valid email address"),
-});
-
-type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
-
 export default function ForgotPassword() {
-  const { t } = useTranslation("auth");
+  const { t, i18n } = useTranslation("auth");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
   const [submittedEmail, setSubmittedEmail] = useState("");
   const [isMigratedUser, setIsMigratedUser] = useState(false);
   const { toast } = useToast();
+
+  // Create schema with translations - updates when language changes
+  const forgotPasswordSchema = useMemo(() => z.object({
+    email: z.string().email(t("migratedUser.forgotPassword.validation_email_invalid")),
+  }), [t, i18n.language]);
+
+  type ForgotPasswordForm = z.infer<typeof forgotPasswordSchema>;
 
   const form = useForm<ForgotPasswordForm>({
     resolver: zodResolver(forgotPasswordSchema),
@@ -59,16 +60,16 @@ export default function ForgotPassword() {
       } else {
         toast({
           variant: "destructive",
-          title: "Error",
-          description: response.message || "Failed to send reset email. Please try again.",
+          title: t("migratedUser.forgotPassword.error_title"),
+          description: response.message || t("migratedUser.forgotPassword.error_send_failed"),
         });
       }
     } catch (error) {
       console.error("Forgot password error:", error);
       toast({
         variant: "destructive",
-        title: "Error",
-        description: "An error occurred. Please try again later.",
+        title: t("migratedUser.forgotPassword.error_title"),
+        description: t("migratedUser.forgotPassword.error_generic"),
       });
     } finally {
       setIsSubmitting(false);
