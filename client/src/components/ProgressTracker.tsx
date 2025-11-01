@@ -397,7 +397,7 @@ export default function ProgressTracker({
                                 {auditStatus === 'not_started' && (
                                   <>
                                     <Circle className="h-4 w-4 text-gray-400" />
-                                    <span className="text-xs text-gray-500">Not started</span>
+                                    <span className="text-xs text-gray-500">{t('progress.status.not_started')}</span>
                                   </>
                                 )}
                                 {auditStatus === 'submitted' && (
@@ -408,7 +408,7 @@ export default function ProgressTracker({
                                       className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
                                       data-testid="status-pending-review"
                                     >
-                                      Pending Review
+                                      {t('progress.status.pending_review')}
                                     </Badge>
                                   </>
                                 )}
@@ -420,7 +420,7 @@ export default function ProgressTracker({
                                       className="text-xs bg-green-50 text-green-700 border-green-200"
                                       data-testid="status-approved"
                                     >
-                                      Approved
+                                      {t('progress.status.approved')}
                                     </Badge>
                                   </>
                                 )}
@@ -432,7 +432,7 @@ export default function ProgressTracker({
                                       className="text-xs bg-red-50 text-red-700 border-red-200"
                                       data-testid="status-rejected"
                                     >
-                                      Rejected
+                                      {t('progress.status.rejected')}
                                     </Badge>
                                   </>
                                 )}
@@ -446,7 +446,7 @@ export default function ProgressTracker({
                                   onClick={handleOpenAudit}
                                   data-testid="button-do-audit"
                                 >
-                                  Do Audit
+                                  {t('progress.buttons.do_audit')}
                                 </Button>
                               )}
                               {auditStatus === 'submitted' && (
@@ -457,7 +457,7 @@ export default function ProgressTracker({
                                   onClick={handleOpenAudit}
                                   data-testid="button-review-answers"
                                 >
-                                  Review Answers
+                                  {t('progress.buttons.review_answers')}
                                 </Button>
                               )}
                               {auditStatus === 'rejected' && (
@@ -468,7 +468,7 @@ export default function ProgressTracker({
                                   onClick={handleOpenAudit}
                                   data-testid="button-redo-audit"
                                 >
-                                  Redo Audit
+                                  {t('progress.buttons.redo_audit')}
                                 </Button>
                               )}
                             </div>
@@ -481,7 +481,7 @@ export default function ProgressTracker({
                                 {!evidenceStatus && (
                                   <>
                                     <Circle className="h-4 w-4 text-gray-400" />
-                                    <span className="text-xs text-gray-500">Not started</span>
+                                    <span className="text-xs text-gray-500">{t('progress.status.not_started')}</span>
                                   </>
                                 )}
                                 {evidenceStatus === 'pending' && (
@@ -492,7 +492,7 @@ export default function ProgressTracker({
                                       className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
                                       data-testid="status-action-plan-pending"
                                     >
-                                      Pending Review
+                                      {t('progress.status.pending_review')}
                                     </Badge>
                                   </>
                                 )}
@@ -504,7 +504,7 @@ export default function ProgressTracker({
                                       className="text-xs bg-green-50 text-green-700 border-green-200"
                                       data-testid="status-action-plan-approved"
                                     >
-                                      Approved
+                                      {t('progress.status.approved')}
                                     </Badge>
                                   </>
                                 )}
@@ -516,7 +516,7 @@ export default function ProgressTracker({
                                       className="text-xs bg-red-50 text-red-700 border-red-200"
                                       data-testid="status-action-plan-rejected"
                                     >
-                                      Rejected
+                                      {t('progress.status.rejected')}
                                     </Badge>
                                   </>
                                 )}
@@ -530,7 +530,7 @@ export default function ProgressTracker({
                                   onClick={() => handleOpenActionPlan(requirement.id)}
                                   data-testid="button-create-action-plan"
                                 >
-                                  Create Plan
+                                  {t('progress.buttons.create_plan')}
                                 </Button>
                               )}
                               {evidenceStatus === 'pending' && (
@@ -541,7 +541,7 @@ export default function ProgressTracker({
                                   onClick={() => handleOpenActionPlan(requirement.id)}
                                   data-testid="button-view-action-plan"
                                 >
-                                  View Plan
+                                  {t('progress.buttons.view_plan')}
                                 </Button>
                               )}
                               {evidenceStatus === 'rejected' && (
@@ -552,7 +552,7 @@ export default function ProgressTracker({
                                   onClick={() => handleOpenActionPlan(requirement.id)}
                                   data-testid="button-redo-action-plan"
                                 >
-                                  Revise Plan
+                                  {t('progress.buttons.revise_plan')}
                                 </Button>
                               )}
                             </div>
@@ -565,7 +565,7 @@ export default function ProgressTracker({
                                 {!evidenceStatus && (
                                   <>
                                     <Circle className="h-4 w-4 text-gray-400" />
-                                    <span className="text-xs text-gray-500">Not started</span>
+                                    <span className="text-xs text-gray-500">{t('progress.status.not_started')}</span>
                                   </>
                                 )}
                                 {evidenceStatus === 'pending' && (
@@ -576,7 +576,7 @@ export default function ProgressTracker({
                                       className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
                                       data-testid={`status-pending-${requirement.id}`}
                                     >
-                                      Pending
+                                      {t('progress.status.pending')}
                                     </Badge>
                                   </>
                                 )}
@@ -588,7 +588,7 @@ export default function ProgressTracker({
                                       className="text-xs bg-green-50 text-green-700 border-green-200"
                                       data-testid={`status-approved-${requirement.id}`}
                                     >
-                                      Approved
+                                      {t('progress.status.approved')}
                                     </Badge>
                                   </>
                                 )}
@@ -600,7 +600,7 @@ export default function ProgressTracker({
                                       className="text-xs bg-red-50 text-red-700 border-red-200"
                                       data-testid={`status-rejected-${requirement.id}`}
                                     >
-                                      Rejected
+                                      {t('progress.status.rejected')}
                                     </Badge>
                                   </>
                                 )}
@@ -619,7 +619,7 @@ export default function ProgressTracker({
                                   onClick={() => handleSubmitEvidence(requirement.id, stage.id)}
                                   data-testid={`button-submit-${requirement.id}`}
                                 >
-                                  {evidenceStatus === 'rejected' ? 'Resubmit' : 'Submit'}
+                                  {evidenceStatus === 'rejected' ? t('progress.buttons.resubmit') : t('progress.buttons.submit')}
                                 </Button>
                               )}
                             </div>

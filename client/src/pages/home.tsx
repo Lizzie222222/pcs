@@ -891,7 +891,7 @@ export default function Home() {
                         data-testid="button-teacher-toolkit"
                       >
                         <BookOpen className="h-3 w-3 mr-1.5" />
-                        Teacher Toolkit
+                        {t('progress.buttons.teacher_toolkit')}
                       </Button>
                     </a>
                     <a href={studentWorkbookUrl} target="_blank" rel="noopener noreferrer">
@@ -902,7 +902,7 @@ export default function Home() {
                         data-testid="button-student-workbook"
                       >
                         <FileText className="h-3 w-3 mr-1.5" />
-                        Student Workbook
+                        {t('progress.buttons.student_workbook')}
                       </Button>
                     </a>
                   </div>
