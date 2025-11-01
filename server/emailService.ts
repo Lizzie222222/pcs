@@ -457,16 +457,16 @@ export async function sendMigratedUserWelcomeEmail(
         <strong>Need help getting started?</strong><br>
         Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
       </p>
-    `
+    `,
+    callToActionText: 'Launch My New Dashboard',
+    footerText: 'This email was sent because your account was upgraded to our new platform.'
   };
   
   return await sendTranslatedEmail({
     to: userEmail,
     userLanguage,
     englishContent,
-    callToActionText: '🚀 Launch My New Dashboard!',
     callToActionUrl: loginUrl,
-    footerText: 'This email was sent because your account was upgraded to our new platform.'
   });
 }
 
@@ -541,16 +541,16 @@ export async function sendMigratedUserStandardWelcomeEmail(
         <strong>Need help getting started?</strong><br>
         Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
       </p>
-    `
+    `,
+    callToActionText: 'Access My Dashboard',
+    footerText: 'This email was sent because your account was upgraded to our new platform.'
   };
   
   return await sendTranslatedEmail({
     to: userEmail,
     userLanguage,
     englishContent,
-    callToActionText: '🚀 Access My Dashboard',
     callToActionUrl: loginUrl,
-    footerText: 'This email was sent because your account was upgraded to our new platform.'
   });
 }
 
@@ -668,16 +668,16 @@ export async function sendEvidenceApprovalEmail(
       <p style="margin: 0; color: #666;">
         View your evidence and track your progress in your dashboard.
       </p>
-    `
+    `,
+    callToActionText: 'View Dashboard',
+    footerText: 'You received this email because evidence was approved for your school.'
   };
   
   return await sendTranslatedEmail({
     to: userEmail,
     userLanguage,
     englishContent,
-    callToActionText: '📊 View Dashboard',
     callToActionUrl: baseUrl,
-    footerText: 'You received this email because evidence was approved for your school.'
   });
 }
 
@@ -727,16 +727,16 @@ export async function sendEvidenceRejectionEmail(
       <p style="margin: 0; color: #666;">
         Need help? Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
       </p>
-    `
+    `,
+    callToActionText: 'Update Evidence',
+    footerText: 'You received this email because evidence was reviewed for your school.'
   };
   
   return await sendTranslatedEmail({
     to: userEmail,
     userLanguage,
     englishContent,
-    callToActionText: '📝 Update Evidence',
     callToActionUrl: baseUrl,
-    footerText: 'You received this email because evidence was reviewed for your school.'
   });
 }
 
@@ -810,16 +810,16 @@ export async function sendTeacherInvitationEmail(
       <p style="margin: 30px 0 0 0; color: #333333; font-size: 16px; line-height: 1.8; text-align: center;">
         We're excited to have you join <strong style="color: #02BBB4;">${schoolName}</strong> on this journey! 🌊
       </p>
-    `
+    `,
+    callToActionText: 'Join Your School',
+    footerText: 'You received this invitation to join your school on Plastic Clever Schools.'
   };
   
   return await sendTranslatedEmail({
     to: recipientEmail,
     userLanguage,
     englishContent,
-    callToActionText: '🚀 Join Your School',
     callToActionUrl: acceptUrl,
-    footerText: 'You received this invitation to join your school on Plastic Clever Schools.'
   });
 }
 
@@ -895,16 +895,16 @@ export async function sendAdminInvitationEmail(
           <a href="mailto:education@commonseas.com" style="color: #02BBB4; font-weight: 600; text-decoration: none;">education@commonseas.com</a>
         </p>
       </div>
-    `
+    `,
+    callToActionText: 'Accept Your Invitation',
+    footerText: 'You received this invitation to become an administrator on Plastic Clever Schools.'
   };
   
   return await sendTranslatedEmail({
     to: recipientEmail,
     userLanguage,
     englishContent,
-    callToActionText: '🎯 Accept Your Invitation!',
     callToActionUrl: acceptUrl,
-    footerText: 'You received this invitation to become an administrator on Plastic Clever Schools.'
   });
 }
 
@@ -976,16 +976,16 @@ export async function sendPartnerInvitationEmail(
       <p style="margin: 30px 0 0 0; color: #333333; font-size: 16px; line-height: 1.8; text-align: center;">
         Thank you for joining our mission to create a <strong style="color: #02BBB4;">plastic-free future</strong>! 🌊
       </p>
-    `
+    `,
+    callToActionText: 'Accept Your Invitation',
+    footerText: 'You received this invitation to become a partner with Plastic Clever Schools.'
   };
   
   return await sendTranslatedEmail({
     to: recipientEmail,
     userLanguage,
     englishContent,
-    callToActionText: '🎯 Accept Your Invitation',
     callToActionUrl: acceptUrl,
-    footerText: 'You received this invitation to become a partner with Plastic Clever Schools.'
   });
 }
 
@@ -1031,16 +1031,16 @@ export async function sendVerificationRequestEmail(
       <p style="margin: 0 0 20px 0;">
         Please review this request and approve or decline it from your Team Management dashboard.
       </p>
-    `
+    `,
+    callToActionText: 'Review Request',
+    footerText: 'You received this email because you are a head teacher at this school.'
   };
   
   return await sendTranslatedEmail({
     to: headTeacherEmail,
     userLanguage,
     englishContent,
-    callToActionText: '👀 Review Request',
     callToActionUrl: reviewUrl,
-    footerText: 'You received this email because you are a head teacher at this school.'
   });
 }
 
@@ -1083,16 +1083,16 @@ export async function sendVerificationApprovalEmail(
       <p style="margin: 0 0 20px 0;">
         You can now access your school's dashboard and start contributing to your school's plastic clever journey! 🌊
       </p>
-    `
+    `,
+    callToActionText: 'Go to Dashboard',
+    footerText: 'You received this email because your verification request was approved.'
   };
   
   return await sendTranslatedEmail({
     to: requesterEmail,
     userLanguage,
     englishContent,
-    callToActionText: '🚀 Go to Dashboard',
     callToActionUrl: `${baseUrl}/dashboard`,
-    footerText: 'You received this email because your verification request was approved.'
   });
 }
 
@@ -1139,14 +1139,14 @@ export async function sendVerificationRejectionEmail(
       <p style="margin: 0; color: #666;">
         Need help? Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
       </p>
-    `
+    `,
+    footerText: 'You received this email because your verification request was reviewed.'
   };
   
   return await sendTranslatedEmail({
     to: requesterEmail,
     userLanguage,
     englishContent,
-    footerText: 'You received this email because your verification request was reviewed.'
   });
 }
 
@@ -1190,16 +1190,16 @@ export async function sendEvidenceSubmissionEmail(
       <p style="margin: 0; color: #666;">
         Keep up the great work making your school plastic clever! 🌊
       </p>
-    `
+    `,
+    callToActionText: 'View Dashboard',
+    footerText: 'You received this email because you submitted evidence for your school.'
   };
   
   return await sendTranslatedEmail({
     to: userEmail,
     userLanguage,
     englishContent,
-    callToActionText: '📊 View Dashboard',
     callToActionUrl: baseUrl,
-    footerText: 'You received this email because you submitted evidence for your school.'
   });
 }
 
@@ -1246,16 +1246,16 @@ export async function sendAdminNewEvidenceEmail(
       <p style="margin: 0;">
         Please review this submission from your admin dashboard.
       </p>
-    `
+    `,
+    callToActionText: 'Review Evidence',
+    footerText: 'You received this email because you are a platform administrator.'
   };
   
   return await sendTranslatedEmail({
     to: adminEmail,
     userLanguage,
     englishContent,
-    callToActionText: '👀 Review Evidence',
     callToActionUrl: adminUrl,
-    footerText: 'You received this email because you are a platform administrator.'
   });
 }
 
@@ -1293,16 +1293,16 @@ export async function sendAuditSubmissionEmail(
       <p style="margin: 0; color: #666;">
         Keep up the fantastic work! 🌊
       </p>
-    `
+    `,
+    callToActionText: 'View Dashboard',
+    footerText: 'You received this email because you submitted a plastic waste audit for your school.'
   };
   
   return await sendTranslatedEmail({
     to: userEmail,
     userLanguage,
     englishContent,
-    callToActionText: '📊 View Dashboard',
     callToActionUrl: baseUrl,
-    footerText: 'You received this email because you submitted a plastic waste audit for your school.'
   });
 }
 
@@ -1341,16 +1341,16 @@ export async function sendAdminNewAuditEmail(
       <p style="margin: 0;">
         Please review this audit submission from your admin dashboard.
       </p>
-    `
+    `,
+    callToActionText: 'Review Audit',
+    footerText: 'You received this email because you are a platform administrator.'
   };
   
   return await sendTranslatedEmail({
     to: adminEmail,
     userLanguage,
     englishContent,
-    callToActionText: '👀 Review Audit',
     callToActionUrl: adminUrl,
-    footerText: 'You received this email because you are a platform administrator.'
   });
 }
 
@@ -1390,16 +1390,16 @@ export async function sendAuditApprovalEmail(
       <p style="margin: 0; color: #666;">
         View your audit results and track your progress in your dashboard.
       </p>
-    `
+    `,
+    callToActionText: 'View Dashboard',
+    footerText: 'You received this email because your audit was approved.'
   };
   
   return await sendTranslatedEmail({
     to: userEmail,
     userLanguage,
     englishContent,
-    callToActionText: '📊 View Dashboard',
     callToActionUrl: baseUrl,
-    footerText: 'You received this email because your audit was approved.'
   });
 }
 
@@ -1445,16 +1445,16 @@ export async function sendAuditRejectionEmail(
       <p style="margin: 0; color: #666;">
         Need help? Contact us at <a href="mailto:education@commonseas.com" style="color: #02BBB4; text-decoration: none;">education@commonseas.com</a>
       </p>
-    `
+    `,
+    callToActionText: 'Update Audit',
+    footerText: 'You received this email because your audit was reviewed.'
   };
   
   return await sendTranslatedEmail({
     to: userEmail,
     userLanguage,
     englishContent,
-    callToActionText: '📝 Update Audit',
     callToActionUrl: baseUrl,
-    footerText: 'You received this email because your audit was reviewed.'
   });
 }
 
@@ -1591,16 +1591,16 @@ export async function sendWeeklyAdminDigest(
       <p style="margin: 0; color: #666; font-size: 14px;">
         This digest is sent weekly every Monday at 9:00 AM.
       </p>
-    `
+    `,
+    callToActionText: 'Go to Admin Dashboard',
+    footerText: 'You received this email because you are a platform administrator.'
   };
   
   return await sendTranslatedEmail({
     to: adminEmail,
     userLanguage,
     englishContent,
-    callToActionText: '🔧 Go to Admin Dashboard',
     callToActionUrl: `${baseUrl}/admin`,
-    footerText: 'You received this email because you are a platform administrator.'
   });
 }
 
@@ -1873,16 +1873,16 @@ export async function sendEventCancellationEmail(
       <p style="margin: 0; color: #333333; font-size: 16px; line-height: 1.6;">
         Thank you for being part of our community!
       </p>
-    `
+    `,
+    callToActionText: 'Browse Upcoming Events',
+    footerText: 'You received this email because your event registration was cancelled.'
   };
   
   return await sendTranslatedEmail({
     to,
     userLanguage,
     englishContent,
-    callToActionText: 'Browse Upcoming Events',
     callToActionUrl: eventsUrl,
-    footerText: 'You received this email because your event registration was cancelled.'
   });
 }
 
@@ -1980,16 +1980,16 @@ export async function sendEventReminderEmail(
       <p style="margin: 0; color: #333333; font-size: 16px; line-height: 1.6;">
         We look forward to seeing you there!
       </p>
-    `
+    `,
+    callToActionText,
+    footerText: 'You received this reminder because you registered for this event.'
   };
   
   return await sendTranslatedEmail({
     to,
     userLanguage,
     englishContent,
-    callToActionText,
     callToActionUrl,
-    footerText: 'You received this reminder because you registered for this event.'
   });
 }
 
@@ -2095,16 +2095,16 @@ export async function sendEventUpdatedEmail(
       <p style="margin: 0; color: #666666; font-size: 14px; line-height: 1.6;">
         If these changes don't work for you, you can cancel your registration from your dashboard at any time.
       </p>
-    `
+    `,
+    callToActionText: 'View Event Details',
+    footerText: 'You received this email because an event you registered for was updated.'
   };
   
   return await sendTranslatedEmail({
     to,
     userLanguage,
     englishContent,
-    callToActionText: 'View Event Details',
     callToActionUrl: eventUrl,
-    footerText: 'You received this email because an event you registered for was updated.'
   });
 }
 
@@ -2597,16 +2597,16 @@ export async function sendCourseCompletionCelebrationEmail(
           Thank you for leading the way to a plastic-free future! 🌊
         </p>
       </div>
-    `
+    `,
+    callToActionText: certificateUrl ? 'View Your Certificate' : 'Go to Dashboard',
+    footerText: 'You received this email because your school completed a program round.'
   };
   
   return await sendTranslatedEmail({
     to: recipientEmail,
     userLanguage,
     englishContent,
-    callToActionText: certificateUrl ? '📜 View Your Certificate!' : '📊 Go to Dashboard',
     callToActionUrl: certificateUrl || baseUrl,
-    footerText: 'You received this email because your school completed a program round.'
   });
 }
 
