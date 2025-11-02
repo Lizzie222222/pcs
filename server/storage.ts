@@ -3414,23 +3414,10 @@ export class DatabaseStorage implements IStorage {
             }
           }).returning();
 
-          // Generate the PDF certificate asynchronously (don't block on this)
+          // PDFs are now generated on-demand when requested via /api/certificates/:id/download
+          // No need to pre-generate and store PDFs in object storage
           if (newCertificate) {
-            import('./certificateService').then(({ generateCertificatePDF }) => {
-              generateCertificatePDF(newCertificate.id)
-                .then(async (pdfUrl) => {
-                  // Update certificate with the shareable PDF URL
-                  await db.update(certificates)
-                    .set({ shareableUrl: pdfUrl, updatedAt: new Date() })
-                    .where(eq(certificates.id, newCertificate.id));
-                  console.log(`[Certificate] PDF generated and saved for certificate ${newCertificate.id}: ${pdfUrl}`);
-                })
-                .catch((error) => {
-                  console.error(`[Certificate] Failed to generate PDF for certificate ${newCertificate.id}:`, error);
-                });
-            }).catch((error) => {
-              console.error('[Certificate] Failed to import certificate service:', error);
-            });
+            console.log(`[Certificate] Created certificate ${newCertificate.id} for school ${schoolId}. PDF will be generated on-demand.`);
           }
         }
       }
