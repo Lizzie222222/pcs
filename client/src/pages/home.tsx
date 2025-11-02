@@ -130,6 +130,14 @@ interface Certificate {
   completedDate: string;
   issuedDate: string;
   stage: string;
+  metadata?: {
+    round: number;
+    achievements?: {
+      inspire?: number;
+      investigate?: number;
+      act?: number;
+    };
+  };
 }
 
 interface Resource {
@@ -1339,7 +1347,7 @@ export default function Home() {
                                 <Button
                                   size="sm"
                                   className="bg-pcs_blue hover:bg-blue-700 text-white w-full"
-                                  onClick={() => window.open(`/api/certificates/${cert.id}`, '_blank')}
+                                  onClick={() => window.open(`/api/certificates/${cert.id}/download`, '_blank')}
                                   data-testid={`button-view-certificate-${cert.id}`}
                                 >
                                   {t('certificates.view_certificate', { ns: 'dashboard' })}

@@ -2701,6 +2701,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSchoolEvidence(schoolId: string): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null }>> {
+    // Get school to determine current round
+    const school = await this.getSchool(schoolId);
+    const currentRound = school?.currentRound || 1;
+
     return await db
       .select({
         id: evidence.id,
@@ -2734,7 +2738,12 @@ export class DatabaseStorage implements IStorage {
       })
       .from(evidence)
       .leftJoin(users, eq(evidence.reviewedBy, users.id))
-      .where(eq(evidence.schoolId, schoolId))
+      .where(
+        and(
+          eq(evidence.schoolId, schoolId),
+          eq(evidence.roundNumber, currentRound)
+        )
+      )
       .orderBy(desc(evidence.submittedAt));
   }
 
