@@ -32,6 +32,12 @@ export default function VerifyCertificate() {
     enabled: !!certificateNumber,
   });
 
+  // Fetch certificate background setting (public endpoint, no authentication required)
+  const { data: backgroundData } = useQuery<{ url: string | null }>({
+    queryKey: ['/api/settings/certificate-background'],
+    retry: false,
+  });
+
   // Extract metadata
   const roundNumber = certificate ? (certificate.metadata as any)?.round || 1 : 1;
   const completionDate = certificate ? new Date(certificate.completedDate).toLocaleDateString('en-US', {
@@ -197,6 +203,7 @@ export default function VerifyCertificate() {
                 <CertificateTemplate 
                   certificate={certificate} 
                   showBorder={true}
+                  backgroundUrl={backgroundData?.url || undefined}
                 />
               </div>
             </div>

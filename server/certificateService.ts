@@ -314,11 +314,8 @@ async function uploadCertificatePDF(
 ): Promise<string> {
   const objectStorageService = new ObjectStorageService();
   
-  // Get the private object directory
-  const privateDir = objectStorageService.getPrivateObjectDir();
-  
-  // Upload to /.private/certificates/ directory
-  const objectPath = `${privateDir}/certificates/${certificateId}.pdf`;
+  // Upload to public/certificates/ directory so schools can download their own certificates
+  const objectPath = `public/certificates/${certificateId}.pdf`;
   const { bucketName, objectName } = parseObjectPath(objectPath);
   
   console.log(`[Certificate PDF] Uploading to bucket: ${bucketName}, object: ${objectName}`);
@@ -326,7 +323,7 @@ async function uploadCertificatePDF(
   const bucket = objectStorageClient.bucket(bucketName);
   const file = bucket.file(objectName);
   
-  // Upload the PDF buffer
+  // Upload the PDF buffer with public visibility
   await file.save(pdfBuffer, {
     metadata: {
       contentType: 'application/pdf',
@@ -334,11 +331,21 @@ async function uploadCertificatePDF(
         certificateId,
         schoolName,
         generatedAt: new Date().toISOString(),
+        visibility: 'public',
       },
     },
   });
   
-  console.log('[Certificate PDF] Uploaded successfully');
+  // Make the file public in GCS so schools can download their certificates
+  try {
+    await file.makePublic();
+    console.log('[Certificate PDF] File made public in GCS');
+  } catch (error) {
+    console.warn('[Certificate PDF] Failed to make file public in GCS:', error);
+    // Continue - the visibility metadata is still set
+  }
+  
+  console.log('[Certificate PDF] Uploaded successfully with public access');
   
   // Return /objects/ path instead of direct GCS URL
   return `/objects/certificates/${certificateId}.pdf`;

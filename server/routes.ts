@@ -3524,7 +3524,18 @@ Return JSON with:
     }
   });
 
-  // Certificate background settings routes
+  // Public certificate background setting (no authentication required for public certificate verification page)
+  app.get('/api/settings/certificate-background', async (req: any, res) => {
+    try {
+      const backgroundUrl = await storage.getSetting('certificateBackgroundUrl');
+      res.json({ url: backgroundUrl });
+    } catch (error) {
+      console.error("Error fetching certificate background setting:", error);
+      res.status(500).json({ message: "Failed to fetch certificate background" });
+    }
+  });
+
+  // Admin certificate background settings routes
   app.get('/api/admin/settings/certificate-background', isAuthenticated, requireAdmin, async (req: any, res) => {
     try {
       const backgroundUrl = await storage.getSetting('certificateBackgroundUrl');
