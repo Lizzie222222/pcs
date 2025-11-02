@@ -3561,52 +3561,54 @@ Return JSON with:
         return res.status(400).json({ error: "Only image files are allowed" });
       }
 
-      // Upload to public/certificate-backgrounds/ directory
+      console.log('[Certificate Background] Uploading background image...');
+
+      // Create unique filename
+      const timestamp = Date.now();
+      const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const uniqueFilename = `${timestamp}-${sanitizedFilename}`;
+      
+      // Get public search paths from object storage service
       const objectStorageService = new ObjectStorageService();
       const publicPaths = objectStorageService.getPublicObjectSearchPaths();
       
       if (publicPaths.length === 0) {
         return res.status(500).json({ error: "Object storage not configured" });
       }
-
+      
       // Use first public path and append certificate-backgrounds directory
       const publicPath = publicPaths[0];
-      const timestamp = Date.now();
-      const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
-      const objectPath = `${publicPath}/certificate-backgrounds/${timestamp}-${sanitizedFilename}`;
+      const objectPath = `${publicPath}/certificate-backgrounds/${uniqueFilename}`;
+      const { bucketName, objectName } = parseObjectPath(objectPath);
       
-      // Parse bucket and object name
-      const parts = objectPath.split('/');
-      const bucketName = parts[1]; // Remove leading slash
-      const objectName = parts.slice(2).join('/');
-
-      // Get signed upload URL
-      const uploadURL = await objectStorageService.getSignedUploadUrl(bucketName, objectName, 900);
+      console.log(`[Certificate Background] Uploading to bucket: ${bucketName}, object: ${objectName}`);
       
-      // Upload file
-      const uploadResponse = await fetch(uploadURL, {
-        method: 'PUT',
-        body: req.file.buffer,
-        headers: {
-          'Content-Type': mimeType,
-          'Content-Length': req.file.buffer.length.toString(),
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
-      }
-
-      // Set ACL policy for the uploaded background image
       const bucket = objectStorageClient.bucket(bucketName);
       const file = bucket.file(objectName);
+      
+      // Upload the file buffer directly
+      await file.save(req.file.buffer, {
+        metadata: {
+          contentType: mimeType,
+          metadata: {
+            uploadedBy: userId || 'system',
+            originalFilename: filename,
+            uploadedAt: new Date().toISOString(),
+          },
+        },
+      });
+      
+      console.log('[Certificate Background] File uploaded successfully');
+      
+      // Set ACL policy so the file is accessible via /api/objects/ route
       await setObjectAclPolicy(file, {
         owner: userId || 'system',
         visibility: 'public',
         aclRules: [],
       });
+      console.log('[Certificate Background] ACL policy set to public');
       
-      // Make file public in GCS
+      // Make file public in GCS for direct access
       try {
         await file.makePublic();
         console.log('[Certificate Background] File made public in GCS');
@@ -3614,13 +3616,15 @@ Return JSON with:
         console.warn('[Certificate Background] Failed to make file public in GCS:', error);
       }
 
-      // Construct the public GCS URL
-      const gcsUrl = `https://storage.googleapis.com/${bucketName}/${objectName}`;
+      // Return /api/objects/public/ path so the route can find it correctly
+      const apiPath = `/api/objects/public/certificate-backgrounds/${uniqueFilename}`;
+      
+      console.log(`[Certificate Background] Saving path: ${apiPath}`);
       
       // Save to settings
-      await storage.setSetting('certificateBackgroundUrl', gcsUrl);
+      await storage.setSetting('certificateBackgroundUrl', apiPath);
       
-      res.json({ url: gcsUrl });
+      res.json({ url: apiPath });
     } catch (error) {
       console.error("Error uploading certificate background:", error);
       res.status(500).json({ error: "Failed to upload certificate background" });
@@ -3634,6 +3638,133 @@ Return JSON with:
     } catch (error) {
       console.error("Error resetting certificate background:", error);
       res.status(500).json({ message: "Failed to reset certificate background" });
+    }
+  });
+
+  // Migration endpoint to fix ACL on existing certificate PDFs
+  app.post('/api/admin/certificates/migrate-acl', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      console.log('[Certificate Migration] Starting ACL migration for existing certificates...');
+      
+      // Get all certificates
+      const allCertificates = await storage.getCertificates();
+      console.log(`[Certificate Migration] Found ${allCertificates.length} total certificates`);
+      
+      const results = {
+        total: allCertificates.length,
+        processed: 0,
+        fixed: 0,
+        skipped: 0,
+        errors: [] as string[],
+      };
+      
+      // Process each certificate that has a shareableUrl (PDF was generated)
+      for (const cert of allCertificates) {
+        try {
+          if (!cert.shareableUrl) {
+            results.skipped++;
+            continue;
+          }
+          
+          results.processed++;
+          
+          let bucketName: string;
+          let objectName: string;
+          
+          // Handle both /objects/ paths and direct GCS URLs
+          if (cert.shareableUrl.startsWith('/objects/')) {
+            // New format: /objects/certificates/abc123.pdf
+            // Need to get the actual bucket from PUBLIC_OBJECT_SEARCH_PATHS
+            const objectStorageService = new ObjectStorageService();
+            const publicPaths = objectStorageService.getPublicObjectSearchPaths();
+            
+            if (publicPaths.length === 0) {
+              console.warn(`[Certificate Migration] Object storage not configured`);
+              results.errors.push(`No public paths: ${cert.id}`);
+              continue;
+            }
+            
+            // Get the path after /objects/ (e.g., "certificates/abc123.pdf")
+            const relativePath = cert.shareableUrl.replace('/objects/', '');
+            
+            // Build full path: /<bucket>/public/certificates/abc123.pdf
+            const fullPath = `${publicPaths[0]}/${relativePath}`;
+            const parsed = parseObjectPath(fullPath);
+            bucketName = parsed.bucketName;
+            objectName = parsed.objectName;
+            
+          } else if (cert.shareableUrl.startsWith('https://storage.googleapis.com/')) {
+            // Old format: direct GCS URL
+            const url = new URL(cert.shareableUrl);
+            const pathParts = url.pathname.split('/').filter(p => p);
+            if (pathParts.length < 2) {
+              console.warn(`[Certificate Migration] Invalid GCS URL for certificate ${cert.id}: ${cert.shareableUrl}`);
+              results.errors.push(`Invalid GCS URL: ${cert.id}`);
+              continue;
+            }
+            bucketName = pathParts[0];
+            objectName = pathParts.slice(1).join('/');
+            
+          } else {
+            console.warn(`[Certificate Migration] Unknown URL format for certificate ${cert.id}: ${cert.shareableUrl}`);
+            results.errors.push(`Unknown format: ${cert.id}`);
+            continue;
+          }
+          
+          console.log(`[Certificate Migration] Processing ${cert.id}: bucket=${bucketName}, object=${objectName}`);
+          
+          const bucket = objectStorageClient.bucket(bucketName);
+          const file = bucket.file(objectName);
+          
+          // Check if file exists
+          const [exists] = await file.exists();
+          if (!exists) {
+            console.warn(`[Certificate Migration] File not found for certificate ${cert.id}`);
+            results.errors.push(`File not found: ${cert.id}`);
+            continue;
+          }
+          
+          console.log(`[Certificate Migration] File exists, setting ACL policy for ${cert.id}...`);
+          
+          // Set ACL policy
+          try {
+            await setObjectAclPolicy(file, {
+              owner: 'system',
+              visibility: 'public',
+              aclRules: [],
+            });
+            console.log(`[Certificate Migration] ACL policy set successfully for ${cert.id}`);
+            results.fixed++;
+          } catch (aclError) {
+            console.error(`[Certificate Migration] Failed to set ACL policy for ${cert.id}:`, aclError);
+            results.errors.push(`ACL failed: ${cert.id}`);
+            continue;
+          }
+          
+          // Make file public in GCS (optional - will fail if public access prevention is enabled)
+          try {
+            await file.makePublic();
+            console.log(`[Certificate Migration] GCS public access set for ${cert.id}`);
+          } catch (error) {
+            console.warn(`[Certificate Migration] GCS makePublic failed (expected if public access prevention is enabled): ${cert.id}`);
+            // This is OK - ACL policy is what matters for /api/objects/ route
+          }
+          
+        } catch (error) {
+          console.error(`[Certificate Migration] Error processing certificate ${cert.id}:`, error);
+          results.errors.push(`Error: ${cert.id} - ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      }
+      
+      console.log('[Certificate Migration] Migration complete:', results);
+      res.json(results);
+      
+    } catch (error) {
+      console.error("[Certificate Migration] Migration failed:", error);
+      res.status(500).json({ 
+        error: "Migration failed", 
+        message: error instanceof Error ? error.message : 'Unknown error' 
+      });
     }
   });
 

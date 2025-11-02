@@ -110,8 +110,19 @@ export async function generateCertificatePDF(
         if (backgroundUrl) {
           console.log(`[Certificate PDF] Fetching background image: ${backgroundUrl}`);
           
+          // Handle both /api/objects/ paths and direct URLs
+          let fetchUrl = backgroundUrl;
+          if (backgroundUrl.startsWith('/api/objects/') || backgroundUrl.startsWith('/objects/')) {
+            // Convert to full URL for fetching from own server
+            const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+              ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+              : 'http://localhost:5000';
+            fetchUrl = `${baseUrl}${backgroundUrl}`;
+            console.log(`[Certificate PDF] Converted path to URL: ${fetchUrl}`);
+          }
+          
           // Fetch the image
-          const response = await fetch(backgroundUrl);
+          const response = await fetch(fetchUrl);
           if (response.ok) {
             const buffer = await response.arrayBuffer();
             const base64 = Buffer.from(buffer).toString('base64');
@@ -356,6 +367,6 @@ async function uploadCertificatePDF(
   
   console.log('[Certificate PDF] Uploaded successfully with public access');
   
-  // Return /objects/ path instead of direct GCS URL
-  return `/objects/certificates/${certificateId}.pdf`;
+  // Return /objects/public/ path so the route can find it correctly
+  return `/objects/public/certificates/${certificateId}.pdf`;
 }
