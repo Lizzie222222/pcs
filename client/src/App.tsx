@@ -54,6 +54,7 @@ const TestLogin = lazy(() => import("@/pages/TestLogin"));
 const HowItWorks = lazy(() => import("@/pages/how-it-works"));
 const AwardCriteria = lazy(() => import("@/pages/award-criteria"));
 const Partners = lazy(() => import("@/pages/partners"));
+const VerifyCertificate = lazy(() => import("@/pages/VerifyCertificate"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 function Router() {
@@ -188,6 +189,7 @@ function Router() {
               <Route path="/how-it-works" component={HowItWorks} />
               <Route path="/award-criteria" component={AwardCriteria} />
               <Route path="/partners" component={Partners} />
+              <Route path="/verify-certificate/:certificateNumber" component={VerifyCertificate} />
               <Route path="/invitations/:token" component={InvitationAccept} />
               <Route path="/admin-invitations/:token" component={AdminInvitationAccept} />
               {import.meta.env.DEV && <Route path="/test-login" component={TestLogin} />}

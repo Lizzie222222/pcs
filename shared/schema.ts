@@ -1994,6 +1994,26 @@ export type InsertHealthCheck = z.infer<typeof insertHealthCheckSchema>;
 export type UptimeMetric = typeof uptimeMetrics.$inferSelect;
 export type InsertUptimeMetric = z.infer<typeof insertUptimeMetricSchema>;
 
+// Settings table for application-wide settings
+export const settings = pgTable("settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  key: varchar("key").notNull().unique(),
+  value: text("value"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("idx_settings_key").on(table.key),
+]);
+
+export const insertSettingSchema = createInsertSchema(settings).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type Setting = typeof settings.$inferSelect;
+export type InsertSetting = z.infer<typeof insertSettingSchema>;
+
 // Password Reset Token schemas
 export const insertPasswordResetTokenSchema = createInsertSchema(passwordResetTokens).omit({
   id: true,

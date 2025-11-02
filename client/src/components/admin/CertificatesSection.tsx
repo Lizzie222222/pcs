@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
-import { Award, Plus, Download, Search, FileText, AlertCircle } from "lucide-react";
+import { Award, Plus, Download, Search, FileText, AlertCircle, Upload, RotateCcw, Image as ImageIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { CertificateTemplate } from "@/components/CertificateTemplate";
@@ -49,6 +49,8 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
   const [selectedCertificate, setSelectedCertificate] = useState<(Certificate & { school: School }) | null>(null);
   const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
   const certificateRef = useRef<HTMLDivElement>(null);
+  const [backgroundFile, setBackgroundFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   // Initialize form with react-hook-form and zodResolver
   const form = useForm<CertificateFormData>({
@@ -72,6 +74,13 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
   const { data: schools = [] } = useQuery<School[]>({
     queryKey: ['/api/admin/schools', { limit: 1000 }],
     enabled: createDialogOpen,
+    retry: false,
+  });
+
+  // Fetch current certificate background
+  const { data: backgroundData, isLoading: isLoadingBackground } = useQuery<{ url: string | null }>({
+    queryKey: ['/api/admin/settings/certificate-background'],
+    enabled: activeTab === 'certificates',
     retry: false,
   });
 
@@ -102,6 +111,66 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
       toast({
         title: "Error",
         description: error.message || "Failed to create certificate",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Upload certificate background mutation
+  const uploadBackgroundMutation = useMutation({
+    mutationFn: async (file: File) => {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/admin/settings/certificate-background', {
+        method: 'POST',
+        body: formData,
+        credentials: 'include',
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Failed to upload background');
+      }
+      
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Background Updated",
+        description: "Certificate background has been updated successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings/certificate-background'] });
+      setBackgroundFile(null);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to upload background",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Reset certificate background mutation
+  const resetBackgroundMutation = useMutation({
+    mutationFn: async () => {
+      return await apiRequest('DELETE', '/api/admin/settings/certificate-background', {});
+    },
+    onSuccess: () => {
+      toast({
+        title: "Background Reset",
+        description: "Certificate background has been reset to default.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/settings/certificate-background'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reset background",
         variant: "destructive",
       });
     },
@@ -152,8 +221,160 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
     createMutation.mutate(data);
   };
 
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        toast({
+          title: "Invalid File",
+          description: "Please select an image file (.png, .jpg, .jpeg)",
+          variant: "destructive",
+        });
+        return;
+      }
+      setBackgroundFile(file);
+    }
+  };
+
+  // Handle upload
+  const handleUpload = () => {
+    if (backgroundFile) {
+      uploadBackgroundMutation.mutate(backgroundFile);
+    }
+  };
+
+  // Handle reset
+  const handleReset = () => {
+    resetBackgroundMutation.mutate();
+  };
+
   return (
     <>
+      {/* Certificate Background Settings Section */}
+      <Card className="mb-6">
+        <CardHeader className="p-3 sm:p-4 lg:p-6">
+          <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+            <ImageIcon className="h-5 w-5" />
+            Certificate Background Settings
+          </CardTitle>
+          <p className="text-sm text-gray-500 mt-2">
+            Upload a custom background image for all certificates. This will replace the default background on all generated certificates.
+          </p>
+        </CardHeader>
+        <CardContent className="p-3 sm:p-4 lg:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Preview Section */}
+            <div>
+              <h3 className="text-sm font-semibold mb-3">Current Background</h3>
+              <div className="border rounded-lg p-4 bg-gray-50">
+                {isLoadingBackground ? (
+                  <div className="h-48 flex items-center justify-center">
+                    <LoadingSpinner />
+                  </div>
+                ) : (
+                  <div className="relative h-48 flex items-center justify-center bg-white rounded overflow-hidden">
+                    {backgroundData?.url ? (
+                      <img
+                        src={backgroundData.url}
+                        alt="Current certificate background"
+                        className="w-full h-full object-cover"
+                        data-testid="img-current-background"
+                      />
+                    ) : (
+                      <div className="text-center text-gray-400">
+                        <ImageIcon className="h-12 w-12 mx-auto mb-2" />
+                        <p className="text-sm">Using default background</p>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Upload Section */}
+            <div>
+              <h3 className="text-sm font-semibold mb-3">Upload New Background</h3>
+              <div className="space-y-4">
+                <div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".png,.jpg,.jpeg,image/png,image/jpeg"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    data-testid="input-background-file"
+                  />
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="w-full"
+                    data-testid="button-select-file"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Select Image File
+                  </Button>
+                  {backgroundFile && (
+                    <p className="text-sm text-gray-600 mt-2" data-testid="text-selected-file">
+                      Selected: {backgroundFile.name}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={handleUpload}
+                    disabled={!backgroundFile || uploadBackgroundMutation.isPending}
+                    className="flex-1 bg-pcs_blue hover:bg-blue-600"
+                    data-testid="button-upload-background"
+                  >
+                    {uploadBackgroundMutation.isPending ? (
+                      <>
+                        <LoadingSpinner />
+                        <span className="ml-2">Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4 mr-2" />
+                        Upload Custom Background
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    onClick={handleReset}
+                    disabled={!backgroundData?.url || resetBackgroundMutation.isPending}
+                    variant="outline"
+                    className="flex-1"
+                    data-testid="button-reset-background"
+                  >
+                    {resetBackgroundMutation.isPending ? (
+                      <>
+                        <LoadingSpinner />
+                        <span className="ml-2">Resetting...</span>
+                      </>
+                    ) : (
+                      <>
+                        <RotateCcw className="h-4 w-4 mr-2" />
+                        Reset to Default
+                      </>
+                    )}
+                  </Button>
+                </div>
+
+                <div className="bg-blue-50 border border-blue-200 rounded p-3">
+                  <p className="text-xs text-blue-800">
+                    <strong>Note:</strong> Accepted formats: PNG, JPG, JPEG. Recommended size: 1920x1080 pixels or larger for best quality.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Certificates List Section */}
       <Card>
         <CardHeader className="p-3 sm:p-4 lg:p-6">
           <div className="flex flex-col gap-4">

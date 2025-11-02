@@ -3028,7 +3028,30 @@ Return JSON with:
         return res.status(404).json({ message: "Evidence not found" });
       }
 
-      // Update the evidence
+      // If updating status to approved or rejected, use proper review method
+      if (updates.status && ['approved', 'rejected'].includes(updates.status) && evidence.status !== updates.status) {
+        console.log(`[Evidence] Updating evidence ${id} status to ${updates.status} via admin PATCH`);
+        const updatedEvidence = await storage.updateEvidenceStatus(
+          id,
+          updates.status as 'approved' | 'rejected',
+          req.user.id,
+          updates.reviewNotes
+        );
+        
+        if (!updatedEvidence) {
+          return res.status(500).json({ message: "Failed to update evidence" });
+        }
+
+        // Check and update school progression if approved
+        if (updates.status === 'approved') {
+          console.log(`[Evidence] Triggering school progression check for school ${updatedEvidence.schoolId}`);
+          await storage.checkAndUpdateSchoolProgression(updatedEvidence.schoolId);
+        }
+
+        return res.json(updatedEvidence);
+      }
+
+      // For other updates, use regular update method
       const updatedEvidence = await storage.updateEvidence(id, updates);
       if (!updatedEvidence) {
         return res.status(500).json({ message: "Failed to update evidence" });
@@ -3320,6 +3343,34 @@ Return JSON with:
         return res.status(403).json({ message: "You don't have access to this certificate" });
       }
 
+      // If requesting PDF format (or if shareableUrl exists), serve the PDF
+      const wantsPdf = req.query.format === 'pdf' || req.headers.accept?.includes('application/pdf');
+      
+      if (wantsPdf || certificate.shareableUrl) {
+        let pdfUrl = certificate.shareableUrl;
+        
+        // If no PDF exists yet, generate it on-demand
+        if (!pdfUrl) {
+          console.log(`[Certificate] No PDF found for certificate ${certificate.id}, generating on-demand...`);
+          const { generateCertificatePDF } = await import('./certificateService');
+          
+          try {
+            pdfUrl = await generateCertificatePDF(certificate.id);
+            
+            // Update the certificate with the new PDF URL
+            await storage.updateCertificate(certificate.id, { shareableUrl: pdfUrl });
+            console.log(`[Certificate] On-demand PDF generated for certificate ${certificate.id}: ${pdfUrl}`);
+          } catch (error) {
+            console.error(`[Certificate] Failed to generate PDF on-demand:`, error);
+            return res.status(500).json({ message: "Failed to generate certificate PDF" });
+          }
+        }
+        
+        // Redirect to the PDF URL (GCS will handle serving it)
+        return res.redirect(pdfUrl);
+      }
+
+      // Otherwise, return JSON data
       res.json(certificate);
     } catch (error) {
       console.error("Error fetching certificate:", error);
@@ -3348,6 +3399,29 @@ Return JSON with:
     } catch (error) {
       console.error("Error fetching certificate:", error);
       res.status(500).json({ message: "Failed to fetch certificate" });
+    }
+  });
+
+  // Public certificate verification endpoint (no auth required)
+  app.get('/api/certificates/verify/:certificateNumber', async (req, res) => {
+    try {
+      const { certificateNumber } = req.params;
+      
+      const certificate = await storage.getCertificateByNumber(certificateNumber);
+      
+      if (!certificate) {
+        return res.status(404).json({ message: "Certificate not found" });
+      }
+
+      // Return certificate data with school information for public verification
+      res.json({
+        ...certificate,
+        school: certificate.school,
+        isValid: certificate.isActive,
+      });
+    } catch (error) {
+      console.error("Error verifying certificate:", error);
+      res.status(500).json({ message: "Failed to verify certificate" });
     }
   });
 
@@ -3406,6 +3480,91 @@ Return JSON with:
         return res.status(400).json({ message: "Invalid data", errors: error.errors });
       }
       res.status(500).json({ message: "Failed to create certificate" });
+    }
+  });
+
+  // Certificate background settings routes
+  app.get('/api/admin/settings/certificate-background', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const backgroundUrl = await storage.getSetting('certificateBackgroundUrl');
+      res.json({ url: backgroundUrl });
+    } catch (error) {
+      console.error("Error fetching certificate background setting:", error);
+      res.status(500).json({ message: "Failed to fetch certificate background" });
+    }
+  });
+
+  app.post('/api/admin/settings/certificate-background', isAuthenticated, requireAdmin, uploadCompression.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file provided" });
+      }
+
+      const userId = req.user?.id;
+      const filename = req.file.originalname;
+      const mimeType = req.file.mimetype;
+      
+      // Validate file type (only images)
+      if (!mimeType.startsWith('image/')) {
+        return res.status(400).json({ error: "Only image files are allowed" });
+      }
+
+      // Upload to public/certificate-backgrounds/ directory
+      const objectStorageService = new ObjectStorageService();
+      const publicPaths = objectStorageService.getPublicObjectSearchPaths();
+      
+      if (publicPaths.length === 0) {
+        return res.status(500).json({ error: "Object storage not configured" });
+      }
+
+      // Use first public path and append certificate-backgrounds directory
+      const publicPath = publicPaths[0];
+      const timestamp = Date.now();
+      const sanitizedFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const objectPath = `${publicPath}/certificate-backgrounds/${timestamp}-${sanitizedFilename}`;
+      
+      // Parse bucket and object name
+      const parts = objectPath.split('/');
+      const bucketName = parts[1]; // Remove leading slash
+      const objectName = parts.slice(2).join('/');
+
+      // Get signed upload URL
+      const uploadURL = await objectStorageService.getSignedUploadUrl(bucketName, objectName, 900);
+      
+      // Upload file
+      const uploadResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: req.file.buffer,
+        headers: {
+          'Content-Type': mimeType,
+          'Content-Length': req.file.buffer.length.toString(),
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+      }
+
+      // Construct the public GCS URL
+      const gcsUrl = `https://storage.googleapis.com/${bucketName}/${objectName}`;
+      
+      // Save to settings
+      await storage.setSetting('certificateBackgroundUrl', gcsUrl);
+      
+      res.json({ url: gcsUrl });
+    } catch (error) {
+      console.error("Error uploading certificate background:", error);
+      res.status(500).json({ error: "Failed to upload certificate background" });
+    }
+  });
+
+  app.delete('/api/admin/settings/certificate-background', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      await storage.setSetting('certificateBackgroundUrl', '');
+      res.json({ message: "Certificate background reset to default" });
+    } catch (error) {
+      console.error("Error resetting certificate background:", error);
+      res.status(500).json({ message: "Failed to reset certificate background" });
     }
   });
 

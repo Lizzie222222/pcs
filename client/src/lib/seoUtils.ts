@@ -66,6 +66,13 @@ export const pageSEOData: PageSEOMap = {
     keywords: 'admin panel, dashboard, programme management',
     ogImage: '/assets/Logo_1757848498470.png',
     canonicalUrl: 'https://plasticcleverschools.org/admin'
+  },
+  '/verify-certificate': {
+    title: 'Certificate Verification - Plastic Clever Schools',
+    description: 'Verify the authenticity of a Plastic Clever Schools certificate. View certificate details, school information, and download the official certificate.',
+    keywords: 'certificate verification, verify certificate, school certificate, environmental education certificate, plastic clever schools certificate',
+    ogImage: '/assets/Logo_1757848498470.png',
+    canonicalUrl: 'https://plasticcleverschools.org/verify-certificate'
   }
 };
 

@@ -39,6 +39,7 @@ import {
   healthChecks,
   uptimeMetrics,
   passwordResetTokens,
+  settings,
   type User,
   type UpsertUser,
   type School,
@@ -120,6 +121,8 @@ import {
   type InsertUptimeMetric,
   type PasswordResetToken,
   type InsertPasswordResetToken,
+  type Setting,
+  type InsertSetting,
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne, gte } from "drizzle-orm";
@@ -815,6 +818,10 @@ export interface IStorage {
       totalChecks: number;
     }>;
   }>;
+
+  // Settings operations
+  getSetting(key: string): Promise<string | null>;
+  setSetting(key: string, value: string): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -3374,7 +3381,7 @@ export class DatabaseStorage implements IStorage {
         if (existingCertificates.length === 0) {
           const certificateNumber = `PCSR${currentRound}-${Date.now()}-${schoolId.substring(0, 8)}`;
           
-          await db.insert(certificates).values({
+          const [newCertificate] = await db.insert(certificates).values({
             schoolId,
             stage: 'act',
             issuedBy: null,
@@ -3390,7 +3397,26 @@ export class DatabaseStorage implements IStorage {
                 act: counts.act.approved
               }
             }
-          });
+          }).returning();
+
+          // Generate the PDF certificate asynchronously (don't block on this)
+          if (newCertificate) {
+            import('./certificateService').then(({ generateCertificatePDF }) => {
+              generateCertificatePDF(newCertificate.id)
+                .then(async (pdfUrl) => {
+                  // Update certificate with the shareable PDF URL
+                  await db.update(certificates)
+                    .set({ shareableUrl: pdfUrl, updatedAt: new Date() })
+                    .where(eq(certificates.id, newCertificate.id));
+                  console.log(`[Certificate] PDF generated and saved for certificate ${newCertificate.id}: ${pdfUrl}`);
+                })
+                .catch((error) => {
+                  console.error(`[Certificate] Failed to generate PDF for certificate ${newCertificate.id}:`, error);
+                });
+            }).catch((error) => {
+              console.error('[Certificate] Failed to import certificate service:', error);
+            });
+          }
         }
       }
       
@@ -3398,18 +3424,36 @@ export class DatabaseStorage implements IStorage {
       if (updates.actCompleted) {
         const currentRound = school.currentRound || 1;
         
+        // Get the certificate for this round to include in email
+        const roundCertificates = await db
+          .select()
+          .from(certificates)
+          .where(
+            and(
+              eq(certificates.schoolId, schoolId),
+              eq(certificates.stage, 'act'),
+              sql`(${certificates.metadata}->>'round')::int = ${currentRound}`
+            )
+          )
+          .limit(1);
+        
         // Get school primary contact email
         const primaryContact = school.primaryContactId 
           ? await this.getUser(school.primaryContactId)
           : null;
         
         if (primaryContact?.email) {
+          // Build certificate URL if we have one
+          const certificateUrl = roundCertificates.length > 0
+            ? `${getBaseUrl()}/api/certificates/${roundCertificates[0].id}`
+            : undefined;
+          
           // Send celebration email (fire and forget - don't block on email)
           sendCourseCompletionCelebrationEmail(
             primaryContact.email,
             school.name,
             currentRound,
-            `${getBaseUrl()}/dashboard`,
+            certificateUrl,
             primaryContact.preferredLanguage
           ).catch(err => console.error('Failed to send celebration email:', err));
         }
@@ -7426,6 +7470,40 @@ export class DatabaseStorage implements IStorage {
     }));
 
     return { overall, byEndpoint };
+  }
+
+  // Settings operations
+  async getSetting(key: string): Promise<string | null> {
+    const [setting] = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, key))
+      .limit(1);
+    
+    return setting?.value || null;
+  }
+
+  async setSetting(key: string, value: string): Promise<void> {
+    const existing = await db
+      .select()
+      .from(settings)
+      .where(eq(settings.key, key))
+      .limit(1);
+
+    if (existing.length > 0) {
+      await db
+        .update(settings)
+        .set({
+          value,
+          updatedAt: new Date(),
+        })
+        .where(eq(settings.key, key));
+    } else {
+      await db.insert(settings).values({
+        key,
+        value,
+      });
+    }
   }
 }
 
