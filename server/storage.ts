@@ -3305,19 +3305,49 @@ export class DatabaseStorage implements IStorage {
     // Calculate granular progress percentage based on approved requirements
     let progressPercentage = 0;
     
-    // For migrated schools, use stage-based calculation since they have no evidence in the new platform
-    // but already have their completion flags set from the WordPress migration
+    // For migrated schools, blend legacy evidence count with new evidence
     if (school.isMigrated) {
       const inspireComplete = updates.inspireCompleted ?? school.inspireCompleted;
       const investigateComplete = updates.investigateCompleted ?? school.investigateCompleted;
       const actComplete = updates.actCompleted ?? school.actCompleted;
       
+      // Get total requirements for each stage
+      const allRequirements = await db
+        .select()
+        .from(evidenceRequirements);
+      
+      const inspireRequirements = allRequirements.filter(r => r.stage === 'inspire').length;
+      const investigateRequirements = allRequirements.filter(r => r.stage === 'investigate').length;
+      const actRequirements = allRequirements.filter(r => r.stage === 'act').length;
+      
+      // Calculate new evidence approved
+      const totalNewApproved = 
+        counts.inspire.approved + 
+        counts.investigate.approved + 
+        (counts.investigate.hasQuiz ? 1 : 0) +
+        (counts.investigate.hasActionPlan ? 1 : 0) +
+        counts.act.approved;
+      
+      // Add legacy evidence count to the total
+      const legacyEvidence = school.legacyEvidenceCount || 0;
+      const totalEvidence = totalNewApproved + legacyEvidence;
+      
+      // Calculate total required items
+      const totalRequired = inspireRequirements + investigateRequirements + actRequirements + 2; // +2 for audit and action plan
+      
+      // Calculate percentage based on combined evidence
+      if (totalRequired > 0) {
+        progressPercentage = Math.min(100, Math.round((totalEvidence / totalRequired) * 100));
+      }
+      
+      // Ensure progress respects stage completion minimums to prevent regression
+      // Migrated schools with completed stages should not be downgraded
       if (actComplete) {
-        progressPercentage = 100;
+        progressPercentage = Math.max(progressPercentage, 100);
       } else if (investigateComplete) {
-        progressPercentage = 67;
+        progressPercentage = Math.max(progressPercentage, 67);
       } else if (inspireComplete) {
-        progressPercentage = 33;
+        progressPercentage = Math.max(progressPercentage, 33);
       }
     } else {
       // For non-migrated schools, calculate based on evidence

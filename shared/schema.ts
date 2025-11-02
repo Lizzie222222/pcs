@@ -253,6 +253,7 @@ export const schools = pgTable("schools", {
   photoConsentReviewNotes: text("photo_consent_review_notes"),
   isMigrated: boolean("is_migrated").default(false),
   legacyDistrict: varchar("legacy_district"),
+  legacyEvidenceCount: integer("legacy_evidence_count").default(0),
   migratedAt: timestamp("migrated_at"),
   lastActiveAt: timestamp("last_active_at"),
   createdAt: timestamp("created_at").defaultNow(),

@@ -1,6 +1,7 @@
 import { db } from '../server/db';
 import { users, schools, schoolUsers, migrationLogs } from '../shared/schema';
 import { MigrationUtils, CSVUserRow, SchoolInfo } from './migration-utils';
+import { parsePhpEvidenceCount } from './lib/phpDeserializer';
 import { nanoid } from 'nanoid';
 import bcrypt from 'bcrypt';
 import { eq, and } from 'drizzle-orm';
@@ -148,6 +149,12 @@ export class MigrationScript {
     const stage2Complete = MigrationUtils.parseStageData(row.stage_2);
     const stage3Complete = MigrationUtils.parseStageData(row.stage_3);
 
+    // Calculate legacy evidence count from CSV stage data
+    const stage1Count = parsePhpEvidenceCount(row.stage_1);
+    const stage2Count = parsePhpEvidenceCount(row.stage_2);
+    const stage3Count = parsePhpEvidenceCount(row.stage_3);
+    const totalLegacyEvidence = stage1Count + stage2Count + stage3Count;
+
     let currentStage: 'inspire' | 'investigate' | 'act' = 'inspire';
     if (stage3Complete) currentStage = 'act';
     else if (stage2Complete) currentStage = 'investigate';
@@ -207,6 +214,7 @@ export class MigrationScript {
       stage3Complete,
       currentStage,
       round: MigrationUtils.extractRound(row),
+      legacyEvidenceCount: totalLegacyEvidence,
     });
 
     this.result.userCredentials.push({
@@ -281,6 +289,7 @@ export class MigrationScript {
       stage3Complete: boolean;
       currentStage: 'inspire' | 'investigate' | 'act';
       round: number;
+      legacyEvidenceCount: number;
     }
   ): Promise<void> {
     const existing = await db.query.schools.findFirst({
@@ -301,6 +310,21 @@ export class MigrationScript {
     }
     if (progress.stage3Complete && !existing.actCompleted) {
       updates.actCompleted = true;
+    }
+
+    // Use max to avoid double-counting when multiple users from same school are in CSV
+    const newLegacyCount = Math.max(existing.legacyEvidenceCount || 0, progress.legacyEvidenceCount);
+    if (newLegacyCount > (existing.legacyEvidenceCount || 0)) {
+      updates.legacyEvidenceCount = newLegacyCount;
+    }
+
+    // Calculate initial progress percentage for migrated schools
+    if (existing.isMigrated && (updates.inspireCompleted || updates.investigateCompleted || updates.actCompleted)) {
+      let stageProgress = 0;
+      if (updates.inspireCompleted || existing.inspireCompleted) stageProgress += 33;
+      if (updates.investigateCompleted || existing.investigateCompleted) stageProgress += 33;
+      if (updates.actCompleted || existing.actCompleted) stageProgress += 34;
+      updates.progressPercentage = stageProgress;
     }
 
     const currentStageOrder = { inspire: 1, investigate: 2, act: 3 };
