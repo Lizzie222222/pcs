@@ -4,6 +4,7 @@ import { Card } from "@/components/ui/card";
 import SchoolsFilters from "./SchoolsFilters";
 import SchoolsTable from "./SchoolsTable";
 import BulkSchoolActions from "./BulkSchoolActions";
+import AwardCompletionBanner from "../AwardCompletionBanner";
 import type { AdminStats, SchoolData } from "@/components/admin/shared/types";
 import { useTranslation } from 'react-i18next';
 
@@ -114,6 +115,8 @@ export default function SchoolsSection({
 
   return (
     <>
+      <AwardCompletionBanner activeTab={activeTab} />
+      
       <Card>
         <SchoolsFilters
           schoolFilters={schoolFilters}

@@ -6,7 +6,7 @@ import { ObjectStorageService, ObjectNotFoundError, objectStorageClient } from "
 import { ObjectPermission, getObjectAclPolicy, setObjectAclPolicy } from "./objectAcl";
 import { sendWelcomeEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail, sendEvidenceSubmissionEmail, sendAdminNewEvidenceEmail, sendBulkEmail, BulkEmailParams, sendEmail, sendVerificationApprovalEmail, sendVerificationRejectionEmail, sendTeacherInvitationEmail, sendVerificationRequestEmail, sendAdminInvitationEmail, sendPartnerInvitationEmail, sendAuditSubmissionEmail, sendAuditApprovalEmail, sendAuditRejectionEmail, sendAdminNewAuditEmail, sendEventRegistrationEmail, sendEventCancellationEmail, sendEventReminderEmail, sendEventUpdatedEmail, sendEventAnnouncementEmail, sendEventDigestEmail, sendContactFormEmail, getFromAddress, sendWeeklyAdminDigest, WeeklyDigestData, getBaseUrl } from "./emailService";
 import { mailchimpService } from "./mailchimpService";
-import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, schools, schoolUsers, caseStudies, importBatches, userActivityLogs } from "@shared/schema";
+import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, schools, schoolUsers, caseStudies, importBatches, userActivityLogs, certificates } from "@shared/schema";
 import { nanoid } from 'nanoid';
 import { z } from "zod";
 import { randomUUID, randomBytes } from 'crypto';
@@ -6898,6 +6898,200 @@ Return JSON with:
     } catch (error) {
       console.error("Error in bulk school delete:", error);
       res.status(500).json({ message: "Failed to perform bulk delete" });
+    }
+  });
+
+  // Get schools ready for award completion (Round 1 complete)
+  app.get('/api/admin/schools/award-completion-ready', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      // Find schools that have completed all three stages in Round 1
+      const allSchools = await storage.getSchools({});
+      
+      const readySchools = allSchools.filter(school => 
+        school.currentRound === 1 &&
+        school.inspireCompleted === true &&
+        school.investigateCompleted === true &&
+        school.actCompleted === true
+      );
+
+      console.log(`[Award Completion] Found ${readySchools.length} schools ready for Round 1 completion`);
+      
+      res.json({
+        count: readySchools.length,
+        schools: readySchools
+      });
+    } catch (error) {
+      console.error("Error fetching schools ready for award completion:", error);
+      res.status(500).json({ message: "Failed to fetch schools" });
+    }
+  });
+
+  // Bulk award completion: Generate certificates and move schools to Round 2
+  app.post('/api/admin/schools/bulk-award-process', isAuthenticated, requireAdmin, async (req: any, res) => {
+    try {
+      const { schoolIds } = req.body;
+      
+      if (!Array.isArray(schoolIds) || schoolIds.length === 0) {
+        return res.status(400).json({ message: "School IDs array is required" });
+      }
+
+      // Use a transaction to ensure atomicity - either all schools are processed or none are
+      const results = await db.transaction(async (tx) => {
+        const success: Array<{ id: string; schoolName: string; certificateId: string }> = [];
+        const failed: Array<{ id: string; schoolName: string; reason: string }> = [];
+
+        for (const schoolId of schoolIds) {
+          // Fetch school within transaction
+          const [school] = await tx
+            .select()
+            .from(schools)
+            .where(eq(schools.id, schoolId));
+          
+          if (!school) {
+            failed.push({ id: schoolId, schoolName: 'Unknown', reason: 'School not found' });
+            continue;
+          }
+
+          // Verify school has completed all three stages in Round 1
+          if (school.currentRound !== 1 || 
+              !school.inspireCompleted || 
+              !school.investigateCompleted || 
+              !school.actCompleted) {
+            failed.push({ 
+              id: schoolId,
+              schoolName: school.name,
+              reason: 'School has not completed all stages in Round 1' 
+            });
+            continue;
+          }
+
+          // Check if certificate already exists for this round
+          const existingCertificates = await tx
+            .select()
+            .from(certificates)
+            .where(
+              and(
+                eq(certificates.schoolId, schoolId),
+                eq(certificates.stage, 'act'),
+                sql`(${certificates.metadata}->>'round')::int = 1`
+              )
+            );
+
+          let certificateId: string;
+          
+          if (existingCertificates.length === 0) {
+            // Create certificate for Round 1 completion
+            const certificateNumber = `PCSR1-${Date.now()}-${schoolId.substring(0, 8)}`;
+            
+            // Get evidence counts directly from database within transaction
+            const inspireEvidence = await tx
+              .select()
+              .from(evidence)
+              .where(
+                and(
+                  eq(evidence.schoolId, schoolId),
+                  eq(evidence.stage, 'inspire'),
+                  eq(evidence.status, 'approved')
+                )
+              );
+            
+            const investigateEvidence = await tx
+              .select()
+              .from(evidence)
+              .where(
+                and(
+                  eq(evidence.schoolId, schoolId),
+                  eq(evidence.stage, 'investigate'),
+                  eq(evidence.status, 'approved')
+                )
+              );
+            
+            const actEvidence = await tx
+              .select()
+              .from(evidence)
+              .where(
+                and(
+                  eq(evidence.schoolId, schoolId),
+                  eq(evidence.stage, 'act'),
+                  eq(evidence.status, 'approved')
+                )
+              );
+            
+            const [newCertificate] = await tx.insert(certificates).values({
+              schoolId,
+              stage: 'act',
+              issuedBy: req.user.id,
+              certificateNumber,
+              completedDate: new Date(),
+              title: `Round 1 Completion Certificate`,
+              description: `Successfully completed all three stages (Inspire, Investigate, Act) in Round 1`,
+              metadata: {
+                round: 1,
+                achievements: {
+                  inspire: inspireEvidence.length,
+                  investigate: investigateEvidence.length,
+                  act: actEvidence.length
+                }
+              }
+            }).returning();
+
+            certificateId = newCertificate.id;
+            console.log(`[Award Completion] Created certificate ${certificateId} for school ${schoolId}`);
+          } else {
+            certificateId = existingCertificates[0].id;
+            console.log(`[Award Completion] Certificate ${certificateId} already exists for school ${schoolId}`);
+          }
+
+          // Move school to Round 2 within same transaction
+          await tx
+            .update(schools)
+            .set({
+              currentRound: 2,
+              roundsCompleted: 1,
+              currentStage: 'inspire',
+              inspireCompleted: false,
+              investigateCompleted: false,
+              actCompleted: false,
+              awardCompleted: false,
+              auditQuizCompleted: false,
+              progressPercentage: 0,
+              updatedAt: new Date()
+            })
+            .where(eq(schools.id, schoolId));
+
+          console.log(`[Award Completion] Moved school ${schoolId} to Round 2`);
+          
+          success.push({ id: schoolId, schoolName: school.name, certificateId });
+        }
+
+        // If there are any failures, throw with details to rollback transaction
+        if (failed.length > 0) {
+          const error = new Error(`${failed.length} school(s) failed to process`) as any;
+          error.failed = failed;
+          throw error;
+        }
+
+        return { success, failed };
+      });
+
+      res.json({
+        message: `Bulk award processing completed. ${results.success.length} schools processed successfully.`,
+        results
+      });
+    } catch (error: any) {
+      console.error("Error in bulk award processing:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to perform bulk award processing';
+      
+      // If error includes failed schools array, include it in response
+      const failed = error.failed || [];
+      
+      res.status(500).json({ 
+        message: errorMessage,
+        results: {
+          success: [],
+          failed
+        }
+      });
     }
   });
 
