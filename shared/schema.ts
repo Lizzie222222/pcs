@@ -150,6 +150,7 @@ export const users = pgTable("users", {
   legacyUserId: varchar("legacy_user_id"),
   needsEvidenceResubmission: boolean("needs_evidence_resubmission").default(false),
   migratedAt: timestamp("migrated_at"),
+  welcomeEmailSentAt: timestamp("welcome_email_sent_at"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });

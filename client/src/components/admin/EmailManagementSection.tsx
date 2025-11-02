@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,11 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Mail, Eye, Globe, Image as ImageIcon, X } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Mail, Eye, Globe, Image as ImageIcon, X, ChevronDown, ChevronUp, Users, Send, Loader2, CheckCircle2, Search, Filter } from "lucide-react";
+import { apiRequest } from "@/lib/queryClient";
 
 interface EmailManagementSectionProps {
   emailForm: any;
@@ -36,6 +40,17 @@ interface EmailManagementSectionProps {
   setCurrentViewingLanguage: (language: string) => void;
   isGeneratingTranslations: boolean;
   setIsGeneratingTranslations: (generating: boolean) => void;
+}
+
+interface MigratedUser {
+  id: string;
+  email: string;
+  firstName: string | null;
+  lastName: string | null;
+  preferredLanguage: string;
+  welcomeEmailSentAt: string | null;
+  isMigrated: boolean;
+  needsPasswordReset: boolean;
 }
 
 export default function EmailManagementSection({ 
@@ -55,6 +70,7 @@ export default function EmailManagementSection({
   setIsGeneratingTranslations
 }: EmailManagementSectionProps) {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
   const [results, setResults] = useState<Record<string, { success: boolean; message: string } | null>>({});
@@ -65,6 +81,15 @@ export default function EmailManagementSection({
   const [selectedEmailType, setSelectedEmailType] = useState('welcome');
   const [imagePickerOpen, setImagePickerOpen] = useState(false);
   const [imageSearch, setImageSearch] = useState('');
+  
+  // Migrated users state
+  const [migratedSectionOpen, setMigratedSectionOpen] = useState(false);
+  const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [migratedTestEmail, setMigratedTestEmail] = useState('');
+  const [migratedUserSearch, setMigratedUserSearch] = useState('');
+  const [migratedLanguageFilter, setMigratedLanguageFilter] = useState('all');
+  const [migratedSentFilter, setMigratedSentFilter] = useState('all');
+  const [confirmMigratedSendOpen, setConfirmMigratedSendOpen] = useState(false);
   
   const [formData, setFormData] = useState({
     welcome: { recipientEmail: '', schoolName: 'Test School' },
@@ -210,6 +235,96 @@ export default function EmailManagementSection({
       });
       if (!response.ok) throw new Error('Failed to fetch images');
       return response.json();
+    },
+  });
+
+  // Fetch migrated users
+  const { data: migratedUsers = [], isLoading: migratedUsersLoading } = useQuery<MigratedUser[]>({
+    queryKey: ['/api/admin/users'],
+    select: (data: any) => {
+      // Handle multiple response formats:
+      // 1. Array of {user, schools} objects (default non-paginated)
+      // 2. {users: [...], pagination: {...}} (paginated)
+      // 3. Array of raw user objects (role=admin filter)
+      let usersArray: any[];
+      
+      if (Array.isArray(data)) {
+        // Check if array contains {user, schools} objects or raw user objects
+        usersArray = data.map(item => item.user || item);
+      } else if (data.users) {
+        // Paginated response
+        usersArray = data.users.map((item: any) => item.user || item);
+      } else {
+        usersArray = [];
+      }
+      
+      return usersArray.filter((user: MigratedUser) => 
+        user && user.isMigrated && user.needsPasswordReset
+      );
+    },
+  });
+
+  // Filter migrated users based on search and filters
+  const filteredMigratedUsers = migratedUsers.filter(user => {
+    const searchTerm = migratedUserSearch.toLowerCase();
+    const matchesSearch = !searchTerm || 
+      user.email.toLowerCase().includes(searchTerm) ||
+      user.firstName?.toLowerCase().includes(searchTerm) ||
+      user.lastName?.toLowerCase().includes(searchTerm);
+    
+    const matchesLanguage = migratedLanguageFilter === 'all' || user.preferredLanguage === migratedLanguageFilter;
+    const matchesSent = migratedSentFilter === 'all' || 
+      (migratedSentFilter === 'sent' && user.welcomeEmailSentAt) ||
+      (migratedSentFilter === 'not_sent' && !user.welcomeEmailSentAt);
+    
+    return matchesSearch && matchesLanguage && matchesSent;
+  });
+
+  // Send test migrated email mutation
+  const sendMigratedTestEmailMutation = useMutation({
+    mutationFn: async (email: string) => {
+      const response = await apiRequest('POST', '/api/admin/send-test-migrated-email', { testEmail: email });
+      return response.json();
+    },
+    onSuccess: () => {
+      toast({
+        title: "Test Email Sent",
+        description: `Check your inbox at ${migratedTestEmail} to preview the welcome email.`,
+      });
+      setMigratedTestEmail("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Send Test Email",
+        description: error.message || "An error occurred while sending the test email.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  // Send migrated user emails mutation
+  const sendMigratedEmailsMutation = useMutation({
+    mutationFn: async (userIds: string[]) => {
+      const response = await apiRequest('POST', '/api/admin/send-migrated-user-emails', { userIds });
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      const { sent, failed, totalMigratedUsers } = data.results || {};
+      toast({
+        title: "Welcome Emails Sent",
+        description: `Successfully sent ${sent} out of ${totalMigratedUsers} emails. ${failed > 0 ? `${failed} failed.` : ''}`,
+        variant: sent === totalMigratedUsers ? "default" : "destructive",
+      });
+      setConfirmMigratedSendOpen(false);
+      setSelectedUserIds([]);
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Failed to Send Emails",
+        description: error.message || "An error occurred while sending welcome emails.",
+        variant: "destructive",
+      });
     },
   });
 
@@ -1436,6 +1551,233 @@ export default function EmailManagementSection({
         </AlertDialogContent>
       </AlertDialog>
 
+      {/* Migrated Users Welcome Emails Section */}
+      {migratedUsers.length > 0 && (
+        <Card>
+          <Collapsible open={migratedSectionOpen} onOpenChange={setMigratedSectionOpen}>
+            <CardHeader className="p-3 sm:p-4 lg:p-6">
+              <CollapsibleTrigger className="flex items-center justify-between w-full hover:opacity-70 transition-opacity" data-testid="button-toggle-migrated-section">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg">
+                    <Users className="h-5 w-5 text-blue-600" />
+                  </div>
+                  <div className="text-left">
+                    <CardTitle className="text-base sm:text-lg">Migrated Users - Welcome Emails</CardTitle>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {migratedUsers.length} migrated {migratedUsers.length === 1 ? 'user' : 'users'} awaiting welcome emails
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge variant="outline" className="bg-white">
+                    {filteredMigratedUsers.length} shown
+                  </Badge>
+                  {migratedSectionOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
+                </div>
+              </CollapsibleTrigger>
+            </CardHeader>
+
+            <CollapsibleContent>
+              <CardContent className="p-3 sm:p-4 lg:p-6 space-y-4">
+                {/* Test Email Section */}
+                <div className="bg-green-50 rounded-lg p-4 space-y-3 border border-green-200">
+                  <h4 className="font-medium text-gray-900 flex items-center gap-2">
+                    <Send className="h-4 w-4 text-green-600" />
+                    Test Email First
+                  </h4>
+                  <p className="text-sm text-gray-600">
+                    Send a test welcome email to yourself to preview before sending to users.
+                  </p>
+                  <div className="flex gap-2">
+                    <Input
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={migratedTestEmail}
+                      onChange={(e) => setMigratedTestEmail(e.target.value)}
+                      className="flex-1"
+                      data-testid="input-migrated-test-email"
+                    />
+                    <Button
+                      onClick={() => sendMigratedTestEmailMutation.mutate(migratedTestEmail)}
+                      disabled={!migratedTestEmail || sendMigratedTestEmailMutation.isPending}
+                      variant="outline"
+                      className="border-green-300 hover:bg-green-50"
+                      data-testid="button-send-migrated-test"
+                    >
+                      {sendMigratedTestEmailMutation.isPending ? (
+                        <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Sending...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="mr-2 h-4 w-4" />
+                          Send Test
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Search and Filters */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <Search className="h-4 w-4 text-gray-500" />
+                    <h4 className="font-medium text-gray-900">Search & Filter Users</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                    <div>
+                      <Input
+                        placeholder="Search by name or email..."
+                        value={migratedUserSearch}
+                        onChange={(e) => setMigratedUserSearch(e.target.value)}
+                        data-testid="input-migrated-user-search"
+                      />
+                    </div>
+                    <div>
+                      <Select value={migratedLanguageFilter} onValueChange={setMigratedLanguageFilter}>
+                        <SelectTrigger data-testid="select-migrated-language-filter">
+                          <SelectValue placeholder="All languages" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Languages</SelectItem>
+                          <SelectItem value="en">English</SelectItem>
+                          <SelectItem value="es">Spanish</SelectItem>
+                          <SelectItem value="fr">French</SelectItem>
+                          <SelectItem value="de">German</SelectItem>
+                          <SelectItem value="it">Italian</SelectItem>
+                          <SelectItem value="pt">Portuguese</SelectItem>
+                          <SelectItem value="nl">Dutch</SelectItem>
+                          <SelectItem value="ru">Russian</SelectItem>
+                          <SelectItem value="zh">Chinese</SelectItem>
+                          <SelectItem value="ko">Korean</SelectItem>
+                          <SelectItem value="ar">Arabic</SelectItem>
+                          <SelectItem value="id">Indonesian</SelectItem>
+                          <SelectItem value="el">Greek</SelectItem>
+                          <SelectItem value="cy">Welsh</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div>
+                      <Select value={migratedSentFilter} onValueChange={setMigratedSentFilter}>
+                        <SelectTrigger data-testid="select-migrated-sent-filter">
+                          <SelectValue placeholder="All users" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="all">All Users</SelectItem>
+                          <SelectItem value="not_sent">Not Sent</SelectItem>
+                          <SelectItem value="sent">Email Sent</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Users Table */}
+                <div className="border rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">
+                          <Checkbox
+                            checked={selectedUserIds.length === filteredMigratedUsers.length && filteredMigratedUsers.length > 0}
+                            onCheckedChange={(checked) => {
+                              if (checked) {
+                                setSelectedUserIds(filteredMigratedUsers.map(u => u.id));
+                              } else {
+                                setSelectedUserIds([]);
+                              }
+                            }}
+                            data-testid="checkbox-select-all-migrated"
+                          />
+                        </TableHead>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Language</TableHead>
+                        <TableHead>Status</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {migratedUsersLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8">
+                            <Loader2 className="h-6 w-6 animate-spin mx-auto text-gray-400" />
+                          </TableCell>
+                        </TableRow>
+                      ) : filteredMigratedUsers.length === 0 ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                            No users found matching filters
+                          </TableCell>
+                        </TableRow>
+                      ) : (
+                        filteredMigratedUsers.map(user => (
+                          <TableRow key={user.id} data-testid={`row-migrated-user-${user.id}`}>
+                            <TableCell>
+                              <Checkbox
+                                checked={selectedUserIds.includes(user.id)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    setSelectedUserIds([...selectedUserIds, user.id]);
+                                  } else {
+                                    setSelectedUserIds(selectedUserIds.filter(id => id !== user.id));
+                                  }
+                                }}
+                                data-testid={`checkbox-migrated-user-${user.id}`}
+                              />
+                            </TableCell>
+                            <TableCell className="font-medium">
+                              {user.firstName || user.lastName 
+                                ? `${user.firstName || ''} ${user.lastName || ''}`.trim()
+                                : '-'}
+                            </TableCell>
+                            <TableCell>{user.email}</TableCell>
+                            <TableCell>
+                              <Badge variant="outline">
+                                {user.preferredLanguage.toUpperCase()}
+                              </Badge>
+                            </TableCell>
+                            <TableCell>
+                              {user.welcomeEmailSentAt ? (
+                                <Badge variant="default" className="bg-green-500">
+                                  <CheckCircle2 className="h-3 w-3 mr-1" />
+                                  Sent
+                                </Badge>
+                              ) : (
+                                <Badge variant="secondary">
+                                  Pending
+                                </Badge>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))
+                      )}
+                    </TableBody>
+                  </Table>
+                </div>
+
+                {/* Send Button */}
+                {selectedUserIds.length > 0 && (
+                  <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-gray-700">
+                      <span className="font-semibold">{selectedUserIds.length}</span> {selectedUserIds.length === 1 ? 'user' : 'users'} selected
+                    </p>
+                    <Button
+                      onClick={() => setConfirmMigratedSendOpen(true)}
+                      className="bg-pcs_blue hover:bg-blue-600"
+                      data-testid="button-send-migrated-emails"
+                    >
+                      <Mail className="mr-2 h-4 w-4" />
+                      Send Welcome Emails
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </CollapsibleContent>
+          </Collapsible>
+        </Card>
+      )}
+
       {/* Image Picker Dialog */}
       <Dialog open={imagePickerOpen} onOpenChange={setImagePickerOpen}>
         <DialogContent className="max-w-4xl max-h-[80vh]" data-testid="dialog-image-picker">
@@ -1477,6 +1819,44 @@ export default function EmailManagementSection({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Migrated Users Confirmation Dialog */}
+      <AlertDialog open={confirmMigratedSendOpen} onOpenChange={setConfirmMigratedSendOpen}>
+        <AlertDialogContent data-testid="dialog-confirm-migrated-send">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send Welcome Emails?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will send welcome emails with temporary passwords to {selectedUserIds.length} selected {selectedUserIds.length === 1 ? 'user' : 'users'}.
+              <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-800">
+                  <strong>Note:</strong> Each user will receive an email with a temporary password and instructions to access their account.
+                </p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-migrated-send">Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => sendMigratedEmailsMutation.mutate(selectedUserIds)}
+              disabled={sendMigratedEmailsMutation.isPending}
+              className="bg-pcs_blue hover:bg-blue-600"
+              data-testid="button-confirm-migrated-send"
+            >
+              {sendMigratedEmailsMutation.isPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <Mail className="mr-2 h-4 w-4" />
+                  Send Emails
+                </>
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

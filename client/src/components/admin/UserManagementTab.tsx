@@ -46,7 +46,6 @@ import {
 } from "lucide-react";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import AssignTeacherForm from "@/components/admin/AssignTeacherForm";
-import MigratedUsersSection from "@/components/admin/MigratedUsersSection";
 
 interface UserWithSchools {
   user: {
@@ -572,7 +571,6 @@ export default function UserManagementTab() {
         </div>
       </CardHeader>
       <CardContent>
-        <MigratedUsersSection />
         <div className="space-y-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="flex-1">

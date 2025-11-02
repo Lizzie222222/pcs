@@ -7569,10 +7569,21 @@ Return JSON with:
   // Send welcome emails to migrated users with temporary passwords
   app.post('/api/admin/send-migrated-user-emails', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const allUsers = await storage.getAllUsers();
-      // IMPORTANT: Filter ensures we only email users who still need password reset
-      // Users who reset via forgot password flow will have needsPasswordReset=false and won't receive duplicate emails
-      const migratedUsers = allUsers.filter(user => user.isMigrated && user.needsPasswordReset);
+      const { userIds } = req.body;
+      
+      // Get users to email - either specific IDs or all migrated users
+      let migratedUsers;
+      if (userIds && Array.isArray(userIds) && userIds.length > 0) {
+        // Filter to specified user IDs
+        const allUsers = await storage.getAllUsers();
+        migratedUsers = allUsers.filter(user => 
+          userIds.includes(user.id) && user.isMigrated && user.needsPasswordReset
+        );
+      } else {
+        // Legacy behavior: send to all migrated users
+        const allUsers = await storage.getAllUsers();
+        migratedUsers = allUsers.filter(user => user.isMigrated && user.needsPasswordReset);
+      }
 
       if (migratedUsers.length === 0) {
         return res.status(400).json({ message: "No migrated users awaiting welcome emails" });
@@ -7597,7 +7608,11 @@ Return JSON with:
           const passwordHash = await storage.hashPassword(tempPassword);
           await db
             .update(users)
-            .set({ passwordHash, updatedAt: new Date() })
+            .set({ 
+              passwordHash, 
+              welcomeEmailSentAt: new Date(),
+              updatedAt: new Date() 
+            })
             .where(eq(users.id, user.id));
 
           // Get school name for the email
@@ -7612,7 +7627,8 @@ Return JSON with:
             user.email,
             tempPassword,
             schoolName,
-            user.firstName || undefined
+            user.firstName || undefined,
+            user.preferredLanguage || 'en'
           );
 
           if (emailSent) {
