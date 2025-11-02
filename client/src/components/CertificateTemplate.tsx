@@ -43,7 +43,7 @@ export const CertificateTemplate = forwardRef<HTMLDivElement, CertificateTemplat
       >
         {/* School Name and Details in Center */}
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className="text-center px-8">
+          <div className="text-center px-8" style={{ marginTop: '15px' }}>
             {/* School Name - Prominent */}
             <div className="text-6xl font-bold text-gray-800 drop-shadow-lg mb-6">
               {school.name}
