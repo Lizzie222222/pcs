@@ -1,6 +1,7 @@
 import { storage } from './storage';
 import { objectStorageClient, ObjectStorageService } from './objectStorage';
 import puppeteer, { Browser } from 'puppeteer';
+import React from 'react';
 import ReactDOMServer from 'react-dom/server';
 import { CertificateTemplate } from '../client/src/components/CertificateTemplate';
 import { Certificate, School } from '@shared/schema';
@@ -135,7 +136,7 @@ function renderCertificateHTML(
 
   // Render the React component to HTML string
   const componentHTML = ReactDOMServer.renderToString(
-    CertificateTemplate(templateProps)
+    React.createElement(CertificateTemplate, templateProps)
   );
 
   // Wrap in a complete HTML document with necessary styles
