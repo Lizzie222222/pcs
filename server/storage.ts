@@ -473,6 +473,19 @@ export interface IStorage {
     user: User; 
     schools: Array<School & { role: string }> 
   }>>;
+  
+  getUsersWithSchoolsPaginated(params: {
+    limit?: number;
+    offset?: number;
+    search?: string;
+    interactionFilter?: 'all' | 'interacted' | 'not-interacted';
+    schoolFilter?: 'all' | 'with-schools' | 'without-schools';
+  }): Promise<{
+    users: Array<{ user: User; schools: Array<School & { role: string }> }>;
+    total: number;
+    limit: number;
+    offset: number;
+  }>;
 
   // Analytics operations
   getAnalyticsOverview(startDate?: string, endDate?: string): Promise<{
@@ -3941,6 +3954,122 @@ export class DatabaseStorage implements IStorage {
     );
 
     return usersWithSchools;
+  }
+
+  async getUsersWithSchoolsPaginated(params: {
+    limit?: number;
+    offset?: number;
+    search?: string;
+    interactionFilter?: 'all' | 'interacted' | 'not-interacted';
+    schoolFilter?: 'all' | 'with-schools' | 'without-schools';
+  }): Promise<{
+    users: Array<{ user: User; schools: Array<School & { role: string }> }>;
+    total: number;
+    limit: number;
+    offset: number;
+  }> {
+    const {
+      limit = 50,
+      offset = 0,
+      search = '',
+      interactionFilter = 'all',
+      schoolFilter = 'all',
+    } = params;
+
+    // Build a subquery that includes school count for filtering
+    const userSchoolCountSubquery = db
+      .select({
+        userId: schoolUsers.userId,
+        schoolCount: sql<number>`COUNT(${schoolUsers.schoolId})`.as('school_count'),
+      })
+      .from(schoolUsers)
+      .groupBy(schoolUsers.userId)
+      .as('user_school_counts');
+
+    // Build filter conditions for the main user query
+    const conditions = [];
+    
+    // Search filter (name or email)
+    if (search && search.trim()) {
+      const searchTerm = `%${search.trim().toLowerCase()}%`;
+      conditions.push(
+        or(
+          sql`LOWER(${users.firstName}) LIKE ${searchTerm}`,
+          sql`LOWER(${users.lastName}) LIKE ${searchTerm}`,
+          sql`LOWER(${users.email}) LIKE ${searchTerm}`,
+          sql`LOWER(CONCAT(${users.firstName}, ' ', ${users.lastName})) LIKE ${searchTerm}`
+        )
+      );
+    }
+
+    // Interaction filter
+    if (interactionFilter === 'interacted') {
+      conditions.push(eq(users.hasInteracted, true));
+    } else if (interactionFilter === 'not-interacted') {
+      conditions.push(or(eq(users.hasInteracted, false), sql`${users.hasInteracted} IS NULL`));
+    }
+
+    // School filter - applied via LEFT JOIN and WHERE
+    let baseQuery = db.select({
+      ...getTableColumns(users),
+      schoolCount: sql<number>`COALESCE(${userSchoolCountSubquery.schoolCount}, 0)`.as('school_count'),
+    })
+    .from(users)
+    .leftJoin(userSchoolCountSubquery, eq(users.id, userSchoolCountSubquery.userId));
+
+    // Apply school filter to conditions
+    if (schoolFilter === 'with-schools') {
+      conditions.push(sql`COALESCE(${userSchoolCountSubquery.schoolCount}, 0) > 0`);
+    } else if (schoolFilter === 'without-schools') {
+      conditions.push(sql`COALESCE(${userSchoolCountSubquery.schoolCount}, 0) = 0`);
+    }
+
+    // Apply WHERE conditions (including school filter)
+    if (conditions.length > 0) {
+      baseQuery = baseQuery.where(and(...conditions)) as any;
+    }
+
+    // Get total count with same filters
+    const countQuery = baseQuery.as('filtered_users');
+    const [countResult] = await db
+      .select({ count: sql<number>`COUNT(*)` })
+      .from(countQuery);
+    const totalCount = Number(countResult?.count || 0);
+
+    // Get paginated users with same filters
+    const paginatedUsers = await baseQuery
+      .orderBy(asc(users.firstName), asc(users.lastName))
+      .limit(limit)
+      .offset(offset);
+
+    // Get schools for each user
+    const usersWithSchools = await Promise.all(
+      paginatedUsers.map(async (user) => {
+        const userSchools = await db
+          .select({
+            ...getTableColumns(schools),
+            role: schoolUsers.role,
+          })
+          .from(schools)
+          .innerJoin(schoolUsers, eq(schoolUsers.schoolId, schools.id))
+          .where(eq(schoolUsers.userId, user.id));
+
+        return {
+          user,
+          schools: userSchools.map(s => ({
+            ...s,
+            role: s.role || 'teacher',
+          })),
+        };
+      })
+    );
+
+    return {
+      users: usersWithSchools,
+      total: totalCount,
+      limit,
+      offset,
+    };
   }
 
   // Analytics implementations

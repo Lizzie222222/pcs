@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
@@ -84,8 +84,11 @@ export default function UserManagementTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'with-schools' | 'without-schools'>('all');
   const [interactionFilter, setInteractionFilter] = useState<'all' | 'interacted' | 'not-interacted'>('all');
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(50);
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [selectedUserEmail, setSelectedUserEmail] = useState('');
   const [inviteAdminDialogOpen, setInviteAdminDialogOpen] = useState(false);
@@ -103,9 +106,41 @@ export default function UserManagementTab() {
 
   const isPartner = user?.role === 'partner';
 
-  const { data: usersWithSchools = [], isLoading } = useQuery<UserWithSchools[]>({
-    queryKey: ['/api/admin/users'],
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(searchQuery);
+      setPage(1); // Reset to first page on search
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+  }, [filterStatus, interactionFilter]);
+
+  const { data, isLoading } = useQuery<{
+    users: UserWithSchools[];
+    pagination: {
+      total: number;
+      limit: number;
+      offset: number;
+      page: number;
+      totalPages: number;
+    };
+  }>({
+    queryKey: ['/api/admin/users', { 
+      page, 
+      limit: pageSize, 
+      search: debouncedSearch,
+      interactionFilter,
+      schoolFilter: filterStatus
+    }],
   });
+
+  const usersWithSchools = data?.users || [];
+  const pagination = data?.pagination;
 
   const { data: deletionPreview, isLoading: isLoadingPreview } = useQuery<DeletionPreview>({
     queryKey: ['/api/admin/users', selectedUserToDelete?.id, 'deletion-preview'],
@@ -344,33 +379,9 @@ export default function UserManagementTab() {
     },
   });
 
-  const filteredUsers = usersWithSchools.filter((item) => {
-    // Skip items with invalid user data
-    if (!item || !item.user) return false;
-    
-    const user = item.user;
-    const fullName = `${user.firstName || ''} ${user.lastName || ''}`.toLowerCase();
-    const email = user.email?.toLowerCase() || '';
-    const matchesSearch = fullName.includes(searchQuery.toLowerCase()) || email.includes(searchQuery.toLowerCase());
-
-    // Apply school status filter
-    if (filterStatus === 'with-schools' && item.schools.length === 0) {
-      return false;
-    }
-    if (filterStatus === 'without-schools' && item.schools.length > 0) {
-      return false;
-    }
-
-    // Apply interaction filter
-    if (interactionFilter === 'interacted' && !user.hasInteracted) {
-      return false;
-    }
-    if (interactionFilter === 'not-interacted' && user.hasInteracted) {
-      return false;
-    }
-
-    return matchesSearch;
-  });
+  // Server-side filtering is now handled in the query
+  // filteredUsers is the same as usersWithSchools since filtering is done on the backend
+  const filteredUsers = usersWithSchools;
 
   const handleAssignToSchool = (userEmail: string) => {
     setSelectedUserEmail(userEmail);
@@ -628,7 +639,13 @@ export default function UserManagementTab() {
 
           <div className="flex items-center justify-between">
             <div className="text-sm text-gray-600">
-              {t('userManagement.table.showingCount', { filtered: filteredUsers.length, total: usersWithSchools.length })}
+              {pagination ? (
+                <>
+                  Showing {((pagination.page - 1) * pagination.limit) + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)} of {pagination.total} users
+                </>
+              ) : (
+                `Showing ${filteredUsers.length} users`
+              )}
             </div>
             {selectedUserIds.size > 0 && (
               <Button
@@ -793,6 +810,61 @@ export default function UserManagementTab() {
                   })}
                 </tbody>
               </table>
+            </div>
+          )}
+
+          {/* Pagination Controls */}
+          {pagination && pagination.totalPages > 1 && (
+            <div className="mt-6 flex items-center justify-between gap-4 flex-wrap">
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-600">
+                  Items per page:
+                </label>
+                <Select
+                  value={pageSize.toString()}
+                  onValueChange={(value) => {
+                    setPageSize(parseInt(value));
+                    setPage(1);
+                  }}
+                >
+                  <SelectTrigger className="w-20" data-testid="select-page-size">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="20">20</SelectItem>
+                    <SelectItem value="50">50</SelectItem>
+                    <SelectItem value="100">100</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(Math.max(1, page - 1))}
+                  disabled={page === 1}
+                  data-testid="button-previous-page"
+                >
+                  Previous
+                </Button>
+                
+                <div className="flex items-center gap-2 px-4">
+                  <span className="text-sm text-gray-600">
+                    Page {page} of {pagination.totalPages}
+                  </span>
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage(Math.min(pagination.totalPages, page + 1))}
+                  disabled={page === pagination.totalPages}
+                  data-testid="button-next-page"
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </div>

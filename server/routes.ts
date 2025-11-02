@@ -6490,7 +6490,7 @@ Return JSON with:
   // Get all users with their school associations for admin management
   app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
     try {
-      const { role } = req.query;
+      const { role, limit, offset, page, search, interactionFilter, schoolFilter } = req.query;
       
       // If filtering by role=admin, return just admin users (not the full structure)
       if (role === 'admin') {
@@ -6500,9 +6500,38 @@ Return JSON with:
           .map(({ user }) => user);
         res.json(adminUsers);
       } else {
-        // Otherwise return full structure with schools for admin management
-        const usersWithSchools = await storage.getAllUsersWithSchools();
-        res.json(usersWithSchools);
+        // Check if pagination is requested
+        const isPaginated = limit !== undefined || offset !== undefined || page !== undefined;
+        
+        if (isPaginated) {
+          // Use paginated query
+          const pageNum = page ? parseInt(page as string) : 1;
+          const pageSize = limit ? parseInt(limit as string) : 50;
+          const pageOffset = offset !== undefined ? parseInt(offset as string) : (pageNum - 1) * pageSize;
+          
+          const result = await storage.getUsersWithSchoolsPaginated({
+            limit: pageSize,
+            offset: pageOffset,
+            search: search as string,
+            interactionFilter: (interactionFilter as 'all' | 'interacted' | 'not-interacted') || 'all',
+            schoolFilter: (schoolFilter as 'all' | 'with-schools' | 'without-schools') || 'all',
+          });
+          
+          res.json({
+            users: result.users,
+            pagination: {
+              total: result.total,
+              limit: result.limit,
+              offset: result.offset,
+              page: Math.floor(result.offset / result.limit) + 1,
+              totalPages: Math.ceil(result.total / result.limit),
+            },
+          });
+        } else {
+          // Otherwise return full structure with schools for admin management (backward compatibility)
+          const usersWithSchools = await storage.getAllUsersWithSchools();
+          res.json(usersWithSchools);
+        }
       }
     } catch (error) {
       console.error("Error fetching users with schools:", error);
