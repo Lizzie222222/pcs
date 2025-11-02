@@ -319,7 +319,8 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
     }
     
     console.log('Admin page: Access granted');
-  }, [isAuthenticated, isLoading, user, toast]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated, isLoading, user]);
 
   // Combined dashboard data query - fetches stats, audits, and photo consent in one call
   const { data: dashboardData, error: dashboardError } = useQuery<{
