@@ -3443,9 +3443,9 @@ export class DatabaseStorage implements IStorage {
           : null;
         
         if (primaryContact?.email) {
-          // Build certificate URL if we have one
+          // Build certificate URL if we have one - force PDF format
           const certificateUrl = roundCertificates.length > 0
-            ? `${getBaseUrl()}/api/certificates/${roundCertificates[0].id}`
+            ? `${getBaseUrl()}/api/certificates/${roundCertificates[0].id}?format=pdf`
             : undefined;
           
           // Send celebration email (fire and forget - don't block on email)

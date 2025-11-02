@@ -1247,7 +1247,7 @@ export default function Home() {
                   <CardContent className="p-8 text-center">
                     <div className="mb-6">
                       <div className="w-24 h-24 mx-auto bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-full flex items-center justify-center shadow-xl animate-bounce">
-                        <Award className="h-14 w-14 text-white" />
+                        <Award className="h-14 w-14 text-navy" />
                       </div>
                     </div>
                     <h2 className="text-3xl font-bold text-navy mb-3">
@@ -1338,7 +1338,7 @@ export default function Home() {
                               <div className="space-y-2">
                                 <Button
                                   size="sm"
-                                  className="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white w-full"
+                                  className="bg-pcs_blue hover:bg-blue-700 text-white w-full"
                                   onClick={() => window.open(`/api/certificates/${cert.id}`, '_blank')}
                                   data-testid={`button-view-certificate-${cert.id}`}
                                 >
@@ -1350,8 +1350,7 @@ export default function Home() {
                                   <span className="text-xs text-gray-500 mr-1">Share:</span>
                                   <Button
                                     size="sm"
-                                    variant="outline"
-                                    className="flex-1"
+                                    className="flex-1 bg-pcs_blue hover:bg-blue-700 text-white"
                                     onClick={() => {
                                       const shareUrl = `${window.location.origin}/verify-certificate/${cert.certificateNumber}`;
                                       const shareText = `🎉 ${school.name} is now a Plastic Clever School! Check out our Round ${(cert.metadata as any)?.round || 1} completion certificate:`;
@@ -1365,8 +1364,7 @@ export default function Home() {
                                   </Button>
                                   <Button
                                     size="sm"
-                                    variant="outline"
-                                    className="flex-1"
+                                    className="flex-1 bg-pcs_blue hover:bg-blue-700 text-white"
                                     onClick={() => {
                                       const shareUrl = `${window.location.origin}/verify-certificate/${cert.certificateNumber}`;
                                       window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`, '_blank', 'width=550,height=420');
@@ -1379,8 +1377,7 @@ export default function Home() {
                                   </Button>
                                   <Button
                                     size="sm"
-                                    variant="outline"
-                                    className="flex-1"
+                                    className="flex-1 bg-pcs_blue hover:bg-blue-700 text-white"
                                     onClick={() => {
                                       const shareUrl = `${window.location.origin}/verify-certificate/${cert.certificateNumber}`;
                                       const shareText = `${school.name} is now a Plastic Clever School!`;
@@ -1394,8 +1391,7 @@ export default function Home() {
                                   </Button>
                                   <Button
                                     size="sm"
-                                    variant="outline"
-                                    className="flex-1"
+                                    className="flex-1 bg-pcs_blue hover:bg-blue-700 text-white"
                                     onClick={() => {
                                       const shareUrl = `${window.location.origin}/verify-certificate/${cert.certificateNumber}`;
                                       const shareText = `🎉 ${school.name} is now a Plastic Clever School! Check out our certificate:`;
