@@ -101,21 +101,35 @@ export async function generateCertificatePDF(
 
     console.log(`[Certificate PDF] Fetched certificate data for school: ${certificateWithSchool.school.name}`);
 
-    // 1.5. Fetch custom background from settings if not provided
-    let backgroundUrl = customBackgroundUrl;
-    if (!backgroundUrl) {
+    // 1.5. Fetch custom background from settings and convert to base64
+    let backgroundDataUrl: string | undefined;
+    if (!customBackgroundUrl) {
       try {
-        backgroundUrl = await storage.getSetting('certificateBackgroundUrl') || undefined;
+        const backgroundUrl = await storage.getSetting('certificateBackgroundUrl');
         if (backgroundUrl) {
-          console.log(`[Certificate PDF] Using custom background from settings: ${backgroundUrl}`);
+          console.log(`[Certificate PDF] Fetching background image: ${backgroundUrl}`);
+          
+          // Fetch the image
+          const response = await fetch(backgroundUrl);
+          if (response.ok) {
+            const buffer = await response.arrayBuffer();
+            const base64 = Buffer.from(buffer).toString('base64');
+            const mimeType = response.headers.get('content-type') || 'image/png';
+            backgroundDataUrl = `data:${mimeType};base64,${base64}`;
+            console.log(`[Certificate PDF] Background image loaded (${buffer.byteLength} bytes)`);
+          } else {
+            console.warn(`[Certificate PDF] Failed to fetch background: ${response.status}`);
+          }
         }
       } catch (error) {
-        console.warn('[Certificate PDF] Failed to fetch custom background setting, using default');
+        console.warn('[Certificate PDF] Failed to fetch custom background setting:', error);
       }
+    } else {
+      backgroundDataUrl = customBackgroundUrl;
     }
 
     // 2. Render the CertificateTemplate React component to HTML
-    const certificateHTML = renderCertificateHTML(certificateWithSchool, backgroundUrl);
+    const certificateHTML = renderCertificateHTML(certificateWithSchool, backgroundDataUrl);
 
     // 3. Use Puppeteer to convert HTML to PDF
     const chromiumPath = findChromiumPath();
