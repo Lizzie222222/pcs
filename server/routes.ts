@@ -1830,6 +1830,18 @@ Return JSON with:
         return res.status(403).json({ message: "You must be a member of this school to invite teachers" });
       }
       
+      // Check if the invited email already belongs to a teacher on this school's team
+      const invitedUser = await storage.findUserByEmail(email);
+      if (invitedUser) {
+        const existingSchoolUser = await storage.getSchoolUser(schoolId, invitedUser.id);
+        if (existingSchoolUser) {
+          console.log(`[Teacher Invitation] Teacher ${email} is already a member of school ${schoolId}`);
+          return res.status(400).json({ 
+            message: "This teacher is already a member of your school team" 
+          });
+        }
+      }
+      
       // Generate invitation token
       const token = randomBytes(32).toString('hex');
       const expiresAt = new Date();
@@ -1935,6 +1947,13 @@ Return JSON with:
         return res.status(410).json({ message: "This invitation has already been accepted" });
       }
       
+      // Check if the invited email has an existing user account with a password
+      const existingUser = await storage.findUserByEmail(invitation.email);
+      const hasExistingAccount = !!existingUser;
+      const authMethod = (existingUser && existingUser.passwordHash) ? 'password' : 'none';
+      
+      console.log(`[Get Invitation] User exists: ${hasExistingAccount}, auth method: ${authMethod}`);
+      
       // Get school and inviter details
       const school = await storage.getSchool(invitation.schoolId);
       const inviter = invitation.invitedBy ? await storage.getUser(invitation.invitedBy) : null;
@@ -1948,6 +1967,8 @@ Return JSON with:
         inviterName: inviter ? `${inviter.firstName} ${inviter.lastName}`.trim() : 'A colleague',
         expiresAt: invitation.expiresAt,
         status: invitation.status,
+        authMethod,
+        hasExistingAccount,
       });
     } catch (error) {
       console.error("[Get Invitation] Error:", error);
