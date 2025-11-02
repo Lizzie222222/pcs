@@ -83,7 +83,6 @@ export default function UserManagementTab() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<'all' | 'with-schools' | 'without-schools'>('all');
   const [interactionFilter, setInteractionFilter] = useState<'all' | 'interacted' | 'not-interacted'>('all');
   const [page, setPage] = useState(1);
@@ -105,19 +104,33 @@ export default function UserManagementTab() {
 
   const isPartner = user?.role === 'partner';
 
-  // Debounce search query
+  // Debounced query parameters to prevent refetch on every keystroke
+  const [debouncedQueryParams, setDebouncedQueryParams] = useState({
+    page,
+    limit: pageSize,
+    search: searchQuery,
+    interactionFilter,
+    schoolFilter: filterStatus
+  });
+
+  // Debounce all query parameters together (300ms delay)
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearch(searchQuery);
-      setPage(1); // Reset to first page on search
+      setDebouncedQueryParams({
+        page,
+        limit: pageSize,
+        search: searchQuery,
+        interactionFilter,
+        schoolFilter: filterStatus
+      });
     }, 300);
     return () => clearTimeout(timer);
-  }, [searchQuery]);
+  }, [page, pageSize, searchQuery, interactionFilter, filterStatus]);
 
-  // Reset to page 1 when filters change
+  // Reset to page 1 when search or filters change
   useEffect(() => {
     setPage(1);
-  }, [filterStatus, interactionFilter]);
+  }, [searchQuery, filterStatus, interactionFilter]);
 
   const { data, isLoading } = useQuery<{
     users: UserWithSchools[];
@@ -129,13 +142,7 @@ export default function UserManagementTab() {
       totalPages: number;
     };
   }>({
-    queryKey: ['/api/admin/users', { 
-      page, 
-      limit: pageSize, 
-      search: debouncedSearch,
-      interactionFilter,
-      schoolFilter: filterStatus
-    }],
+    queryKey: ['/api/admin/users', debouncedQueryParams],
   });
 
   const usersWithSchools = data?.users || [];
