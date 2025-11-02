@@ -3347,29 +3347,27 @@ Return JSON with:
 
       console.log(`[Certificate Download] Request for certificate ${req.params.id}`);
 
-      // ALWAYS use /api/objects/ path instead of direct GCS URLs
-      const objectPath = `/api/objects/certificates/${req.params.id}.pdf`;
+      // Generate PDF on-demand and stream it directly to the browser
+      const { generateCertificatePDFBuffer } = await import('./certificateService');
       
-      // Generate PDF on-demand if it doesn't exist
-      if (!certificate.shareableUrl) {
-        console.log(`[Certificate Download] No PDF found, generating on-demand...`);
-        const { generateCertificatePDF } = await import('./certificateService');
+      try {
+        const { buffer, schoolName } = await generateCertificatePDFBuffer(certificate.id);
         
-        try {
-          const pdfUrl = await generateCertificatePDF(certificate.id);
-          
-          // Update the certificate with the new PDF URL
-          await storage.updateCertificate(certificate.id, { shareableUrl: pdfUrl });
-          console.log(`[Certificate Download] PDF generated: ${pdfUrl}`);
-        } catch (error) {
-          console.error(`[Certificate Download] Failed to generate PDF:`, error);
-          return res.status(500).json({ message: "Failed to generate certificate PDF" });
-        }
+        // Set headers for PDF download
+        const filename = `${schoolName.replace(/[^a-zA-Z0-9]/g, '_')}_Certificate_${certificate.certificateNumber}.pdf`;
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${filename}"`);
+        res.setHeader('Content-Length', buffer.length);
+        res.setHeader('Cache-Control', 'public, max-age=3600'); // Cache for 1 hour
+        
+        console.log(`[Certificate Download] Streaming PDF (${buffer.length} bytes) for ${schoolName}`);
+        
+        // Stream the PDF buffer to the response
+        res.send(buffer);
+      } catch (error) {
+        console.error(`[Certificate Download] Failed to generate PDF:`, error);
+        return res.status(500).json({ message: "Failed to generate certificate PDF" });
       }
-      
-      // Always redirect to /api/objects/ path for proper access control
-      console.log(`[Certificate Download] Redirecting to: ${objectPath}`);
-      return res.redirect(objectPath);
     } catch (error) {
       console.error("Error downloading certificate:", error);
       res.status(500).json({ message: "Failed to download certificate" });
