@@ -626,6 +626,7 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
                   ref={certificateRef}
                   certificate={selectedCertificate}
                   showBorder={false}
+                  backgroundUrl={backgroundData?.url || undefined}
                 />
               </div>
               
