@@ -3331,7 +3331,7 @@ Return JSON with:
   });
 
   // Admin certificate routes
-  app.get('/api/admin/certificates', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/certificates', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const certificates = await storage.getCertificates();
       res.json(certificates);
@@ -4198,7 +4198,7 @@ Return JSON with:
   });
 
   // GET /api/admin/photo-consent/pending - Get all schools with pending photo consent
-  app.get('/api/admin/photo-consent/pending', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/photo-consent/pending', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const pendingSchools = await storage.getSchoolsWithPendingPhotoConsent();
       res.json(pendingSchools);
@@ -4329,7 +4329,7 @@ Return JSON with:
   });
 
   // Combined dashboard data endpoint - fetches stats, pending audits, and pending photo consent in one call
-  app.get('/api/admin/dashboard-data', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/dashboard-data', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const [stats, pendingAudits, pendingPhotoConsent] = await Promise.all([
         storage.getAdminStats(),
@@ -4349,7 +4349,7 @@ Return JSON with:
   });
 
   // Analytics endpoints
-  app.get('/api/admin/analytics/overview', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/analytics/overview', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
       const analytics = await storage.getAnalyticsOverview(
@@ -4389,7 +4389,7 @@ Return JSON with:
     }
   });
 
-  app.get('/api/admin/analytics/school-progress', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/analytics/school-progress', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
       const analytics = await storage.getSchoolProgressAnalytics(
@@ -4403,7 +4403,7 @@ Return JSON with:
     }
   });
 
-  app.get('/api/admin/analytics/evidence', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/analytics/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
       const analytics = await storage.getEvidenceAnalytics(
@@ -4417,7 +4417,7 @@ Return JSON with:
     }
   });
 
-  app.get('/api/admin/analytics/user-engagement', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/analytics/user-engagement', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
       const analytics = await storage.getUserEngagementAnalytics(
@@ -4431,7 +4431,7 @@ Return JSON with:
     }
   });
 
-  app.get('/api/admin/analytics/resources', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/analytics/resources', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const analytics = await storage.getResourceAnalytics();
       res.json(analytics);
@@ -4441,7 +4441,7 @@ Return JSON with:
     }
   });
 
-  app.get('/api/admin/analytics/email', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/analytics/email', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const analytics = await storage.getEmailAnalytics();
       res.json(analytics);
@@ -4451,7 +4451,7 @@ Return JSON with:
     }
   });
 
-  app.get('/api/admin/analytics/geographic', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/analytics/geographic', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const analytics = await storage.getGeographicAnalytics();
       res.json(analytics);
@@ -4462,7 +4462,7 @@ Return JSON with:
   });
 
   // Audit analytics endpoints
-  app.get('/api/admin/analytics/audit-overview', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/analytics/audit-overview', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const analytics = await storage.getAuditOverviewAnalytics();
       res.json(analytics);
@@ -4472,7 +4472,7 @@ Return JSON with:
     }
   });
 
-  app.get('/api/admin/analytics/audit-by-school', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/analytics/audit-by-school', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const analytics = await storage.getAuditBySchoolAnalytics();
       res.json(analytics);
@@ -4482,7 +4482,7 @@ Return JSON with:
     }
   });
 
-  app.get('/api/admin/analytics/waste-trends', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/analytics/waste-trends', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const analytics = await storage.getWasteTrendsAnalytics();
       res.json(analytics);
@@ -4983,7 +4983,7 @@ Return JSON with:
    * @location server/routes.ts#L2570
    * @related shared/schema.ts (evidence table), client/src/pages/admin.tsx (evidence review tab)
    */
-  app.get('/api/admin/evidence', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const filters = {
         status: req.query.status as 'pending' | 'approved' | 'rejected' | undefined,
@@ -5008,7 +5008,7 @@ Return JSON with:
   });
 
   // Get pending evidence for review (kept for backward compatibility)
-  app.get('/api/admin/evidence/pending', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/evidence/pending', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const evidence = await storage.getPendingEvidence();
       res.json(evidence);
@@ -5019,7 +5019,7 @@ Return JSON with:
   });
 
   // Get approved and public evidence for case studies
-  app.get('/api/admin/evidence/approved-public', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/evidence/approved-public', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const evidence = await storage.getApprovedPublicEvidence();
       res.json(evidence);
@@ -5702,7 +5702,7 @@ Return JSON with:
   });
 
   // Admin: Get pending audits
-  app.get('/api/admin/audits/pending', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.get('/api/admin/audits/pending', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const audits = await storage.getPendingAudits();
       res.json(audits);
@@ -5713,7 +5713,7 @@ Return JSON with:
   });
 
   // Admin: Get all audits with filters
-  app.get('/api/admin/audits', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.get('/api/admin/audits', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { status, limit, offset } = req.query;
       const audits = await storage.getAllAudits({
@@ -6488,7 +6488,7 @@ Return JSON with:
   });
 
   // Get all users with their school associations for admin management
-  app.get('/api/admin/users', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/users', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { role, limit, offset, page, search, interactionFilter, schoolFilter } = req.query;
       
@@ -6590,7 +6590,7 @@ Return JSON with:
   });
 
   // Get deletion preview for a user
-  app.get('/api/admin/users/:id/deletion-preview', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.get('/api/admin/users/:id/deletion-preview', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { id } = req.params;
       const adminUserId = req.user.id;
@@ -6748,7 +6748,7 @@ Return JSON with:
   });
 
   // Get all schools for admin management
-  app.get('/api/admin/schools', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/schools', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { country, stage, type, search, language, sortByDate, joinedMonth, joinedYear, interactionStatus, limit, offset } = req.query;
       const schools = await storage.getSchools({
@@ -6772,7 +6772,7 @@ Return JSON with:
   });
 
   // Get single school by ID
-  app.get('/api/admin/schools/:id', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/schools/:id', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const school = await storage.getSchool(req.params.id);
       
@@ -6788,7 +6788,7 @@ Return JSON with:
   });
 
   // Get evidence for a specific school
-  app.get('/api/admin/schools/:id/evidence', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/schools/:id/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const schoolId = req.params.id;
       const evidence = await storage.getSchoolEvidence(schoolId);
@@ -6800,7 +6800,7 @@ Return JSON with:
   });
 
   // Get teachers for a specific school
-  app.get('/api/admin/schools/:id/teachers', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/schools/:id/teachers', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const schoolId = req.params.id;
       const schoolUsers = await storage.getSchoolUsersWithDetails(schoolId);
@@ -6844,7 +6844,7 @@ Return JSON with:
   });
 
   // Get school users count for deletion preview
-  app.get('/api/admin/schools/:id/users-preview', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/schools/:id/users-preview', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const schoolId = req.params.id;
       
@@ -6906,7 +6906,7 @@ Return JSON with:
   });
 
   // Get teachers for a specific school (for expandable rows)
-  app.get('/api/admin/schools/:schoolId/teachers', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/schools/:schoolId/teachers', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { schoolId } = req.params;
       
@@ -8084,7 +8084,7 @@ Return JSON with:
   });
 
   // GET /api/admin/invitations - Get all admin invitations
-  app.get('/api/admin/invitations', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.get('/api/admin/invitations', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const userId = req.user.id;
       
@@ -8605,7 +8605,7 @@ Return JSON with:
   });
 
   // GET /api/admin/verification-requests - Admin views all verification requests across all schools
-  app.get('/api/admin/verification-requests', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.get('/api/admin/verification-requests', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       console.log('[Admin Verification Requests] Fetching all verification requests');
 

@@ -175,6 +175,15 @@ export default function Navigation() {
                       Admin
                     </Badge>
                   </Link>
+                ) : user?.role === 'partner' ? (
+                  <Link 
+                    href="/admin"
+                    data-testid="badge-role-partner"
+                  >
+                    <Badge className="bg-purple-600 text-white hover:bg-purple-700 cursor-pointer transition-colors text-xs">
+                      Partner
+                    </Badge>
+                  </Link>
                 ) : (
                   <>
                     <Badge className="bg-teal text-white text-xs px-2 py-0.5" data-testid="badge-role-teacher">
@@ -348,6 +357,16 @@ export default function Navigation() {
                             >
                               <Badge className="bg-pcs_blue text-white hover:bg-pcs_blue/90 cursor-pointer transition-colors">
                                 Admin
+                              </Badge>
+                            </Link>
+                          ) : user?.role === 'partner' ? (
+                            <Link 
+                              href="/admin"
+                              onClick={() => setIsMobileMenuOpen(false)}
+                              data-testid="mobile-badge-role-partner"
+                            >
+                              <Badge className="bg-purple-600 text-white hover:bg-purple-700 cursor-pointer transition-colors">
+                                Partner
                               </Badge>
                             </Link>
                           ) : (
