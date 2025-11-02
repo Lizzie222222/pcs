@@ -236,9 +236,12 @@ export default function AdminInvitationAccept() {
       return await response.json();
     },
     onSuccess: async () => {
+      const isPartner = invitation?.role === 'partner';
       toast({
         title: "Invitation accepted!",
-        description: "You've successfully become an administrator",
+        description: isPartner 
+          ? "You've successfully become a partner"
+          : "You've successfully become an administrator",
       });
       // Invalidate auth user cache to refresh admin status
       await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });

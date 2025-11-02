@@ -278,9 +278,9 @@ export default function Home() {
   });
   const isManualTourTrigger = useRef(false);
 
-  // Redirect admins to admin dashboard
+  // Redirect admins and partners to admin dashboard
   useEffect(() => {
-    if (!isLoading && isAuthenticated && user?.isAdmin) {
+    if (!isLoading && isAuthenticated && (user?.isAdmin || user?.role === 'partner')) {
       setLocation("/admin");
       return;
     }
@@ -312,7 +312,7 @@ export default function Home() {
 
   const { data: dashboardData, isLoading: isDashboardLoading, error } = useQuery<DashboardData>({
     queryKey: ['/api/dashboard'],
-    enabled: isAuthenticated && !user?.isAdmin,
+    enabled: isAuthenticated && !user?.isAdmin && user?.role !== 'partner',
     retry: false,
   });
 

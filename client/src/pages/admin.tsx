@@ -283,13 +283,13 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
     };
   }, [unreadChatCount]);
 
-  // Redirect if not authenticated or not admin (but only after loading completes)
+  // Redirect if not authenticated or not admin/partner (but only after loading completes)
   useEffect(() => {
     console.log('Admin page - access check:', {
       isLoading,
       isAuthenticated,
       user: user ? { id: user.id, email: user.email, role: user.role, isAdmin: user.isAdmin } : null,
-      hasAdminAccess: user?.role === 'admin' || user?.isAdmin
+      hasAdminAccess: user?.role === 'admin' || user?.role === 'partner' || user?.isAdmin
     });
     
     // Only check access after auth state is fully loaded
@@ -304,8 +304,8 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
       return;
     }
     
-    // Now check if user has admin access
-    if (!isAuthenticated || !(user?.role === 'admin' || user?.isAdmin)) {
+    // Now check if user has admin or partner access
+    if (!isAuthenticated || !(user?.role === 'admin' || user?.role === 'partner' || user?.isAdmin)) {
       console.log('Admin page: Access denied, redirecting to /');
       toast({
         title: t('toasts.access_denied'),
@@ -335,7 +335,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
     }>;
   }>({
     queryKey: ['/api/admin/dashboard-data'],
-    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin)),
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.role === 'partner' || user?.isAdmin)),
     retry: false,
   });
 
@@ -348,7 +348,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
   // Fetch schools list for CaseStudyManagement
   const { data: schools = [] } = useQuery<any[]>({
     queryKey: ['/api/admin/schools'],
-    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.isAdmin) && activeTab === 'case-studies'),
+    enabled: Boolean(isAuthenticated && (user?.role === 'admin' || user?.role === 'partner' || user?.isAdmin) && activeTab === 'case-studies'),
     retry: false,
   });
 
@@ -1147,7 +1147,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
       </div>
 
       {/* Collaboration Components */}
-      {(user?.role === 'admin' || user?.isAdmin) && (
+      {(user?.role === 'admin' || user?.role === 'partner' || user?.isAdmin) && (
         <>
           <CollaborationSidebar />
           

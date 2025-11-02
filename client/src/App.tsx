@@ -207,7 +207,7 @@ function Router() {
                   <Route path="/migrated-onboarding" component={MigratedUserOnboarding} />
                   <Route path="/dashboard">
                     {() => {
-                      if (user?.isAdmin) {
+                      if (user?.isAdmin || user?.role === 'partner') {
                         window.location.href = "/admin";
                         return null;
                       }
