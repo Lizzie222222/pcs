@@ -765,6 +765,7 @@ export const auditResponses = pgTable("audit_responses", {
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
   submittedBy: varchar("submitted_by").notNull().references(() => users.id),
   status: auditStatusEnum("status").default('draft'),
+  roundNumber: integer("round_number").default(1),
   
   // Part 1: About Your School
   part1Data: jsonb("part1_data").default('{}'),
@@ -804,6 +805,7 @@ export const reductionPromises = pgTable("reduction_promises", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
   auditId: varchar("audit_id").references(() => auditResponses.id, { onDelete: 'set null' }),
+  roundNumber: integer("round_number").default(1),
   plasticItemType: varchar("plastic_item_type").notNull(),
   plasticItemLabel: varchar("plastic_item_label").notNull(),
   baselineQuantity: integer("baseline_quantity").notNull(),

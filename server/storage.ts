@@ -3188,25 +3188,31 @@ export class DatabaseStorage implements IStorage {
       return uniqueRequirementIds.size + evidenceWithoutRequirement.length;
     };
 
-    // Check if school has an approved audit
+    // Check if school has an approved audit for current round
     const approvedAudit = await db
       .select()
       .from(auditResponses)
       .where(
         and(
           eq(auditResponses.schoolId, schoolId),
-          eq(auditResponses.status, 'approved')
+          eq(auditResponses.status, 'approved'),
+          eq(auditResponses.roundNumber, currentRound)
         )
       )
       .limit(1);
 
     const hasQuiz = approvedAudit.length > 0;
 
-    // Check if school has any reduction promises (action plan)
+    // Check if school has any reduction promises (action plan) for current round
     const actionPlans = await db
       .select()
       .from(reductionPromises)
-      .where(eq(reductionPromises.schoolId, schoolId))
+      .where(
+        and(
+          eq(reductionPromises.schoolId, schoolId),
+          eq(reductionPromises.roundNumber, currentRound)
+        )
+      )
       .limit(1);
 
     const hasActionPlan = actionPlans.length > 0;
@@ -5774,11 +5780,20 @@ export class DatabaseStorage implements IStorage {
     return audit;
   }
 
-  async getSchoolAudit(schoolId: string): Promise<AuditResponse | undefined> {
+  async getSchoolAudit(schoolId: string, roundNumber?: number): Promise<AuditResponse | undefined> {
+    // If round number is specified, filter by it
+    // Otherwise return most recent audit (for backwards compatibility)
     const [audit] = await db
       .select()
       .from(auditResponses)
-      .where(eq(auditResponses.schoolId, schoolId))
+      .where(
+        roundNumber !== undefined
+          ? and(
+              eq(auditResponses.schoolId, schoolId),
+              eq(auditResponses.roundNumber, roundNumber)
+            )
+          : eq(auditResponses.schoolId, schoolId)
+      )
       .orderBy(desc(auditResponses.createdAt))
       .limit(1);
     return audit;

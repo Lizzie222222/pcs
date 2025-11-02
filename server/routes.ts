@@ -2795,10 +2795,18 @@ Return JSON with:
       // Check if user is admin or partner
       const isAdminOrPartner = user?.isAdmin || user?.role === 'partner';
       
+      // Get school to check stage lock status and round number
+      const school = await storage.getSchool(req.body.schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
       // If admin is uploading, auto-approve and set review metadata
+      // Also set the roundNumber to the school's current round
       const evidenceData = insertEvidenceSchema.parse({
         ...req.body,
         submittedBy: userId,
+        roundNumber: school.currentRound || 1,
         // Auto-approve admin uploads
         ...(user?.isAdmin ? {
           status: 'approved',
@@ -2807,18 +2815,19 @@ Return JSON with:
         } : {}),
       });
 
-      // Get school to check stage lock status
-      const school = await storage.getSchool(evidenceData.schoolId);
-      if (!school) {
-        return res.status(404).json({ message: "School not found" });
-      }
-
       // If not admin/partner, verify user is a member of the school
       if (!isAdminOrPartner) {
         const schoolUser = await storage.getSchoolUser(evidenceData.schoolId, userId);
         if (!schoolUser) {
           return res.status(403).json({ 
             message: "You must be a member of the school to submit evidence" 
+          });
+        }
+        
+        // Check if stage is locked
+        if (evidenceData.stage !== school.currentStage) {
+          return res.status(403).json({ 
+            message: `You can only submit evidence for the ${school.currentStage} stage at this time` 
           });
         }
       }
@@ -5564,25 +5573,32 @@ Return JSON with:
       // Mark user as having interacted (audit submission is a meaningful action)
       await markUserInteracted(userId);
       
+      // Get school to set correct round number
+      const school = await storage.getSchool(req.body.schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
       const auditData = insertAuditResponseSchema.parse({
         ...req.body,
         submittedBy: userId,
+        roundNumber: school.currentRound || 1,
         // Auto-approve if submitted by admin
         ...(isAdmin ? { status: 'approved' } : {}),
       });
 
-      // Check if audit already exists for this school
-      const existingAudit = await storage.getSchoolAudit(auditData.schoolId);
+      // Check if audit already exists for this school and current round
+      const existingAudit = await storage.getSchoolAudit(auditData.schoolId, school.currentRound || 1);
       
       let audit;
       if (existingAudit && existingAudit.status === 'draft') {
-        // Update existing draft
+        // Update existing draft for this round
         audit = await storage.updateAudit(existingAudit.id, auditData);
       } else if (!existingAudit) {
-        // Create new audit
+        // Create new audit for this round
         audit = await storage.createAudit(auditData);
       } else {
-        return res.status(400).json({ message: "Audit already submitted for this school" });
+        return res.status(400).json({ message: `Audit already submitted for round ${school.currentRound}` });
       }
 
       res.status(201).json(audit);
@@ -6074,8 +6090,17 @@ Return JSON with:
       
       console.log("[Reduction Promise] Received data:", JSON.stringify(req.body, null, 2));
       
-      // Validate request body
-      const validatedData = insertReductionPromiseSchema.parse(req.body);
+      // Get school to set correct round number
+      const school = await storage.getSchool(req.body.schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      // Validate request body with round number
+      const validatedData = insertReductionPromiseSchema.parse({
+        ...req.body,
+        roundNumber: school.currentRound || 1,
+      });
       
       // Check if user is a member of the school
       const schools = await storage.getUserSchools(userId);
