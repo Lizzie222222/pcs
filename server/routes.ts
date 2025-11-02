@@ -3335,7 +3335,8 @@ Return JSON with:
     }
   });
 
-  app.get('/api/certificates/:id', isAuthenticated, async (req: any, res) => {
+  // Public certificate download endpoint (no auth required - certificate ID acts as access token)
+  app.get('/api/certificates/:id', async (req: any, res) => {
     try {
       const certificate = await storage.getCertificate(req.params.id);
       
@@ -3343,14 +3344,8 @@ Return JSON with:
         return res.status(404).json({ message: "Certificate not found" });
       }
 
-      // Verify user has access to this school's certificate (or is admin)
-      const userId = req.user.id;
-      const schools = await storage.getUserSchools(userId);
-      const hasAccess = schools.some(s => s.id === certificate.schoolId) || req.user.isAdmin;
-      
-      if (!hasAccess) {
-        return res.status(403).json({ message: "You don't have access to this certificate" });
-      }
+      // No authentication required - the certificate ID itself acts as a secret token
+      // Anyone with the link can view/download the certificate (intended for sharing)
 
       // If requesting PDF format (or if shareableUrl exists), serve the PDF
       const wantsPdf = req.query.format === 'pdf' || req.headers.accept?.includes('application/pdf');
