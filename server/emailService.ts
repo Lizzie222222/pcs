@@ -252,8 +252,24 @@ interface EmailParams {
 
 export async function sendEmail(params: EmailParams): Promise<boolean> {
   if (!process.env.SENDGRID_API_KEY) {
-    console.error('Cannot send email: SENDGRID_API_KEY not configured');
-    return false;
+    console.log('\n========================================');
+    console.log('📧 EMAIL (Development Mode - Not Actually Sent)');
+    console.log('========================================');
+    console.log('To:', params.to);
+    console.log('Subject:', params.subject);
+    
+    // Extract and log password reset link if present
+    if (params.html) {
+      const resetLinkMatch = params.html.match(/\/reset-password\?token=([a-f0-9]+)/);
+      if (resetLinkMatch) {
+        const resetUrl = `${getBaseUrl()}${resetLinkMatch[0]}`;
+        console.log('\n🔗 PASSWORD RESET LINK:');
+        console.log(resetUrl);
+        console.log('\n📋 Copy this link to reset your password');
+      }
+    }
+    console.log('========================================\n');
+    return true;
   }
 
   try {
