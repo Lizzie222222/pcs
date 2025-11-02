@@ -79,10 +79,147 @@ function findChromiumPath(): string {
 }
 
 /**
+ * Generate a PDF buffer from a certificate (without uploading to storage)
+ * @param certificateId - The ID of the certificate to generate PDF for
+ * @param customBackgroundUrl - Optional custom background image URL
+ * @returns The PDF as a Buffer along with the school name
+ */
+export async function generateCertificatePDFBuffer(
+  certificateId: string,
+  customBackgroundUrl?: string
+): Promise<{ buffer: Buffer; schoolName: string }> {
+  let browser: Browser | null = null;
+
+  try {
+    console.log(`[Certificate PDF] Starting PDF generation for certificate ${certificateId}`);
+
+    // 1. Fetch certificate and school data from database
+    const certificateWithSchool = await storage.getCertificate(certificateId);
+    
+    if (!certificateWithSchool) {
+      throw new Error(`Certificate with ID ${certificateId} not found`);
+    }
+
+    console.log(`[Certificate PDF] Fetched certificate data for school: ${certificateWithSchool.school.name}`);
+
+    // 1.5. Fetch custom background from settings and convert to base64
+    let backgroundDataUrl: string | undefined;
+    if (!customBackgroundUrl) {
+      try {
+        const backgroundUrl = await storage.getSetting('certificateBackgroundUrl');
+        if (backgroundUrl) {
+          console.log(`[Certificate PDF] Fetching background image: ${backgroundUrl}`);
+          
+          // Handle both /api/objects/ paths and direct URLs
+          let fetchUrl = backgroundUrl;
+          if (backgroundUrl.startsWith('/api/objects/') || backgroundUrl.startsWith('/objects/')) {
+            // Convert to full URL for fetching from own server
+            const baseUrl = process.env.REPLIT_DEV_DOMAIN 
+              ? `https://${process.env.REPLIT_DEV_DOMAIN}` 
+              : 'http://localhost:5000';
+            fetchUrl = `${baseUrl}${backgroundUrl}`;
+            console.log(`[Certificate PDF] Converted path to URL: ${fetchUrl}`);
+          }
+          
+          // Fetch the image
+          const response = await fetch(fetchUrl);
+          if (response.ok) {
+            const buffer = await response.arrayBuffer();
+            const base64 = Buffer.from(buffer).toString('base64');
+            const mimeType = response.headers.get('content-type') || 'image/png';
+            backgroundDataUrl = `data:${mimeType};base64,${base64}`;
+            console.log(`[Certificate PDF] Background image loaded (${buffer.byteLength} bytes)`);
+          } else {
+            console.warn(`[Certificate PDF] Failed to fetch background: ${response.status}`);
+          }
+        }
+      } catch (error) {
+        console.warn('[Certificate PDF] Failed to fetch custom background setting:', error);
+      }
+    } else {
+      backgroundDataUrl = customBackgroundUrl;
+    }
+
+    // 2. Render the CertificateTemplate React component to HTML
+    const certificateHTML = renderCertificateHTML(certificateWithSchool, backgroundDataUrl);
+
+    // 3. Use Puppeteer to convert HTML to PDF
+    const chromiumPath = findChromiumPath();
+    console.log(`[Certificate PDF] Using Chromium at: ${chromiumPath}`);
+    console.log('[Certificate PDF] Launching Puppeteer browser...');
+    browser = await puppeteer.launch({
+      headless: true,
+      executablePath: chromiumPath,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-gpu',
+      ],
+    });
+
+    const page = await browser.newPage();
+    
+    // Set viewport to match certificate dimensions
+    await page.setViewport({
+      width: 1056, // 11 inches * 96 DPI
+      height: 816,  // 8.5 inches * 96 DPI
+    });
+
+    // Set content and wait for images to load
+    await page.setContent(certificateHTML, {
+      waitUntil: ['networkidle0', 'load'],
+    });
+
+    console.log('[Certificate PDF] Generating PDF...');
+    
+    // Generate PDF with landscape orientation (11in x 8.5in)
+    const pdfUint8Array = await page.pdf({
+      format: 'Letter',
+      landscape: true,
+      width: '11in',
+      height: '8.5in',
+      printBackground: true,
+      margin: {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0,
+      },
+    });
+
+    // Convert Uint8Array to Buffer
+    const pdfBuffer = Buffer.from(pdfUint8Array);
+
+    console.log(`[Certificate PDF] PDF generated, size: ${pdfBuffer.length} bytes`);
+
+    return {
+      buffer: pdfBuffer,
+      schoolName: certificateWithSchool.school.name
+    };
+
+  } catch (error) {
+    console.error('[Certificate PDF] Error generating certificate PDF:', error);
+    throw new Error(`Failed to generate certificate PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  } finally {
+    // Clean up Puppeteer browser instance
+    if (browser) {
+      try {
+        await browser.close();
+        console.log('[Certificate PDF] Browser closed successfully');
+      } catch (closeError) {
+        console.error('[Certificate PDF] Error closing browser:', closeError);
+      }
+    }
+  }
+}
+
+/**
  * Generate a PDF from a certificate and upload it to Google Cloud Storage
  * @param certificateId - The ID of the certificate to generate PDF for
  * @param customBackgroundUrl - Optional custom background image URL
  * @returns The public URL of the uploaded PDF
+ * @deprecated Use generateCertificatePDFBuffer instead and stream PDFs directly
  */
 export async function generateCertificatePDF(
   certificateId: string,
