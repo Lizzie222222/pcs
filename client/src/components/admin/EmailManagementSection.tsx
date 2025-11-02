@@ -1552,26 +1552,36 @@ export default function EmailManagementSection({
       </AlertDialog>
 
       {/* Migrated Users Welcome Emails Section */}
-      {migratedUsers.length > 0 && (
+      {(migratedUsersLoading || migratedUsers.length > 0) && (
         <Card>
           <Collapsible open={migratedSectionOpen} onOpenChange={setMigratedSectionOpen}>
             <CardHeader className="p-3 sm:p-4 lg:p-6">
               <CollapsibleTrigger className="flex items-center justify-between w-full hover:opacity-70 transition-opacity" data-testid="button-toggle-migrated-section">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-100 rounded-lg">
-                    <Users className="h-5 w-5 text-blue-600" />
+                    {migratedUsersLoading ? (
+                      <Loader2 className="h-5 w-5 text-blue-600 animate-spin" />
+                    ) : (
+                      <Users className="h-5 w-5 text-blue-600" />
+                    )}
                   </div>
                   <div className="text-left">
                     <CardTitle className="text-base sm:text-lg">Migrated Users - Welcome Emails</CardTitle>
                     <p className="text-sm text-gray-600 mt-1">
-                      {migratedUsers.length} migrated {migratedUsers.length === 1 ? 'user' : 'users'} awaiting welcome emails
+                      {migratedUsersLoading ? (
+                        'Loading migrated users...'
+                      ) : (
+                        `${migratedUsers.length} migrated ${migratedUsers.length === 1 ? 'user' : 'users'} awaiting welcome emails`
+                      )}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Badge variant="outline" className="bg-white">
-                    {filteredMigratedUsers.length} shown
-                  </Badge>
+                  {!migratedUsersLoading && (
+                    <Badge variant="outline" className="bg-white">
+                      {filteredMigratedUsers.length} shown
+                    </Badge>
+                  )}
                   {migratedSectionOpen ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
                 </div>
               </CollapsibleTrigger>
