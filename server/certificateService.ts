@@ -1,10 +1,81 @@
+import fs from 'fs';
 import { storage } from './storage';
 import { objectStorageClient, ObjectStorageService } from './objectStorage';
 import puppeteer, { Browser } from 'puppeteer';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
+import { execSync } from 'child_process';
 import { CertificateTemplate } from '../client/src/components/CertificateTemplate';
 import { Certificate, School } from '@shared/schema';
+
+// Helper function to find chromium executable
+function findChromiumPath(): string {
+  // 1. Check PUPPETEER_EXECUTABLE_PATH environment variable
+  if (process.env.PUPPETEER_EXECUTABLE_PATH) {
+    const envPath = process.env.PUPPETEER_EXECUTABLE_PATH;
+    if (fs.existsSync(envPath)) {
+      console.log(`[Certificate PDF] Found Chromium via PUPPETEER_EXECUTABLE_PATH: ${envPath}`);
+      return envPath;
+    }
+  }
+  
+  // 2. Try to find chromium in PATH using 'which chromium'
+  try {
+    const chromiumPath = execSync('which chromium', { encoding: 'utf-8' }).trim();
+    if (chromiumPath && fs.existsSync(chromiumPath)) {
+      console.log(`[Certificate PDF] Found Chromium via 'which chromium': ${chromiumPath}`);
+      return chromiumPath;
+    }
+  } catch (error) {
+    // Chromium not in PATH, continue to next option
+  }
+  
+  // 3. Try to find chromium in Nix store (Replit/NixOS)
+  try {
+    const nixChromiumPath = execSync(
+      'find /nix/store -maxdepth 2 -name chromium -type f -executable 2>/dev/null | head -n 1',
+      { encoding: 'utf-8' }
+    ).trim();
+    
+    if (nixChromiumPath && fs.existsSync(nixChromiumPath)) {
+      console.log(`[Certificate PDF] Found Chromium in Nix store: ${nixChromiumPath}`);
+      return nixChromiumPath;
+    }
+  } catch (error) {
+    // Nix store search failed, continue to next option
+  }
+  
+  // 4. Try puppeteer.executablePath() if available
+  try {
+    const puppeteerPath = puppeteer.executablePath();
+    if (puppeteerPath && fs.existsSync(puppeteerPath)) {
+      console.log(`[Certificate PDF] Found Chromium via puppeteer.executablePath(): ${puppeteerPath}`);
+      return puppeteerPath;
+    }
+  } catch (error) {
+    // puppeteer.executablePath() failed, continue to next option
+  }
+  
+  // 5. Try common paths
+  const commonPaths = [
+    '/usr/bin/chromium',
+    '/usr/bin/chromium-browser',
+    '/usr/bin/google-chrome',
+    '/usr/bin/google-chrome-stable',
+  ];
+  
+  for (const path of commonPaths) {
+    if (fs.existsSync(path)) {
+      console.log(`[Certificate PDF] Found Chromium at common path: ${path}`);
+      return path;
+    }
+  }
+  
+  // 6. No valid chromium path found
+  throw new Error(
+    'Could not find Chromium executable. Please set PUPPETEER_EXECUTABLE_PATH environment variable or install Chromium.'
+  );
+}
 
 /**
  * Generate a PDF from a certificate and upload it to Google Cloud Storage
@@ -47,9 +118,12 @@ export async function generateCertificatePDF(
     const certificateHTML = renderCertificateHTML(certificateWithSchool, backgroundUrl);
 
     // 3. Use Puppeteer to convert HTML to PDF
+    const chromiumPath = findChromiumPath();
+    console.log(`[Certificate PDF] Using Chromium at: ${chromiumPath}`);
     console.log('[Certificate PDF] Launching Puppeteer browser...');
     browser = await puppeteer.launch({
       headless: true,
+      executablePath: chromiumPath,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
@@ -255,6 +329,7 @@ async function uploadCertificatePDF(
   await file.save(pdfBuffer, {
     metadata: {
       contentType: 'application/pdf',
+      cacheControl: 'public, max-age=31536000', // Cache for 1 year
       metadata: {
         certificateId,
         schoolName,
@@ -263,13 +338,12 @@ async function uploadCertificatePDF(
     },
   });
 
-  // Make the file publicly accessible
-  await file.makePublic();
+  console.log('[Certificate PDF] File uploaded successfully');
 
-  console.log('[Certificate PDF] File made public');
-
-  // Generate the public URL
+  // Return direct GCS URL - files in public/ folders are accessible even with PAP enabled
   const publicUrl = `https://storage.googleapis.com/${bucketName}/${objectName}`;
+
+  console.log('[Certificate PDF] Generated public URL for certificate access');
 
   return publicUrl;
 }
