@@ -1,6 +1,6 @@
 import fs from 'fs';
 import { storage } from './storage';
-import { objectStorageClient, ObjectStorageService } from './objectStorage';
+import { objectStorageClient, ObjectStorageService, parseObjectPath } from './objectStorage';
 import puppeteer, { Browser } from 'puppeteer';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
@@ -300,36 +300,22 @@ async function uploadCertificatePDF(
 ): Promise<string> {
   const objectStorageService = new ObjectStorageService();
   
-  // Get the public object search paths from environment
-  const publicPaths = objectStorageService.getPublicObjectSearchPaths();
+  // Get the private object directory
+  const privateDir = objectStorageService.getPrivateObjectDir();
   
-  if (!publicPaths || publicPaths.length === 0) {
-    throw new Error('PUBLIC_OBJECT_SEARCH_PATHS not configured');
-  }
-
-  // Parse the first public path to get bucket name
-  // Format: /bucket-name/public
-  const firstPublicPath = publicPaths[0];
-  const pathParts = firstPublicPath.split('/').filter(p => p);
+  // Upload to /.private/certificates/ directory
+  const objectPath = `${privateDir}/certificates/${certificateId}.pdf`;
+  const { bucketName, objectName } = parseObjectPath(objectPath);
   
-  if (pathParts.length < 1) {
-    throw new Error('Invalid PUBLIC_OBJECT_SEARCH_PATHS format');
-  }
-
-  const bucketName = pathParts[0];
-  const objectName = `public/certificates/${certificateId}.pdf`;
-
   console.log(`[Certificate PDF] Uploading to bucket: ${bucketName}, object: ${objectName}`);
-
-  // Get the bucket and file reference
+  
   const bucket = objectStorageClient.bucket(bucketName);
   const file = bucket.file(objectName);
-
+  
   // Upload the PDF buffer
   await file.save(pdfBuffer, {
     metadata: {
       contentType: 'application/pdf',
-      cacheControl: 'public, max-age=31536000', // Cache for 1 year
       metadata: {
         certificateId,
         schoolName,
@@ -337,13 +323,9 @@ async function uploadCertificatePDF(
       },
     },
   });
-
-  console.log('[Certificate PDF] File uploaded successfully');
-
-  // Return direct GCS URL - files in public/ folders are accessible even with PAP enabled
-  const publicUrl = `https://storage.googleapis.com/${bucketName}/${objectName}`;
-
-  console.log('[Certificate PDF] Generated public URL for certificate access');
-
-  return publicUrl;
+  
+  console.log('[Certificate PDF] Uploaded successfully');
+  
+  // Return /objects/ path instead of direct GCS URL
+  return `/objects/certificates/${certificateId}.pdf`;
 }
