@@ -3347,8 +3347,10 @@ Return JSON with:
       // No authentication required - the certificate ID itself acts as a secret token
       // Anyone with the link can view/download the certificate (intended for sharing)
 
-      // If requesting PDF format (or if shareableUrl exists), serve the PDF
+      // Support both query param and Accept header for PDF requests
       const wantsPdf = req.query.format === 'pdf' || req.headers.accept?.includes('application/pdf');
+      
+      console.log(`[Certificate] Request for ${req.params.id}: format=${req.query.format}, Accept=${req.headers.accept}, wantsPdf=${wantsPdf}`);
       
       if (wantsPdf || certificate.shareableUrl) {
         let pdfUrl = certificate.shareableUrl;
