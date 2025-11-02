@@ -1673,6 +1673,23 @@ export default function EmailManagementSection({
                   </div>
                 </div>
 
+                {/* Send Button - Positioned at top for easy access */}
+                {selectedUserIds.length > 0 && (
+                  <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
+                    <p className="text-sm text-gray-700">
+                      <span className="font-semibold">{selectedUserIds.length}</span> {selectedUserIds.length === 1 ? 'user' : 'users'} selected
+                    </p>
+                    <Button
+                      onClick={() => setConfirmMigratedSendOpen(true)}
+                      className="bg-pcs_blue hover:bg-blue-600"
+                      data-testid="button-send-migrated-emails"
+                    >
+                      <Mail className="mr-2 h-4 w-4" />
+                      Send Welcome Emails
+                    </Button>
+                  </div>
+                )}
+
                 {/* Users Table */}
                 <div className="border rounded-lg">
                   <Table>
@@ -1755,23 +1772,6 @@ export default function EmailManagementSection({
                     </TableBody>
                   </Table>
                 </div>
-
-                {/* Send Button */}
-                {selectedUserIds.length > 0 && (
-                  <div className="flex items-center justify-between p-4 bg-blue-50 rounded-lg border border-blue-200">
-                    <p className="text-sm text-gray-700">
-                      <span className="font-semibold">{selectedUserIds.length}</span> {selectedUserIds.length === 1 ? 'user' : 'users'} selected
-                    </p>
-                    <Button
-                      onClick={() => setConfirmMigratedSendOpen(true)}
-                      className="bg-pcs_blue hover:bg-blue-600"
-                      data-testid="button-send-migrated-emails"
-                    >
-                      <Mail className="mr-2 h-4 w-4" />
-                      Send Welcome Emails
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </CollapsibleContent>
           </Collapsible>
