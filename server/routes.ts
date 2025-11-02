@@ -3964,7 +3964,21 @@ Return JSON with:
         normalizedPath = normalizedPath.replace('/api/objects/', '/objects/');
       }
       
-      const objectFile = await objectStorageService.getObjectEntityFile(normalizedPath);
+      let objectFile;
+      
+      // Check if this is a public file first
+      if (normalizedPath.startsWith('/objects/public/')) {
+        // Extract the file path after /objects/public/
+        const publicFilePath = normalizedPath.replace('/objects/public/', '');
+        objectFile = await objectStorageService.searchPublicObject(publicFilePath);
+        
+        if (!objectFile) {
+          return res.status(404).send('Not found');
+        }
+      } else {
+        // Use the standard entity file lookup for private files
+        objectFile = await objectStorageService.getObjectEntityFile(normalizedPath);
+      }
       
       // Get file metadata early to determine content type
       const [metadata] = await objectFile.getMetadata();
@@ -3992,8 +4006,11 @@ Return JSON with:
         'Access-Control-Expose-Headers': 'Content-Length, Content-Range, Accept-Ranges',
       });
       
-      // Check access permissions
-      if (aclPolicy?.visibility !== 'public') {
+      // Files in the public directory are always publicly accessible, skip ACL checks
+      const isPublicDirectory = normalizedPath.startsWith('/objects/public/');
+      
+      // Check access permissions (skip for public directory files)
+      if (!isPublicDirectory && aclPolicy?.visibility !== 'public') {
         // For private/registered objects, check evidence-based access control
         if (!aclPolicy || aclPolicy?.visibility === 'private' || aclPolicy?.visibility === 'registered') {
           const pathParts = normalizedPath.split('/');
