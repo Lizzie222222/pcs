@@ -3335,7 +3335,47 @@ Return JSON with:
     }
   });
 
-  // Public certificate download endpoint (no auth required - certificate ID acts as access token)
+  // Public certificate PDF download endpoint (no auth, no query params needed)
+  // This endpoint always generates/returns the PDF - designed for email links
+  app.get('/api/certificates/:id/download', async (req: any, res) => {
+    try {
+      const certificate = await storage.getCertificate(req.params.id);
+      
+      if (!certificate) {
+        return res.status(404).json({ message: "Certificate not found" });
+      }
+
+      console.log(`[Certificate Download] Request for certificate ${req.params.id}`);
+
+      let pdfUrl = certificate.shareableUrl;
+      
+      // Generate PDF on-demand if it doesn't exist
+      if (!pdfUrl) {
+        console.log(`[Certificate Download] No PDF found, generating on-demand...`);
+        const { generateCertificatePDF } = await import('./certificateService');
+        
+        try {
+          pdfUrl = await generateCertificatePDF(certificate.id);
+          
+          // Update the certificate with the new PDF URL
+          await storage.updateCertificate(certificate.id, { shareableUrl: pdfUrl });
+          console.log(`[Certificate Download] PDF generated: ${pdfUrl}`);
+        } catch (error) {
+          console.error(`[Certificate Download] Failed to generate PDF:`, error);
+          return res.status(500).json({ message: "Failed to generate certificate PDF" });
+        }
+      }
+      
+      // Redirect to the PDF URL (GCS will handle serving it)
+      console.log(`[Certificate Download] Redirecting to PDF: ${pdfUrl}`);
+      return res.redirect(pdfUrl);
+    } catch (error) {
+      console.error("Error downloading certificate:", error);
+      res.status(500).json({ message: "Failed to download certificate" });
+    }
+  });
+
+  // Public certificate data endpoint with content negotiation (no auth required)
   app.get('/api/certificates/:id', async (req: any, res) => {
     try {
       const certificate = await storage.getCertificate(req.params.id);
@@ -3344,39 +3384,32 @@ Return JSON with:
         return res.status(404).json({ message: "Certificate not found" });
       }
 
-      // No authentication required - the certificate ID itself acts as a secret token
-      // Anyone with the link can view/download the certificate (intended for sharing)
-
-      // Support both query param and Accept header for PDF requests
+      // Support content negotiation: PDF via Accept header or ?format=pdf
       const wantsPdf = req.query.format === 'pdf' || req.headers.accept?.includes('application/pdf');
       
-      console.log(`[Certificate] Request for ${req.params.id}: format=${req.query.format}, Accept=${req.headers.accept}, wantsPdf=${wantsPdf}`);
-      
-      if (wantsPdf || certificate.shareableUrl) {
+      if (wantsPdf) {
         let pdfUrl = certificate.shareableUrl;
         
-        // If no PDF exists yet, generate it on-demand
+        // Generate PDF on-demand if it doesn't exist
         if (!pdfUrl) {
-          console.log(`[Certificate] No PDF found for certificate ${certificate.id}, generating on-demand...`);
+          console.log(`[Certificate] No PDF found, generating on-demand for cert ${certificate.id}`);
           const { generateCertificatePDF } = await import('./certificateService');
           
           try {
             pdfUrl = await generateCertificatePDF(certificate.id);
-            
-            // Update the certificate with the new PDF URL
             await storage.updateCertificate(certificate.id, { shareableUrl: pdfUrl });
-            console.log(`[Certificate] On-demand PDF generated for certificate ${certificate.id}: ${pdfUrl}`);
+            console.log(`[Certificate] PDF generated: ${pdfUrl}`);
           } catch (error) {
-            console.error(`[Certificate] Failed to generate PDF on-demand:`, error);
+            console.error(`[Certificate] Failed to generate PDF:`, error);
             return res.status(500).json({ message: "Failed to generate certificate PDF" });
           }
         }
         
-        // Redirect to the PDF URL (GCS will handle serving it)
+        // Redirect to the PDF
         return res.redirect(pdfUrl);
       }
 
-      // Otherwise, return JSON data
+      // Default: Return JSON data (for API consumers, verification page, etc.)
       res.json(certificate);
     } catch (error) {
       console.error("Error fetching certificate:", error);

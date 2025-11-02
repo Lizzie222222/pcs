@@ -3451,7 +3451,7 @@ export class DatabaseStorage implements IStorage {
         if (primaryContact?.email) {
           // Build certificate URL if we have one - force PDF format
           const certificateUrl = roundCertificates.length > 0
-            ? `${getBaseUrl()}/api/certificates/${roundCertificates[0].id}?format=pdf`
+            ? `${getBaseUrl()}/api/certificates/${roundCertificates[0].id}/download`
             : undefined;
           
           // Send celebration email (fire and forget - don't block on email)
@@ -3460,7 +3460,7 @@ export class DatabaseStorage implements IStorage {
             school.name,
             currentRound,
             certificateUrl,
-            primaryContact.preferredLanguage
+            primaryContact.preferredLanguage ?? undefined
           ).catch(err => console.error('Failed to send celebration email:', err));
         }
       }
