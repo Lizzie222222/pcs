@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import SchoolsFilters from "./SchoolsFilters";
@@ -53,6 +53,17 @@ export default function SchoolsSection({
     updates?: Record<string, any>;
   } | null>(null);
   const [expandedSchools, setExpandedSchools] = useState<Set<string>>(new Set());
+  
+  // Debounced school filters to prevent refetch on every keystroke
+  const [debouncedSchoolFilters, setDebouncedSchoolFilters] = useState(schoolFilters);
+
+  // Debounce school filters (300ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSchoolFilters(schoolFilters);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [schoolFilters]);
 
   // Helper function to clean filters (convert "all" values to empty strings)
   const cleanFilters = (filters: typeof schoolFilters) => {
@@ -61,11 +72,11 @@ export default function SchoolsSection({
     );
   };
 
-  // Schools query
+  // Schools query - uses debounced filters to prevent refetch on every keystroke
   const { data: schools, isLoading: schoolsLoading } = useQuery<SchoolData[]>({
-    queryKey: ['/api/admin/schools', cleanFilters(schoolFilters)],
+    queryKey: ['/api/admin/schools', cleanFilters(debouncedSchoolFilters)],
     queryFn: async () => {
-      const filters = cleanFilters(schoolFilters);
+      const filters = cleanFilters(debouncedSchoolFilters);
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value);

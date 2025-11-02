@@ -120,7 +120,7 @@ export default function TeamManagement() {
     }
   }, [searchParams]);
 
-  // Redirect if not authenticated or not head teacher
+  // Redirect if not authenticated
   useEffect(() => {
     if (!authLoading && !isAuthenticated) {
       toast({
@@ -131,18 +131,6 @@ export default function TeamManagement() {
       setLocation("/");
     }
   }, [authLoading, isAuthenticated, setLocation, toast]);
-
-  // Check if user is head teacher
-  useEffect(() => {
-    if (dashboardData && dashboardData.schoolUser?.role !== 'head_teacher') {
-      toast({
-        title: "Access Denied",
-        description: "Only head teachers can access team management.",
-        variant: "destructive",
-      });
-      setLocation('/');
-    }
-  }, [dashboardData, setLocation, toast]);
 
   // Fetch team members
   const { data: teamMembers = [], isLoading: teamLoading } = useQuery<TeamMember[]>({
