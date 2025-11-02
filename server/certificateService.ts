@@ -1,6 +1,7 @@
 import fs from 'fs';
 import { storage } from './storage';
 import { objectStorageClient, ObjectStorageService, parseObjectPath } from './objectStorage';
+import { setObjectAclPolicy } from './objectAcl';
 import puppeteer, { Browser } from 'puppeteer';
 import React from 'react';
 import ReactDOMServer from 'react-dom/server';
@@ -336,13 +337,21 @@ async function uploadCertificatePDF(
     },
   });
   
+  // Set ACL policy so the file is accessible via the /api/objects/ route
+  await setObjectAclPolicy(file, {
+    owner: 'system',
+    visibility: 'public',
+    aclRules: [],
+  });
+  console.log('[Certificate PDF] ACL policy set to public');
+  
   // Make the file public in GCS so schools can download their certificates
   try {
     await file.makePublic();
     console.log('[Certificate PDF] File made public in GCS');
   } catch (error) {
     console.warn('[Certificate PDF] Failed to make file public in GCS:', error);
-    // Continue - the visibility metadata is still set
+    // Continue - the ACL policy is still set
   }
   
   console.log('[Certificate PDF] Uploaded successfully with public access');
