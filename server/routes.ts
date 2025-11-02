@@ -3347,15 +3347,16 @@ Return JSON with:
 
       console.log(`[Certificate Download] Request for certificate ${req.params.id}`);
 
-      let pdfUrl = certificate.shareableUrl;
+      // ALWAYS use /api/objects/ path instead of direct GCS URLs
+      const objectPath = `/api/objects/certificates/${req.params.id}.pdf`;
       
       // Generate PDF on-demand if it doesn't exist
-      if (!pdfUrl) {
+      if (!certificate.shareableUrl) {
         console.log(`[Certificate Download] No PDF found, generating on-demand...`);
         const { generateCertificatePDF } = await import('./certificateService');
         
         try {
-          pdfUrl = await generateCertificatePDF(certificate.id);
+          const pdfUrl = await generateCertificatePDF(certificate.id);
           
           // Update the certificate with the new PDF URL
           await storage.updateCertificate(certificate.id, { shareableUrl: pdfUrl });
@@ -3366,9 +3367,9 @@ Return JSON with:
         }
       }
       
-      // Redirect to the PDF URL (GCS will handle serving it)
-      console.log(`[Certificate Download] Redirecting to PDF: ${pdfUrl}`);
-      return res.redirect(pdfUrl);
+      // Always redirect to /api/objects/ path for proper access control
+      console.log(`[Certificate Download] Redirecting to: ${objectPath}`);
+      return res.redirect(objectPath);
     } catch (error) {
       console.error("Error downloading certificate:", error);
       res.status(500).json({ message: "Failed to download certificate" });
@@ -3388,15 +3389,16 @@ Return JSON with:
       const wantsPdf = req.query.format === 'pdf' || req.headers.accept?.includes('application/pdf');
       
       if (wantsPdf) {
-        let pdfUrl = certificate.shareableUrl;
+        // ALWAYS use /api/objects/ path instead of direct GCS URLs
+        const objectPath = `/api/objects/certificates/${certificate.id}.pdf`;
         
         // Generate PDF on-demand if it doesn't exist
-        if (!pdfUrl) {
+        if (!certificate.shareableUrl) {
           console.log(`[Certificate] No PDF found, generating on-demand for cert ${certificate.id}`);
           const { generateCertificatePDF } = await import('./certificateService');
           
           try {
-            pdfUrl = await generateCertificatePDF(certificate.id);
+            const pdfUrl = await generateCertificatePDF(certificate.id);
             await storage.updateCertificate(certificate.id, { shareableUrl: pdfUrl });
             console.log(`[Certificate] PDF generated: ${pdfUrl}`);
           } catch (error) {
@@ -3405,8 +3407,8 @@ Return JSON with:
           }
         }
         
-        // Redirect to the PDF
-        return res.redirect(pdfUrl);
+        // Always redirect to /api/objects/ path for proper access control
+        return res.redirect(objectPath);
       }
 
       // Default: Return JSON data (for API consumers, verification page, etc.)
