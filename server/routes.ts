@@ -411,11 +411,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new resource (admin only)
+  // Create new resource (admin/partner only)
   app.post('/api/resources', isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       // Convert empty strings to null for enum fields
@@ -437,11 +437,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update resource (admin only)
+  // Update resource (admin/partner only)
   app.put('/api/resources/:id', isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       // Convert empty strings to null for enum fields
@@ -468,11 +468,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete resource (admin only)
+  // Delete resource (admin/partner only)
   app.delete('/api/resources/:id', isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       const success = await storage.deleteResource(req.params.id);
@@ -533,11 +533,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create new resource pack (admin only)
+  // Create new resource pack (admin/partner only)
   app.post('/api/resource-packs', isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       const pack = await storage.createResourcePack(req.body);
@@ -548,11 +548,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Update resource pack (admin only)
+  // Update resource pack (admin/partner only)
   app.put('/api/resource-packs/:id', isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       const pack = await storage.updateResourcePack(req.params.id, req.body);
@@ -566,11 +566,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Delete resource pack (admin only)
+  // Delete resource pack (admin/partner only)
   app.delete('/api/resource-packs/:id', isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       const success = await storage.deleteResourcePack(req.params.id);
@@ -584,11 +584,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Add resource to pack (admin only)
+  // Add resource to pack (admin/partner only)
   app.post('/api/resource-packs/:id/resources', isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       const { resourceId, orderIndex } = req.body;
@@ -608,11 +608,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Remove resource from pack (admin only)
+  // Remove resource from pack (admin/partner only)
   app.delete('/api/resource-packs/:id/resources/:resourceId', isAuthenticated, async (req: any, res) => {
     try {
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       const success = await storage.removeResourceFromPack(
@@ -629,12 +629,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Bulk upload resources (admin only)
+  // Bulk upload resources (admin/partner only)
   // (using bulkResourceUpload from utils/uploads.ts)
   app.post('/api/resources/bulk-upload', isAuthenticated, bulkResourceUpload.array('files', 50), async (req: any, res) => {
     try {
-      if (!req.user?.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       if (!req.files || req.files.length === 0) {
@@ -3629,16 +3629,16 @@ Return JSON with:
     }
   });
 
-  // PATCH /api/schools/:schoolId/photo-consent/approve - Admin approves consent
+  // PATCH /api/schools/:schoolId/photo-consent/approve - Admin/Partner approves consent
   app.patch('/api/schools/:schoolId/photo-consent/approve', isAuthenticated, async (req: any, res) => {
     try {
       const { schoolId } = req.params;
       const { notes } = req.body;
       const userId = req.user.id;
 
-      // Check if user is admin
-      if (!req.user.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      // Check if user is admin or partner
+      if (!req.user.isAdmin && req.user.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       // Verify school exists
@@ -3670,16 +3670,16 @@ Return JSON with:
     }
   });
 
-  // PATCH /api/schools/:schoolId/photo-consent/reject - Admin rejects consent
+  // PATCH /api/schools/:schoolId/photo-consent/reject - Admin/Partner rejects consent
   app.patch('/api/schools/:schoolId/photo-consent/reject', isAuthenticated, async (req: any, res) => {
     try {
       const { schoolId } = req.params;
       const { notes } = req.body;
       const userId = req.user.id;
 
-      // Check if user is admin
-      if (!req.user.isAdmin) {
-        return res.status(403).json({ message: "Admin access required" });
+      // Check if user is admin or partner
+      if (!req.user.isAdmin && req.user.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
       }
 
       // Validate that notes are provided for rejection
@@ -4231,8 +4231,8 @@ Return JSON with:
     }
   };
 
-  // Bulk delete resources (admin only)
-  app.post('/api/admin/resources/bulk-delete', isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Bulk delete resources (admin/partner only)
+  app.post('/api/admin/resources/bulk-delete', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { resourceIds } = req.body;
       
@@ -5069,13 +5069,13 @@ Return JSON with:
   });
 
   /**
-   * @description PATCH /api/admin/evidence/:id/review - Admin-only endpoint for approving or rejecting evidence submissions. Updates school progression on approval and sends notification emails (approval or revision request).
+   * @description PATCH /api/admin/evidence/:id/review - Admin/Partner endpoint for approving or rejecting evidence submissions. Updates school progression on approval and sends notification emails (approval or revision request).
    * @param {string} id - Evidence ID from URL params
    * @returns {Evidence} Updated evidence object with review status
    * @location server/routes.ts#L2655
    * @related shared/schema.ts (evidence table), server/email.ts (sendEvidenceApprovalEmail, sendEvidenceRejectionEmail), client/src/pages/admin.tsx (evidence review handlers)
    */
-  app.patch('/api/admin/evidence/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.patch('/api/admin/evidence/:id/review', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { status, reviewNotes } = req.body;
       const reviewerId = req.user.id;
@@ -5149,8 +5149,8 @@ Return JSON with:
     }
   });
 
-  // Bulk evidence review endpoint
-  app.post('/api/admin/evidence/bulk-review', isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Bulk evidence review endpoint (admin/partner)
+  app.post('/api/admin/evidence/bulk-review', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { evidenceIds, status, reviewNotes } = req.body;
       const reviewerId = req.user.id;
@@ -5728,8 +5728,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Review audit (approve/reject)
-  app.patch('/api/admin/audits/:id/review', isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Admin/Partner: Review audit (approve/reject)
+  app.patch('/api/admin/audits/:id/review', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { approved, reviewNotes } = req.body;
       const reviewerId = req.user.id;
@@ -5791,8 +5791,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Update printable form submission status
-  app.patch('/api/admin/printable-form-submissions/:id/status', isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Admin/Partner: Update printable form submission status
+  app.patch('/api/admin/printable-form-submissions/:id/status', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { id } = req.params;
       const statusSchema = z.object({
@@ -6103,7 +6103,7 @@ Return JSON with:
   });
 
   // Create case study from evidence
-  app.post('/api/admin/case-studies/from-evidence', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.post('/api/admin/case-studies/from-evidence', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { evidenceId, title, description, impact, imageUrl, featured = false, priority = 0 } = req.body;
       const userId = req.user.id;
@@ -6143,7 +6143,7 @@ Return JSON with:
   });
 
   // Update case study featured status
-  app.put('/api/admin/case-studies/:id/featured', isAuthenticated, requireAdmin, async (req, res) => {
+  app.put('/api/admin/case-studies/:id/featured', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { featured } = req.body;
       
@@ -6177,7 +6177,7 @@ Return JSON with:
   }
 
   // Create new case study
-  app.post('/api/admin/case-studies', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.post('/api/admin/case-studies', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const validatedData = insertCaseStudySchema.parse(req.body);
       
@@ -6203,7 +6203,7 @@ Return JSON with:
   });
 
   // Update case study
-  app.put('/api/admin/case-studies/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.put('/api/admin/case-studies/:id', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const validatedData = insertCaseStudySchema.partial().parse(req.body);
       
@@ -6273,7 +6273,7 @@ Return JSON with:
   });
 
   // Delete case study
-  app.delete('/api/admin/case-studies/:id', isAuthenticated, requireAdmin, async (req, res) => {
+  app.delete('/api/admin/case-studies/:id', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const deleted = await storage.deleteCaseStudy(req.params.id);
       
@@ -6289,7 +6289,7 @@ Return JSON with:
   });
 
   // Create a version snapshot
-  app.post("/api/admin/case-studies/:id/versions", isAuthenticated, requireAdmin, async (req, res) => {
+  app.post("/api/admin/case-studies/:id/versions", isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { id } = req.params;
       
@@ -6346,7 +6346,7 @@ Return JSON with:
   });
 
   // Restore a specific version
-  app.post("/api/admin/case-studies/:id/versions/:versionId/restore", isAuthenticated, requireAdmin, async (req, res) => {
+  app.post("/api/admin/case-studies/:id/versions/:versionId/restore", isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { id, versionId } = req.params;
       
@@ -7811,7 +7811,7 @@ Return JSON with:
   });
 
   // Email system health check endpoint
-  app.get('/api/admin/email/health', isAuthenticated, requireAdmin, async (req, res) => {
+  app.get('/api/admin/email/health', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const health: {
         sendgrid: {
@@ -7879,8 +7879,8 @@ Return JSON with:
     }
   });
 
-  // Test email endpoint for administrators
-  app.post('/api/admin/email/test', isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Test email endpoint for administrators and partners
+  app.post('/api/admin/email/test', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { email } = req.body;
       const testEmail = email || req.user.email;
@@ -9408,12 +9408,12 @@ Return JSON with:
   });
 
   /**
-   * @description POST /api/admin/events - Admin-only endpoint for creating events with full details including page builder content (YouTube videos, PDFs, testimonials). Validates dates and capacity.
+   * @description POST /api/admin/events - Admin/Partner endpoint for creating events with full details including page builder content (YouTube videos, PDFs, testimonials). Validates dates and capacity.
    * @returns {Event} Created event object
    * @location server/routes.ts#L5565
    * @related shared/schema.ts (events table, insertEventSchema), client/src/pages/admin.tsx (event form handlers)
    */
-  app.post('/api/admin/events', isAuthenticated, requireAdmin, async (req: any, res) => {
+  app.post('/api/admin/events', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const eventData = insertEventSchema.parse({
         ...req.body,
@@ -9481,8 +9481,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Update event
-  app.put('/api/admin/events/:id', isAuthenticated, requireAdmin, async (req, res) => {
+  // Admin/Partner: Update event
+  app.put('/api/admin/events/:id', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const eventId = req.params.id;
       const updates = req.body;
@@ -9692,8 +9692,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Delete event
-  app.delete('/api/admin/events/:id', isAuthenticated, requireAdmin, async (req, res) => {
+  // Admin/Partner: Delete event
+  app.delete('/api/admin/events/:id', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       await storage.deleteEvent(req.params.id);
       res.json({ message: "Event deleted successfully" });
@@ -9703,8 +9703,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Duplicate event
-  app.post('/api/admin/events/:id/duplicate', isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Admin/Partner: Duplicate event
+  app.post('/api/admin/events/:id/duplicate', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const eventId = req.params.id;
       
@@ -9784,8 +9784,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Attach resource to event
-  app.post('/api/admin/events/:id/resources', isAuthenticated, requireAdmin, async (req, res) => {
+  // Admin/Partner: Attach resource to event
+  app.post('/api/admin/events/:id/resources', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const eventId = req.params.id;
       const { resourceId, orderIndex } = req.body;
@@ -9812,8 +9812,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Detach resource from event
-  app.delete('/api/admin/events/:id/resources/:resourceId', isAuthenticated, requireAdmin, async (req, res) => {
+  // Admin/Partner: Detach resource from event
+  app.delete('/api/admin/events/:id/resources/:resourceId', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { id: eventId, resourceId } = req.params;
       await storage.detachResourceFromEvent(eventId, resourceId);
@@ -9836,8 +9836,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Reorder event resources
-  app.put('/api/admin/events/:id/resources/reorder', isAuthenticated, requireAdmin, async (req, res) => {
+  // Admin/Partner: Reorder event resources
+  app.put('/api/admin/events/:id/resources/reorder', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const eventId = req.params.id;
       const { resourceOrders } = req.body;
@@ -9854,8 +9854,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Auto-translate event content
-  app.post('/api/admin/events/:id/auto-translate', isAuthenticated, requireAdmin, async (req, res) => {
+  // Admin/Partner: Auto-translate event content
+  app.post('/api/admin/events/:id/auto-translate', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const eventId = req.params.id;
       const { languages } = req.body;
@@ -9914,8 +9914,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Update event landing page content
-  app.patch('/api/admin/events/:id/page-content', isAuthenticated, requireAdmin, async (req, res) => {
+  // Admin/Partner: Update event landing page content
+  app.patch('/api/admin/events/:id/page-content', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const eventId = req.params.id;
       const { 
@@ -10014,8 +10014,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Send event announcement via SendGrid
-  app.post('/api/admin/events/:id/announce', isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Admin/Partner: Send event announcement via SendGrid
+  app.post('/api/admin/events/:id/announce', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const eventId = req.params.id;
       const { recipientType, customEmails } = req.body;
@@ -10089,8 +10089,8 @@ Return JSON with:
     }
   });
 
-  // Admin: Send event digest via SendGrid
-  app.post('/api/admin/events/digest', isAuthenticated, requireAdmin, async (req: any, res) => {
+  // Admin/Partner: Send event digest via SendGrid
+  app.post('/api/admin/events/digest', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { recipientType, customEmails, eventIds } = req.body;
 

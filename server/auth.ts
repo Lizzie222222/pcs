@@ -646,7 +646,10 @@ export async function setupAuth(app: Express) {
         // Check if role indicates admin (for OIDC testing compatibility)
         const shouldBeAdmin = isAdmin || (role && role.toLowerCase().includes('admin'));
         
-        console.log(`[Test Auth] Logging in test user: ${email}, admin: ${shouldBeAdmin}, preferredLanguage: ${preferredLanguage || 'en'}`);
+        // Determine the user role (default to 'teacher' if not specified)
+        const userRole = role || 'teacher';
+        
+        console.log(`[Test Auth] Logging in test user: ${email}, role: ${userRole}, admin: ${shouldBeAdmin}, preferredLanguage: ${preferredLanguage || 'en'}`);
         
         // Find or create user by email
         let user = await storage.findUserByEmail(email);
@@ -661,25 +664,34 @@ export async function setupAuth(app: Express) {
             lastName,
             passwordHash,
             emailVerified: true,
-            role: 'teacher',
+            role: userRole,
             isAdmin: shouldBeAdmin,
             preferredLanguage: preferredLanguage || 'en'
           });
         } else {
           console.log(`[Test Auth] Found existing user: ${email}`);
-          // Only update isAdmin if needed (don't override preferredLanguage - user's DB preference takes precedence)
-          if (shouldBeAdmin && !user.isAdmin) {
+          // Update role and/or isAdmin if needed
+          const needsUpdate = (shouldBeAdmin && !user.isAdmin) || (role && user.role !== role);
+          if (needsUpdate) {
             const { db } = await import('./db');
             const { users } = await import('@shared/schema');
             const { eq } = await import('drizzle-orm');
             
+            const updates: any = { updatedAt: new Date() };
+            if (shouldBeAdmin && !user.isAdmin) {
+              updates.isAdmin = true;
+            }
+            if (role && user.role !== role) {
+              updates.role = role;
+            }
+            
             const [updatedUser] = await db
               .update(users)
-              .set({ isAdmin: true, updatedAt: new Date() })
+              .set(updates)
               .where(eq(users.id, user.id))
               .returning();
             user = updatedUser;
-            console.log(`[Test Auth] Updated user to admin: ${user.email}`);
+            console.log(`[Test Auth] Updated user: ${user.email} (role: ${user.role}, admin: ${user.isAdmin})`);
           }
         }
         
