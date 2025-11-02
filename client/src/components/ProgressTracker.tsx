@@ -38,6 +38,7 @@ interface Evidence {
   evidenceRequirementId?: string;
   status: 'pending' | 'approved' | 'rejected';
   stage: string;
+  roundNumber?: number;
 }
 
 interface ProgressTrackerProps {
@@ -48,6 +49,7 @@ interface ProgressTrackerProps {
   currentStage: string;
   evidenceCounts: EvidenceCounts;
   schoolId: string;
+  currentRound: number;
 }
 
 export default function ProgressTracker({
@@ -58,6 +60,7 @@ export default function ProgressTracker({
   currentStage,
   evidenceCounts,
   schoolId,
+  currentRound,
 }: ProgressTrackerProps) {
   const { t, i18n } = useTranslation('dashboard');
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
@@ -237,7 +240,7 @@ export default function ProgressTracker({
   const getRequirementEvidence = (requirementId: string) => {
     if (!allEvidence) return null;
     return allEvidence.find(
-      ev => ev.evidenceRequirementId === requirementId
+      ev => ev.evidenceRequirementId === requirementId && ev.roundNumber === currentRound
     );
   };
 

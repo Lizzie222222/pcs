@@ -1237,6 +1237,7 @@ export default function Home() {
                 currentStage={school.currentStage}
                 evidenceCounts={evidenceCounts}
                 schoolId={school.id}
+                currentRound={school.currentRound ?? 1}
               />
             </div>
 
