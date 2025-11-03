@@ -254,7 +254,7 @@ export default function EditUserDialog({ user, open, onOpenChange, currentUserId
             <Button
               type="submit"
               disabled={updateUserMutation.isPending || !formData.email || !formData.firstName || !formData.lastName}
-              data-testid="button-save"
+              data-testid="button-save-user"
             >
               {updateUserMutation.isPending ? (
                 <>

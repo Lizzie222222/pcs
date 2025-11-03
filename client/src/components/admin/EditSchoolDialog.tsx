@@ -40,8 +40,13 @@ export default function EditSchoolDialog({ school, open, onOpenChange }: EditSch
   });
 
   useEffect(() => {
-    if (school) {
-      setFormData({
+    if (school && open) {
+      console.log('EditSchoolDialog - Received school data:', school);
+      console.log('EditSchoolDialog - adminEmail:', school.adminEmail);
+      console.log('EditSchoolDialog - type:', school.type);
+      console.log('EditSchoolDialog - ageRanges:', school.ageRanges);
+      
+      const newFormData = {
         name: school.name || '',
         adminEmail: school.adminEmail || '',
         country: school.country || '',
@@ -53,9 +58,27 @@ export default function EditSchoolDialog({ school, open, onOpenChange }: EditSch
         zipCode: school.zipCode || '',
         studentCount: school.studentCount?.toString() || '',
         ageRanges: school.ageRanges || [],
+      };
+      
+      console.log('EditSchoolDialog - Setting formData to:', newFormData);
+      setFormData(newFormData);
+    } else if (!open) {
+      // Reset form when dialog closes
+      setFormData({
+        name: '',
+        adminEmail: '',
+        country: '',
+        address: '',
+        type: '',
+        website: '',
+        primaryLanguage: 'en',
+        postcode: '',
+        zipCode: '',
+        studentCount: '',
+        ageRanges: [],
       });
     }
-  }, [school]);
+  }, [school, open]);
 
   const updateSchoolMutation = useMutation({
     mutationFn: async (updates: any) => {
@@ -114,7 +137,7 @@ export default function EditSchoolDialog({ school, open, onOpenChange }: EditSch
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent key={school?.id || 'new'} className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <School className="h-5 w-5 text-pcs_blue" />
@@ -177,18 +200,16 @@ export default function EditSchoolDialog({ school, open, onOpenChange }: EditSch
             <div className="space-y-2">
               <Label htmlFor="type">School Type</Label>
               <Select
-                value={formData.type}
-                onValueChange={(value) => setFormData({ ...formData, type: value })}
+                value={formData.type || "not_specified"}
+                onValueChange={(value) => setFormData({ ...formData, type: value === "not_specified" ? null : value })}
               >
                 <SelectTrigger id="type" data-testid="select-type">
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Not specified</SelectItem>
-                  <SelectItem value="Primary">Primary</SelectItem>
-                  <SelectItem value="Secondary">Secondary</SelectItem>
-                  <SelectItem value="Combined">Combined</SelectItem>
-                  <SelectItem value="Special">Special</SelectItem>
+                  <SelectItem value="not_specified">Not specified</SelectItem>
+                  <SelectItem value="primary">Primary</SelectItem>
+                  <SelectItem value="secondary">Secondary</SelectItem>
                 </SelectContent>
               </Select>
             </div>
