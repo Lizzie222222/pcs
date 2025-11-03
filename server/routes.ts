@@ -2824,13 +2824,6 @@ Return JSON with:
             message: "You must be a member of the school to submit evidence" 
           });
         }
-        
-        // Check if stage is locked
-        if (evidenceData.stage !== school.currentStage) {
-          return res.status(403).json({ 
-            message: `You can only submit evidence for the ${school.currentStage} stage at this time` 
-          });
-        }
       }
 
       const evidence = await storage.createEvidence(evidenceData);
