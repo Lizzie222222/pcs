@@ -679,6 +679,35 @@ function MigrationDialogContent() {
     enabled: !!selectedLog,
   });
 
+  const fixProgressMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/migration/fix-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to recalculate progress');
+      }
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: 'Progress Recalculation Complete',
+        description: `Updated ${data.updated} schools, skipped ${data.skipped} schools with no changes.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/migration/logs'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Recalculation Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const runMigrationMutation = useMutation({
     mutationFn: async ({ dryRun }: { dryRun: boolean }) => {
       const response = await fetch('/api/admin/migration/run', {
@@ -819,6 +848,57 @@ function MigrationDialogContent() {
                       </Alert>
                     )}
                   </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Progress Recalculation Tool */}
+          <Card className="border-2 border-teal/20 bg-gradient-to-br from-teal-50/30 to-white">
+            <CardHeader>
+              <CardTitle className="text-lg text-teal">Recalculate Migrated Schools Progress</CardTitle>
+              <CardDescription>
+                Update progress percentages for all migrated schools to include their legacy evidence counts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    This tool recalculates the progress percentage for all migrated schools by combining their new evidence submissions 
+                    with their legacy evidence counts from the old system. Run this after importing users to ensure accurate progress tracking.
+                  </AlertDescription>
+                </Alert>
+                
+                <Button
+                  onClick={() => fixProgressMutation.mutate()}
+                  disabled={fixProgressMutation.isPending}
+                  className="bg-teal hover:bg-teal/90"
+                  data-testid="button-fix-progress"
+                >
+                  {fixProgressMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Recalculating Progress...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Recalculate All Progress
+                    </>
+                  )}
+                </Button>
+
+                {fixProgressMutation.isSuccess && fixProgressMutation.data && (
+                  <Alert className="bg-green-50 border-green-200">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">
+                      Successfully updated progress for {fixProgressMutation.data.updated} migrated schools. 
+                      {fixProgressMutation.data.skipped > 0 && ` ${fixProgressMutation.data.skipped} schools had no changes.`}
+                      {fixProgressMutation.data.totalErrors > 0 && ` ${fixProgressMutation.data.totalErrors} errors encountered.`}
+                    </AlertDescription>
+                  </Alert>
                 )}
               </div>
             </CardContent>
