@@ -5233,6 +5233,78 @@ Return JSON with:
     }
   });
 
+  // Reset Round 2 schools to start fresh (preserve Round 1 completion history)
+  app.post('/api/admin/migration/reset-round-2-schools', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      console.log('[Reset Round 2] Finding schools on Round 2 that need fresh start...');
+
+      // Find schools on Round 2 with award completed (they finished Round 1)
+      const round2Schools = await db.query.schools.findMany({
+        where: and(
+          eq(schools.currentRound, 2),
+          eq(schools.awardCompleted, true)
+        ),
+      });
+
+      console.log(`[Reset Round 2] Found ${round2Schools.length} schools on Round 2 with Round 1 completion`);
+
+      let reset = 0;
+      const errors: Array<{ schoolId: string; schoolName: string; error: string }> = [];
+
+      for (const school of round2Schools) {
+        try {
+          console.log(`[Reset Round 2] Resetting ${school.name} (ID: ${school.id})`);
+          console.log(`  Before: stage=${school.currentStage}, progress=${school.progressPercentage}%, roundsCompleted=${school.roundsCompleted}`);
+          
+          // Reset current round progress to start fresh on Round 2
+          // BUT preserve their Round 1 completion history (roundsCompleted=1, awardCompleted=true)
+          await db
+            .update(schools)
+            .set({
+              currentStage: 'inspire',
+              inspireCompleted: false,
+              investigateCompleted: false,
+              actCompleted: false,
+              auditQuizCompleted: false,
+              progressPercentage: 0,
+              // Keep awardCompleted=true to show they earned Round 1 award
+              // Keep roundsCompleted=1 to show they completed Round 1
+              updatedAt: new Date()
+            })
+            .where(eq(schools.id, school.id));
+          
+          const updatedSchool = await storage.getSchool(school.id);
+          console.log(`  After: stage=${updatedSchool?.currentStage}, progress=${updatedSchool?.progressPercentage}%, roundsCompleted=${updatedSchool?.roundsCompleted}`);
+          
+          reset++;
+        } catch (error) {
+          console.error(`[Reset Round 2] Error resetting school ${school.id}:`, error);
+          errors.push({
+            schoolId: school.id,
+            schoolName: school.name,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      console.log(`[Reset Round 2] Completed: ${reset} schools reset, ${errors.length} errors`);
+
+      res.json({
+        message: 'Round 2 schools reset to fresh start',
+        total: round2Schools.length,
+        reset,
+        errors: errors.length > 0 ? errors.slice(0, 10) : [],
+        totalErrors: errors.length,
+      });
+    } catch (error) {
+      console.error('[Reset Round 2] Operation failed:', error);
+      res.status(500).json({
+        message: 'Failed to reset Round 2 schools',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // AI-powered analytics insights generation
   app.post('/api/admin/analytics/generate-insights', isAuthenticated, requireAdmin, async (req, res) => {
     try {

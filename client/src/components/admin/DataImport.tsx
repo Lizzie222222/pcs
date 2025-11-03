@@ -708,6 +708,35 @@ function MigrationDialogContent() {
     },
   });
 
+  const resetRound2Mutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/migration/reset-round-2-schools', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to reset Round 2 schools');
+      }
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: 'Round 2 Schools Reset',
+        description: `Successfully reset ${data.reset} schools to start Round 2 fresh.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Reset Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const fixCompletionFlagsMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch('/api/admin/migration/fix-completion-flags', {
@@ -926,6 +955,56 @@ function MigrationDialogContent() {
                       Successfully updated progress for {fixProgressMutation.data.updated} migrated schools. 
                       {fixProgressMutation.data.skipped > 0 && ` ${fixProgressMutation.data.skipped} schools had no changes.`}
                       {fixProgressMutation.data.totalErrors > 0 && ` ${fixProgressMutation.data.totalErrors} errors encountered.`}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Round 2 Reset Tool */}
+          <Card className="border-2 border-blue-500/20 bg-gradient-to-br from-blue-50/30 to-white">
+            <CardHeader>
+              <CardTitle className="text-lg text-blue-700">Reset Round 2 Schools to Fresh Start</CardTitle>
+              <CardDescription>
+                Resets all Round 2 schools to start fresh (Inspire 0%) while preserving their Round 1 completion history. This ensures schools show they've completed Round 1 and are starting Round 2.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    This tool resets the 121 schools that completed Round 1 back to the starting point of Round 2 (Inspire stage, 0% progress). 
+                    Their Round 1 completion status (roundsCompleted=1, awardCompleted=true) is preserved so they know they earned the "Plastic Clever" award.
+                  </AlertDescription>
+                </Alert>
+                
+                <Button
+                  onClick={() => resetRound2Mutation.mutate()}
+                  disabled={resetRound2Mutation.isPending}
+                  className="bg-blue-600 hover:bg-blue-700"
+                  data-testid="button-reset-round-2"
+                >
+                  {resetRound2Mutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Resetting Round 2 Schools...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Reset Round 2 Schools
+                    </>
+                  )}
+                </Button>
+
+                {resetRound2Mutation.isSuccess && resetRound2Mutation.data && (
+                  <Alert className="bg-green-50 border-green-200">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">
+                      Successfully reset {resetRound2Mutation.data.reset} schools to start Round 2 fresh. 
+                      {resetRound2Mutation.data.totalErrors > 0 && ` ${resetRound2Mutation.data.totalErrors} errors encountered.`}
                     </AlertDescription>
                   </Alert>
                 )}
