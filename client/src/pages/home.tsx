@@ -1708,17 +1708,7 @@ export default function Home() {
                   const metrics = calculateAggregateMetrics(schoolPromises);
                   return (
                     <>
-                      <div className="flex items-center justify-between mb-6">
-                        <h2 className="text-3xl font-bold text-navy">{t('action_plan.impact_title', { ns: 'dashboard' })}</h2>
-                        <Button
-                          onClick={handleAddActionPlan}
-                          className="bg-navy hover:bg-navy/90 text-white shadow-lg"
-                          data-testid="button-add-promise"
-                        >
-                          <Plus className="h-5 w-5 mr-2" />
-                          {t('actions.add_action_item', { ns: 'dashboard' })}
-                        </Button>
-                      </div>
+                      <h2 className="text-3xl font-bold text-navy mb-6">{t('action_plan.impact_title', { ns: 'dashboard' })}</h2>
 
                       {/* Summary Cards */}
                       <TooltipProvider>
