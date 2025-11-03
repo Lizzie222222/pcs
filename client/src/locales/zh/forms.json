@@ -86,7 +86,7 @@
     "school_name_label": "学校名称 *",
     "country_label": "国家 *",
     "country_button": "选择国家...",
-    "admin_email_label": "学校管理员电子邮件（可选）",
+    "admin_email_label": "学校管理员电子邮件 *",
     "admin_email_placeholder": "admin@school.edu",
     "primary_language_label": "主要使用语言 *",
     "primary_language_placeholder": "选择语言",

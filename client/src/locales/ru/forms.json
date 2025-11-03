@@ -86,7 +86,7 @@
     "school_name_label": "Название Школы *",
     "country_label": "Страна *",
     "country_button": "Выбрать страну...",
-    "admin_email_label": "Email Администратора Школы (Необязательно)",
+    "admin_email_label": "Email Администратора Школы *",
     "admin_email_placeholder": "admin@school.ru",
     "primary_language_label": "Основной Разговорный Язык *",
     "primary_language_placeholder": "Выбрать язык",

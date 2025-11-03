@@ -86,7 +86,7 @@
     "school_name_label": "Schoolnaam *",
     "country_label": "Land *",
     "country_button": "Selecteer land...",
-    "admin_email_label": "E-mail Schoolbeheerder (Optioneel)",
+    "admin_email_label": "E-mail Schoolbeheerder *",
     "admin_email_placeholder": "admin@school.nl",
     "primary_language_label": "Primaire Gesproken Taal *",
     "primary_language_placeholder": "Selecteer taal",

@@ -86,7 +86,7 @@
     "school_name_label": "اسم المدرسة *",
     "country_label": "البلد *",
     "country_button": "اختر البلد...",
-    "admin_email_label": "البريد الإلكتروني لمسؤول المدرسة (اختياري)",
+    "admin_email_label": "البريد الإلكتروني لمسؤول المدرسة *",
     "admin_email_placeholder": "admin@school.edu",
     "primary_language_label": "اللغة الأساسية المنطوقة *",
     "primary_language_placeholder": "اختر اللغة",

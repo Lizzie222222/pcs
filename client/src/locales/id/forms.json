@@ -86,7 +86,7 @@
     "school_name_label": "Nama Sekolah *",
     "country_label": "Negara *",
     "country_button": "Pilih negara...",
-    "admin_email_label": "Email Admin Sekolah (Opsional)",
+    "admin_email_label": "Email Admin Sekolah *",
     "admin_email_placeholder": "admin@sekolah.edu",
     "primary_language_label": "Bahasa Utama yang Digunakan *",
     "primary_language_placeholder": "Pilih bahasa",

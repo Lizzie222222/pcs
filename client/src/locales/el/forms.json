@@ -86,7 +86,7 @@
     "school_name_label": "Όνομα Σχολείου *",
     "country_label": "Χώρα *",
     "country_button": "Επιλογή χώρας...",
-    "admin_email_label": "Email Διαχειριστή Σχολείου (Προαιρετικό)",
+    "admin_email_label": "Email Διαχειριστή Σχολείου *",
     "admin_email_placeholder": "admin@school.edu",
     "primary_language_label": "Κύρια Γλώσσα Ομιλίας *",
     "primary_language_placeholder": "Επιλογή γλώσσας",

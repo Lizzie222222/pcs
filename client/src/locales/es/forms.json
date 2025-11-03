@@ -87,7 +87,7 @@
     "country_label": "País *",
     "country_button": "Seleccionar país...",
     "country_placeholder": "Seleccionar país...",
-    "admin_email_label": "Correo del Administrador Escolar (Opcional)",
+    "admin_email_label": "Correo del Administrador Escolar *",
     "admin_email_placeholder": "admin@escuela.edu",
     "primary_language_label": "Idioma Principal Hablado *",
     "primary_language_placeholder": "Seleccionar idioma",

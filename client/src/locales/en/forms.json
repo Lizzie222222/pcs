@@ -90,7 +90,7 @@
     "domain_match_more": "+ {{count}} more",
     "domain_match_join_button": "Request to Join Existing School",
     "domain_match_dismiss": "Continue Registration",
-    "admin_email_label": "School Admin Email (Optional)",
+    "admin_email_label": "School Admin Email *",
     "admin_email_placeholder": "admin@school.edu",
     "primary_language_label": "Primary Language Spoken *",
     "primary_language_placeholder": "Select language",

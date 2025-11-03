@@ -86,7 +86,7 @@
     "school_name_label": "Nome della Scuola *",
     "country_label": "Paese *",
     "country_button": "Seleziona paese...",
-    "admin_email_label": "Email Amministratore Scolastico (Opzionale)",
+    "admin_email_label": "Email Amministratore Scolastico *",
     "admin_email_placeholder": "admin@scuola.it",
     "primary_language_label": "Lingua Principale Parlata *",
     "primary_language_placeholder": "Seleziona lingua",
