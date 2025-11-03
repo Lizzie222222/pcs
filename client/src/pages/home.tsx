@@ -1713,15 +1713,15 @@ export default function Home() {
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Card className="shadow-xl border-0 bg-gradient-to-br from-teal to-pcs_blue text-white cursor-help">
+                              <Card className="shadow-lg border-2 border-navy/20 cursor-help hover:shadow-xl transition-shadow">
                                 <CardContent className="p-6">
                                   <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                                      <Target className="h-8 w-8 text-white" />
+                                    <div className="w-16 h-16 bg-navy/10 rounded-full flex items-center justify-center">
+                                      <Target className="h-8 w-8 text-navy" />
                                     </div>
                                     <div>
-                                      <div className="text-sm font-semibold opacity-90">{t('action_plan.total_items', { ns: 'dashboard' })}</div>
-                                      <div className="text-3xl font-bold" data-testid="text-total-promises">
+                                      <div className="text-sm font-semibold text-navy/70">{t('action_plan.total_items', { ns: 'dashboard' })}</div>
+                                      <div className="text-3xl font-bold text-navy" data-testid="text-total-promises">
                                         {schoolPromises.length}
                                       </div>
                                     </div>
@@ -1736,15 +1736,15 @@ export default function Home() {
 
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Card className="shadow-xl border-0 bg-gradient-to-br from-green-500 to-green-600 text-white cursor-help">
+                              <Card className="shadow-lg border-2 border-teal/20 cursor-help hover:shadow-xl transition-shadow">
                                 <CardContent className="p-6">
                                   <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                                      <TrendingDown className="h-8 w-8 text-white" />
+                                    <div className="w-16 h-16 bg-teal/10 rounded-full flex items-center justify-center">
+                                      <TrendingDown className="h-8 w-8 text-teal" />
                                     </div>
                                     <div>
-                                      <div className="text-sm font-semibold opacity-90">{t('action_plan.items_reduced_per_year', { ns: 'dashboard' })}</div>
-                                      <div className="text-3xl font-bold" data-testid="text-items-reduced">
+                                      <div className="text-sm font-semibold text-navy/70">{t('action_plan.items_reduced_per_year', { ns: 'dashboard' })}</div>
+                                      <div className="text-3xl font-bold text-navy" data-testid="text-items-reduced">
                                         {metrics.byItemType.reduce((sum, item) => sum + item.totalReduction, 0).toLocaleString()}
                                       </div>
                                     </div>
@@ -1759,15 +1759,15 @@ export default function Home() {
 
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Card className="shadow-xl border-0 bg-gradient-to-br from-coral to-red-400 text-white cursor-help">
+                              <Card className="shadow-lg border-2 border-coral/20 cursor-help hover:shadow-xl transition-shadow">
                                 <CardContent className="p-6">
                                   <div className="flex items-center gap-4">
-                                    <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center">
-                                      <Leaf className="h-8 w-8 text-white" />
+                                    <div className="w-16 h-16 bg-coral/10 rounded-full flex items-center justify-center">
+                                      <Leaf className="h-8 w-8 text-coral" />
                                     </div>
                                     <div>
-                                      <div className="text-sm font-semibold opacity-90">{t('action_plan.weight_reduced_per_year', { ns: 'dashboard' })}</div>
-                                      <div className="text-3xl font-bold" data-testid="text-weight-reduced">
+                                      <div className="text-sm font-semibold text-navy/70">{t('action_plan.weight_reduced_per_year', { ns: 'dashboard' })}</div>
+                                      <div className="text-3xl font-bold text-navy" data-testid="text-weight-reduced">
                                         {metrics.seriousMetrics.kilograms.toFixed(1)} {t('units.kg', { ns: 'dashboard' })}
                                       </div>
                                     </div>
