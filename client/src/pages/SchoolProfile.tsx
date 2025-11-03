@@ -56,6 +56,23 @@ import { EditEvidenceDialog } from "@/components/admin/EditEvidenceDialog";
 import { UploadPhotoConsentDialog } from "@/components/admin/UploadPhotoConsentDialog";
 import { UploadAuditDialog } from "@/components/admin/UploadAuditDialog";
 
+// Helper function to calculate current round progress percentage
+function getCurrentRoundProgress(progressPercentage: number, currentRound?: number, roundsCompleted?: number): number {
+  // If no valid progress data, return 0
+  if (progressPercentage === undefined || progressPercentage === null) return 0;
+  
+  // If school has completed the current round, show 100%
+  if (currentRound && roundsCompleted && roundsCompleted >= currentRound) {
+    return 100;
+  }
+  
+  // Calculate progress within current round (0-100)
+  const currentProgress = progressPercentage % 100;
+  
+  // Return current progress (0 for fresh start of new round)
+  return currentProgress;
+}
+
 interface SchoolData {
   id: string;
   name: string;
@@ -63,6 +80,7 @@ interface SchoolData {
   currentStage: string;
   progressPercentage: number;
   currentRound?: number;
+  roundsCompleted?: number;
   inspireCompleted?: boolean;
   investigateCompleted?: boolean;
   actCompleted?: boolean;
@@ -433,16 +451,16 @@ function OverviewTab({ school }: { school: SchoolData }) {
             </p>
           </div>
           <div>
-            <label className="text-sm font-medium text-gray-600">Progress</label>
+            <label className="text-sm font-medium text-gray-600">Current Round Progress</label>
             <div className="flex items-center gap-2">
               <div className="flex-1 bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-pcs_blue h-2 rounded-full transition-all"
-                  style={{ width: `${school.progressPercentage}%` }}
+                  style={{ width: `${school.progressPercentage % 100 || (school.roundsCompleted && school.roundsCompleted > 0 ? 100 : 0)}%` }}
                 />
               </div>
               <span className="text-sm font-medium" data-testid="text-stats-progress">
-                {school.progressPercentage}%
+                {school.progressPercentage % 100 || (school.roundsCompleted && school.roundsCompleted > 0 ? 100 : 0)}%
               </span>
             </div>
           </div>
@@ -801,19 +819,31 @@ function AnalyticsTab({ school, reductionPromises }: {
         <CardContent className="space-y-4">
           <div>
             <div className="flex justify-between text-sm mb-2">
-              <span className="text-gray-600">Overall Progress</span>
-              <span className="font-medium">{school.progressPercentage}%</span>
+              <span className="text-gray-600">Current Round Progress</span>
+              <span className="font-medium" data-testid="text-current-round-progress">
+                {school.progressPercentage % 100 || (school.roundsCompleted && school.roundsCompleted > 0 ? 100 : 0)}%
+              </span>
             </div>
             <div className="w-full bg-gray-200 rounded-full h-3">
               <div
                 className="bg-pcs_blue h-3 rounded-full transition-all"
-                style={{ width: `${school.progressPercentage}%` }}
+                style={{ width: `${school.progressPercentage % 100 || (school.roundsCompleted && school.roundsCompleted > 0 ? 100 : 0)}%` }}
               />
             </div>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Current Round</p>
-            <p className="text-2xl font-bold text-pcs_blue">Round {school.currentRound || 1}</p>
+            <p className="text-sm text-gray-600 mb-2">Round Status</p>
+            <div className="flex flex-wrap gap-2">
+              {Array.from({ length: school.roundsCompleted || 0 }).map((_, i) => (
+                <Badge key={`completed-${i}`} className="bg-green-600 text-white" data-testid={`badge-completed-round-${i + 1}`}>
+                  <CheckCircle className="h-3 w-3 mr-1" />
+                  Round {i + 1}
+                </Badge>
+              ))}
+              <Badge className="bg-teal text-white" data-testid="badge-current-round">
+                Round {school.currentRound || 1}
+              </Badge>
+            </div>
           </div>
           <div>
             <p className="text-sm text-gray-600">Current Stage</p>
