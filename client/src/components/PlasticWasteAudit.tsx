@@ -658,7 +658,7 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
 
   // Download PDF handler
   const handleDownloadPDF = () => {
-    window.open(`/api/audits/${auditId}/pdf`, '_blank');
+    window.open(`/api/audits/${auditId}/results-pdf`, '_blank');
   };
 
   // Calculate progress
@@ -677,6 +677,21 @@ export function PlasticWasteAudit({ schoolId, onClose }: PlasticWasteAuditProps)
               {t('audit.overview.description')}
             </CardDescription>
           </div>
+        </div>
+        <div className="mt-4 mb-3 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+          <p className="text-sm text-blue-900 dark:text-blue-100 mb-2">
+            <strong>Prefer a printable form?</strong> Download and complete the audit manually, then upload it later.
+          </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => window.open('/api/printable-forms/audit', '_blank')}
+            className="border-blue-600 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900"
+            data-testid="button-download-blank-audit-form"
+          >
+            <Download className="h-4 w-4 mr-2" />
+            Download Blank Audit Form (PDF)
+          </Button>
         </div>
         <div className="mt-4">
           <div className="flex justify-between items-center mb-2">
