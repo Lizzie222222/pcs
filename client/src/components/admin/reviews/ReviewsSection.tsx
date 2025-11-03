@@ -149,9 +149,6 @@ export default function ReviewsSection({
       // Refetch to ensure consistency (surgical invalidation)
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
-      // Invalidate teacher-facing queries so ProgressTracker updates
-      queryClient.invalidateQueries({ queryKey: ['/api/evidence'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
     },
   });
 
@@ -266,9 +263,6 @@ export default function ReviewsSection({
       // Refetch to ensure consistency (surgical invalidation)
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
-      // Invalidate teacher-facing queries so ProgressTracker updates
-      queryClient.invalidateQueries({ queryKey: ['/api/evidence'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
     },
   });
 
@@ -318,9 +312,6 @@ export default function ReviewsSection({
       // Refetch to ensure consistency (surgical invalidation)
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
-      // Invalidate teacher-facing queries so ProgressTracker updates
-      queryClient.invalidateQueries({ queryKey: ['/api/evidence'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
     },
   });
 
@@ -365,9 +356,6 @@ export default function ReviewsSection({
       // Refetch to ensure consistency (surgical invalidation)
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
-      // Invalidate teacher-facing queries so ProgressTracker updates
-      queryClient.invalidateQueries({ queryKey: ['/api/evidence'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
     },
   });
 

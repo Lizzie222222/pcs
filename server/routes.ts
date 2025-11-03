@@ -2753,37 +2753,16 @@ Return JSON with:
       }
 
       // For now, use the first school (multi-school support can be added later)
-      const schoolData: any = schools[0];
-      
-      // Convert snake_case to camelCase for frontend
-      const school = {
-        id: schoolData.id,
-        name: schoolData.name,
-        country: schoolData.country,
-        type: schoolData.type,
-        primaryLanguage: schoolData.primary_language,
-        currentRound: schoolData.current_round,
-        currentStage: schoolData.current_stage || 'inspire',
-        progressPercentage: schoolData.progress_percentage || 0,
-        inspireCompleted: schoolData.inspire_completed,
-        investigateCompleted: schoolData.investigate_completed,
-        actCompleted: schoolData.act_completed,
-        awardCompleted: schoolData.award_completed,
-        roundsCompleted: schoolData.rounds_completed,
-        photoConsentStatus: schoolData.photo_consent_status,
-        photoConsentDocumentUrl: schoolData.photo_consent_document_url,
-        createdAt: schoolData.created_at,
-        updatedAt: schoolData.updated_at,
-      };
+      const school = schools[0];
       
       // Get recent evidence for this school
-      const evidence = await storage.getSchoolEvidence(schoolData.id);
+      const evidence = await storage.getSchoolEvidence(school.id);
       
       // Get user's role in this school
-      const schoolUser = await storage.getSchoolUser(schoolData.id, userId);
+      const schoolUser = await storage.getSchoolUser(school.id, userId);
       
       // Get evidence counts with progression info
-      const evidenceCounts = await storage.getSchoolEvidenceCounts(schoolData.id);
+      const evidenceCounts = await storage.getSchoolEvidenceCounts(school.id);
       
       res.json({
         school,
@@ -2843,6 +2822,13 @@ Return JSON with:
         if (!schoolUser) {
           return res.status(403).json({ 
             message: "You must be a member of the school to submit evidence" 
+          });
+        }
+        
+        // Check if stage is locked
+        if (evidenceData.stage !== school.currentStage) {
+          return res.status(403).json({ 
+            message: `You can only submit evidence for the ${school.currentStage} stage at this time` 
           });
         }
       }
