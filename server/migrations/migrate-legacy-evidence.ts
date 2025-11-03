@@ -91,8 +91,12 @@ export async function runMigration(dryRun: boolean = true): Promise<void> {
       requirementMap.set(req.title, req);
     });
 
+    // Store total requirements count for progress calculation
+    const totalRequirementsCount = requirements.length;
+    console.log(`  Total evidence requirements: ${totalRequirementsCount}`);
+
     // Validate all expected requirements exist
-    console.log('Step 3: Validating evidence requirement mapping...');
+    console.log('\nStep 3: Validating evidence requirement mapping...');
     const missingRequirements: string[] = [];
     Object.values(EVIDENCE_MAPPING).forEach(title => {
       if (!requirementMap.has(title)) {
@@ -106,7 +110,7 @@ export async function runMigration(dryRun: boolean = true): Promise<void> {
         'Please ensure all requirements are seeded before running this migration.'
       );
     }
-    console.log('✓ All evidence requirements found\n');
+    console.log('✓ All mapped CSV requirements found in database\n');
 
     // Step 4: Fetch all Round 1 migrated schools with their head teacher emails
     console.log('Step 4: Fetching Round 1 migrated schools with users...');
@@ -147,6 +151,7 @@ export async function runMigration(dryRun: boolean = true): Promise<void> {
         investigateCompleted: boolean;
         actCompleted: boolean;
         currentStage: string;
+        progressPercentage: number;
       };
     }> = [];
 
@@ -205,6 +210,10 @@ export async function runMigration(dryRun: boolean = true): Promise<void> {
         currentStage = 'act';
       }
 
+      // Calculate progress percentage based on evidence requirements completed
+      // Use actual total from database, not hardcoded value
+      const progressPercentage = (evidenceToCreate.length / totalRequirementsCount) * 100;
+
       migrations.push({
         school,
         evidenceToCreate,
@@ -213,6 +222,7 @@ export async function runMigration(dryRun: boolean = true): Promise<void> {
           investigateCompleted,
           actCompleted,
           currentStage,
+          progressPercentage,
         },
       });
 
@@ -238,6 +248,7 @@ export async function runMigration(dryRun: boolean = true): Promise<void> {
           console.log(`     - ${ev.title}`);
         });
         console.log(`   Progression updates:`);
+        console.log(`     - Progress: ${migration.progressionUpdates.progressPercentage.toFixed(1)}%`);
         console.log(`     - Inspire: ${migration.progressionUpdates.inspireCompleted}`);
         console.log(`     - Investigate: ${migration.progressionUpdates.investigateCompleted}`);
         console.log(`     - Act: ${migration.progressionUpdates.actCompleted}`);
@@ -312,14 +323,16 @@ export async function runMigration(dryRun: boolean = true): Promise<void> {
                  act_completed = $3,
                  current_stage = $4,
                  legacy_evidence_count = $5,
+                 progress_percentage = $6,
                  updated_at = NOW()
-             WHERE id = $6`,
+             WHERE id = $7`,
             [
               migration.progressionUpdates.inspireCompleted,
               migration.progressionUpdates.investigateCompleted,
               migration.progressionUpdates.actCompleted,
               migration.progressionUpdates.currentStage,
               migration.evidenceToCreate.length, // CSV total, not newly inserted count
+              migration.progressionUpdates.progressPercentage,
               migration.school.id,
             ]
           );

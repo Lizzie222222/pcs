@@ -234,7 +234,7 @@ export const schools = pgTable("schools", {
   latitude: decimal("latitude", { precision: 10, scale: 8 }),
   longitude: decimal("longitude", { precision: 11, scale: 8 }),
   currentStage: programStageEnum("current_stage").default('inspire'),
-  progressPercentage: integer("progress_percentage").default(0),
+  progressPercentage: decimal("progress_percentage", { precision: 5, scale: 2 }).default('0'),
   inspireCompleted: boolean("inspire_completed").default(false),
   investigateCompleted: boolean("investigate_completed").default(false),
   actCompleted: boolean("act_completed").default(false),
