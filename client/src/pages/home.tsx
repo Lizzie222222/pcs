@@ -270,10 +270,10 @@ export default function Home() {
     return stored === 'true';
   });
   const [activeTab, setActiveTab] = useState<'progress' | 'resources' | 'team' | 'promises' | 'events'>('progress');
-  const [promiseDialogOpen, setPromiseDialogOpen] = useState(false);
-  const [editingPromise, setEditingPromise] = useState<ReductionPromise | null>(null);
   const [deletePromiseDialogOpen, setDeletePromiseDialogOpen] = useState(false);
   const [promiseToDelete, setPromiseToDelete] = useState<string | null>(null);
+  const [editPromiseDialogOpen, setEditPromiseDialogOpen] = useState(false);
+  const [editingPromise, setEditingPromise] = useState<ReductionPromise | null>(null);
   const [showWelcomeModal, setShowWelcomeModal] = useState(false);
   const [showTour, setShowTour] = useState(false);
   const [hasAttemptedOnboarding, setHasAttemptedOnboarding] = useState<boolean>(() => {
@@ -494,62 +494,12 @@ export default function Home() {
     localStorage.setItem('dismissedPromiseNotification', 'true');
   };
 
-  // Form schema for promise dialog
-  const promiseFormSchema = z.object({
-    plasticItemType: z.string().min(1, t('validation.select_plastic_type', { ns: 'dashboard' })),
-    plasticItemLabel: z.string().min(1, t('validation.provide_item_label', { ns: 'dashboard' })),
-    baselineQuantity: z.number().min(1, t('validation.baseline_min', { ns: 'dashboard' })),
-    targetQuantity: z.number().min(0, t('validation.target_min', { ns: 'dashboard' })),
-    timeframeUnit: z.enum(["week", "month", "year"]),
-    notes: z.string().optional(),
-  });
-
-  const promiseForm = useForm<z.infer<typeof promiseFormSchema>>({
-    resolver: zodResolver(promiseFormSchema),
-    defaultValues: {
-      plasticItemType: "",
-      plasticItemLabel: "",
-      baselineQuantity: 0,
-      targetQuantity: 0,
-      timeframeUnit: "week",
-      notes: "",
-    },
-  });
-
-  // Create promise mutation
-  const createPromiseMutation = useMutation({
-    mutationFn: async (data: InsertReductionPromise) => {
-      return apiRequest('POST', '/api/reduction-promises', data);
-    },
-    onSuccess: () => {
-      // Invalidate audit-based query and analytics
-      queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit', schoolAudit?.id] });
-      queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'analytics'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'audit-analytics'] });
-      toast({
-        title: t('toasts.success', { ns: 'dashboard' }),
-        description: t('toasts.promise_created', { ns: 'dashboard' }),
-      });
-      setPromiseDialogOpen(false);
-      setEditingPromise(null);
-      promiseForm.reset();
-    },
-    onError: (error: any) => {
-      toast({
-        title: t('toasts.error', { ns: 'dashboard' }),
-        description: error?.message || t('toasts.promise_create_failed', { ns: 'dashboard' }),
-        variant: "destructive",
-      });
-    },
-  });
-
-  // Update promise mutation
+  // Update promise mutation (for editing existing promises before approval)
   const updatePromiseMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: Partial<InsertReductionPromise> }) => {
       return apiRequest('PATCH', `/api/reduction-promises/${id}`, data);
     },
     onSuccess: () => {
-      // Invalidate audit-based query and analytics
       queryClient.invalidateQueries({ queryKey: ['/api/reduction-promises/audit', schoolAudit?.id] });
       queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'analytics'] });
       queryClient.invalidateQueries({ queryKey: ['/api/schools', dashboardData?.school?.id, 'audit-analytics'] });
@@ -557,9 +507,6 @@ export default function Home() {
         title: t('toasts.success', { ns: 'dashboard' }),
         description: t('toasts.promise_updated', { ns: 'dashboard' }),
       });
-      setPromiseDialogOpen(false);
-      setEditingPromise(null);
-      promiseForm.reset();
     },
     onError: (error: any) => {
       toast({
@@ -678,44 +625,26 @@ export default function Home() {
     setShowTour(true);
   };
 
-  const handlePromiseSubmit = (values: z.infer<typeof promiseFormSchema>) => {
-    if (!dashboardData?.school?.id || !user?.id) return;
-
-    const reductionAmount = values.baselineQuantity - values.targetQuantity;
-    
-    if (editingPromise) {
-      updatePromiseMutation.mutate({
-        id: editingPromise.id,
-        data: {
-          ...values,
-          reductionAmount,
-          schoolId: dashboardData.school.id,
-          createdBy: editingPromise.createdBy,
-        },
-      });
-    } else {
-      createPromiseMutation.mutate({
-        ...values,
-        reductionAmount,
-        schoolId: dashboardData.school.id,
-        auditId: schoolAudit?.id,
-        createdBy: user.id,
-        status: 'active',
-      });
-    }
+  const handleEditPromiseClick = (promise: ReductionPromise) => {
+    setEditingPromise(promise);
+    setEditPromiseDialogOpen(true);
   };
 
-  const handleEditPromise = (promise: ReductionPromise) => {
-    setEditingPromise(promise);
-    promiseForm.reset({
-      plasticItemType: promise.plasticItemType,
-      plasticItemLabel: promise.plasticItemLabel,
-      baselineQuantity: promise.baselineQuantity,
-      targetQuantity: promise.targetQuantity,
-      timeframeUnit: promise.timeframeUnit as "week" | "month" | "year",
-      notes: promise.notes || "",
+  const handleEditPromiseSubmit = (data: { baselineQuantity: number; targetQuantity: number; notes?: string }) => {
+    if (!editingPromise) return;
+    
+    const reductionAmount = data.baselineQuantity - data.targetQuantity;
+    updatePromiseMutation.mutate({
+      id: editingPromise.id,
+      data: {
+        baselineQuantity: data.baselineQuantity,
+        targetQuantity: data.targetQuantity,
+        reductionAmount,
+        notes: data.notes || "",
+      },
     });
-    setPromiseDialogOpen(true);
+    setEditPromiseDialogOpen(false);
+    setEditingPromise(null);
   };
 
   const handleDeletePromiseClick = (promiseId: string) => {
@@ -729,17 +658,16 @@ export default function Home() {
     }
   };
 
-  const handleAddPromiseClick = () => {
-    setEditingPromise(null);
-    promiseForm.reset({
-      plasticItemType: "",
-      plasticItemLabel: "",
-      baselineQuantity: 0,
-      targetQuantity: 0,
-      timeframeUnit: "week",
-      notes: "",
-    });
-    setPromiseDialogOpen(true);
+  // Redirect to action plan evidence requirement
+  const handleAddActionPlan = () => {
+    setActiveTab('progress');
+    // Scroll to action plan requirement after tab switches
+    setTimeout(() => {
+      const actionPlanCard = document.querySelector('[data-requirement-id="' + actionPlanRequirement?.id + '"]');
+      if (actionPlanCard) {
+        actionPlanCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }
+    }, 100);
   };
 
 
@@ -1745,30 +1673,27 @@ export default function Home() {
                       }
                     }
                     
-                    // No pending or approved - show create buttons
+                    // No pending or approved - show message to submit via evidence
                     return (
                     <>
-                      <h2 className="text-2xl font-bold text-navy mb-3">{t('action_plan.empty_title', { ns: 'dashboard' })}</h2>
+                      <h2 className="text-2xl font-bold text-navy mb-3">Create Your Action Plan</h2>
                       <p className="text-gray-600 mb-6 max-w-md mx-auto">
-                        {t('action_plan.empty_message', { ns: 'dashboard' })}
+                        To create your action plan, please submit it through the <strong>Action Plan Development</strong> evidence requirement in the Progress tab.
                       </p>
+                      <Alert className="max-w-md mx-auto mb-6 bg-navy/5 border-navy/20">
+                        <Lightbulb className="h-4 w-4 text-navy" />
+                        <AlertDescription className="text-sm text-gray-700">
+                          Your action plan will be reviewed by our team. Once approved, you'll see your reduction promises and impact metrics here.
+                        </AlertDescription>
+                      </Alert>
                       <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <Button
-                          onClick={handleAddPromiseClick}
-                          className="bg-teal hover:bg-teal/90 text-white px-6 py-3 text-lg shadow-lg"
+                          onClick={handleAddActionPlan}
+                          className="bg-navy hover:bg-navy/90 text-white px-6 py-3 text-lg shadow-lg"
                           data-testid="button-add-first-promise"
                         >
-                          <Plus className="h-5 w-5 mr-2" />
-                          {t('actions.create_online_action_plan', { ns: 'dashboard' })}
-                        </Button>
-                        <Button
-                          onClick={() => window.location.href = '/api/printable-forms/action-plan'}
-                          variant="outline"
-                          className="px-6 py-3 text-lg shadow-lg border-2 border-teal text-teal hover:bg-teal hover:text-white"
-                          data-testid="button-download-action-plan-form"
-                        >
-                          <Download className="h-5 w-5 mr-2" />
-                          {t('actions.download_printable_form', { ns: 'dashboard' })}
+                          <Target className="h-5 w-5 mr-2" />
+                          Go to Action Plan Evidence
                         </Button>
                       </div>
                     </>
@@ -1786,8 +1711,8 @@ export default function Home() {
                       <div className="flex items-center justify-between mb-6">
                         <h2 className="text-3xl font-bold text-navy">{t('action_plan.impact_title', { ns: 'dashboard' })}</h2>
                         <Button
-                          onClick={handleAddPromiseClick}
-                          className="bg-teal hover:bg-teal/90 text-white shadow-lg"
+                          onClick={handleAddActionPlan}
+                          className="bg-navy hover:bg-navy/90 text-white shadow-lg"
                           data-testid="button-add-promise"
                         >
                           <Plus className="h-5 w-5 mr-2" />
@@ -1869,47 +1794,22 @@ export default function Home() {
                         </div>
                       </TooltipProvider>
 
-                      {/* Fun & Serious Metrics */}
+                      {/* Environmental Metrics */}
                       <TooltipProvider>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-                          <Card className="shadow-lg border-0">
-                            <CardHeader>
+                          <Card className="shadow-lg border-2 border-navy/10">
+                            <CardHeader className="bg-navy/5">
                               <CardTitle className="text-xl font-bold text-navy flex items-center gap-2">
-                                🌊 {t('action_plan.ocean_impact', { ns: 'dashboard' })}
+                                <Leaf className="h-5 w-5" />
+                                {t('action_plan.ocean_impact', { ns: 'dashboard' })}
                               </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="space-y-4 pt-6">
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <div className="p-4 bg-blue-50 rounded-lg cursor-help">
-                                    <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.plastic_bottles_prevented', { ns: 'dashboard' })}</p>
-                                    <p className="text-2xl font-bold text-pcs_blue" data-testid="text-ocean-bottles">
-                                      {Math.floor(metrics.funMetrics.oceanPlasticBottles).toLocaleString()}
-                                    </p>
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs">
-                                  <p>{t('action_plan.tooltip_ocean_bottles')}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="p-4 bg-green-50 rounded-lg cursor-help">
-                                    <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.fish_potentially_saved', { ns: 'dashboard' })}</p>
-                                    <p className="text-2xl font-bold text-green-600" data-testid="text-fish-saved">
-                                      {Math.floor(metrics.funMetrics.fishSaved).toLocaleString()}
-                                    </p>
-                                  </div>
-                                </TooltipTrigger>
-                                <TooltipContent className="max-w-xs">
-                                  <p>{t('action_plan.tooltip_fish_saved')}</p>
-                                </TooltipContent>
-                              </Tooltip>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <div className="p-4 bg-teal-50 rounded-lg cursor-help">
+                                  <div className="p-4 bg-navy/5 rounded-lg cursor-help border border-navy/10">
                                     <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.sea_turtles_worth', { ns: 'dashboard' })}</p>
-                                    <p className="text-2xl font-bold text-teal" data-testid="text-sea-turtles">
+                                    <p className="text-2xl font-bold text-navy" data-testid="text-sea-turtles">
                                       {metrics.funMetrics.seaTurtles.toFixed(3)}
                                     </p>
                                   </div>
@@ -1921,18 +1821,19 @@ export default function Home() {
                             </CardContent>
                           </Card>
 
-                          <Card className="shadow-lg border-0">
-                            <CardHeader>
+                          <Card className="shadow-lg border-2 border-navy/10">
+                            <CardHeader className="bg-navy/5">
                               <CardTitle className="text-xl font-bold text-navy flex items-center gap-2">
-                                📊 {t('action_plan.environmental_impact', { ns: 'dashboard' })}
+                                <BarChart3 className="h-5 w-5" />
+                                {t('action_plan.environmental_impact', { ns: 'dashboard' })}
                               </CardTitle>
                             </CardHeader>
-                            <CardContent className="space-y-4">
+                            <CardContent className="space-y-4 pt-6">
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <div className="p-4 bg-orange-50 rounded-lg cursor-help">
+                                  <div className="p-4 bg-navy/5 rounded-lg cursor-help border border-navy/10">
                                     <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.co2_emissions_prevented', { ns: 'dashboard' })}</p>
-                                    <p className="text-2xl font-bold text-orange-600" data-testid="text-co2-prevented">
+                                    <p className="text-2xl font-bold text-navy" data-testid="text-co2-prevented">
                                       {metrics.seriousMetrics.co2Prevented.toFixed(1)} {t('units.kg', { ns: 'dashboard' })}
                                     </p>
                                   </div>
@@ -1943,9 +1844,9 @@ export default function Home() {
                               </Tooltip>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <div className="p-4 bg-purple-50 rounded-lg cursor-help">
+                                  <div className="p-4 bg-navy/5 rounded-lg cursor-help border border-navy/10">
                                     <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.oil_saved', { ns: 'dashboard' })}</p>
-                                    <p className="text-2xl font-bold text-purple-600" data-testid="text-oil-saved">
+                                    <p className="text-2xl font-bold text-navy" data-testid="text-oil-saved">
                                       {metrics.seriousMetrics.oilSaved.toFixed(1)} {t('units.liters', { ns: 'dashboard' })}
                                     </p>
                                   </div>
@@ -1956,9 +1857,9 @@ export default function Home() {
                               </Tooltip>
                               <Tooltip>
                                 <TooltipTrigger asChild>
-                                  <div className="p-4 bg-indigo-50 rounded-lg cursor-help">
+                                  <div className="p-4 bg-navy/5 rounded-lg cursor-help border border-navy/10">
                                     <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.tons_plastic_prevented', { ns: 'dashboard' })}</p>
-                                    <p className="text-2xl font-bold text-indigo-600" data-testid="text-tons-prevented">
+                                    <p className="text-2xl font-bold text-navy" data-testid="text-tons-prevented">
                                       {metrics.seriousMetrics.tons.toFixed(4)}
                                     </p>
                                   </div>
@@ -1983,6 +1884,15 @@ export default function Home() {
                       const reduction = promise.baselineQuantity - promise.targetQuantity;
                       const reductionPercent = ((reduction / promise.baselineQuantity) * 100).toFixed(0);
                       
+                      // Check if action plan is approved - if so, disable edit/delete
+                      const sortedEvidence = actionPlanEvidence
+                        ? [...actionPlanEvidence].sort((a, b) => 
+                            new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime()
+                          )
+                        : [];
+                      const approvedActionPlan = sortedEvidence.find(ev => ev.status === 'approved');
+                      const isLocked = !!approvedActionPlan;
+                      
                       return (
                         <Card key={promise.id} className="shadow-lg border-0 hover:shadow-xl transition-shadow" data-testid={`promise-card-${promise.id}`}>
                           <CardHeader className="pb-3">
@@ -1995,26 +1905,35 @@ export default function Home() {
                                   {promise.plasticItemType.replace(/_/g, ' ')}
                                 </Badge>
                               </div>
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleEditPromise(promise)}
-                                  className="h-8 w-8 p-0 hover:bg-pcs_blue/10"
-                                  data-testid={`button-edit-promise-${promise.id}`}
-                                >
-                                  <Edit className="h-4 w-4 text-pcs_blue" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  onClick={() => handleDeletePromiseClick(promise.id)}
-                                  className="h-8 w-8 p-0 hover:bg-red-50"
-                                  data-testid={`button-delete-promise-${promise.id}`}
-                                >
-                                  <Trash2 className="h-4 w-4 text-red-500" />
-                                </Button>
-                              </div>
+                              {!isLocked && (
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleEditPromiseClick(promise)}
+                                    className="h-8 w-8 p-0 hover:bg-navy/10"
+                                    data-testid={`button-edit-promise-${promise.id}`}
+                                    title="Edit this promise"
+                                  >
+                                    <Edit className="h-4 w-4 text-navy" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    onClick={() => handleDeletePromiseClick(promise.id)}
+                                    className="h-8 w-8 p-0 hover:bg-red-50"
+                                    data-testid={`button-delete-promise-${promise.id}`}
+                                    title="Delete this promise"
+                                  >
+                                    <Trash2 className="h-4 w-4 text-red-500" />
+                                  </Button>
+                                </div>
+                              )}
+                              {isLocked && (
+                                <Badge variant="secondary" className="bg-navy/10 text-navy border-navy/20">
+                                  Approved
+                                </Badge>
+                              )}
                             </div>
                           </CardHeader>
                           <CardContent className="space-y-4">
@@ -2110,218 +2029,6 @@ export default function Home() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Promise Form Dialog */}
-      <Dialog open={promiseDialogOpen} onOpenChange={setPromiseDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto" data-testid="dialog-promise-form">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-navy">
-              {editingPromise ? t('promise_dialog.title_edit', { ns: 'dashboard' }) : t('promise_dialog.title_add', { ns: 'dashboard' })}
-            </DialogTitle>
-            <DialogDescription>
-              {t('promise_dialog.description', { ns: 'dashboard' })}
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...promiseForm}>
-            <form onSubmit={promiseForm.handleSubmit(handlePromiseSubmit)} className="space-y-6">
-              <FormField
-                control={promiseForm.control}
-                name="plasticItemType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('promise_dialog.plastic_item_type', { ns: 'dashboard' })}</FormLabel>
-                    <Select 
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        // Auto-fill label with formatted version
-                        if (!promiseForm.getValues('plasticItemLabel')) {
-                          promiseForm.setValue('plasticItemLabel', value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()));
-                        }
-                      }} 
-                      value={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger data-testid="select-plastic-item-type">
-                          <SelectValue placeholder={t('promise_dialog.select_plastic_item', { ns: 'dashboard' })} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {Object.keys(PLASTIC_ITEM_WEIGHTS).map((type) => (
-                          <SelectItem key={type} value={type}>
-                            {type.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={promiseForm.control}
-                name="plasticItemLabel"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('promise_dialog.item_label', { ns: 'dashboard' })}</FormLabel>
-                    <FormControl>
-                      <Input 
-                        {...field} 
-                        placeholder={t('promise_dialog.item_label_placeholder', { ns: 'dashboard' })}
-                        data-testid="input-plastic-item-label"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormField
-                  control={promiseForm.control}
-                  name="baselineQuantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('promise_dialog.baseline_quantity', { ns: 'dashboard' })}</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          {...field} 
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          placeholder={t('promise_dialog.baseline_placeholder', { ns: 'dashboard' })}
-                          data-testid="input-baseline-quantity"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={promiseForm.control}
-                  name="targetQuantity"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>{t('promise_dialog.target_quantity', { ns: 'dashboard' })}</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          {...field} 
-                          onChange={(e) => field.onChange(parseInt(e.target.value) || 0)}
-                          placeholder={t('promise_dialog.target_placeholder', { ns: 'dashboard' })}
-                          data-testid="input-target-quantity"
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <FormField
-                control={promiseForm.control}
-                name="timeframeUnit"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('promise_dialog.timeframe', { ns: 'dashboard' })}</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger data-testid="select-timeframe-unit">
-                          <SelectValue placeholder={t('promise_dialog.select_timeframe', { ns: 'dashboard' })} />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="week">{t('promise_dialog.per_week', { ns: 'dashboard' })}</SelectItem>
-                        <SelectItem value="month">{t('promise_dialog.per_month', { ns: 'dashboard' })}</SelectItem>
-                        <SelectItem value="year">{t('promise_dialog.per_year', { ns: 'dashboard' })}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {(() => {
-                const baseline = promiseForm.watch('baselineQuantity');
-                const target = promiseForm.watch('targetQuantity');
-                const reduction = baseline - target;
-                const reductionPercent = baseline > 0 ? ((reduction / baseline) * 100).toFixed(0) : 0;
-                
-                if (baseline > 0 && target >= 0) {
-                  return (
-                    <div className="p-4 bg-gradient-to-r from-green-50 to-teal-50 rounded-lg border border-green-200">
-                      <p className="text-sm font-semibold text-navy mb-2">{t('promise_dialog.reduction_preview', { ns: 'dashboard' })}</p>
-                      <div className="flex items-center gap-3">
-                        <div className="flex-1">
-                          <p className="text-2xl font-bold text-green-600">
-                            {t('promise_dialog.items', { ns: 'dashboard', count: reduction })}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {t('promise_dialog.reduction_percent', { ns: 'dashboard', percent: reductionPercent })}
-                          </p>
-                        </div>
-                        {reduction > 0 && (
-                          <Badge className="bg-green-500 text-white">
-                            {t('promise_dialog.great_goal', { ns: 'dashboard' })}
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-                return null;
-              })()}
-
-              <FormField
-                control={promiseForm.control}
-                name="notes"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>{t('promise_dialog.notes_optional', { ns: 'dashboard' })}</FormLabel>
-                    <FormControl>
-                      <Textarea 
-                        {...field} 
-                        placeholder={t('promise_dialog.notes_placeholder', { ns: 'dashboard' })}
-                        rows={3}
-                        data-testid="input-notes"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <DialogFooter>
-                <Button
-                  type="button"
-                  variant="outline"
-                  onClick={() => {
-                    setPromiseDialogOpen(false);
-                    setEditingPromise(null);
-                    promiseForm.reset();
-                  }}
-                  data-testid="button-cancel-promise"
-                >
-                  {t('actions.cancel', { ns: 'dashboard' })}
-                </Button>
-                <Button
-                  type="submit"
-                  className="bg-teal hover:bg-teal/90 text-white"
-                  disabled={createPromiseMutation.isPending || updatePromiseMutation.isPending}
-                  data-testid="button-save-promise"
-                >
-                  {createPromiseMutation.isPending || updatePromiseMutation.isPending
-                    ? t('actions.saving', { ns: 'dashboard' })
-                    : editingPromise
-                    ? t('actions.update_action_item', { ns: 'dashboard' })
-                    : t('actions.create_action_item', { ns: 'dashboard' })}
-                </Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-
       {/* Delete Promise Confirmation Dialog */}
       <AlertDialog open={deletePromiseDialogOpen} onOpenChange={setDeletePromiseDialogOpen}>
         <AlertDialogContent data-testid="dialog-delete-promise-confirmation">
@@ -2349,6 +2056,98 @@ export default function Home() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Edit Promise Dialog */}
+      {editingPromise && (
+        <Dialog open={editPromiseDialogOpen} onOpenChange={setEditPromiseDialogOpen}>
+          <DialogContent className="sm:max-w-md" data-testid="dialog-edit-promise">
+            <DialogHeader>
+              <DialogTitle className="text-xl font-bold text-navy">
+                Edit: {editingPromise.plasticItemLabel}
+              </DialogTitle>
+              <DialogDescription>
+                Update the baseline, target, or notes for this reduction promise.
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={(e) => {
+              e.preventDefault();
+              const formData = new FormData(e.currentTarget);
+              handleEditPromiseSubmit({
+                baselineQuantity: parseInt(formData.get('baseline') as string),
+                targetQuantity: parseInt(formData.get('target') as string),
+                notes: formData.get('notes') as string,
+              });
+            }}>
+              <div className="space-y-4 py-4">
+                <div>
+                  <label htmlFor="baseline" className="text-sm font-medium text-navy">
+                    Baseline Quantity (per {editingPromise.timeframeUnit})
+                  </label>
+                  <Input
+                    id="baseline"
+                    name="baseline"
+                    type="number"
+                    defaultValue={editingPromise.baselineQuantity}
+                    min="1"
+                    required
+                    className="mt-1"
+                    data-testid="input-edit-baseline"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="target" className="text-sm font-medium text-navy">
+                    Target Quantity (per {editingPromise.timeframeUnit})
+                  </label>
+                  <Input
+                    id="target"
+                    name="target"
+                    type="number"
+                    defaultValue={editingPromise.targetQuantity}
+                    min="0"
+                    required
+                    className="mt-1"
+                    data-testid="input-edit-target"
+                  />
+                </div>
+                <div>
+                  <label htmlFor="notes" className="text-sm font-medium text-navy">
+                    Notes (optional)
+                  </label>
+                  <Textarea
+                    id="notes"
+                    name="notes"
+                    defaultValue={editingPromise.notes || ''}
+                    rows={3}
+                    className="mt-1"
+                    data-testid="input-edit-notes"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setEditPromiseDialogOpen(false);
+                    setEditingPromise(null);
+                  }}
+                  data-testid="button-cancel-edit"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  className="bg-navy hover:bg-navy/90 text-white"
+                  disabled={updatePromiseMutation.isPending}
+                  data-testid="button-save-edit"
+                >
+                  {updatePromiseMutation.isPending ? 'Saving...' : 'Save Changes'}
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+      )}
 
       {/* Onboarding Components */}
       <WelcomeModal 
