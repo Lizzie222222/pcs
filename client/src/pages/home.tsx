@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import ProgressTracker from "@/components/ProgressTracker";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
+import { RoundProgressBadges } from "@/components/RoundProgressBadges";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { InteractiveTour } from "@/components/InteractiveTour";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -923,16 +924,16 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-                <div className="text-center">
-                  <div className="relative inline-flex items-center justify-center w-28 h-28 mb-3">
-                    <div className="absolute inset-0 bg-gradient-to-br from-pcs_blue to-teal rounded-full opacity-20"></div>
-                    <div className="relative bg-white rounded-full w-24 h-24 flex items-center justify-center shadow-xl border-4 border-white">
-                      <span className="text-2xl font-bold text-navy" data-testid="text-progress-percentage">
-                        {school.progressPercentage % 100 === 0 && school.progressPercentage > 0 ? 100 : school.progressPercentage % 100}%
-                      </span>
-                    </div>
+                <div className="flex-1 min-w-[280px]">
+                  <div className="mb-3">
+                    <h3 className="text-sm font-semibold text-gray-700 mb-3">{t('progress.overall_progress')}</h3>
+                    <RoundProgressBadges
+                      currentRound={school.currentRound || 1}
+                      roundsCompleted={school.roundsCompleted || 0}
+                      progressPercentage={school.progressPercentage}
+                      showProgressBar={true}
+                    />
                   </div>
-                  <div className="text-sm font-semibold text-gray-700">{t('progress.overall_progress')}</div>
                   {user?.hasSeenOnboarding && (
                     <Button
                       variant="outline"

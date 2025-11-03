@@ -38,8 +38,12 @@ import {
   Image as ImageIcon,
   ExternalLink,
   Loader2,
+  ArrowDown,
+  ArrowUp,
+  Download,
 } from "lucide-react";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
+import { RoundProgressBadges } from "@/components/RoundProgressBadges";
 import type { SchoolData } from "@/components/admin/shared/types";
 import type { ReductionPromise } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
@@ -84,9 +88,17 @@ export default function SchoolDetailsDialog({
   });
   const [showAdminEvidenceForm, setShowAdminEvidenceForm] = useState(false);
 
-  // Reduction promises query for selected school
+  // Reduction promises query for selected school (filtered by current round)
   const schoolPromisesQuery = useQuery<ReductionPromise[]>({
-    queryKey: ['/api/reduction-promises/school', viewingSchool?.id],
+    queryKey: ['/api/reduction-promises/school', viewingSchool?.id, viewingSchool?.currentRound],
+    queryFn: async () => {
+      const round = viewingSchool?.currentRound || 1;
+      const response = await fetch(`/api/reduction-promises/school/${viewingSchool?.id}?round=${round}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch reduction promises');
+      }
+      return response.json();
+    },
     enabled: !!viewingSchool?.id,
     retry: false,
   });
@@ -122,6 +134,32 @@ export default function SchoolDetailsDialog({
     queryKey: ['/api/schools', viewingSchool?.id, 'photo-consent'],
     enabled: !!viewingSchool?.id,
   });
+
+  // Certificates query for Round History
+  const certificatesQuery = useQuery<any[]>({
+    queryKey: ['/api/schools', viewingSchool?.id, 'certificates'],
+    queryFn: async () => {
+      const response = await fetch(`/api/schools/${viewingSchool?.id}/certificates`);
+      if (!response.ok) throw new Error('Failed to fetch certificates');
+      return response.json();
+    },
+    enabled: !!viewingSchool?.id && (viewingSchool?.roundsCompleted || 0) >= 1,
+  });
+
+  // Audits query for Round History - fetch all audits for completed rounds
+  const completedRounds = Array.from({ length: viewingSchool?.roundsCompleted || 0 }, (_, i) => i + 1);
+  const auditsQueries = completedRounds.map(round => 
+    useQuery({
+      queryKey: ['/api/audits/school', viewingSchool?.id, round],
+      queryFn: async () => {
+        const response = await fetch(`/api/audits/school/${viewingSchool?.id}?round=${round}`);
+        if (!response.ok) return null;
+        const data = await response.json();
+        return data;
+      },
+      enabled: !!viewingSchool?.id && (viewingSchool?.roundsCompleted || 0) >= 1,
+    })
+  );
 
   // Update school language mutation
   const updateSchoolLanguageMutation = useMutation({
@@ -371,11 +409,14 @@ export default function SchoolDetailsDialog({
                   {viewingSchool.currentStage}
                 </p>
               </div>
-              <div>
-                <label className="text-sm font-medium text-gray-600">{t('schools.school_details.labels.progress')}</label>
-                <p className="text-base" data-testid={`text-progress-${viewingSchool.id}`}>
-                  {viewingSchool.progressPercentage}%
-                </p>
+              <div className="col-span-2">
+                <label className="text-sm font-medium text-gray-600 mb-2 block">{t('schools.school_details.labels.progress')}</label>
+                <RoundProgressBadges
+                  currentRound={viewingSchool.currentRound || 1}
+                  roundsCompleted={viewingSchool.roundsCompleted || 0}
+                  progressPercentage={viewingSchool.progressPercentage}
+                  showProgressBar={true}
+                />
               </div>
               <div>
                 <label className="text-sm font-medium text-gray-600">{t('schools.school_details.labels.primaryContactEmail')}</label>
@@ -672,6 +713,161 @@ export default function SchoolDetailsDialog({
                 )}
               </CardContent>
             </Card>
+
+            {/* Round History Card */}
+            {viewingSchool && (viewingSchool.roundsCompleted || 0) >= 1 && (
+              <Card className="mt-4">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-lg">
+                    <Clock className="h-5 w-5 text-pcs_blue" />
+                    Round History
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {certificatesQuery.isLoading ? (
+                    <div className="flex items-center justify-center py-8">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue mr-3"></div>
+                      <span className="text-gray-600">Loading round history...</span>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {completedRounds.map((round, index) => {
+                        const certificate = certificatesQuery.data?.find(
+                          (cert: any) => parseInt(cert.metadata?.round || '0') === round
+                        );
+                        const auditQuery = auditsQueries[index];
+                        const auditData = auditQuery?.data;
+                        const prevAuditQuery = index > 0 ? auditsQueries[index - 1] : null;
+                        const prevAuditData = prevAuditQuery?.data;
+
+                        const currentPlasticItems = auditData?.totalPlasticItems || auditData?.resultsData?.totalPlasticItems || 0;
+                        const prevPlasticItems = prevAuditData?.totalPlasticItems || prevAuditData?.resultsData?.totalPlasticItems || 0;
+                        
+                        let reductionPercentage = 0;
+                        let hasComparison = false;
+                        if (index > 0 && prevPlasticItems > 0 && currentPlasticItems > 0) {
+                          reductionPercentage = ((prevPlasticItems - currentPlasticItems) / prevPlasticItems) * 100;
+                          hasComparison = true;
+                        }
+
+                        const evidenceCount = Array.isArray(certificate?.metadata?.achievements) 
+                          ? certificate.metadata.achievements.length 
+                          : 0;
+
+                        return (
+                          <div key={round} className="relative">
+                            {/* Timeline connector */}
+                            {index < completedRounds.length - 1 && (
+                              <div className="absolute left-3 top-10 bottom-0 w-0.5 bg-teal-300" />
+                            )}
+                            
+                            <div className="flex gap-4">
+                              {/* Round badge */}
+                              <div className="flex-shrink-0">
+                                <div className="w-6 h-6 rounded-full bg-teal-500 flex items-center justify-center relative z-10">
+                                  <CheckCircle className="h-4 w-4 text-white" />
+                                </div>
+                              </div>
+
+                              {/* Round content */}
+                              <div className="flex-1 pb-6">
+                                <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+                                  <div className="flex items-center justify-between">
+                                    <h4 className="font-semibold text-navy flex items-center gap-2">
+                                      <Badge className="bg-teal-500 text-white">
+                                        ✓ Round {round}
+                                      </Badge>
+                                    </h4>
+                                    {certificate && (
+                                      <span className="text-xs text-gray-600">
+                                        Completed: {new Date(certificate.completedDate).toLocaleDateString()}
+                                      </span>
+                                    )}
+                                  </div>
+
+                                  <div className="grid grid-cols-2 gap-3 text-sm">
+                                    {/* Certificate download */}
+                                    {certificate && (
+                                      <div className="flex items-center gap-2">
+                                        <Download className="h-4 w-4 text-pcs_blue" />
+                                        <a
+                                          href={`/api/certificates/${certificate.id}/download`}
+                                          target="_blank"
+                                          rel="noopener noreferrer"
+                                          className="text-pcs_blue hover:underline"
+                                          data-testid={`link-download-certificate-round-${round}`}
+                                        >
+                                          Download Certificate
+                                        </a>
+                                      </div>
+                                    )}
+
+                                    {/* Evidence count */}
+                                    {evidenceCount > 0 && (
+                                      <div className="flex items-center gap-2 text-gray-600">
+                                        <CheckCircle className="h-4 w-4 text-teal-500" />
+                                        <span>{evidenceCount} evidence submitted</span>
+                                      </div>
+                                    )}
+                                  </div>
+
+                                  {/* Audit metrics */}
+                                  {auditQuery?.isLoading ? (
+                                    <div className="text-xs text-gray-500 italic">Loading audit data...</div>
+                                  ) : auditData ? (
+                                    <div className="space-y-2">
+                                      <div className="flex items-center justify-between bg-white rounded p-2">
+                                        <span className="text-xs font-medium text-gray-700">Plastic Usage:</span>
+                                        <span className="text-sm font-semibold text-pcs_blue">
+                                          {currentPlasticItems.toLocaleString()} items/week
+                                        </span>
+                                      </div>
+
+                                      {/* Comparison with previous round */}
+                                      {hasComparison && (
+                                        <div className={`flex items-center justify-between rounded p-2 ${
+                                          reductionPercentage > 0 ? 'bg-green-50' : 'bg-red-50'
+                                        }`}>
+                                          <span className="text-xs font-medium text-gray-700">vs Round {round - 1}:</span>
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs text-gray-600">
+                                              {prevPlasticItems.toLocaleString()} → {currentPlasticItems.toLocaleString()}
+                                            </span>
+                                            {reductionPercentage > 0 ? (
+                                              <Badge className="bg-green-600 text-white flex items-center gap-1">
+                                                <ArrowDown className="h-3 w-3" />
+                                                {Math.abs(reductionPercentage).toFixed(1)}% reduction
+                                              </Badge>
+                                            ) : reductionPercentage < 0 ? (
+                                              <Badge className="bg-red-600 text-white flex items-center gap-1">
+                                                <ArrowUp className="h-3 w-3" />
+                                                {Math.abs(reductionPercentage).toFixed(1)}% increase
+                                              </Badge>
+                                            ) : (
+                                              <Badge className="bg-gray-500 text-white">
+                                                No change
+                                              </Badge>
+                                            )}
+                                          </div>
+                                        </div>
+                                      )}
+                                    </div>
+                                  ) : (
+                                    <div className="text-xs text-gray-500 italic bg-gray-100 rounded p-2">
+                                      No audit data available
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Photo Consent Status Card */}
             <Card className="mt-4">
