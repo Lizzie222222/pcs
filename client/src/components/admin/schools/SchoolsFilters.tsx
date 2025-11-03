@@ -220,7 +220,9 @@ export default function SchoolsFilters({
             </SelectTrigger>
             <SelectContent position="popper" sideOffset={5}>
               <SelectItem value="all">All Schools</SelectItem>
-              <SelectItem value="plastic-clever">Plastic Clever (Completed)</SelectItem>
+              <SelectItem value="plastic-clever">Plastic Clever</SelectItem>
+              <SelectItem value="plastic-clever-ii">Plastic Clever II</SelectItem>
+              <SelectItem value="plastic-clever-iii">Plastic Clever III</SelectItem>
               <SelectItem value="in-progress">In Progress</SelectItem>
             </SelectContent>
           </Select>

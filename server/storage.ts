@@ -125,7 +125,7 @@ import {
   type InsertSetting,
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne, gte } from "drizzle-orm";
+import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne, gte, isNull } from "drizzle-orm";
 import * as bcrypt from "bcrypt";
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
 import { normalizeCountryName, getAllCountryCodes, getCountryCode } from './countryMapping';
@@ -1537,13 +1537,19 @@ export class DatabaseStorage implements IStorage {
       conditions.push(eq(schools.currentStage, filters.stage as any));
     }
     if (filters.completionStatus && filters.completionStatus !== 'all') {
-      // Filter by completion status
+      // Filter by completion status using roundsCompleted
       if (filters.completionStatus === 'plastic-clever') {
-        // Schools that have completed at least one round (awardCompleted = true)
-        conditions.push(eq(schools.awardCompleted, true));
+        // Schools that have completed at least one round (roundsCompleted >= 1)
+        conditions.push(gte(schools.roundsCompleted, 1));
+      } else if (filters.completionStatus === 'plastic-clever-ii') {
+        // Schools that have completed at least two rounds (roundsCompleted >= 2)
+        conditions.push(gte(schools.roundsCompleted, 2));
+      } else if (filters.completionStatus === 'plastic-clever-iii') {
+        // Schools that have completed at least three rounds (roundsCompleted >= 3)
+        conditions.push(gte(schools.roundsCompleted, 3));
       } else if (filters.completionStatus === 'in-progress') {
-        // Schools that haven't completed a round yet
-        conditions.push(eq(schools.awardCompleted, false));
+        // Schools that haven't completed any round yet (roundsCompleted = 0 or null)
+        conditions.push(or(eq(schools.roundsCompleted, 0), isNull(schools.roundsCompleted)));
       }
     }
     if (filters.type && filters.type !== 'all') {
