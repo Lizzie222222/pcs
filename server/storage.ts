@@ -3339,7 +3339,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Calculate granular progress percentage based on approved requirements
-    let progressPercentage = 0;
+    let currentRoundProgress = 0;
     
     // For migrated schools, blend legacy evidence count with new evidence
     if (school.isMigrated) {
@@ -3373,17 +3373,17 @@ export class DatabaseStorage implements IStorage {
       
       // Calculate percentage based on combined evidence
       if (totalRequired > 0) {
-        progressPercentage = Math.min(100, Math.round((totalEvidence / totalRequired) * 100));
+        currentRoundProgress = Math.min(100, Math.round((totalEvidence / totalRequired) * 100));
       }
       
       // Ensure progress respects stage completion minimums to prevent regression
       // Migrated schools with completed stages should not be downgraded
       if (actComplete) {
-        progressPercentage = Math.max(progressPercentage, 100);
+        currentRoundProgress = Math.max(currentRoundProgress, 100);
       } else if (investigateComplete) {
-        progressPercentage = Math.max(progressPercentage, 67);
+        currentRoundProgress = Math.max(currentRoundProgress, 67);
       } else if (inspireComplete) {
-        progressPercentage = Math.max(progressPercentage, 33);
+        currentRoundProgress = Math.max(currentRoundProgress, 33);
       }
     } else {
       // For non-migrated schools, calculate based on evidence
@@ -3409,7 +3409,7 @@ export class DatabaseStorage implements IStorage {
       
       // Calculate percentage (fallback to stage-based if no requirements defined)
       if (totalRequired > 0) {
-        progressPercentage = Math.round((totalApproved / totalRequired) * 100);
+        currentRoundProgress = Math.round((totalApproved / totalRequired) * 100);
       } else {
         // Fallback to old stage-based calculation
         const inspireComplete = updates.inspireCompleted ?? school.inspireCompleted;
@@ -3417,14 +3417,19 @@ export class DatabaseStorage implements IStorage {
         const actComplete = updates.actCompleted ?? school.actCompleted;
         
         if (actComplete) {
-          progressPercentage = 100;
+          currentRoundProgress = 100;
         } else if (investigateComplete) {
-          progressPercentage = 67;
+          currentRoundProgress = 67;
         } else if (inspireComplete) {
-          progressPercentage = 33;
+          currentRoundProgress = 33;
         }
       }
     }
+    
+    // Make progress cumulative across rounds
+    // Round 1: 0-100%, Round 2: 100-200%, Round 3: 200-300%, etc.
+    const completedRounds = updates.roundsCompleted ?? school.roundsCompleted ?? 0;
+    const progressPercentage = (completedRounds * 100) + currentRoundProgress;
     
     // Update progress percentage if it has changed
     if (progressPercentage !== school.progressPercentage) {

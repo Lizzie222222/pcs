@@ -928,7 +928,7 @@ export default function Home() {
                     <div className="absolute inset-0 bg-gradient-to-br from-pcs_blue to-teal rounded-full opacity-20"></div>
                     <div className="relative bg-white rounded-full w-24 h-24 flex items-center justify-center shadow-xl border-4 border-white">
                       <span className="text-2xl font-bold text-navy" data-testid="text-progress-percentage">
-                        {school.progressPercentage}%
+                        {school.progressPercentage % 100 === 0 && school.progressPercentage > 0 ? 100 : school.progressPercentage % 100}%
                       </span>
                     </div>
                   </div>

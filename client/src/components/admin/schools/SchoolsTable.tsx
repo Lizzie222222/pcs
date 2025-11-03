@@ -317,10 +317,10 @@ export default function SchoolsTable({
                         <div className="flex-1 bg-gray-200 rounded-full h-2 max-w-20">
                           <div 
                             className="bg-teal h-2 rounded-full transition-all"
-                            style={{ width: `${school.progressPercentage}%` }}
+                            style={{ width: `${school.progressPercentage % 100 === 0 && school.progressPercentage > 0 ? 100 : school.progressPercentage % 100}%` }}
                           ></div>
                         </div>
-                        <span className="text-xs text-gray-600">{school.progressPercentage}%</span>
+                        <span className="text-xs text-gray-600">{school.progressPercentage % 100 === 0 && school.progressPercentage > 0 ? 100 : school.progressPercentage % 100}%</span>
                       </div>
                     </td>
                     <td className="p-3 text-gray-600">
