@@ -3325,6 +3325,19 @@ export class DatabaseStorage implements IStorage {
       hasChanges = true;
     }
 
+    // Ensure awardCompleted is set if all three stages are complete
+    // This catches schools that already had actCompleted=true but never got the award flag
+    const finalActCompleted = updates.actCompleted ?? school.actCompleted;
+    if (finalInspireCompleted && finalInvestigateCompleted && finalActCompleted && !school.awardCompleted) {
+      updates.awardCompleted = true;
+      hasChanges = true;
+      
+      // If roundsCompleted wasn't set yet, set it now
+      if ((school.roundsCompleted || 0) === 0 && !updates.roundsCompleted) {
+        updates.roundsCompleted = 1;
+      }
+    }
+
     // Calculate granular progress percentage based on approved requirements
     let progressPercentage = 0;
     

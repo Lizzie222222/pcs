@@ -5135,7 +5135,8 @@ Return JSON with:
 
       // Find schools that need fixing:
       // 1. Schools where actCompleted = true but inspireCompleted OR investigateCompleted = false (illogical flags)
-      // 2. Schools where awardCompleted = true but still on currentRound = 1 (should be Round 2)
+      // 2. Schools where all 3 stages are complete but awardCompleted = false (missing award flag)
+      // 3. Schools where awardCompleted = true but still on currentRound = 1 (should be Round 2)
       const problematicSchools = await db.query.schools.findMany({
         where: or(
           and(
@@ -5144,6 +5145,12 @@ Return JSON with:
               eq(schools.inspireCompleted, false),
               eq(schools.investigateCompleted, false)
             )
+          ),
+          and(
+            eq(schools.inspireCompleted, true),
+            eq(schools.investigateCompleted, true),
+            eq(schools.actCompleted, true),
+            eq(schools.awardCompleted, false)
           ),
           and(
             eq(schools.awardCompleted, true),
