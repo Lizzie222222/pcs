@@ -1179,5 +1179,10 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
 }
 
 export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' } = {}) {
-  return <AdminContent initialTab={initialTab} />;
+  const urlParams = new URLSearchParams(window.location.search);
+  const tabFromUrl = urlParams.get('tab') as 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' | null;
+  
+  const effectiveInitialTab = tabFromUrl || initialTab;
+  
+  return <AdminContent initialTab={effectiveInitialTab} />;
 }
