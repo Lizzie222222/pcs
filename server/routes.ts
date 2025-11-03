@@ -2753,16 +2753,34 @@ Return JSON with:
       }
 
       // For now, use the first school (multi-school support can be added later)
-      const school = schools[0];
+      const schoolData: any = schools[0];
+      
+      // Convert snake_case to camelCase for frontend
+      const school = {
+        id: schoolData.id,
+        name: schoolData.name,
+        country: schoolData.country,
+        currentRound: schoolData.current_round,
+        currentStage: schoolData.current_stage,
+        inspireCompleted: schoolData.inspire_completed,
+        investigateCompleted: schoolData.investigate_completed,
+        actCompleted: schoolData.act_completed,
+        awardCompleted: schoolData.award_completed,
+        roundsCompleted: schoolData.rounds_completed,
+        photoConsentStatus: schoolData.photo_consent_status,
+        photoConsentDocumentUrl: schoolData.photo_consent_document_url,
+        createdAt: schoolData.created_at,
+        updatedAt: schoolData.updated_at,
+      };
       
       // Get recent evidence for this school
-      const evidence = await storage.getSchoolEvidence(school.id);
+      const evidence = await storage.getSchoolEvidence(schoolData.id);
       
       // Get user's role in this school
-      const schoolUser = await storage.getSchoolUser(school.id, userId);
+      const schoolUser = await storage.getSchoolUser(schoolData.id, userId);
       
       // Get evidence counts with progression info
-      const evidenceCounts = await storage.getSchoolEvidenceCounts(school.id);
+      const evidenceCounts = await storage.getSchoolEvidenceCounts(schoolData.id);
       
       res.json({
         school,
