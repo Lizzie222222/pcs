@@ -708,6 +708,35 @@ function MigrationDialogContent() {
     },
   });
 
+  const fixCompletionFlagsMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/migration/fix-completion-flags', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to fix completion flags');
+      }
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: 'Completion Flags Fixed',
+        description: `Fixed ${data.fixed} schools with illogical completion flags.`,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/migration/logs'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Fix Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const runMigrationMutation = useMutation({
     mutationFn: async ({ dryRun }: { dryRun: boolean }) => {
       const response = await fetch('/api/admin/migration/run', {
@@ -897,6 +926,57 @@ function MigrationDialogContent() {
                       Successfully updated progress for {fixProgressMutation.data.updated} migrated schools. 
                       {fixProgressMutation.data.skipped > 0 && ` ${fixProgressMutation.data.skipped} schools had no changes.`}
                       {fixProgressMutation.data.totalErrors > 0 && ` ${fixProgressMutation.data.totalErrors} errors encountered.`}
+                    </AlertDescription>
+                  </Alert>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Completion Flags Fix Tool */}
+          <Card className="border-2 border-purple-500/20 bg-gradient-to-br from-purple-50/30 to-white">
+            <CardHeader>
+              <CardTitle className="text-lg text-purple-700">Fix Completion Flags Consistency</CardTitle>
+              <CardDescription>
+                Ensures all schools have logically consistent completion flags (if Act is complete, Inspire and Investigate must also be complete). Fixes schools stuck in wrong stages.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <Alert>
+                  <Info className="h-4 w-4" />
+                  <AlertDescription>
+                    This tool finds schools where Act stage is marked complete but Inspire or Investigate stages are incomplete. 
+                    This violates linear progression and can leave schools stuck. The tool automatically fixes these inconsistencies 
+                    and recalculates their current stage and round number.
+                  </AlertDescription>
+                </Alert>
+                
+                <Button
+                  onClick={() => fixCompletionFlagsMutation.mutate()}
+                  disabled={fixCompletionFlagsMutation.isPending}
+                  className="bg-purple-600 hover:bg-purple-700"
+                  data-testid="button-fix-completion-flags"
+                >
+                  {fixCompletionFlagsMutation.isPending ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Fixing Completion Flags...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-4 w-4 mr-2" />
+                      Fix Completion Flags
+                    </>
+                  )}
+                </Button>
+
+                {fixCompletionFlagsMutation.isSuccess && fixCompletionFlagsMutation.data && (
+                  <Alert className="bg-green-50 border-green-200">
+                    <CheckCircle className="h-4 w-4 text-green-600" />
+                    <AlertDescription className="text-green-800">
+                      Successfully fixed {fixCompletionFlagsMutation.data.fixed} schools with illogical completion flags.
+                      {fixCompletionFlagsMutation.data.totalErrors > 0 && ` ${fixCompletionFlagsMutation.data.totalErrors} errors encountered.`}
                     </AlertDescription>
                   </Alert>
                 )}

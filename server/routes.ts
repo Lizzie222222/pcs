@@ -5128,6 +5128,96 @@ Return JSON with:
     }
   });
 
+  // Fix illogical completion flags from migration
+  app.post('/api/admin/migration/fix-completion-flags', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      console.log('[Fix Completion Flags] Starting completion flags consistency check...');
+
+      // Find schools that need fixing:
+      // 1. Schools where actCompleted = true but inspireCompleted OR investigateCompleted = false (illogical flags)
+      // 2. Schools where awardCompleted = true but still on currentRound = 1 (should be Round 2)
+      const problematicSchools = await db.query.schools.findMany({
+        where: or(
+          and(
+            eq(schools.actCompleted, true),
+            or(
+              eq(schools.inspireCompleted, false),
+              eq(schools.investigateCompleted, false)
+            )
+          ),
+          and(
+            eq(schools.awardCompleted, true),
+            or(
+              eq(schools.currentRound, 1),
+              sql`${schools.currentRound} IS NULL`
+            )
+          )
+        ),
+      });
+
+      console.log(`[Fix Completion Flags] Found ${problematicSchools.length} schools that need completion/round fixes`);
+
+      let fixed = 0;
+      const errors: Array<{ schoolId: string; schoolName: string; error: string }> = [];
+
+      for (const school of problematicSchools) {
+        try {
+          console.log(`[Fix Completion Flags] Fixing ${school.name} (ID: ${school.id})`);
+          console.log(`  Before: inspireCompleted=${school.inspireCompleted}, investigateCompleted=${school.investigateCompleted}, actCompleted=${school.actCompleted}`);
+          
+          // Update the completion flags to ensure logical consistency
+          await db
+            .update(schools)
+            .set({
+              inspireCompleted: true,
+              investigateCompleted: true,
+            })
+            .where(eq(schools.id, school.id));
+          
+          // Call checkAndUpdateSchoolProgression to recalculate stage
+          await storage.checkAndUpdateSchoolProgression(school.id);
+          
+          // If the school has completed all stages (awardCompleted=true), move them to Round 2
+          const updatedSchool = await storage.getSchool(school.id);
+          if (updatedSchool?.awardCompleted && updatedSchool?.currentRound === 1) {
+            console.log(`  School completed Round 1 - advancing to Round 2`);
+            await storage.startNewRound(school.id);
+          }
+          
+          // Fetch final state to log the changes
+          const finalSchool = await storage.getSchool(school.id);
+          console.log(`  After: stage=${finalSchool?.currentStage}, round=${finalSchool?.currentRound}, roundsCompleted=${finalSchool?.roundsCompleted}`);
+          
+          fixed++;
+        } catch (error) {
+          console.error(`[Fix Completion Flags] Error fixing school ${school.id}:`, error);
+          errors.push({
+            schoolId: school.id,
+            schoolName: school.name,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+
+      console.log(`[Fix Completion Flags] Completed: ${fixed} fixed, ${errors.length} errors`);
+
+      res.json({
+        message: 'Completion flags consistency check completed',
+        total: problematicSchools.length,
+        fixed,
+        alreadyCorrect: 0,
+        errors: errors.length > 0 ? errors.slice(0, 10) : [],
+        totalErrors: errors.length,
+      });
+    } catch (error) {
+      console.error('[Fix Completion Flags] Operation failed:', error);
+      res.status(500).json({
+        message: 'Failed to fix completion flags',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // AI-powered analytics insights generation
   app.post('/api/admin/analytics/generate-insights', isAuthenticated, requireAdmin, async (req, res) => {
     try {
