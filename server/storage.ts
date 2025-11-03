@@ -3280,6 +3280,12 @@ export class DatabaseStorage implements IStorage {
 
     const counts = await this.getSchoolEvidenceCounts(schoolId);
     
+    // Capture the current round before any updates for certificate generation
+    // This ensures certificates are created for the COMPLETED round, not the next round
+    // The round transition sequence is: complete → increment → reset → certificate for completed round
+    // We MUST use this captured value for certificate generation, not school.currentRound or updated.currentRound
+    const completedRound = school.currentRound || 1;
+    
     let updates: Partial<School> = {};
     let hasChanges = false;
     let justCompletedRound = false;
@@ -3318,7 +3324,7 @@ export class DatabaseStorage implements IStorage {
       updates.awardCompleted = false;
       updates.auditQuizCompleted = false;
       
-      console.log(`[Round Progression] School ${schoolId} completed round ${school.currentRound || 1}, advancing to round ${nextRound}`);
+      console.log(`[Round Progression] School ${schoolId} completed round ${completedRound}, advancing to round ${nextRound}`);
     }
 
     // Only recalculate currentStage if we're NOT advancing to a new round
@@ -3371,7 +3377,7 @@ export class DatabaseStorage implements IStorage {
         updates.awardCompleted = false;
         updates.auditQuizCompleted = false;
         
-        console.log(`[Round Progression] School ${schoolId} completed round ${school.currentRound || 1} (catch-up), advancing to round ${nextRound}`);
+        console.log(`[Round Progression] School ${schoolId} completed round ${completedRound} (catch-up), advancing to round ${nextRound}`);
       }
     }
 
@@ -3487,7 +3493,9 @@ export class DatabaseStorage implements IStorage {
       // Generate certificate for round completion
       // Use justCompletedRound flag since we reset actCompleted for the next round
       if (justCompletedRound) {
-        const currentRound = school.currentRound || 1;
+        // Use the captured completedRound value - this is the round that was JUST completed
+        // NOT school.currentRound (which is the OLD value) or updated.currentRound (which is the NEXT round)
+        const currentRound = completedRound;
         
         // Check if certificate already exists for this round
         const existingCertificates = await db
@@ -3534,7 +3542,9 @@ export class DatabaseStorage implements IStorage {
       // Send celebration email when round is completed
       // Use justCompletedRound flag since we reset actCompleted for the next round
       if (justCompletedRound) {
-        const currentRound = school.currentRound || 1;
+        // Use the captured completedRound value - this is the round that was JUST completed
+        // NOT school.currentRound (which is the OLD value) or updated.currentRound (which is the NEXT round)
+        const currentRound = completedRound;
         
         // Get the certificate for this round to include in email
         const roundCertificates = await db
