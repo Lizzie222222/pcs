@@ -51,9 +51,11 @@ export default function AssignTeacherForm() {
   const [role, setRole] = useState<'head_teacher' | 'teacher'>('teacher');
   const [searchQuery, setSearchQuery] = useState('');
 
-  const { data: schools = [], isLoading: schoolsLoading } = useQuery<SchoolData[]>({
+  const { data: schoolsData, isLoading: schoolsLoading } = useQuery<{ schools: SchoolData[]; total: number }>({
     queryKey: ['/api/admin/schools'],
   });
+
+  const schools = schoolsData?.schools || [];
 
   const { data: usersWithSchools = [], isLoading: usersLoading } = useQuery<UserWithSchools[]>({
     queryKey: ['/api/admin/users'],
