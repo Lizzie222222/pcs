@@ -122,7 +122,13 @@ export default function ProgressTracker({
 
   // Fetch all school evidence to match with requirements
   const { data: allEvidence = [] } = useQuery<Evidence[]>({
-    queryKey: ['/api/evidence'],
+    queryKey: ['/api/evidence', schoolId],
+    queryFn: async () => {
+      const res = await fetch(`/api/evidence?schoolId=${schoolId}`);
+      if (!res.ok) throw new Error('Failed to fetch evidence');
+      return res.json();
+    },
+    enabled: !!schoolId,
   });
 
   // Fetch all resources to lookup attached resources by ID
