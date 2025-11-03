@@ -1,3 +1,4 @@
+import { Fragment } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
@@ -270,9 +271,8 @@ export default function SchoolsTable({
               ))
             ) : (
               schools?.map((school) => (
-                <>
+                <Fragment key={school.id}>
                   <tr 
-                    key={school.id} 
                     className={`border-b transition-colors ${
                       selectedSchools.includes(school.id) 
                         ? 'bg-blue-50' 
@@ -324,7 +324,9 @@ export default function SchoolsTable({
                       </div>
                     </td>
                     <td className="p-3 text-gray-600">
-                      <span className="text-xs">Round {school.currentRound || 1}</span>
+                      <span className="text-xs">
+                        {school.currentRound ? `Round ${school.currentRound}` : '—'}
+                      </span>
                     </td>
                     <td className="p-3 text-gray-600">{school.studentCount}</td>
                     <td className="p-3 text-gray-600" data-testid={`text-primary-contact-${school.id}`}>
@@ -363,7 +365,7 @@ export default function SchoolsTable({
                     schoolId={school.id} 
                     isExpanded={expandedSchools.has(school.id)} 
                   />
-                </>
+                </Fragment>
               ))
             )}
           </tbody>

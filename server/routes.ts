@@ -11,7 +11,7 @@ import { nanoid } from 'nanoid';
 import { z } from "zod";
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
-import { eq, and, sql, desc, gte, lte, count } from "drizzle-orm";
+import { eq, and, or, sql, desc, gte, lte, count, ilike, inArray } from "drizzle-orm";
 import { generateAnalyticsInsights } from "./lib/aiInsights";
 import { translateEmailContent, translateEvidenceRequirement, type EmailContent } from "./translationService";
 import { promises as fs } from 'fs';
@@ -36,6 +36,7 @@ import { calculateAggregateMetrics } from '@shared/plasticMetrics';
 
 // Import WebSocket collaboration functions
 import { getOnlineUsers, broadcastChatMessage, notifyDocumentLock, broadcastDocumentUnlock } from './websocket';
+import { getAllCountryCodes } from './countryMapping';
 
 /**
  * @description Main route registration function setting up all API endpoints including auth, schools, evidence, case studies, events, email, and file uploads. Applies authentication middleware and ACL policies.
@@ -7380,26 +7381,122 @@ Return JSON with:
       const pageLimit = limit ? parseInt(limit as string) : 50;
       const offset = (currentPage - 1) * pageLimit;
       
-      // Get total count for pagination metadata (without limit/offset)
-      const totalSchools = await storage.getSchools({
-        country: country as string,
-        stage: stage as string,
-        type: type as string,
-        search: search as string,
-        language: language as string,
-        sortByDate: sortByDate as 'newest' | 'oldest',
-        joinedMonth: joinedMonth as string,
-        joinedYear: joinedYear as string,
-        interactionStatus: interactionStatus as string,
-        completionStatus: completionStatus as string,
-        sortBy: sortBy as 'name' | 'country' | 'progress' | 'joinDate' | undefined,
-        sortOrder: sortOrder as 'asc' | 'desc' | undefined,
-      });
+      // Get total count for pagination metadata
+      // For interactionStatus filter, we need to fetch all schools and filter in memory
+      // For other filters, we can use an efficient COUNT(*) query
+      let total: number;
       
-      const total = totalSchools.length;
+      if (interactionStatus && interactionStatus !== 'all') {
+        // Fall back to fetching all schools for interaction status filtering
+        const totalSchools = await storage.getSchools({
+          country: country as string,
+          stage: stage as string,
+          type: type as string,
+          search: search as string,
+          language: language as string,
+          sortByDate: sortByDate as 'newest' | 'oldest',
+          joinedMonth: joinedMonth as string,
+          joinedYear: joinedYear as string,
+          interactionStatus: interactionStatus as string,
+          completionStatus: completionStatus as string,
+        });
+        total = totalSchools.length;
+      } else {
+        // Use efficient COUNT(*) query with same WHERE conditions as getSchools
+        const conditions = [];
+        
+        // Country filter
+        if (country && country !== 'all') {
+          const allCodes = getAllCountryCodes(country);
+          const searchValues = [...allCodes, country];
+          if (searchValues.length > 1) {
+            conditions.push(inArray(schools.country, searchValues));
+          } else {
+            conditions.push(eq(schools.country, searchValues[0]));
+          }
+        }
+        
+        // Stage filter
+        if (stage && stage !== 'all') {
+          conditions.push(eq(schools.currentStage, stage as any));
+        }
+        
+        // Completion status filter
+        if (completionStatus && completionStatus !== 'all') {
+          if (completionStatus === 'plastic-clever') {
+            conditions.push(eq(schools.awardCompleted, true));
+          } else if (completionStatus === 'in-progress') {
+            conditions.push(eq(schools.awardCompleted, false));
+          }
+        }
+        
+        // Type filter
+        if (type && type !== 'all') {
+          conditions.push(eq(schools.type, type as any));
+        }
+        
+        // Language filter
+        if (language && language !== 'all') {
+          const languageMap: Record<string, string> = {
+            'en': 'English',
+            'es': 'Spanish',
+            'fr': 'French',
+            'de': 'German',
+            'it': 'Italian',
+            'pt': 'Portuguese',
+            'nl': 'Dutch',
+            'el': 'Greek',
+            'id': 'Indonesian',
+            'zh': 'Chinese'
+          };
+          const languageName = languageMap[language] || language;
+          conditions.push(eq(schools.primaryLanguage, languageName));
+        }
+        
+        // Search filter
+        if (search) {
+          const searchTerm = `%${search}%`;
+          conditions.push(
+            or(
+              ilike(schools.name, searchTerm),
+              ilike(schools.address, searchTerm),
+              ilike(schools.adminEmail, searchTerm)
+            )
+          );
+        }
+        
+        // Joined month/year filter
+        if (joinedMonth && joinedYear) {
+          const month = parseInt(joinedMonth);
+          const year = parseInt(joinedYear);
+          const startDate = new Date(year, month - 1, 1);
+          const endDate = new Date(year, month, 0, 23, 59, 59, 999);
+          conditions.push(and(
+            gte(schools.createdAt, startDate),
+            sql`${schools.createdAt} <= ${endDate}`
+          ));
+        } else if (joinedYear) {
+          const year = parseInt(joinedYear);
+          const startDate = new Date(year, 0, 1);
+          const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
+          conditions.push(and(
+            gte(schools.createdAt, startDate),
+            sql`${schools.createdAt} <= ${endDate}`
+          ));
+        }
+        
+        // Execute COUNT query
+        const countQuery = db
+          .select({ count: count() })
+          .from(schools)
+          .where(conditions.length > 0 ? and(...conditions) : undefined);
+        
+        const [countResult] = await countQuery;
+        total = countResult?.count || 0;
+      }
       
       // Get paginated schools
-      const schools = await storage.getSchools({
+      const paginatedSchools = await storage.getSchools({
         country: country as string,
         stage: stage as string,
         type: type as string,
@@ -7418,7 +7515,7 @@ Return JSON with:
       
       // Return pagination metadata
       res.json({
-        schools,
+        schools: paginatedSchools,
         total,
         page: currentPage,
         limit: pageLimit,
