@@ -5082,30 +5082,36 @@ Return JSON with:
       let skipped = 0;
       const errors: Array<{ schoolId: string; schoolName: string; error: string }> = [];
 
-      for (const school of migratedSchools) {
-        try {
-          const beforeProgress = school.progressPercentage;
-          
-          // Call checkAndUpdateSchoolProgression to recalculate progress
-          await storage.checkAndUpdateSchoolProgression(school.id);
-          
-          // Fetch the updated school to see the new progress
-          const updatedSchool = await storage.getSchool(school.id);
-          const afterProgress = updatedSchool?.progressPercentage ?? 0;
-          
-          if (beforeProgress !== afterProgress) {
-            console.log(`[Fix Progress] Updated ${school.name}: ${beforeProgress}% → ${afterProgress}%`);
-            updated++;
-          } else {
-            skipped++;
+      // Process in batches to prevent timeout
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < migratedSchools.length; i += BATCH_SIZE) {
+        const batch = migratedSchools.slice(i, i + BATCH_SIZE);
+        console.log(`[Fix Progress] Processing batch ${Math.floor(i / BATCH_SIZE) + 1} of ${Math.ceil(migratedSchools.length / BATCH_SIZE)}`);
+        
+        for (const school of batch) {
+          try {
+            const beforeProgress = school.progressPercentage;
+            
+            // Call checkAndUpdateSchoolProgression to recalculate progress
+            await storage.checkAndUpdateSchoolProgression(school.id);
+            
+            // Fetch the updated school to see the new progress
+            const updatedSchool = await storage.getSchool(school.id);
+            const afterProgress = updatedSchool?.progressPercentage ?? 0;
+            
+            if (beforeProgress !== afterProgress) {
+              updated++;
+            } else {
+              skipped++;
+            }
+          } catch (error) {
+            console.error(`[Fix Progress] Error updating school ${school.id}:`, error);
+            errors.push({
+              schoolId: school.id,
+              schoolName: school.name,
+              error: error instanceof Error ? error.message : 'Unknown error'
+            });
           }
-        } catch (error) {
-          console.error(`[Fix Progress] Error updating school ${school.id}:`, error);
-          errors.push({
-            schoolId: school.id,
-            schoolName: school.name,
-            error: error instanceof Error ? error.message : 'Unknown error'
-          });
         }
       }
 
