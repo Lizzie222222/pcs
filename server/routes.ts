@@ -5181,19 +5181,27 @@ Return JSON with:
             })
             .where(eq(schools.id, school.id));
           
-          // Call checkAndUpdateSchoolProgression to recalculate stage
+          // Call checkAndUpdateSchoolProgression to recalculate stage and award status
           await storage.checkAndUpdateSchoolProgression(school.id);
           
-          // If the school has completed all stages (awardCompleted=true), move them to Round 2
+          // If the school has completed all stages (awardCompleted=true) but is still on Round 1,
+          // move them to Round 2 WITHOUT resetting completion flags (they already earned it!)
           const updatedSchool = await storage.getSchool(school.id);
           if (updatedSchool?.awardCompleted && updatedSchool?.currentRound === 1) {
-            console.log(`  School completed Round 1 - advancing to Round 2`);
-            await storage.startNewRound(school.id);
+            console.log(`  School completed Round 1 - moving to Round 2 (keeping completion status)`);
+            await db
+              .update(schools)
+              .set({
+                currentRound: 2,
+                roundsCompleted: 1,
+                updatedAt: new Date()
+              })
+              .where(eq(schools.id, school.id));
           }
           
           // Fetch final state to log the changes
           const finalSchool = await storage.getSchool(school.id);
-          console.log(`  After: stage=${finalSchool?.currentStage}, round=${finalSchool?.currentRound}, roundsCompleted=${finalSchool?.roundsCompleted}`);
+          console.log(`  After: stage=${finalSchool?.currentStage}, round=${finalSchool?.currentRound}, roundsCompleted=${finalSchool?.roundsCompleted}, awardCompleted=${finalSchool?.awardCompleted}`);
           
           fixed++;
         } catch (error) {
