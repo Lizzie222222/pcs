@@ -8,7 +8,6 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import ProgressTracker from "@/components/ProgressTracker";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
-import { RoundProgressBadges } from "@/components/RoundProgressBadges";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { InteractiveTour } from "@/components/InteractiveTour";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -96,23 +95,6 @@ const EventNotificationBanner = lazy(() => import("@/components/dashboard/EventN
 const ResourceNotificationBanner = lazy(() => import("@/components/dashboard/ResourceNotificationBanner"));
 const PhotoConsentBanner = lazy(() => import("@/components/PhotoConsentBanner").then(module => ({ default: module.PhotoConsentBanner })));
 const TeamManagement = lazy(() => import("@/pages/TeamManagement"));
-
-// Helper function to calculate current round progress percentage
-function getCurrentRoundProgress(progressPercentage: number, currentRound?: number, roundsCompleted?: number): number {
-  // If no valid progress data, return 0
-  if (progressPercentage === undefined || progressPercentage === null) return 0;
-  
-  // If school has completed the current round, show 100%
-  if (currentRound && roundsCompleted && roundsCompleted >= currentRound) {
-    return 100;
-  }
-  
-  // Calculate progress within current round (0-100)
-  const currentProgress = progressPercentage % 100;
-  
-  // Return current progress (0 for fresh start of new round)
-  return currentProgress;
-}
 
 // Helper function to convert GCS URLs to proxy URLs for CORS support
 function getProxyUrl(url: string | null): string {
@@ -941,36 +923,16 @@ export default function Home() {
                     </div>
                   )}
                 </div>
-                <div className="flex-1 min-w-[280px]">
-                  <div className="mb-3">
-                    <h3 className="text-sm font-semibold text-gray-700 mb-3">{t('progress.overall_progress')}</h3>
-                    
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="relative w-32 h-32" data-testid="circular-progress">
-                        <div className="absolute inset-0 rounded-full bg-gradient-to-br from-pcs_blue to-teal"></div>
-                        <div className="absolute inset-2 rounded-full bg-white flex items-center justify-center">
-                          <div className="text-center">
-                            <div className="text-3xl font-bold text-navy" data-testid="text-current-round-progress">
-                              {school.progressPercentage % 100 || (school.roundsCompleted && school.roundsCompleted > 0 ? 100 : 0)}%
-                            </div>
-                            <div className="text-xs text-gray-600">Complete</div>
-                          </div>
-                        </div>
-                      </div>
-                      
-                      <div className="flex flex-wrap gap-2 justify-center" data-testid="round-badges">
-                        {Array.from({ length: school.roundsCompleted || 0 }).map((_, i) => (
-                          <Badge key={`completed-${i}`} className="bg-green-600 text-white" data-testid={`badge-completed-round-${i + 1}`}>
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Round {i + 1}
-                          </Badge>
-                        ))}
-                        <Badge className="bg-teal text-white" data-testid="badge-current-round">
-                          Round {school.currentRound || 1}
-                        </Badge>
-                      </div>
+                <div className="text-center">
+                  <div className="relative inline-flex items-center justify-center w-28 h-28 mb-3">
+                    <div className="absolute inset-0 bg-gradient-to-br from-pcs_blue to-teal rounded-full opacity-20"></div>
+                    <div className="relative bg-white rounded-full w-24 h-24 flex items-center justify-center shadow-xl border-4 border-white">
+                      <span className="text-2xl font-bold text-navy" data-testid="text-progress-percentage">
+                        {school.progressPercentage % 100 === 0 && school.progressPercentage > 0 ? 100 : school.progressPercentage % 100}%
+                      </span>
                     </div>
                   </div>
+                  <div className="text-sm font-semibold text-gray-700">{t('progress.overall_progress')}</div>
                   {user?.hasSeenOnboarding && (
                     <Button
                       variant="outline"

@@ -132,17 +132,7 @@ export default function ProgressTracker({
 
   // Fetch audit status
   const { data: auditResponse } = useQuery<AuditResponse>({
-    queryKey: ['/api/audits/school', schoolId, currentRound],
-    queryFn: async () => {
-      const response = await fetch(`/api/audits/school/${schoolId}?round=${currentRound}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
-        throw new Error('Failed to fetch audit');
-      }
-      return response.json();
-    },
+    queryKey: [`/api/audits/school/${schoolId}`],
     enabled: !!schoolId,
   });
 
@@ -732,7 +722,6 @@ export default function ProgressTracker({
           <ActionPlan 
             schoolId={schoolId}
             evidenceRequirementId={actionPlanRequirementId}
-            currentRound={currentRound}
             onClose={() => setShowActionPlanModal(false)}
           />
         </DialogContent>

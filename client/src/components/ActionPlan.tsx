@@ -19,7 +19,6 @@ import type { TFunction } from "i18next";
 interface ActionPlanProps {
   schoolId: string;
   evidenceRequirementId: string;
-  currentRound: number;
   onClose?: () => void;
 }
 
@@ -38,7 +37,7 @@ const createActionPlanSchema = (t: TFunction) => z.object({
   promises: z.array(createPromiseSchema(t)).min(2, t('actionPlan.validation.minimumPromises')),
 });
 
-export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onClose }: ActionPlanProps) {
+export function ActionPlan({ schoolId, evidenceRequirementId, onClose }: ActionPlanProps) {
   const { t } = useTranslation('audit');
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -47,19 +46,9 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
   const actionPlanSchema = createActionPlanSchema(t);
   type ActionPlanData = z.infer<typeof actionPlanSchema>;
 
-  // Fetch existing audit data to get plastic items (filtered by current round)
+  // Fetch existing audit data to get plastic items
   const { data: auditResponse } = useQuery<AuditResponse>({
-    queryKey: ['/api/audits/school', schoolId, currentRound],
-    queryFn: async () => {
-      const response = await fetch(`/api/audits/school/${schoolId}?round=${currentRound}`);
-      if (!response.ok) {
-        if (response.status === 404) {
-          return null;
-        }
-        throw new Error('Failed to fetch audit');
-      }
-      return response.json();
-    },
+    queryKey: [`/api/audits/school/${schoolId}`],
     enabled: !!schoolId,
   });
 
@@ -73,16 +62,9 @@ export function ActionPlan({ schoolId, evidenceRequirementId, currentRound, onCl
   const hasExistingActionPlan = existingEvidence && Array.isArray(existingEvidence) && existingEvidence.length > 0;
   const actionPlanStatus = hasExistingActionPlan ? existingEvidence[0]?.status : null;
 
-  // Fetch reduction promises for this school (filtered by current round)
+  // Fetch reduction promises for this school
   const { data: reductionPromises = [], isLoading: promisesLoading } = useQuery<any[]>({
-    queryKey: ['/api/reduction-promises/school', schoolId, currentRound],
-    queryFn: async () => {
-      const response = await fetch(`/api/reduction-promises/school/${schoolId}?round=${currentRound}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch reduction promises');
-      }
-      return response.json();
-    },
+    queryKey: [`/api/reduction-promises/school/${schoolId}`],
     enabled: !!schoolId && (actionPlanStatus === 'pending' || actionPlanStatus === 'approved'),
   });
 

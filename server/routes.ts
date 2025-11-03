@@ -6259,16 +6259,11 @@ Return JSON with:
     }
   });
 
-  // Get school audit (with optional round filtering)
+  // Get school audit
   app.get('/api/audits/school/:schoolId', isAuthenticated, async (req: any, res) => {
     try {
       const { schoolId } = req.params;
-      const { round } = req.query;
-      
-      // Parse round parameter if provided
-      const roundNumber = round ? parseInt(round as string, 10) : undefined;
-      
-      const audit = await storage.getSchoolAudit(schoolId, roundNumber);
+      const audit = await storage.getSchoolAudit(schoolId);
       
       if (!audit) {
         return res.status(404).json({ message: "No audit found for this school" });
@@ -6712,16 +6707,11 @@ Return JSON with:
 
   // Reduction Promises Routes
 
-  // Get all reduction promises for a school (with optional round filtering)
+  // Get all reduction promises for a school
   app.get('/api/reduction-promises/school/:schoolId', isAuthenticated, isSchoolMember, async (req: any, res) => {
     try {
       const { schoolId } = req.params;
-      const { round } = req.query;
-      
-      // Parse round parameter if provided
-      const roundNumber = round ? parseInt(round as string, 10) : undefined;
-      
-      const promises = await storage.getReductionPromisesBySchool(schoolId, roundNumber);
+      const promises = await storage.getReductionPromisesBySchool(schoolId);
       res.json(promises);
     } catch (error) {
       console.error("Error fetching reduction promises:", error);

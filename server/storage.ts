@@ -6223,20 +6223,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Reduction Promise operations
-  async getReductionPromisesBySchool(schoolId: string, roundNumber?: number): Promise<ReductionPromise[]> {
-    // If round number is specified, filter by it
-    // Otherwise return all promises (for backwards compatibility)
+  async getReductionPromisesBySchool(schoolId: string): Promise<ReductionPromise[]> {
     return await db
       .select()
       .from(reductionPromises)
-      .where(
-        roundNumber !== undefined
-          ? and(
-              eq(reductionPromises.schoolId, schoolId),
-              eq(reductionPromises.roundNumber, roundNumber)
-            )
-          : eq(reductionPromises.schoolId, schoolId)
-      )
+      .where(eq(reductionPromises.schoolId, schoolId))
       .orderBy(desc(reductionPromises.createdAt));
   }
 
