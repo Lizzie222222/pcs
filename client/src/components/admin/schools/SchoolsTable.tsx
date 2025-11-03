@@ -3,7 +3,7 @@ import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
-import { CheckCircle, XCircle, Eye, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { CheckCircle, XCircle, Eye, Trash2, ChevronDown, ChevronUp, ArrowUp, ArrowDown, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
 import type { SchoolData } from "@/components/admin/shared/types";
 import { useTranslation } from 'react-i18next';
 
@@ -31,7 +31,7 @@ function SchoolTeachersRow({ schoolId, isExpanded }: { schoolId: string; isExpan
   if (isLoading) {
     return (
       <tr data-testid={`expanded-row-${schoolId}`}>
-        <td colSpan={10} className="p-0 bg-gray-50">
+        <td colSpan={11} className="p-0 bg-gray-50">
           <div className="p-4 border-t">
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-pcs_blue mr-3"></div>
@@ -46,7 +46,7 @@ function SchoolTeachersRow({ schoolId, isExpanded }: { schoolId: string; isExpan
   if (error) {
     return (
       <tr data-testid={`expanded-row-${schoolId}`}>
-        <td colSpan={10} className="p-0 bg-gray-50">
+        <td colSpan={11} className="p-0 bg-gray-50">
           <div className="p-4 border-t">
             <div className="text-center py-8 text-red-600">
               {t('schools.school_table.teachers.loadingError')}
@@ -59,7 +59,7 @@ function SchoolTeachersRow({ schoolId, isExpanded }: { schoolId: string; isExpan
 
   return (
     <tr data-testid={`expanded-row-${schoolId}`}>
-      <td colSpan={10} className="p-0 bg-gray-50">
+      <td colSpan={11} className="p-0 bg-gray-50">
         <div className="p-4 border-t">
           {teachers?.length === 0 ? (
             <div className="text-center py-8 text-gray-500" data-testid={`no-teachers-${schoolId}`}>
@@ -131,6 +131,14 @@ interface SchoolsTableProps {
   setDeletingSchool: (school: SchoolData | null) => void;
   expandedSchools: Set<string>;
   setExpandedSchools: (schools: Set<string>) => void;
+  sortBy: 'name' | 'country' | 'progress' | 'joinDate' | null;
+  sortOrder: 'asc' | 'desc';
+  onSort: (column: 'name' | 'country' | 'progress' | 'joinDate') => void;
+  page: number;
+  totalPages: number;
+  totalSchools: number;
+  limit: number;
+  onPageChange: (page: number) => void;
 }
 
 export default function SchoolsTable({
@@ -141,6 +149,14 @@ export default function SchoolsTable({
   setDeletingSchool,
   expandedSchools,
   setExpandedSchools,
+  sortBy,
+  sortOrder,
+  onSort,
+  page,
+  totalPages,
+  totalSchools,
+  limit,
+  onPageChange,
 }: SchoolsTableProps) {
   const { t } = useTranslation('admin');
   const [, setLocation] = useLocation();
@@ -173,25 +189,42 @@ export default function SchoolsTable({
       default: return 'bg-gray-500 text-white';
     }
   };
+  
+  const SortableHeader = ({ column, label }: { column: 'name' | 'country' | 'progress' | 'joinDate'; label: string }) => (
+    <th className="text-left p-3 font-semibold text-navy">
+      <button
+        onClick={() => onSort(column)}
+        className="flex items-center gap-1 hover:text-pcs_blue transition-colors"
+        data-testid={`header-sort-${column}`}
+      >
+        {label}
+        {sortBy === column && (
+          sortOrder === 'asc' ? <ArrowUp className="h-3 w-3" /> : <ArrowDown className="h-3 w-3" />
+        )}
+      </button>
+    </th>
+  );
 
   return (
-    <CardContent>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b bg-gray-50">
-              <th className="text-left p-3 font-semibold text-navy w-12"></th>
-              <th className="text-left p-3 font-semibold text-navy w-12">{t('schools.school_table.headers.select')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.school_name')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.country')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.stage')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.progress')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.students')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.contact')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.joined')}</th>
-              <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.actions')}</th>
-            </tr>
-          </thead>
+    <>
+      <CardContent>
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b bg-gray-50">
+                <th className="text-left p-3 font-semibold text-navy w-12"></th>
+                <th className="text-left p-3 font-semibold text-navy w-12">{t('schools.school_table.headers.select')}</th>
+                <SortableHeader column="name" label={t('schools.school_table.headers.school_name')} />
+                <SortableHeader column="country" label={t('schools.school_table.headers.country')} />
+                <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.stage')}</th>
+                <SortableHeader column="progress" label={t('schools.school_table.headers.progress')} />
+                <th className="text-left p-3 font-semibold text-navy">Round</th>
+                <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.students')}</th>
+                <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.contact')}</th>
+                <SortableHeader column="joinDate" label={t('schools.school_table.headers.joined')} />
+                <th className="text-left p-3 font-semibold text-navy">{t('schools.school_table.headers.actions')}</th>
+              </tr>
+            </thead>
           <tbody>
             {schoolsLoading ? (
               // Skeleton rows
@@ -214,6 +247,9 @@ export default function SchoolsTable({
                   </td>
                   <td className="p-3">
                     <div className="h-2 bg-gray-200 rounded w-20"></div>
+                  </td>
+                  <td className="p-3">
+                    <div className="h-4 bg-gray-200 rounded w-16"></div>
                   </td>
                   <td className="p-3">
                     <div className="h-4 bg-gray-200 rounded w-16"></div>
@@ -287,6 +323,9 @@ export default function SchoolsTable({
                         <span className="text-xs text-gray-600">{school.progressPercentage}%</span>
                       </div>
                     </td>
+                    <td className="p-3 text-gray-600">
+                      <span className="text-xs">Round {school.currentRound || 1}</span>
+                    </td>
                     <td className="p-3 text-gray-600">{school.studentCount}</td>
                     <td className="p-3 text-gray-600" data-testid={`text-primary-contact-${school.id}`}>
                       {school.primaryContactFirstName?.trim() && school.primaryContactLastName?.trim()
@@ -330,6 +369,88 @@ export default function SchoolsTable({
           </tbody>
         </table>
       </div>
+      
+      {/* Pagination Controls */}
+      {!schoolsLoading && schools && schools.length > 0 && (
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 border-t">
+          <div className="text-sm text-gray-600">
+            Showing {((page - 1) * limit) + 1}-{Math.min(page * limit, totalSchools)} of {totalSchools} schools
+          </div>
+          
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(1)}
+              disabled={page === 1}
+              className="min-h-11 px-3"
+              data-testid="button-first-page"
+            >
+              <ChevronsLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(page - 1)}
+              disabled={page === 1}
+              className="min-h-11 px-3"
+              data-testid="button-prev-page"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            
+            <div className="flex gap-1">
+              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
+                let pageNum;
+                if (totalPages <= 5) {
+                  pageNum = i + 1;
+                } else if (page <= 3) {
+                  pageNum = i + 1;
+                } else if (page >= totalPages - 2) {
+                  pageNum = totalPages - 4 + i;
+                } else {
+                  pageNum = page - 2 + i;
+                }
+                
+                return (
+                  <Button
+                    key={pageNum}
+                    variant={page === pageNum ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => onPageChange(pageNum)}
+                    className="min-h-11 min-w-11"
+                    data-testid={`button-page-${pageNum}`}
+                  >
+                    {pageNum}
+                  </Button>
+                );
+              })}
+            </div>
+            
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(page + 1)}
+              disabled={page === totalPages}
+              className="min-h-11 px-3"
+              data-testid="button-next-page"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => onPageChange(totalPages)}
+              disabled={page === totalPages}
+              className="min-h-11 px-3"
+              data-testid="button-last-page"
+            >
+              <ChevronsRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      )}
     </CardContent>
+    </>
   );
 }

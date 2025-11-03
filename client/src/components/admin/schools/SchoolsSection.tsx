@@ -55,6 +55,14 @@ export default function SchoolsSection({
   } | null>(null);
   const [expandedSchools, setExpandedSchools] = useState<Set<string>>(new Set());
   
+  // Pagination state
+  const [page, setPage] = useState(1);
+  const [limit] = useState(50);
+  
+  // Sorting state
+  const [sortBy, setSortBy] = useState<'name' | 'country' | 'progress' | 'joinDate' | null>(null);
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  
   // Debounced school filters to prevent refetch on every keystroke
   const [debouncedSchoolFilters, setDebouncedSchoolFilters] = useState(schoolFilters);
 
@@ -66,6 +74,12 @@ export default function SchoolsSection({
     return () => clearTimeout(timer);
   }, [schoolFilters]);
 
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1);
+    setSelectedSchools([]); // Clear selected schools when filters change
+  }, [debouncedSchoolFilters]);
+
   // Helper function to clean filters (convert "all" values to empty strings)
   const cleanFilters = (filters: typeof schoolFilters) => {
     return Object.fromEntries(
@@ -74,15 +88,27 @@ export default function SchoolsSection({
   };
 
   // Schools query - uses debounced filters to prevent refetch on every keystroke
-  const { data: schools, isLoading: schoolsLoading } = useQuery<SchoolData[]>({
-    queryKey: ['/api/admin/schools', cleanFilters(debouncedSchoolFilters)],
+  const { data: paginatedData, isLoading: schoolsLoading } = useQuery<{
+    schools: SchoolData[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }>({
+    queryKey: ['/api/admin/schools', cleanFilters(debouncedSchoolFilters), page, limit, sortBy, sortOrder],
     queryFn: async () => {
       const filters = cleanFilters(debouncedSchoolFilters);
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value);
       });
-      const url = `/api/admin/schools${params.toString() ? `?${params.toString()}` : ''}`;
+      params.append('page', page.toString());
+      params.append('limit', limit.toString());
+      if (sortBy) {
+        params.append('sortBy', sortBy);
+        params.append('sortOrder', sortOrder);
+      }
+      const url = `/api/admin/schools?${params.toString()}`;
       const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
       return res.json();
@@ -90,6 +116,10 @@ export default function SchoolsSection({
     enabled: activeTab === 'schools',
     retry: false,
   });
+  
+  const schools = paginatedData?.schools;
+  const totalSchools = paginatedData?.total || 0;
+  const totalPages = paginatedData?.totalPages || 1;
 
   // Helper functions
   const toggleSelectAllSchools = () => {
@@ -112,6 +142,17 @@ export default function SchoolsSection({
     setBulkAction({ type: 'delete' });
     setBulkSchoolDialogOpen(true);
   };
+  
+  const handleSort = (column: 'name' | 'country' | 'progress' | 'joinDate') => {
+    if (sortBy === column) {
+      // Toggle sort order if same column
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      // Set new column with ascending order
+      setSortBy(column);
+      setSortOrder('asc');
+    }
+  };
 
   return (
     <>
@@ -123,7 +164,7 @@ export default function SchoolsSection({
           setSchoolFilters={setSchoolFilters}
           countryOptions={countryOptions}
           selectedSchools={selectedSchools}
-          schoolsCount={schools?.length || 0}
+          schoolsCount={totalSchools}
           toggleSelectAllSchools={toggleSelectAllSchools}
           onBulkUpdate={handleBulkUpdate}
           onBulkDelete={handleBulkDelete}
@@ -136,6 +177,14 @@ export default function SchoolsSection({
           setDeletingSchool={setDeletingSchool}
           expandedSchools={expandedSchools}
           setExpandedSchools={setExpandedSchools}
+          sortBy={sortBy}
+          sortOrder={sortOrder}
+          onSort={handleSort}
+          page={page}
+          totalPages={totalPages}
+          totalSchools={totalSchools}
+          limit={limit}
+          onPageChange={setPage}
         />
       </Card>
 

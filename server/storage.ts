@@ -212,6 +212,8 @@ export interface IStorage {
     lastActiveDays?: number;
     limit?: number;
     offset?: number;
+    sortBy?: 'name' | 'country' | 'progress' | 'joinDate';
+    sortOrder?: 'asc' | 'desc';
   }): Promise<School[]>;
   updateSchool(id: string, updates: Partial<School>): Promise<School | undefined>;
   manuallyUpdateSchoolProgression(id: string, updates: {
@@ -1511,6 +1513,8 @@ export class DatabaseStorage implements IStorage {
     joinedYear?: string;
     interactionStatus?: string;
     completionStatus?: string;
+    sortBy?: 'name' | 'country' | 'progress' | 'joinDate';
+    sortOrder?: 'asc' | 'desc';
     limit?: number;
     offset?: number;
   } = {}): Promise<Array<School & { primaryContactEmail: string | null; primaryContactFirstName: string | null; primaryContactLastName: string | null }>> {
@@ -1615,9 +1619,28 @@ export class DatabaseStorage implements IStorage {
       query = query.where(and(...conditions)) as any;
     }
     
-    // Sort by date - default to newest first
-    const sortOrder = filters.sortByDate === 'oldest' ? asc : desc;
-    query = query.orderBy(sortOrder(schools.createdAt)) as any;
+    // Apply sorting
+    if (filters.sortBy && filters.sortOrder) {
+      const order = filters.sortOrder === 'asc' ? asc : desc;
+      switch (filters.sortBy) {
+        case 'name':
+          query = query.orderBy(order(schools.name)) as any;
+          break;
+        case 'country':
+          query = query.orderBy(order(schools.country)) as any;
+          break;
+        case 'progress':
+          query = query.orderBy(order(schools.progressPercentage)) as any;
+          break;
+        case 'joinDate':
+          query = query.orderBy(order(schools.createdAt)) as any;
+          break;
+      }
+    } else {
+      // Default sorting by date if no sortBy is specified
+      const sortOrder = filters.sortByDate === 'oldest' ? asc : desc;
+      query = query.orderBy(sortOrder(schools.createdAt)) as any;
+    }
     
     if (filters.limit) {
       query = query.limit(filters.limit) as any;

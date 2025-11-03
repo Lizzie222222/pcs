@@ -7358,7 +7358,47 @@ Return JSON with:
   // Get all schools for admin management
   app.get('/api/admin/schools', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
-      const { country, stage, type, search, language, sortByDate, joinedMonth, joinedYear, interactionStatus, limit, offset } = req.query;
+      const { 
+        country, 
+        stage, 
+        type, 
+        search, 
+        language, 
+        sortByDate, 
+        joinedMonth, 
+        joinedYear, 
+        interactionStatus, 
+        completionStatus,
+        page,
+        limit,
+        sortBy,
+        sortOrder
+      } = req.query;
+      
+      // Parse pagination params
+      const currentPage = page ? parseInt(page as string) : 1;
+      const pageLimit = limit ? parseInt(limit as string) : 50;
+      const offset = (currentPage - 1) * pageLimit;
+      
+      // Get total count for pagination metadata (without limit/offset)
+      const totalSchools = await storage.getSchools({
+        country: country as string,
+        stage: stage as string,
+        type: type as string,
+        search: search as string,
+        language: language as string,
+        sortByDate: sortByDate as 'newest' | 'oldest',
+        joinedMonth: joinedMonth as string,
+        joinedYear: joinedYear as string,
+        interactionStatus: interactionStatus as string,
+        completionStatus: completionStatus as string,
+        sortBy: sortBy as 'name' | 'country' | 'progress' | 'joinDate' | undefined,
+        sortOrder: sortOrder as 'asc' | 'desc' | undefined,
+      });
+      
+      const total = totalSchools.length;
+      
+      // Get paginated schools
       const schools = await storage.getSchools({
         country: country as string,
         stage: stage as string,
@@ -7369,10 +7409,21 @@ Return JSON with:
         joinedMonth: joinedMonth as string,
         joinedYear: joinedYear as string,
         interactionStatus: interactionStatus as string,
-        limit: limit ? parseInt(limit as string) : 10000,
-        offset: offset ? parseInt(offset as string) : 0,
+        completionStatus: completionStatus as string,
+        sortBy: sortBy as 'name' | 'country' | 'progress' | 'joinDate' | undefined,
+        sortOrder: sortOrder as 'asc' | 'desc' | undefined,
+        limit: pageLimit,
+        offset: offset,
       });
-      res.json(schools);
+      
+      // Return pagination metadata
+      res.json({
+        schools,
+        total,
+        page: currentPage,
+        limit: pageLimit,
+        totalPages: Math.ceil(total / pageLimit)
+      });
     } catch (error) {
       console.error("Error fetching schools:", error);
       res.status(500).json({ message: "Failed to fetch schools" });
