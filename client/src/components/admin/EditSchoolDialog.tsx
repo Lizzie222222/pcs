@@ -42,9 +42,28 @@ export default function EditSchoolDialog({ school, open, onOpenChange }: EditSch
   useEffect(() => {
     if (school && open) {
       console.log('EditSchoolDialog - Received school data:', school);
-      console.log('EditSchoolDialog - adminEmail:', school.adminEmail);
-      console.log('EditSchoolDialog - type:', school.type);
-      console.log('EditSchoolDialog - ageRanges:', school.ageRanges);
+      
+      // Convert primaryLanguage from full name to language code
+      const languageMap: Record<string, string> = {
+        'English': 'en',
+        'Spanish': 'es',
+        'French': 'fr',
+        'German': 'de',
+        'Italian': 'it',
+        'Portuguese': 'pt',
+        'Dutch': 'nl',
+        'Arabic': 'ar',
+        'Chinese': 'zh',
+        'Greek': 'el',
+        'Russian': 'ru',
+        'Korean': 'ko',
+        'Indonesian': 'id',
+        'Welsh': 'cy',
+      };
+      
+      const languageCode = school.primaryLanguage 
+        ? (languageMap[school.primaryLanguage] || school.primaryLanguage)
+        : 'en';
       
       const newFormData = {
         name: school.name || '',
@@ -53,7 +72,7 @@ export default function EditSchoolDialog({ school, open, onOpenChange }: EditSch
         address: school.address || '',
         type: school.type || '',
         website: school.website || '',
-        primaryLanguage: school.primaryLanguage || 'en',
+        primaryLanguage: languageCode,
         postcode: school.postcode || '',
         zipCode: school.zipCode || '',
         studentCount: school.studentCount?.toString() || '',
@@ -137,7 +156,7 @@ export default function EditSchoolDialog({ school, open, onOpenChange }: EditSch
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent key={school?.id || 'new'} className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <School className="h-5 w-5 text-pcs_blue" />
@@ -201,7 +220,7 @@ export default function EditSchoolDialog({ school, open, onOpenChange }: EditSch
               <Label htmlFor="type">School Type</Label>
               <Select
                 value={formData.type || "not_specified"}
-                onValueChange={(value) => setFormData({ ...formData, type: value === "not_specified" ? null : value })}
+                onValueChange={(value) => setFormData({ ...formData, type: value === "not_specified" ? '' : value })}
               >
                 <SelectTrigger id="type" data-testid="select-type">
                   <SelectValue placeholder="Select type" />
