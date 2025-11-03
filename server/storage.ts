@@ -398,6 +398,7 @@ export interface IStorage {
     act: { total: number; approved: number };
   }>;
   startNewRound(schoolId: string): Promise<School | undefined>;
+  migrateStuckSchools(): Promise<{ fixed: number; schools: string[] }>;
   
   // Case Study operations
   createCaseStudy(caseStudy: InsertCaseStudy): Promise<CaseStudy>;
@@ -3275,6 +3276,7 @@ export class DatabaseStorage implements IStorage {
     
     let updates: Partial<School> = {};
     let hasChanges = false;
+    let justCompletedRound = false;
 
     // Check Inspire completion (3 approved evidence)
     if (counts.inspire.approved >= 3 && !school.inspireCompleted) {
@@ -3293,48 +3295,77 @@ export class DatabaseStorage implements IStorage {
     // Check Act completion (3 approved evidence)
     if (counts.act.approved >= 3 && !school.actCompleted) {
       updates.actCompleted = true;
-      updates.awardCompleted = true;
       hasChanges = true;
+      justCompletedRound = true;
       
-      // Round completed! Set up for next round
+      // Round completed! Increment roundsCompleted
       const roundsCompleted = (school.roundsCompleted || 0) + 1;
       updates.roundsCompleted = roundsCompleted;
-    }
-
-    // Always recalculate currentStage based on completion status to enforce linear progression
-    // This ensures users progress through stages linearly regardless of where they submit evidence
-    const finalInspireCompleted = updates.inspireCompleted ?? school.inspireCompleted;
-    const finalInvestigateCompleted = updates.investigateCompleted ?? school.investigateCompleted;
-    
-    let correctStage: 'inspire' | 'investigate' | 'act';
-    
-    if (!finalInspireCompleted) {
-      // If INSPIRE not completed, stay in INSPIRE regardless of other evidence
-      correctStage = 'inspire';
-    } else if (!finalInvestigateCompleted) {
-      // If INSPIRE complete but INVESTIGATE not complete, must be in INVESTIGATE
-      correctStage = 'investigate';
-    } else {
-      // Both INSPIRE and INVESTIGATE complete, move to ACT
-      correctStage = 'act';
-    }
-    
-    // Update currentStage if it's different from the correct linear stage
-    if (school.currentStage !== correctStage) {
-      updates.currentStage = correctStage;
-      hasChanges = true;
-    }
-
-    // Ensure awardCompleted is set if all three stages are complete
-    // This catches schools that already had actCompleted=true but never got the award flag
-    const finalActCompleted = updates.actCompleted ?? school.actCompleted;
-    if (finalInspireCompleted && finalInvestigateCompleted && finalActCompleted && !school.awardCompleted) {
-      updates.awardCompleted = true;
-      hasChanges = true;
       
-      // If roundsCompleted wasn't set yet, set it now
-      if ((school.roundsCompleted || 0) === 0 && !updates.roundsCompleted) {
-        updates.roundsCompleted = 1;
+      // Automatically advance to next round
+      const nextRound = (school.currentRound || 1) + 1;
+      updates.currentRound = nextRound;
+      updates.currentStage = 'inspire';
+      updates.inspireCompleted = false;
+      updates.investigateCompleted = false;
+      updates.actCompleted = false;
+      updates.awardCompleted = false;
+      updates.auditQuizCompleted = false;
+      
+      console.log(`[Round Progression] School ${schoolId} completed round ${school.currentRound || 1}, advancing to round ${nextRound}`);
+    }
+
+    // Only recalculate currentStage if we're NOT advancing to a new round
+    // (new round already sets currentStage to 'inspire')
+    if (!justCompletedRound) {
+      // Always recalculate currentStage based on completion status to enforce linear progression
+      // This ensures users progress through stages linearly regardless of where they submit evidence
+      const finalInspireCompleted = updates.inspireCompleted ?? school.inspireCompleted;
+      const finalInvestigateCompleted = updates.investigateCompleted ?? school.investigateCompleted;
+      
+      let correctStage: 'inspire' | 'investigate' | 'act';
+      
+      if (!finalInspireCompleted) {
+        // If INSPIRE not completed, stay in INSPIRE regardless of other evidence
+        correctStage = 'inspire';
+      } else if (!finalInvestigateCompleted) {
+        // If INSPIRE complete but INVESTIGATE not complete, must be in INVESTIGATE
+        correctStage = 'investigate';
+      } else {
+        // Both INSPIRE and INVESTIGATE complete, move to ACT
+        correctStage = 'act';
+      }
+      
+      // Update currentStage if it's different from the correct linear stage
+      if (school.currentStage !== correctStage) {
+        updates.currentStage = correctStage;
+        hasChanges = true;
+      }
+
+      // Ensure awardCompleted is set if all three stages are complete
+      // This catches schools that already had actCompleted=true but never got the award flag
+      const finalActCompleted = updates.actCompleted ?? school.actCompleted;
+      if (finalInspireCompleted && finalInvestigateCompleted && finalActCompleted && !school.awardCompleted) {
+        updates.awardCompleted = true;
+        hasChanges = true;
+        justCompletedRound = true;
+        
+        // If roundsCompleted wasn't set yet, set it now
+        if ((school.roundsCompleted || 0) === 0 && !updates.roundsCompleted) {
+          updates.roundsCompleted = 1;
+        }
+        
+        // Advance to next round
+        const nextRound = (school.currentRound || 1) + 1;
+        updates.currentRound = nextRound;
+        updates.currentStage = 'inspire';
+        updates.inspireCompleted = false;
+        updates.investigateCompleted = false;
+        updates.actCompleted = false;
+        updates.awardCompleted = false;
+        updates.auditQuizCompleted = false;
+        
+        console.log(`[Round Progression] School ${schoolId} completed round ${school.currentRound || 1} (catch-up), advancing to round ${nextRound}`);
       }
     }
 
@@ -3448,7 +3479,8 @@ export class DatabaseStorage implements IStorage {
         .returning();
       
       // Generate certificate for round completion
-      if (updates.actCompleted) {
+      // Use justCompletedRound flag since we reset actCompleted for the next round
+      if (justCompletedRound) {
         const currentRound = school.currentRound || 1;
         
         // Check if certificate already exists for this round
@@ -3494,7 +3526,8 @@ export class DatabaseStorage implements IStorage {
       }
       
       // Send celebration email when round is completed
-      if (updates.actCompleted) {
+      // Use justCompletedRound flag since we reset actCompleted for the next round
+      if (justCompletedRound) {
         const currentRound = school.currentRound || 1;
         
         // Get the certificate for this round to include in email
@@ -3564,6 +3597,59 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updated;
+  }
+
+  // Migration function to fix schools stuck in previous rounds
+  async migrateStuckSchools(): Promise<{ fixed: number; schools: string[] }> {
+    console.log('[Migration] Checking for schools stuck in previous rounds...');
+    
+    // Find all schools where roundsCompleted > 0 but currentRound doesn't match
+    const allSchools = await db.select().from(schools);
+    
+    const stuckSchools = allSchools.filter(school => {
+      const roundsCompleted = school.roundsCompleted || 0;
+      const currentRound = school.currentRound || 1;
+      
+      // School is stuck if they've completed rounds but currentRound hasn't advanced
+      // For example: roundsCompleted=1 but currentRound=1 means they should be in round 2
+      return roundsCompleted > 0 && currentRound <= roundsCompleted;
+    });
+    
+    if (stuckSchools.length === 0) {
+      console.log('[Migration] No stuck schools found.');
+      return { fixed: 0, schools: [] };
+    }
+    
+    console.log(`[Migration] Found ${stuckSchools.length} stuck schools. Fixing...`);
+    
+    const fixedSchools: string[] = [];
+    
+    for (const school of stuckSchools) {
+      const roundsCompleted = school.roundsCompleted || 0;
+      const correctRound = roundsCompleted + 1;
+      
+      console.log(`[Migration] Fixing school ${school.id} (${school.name}): roundsCompleted=${roundsCompleted}, currentRound=${school.currentRound} -> ${correctRound}`);
+      
+      await db
+        .update(schools)
+        .set({
+          currentRound: correctRound,
+          currentStage: 'inspire',
+          inspireCompleted: false,
+          investigateCompleted: false,
+          actCompleted: false,
+          awardCompleted: false,
+          auditQuizCompleted: false,
+          updatedAt: new Date()
+        })
+        .where(eq(schools.id, school.id));
+      
+      fixedSchools.push(`${school.name} (${school.id})`);
+    }
+    
+    console.log(`[Migration] Successfully fixed ${fixedSchools.length} schools.`);
+    
+    return { fixed: fixedSchools.length, schools: fixedSchools };
   }
 
   // Case Study operations

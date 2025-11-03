@@ -134,8 +134,20 @@ app.use((req, res, next) => {
     port,
     host: "0.0.0.0",
     reusePort: true,
-  }, () => {
+  }, async () => {
     log(`serving on port ${port}`);
+    
+    // Run migration to fix schools stuck in previous rounds
+    const { storage } = await import('./storage');
+    try {
+      const result = await storage.migrateStuckSchools();
+      if (result.fixed > 0) {
+        log(`[Migration] Fixed ${result.fixed} schools stuck in previous rounds`);
+        result.schools.forEach(school => log(`  - ${school}`));
+      }
+    } catch (error) {
+      console.error('[Migration] Error during school migration:', error);
+    }
     
     // Initialize automated weekly digest scheduler
     initScheduler();
