@@ -98,16 +98,94 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 **Verification**: Confirm the role has permission to create extensions. If not, contact your database administrator.
 
 #### Step 4: Convert progress_percentage
+
+**CRITICAL**: First determine the data scale to choose the correct conversion strategy.
+
 ```sql
--- Convert with proper rounding to preserve data
+-- Check the range and sample values
+SELECT 
+  MIN(progress_percentage) as min_val,
+  MAX(progress_percentage) as max_val,
+  AVG(progress_percentage) as avg_val,
+  COUNT(DISTINCT progress_percentage) as distinct_values
+FROM schools 
+WHERE progress_percentage IS NOT NULL;
+
+-- Sample actual values
+SELECT progress_percentage, COUNT(*) as count
+FROM schools
+GROUP BY progress_percentage
+ORDER BY progress_percentage
+LIMIT 20;
+```
+
+**Choose conversion based on scale**:
+
+**Option A: If values are 0-100 (percentages)**
+```sql
+-- Use ROUND to preserve whole number percentages (e.g., 33.00 → 33, 66.50 → 67)
 ALTER TABLE schools 
 ALTER COLUMN progress_percentage TYPE integer 
 USING ROUND(progress_percentage)::integer;
 ```
 
-**Important**: The `ROUND()` function ensures decimal values like 33.50 become 34 instead of 33. If your progress values are already whole numbers (33.00, 66.00, 100.00), this is safe.
+**Option B: If values are 0-1 (fractions)**
+```sql
+-- Multiply by 100 first to convert to percentages (e.g., 0.33 → 33, 0.66 → 66)
+ALTER TABLE schools 
+ALTER COLUMN progress_percentage TYPE integer 
+USING ROUND(progress_percentage * 100)::integer;
+```
 
-#### Step 5: Fix visibility Columns
+**Verification after conversion**:
+```sql
+-- Confirm values look correct
+SELECT progress_percentage, COUNT(*) 
+FROM schools 
+GROUP BY progress_percentage 
+ORDER BY progress_percentage;
+```
+
+#### Step 5: Fix visibility Enum and Columns
+
+**5a. Check current enum ordering**:
+```sql
+SELECT e.enumlabel, e.enumsortorder
+FROM pg_enum e 
+JOIN pg_type t ON e.enumtypid = t.oid 
+WHERE t.typname = 'visibility' 
+ORDER BY e.enumsortorder;
+```
+
+Expected order: `public`, `private`, `registered`
+
+If the order is wrong (e.g., `public`, `registered`, `private`), fix it:
+
+```sql
+-- First, temporarily convert columns to text
+ALTER TABLE evidence ALTER COLUMN visibility TYPE text;
+ALTER TABLE media_assets ALTER COLUMN visibility TYPE text;
+ALTER TABLE resource_packs ALTER COLUMN visibility TYPE text;
+ALTER TABLE resources ALTER COLUMN visibility TYPE text;
+
+-- Drop and recreate enum with correct order
+DROP TYPE visibility CASCADE;
+CREATE TYPE visibility AS ENUM('public', 'private', 'registered');
+
+-- Convert columns back to enum
+ALTER TABLE evidence ALTER COLUMN visibility TYPE visibility USING visibility::visibility;
+ALTER TABLE media_assets ALTER COLUMN visibility TYPE visibility USING visibility::visibility;
+ALTER TABLE resource_packs ALTER COLUMN visibility TYPE visibility USING visibility::visibility;
+ALTER TABLE resources ALTER COLUMN visibility TYPE visibility USING visibility::visibility;
+
+-- Restore default constraints
+ALTER TABLE evidence ALTER COLUMN visibility SET DEFAULT 'registered'::visibility;
+ALTER TABLE media_assets ALTER COLUMN visibility SET DEFAULT 'registered'::visibility;
+ALTER TABLE resource_packs ALTER COLUMN visibility SET DEFAULT 'public'::visibility;
+ALTER TABLE resources ALTER COLUMN visibility SET DEFAULT 'public'::visibility;
+```
+
+**5b. Fix visibility column types** (if needed):
 
 Check which tables need fixing:
 ```sql
@@ -117,10 +195,8 @@ WHERE column_name = 'visibility' AND table_schema = 'public'
 ORDER BY table_name;
 ```
 
-If any show `text` instead of `USER-DEFINED`, run:
-
+If any show `text` instead of `USER-DEFINED`, convert them:
 ```sql
--- For each table that needs fixing
 ALTER TABLE evidence ALTER COLUMN visibility TYPE visibility USING visibility::visibility;
 ALTER TABLE media_assets ALTER COLUMN visibility TYPE visibility USING visibility::visibility;
 ALTER TABLE resource_packs ALTER COLUMN visibility TYPE visibility USING visibility::visibility;
@@ -156,18 +232,44 @@ Ensure `migrations/0000_clean_darkstar.sql` has:
 
 ### Rollback Plan
 
-If anything goes wrong:
+**CRITICAL**: Do NOT drop the schools table - this will break foreign key constraints and lose data.
 
+**Option 1: Restore progress_percentage only** (if only this conversion failed):
 ```sql
--- Restore from backup
-DROP TABLE schools;
-ALTER TABLE schools_backup_progress RENAME TO schools;
-
--- Or restore progress_percentage from backup
+-- Restore progress_percentage from backup table
 UPDATE schools s
-SET progress_percentage = b.progress_percentage
+SET progress_percentage = b.progress_percentage::numeric(5,2)
 FROM schools_backup_progress b
 WHERE s.id = b.id;
+
+-- Revert column type to numeric
+ALTER TABLE schools 
+ALTER COLUMN progress_percentage TYPE numeric(5,2);
+```
+
+**Option 2: Full database restore** (if multiple steps failed):
+1. Stop the application to prevent new writes
+2. Restore from the full database backup taken before migration
+3. Verify data integrity after restoration
+4. Restart application and monitor
+
+**DO NOT:**
+- Drop and rename tables (breaks foreign keys)
+- Delete rows without a backup
+- Make schema changes without a backup
+
+**Verification after rollback**:
+```sql
+-- Confirm data restored correctly
+SELECT COUNT(*) FROM schools;
+SELECT COUNT(*) FROM schools_backup_progress;
+
+-- Check progress values match backup
+SELECT 
+  COUNT(*) as mismatches
+FROM schools s
+JOIN schools_backup_progress b ON s.id = b.id
+WHERE s.progress_percentage != b.progress_percentage;
 ```
 
 ### Post-Migration Checklist
