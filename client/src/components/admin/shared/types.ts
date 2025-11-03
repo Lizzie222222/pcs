@@ -49,6 +49,11 @@ export interface SchoolData {
   type?: string;
   address?: string;
   primaryLanguage?: string | null;
+  adminEmail?: string | null;
+  website?: string | null;
+  postcode?: string | null;
+  zipCode?: string | null;
+  ageRanges?: string[];
 }
 
 export interface VerificationRequest {

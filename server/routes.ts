@@ -7608,6 +7608,9 @@ Return JSON with:
         isAdmin: z.boolean().optional(),
         firstName: z.string().optional(),
         lastName: z.string().optional(),
+        email: z.string().email().optional(),
+        phoneNumber: z.string().optional(),
+        preferredLanguage: z.string().optional(),
       });
       const updates = updateSchema.parse(req.body);
       

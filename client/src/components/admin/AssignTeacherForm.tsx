@@ -32,6 +32,8 @@ interface UserWithSchools {
     email: string;
     firstName: string;
     lastName: string;
+    phoneNumber?: string;
+    preferredLanguage?: string;
     role: string;
     isAdmin: boolean;
     createdAt: string;

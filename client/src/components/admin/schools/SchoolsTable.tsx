@@ -1,12 +1,13 @@
-import { Fragment } from "react";
+import { Fragment, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
-import { CheckCircle, XCircle, Eye, Trash2, ChevronDown, ChevronUp, ArrowUp, ArrowDown, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight } from "lucide-react";
+import { CheckCircle, XCircle, Eye, Trash2, ChevronDown, ChevronUp, ArrowUp, ArrowDown, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, Edit } from "lucide-react";
 import type { SchoolData } from "@/components/admin/shared/types";
 import { useTranslation } from 'react-i18next';
+import EditSchoolDialog from "@/components/admin/EditSchoolDialog";
 
 // SchoolTeachersRow component
 interface SchoolTeacher {
@@ -161,6 +162,8 @@ export default function SchoolsTable({
 }: SchoolsTableProps) {
   const { t } = useTranslation('admin');
   const [, setLocation] = useLocation();
+  const [editingSchool, setEditingSchool] = useState<SchoolData | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
   
   const toggleSchoolSelection = (schoolId: string) => {
     setSelectedSchools(
@@ -342,12 +345,24 @@ export default function SchoolsTable({
                         <Button 
                           size="sm" 
                           variant="outline"
-                          className="min-h-11 px-3 sm:px-4"
+                          className="min-h-11 px-3"
+                          onClick={() => {
+                            setEditingSchool(school);
+                            setEditDialogOpen(true);
+                          }}
+                          data-testid={`button-edit-${school.id}`}
+                        >
+                          <Edit className="h-3 w-3 mr-1" />
+                          Edit
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline"
+                          className="min-h-11 px-3"
                           onClick={() => setLocation(`/admin/school/${school.id}`)}
                           data-testid={`button-view-profile-${school.id}`}
                         >
-                          <Eye className="h-3 w-3 mr-1" />
-                          {t('schools.buttons.viewProfile')}
+                          <Eye className="h-3 w-3" />
                         </Button>
                         <Button 
                           size="sm" 
@@ -453,6 +468,12 @@ export default function SchoolsTable({
         </div>
       )}
     </CardContent>
+    
+    <EditSchoolDialog
+      school={editingSchool}
+      open={editDialogOpen}
+      onOpenChange={setEditDialogOpen}
+    />
     </>
   );
 }

@@ -46,6 +46,7 @@ import {
 } from "lucide-react";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import AssignTeacherForm from "@/components/admin/AssignTeacherForm";
+import EditUserDialog from "@/components/admin/EditUserDialog";
 
 interface UserWithSchools {
   user: {
@@ -53,6 +54,8 @@ interface UserWithSchools {
     email: string;
     firstName: string;
     lastName: string;
+    phoneNumber?: string;
+    preferredLanguage?: string;
     role: string;
     isAdmin: boolean;
     createdAt: string;
@@ -101,6 +104,17 @@ export default function UserManagementTab() {
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
   const [bulkDeleteDialogOpen, setBulkDeleteDialogOpen] = useState(false);
   const [bulkDeletionMode, setBulkDeletionMode] = useState<'soft' | 'transfer' | 'hard'>('soft');
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<{
+    id: string;
+    email: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber?: string;
+    preferredLanguage?: string;
+    role: string;
+    isAdmin: boolean;
+  } | null>(null);
 
   const isPartner = user?.role === 'partner';
 
@@ -779,6 +793,22 @@ export default function UserManagementTab() {
                                   <DropdownMenuLabel>{t('userManagement.table.headers.actions')}</DropdownMenuLabel>
                                   <DropdownMenuSeparator />
                                   <DropdownMenuItem onClick={() => {
+                                    setEditingUser({
+                                      id: currentUser.id,
+                                      email: currentUser.email,
+                                      firstName: currentUser.firstName,
+                                      lastName: currentUser.lastName,
+                                      phoneNumber: currentUser.phoneNumber,
+                                      preferredLanguage: currentUser.preferredLanguage,
+                                      role: currentUser.role,
+                                      isAdmin: currentUser.isAdmin
+                                    });
+                                    setEditDialogOpen(true);
+                                  }}>
+                                    <Eye className="h-4 w-4 mr-2" />
+                                    Edit User
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem onClick={() => {
                                     setSelectedUserForRole({
                                       id: currentUser.id,
                                       name: fullName,
@@ -1189,6 +1219,13 @@ export default function UserManagementTab() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
+        
+        <EditUserDialog
+          user={editingUser}
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          currentUserId={user?.id}
+        />
       </CardContent>
     </Card>
   );
