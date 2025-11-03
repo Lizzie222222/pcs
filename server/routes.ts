@@ -2950,6 +2950,7 @@ Return JSON with:
         schoolId: ev.schoolId,
         schoolName: ev.school?.name || '',
         evidenceRequirementId: ev.evidenceRequirementId,
+        roundNumber: ev.roundNumber,
         fileUrls: Array.isArray(ev.files) 
           ? (ev.files as any[]).filter((f: any) => f.type?.startsWith('image/')).map((f: any) => f.url) 
           : [],
