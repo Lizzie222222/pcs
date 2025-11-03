@@ -631,7 +631,7 @@ export default function ProgressTracker({
                               </div>
 
                               {/* Action Button */}
-                              {evidenceStatus !== 'approved' && (
+                              {evidenceStatus !== 'approved' && evidenceStatus !== 'pending' && (
                                 <Button
                                   size="sm"
                                   variant={evidenceStatus === 'rejected' ? 'destructive' : 'default'}
