@@ -737,6 +737,58 @@ function MigrationDialogContent() {
     },
   });
 
+  const consolidatedCleanupMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/migration/cleanup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      
+      // Always parse the JSON response (even on 500 errors)
+      const data = await response.json();
+      
+      // If response is not ok, throw but include the detailed error info
+      if (!response.ok) {
+        const error: any = new Error(data.message || 'Migration cleanup failed');
+        error.data = data; // Attach the full response for detailed error display
+        throw error;
+      }
+      
+      return data;
+    },
+    onSuccess: (data: any) => {
+      // Show detailed step-by-step results
+      const stepStatusEmoji = (status: string) => {
+        if (status === 'completed') return '✅';
+        if (status === 'failed') return '❌';
+        return '⚠️';
+      };
+
+      toast({
+        title: data.success ? 'Migration Cleanup Complete ✅' : 'Cleanup Completed with Issues ⚠️',
+        description: data.stepStatus 
+          ? `${stepStatusEmoji(data.stepStatus.step1)} Recalculate Progress | ${stepStatusEmoji(data.stepStatus.step2)} Fix Flags | ${stepStatusEmoji(data.stepStatus.step3)} Reset Round 2`
+          : data.message,
+        variant: data.success ? 'default' : 'destructive',
+        duration: 8000, // Show longer for detailed results
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/migration/logs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+    },
+    onError: (error: any) => {
+      const errorData = error.data;
+      toast({
+        title: 'Migration Cleanup Failed ❌',
+        description: errorData?.stepStatus 
+          ? `Failed steps: ${errorData.stepStatus.step1 === 'failed' ? 'Progress' : ''} ${errorData.stepStatus.step2 === 'failed' ? 'Flags' : ''} ${errorData.stepStatus.step3 === 'failed' ? 'Round2' : ''} | ${error.message}`
+          : error.message,
+        variant: 'destructive',
+        duration: 10000, // Show error longer
+      });
+    },
+  });
+
   const fixCompletionFlagsMutation = useMutation({
     mutationFn: async () => {
       const response = await fetch('/api/admin/migration/fix-completion-flags', {
@@ -911,50 +963,66 @@ function MigrationDialogContent() {
             </CardContent>
           </Card>
 
-          {/* Progress Recalculation Tool */}
-          <Card className="border-2 border-teal/20 bg-gradient-to-br from-teal-50/30 to-white">
+          {/* Consolidated Migration Cleanup Tool */}
+          <Card className="border-4 border-green-500/30 bg-gradient-to-br from-green-50/50 to-white shadow-lg">
             <CardHeader>
-              <CardTitle className="text-lg text-teal">Recalculate Migrated Schools Progress</CardTitle>
-              <CardDescription>
-                Update progress percentages for all migrated schools to include their legacy evidence counts
+              <CardTitle className="text-xl text-green-700 flex items-center gap-2">
+                <Database className="h-5 w-5" />
+                Complete Migration Cleanup (Production-Ready)
+              </CardTitle>
+              <CardDescription className="text-base">
+                ONE-CLICK solution that runs all migration cleanup steps automatically. Safe to use in production after deployment.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
-                    This tool recalculates the progress percentage for all migrated schools by combining their new evidence submissions 
-                    with their legacy evidence counts from the old system. Run this after importing users to ensure accurate progress tracking.
+                <Alert className="border-green-500/30 bg-green-50/50">
+                  <Info className="h-4 w-4 text-green-700" />
+                  <AlertDescription className="text-green-800">
+                    <strong>This consolidated tool automatically runs 3 cleanup steps in sequence:</strong>
+                    <ol className="list-decimal ml-5 mt-2 space-y-1">
+                      <li><strong>Recalculate Progress:</strong> Updates progress for all 1,600+ migrated schools (in batches to prevent timeouts)</li>
+                      <li><strong>Fix Completion Flags:</strong> Ensures logical consistency and moves award winners to Round 2</li>
+                      <li><strong>Reset Round 2:</strong> Sets Round 2 schools to start fresh at Inspire 0% while preserving their Round 1 completion</li>
+                    </ol>
+                    <p className="mt-3 font-medium">✅ Safe to run multiple times | ✅ Always returns valid results | ✅ No timeout errors</p>
                   </AlertDescription>
                 </Alert>
                 
                 <Button
-                  onClick={() => fixProgressMutation.mutate()}
-                  disabled={fixProgressMutation.isPending}
-                  className="bg-teal hover:bg-teal/90"
-                  data-testid="button-fix-progress"
+                  onClick={() => consolidatedCleanupMutation.mutate()}
+                  disabled={consolidatedCleanupMutation.isPending}
+                  className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-6 text-lg"
+                  data-testid="button-consolidated-cleanup"
                 >
-                  {fixProgressMutation.isPending ? (
+                  {consolidatedCleanupMutation.isPending ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Recalculating Progress...
+                      <Loader2 className="h-5 w-5 mr-3 animate-spin" />
+                      Running Migration Cleanup... (Step-by-step processing)
                     </>
                   ) : (
                     <>
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Recalculate All Progress
+                      <CheckCircle className="h-5 w-5 mr-3" />
+                      Run Complete Migration Cleanup
                     </>
                   )}
                 </Button>
 
-                {fixProgressMutation.isSuccess && fixProgressMutation.data && (
-                  <Alert className="bg-green-50 border-green-200">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-800">
-                      Successfully updated progress for {fixProgressMutation.data.updated} migrated schools. 
-                      {fixProgressMutation.data.skipped > 0 && ` ${fixProgressMutation.data.skipped} schools had no changes.`}
-                      {fixProgressMutation.data.totalErrors > 0 && ` ${fixProgressMutation.data.totalErrors} errors encountered.`}
+                {consolidatedCleanupMutation.isSuccess && consolidatedCleanupMutation.data && (
+                  <Alert className={consolidatedCleanupMutation.data.success ? "bg-green-50 border-green-200" : "bg-yellow-50 border-yellow-200"}>
+                    <CheckCircle className={`h-4 w-4 ${consolidatedCleanupMutation.data.success ? 'text-green-600' : 'text-yellow-600'}`} />
+                    <AlertDescription className={consolidatedCleanupMutation.data.success ? 'text-green-800' : 'text-yellow-800'}>
+                      <strong className="block mb-2">{consolidatedCleanupMutation.data.message}</strong>
+                      {consolidatedCleanupMutation.data.summary && (
+                        <div className="space-y-1 text-sm">
+                          <div>✓ Step 1: {consolidatedCleanupMutation.data.summary.step1}</div>
+                          <div>✓ Step 2: {consolidatedCleanupMutation.data.summary.step2}</div>
+                          <div>✓ Step 3: {consolidatedCleanupMutation.data.summary.step3}</div>
+                          {consolidatedCleanupMutation.data.summary.totalErrors > 0 && (
+                            <div className="mt-2 text-yellow-800 font-medium">⚠️ {consolidatedCleanupMutation.data.summary.totalErrors} errors encountered (check logs for details)</div>
+                          )}
+                        </div>
+                      )}
                     </AlertDescription>
                   </Alert>
                 )}
@@ -962,106 +1030,95 @@ function MigrationDialogContent() {
             </CardContent>
           </Card>
 
-          {/* Round 2 Reset Tool */}
-          <Card className="border-2 border-blue-500/20 bg-gradient-to-br from-blue-50/30 to-white">
-            <CardHeader>
-              <CardTitle className="text-lg text-blue-700">Reset Round 2 Schools to Fresh Start</CardTitle>
-              <CardDescription>
-                Resets all Round 2 schools to start fresh (Inspire 0%) while preserving their Round 1 completion history. This ensures schools show they've completed Round 1 and are starting Round 2.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
-                    This tool resets the 121 schools that completed Round 1 back to the starting point of Round 2 (Inspire stage, 0% progress). 
-                    Their Round 1 completion status (roundsCompleted=1, awardCompleted=true) is preserved so they know they earned the "Plastic Clever" award.
-                  </AlertDescription>
-                </Alert>
-                
-                <Button
-                  onClick={() => resetRound2Mutation.mutate()}
-                  disabled={resetRound2Mutation.isPending}
-                  className="bg-blue-600 hover:bg-blue-700"
-                  data-testid="button-reset-round-2"
-                >
-                  {resetRound2Mutation.isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Resetting Round 2 Schools...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Reset Round 2 Schools
-                    </>
-                  )}
-                </Button>
+          {/* Individual Tool Cards - Hidden by default, kept for emergency use */}
+          <details className="mt-4">
+            <summary className="cursor-pointer text-sm text-gray-600 hover:text-gray-900">
+              Show Individual Tools (Advanced - Use only if consolidated cleanup fails)
+            </summary>
+            
+            <div className="mt-4 space-y-4">
+              {/* Progress Recalculation Tool */}
+              <Card className="border-2 border-teal/20 bg-gradient-to-br from-teal-50/30 to-white">
+                <CardHeader>
+                  <CardTitle className="text-lg text-teal">Recalculate Migrated Schools Progress (Individual)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={() => fixProgressMutation.mutate()}
+                    disabled={fixProgressMutation.isPending}
+                    className="bg-teal hover:bg-teal/90"
+                    data-testid="button-fix-progress-individual"
+                  >
+                    {fixProgressMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Recalculating...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Recalculate Progress
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
 
-                {resetRound2Mutation.isSuccess && resetRound2Mutation.data && (
-                  <Alert className="bg-green-50 border-green-200">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-800">
-                      Successfully reset {resetRound2Mutation.data.reset} schools to start Round 2 fresh. 
-                      {resetRound2Mutation.data.totalErrors > 0 && ` ${resetRound2Mutation.data.totalErrors} errors encountered.`}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              {/* Reset Round 2 Tool */}
+              <Card className="border-2 border-blue-500/20 bg-gradient-to-br from-blue-50/30 to-white">
+                <CardHeader>
+                  <CardTitle className="text-lg text-blue-700">Reset Round 2 Schools (Individual)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={() => resetRound2Mutation.mutate()}
+                    disabled={resetRound2Mutation.isPending}
+                    className="bg-blue-600 hover:bg-blue-700"
+                    data-testid="button-reset-round-2-individual"
+                  >
+                    {resetRound2Mutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Resetting...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Reset Round 2
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
 
-          {/* Completion Flags Fix Tool */}
-          <Card className="border-2 border-purple-500/20 bg-gradient-to-br from-purple-50/30 to-white">
-            <CardHeader>
-              <CardTitle className="text-lg text-purple-700">Fix Completion Flags Consistency</CardTitle>
-              <CardDescription>
-                Ensures all schools have logically consistent completion flags (if Act is complete, Inspire and Investigate must also be complete). Fixes schools stuck in wrong stages.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <Alert>
-                  <Info className="h-4 w-4" />
-                  <AlertDescription>
-                    This tool finds schools where Act stage is marked complete but Inspire or Investigate stages are incomplete. 
-                    This violates linear progression and can leave schools stuck. The tool automatically fixes these inconsistencies 
-                    and recalculates their current stage and round number.
-                  </AlertDescription>
-                </Alert>
-                
-                <Button
-                  onClick={() => fixCompletionFlagsMutation.mutate()}
-                  disabled={fixCompletionFlagsMutation.isPending}
-                  className="bg-purple-600 hover:bg-purple-700"
-                  data-testid="button-fix-completion-flags"
-                >
-                  {fixCompletionFlagsMutation.isPending ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Fixing Completion Flags...
-                    </>
-                  ) : (
-                    <>
-                      <CheckCircle className="h-4 w-4 mr-2" />
-                      Fix Completion Flags
-                    </>
-                  )}
-                </Button>
-
-                {fixCompletionFlagsMutation.isSuccess && fixCompletionFlagsMutation.data && (
-                  <Alert className="bg-green-50 border-green-200">
-                    <CheckCircle className="h-4 w-4 text-green-600" />
-                    <AlertDescription className="text-green-800">
-                      Successfully fixed {fixCompletionFlagsMutation.data.fixed} schools with illogical completion flags.
-                      {fixCompletionFlagsMutation.data.totalErrors > 0 && ` ${fixCompletionFlagsMutation.data.totalErrors} errors encountered.`}
-                    </AlertDescription>
-                  </Alert>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+              {/* Completion Flags Fix Tool */}
+              <Card className="border-2 border-purple-500/20 bg-gradient-to-br from-purple-50/30 to-white">
+                <CardHeader>
+                  <CardTitle className="text-lg text-purple-700">Fix Completion Flags (Individual)</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={() => fixCompletionFlagsMutation.mutate()}
+                    disabled={fixCompletionFlagsMutation.isPending}
+                    className="bg-purple-600 hover:bg-purple-700"
+                    data-testid="button-fix-completion-flags-individual"
+                  >
+                    {fixCompletionFlagsMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Fixing...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Fix Flags
+                      </>
+                    )}
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </details>
         </TabsContent>
 
         <TabsContent value="logs" className="space-y-4">

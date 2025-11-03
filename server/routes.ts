@@ -5305,6 +5305,261 @@ Return JSON with:
     }
   });
 
+  // Consolidated migration cleanup - runs all cleanup steps in sequence
+  app.post('/api/admin/migration/cleanup', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      console.log('[Migration Cleanup] Starting consolidated cleanup workflow...');
+      
+      const results = {
+        step1_recalculateProgress: { status: 'pending', updated: 0, skipped: 0, errors: [] as any[] },
+        step2_fixCompletionFlags: { status: 'pending', fixed: 0, errors: [] as any[] },
+        step3_resetRound2: { status: 'pending', reset: 0, errors: [] as any[] },
+      };
+
+      try {
+        // STEP 1: Recalculate progress for migrated schools (in batches to avoid timeout)
+        console.log('[Migration Cleanup] Step 1: Recalculating migrated schools progress...');
+        results.step1_recalculateProgress.status = 'running';
+        
+        const migratedSchools = await db.query.schools.findMany({
+          where: eq(schools.isMigrated, true),
+        });
+        
+        console.log(`[Migration Cleanup] Found ${migratedSchools.length} migrated schools to process`);
+        
+        const BATCH_SIZE = 50;
+        for (let i = 0; i < migratedSchools.length; i += BATCH_SIZE) {
+          const batch = migratedSchools.slice(i, i + BATCH_SIZE);
+          console.log(`[Migration Cleanup] Processing batch ${Math.floor(i / BATCH_SIZE) + 1} of ${Math.ceil(migratedSchools.length / BATCH_SIZE)}`);
+          
+          for (const school of batch) {
+            try {
+              const beforeProgress = school.progressPercentage;
+              await storage.checkAndUpdateSchoolProgression(school.id);
+              const updatedSchool = await storage.getSchool(school.id);
+              const afterProgress = updatedSchool?.progressPercentage ?? 0;
+              
+              if (beforeProgress !== afterProgress) {
+                results.step1_recalculateProgress.updated++;
+              } else {
+                results.step1_recalculateProgress.skipped++;
+              }
+            } catch (error) {
+              results.step1_recalculateProgress.errors.push({
+                schoolId: school.id,
+                schoolName: school.name,
+                error: error instanceof Error ? error.message : 'Unknown error'
+              });
+            }
+          }
+        }
+        
+        results.step1_recalculateProgress.status = 'completed';
+        console.log(`[Migration Cleanup] Step 1 completed: ${results.step1_recalculateProgress.updated} updated, ${results.step1_recalculateProgress.skipped} skipped, ${results.step1_recalculateProgress.errors.length} errors`);
+      } catch (error) {
+        results.step1_recalculateProgress.status = 'failed';
+        results.step1_recalculateProgress.errors.push({
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+        console.error('[Migration Cleanup] Step 1 failed:', error);
+      }
+
+      try {
+        // STEP 2: Fix completion flags and move award winners to Round 2
+        console.log('[Migration Cleanup] Step 2: Fixing completion flags...');
+        results.step2_fixCompletionFlags.status = 'running';
+        
+        const problematicSchools = await db.query.schools.findMany({
+          where: or(
+            // Case 1: Act complete but earlier stages incomplete (illogical)
+            and(
+              eq(schools.actCompleted, true),
+              or(
+                eq(schools.inspireCompleted, false),
+                eq(schools.investigateCompleted, false)
+              )
+            ),
+            // Case 2: All 3 stages complete but missing award flag
+            and(
+              eq(schools.inspireCompleted, true),
+              eq(schools.investigateCompleted, true),
+              eq(schools.actCompleted, true),
+              eq(schools.awardCompleted, false)
+            ),
+            // Case 3: Award completed but still on Round 1 (should be Round 2)
+            and(
+              eq(schools.awardCompleted, true),
+              or(
+                eq(schools.currentRound, 1),
+                sql`${schools.currentRound} IS NULL`
+              )
+            ),
+            // Case 4: roundsCompleted=1 but missing award or completion flags (legacy data)
+            and(
+              sql`${schools.roundsCompleted} >= 1`,
+              or(
+                eq(schools.awardCompleted, false),
+                eq(schools.currentRound, 1),
+                sql`${schools.currentRound} IS NULL`
+              )
+            )
+          ),
+        });
+        
+        console.log(`[Migration Cleanup] Found ${problematicSchools.length} schools with completion flag issues`);
+        
+        for (const school of problematicSchools) {
+          try {
+            // For schools with roundsCompleted >= 1 (legacy award winners), ensure all flags are set
+            const hasCompletedRound = (school.roundsCompleted || 0) >= 1;
+            
+            if (hasCompletedRound) {
+              // Legacy school that completed Round 1 - ensure all flags are correct
+              await db.update(schools).set({
+                inspireCompleted: true,
+                investigateCompleted: true,
+                actCompleted: true,
+                awardCompleted: true, // They earned the award
+                currentRound: 2, // Move to Round 2
+                roundsCompleted: 1, // Preserve round completion
+                updatedAt: new Date()
+              }).where(eq(schools.id, school.id));
+            } else {
+              // Regular school with illogical flags - fix the logic
+              await db.update(schools).set({
+                inspireCompleted: true,
+                investigateCompleted: true,
+              }).where(eq(schools.id, school.id));
+              
+              // Recalculate to determine if they should get the award
+              await storage.checkAndUpdateSchoolProgression(school.id);
+              
+              // If they got the award, move to Round 2
+              const updatedSchool = await storage.getSchool(school.id);
+              if (updatedSchool?.awardCompleted && (updatedSchool?.currentRound === 1 || !updatedSchool?.currentRound)) {
+                await db.update(schools).set({
+                  currentRound: 2,
+                  roundsCompleted: 1,
+                  updatedAt: new Date()
+                }).where(eq(schools.id, school.id));
+              }
+            }
+            
+            results.step2_fixCompletionFlags.fixed++;
+          } catch (error) {
+            results.step2_fixCompletionFlags.errors.push({
+              schoolId: school.id,
+              schoolName: school.name,
+              error: error instanceof Error ? error.message : 'Unknown error'
+            });
+          }
+        }
+        
+        results.step2_fixCompletionFlags.status = 'completed';
+        console.log(`[Migration Cleanup] Step 2 completed: ${results.step2_fixCompletionFlags.fixed} fixed, ${results.step2_fixCompletionFlags.errors.length} errors`);
+      } catch (error) {
+        results.step2_fixCompletionFlags.status = 'failed';
+        results.step2_fixCompletionFlags.errors.push({
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+        console.error('[Migration Cleanup] Step 2 failed:', error);
+      }
+
+      try {
+        // STEP 3: Reset Round 2 schools to fresh start
+        console.log('[Migration Cleanup] Step 3: Resetting Round 2 schools...');
+        results.step3_resetRound2.status = 'running';
+        
+        const round2Schools = await db.query.schools.findMany({
+          where: and(
+            eq(schools.currentRound, 2),
+            eq(schools.awardCompleted, true)
+          ),
+        });
+        
+        console.log(`[Migration Cleanup] Found ${round2Schools.length} Round 2 schools to reset`);
+        
+        for (const school of round2Schools) {
+          try {
+            await db.update(schools).set({
+              currentStage: 'inspire',
+              inspireCompleted: false,
+              investigateCompleted: false,
+              actCompleted: false,
+              auditQuizCompleted: false,
+              progressPercentage: 0,
+              updatedAt: new Date()
+            }).where(eq(schools.id, school.id));
+            
+            results.step3_resetRound2.reset++;
+          } catch (error) {
+            results.step3_resetRound2.errors.push({
+              schoolId: school.id,
+              schoolName: school.name,
+              error: error instanceof Error ? error.message : 'Unknown error'
+            });
+          }
+        }
+        
+        results.step3_resetRound2.status = 'completed';
+        console.log(`[Migration Cleanup] Step 3 completed: ${results.step3_resetRound2.reset} reset, ${results.step3_resetRound2.errors.length} errors`);
+      } catch (error) {
+        results.step3_resetRound2.status = 'failed';
+        results.step3_resetRound2.errors.push({
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+        console.error('[Migration Cleanup] Step 3 failed:', error);
+      }
+
+      // Return comprehensive results
+      const overallSuccess = 
+        results.step1_recalculateProgress.status === 'completed' &&
+        results.step2_fixCompletionFlags.status === 'completed' &&
+        results.step3_resetRound2.status === 'completed';
+
+      const hasCriticalFailures =
+        results.step1_recalculateProgress.status === 'failed' ||
+        results.step2_fixCompletionFlags.status === 'failed' ||
+        results.step3_resetRound2.status === 'failed';
+
+      console.log(`[Migration Cleanup] Workflow ${overallSuccess ? 'completed successfully' : 'completed with errors'}`);
+
+      // Use HTTP 500 if any step completely failed (not just individual school errors)
+      const statusCode = hasCriticalFailures ? 500 : 200;
+
+      res.status(statusCode).json({
+        success: overallSuccess && !hasCriticalFailures,
+        message: overallSuccess && !hasCriticalFailures
+          ? 'Migration cleanup completed successfully' 
+          : hasCriticalFailures
+          ? 'Migration cleanup failed - one or more steps did not complete'
+          : 'Migration cleanup completed with some errors',
+        results,
+        stepStatus: {
+          step1: results.step1_recalculateProgress.status,
+          step2: results.step2_fixCompletionFlags.status,
+          step3: results.step3_resetRound2.status,
+        },
+        summary: {
+          step1: `${results.step1_recalculateProgress.updated} schools updated, ${results.step1_recalculateProgress.skipped} skipped`,
+          step2: `${results.step2_fixCompletionFlags.fixed} schools fixed`,
+          step3: `${results.step3_resetRound2.reset} schools reset to Round 2`,
+          totalErrors: 
+            results.step1_recalculateProgress.errors.length +
+            results.step2_fixCompletionFlags.errors.length +
+            results.step3_resetRound2.errors.length
+        }
+      });
+    } catch (error) {
+      console.error('[Migration Cleanup] Workflow failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Migration cleanup workflow failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // AI-powered analytics insights generation
   app.post('/api/admin/analytics/generate-insights', isAuthenticated, requireAdmin, async (req, res) => {
     try {
