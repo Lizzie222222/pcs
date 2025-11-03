@@ -438,11 +438,11 @@ function OverviewTab({ school }: { school: SchoolData }) {
               <div className="flex-1 bg-gray-200 rounded-full h-2">
                 <div
                   className="bg-pcs_blue h-2 rounded-full transition-all"
-                  style={{ width: `${school.progressPercentage}%` }}
+                  style={{ width: `${school.progressPercentage % 100 || 100}%` }}
                 />
               </div>
               <span className="text-sm font-medium" data-testid="text-stats-progress">
-                {school.progressPercentage}%
+                {school.progressPercentage % 100 || 100}%
               </span>
             </div>
           </div>
