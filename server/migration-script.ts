@@ -135,29 +135,38 @@ export class MigrationScript {
     const existingUser = await db.query.users.findFirst({
       where: eq(users.email, row.user_email),
     });
+    
+    // Calculate stage data for school progress (needed even if user exists)
+    const stage1Complete = MigrationUtils.parseStageData(row.stage_1);
+    const stage2Complete = MigrationUtils.parseStageData(row.stage_2);
+    const stage3Complete = MigrationUtils.parseStageData(row.stage_3);
+    const stage1Count = parsePhpEvidenceCount(row.stage_1);
+    const stage2Count = parsePhpEvidenceCount(row.stage_2);
+    const stage3Count = parsePhpEvidenceCount(row.stage_3);
+    const totalLegacyEvidence = stage1Count + stage2Count + stage3Count;
+    let currentStage: 'inspire' | 'investigate' | 'act' = 'inspire';
+    if (stage3Complete) currentStage = 'act';
+    else if (stage2Complete) currentStage = 'investigate';
 
     if (existingUser) {
-      console.log(`[Migration] User already exists: ${row.user_email}`);
+      console.log(`[Migration] User already exists: ${row.user_email} - updating school progress only`);
+      
+      // Still update school progress even if user exists
+      await this.updateSchoolProgress(schoolId, {
+        stage1Complete,
+        stage2Complete,
+        stage3Complete,
+        currentStage,
+        round: MigrationUtils.extractRound(row),
+        legacyEvidenceCount: totalLegacyEvidence,
+      });
+      
       return;
     }
 
     const userId = nanoid();
     const temporaryPassword = MigrationUtils.generateRandomPassword();
     const passwordHash = await bcrypt.hash(temporaryPassword, 10);
-
-    const stage1Complete = MigrationUtils.parseStageData(row.stage_1);
-    const stage2Complete = MigrationUtils.parseStageData(row.stage_2);
-    const stage3Complete = MigrationUtils.parseStageData(row.stage_3);
-
-    // Calculate legacy evidence count from CSV stage data
-    const stage1Count = parsePhpEvidenceCount(row.stage_1);
-    const stage2Count = parsePhpEvidenceCount(row.stage_2);
-    const stage3Count = parsePhpEvidenceCount(row.stage_3);
-    const totalLegacyEvidence = stage1Count + stage2Count + stage3Count;
-
-    let currentStage: 'inspire' | 'investigate' | 'act' = 'inspire';
-    if (stage3Complete) currentStage = 'act';
-    else if (stage2Complete) currentStage = 'investigate';
 
     const hasEvidence = stage1Complete || stage2Complete || stage3Complete;
 
@@ -316,6 +325,7 @@ export class MigrationScript {
     const newLegacyCount = Math.max(existing.legacyEvidenceCount || 0, progress.legacyEvidenceCount);
     if (newLegacyCount > (existing.legacyEvidenceCount || 0)) {
       updates.legacyEvidenceCount = newLegacyCount;
+      console.log(`[Migration] Updating ${existing.name}: legacyEvidenceCount ${existing.legacyEvidenceCount || 0} → ${newLegacyCount}`);
     }
 
     // Calculate initial progress percentage for migrated schools
