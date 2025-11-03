@@ -59,12 +59,14 @@ export interface FunMetrics {
   oceanPlasticBottles: number;
   plasticBags: number;
   fishSaved: number;
+  microplasticsPrevented: number;
   descriptions: {
     seaTurtles: string;
     dolphins: string;
     oceanPlasticBottles: string;
     plasticBags: string;
     fishSaved: string;
+    microplasticsPrevented: string;
   };
 }
 
@@ -139,6 +141,8 @@ export function convertToFunMetrics(gramsReduced: number): FunMetrics {
   const oceanPlasticBottles = gramsReduced / 15;
   const plasticBags = gramsReduced / 5;
   const fishSaved = gramsReduced / 50;
+  // Each gram of plastic can break down into ~1000 microplastic particles (research-based estimate)
+  const microplasticsPrevented = gramsReduced * 1000;
 
   return {
     seaTurtles,
@@ -146,12 +150,14 @@ export function convertToFunMetrics(gramsReduced: number): FunMetrics {
     oceanPlasticBottles,
     plasticBags,
     fishSaved,
+    microplasticsPrevented,
     descriptions: {
       seaTurtles: `🐢 Equivalent to ${seaTurtles.toFixed(2)} sea turtle${seaTurtles !== 1 ? 's' : ''} worth of plastic saved!`,
       dolphins: `🐬 That's ${dolphins.toFixed(2)} dolphin${dolphins !== 1 ? 's' : ''} worth of plastic prevented!`,
       oceanPlasticBottles: `🍾 ${Math.floor(oceanPlasticBottles).toLocaleString()} plastic bottles kept out of the ocean!`,
       plasticBags: `🛍️ ${Math.floor(plasticBags).toLocaleString()} plastic bags prevented from polluting our seas!`,
       fishSaved: `🐟 Potentially saved ${Math.floor(fishSaved).toLocaleString()} fish from plastic ingestion!`,
+      microplasticsPrevented: `✨ ${Math.floor(microplasticsPrevented).toLocaleString()} microplastic particles prevented!`,
     },
   };
 }

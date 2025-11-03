@@ -236,6 +236,8 @@
     "plastic_bottles_prevented": "زجاجات البلاستيك المنع",
     "fish_potentially_saved": "الأسماك المحتمل إنقاذها",
     "sea_turtles_worth": "قيمة السلاحف البحرية",
+    "microplastics_prevented": "Microplastic Particles Prevented",
+    "dolphins_protected": "Dolphins Worth of Plastic Prevented",
     "co2_emissions_prevented": "انبعاثات ثاني أكسيد الكربون المنع",
     "oil_saved": "الزيت الموفر",
     "tons_plastic_prevented": "أطنان البلاستيك المنع",
@@ -250,10 +252,12 @@
     "tooltip_weight_reduced": "الوزن الإجمالي لنفايات البلاستيك المنع سنوياً. كل نوع من العناصر البلاستيكية له وزن قياسي (مثل الزجاجات: 15 جم، الأكواب: 5 جم، القش: 0.42 جم) يتم ضربه بعدد العناصر المخفضة.",
     "tooltip_ocean_bottles": "الزجاجات البلاستيكية المكافئة المحفوظة خارج المحيط. بناءً على زجاجات قياسية 15 جم، يوضح هذا حجم تأثيرك بمصطلحات قابلة للفهم.",
     "tooltip_fish_saved": "الأسماك المحمية من ابتلاع البلاستيك. تظهر الدراسات أن 50 جم من البلاستيك يمكن أن يكون ضاراً بالحياة البحرية، لذا يقدر هذا عدد الأسماك المحتمل إنقاذها.",
-    "tooltip_sea_turtles": "تخفيض البلاستيك الخاص بك مقاساً بأوزان السلاحف البحرية. يزن السلحفاة البحرية المتوسطة حوالي 140 كجم، مما يوفر تصوراً قوياً لتأثيرك.",
-    "tooltip_co2_prevented": "انبعاثات ثاني أكسيد الكربون المنع عن طريق الحد من إنتاج البلاستيك. ينتج إنتاج 1 كجم من البلاستيك حوالي 6 كجم من انبعاثات ثاني أكسيد الكربون.",
-    "tooltip_oil_saved": "الزيت الأحفوري الموفر عن طريق تجنب إنتاج البلاستيك. حوالي 2 كجم (حوالي 2 لتر) من الزيت مطلوب لإنتاج 1 كجم من البلاستيك.",
-    "tooltip_tons_prevented": "إجمالي نفايات البلاستيك المنع مقاساً بالأطنان المترية. يوضح هذا الوزن التراكمي لجميع العناصر البلاستيكية التي تلتزم مدرستك بتقليلها."
+    "tooltip_sea_turtles": "Your plastic reduction measured in sea turtle weights. An average sea turtle weighs about 140kg (308 lbs), providing a powerful visualization of your impact on marine life.",
+    "tooltip_microplastics": "Number of microplastic particles prevented from entering our oceans. Each gram of plastic can break down into approximately 1,000 microplastic particles that harm marine ecosystems and enter the food chain.",
+    "tooltip_dolphins": "Your plastic reduction measured in dolphin weights. An average dolphin weighs about 180kg (397 lbs), showing the scale of ocean plastic pollution you're preventing.",
+    "tooltip_co2_prevented": "Carbon dioxide emissions prevented by reducing plastic production. Producing 1kg of plastic generates approximately 6kg of CO₂ emissions through the extraction and manufacturing process.",
+    "tooltip_oil_saved": "Fossil fuel oil conserved by avoiding plastic production. About 2kg (approximately 2 liters) of oil is needed to produce 1kg of plastic, making plastic reduction a direct way to conserve petroleum resources.",
+    "tooltip_tons_prevented": "Total plastic waste prevented measured in metric tons (1,000 kg). This shows the cumulative weight of all plastic items your school commits to reducing annually."
   },
   "promise_dialog": {
     "title_add": "إضافة التزام التخفيض",

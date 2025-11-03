@@ -236,6 +236,8 @@
     "plastic_bottles_prevented": "Poteli Plastig wedi'u Hatal",
     "fish_potentially_saved": "Pysgod a Achubwyd o Bosibl",
     "sea_turtles_worth": "Gwerth Crwbanod Môr",
+    "microplastics_prevented": "Microplastic Particles Prevented",
+    "dolphins_protected": "Dolphins Worth of Plastic Prevented",
     "co2_emissions_prevented": "Allyriadau CO₂ wedi'u Hatal",
     "oil_saved": "Olew wedi'i Arbed",
     "tons_plastic_prevented": "Tunelli o Blastig wedi'u Hatal",
@@ -250,10 +252,12 @@
     "tooltip_weight_reduced": "Cyfanswm pwysau gwastraff plastig wedi'i atal yn flynyddol. Mae gan bob math o eitem blastig bwysau safonol (e.e., poteli: 15g, cwpanau: 5g, gwelltau: 0.42g) sy'n cael ei luosi â nifer yr eitemau a leihawyd.",
     "tooltip_ocean_bottles": "Poteli plastig cyfatebol sy'n cael eu cadw allan o'r cefnfor. Yn seiliedig ar boteli safonol 15g, mae hyn yn dangos graddfa eich effaith mewn termau perthnasol.",
     "tooltip_fish_saved": "Pysgod sy'n cael eu hamddiffyn rhag llyncu plastig. Mae astudiaethau'n dangos bod 50g o blastig yn gallu bod yn niweidiol i fywyd morol, felly mae hyn yn amcangyfrif nifer y pysgod a achubwyd o bosibl.",
-    "tooltip_sea_turtles": "Eich lleihad plastig wedi'i fesur ym mhwysau crwbanod môr. Mae crwban môr cyfartalog yn pwyso tua 140kg, gan ddarparu delwedd bwerus o'ch effaith.",
-    "tooltip_co2_prevented": "Allyriadau carbon deuocsid wedi'u hatal trwy leihau cynhyrchu plastig. Mae cynhyrchu 1kg o blastig yn cynhyrchu tua 6kg o allyriadau CO₂.",
-    "tooltip_oil_saved": "Olew tanwydd ffosil wedi'i gadw trwy osgoi cynhyrchu plastig. Mae angen tua 2kg (tua 2 litr) o olew i gynhyrchu 1kg o blastig.",
-    "tooltip_tons_prevented": "Cyfanswm gwastraff plastig wedi'i atal wedi'i fesur mewn tunelli metrig. Mae hyn yn dangos pwysau cronnus pob eitem blastig y mae eich ysgol yn ymrwymo i'w leihau."
+    "tooltip_sea_turtles": "Your plastic reduction measured in sea turtle weights. An average sea turtle weighs about 140kg (308 lbs), providing a powerful visualization of your impact on marine life.",
+    "tooltip_microplastics": "Number of microplastic particles prevented from entering our oceans. Each gram of plastic can break down into approximately 1,000 microplastic particles that harm marine ecosystems and enter the food chain.",
+    "tooltip_dolphins": "Your plastic reduction measured in dolphin weights. An average dolphin weighs about 180kg (397 lbs), showing the scale of ocean plastic pollution you're preventing.",
+    "tooltip_co2_prevented": "Carbon dioxide emissions prevented by reducing plastic production. Producing 1kg of plastic generates approximately 6kg of CO₂ emissions through the extraction and manufacturing process.",
+    "tooltip_oil_saved": "Fossil fuel oil conserved by avoiding plastic production. About 2kg (approximately 2 liters) of oil is needed to produce 1kg of plastic, making plastic reduction a direct way to conserve petroleum resources.",
+    "tooltip_tons_prevented": "Total plastic waste prevented measured in metric tons (1,000 kg). This shows the cumulative weight of all plastic items your school commits to reducing annually."
   },
   "promise_dialog": {
     "title_add": "Ychwanegu Addewid Lleihau",

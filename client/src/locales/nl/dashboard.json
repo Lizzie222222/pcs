@@ -236,6 +236,8 @@
     "plastic_bottles_prevented": "Plastic Flessen Voorkomen",
     "fish_potentially_saved": "Vissen Mogelijk Gered",
     "sea_turtles_worth": "Zeeschildpadden Waarde",
+    "microplastics_prevented": "Microplastic Particles Prevented",
+    "dolphins_protected": "Dolphins Worth of Plastic Prevented",
     "co2_emissions_prevented": "CO₂-uitstoot Voorkomen",
     "oil_saved": "Olie Bespaard",
     "tons_plastic_prevented": "Ton Plastic Voorkomen",
@@ -250,10 +252,12 @@
     "tooltip_weight_reduced": "Totaal gewicht van jaarlijks voorkomen plasticafval. Elk type plastic item heeft een standaardgewicht (bijv. flessen: 15g, bekers: 5g, rietjes: 0,42g) dat wordt vermenigvuldigd met het aantal verminderde items.",
     "tooltip_ocean_bottles": "Equivalente plastic flessen die uit de oceaan worden gehouden. Op basis van standaard 15g flessen toont dit de schaal van uw impact in begrijpelijke termen.",
     "tooltip_fish_saved": "Vissen beschermd tegen plastic inname. Studies tonen aan dat 50g plastic schadelijk kan zijn voor zeeleven, dus dit schat het aantal mogelijk geredde vissen.",
-    "tooltip_sea_turtles": "Uw plasticvermindering gemeten in zeeschildpadgewichten. Een gemiddelde zeeschildpad weegt ongeveer 140kg, wat een krachtige visualisatie van uw impact biedt.",
-    "tooltip_co2_prevented": "Kooldioxide-emissies voorkomen door plasticproductie te verminderen. Het produceren van 1kg plastic genereert ongeveer 6kg CO₂-uitstoot.",
-    "tooltip_oil_saved": "Fossiele brandstof olie bespaard door plasticproductie te vermijden. Ongeveer 2kg (ongeveer 2 liter) olie is nodig om 1kg plastic te produceren.",
-    "tooltip_tons_prevented": "Totaal voorkomen plasticafval gemeten in metrische tonnen. Dit toont het cumulatieve gewicht van alle plastic items waartoe uw school zich heeft verbonden om te verminderen."
+    "tooltip_sea_turtles": "Your plastic reduction measured in sea turtle weights. An average sea turtle weighs about 140kg (308 lbs), providing a powerful visualization of your impact on marine life.",
+    "tooltip_microplastics": "Number of microplastic particles prevented from entering our oceans. Each gram of plastic can break down into approximately 1,000 microplastic particles that harm marine ecosystems and enter the food chain.",
+    "tooltip_dolphins": "Your plastic reduction measured in dolphin weights. An average dolphin weighs about 180kg (397 lbs), showing the scale of ocean plastic pollution you're preventing.",
+    "tooltip_co2_prevented": "Carbon dioxide emissions prevented by reducing plastic production. Producing 1kg of plastic generates approximately 6kg of CO₂ emissions through the extraction and manufacturing process.",
+    "tooltip_oil_saved": "Fossil fuel oil conserved by avoiding plastic production. About 2kg (approximately 2 liters) of oil is needed to produce 1kg of plastic, making plastic reduction a direct way to conserve petroleum resources.",
+    "tooltip_tons_prevented": "Total plastic waste prevented measured in metric tons (1,000 kg). This shows the cumulative weight of all plastic items your school commits to reducing annually."
   },
   "promise_dialog": {
     "title_add": "Verminderingsbelofte Toevoegen",

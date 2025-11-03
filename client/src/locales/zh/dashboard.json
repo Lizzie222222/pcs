@@ -236,6 +236,8 @@
     "plastic_bottles_prevented": "防止的塑料瓶",
     "fish_potentially_saved": "潜在拯救的鱼",
     "sea_turtles_worth": "海龟价值",
+    "microplastics_prevented": "Microplastic Particles Prevented",
+    "dolphins_protected": "Dolphins Worth of Plastic Prevented",
     "co2_emissions_prevented": "防止的CO₂排放",
     "oil_saved": "节省的石油",
     "tons_plastic_prevented": "防止的塑料吨数",
@@ -250,10 +252,12 @@
     "tooltip_weight_reduced": "每年防止的塑料废物总重量。每种塑料物品类型都有标准重量(例如瓶子:15克、杯子:5克、吸管:0.42克),乘以减少的物品数量。",
     "tooltip_ocean_bottles": "保持在海洋之外的等效塑料瓶。基于标准15克瓶子,这显示了您的影响规模,以相关术语表示。",
     "tooltip_fish_saved": "受保护免于摄入塑料的鱼类。研究表明,50克塑料可能对海洋生物有害,因此这估计了可能拯救的鱼类数量。",
-    "tooltip_sea_turtles": "以海龟重量衡量的塑料减少。平均海龟重约140公斤,为您的影响提供了强有力的可视化。",
-    "tooltip_co2_prevented": "通过减少塑料生产防止的二氧化碳排放。生产1公斤塑料大约产生6公斤CO₂排放。",
-    "tooltip_oil_saved": "通过避免塑料生产节省的化石燃料油。生产1公斤塑料需要约2公斤(约2升)石油。",
-    "tooltip_tons_prevented": "以公吨衡量的防止的塑料废物总量。这显示了您的学校承诺减少的所有塑料物品的累积重量。"
+    "tooltip_sea_turtles": "Your plastic reduction measured in sea turtle weights. An average sea turtle weighs about 140kg (308 lbs), providing a powerful visualization of your impact on marine life.",
+    "tooltip_microplastics": "Number of microplastic particles prevented from entering our oceans. Each gram of plastic can break down into approximately 1,000 microplastic particles that harm marine ecosystems and enter the food chain.",
+    "tooltip_dolphins": "Your plastic reduction measured in dolphin weights. An average dolphin weighs about 180kg (397 lbs), showing the scale of ocean plastic pollution you're preventing.",
+    "tooltip_co2_prevented": "Carbon dioxide emissions prevented by reducing plastic production. Producing 1kg of plastic generates approximately 6kg of CO₂ emissions through the extraction and manufacturing process.",
+    "tooltip_oil_saved": "Fossil fuel oil conserved by avoiding plastic production. About 2kg (approximately 2 liters) of oil is needed to produce 1kg of plastic, making plastic reduction a direct way to conserve petroleum resources.",
+    "tooltip_tons_prevented": "Total plastic waste prevented measured in metric tons (1,000 kg). This shows the cumulative weight of all plastic items your school commits to reducing annually."
   },
   "promise_dialog": {
     "title_add": "添加减少承诺",

@@ -236,6 +236,8 @@
     "plastic_bottles_prevented": "Botol Plastik Dicegah",
     "fish_potentially_saved": "Ikan yang Berpotensi Diselamatkan",
     "sea_turtles_worth": "Nilai Penyu Laut",
+    "microplastics_prevented": "Microplastic Particles Prevented",
+    "dolphins_protected": "Dolphins Worth of Plastic Prevented",
     "co2_emissions_prevented": "Emisi CO₂ Dicegah",
     "oil_saved": "Minyak Dihemat",
     "tons_plastic_prevented": "Ton Plastik Dicegah",
@@ -250,10 +252,12 @@
     "tooltip_weight_reduced": "Total berat limbah plastik yang dicegah setiap tahun. Setiap jenis item plastik memiliki berat standar (misalnya, botol: 15g, gelas: 5g, sedotan: 0,42g) yang dikalikan dengan jumlah item yang dikurangi.",
     "tooltip_ocean_bottles": "Botol plastik setara yang dijaga agar tidak masuk ke laut. Berdasarkan botol standar 15g, ini menunjukkan skala dampak Anda dalam istilah yang dapat dipahami.",
     "tooltip_fish_saved": "Ikan yang dilindungi dari tertelan plastik. Studi menunjukkan bahwa 50g plastik dapat berbahaya bagi kehidupan laut, jadi ini memperkirakan jumlah ikan yang berpotensi diselamatkan.",
-    "tooltip_sea_turtles": "Pengurangan plastik Anda diukur dalam berat penyu laut. Penyu laut rata-rata beratnya sekitar 140kg, memberikan visualisasi yang kuat tentang dampak Anda.",
-    "tooltip_co2_prevented": "Emisi karbon dioksida yang dicegah dengan mengurangi produksi plastik. Memproduksi 1kg plastik menghasilkan sekitar 6kg emisi CO₂.",
-    "tooltip_oil_saved": "Minyak bahan bakar fosil yang dihemat dengan menghindari produksi plastik. Sekitar 2kg (sekitar 2 liter) minyak diperlukan untuk memproduksi 1kg plastik.",
-    "tooltip_tons_prevented": "Total limbah plastik yang dicegah diukur dalam ton metrik. Ini menunjukkan berat kumulatif semua item plastik yang berkomitmen dikurangi oleh sekolah Anda."
+    "tooltip_sea_turtles": "Your plastic reduction measured in sea turtle weights. An average sea turtle weighs about 140kg (308 lbs), providing a powerful visualization of your impact on marine life.",
+    "tooltip_microplastics": "Number of microplastic particles prevented from entering our oceans. Each gram of plastic can break down into approximately 1,000 microplastic particles that harm marine ecosystems and enter the food chain.",
+    "tooltip_dolphins": "Your plastic reduction measured in dolphin weights. An average dolphin weighs about 180kg (397 lbs), showing the scale of ocean plastic pollution you're preventing.",
+    "tooltip_co2_prevented": "Carbon dioxide emissions prevented by reducing plastic production. Producing 1kg of plastic generates approximately 6kg of CO₂ emissions through the extraction and manufacturing process.",
+    "tooltip_oil_saved": "Fossil fuel oil conserved by avoiding plastic production. About 2kg (approximately 2 liters) of oil is needed to produce 1kg of plastic, making plastic reduction a direct way to conserve petroleum resources.",
+    "tooltip_tons_prevented": "Total plastic waste prevented measured in metric tons (1,000 kg). This shows the cumulative weight of all plastic items your school commits to reducing annually."
   },
   "promise_dialog": {
     "title_add": "Tambah Janji Pengurangan",

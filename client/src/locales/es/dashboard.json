@@ -236,6 +236,8 @@
     "plastic_bottles_prevented": "Botellas de Plástico Prevenidas",
     "fish_potentially_saved": "Peces Potencialmente Salvados",
     "sea_turtles_worth": "Valor en Tortugas Marinas",
+    "microplastics_prevented": "Microplastic Particles Prevented",
+    "dolphins_protected": "Dolphins Worth of Plastic Prevented",
     "co2_emissions_prevented": "Emisiones de CO₂ Prevenidas",
     "oil_saved": "Petróleo Ahorrado",
     "tons_plastic_prevented": "Toneladas de Plástico Prevenidas",
@@ -250,10 +252,12 @@
     "tooltip_weight_reduced": "Peso total de residuos plásticos prevenidos anualmente. Cada tipo de artículo de plástico tiene un peso estándar (por ejemplo, botellas: 15g, vasos: 5g, pajitas: 0,42g) que se multiplica por el número de artículos reducidos.",
     "tooltip_ocean_bottles": "Botellas de plástico equivalentes mantenidas fuera del océano. Basado en botellas estándar de 15g, esto muestra la escala de tu impacto en términos comprensibles.",
     "tooltip_fish_saved": "Peces protegidos de la ingestión de plástico. Los estudios muestran que 50g de plástico pueden ser perjudiciales para la vida marina, por lo que esto estima el número de peces potencialmente salvados.",
-    "tooltip_sea_turtles": "Tu reducción de plástico medida en pesos de tortugas marinas. Una tortuga marina promedio pesa alrededor de 140kg, proporcionando una visualización poderosa de tu impacto.",
-    "tooltip_co2_prevented": "Emisiones de dióxido de carbono prevenidas al reducir la producción de plástico. Producir 1kg de plástico genera aproximadamente 6kg de emisiones de CO₂.",
-    "tooltip_oil_saved": "Petróleo fósil conservado al evitar la producción de plástico. Se necesitan aproximadamente 2kg (aproximadamente 2 litros) de petróleo para producir 1kg de plástico.",
-    "tooltip_tons_prevented": "Total de residuos plásticos prevenidos medidos en toneladas métricas. Esto muestra el peso acumulativo de todos los artículos de plástico que tu escuela se compromete a reducir."
+    "tooltip_sea_turtles": "Your plastic reduction measured in sea turtle weights. An average sea turtle weighs about 140kg (308 lbs), providing a powerful visualization of your impact on marine life.",
+    "tooltip_microplastics": "Number of microplastic particles prevented from entering our oceans. Each gram of plastic can break down into approximately 1,000 microplastic particles that harm marine ecosystems and enter the food chain.",
+    "tooltip_dolphins": "Your plastic reduction measured in dolphin weights. An average dolphin weighs about 180kg (397 lbs), showing the scale of ocean plastic pollution you're preventing.",
+    "tooltip_co2_prevented": "Carbon dioxide emissions prevented by reducing plastic production. Producing 1kg of plastic generates approximately 6kg of CO₂ emissions through the extraction and manufacturing process.",
+    "tooltip_oil_saved": "Fossil fuel oil conserved by avoiding plastic production. About 2kg (approximately 2 liters) of oil is needed to produce 1kg of plastic, making plastic reduction a direct way to conserve petroleum resources.",
+    "tooltip_tons_prevented": "Total plastic waste prevented measured in metric tons (1,000 kg). This shows the cumulative weight of all plastic items your school commits to reducing annually."
   },
   "promise_dialog": {
     "title_add": "Agregar Compromiso de Reducción",

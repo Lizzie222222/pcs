@@ -633,13 +633,11 @@ export default function Home() {
   const handleEditPromiseSubmit = (data: { baselineQuantity: number; targetQuantity: number; notes?: string }) => {
     if (!editingPromise) return;
     
-    const reductionAmount = data.baselineQuantity - data.targetQuantity;
     updatePromiseMutation.mutate({
       id: editingPromise.id,
       data: {
         baselineQuantity: data.baselineQuantity,
         targetQuantity: data.targetQuantity,
-        reductionAmount,
         notes: data.notes || "",
       },
     });
@@ -1805,7 +1803,33 @@ export default function Home() {
                                   </div>
                                 </TooltipTrigger>
                                 <TooltipContent className="max-w-xs">
-                                  <p>{t('action_plan.tooltip_sea_turtles')}</p>
+                                  <p>{t('action_plan.tooltip_sea_turtles', { ns: 'dashboard' })}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="p-4 bg-navy/5 rounded-lg cursor-help border border-navy/10">
+                                    <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.microplastics_prevented', { ns: 'dashboard' })}</p>
+                                    <p className="text-2xl font-bold text-navy" data-testid="text-microplastics">
+                                      {Math.floor(metrics.funMetrics.microplasticsPrevented).toLocaleString()}
+                                    </p>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>{t('action_plan.tooltip_microplastics', { ns: 'dashboard' })}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="p-4 bg-navy/5 rounded-lg cursor-help border border-navy/10">
+                                    <p className="text-sm font-semibold text-navy mb-1">{t('action_plan.dolphins_protected', { ns: 'dashboard' })}</p>
+                                    <p className="text-2xl font-bold text-navy" data-testid="text-dolphins">
+                                      {metrics.funMetrics.dolphins.toFixed(3)}
+                                    </p>
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-xs">
+                                  <p>{t('action_plan.tooltip_dolphins', { ns: 'dashboard' })}</p>
                                 </TooltipContent>
                               </Tooltip>
                             </CardContent>
