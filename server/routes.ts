@@ -5641,6 +5641,116 @@ Return JSON with:
     }
   });
 
+  // Recalculate progress for Round 2+ schools
+  app.post('/api/admin/migration/recalculate-round-progress', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      console.log('[Migration - Recalculate Round Progress] Starting recalculation for Round 2+ schools...');
+      
+      // Find all schools where currentRound >= 2
+      const round2PlusSchools = await db
+        .select()
+        .from(schools)
+        .where(gte(schools.currentRound, 2));
+      
+      console.log(`[Migration - Recalculate Round Progress] Found ${round2PlusSchools.length} schools in Round 2+`);
+      
+      let total = 0;
+      let updated = 0;
+      let skipped = 0;
+      const errors: Array<{ schoolId: string; schoolName: string; error: string }> = [];
+      const progressChanges: Array<{
+        schoolId: string;
+        schoolName: string;
+        round: number;
+        before: number;
+        after: number;
+      }> = [];
+      
+      // Process in batches of 50 to avoid timeouts
+      const batchSize = 50;
+      const batches = [];
+      for (let i = 0; i < round2PlusSchools.length; i += batchSize) {
+        batches.push(round2PlusSchools.slice(i, i + batchSize));
+      }
+      
+      console.log(`[Migration - Recalculate Round Progress] Processing ${batches.length} batches of up to ${batchSize} schools`);
+      
+      for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
+        const batch = batches[batchIndex];
+        console.log(`[Migration - Recalculate Round Progress] Processing batch ${batchIndex + 1}/${batches.length} (${batch.length} schools)`);
+        
+        for (const school of batch) {
+          try {
+            total++;
+            const beforeProgress = school.progressPercentage;
+            
+            console.log(`[Migration - Recalculate Round Progress] Processing: ${school.name} (Round ${school.currentRound}, ${beforeProgress}% progress)`);
+            
+            // Recalculate progress
+            await storage.checkAndUpdateSchoolProgression(school.id);
+            
+            // Get updated school data
+            const updatedSchool = await storage.getSchool(school.id);
+            const afterProgress = updatedSchool?.progressPercentage ?? 0;
+            
+            if (beforeProgress !== afterProgress) {
+              updated++;
+              progressChanges.push({
+                schoolId: school.id,
+                schoolName: school.name,
+                round: school.currentRound,
+                before: beforeProgress,
+                after: afterProgress
+              });
+              console.log(`[Migration - Recalculate Round Progress] ✓ ${school.name}: ${beforeProgress}% → ${afterProgress}% (Round ${school.currentRound})`);
+            } else {
+              skipped++;
+              console.log(`[Migration - Recalculate Round Progress] - ${school.name}: No change (${beforeProgress}%)`);
+            }
+          } catch (error) {
+            const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+            errors.push({
+              schoolId: school.id,
+              schoolName: school.name,
+              error: errorMessage
+            });
+            console.error(`[Migration - Recalculate Round Progress] ✗ Error processing ${school.name}:`, errorMessage);
+          }
+        }
+        
+        console.log(`[Migration - Recalculate Round Progress] Batch ${batchIndex + 1}/${batches.length} complete`);
+      }
+      
+      console.log(`[Migration - Recalculate Round Progress] Complete: ${updated} updated, ${skipped} skipped, ${errors.length} errors`);
+      
+      // Log some example changes
+      if (progressChanges.length > 0) {
+        console.log('[Migration - Recalculate Round Progress] Sample progress changes:');
+        progressChanges.slice(0, 5).forEach(change => {
+          console.log(`  - ${change.schoolName} (Round ${change.round}): ${change.before}% → ${change.after}%`);
+        });
+      }
+      
+      res.json({
+        success: true,
+        message: `Recalculated progress for ${total} Round 2+ schools`,
+        total,
+        updated,
+        skipped,
+        errors,
+        progressChanges: progressChanges.slice(0, 20), // Include first 20 changes in response
+        totalProgressChanges: progressChanges.length
+      });
+    } catch (error) {
+      console.error('[Migration - Recalculate Round Progress] Failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to recalculate round progress',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // Recalculate progress for all schools (applies new calculation logic)
   app.post('/api/admin/recalculate-all-progress', isAuthenticated, requireAdmin, async (req, res) => {
     try {
