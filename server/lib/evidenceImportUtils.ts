@@ -25,6 +25,45 @@ export const CSV_TO_REQUIREMENT_MAP: Record<string, string> = {
 };
 
 /**
+ * Maps country codes from legacy CSV to full country names used in database
+ * Legacy CSV uses ISO country codes, but database stores full names
+ */
+export const COUNTRY_CODE_MAP: Record<string, string> = {
+  'GB': 'United Kingdom',
+  'UK': 'United Kingdom',
+  'US': 'United States',
+  'IE': 'Ireland',
+  'FR': 'France',
+  'DE': 'Germany',
+  'ES': 'Spain',
+  'IT': 'Italy',
+  'NL': 'Netherlands',
+  'BE': 'Belgium',
+  'PT': 'Portugal',
+  'GR': 'Greece',
+  'SE': 'Sweden',
+  'NO': 'Norway',
+  'DK': 'Denmark',
+  'FI': 'Finland',
+  'PL': 'Poland',
+  'CZ': 'Czech Republic',
+  'AT': 'Austria',
+  'CH': 'Switzerland',
+  'AU': 'Australia',
+  'NZ': 'New Zealand',
+  'CA': 'Canada',
+  'ZA': 'South Africa',
+  'IN': 'India',
+  'CN': 'China',
+  'JP': 'Japan',
+  'KR': 'South Korea',
+  'BR': 'Brazil',
+  'MX': 'Mexico',
+  'AR': 'Argentina',
+  'CL': 'Chile',
+};
+
+/**
  * System user for evidence imports
  * All imported evidence will be attributed to this user
  */
