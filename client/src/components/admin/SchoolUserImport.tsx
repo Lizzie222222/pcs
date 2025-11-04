@@ -318,7 +318,7 @@ export default function SchoolUserImport() {
                 </Button>
                 <Button
                   onClick={handleImport}
-                  disabled={validation.validRows === 0 || validation.invalidRows > 0 || isImporting}
+                  disabled={validation.validRows === 0 || isImporting}
                   className="flex-1"
                   data-testid="button-start-import"
                 >
@@ -331,6 +331,7 @@ export default function SchoolUserImport() {
                     <>
                       <CheckCircle2 className="w-4 h-4 mr-2" />
                       Import {validation.validRows} Schools & Users
+                      {validation.invalidRows > 0 && ` (skip ${validation.invalidRows} errors)`}
                     </>
                   )}
                 </Button>

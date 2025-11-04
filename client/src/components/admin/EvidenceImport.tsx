@@ -370,12 +370,13 @@ export default function EvidenceImport() {
                 </Button>
                 <Button
                   onClick={() => handleImport(false)}
-                  disabled={validation.validRows === 0 || validation.invalidRows > 0}
+                  disabled={validation.validRows === 0}
                   className="flex-1"
                   data-testid="button-start-full-import"
                 >
                   <CheckCircle2 className="w-4 h-4 mr-2" />
                   Import All {validation.validRows} Schools
+                  {validation.invalidRows > 0 && ` (skip ${validation.invalidRows} errors)`}
                 </Button>
               </div>
             </CardContent>
