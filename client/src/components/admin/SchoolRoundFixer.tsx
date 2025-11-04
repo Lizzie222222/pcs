@@ -1,11 +1,12 @@
 import { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { RefreshCcw, AlertTriangle, CheckCircle, FileCheck, Activity } from 'lucide-react';
+import { RefreshCcw, AlertTriangle, CheckCircle, FileCheck, Activity, Loader2 } from 'lucide-react';
 
 interface AuditSummary {
   totalSchools: number;
@@ -49,6 +50,33 @@ export default function SchoolRoundFixer() {
   const [illogicalSchools, setIllogicalSchools] = useState<SchoolAuditResult[]>([]);
   const [fixResult, setFixResult] = useState<any>(null);
   const { toast } = useToast();
+
+  // Mutation for recalculating Round 2+ schools progress
+  const recalculateRoundProgressMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/migration/recalculate-round-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!response.ok) throw new Error('Failed to recalculate progress');
+      return response.json();
+    },
+    onSuccess: (data) => {
+      toast({
+        title: "Recalculation Complete",
+        description: `Processed ${data.total} schools. Updated: ${data.updated}, Skipped: ${data.skipped}`,
+      });
+      // Re-run audit after recalculation
+      setTimeout(() => handleAudit(), 1000);
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Recalculation Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleAudit = async () => {
     setIsAuditing(true);
@@ -143,6 +171,81 @@ export default function SchoolRoundFixer() {
 
   return (
     <div className="space-y-6">
+      {/* Recalculate Round 2+ Progress Tool */}
+      <Card className="border-2 border-orange-500/20 bg-gradient-to-br from-orange-50/30 to-white dark:from-orange-900/10 dark:to-gray-900">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
+            <RefreshCcw className="w-5 h-5" />
+            Recalculate Round 2+ Schools Progress
+          </CardTitle>
+          <CardDescription>
+            Fixes Round 2+ schools showing incorrect progress percentages. Recalculates progress based on actual evidence, not stale completion flags.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Alert className="border-orange-200 bg-orange-50/50 dark:bg-orange-900/20">
+            <AlertTriangle className="h-4 w-4 text-orange-600" />
+            <AlertDescription>
+              <strong>What this fixes:</strong> Round 2+ schools may show 100% progress even when they have no evidence in their current round.
+              This happens when old completion flags from previous rounds are incorrectly used in progress calculation.
+              <br /><br />
+              <strong>What it does:</strong> Recalculates progress for all Round 2+ schools using their actual evidence counts, 
+              ignoring any stale completion flags. Progress will correctly show 0-100% based on evidence submitted in the current round.
+            </AlertDescription>
+          </Alert>
+
+          <Button 
+            onClick={() => recalculateRoundProgressMutation.mutate()}
+            disabled={recalculateRoundProgressMutation.isPending}
+            className="w-full bg-orange-600 hover:bg-orange-700"
+            data-testid="button-recalculate-round-progress"
+          >
+            {recalculateRoundProgressMutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Recalculating Round 2+ Progress...
+              </>
+            ) : (
+              <>
+                <RefreshCcw className="mr-2 h-4 w-4" />
+                Recalculate Round 2+ Progress
+              </>
+            )}
+          </Button>
+
+          {recalculateRoundProgressMutation.isSuccess && recalculateRoundProgressMutation.data && (
+            <Alert className="bg-orange-50 border-orange-200 dark:bg-orange-900/20">
+              <CheckCircle className="h-4 w-4 text-orange-600" />
+              <AlertDescription className="text-orange-800 dark:text-orange-200">
+                <strong className="block mb-2">Recalculation Complete</strong>
+                <div className="space-y-1 text-sm">
+                  <div>• Total schools processed: {recalculateRoundProgressMutation.data.total}</div>
+                  <div>• Schools updated: {recalculateRoundProgressMutation.data.updated}</div>
+                  <div>• Schools skipped (no changes): {recalculateRoundProgressMutation.data.skipped}</div>
+                  {recalculateRoundProgressMutation.data.progressChanges && recalculateRoundProgressMutation.data.progressChanges.length > 0 && (
+                    <div className="mt-2">
+                      <strong>Progress Changes (first 5):</strong>
+                      <ul className="ml-4 mt-1">
+                        {recalculateRoundProgressMutation.data.progressChanges.slice(0, 5).map((change: any, idx: number) => (
+                          <li key={idx}>
+                            {change.schoolName}: {change.oldProgress}% → {change.newProgress}%
+                          </li>
+                        ))}
+                        {recalculateRoundProgressMutation.data.progressChanges.length > 5 && (
+                          <li className="font-semibold">
+                            ...and {recalculateRoundProgressMutation.data.progressChanges.length - 5} more
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
