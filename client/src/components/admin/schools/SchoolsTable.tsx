@@ -8,6 +8,7 @@ import { CheckCircle, XCircle, Eye, Trash2, ChevronDown, ChevronUp, ArrowUp, Arr
 import type { SchoolData } from "@/components/admin/shared/types";
 import { useTranslation } from 'react-i18next';
 import EditSchoolDialog from "@/components/admin/EditSchoolDialog";
+import SchoolProgressOverride from "@/components/admin/SchoolProgressOverride";
 
 // SchoolTeachersRow component
 interface SchoolTeacher {
@@ -62,63 +63,70 @@ function SchoolTeachersRow({ schoolId, isExpanded }: { schoolId: string; isExpan
   return (
     <tr data-testid={`expanded-row-${schoolId}`}>
       <td colSpan={11} className="p-0 bg-gray-50">
-        <div className="p-4 border-t">
-          {teachers?.length === 0 ? (
-            <div className="text-center py-8 text-gray-500" data-testid={`no-teachers-${schoolId}`}>
-              {t('schools.school_table.teachers.noTeachers')}
-            </div>
-          ) : (
-            <div className="bg-white rounded-lg border overflow-hidden">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-gray-100 border-b">
-                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.name')}</th>
-                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.email')}</th>
-                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.role')}</th>
-                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.verification')}</th>
-                    <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.joined')}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {teachers?.map((teacher) => (
-                    <tr 
-                      key={teacher.userId} 
-                      className="border-b hover:bg-gray-50"
-                      data-testid={`teacher-row-${schoolId}-${teacher.userId}`}
-                    >
-                      <td className="p-3 text-sm text-gray-700" data-testid={`teacher-name-${teacher.userId}`}>
-                        {teacher.name}
-                      </td>
-                      <td className="p-3 text-sm text-gray-600" data-testid={`teacher-email-${teacher.userId}`}>
-                        {teacher.email}
-                      </td>
-                      <td className="p-3">
-                        <Badge variant="outline" className="text-xs" data-testid={`teacher-role-${teacher.userId}`}>
-                          {teacher.role === 'head_teacher' ? t('schools.school_table.teachers.roles.headTeacher') : t('schools.school_table.teachers.roles.teacher')}
-                        </Badge>
-                      </td>
-                      <td className="p-3" data-testid={`teacher-verified-${teacher.userId}`}>
-                        {teacher.isVerified ? (
-                          <Badge className="bg-green-500 text-white text-xs">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            {t('schools.school_table.teachers.status.verified')}
-                          </Badge>
-                        ) : (
-                          <Badge variant="outline" className="text-xs">
-                            <XCircle className="h-3 w-3 mr-1" />
-                            {t('schools.school_table.teachers.status.notVerified')}
-                          </Badge>
-                        )}
-                      </td>
-                      <td className="p-3 text-sm text-gray-600">
-                        {new Date(teacher.joinedAt).toLocaleDateString()}
-                      </td>
+        <div className="p-4 border-t space-y-4">
+          {/* Teachers Section */}
+          <div>
+            <h4 className="font-semibold mb-3">{t('schools.school_table.teachers.title', 'Teachers')}</h4>
+            {teachers?.length === 0 ? (
+              <div className="text-center py-8 text-gray-500" data-testid={`no-teachers-${schoolId}`}>
+                {t('schools.school_table.teachers.noTeachers')}
+              </div>
+            ) : (
+              <div className="bg-white rounded-lg border overflow-hidden">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-gray-100 border-b">
+                      <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.name')}</th>
+                      <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.email')}</th>
+                      <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.role')}</th>
+                      <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.verification')}</th>
+                      <th className="text-left p-3 text-xs font-semibold text-gray-700 uppercase">{t('schools.school_table.teachers.headers.joined')}</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+                  </thead>
+                  <tbody>
+                    {teachers?.map((teacher) => (
+                      <tr 
+                        key={teacher.userId} 
+                        className="border-b hover:bg-gray-50"
+                        data-testid={`teacher-row-${schoolId}-${teacher.userId}`}
+                      >
+                        <td className="p-3 text-sm text-gray-700" data-testid={`teacher-name-${teacher.userId}`}>
+                          {teacher.name}
+                        </td>
+                        <td className="p-3 text-sm text-gray-600" data-testid={`teacher-email-${teacher.userId}`}>
+                          {teacher.email}
+                        </td>
+                        <td className="p-3">
+                          <Badge variant="outline" className="text-xs" data-testid={`teacher-role-${teacher.userId}`}>
+                            {teacher.role === 'head_teacher' ? t('schools.school_table.teachers.roles.headTeacher') : t('schools.school_table.teachers.roles.teacher')}
+                          </Badge>
+                        </td>
+                        <td className="p-3" data-testid={`teacher-verified-${teacher.userId}`}>
+                          {teacher.isVerified ? (
+                            <Badge className="bg-green-500 text-white text-xs">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              {t('schools.school_table.teachers.status.verified')}
+                            </Badge>
+                          ) : (
+                            <Badge variant="outline" className="text-xs">
+                              <XCircle className="h-3 w-3 mr-1" />
+                              {t('schools.school_table.teachers.status.notVerified')}
+                            </Badge>
+                          )}
+                        </td>
+                        <td className="p-3 text-sm text-gray-600">
+                          {new Date(teacher.joinedAt).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
+          {/* Admin Progress Override Section */}
+          <SchoolProgressOverride schoolId={schoolId} />
         </div>
       </td>
     </tr>

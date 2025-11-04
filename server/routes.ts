@@ -9,6 +9,21 @@ import { mailchimpService } from "./mailchimpService";
 import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSchema, insertMailchimpAudienceSchema, insertMailchimpSubscriptionSchema, insertTeacherInvitationSchema, insertVerificationRequestSchema, insertAuditResponseSchema, insertReductionPromiseSchema, insertEventSchema, insertEventRegistrationSchema, insertMediaAssetSchema, insertMediaTagSchema, insertCaseStudySchema, type VerificationRequest, users, schools, schoolUsers, caseStudies, importBatches, userActivityLogs, certificates, evidence } from "@shared/schema";
 import { nanoid } from 'nanoid';
 import { z } from "zod";
+
+// Admin override validation schemas
+const toggleEvidenceOverrideSchema = z.object({
+  evidenceRequirementId: z.string().uuid(),
+  stage: z.enum(['inspire', 'investigate', 'act'])
+});
+
+const updateSchoolProgressionSchema = z.object({
+  currentRound: z.number().int().min(1).max(10).optional(),
+  currentStage: z.enum(['inspire', 'investigate', 'act']).optional(),
+  inspireCompleted: z.boolean().optional(),
+  investigateCompleted: z.boolean().optional(),
+  actCompleted: z.boolean().optional(),
+  progressPercentage: z.number().min(0).max(300).optional()
+});
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
 import { eq, and, or, sql, desc, gte, lte, count, ilike, inArray } from "drizzle-orm";
@@ -8259,6 +8274,120 @@ Return JSON with:
     } catch (error) {
       console.error("Error fetching school teachers:", error);
       res.status(500).json({ message: "Failed to fetch school teachers" });
+    }
+  });
+
+  // Get admin evidence overrides for a school
+  app.get('/api/admin/schools/:schoolId/evidence-overrides', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { schoolId } = req.params;
+      const school = await storage.getSchool(schoolId);
+      
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      const currentRound = school.currentRound || 1;
+      const overrides = await storage.getAdminEvidenceOverrides(schoolId, currentRound);
+      
+      res.json(overrides);
+    } catch (error) {
+      console.error("Error fetching admin evidence overrides:", error);
+      res.status(500).json({ message: "Failed to fetch evidence overrides" });
+    }
+  });
+
+  // Toggle admin evidence override for a school
+  app.post('/api/admin/schools/:schoolId/evidence-overrides/toggle', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { schoolId } = req.params;
+      
+      // Validate request body with Zod
+      const validation = toggleEvidenceOverrideSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid request body", 
+          errors: validation.error.errors 
+        });
+      }
+
+      const { evidenceRequirementId, stage } = validation.data;
+
+      if (!req.user?.id) {
+        return res.status(401).json({ message: "User not authenticated" });
+      }
+
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      const currentRound = school.currentRound || 1;
+      
+      // Verify evidence requirement exists and matches school's round/stage
+      const requirement = await storage.getEvidenceRequirement(evidenceRequirementId);
+      if (!requirement) {
+        return res.status(404).json({ message: "Evidence requirement not found" });
+      }
+      
+      if (requirement.stage !== stage) {
+        return res.status(400).json({ 
+          message: "Evidence requirement stage does not match provided stage" 
+        });
+      }
+      
+      const result = await storage.toggleAdminEvidenceOverride(
+        schoolId,
+        evidenceRequirementId,
+        stage,
+        currentRound,
+        req.user.id
+      );
+
+      // Recalculate school progression after toggling override
+      await storage.checkAndUpdateSchoolProgression(schoolId);
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error toggling admin evidence override:", error);
+      res.status(500).json({ message: "Failed to toggle evidence override" });
+    }
+  });
+
+  // Manually update school progression (round/stage)
+  app.patch('/api/admin/schools/:schoolId/progression', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      const { schoolId } = req.params;
+      
+      // Validate request body with Zod
+      const validation = updateSchoolProgressionSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid request body", 
+          errors: validation.error.errors 
+        });
+      }
+
+      const { currentRound, currentStage, inspireCompleted, investigateCompleted, actCompleted, progressPercentage } = validation.data;
+      
+      const updates: any = {};
+      if (currentRound !== undefined) updates.currentRound = currentRound;
+      if (currentStage !== undefined) updates.currentStage = currentStage;
+      if (inspireCompleted !== undefined) updates.inspireCompleted = inspireCompleted;
+      if (investigateCompleted !== undefined) updates.investigateCompleted = investigateCompleted;
+      if (actCompleted !== undefined) updates.actCompleted = actCompleted;
+      if (progressPercentage !== undefined) updates.progressPercentage = progressPercentage;
+
+      const school = await storage.manuallyUpdateSchoolProgression(schoolId, updates);
+      
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+
+      res.json(school);
+    } catch (error) {
+      console.error("Error updating school progression:", error);
+      res.status(500).json({ message: "Failed to update school progression" });
     }
   });
 

@@ -417,6 +417,26 @@ export const evidence = pgTable("evidence", {
 });
 
 /**
+ * @description Admin evidence overrides table tracking manually marked evidence requirements as complete by admins, independent of actual submissions.
+ * @location shared/schema.ts
+ * @related schools table, evidenceRequirements table, users table (markedBy), server/storage.ts (progress calculation)
+ */
+export const adminEvidenceOverrides = pgTable("admin_evidence_overrides", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
+  evidenceRequirementId: varchar("evidence_requirement_id").notNull().references(() => evidenceRequirements.id, { onDelete: 'cascade' }),
+  stage: programStageEnum("stage").notNull(),
+  roundNumber: integer("round_number").notNull().default(1),
+  markedBy: varchar("marked_by").notNull().references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("admin_evidence_overrides_school_id_idx").on(table.schoolId),
+  index("admin_evidence_overrides_requirement_id_idx").on(table.evidenceRequirementId),
+  uniqueIndex("admin_evidence_overrides_unique_idx").on(table.schoolId, table.evidenceRequirementId, table.roundNumber)
+]);
+
+/**
  * @description Case studies table for showcasing school success stories with rich media (images, videos), student quotes, impact metrics, and timeline. Supports draft/published workflow with SEO metadata.
  * @location shared/schema.ts#L243
  * @related evidence table (optional link), schools table, server/routes.ts (case studies CRUD, PDF export), client/src/pages/admin.tsx (CaseStudyEditor), client/src/pages/inspiration.tsx
@@ -1520,6 +1540,12 @@ export const insertEvidenceSchema = createInsertSchema(evidence).omit({
   isFeatured: true,
 });
 
+export const insertAdminEvidenceOverrideSchema = createInsertSchema(adminEvidenceOverrides).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
 // Case Study JSONB schemas for rich content
 // Helper to validate URLs or object storage paths (required)
 const urlOrStoragePath = z.string().refine(
@@ -1851,6 +1877,8 @@ export type EvidenceWithSchool = Evidence & {
     lastName: string | null;
   } | null;
 };
+export type AdminEvidenceOverride = typeof adminEvidenceOverrides.$inferSelect;
+export type InsertAdminEvidenceOverride = z.infer<typeof insertAdminEvidenceOverrideSchema>;
 export type CaseStudy = typeof caseStudies.$inferSelect;
 export type InsertCaseStudy = z.infer<typeof insertCaseStudySchema>;
 export type CaseStudyImage = z.infer<typeof caseStudyImageSchema>;

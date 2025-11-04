@@ -7,6 +7,7 @@ import {
   resourcePackItems,
   evidence,
   evidenceRequirements,
+  adminEvidenceOverrides,
   caseStudies,
   caseStudyVersions,
   caseStudyReviewComments,
@@ -57,6 +58,8 @@ import {
   type EvidenceWithSchool,
   type EvidenceRequirement,
   type InsertEvidenceRequirement,
+  type AdminEvidenceOverride,
+  type InsertAdminEvidenceOverride,
   type CaseStudy,
   type InsertCaseStudy,
   type CaseStudyVersion,
@@ -389,6 +392,18 @@ export interface IStorage {
   updateEvidenceRequirement(id: string, data: Partial<InsertEvidenceRequirement>): Promise<EvidenceRequirement | undefined>;
   deleteEvidenceRequirement(id: string): Promise<boolean>;
   getEvidenceByRequirement(requirementId: string): Promise<Evidence[]>;
+  
+  // Admin Evidence Override operations
+  createAdminEvidenceOverride(override: InsertAdminEvidenceOverride): Promise<AdminEvidenceOverride>;
+  getAdminEvidenceOverrides(schoolId: string, roundNumber?: number): Promise<AdminEvidenceOverride[]>;
+  deleteAdminEvidenceOverride(id: string): Promise<boolean>;
+  toggleAdminEvidenceOverride(
+    schoolId: string, 
+    evidenceRequirementId: string, 
+    stage: 'inspire' | 'investigate' | 'act',
+    roundNumber: number, 
+    markedBy: string
+  ): Promise<{ created: boolean; override: AdminEvidenceOverride | null }>;
   
   // Progression system operations
   checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined>;
@@ -3167,6 +3182,82 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(evidence.submittedAt));
   }
 
+  // Admin Evidence Override operations
+  async createAdminEvidenceOverride(override: InsertAdminEvidenceOverride): Promise<AdminEvidenceOverride> {
+    const [created] = await db
+      .insert(adminEvidenceOverrides)
+      .values(override)
+      .returning();
+    return created;
+  }
+
+  async getAdminEvidenceOverrides(schoolId: string, roundNumber?: number): Promise<AdminEvidenceOverride[]> {
+    if (roundNumber !== undefined) {
+      return await db
+        .select()
+        .from(adminEvidenceOverrides)
+        .where(
+          and(
+            eq(adminEvidenceOverrides.schoolId, schoolId),
+            eq(adminEvidenceOverrides.roundNumber, roundNumber)
+          )
+        );
+    }
+    
+    return await db
+      .select()
+      .from(adminEvidenceOverrides)
+      .where(eq(adminEvidenceOverrides.schoolId, schoolId));
+  }
+
+  async deleteAdminEvidenceOverride(id: string): Promise<boolean> {
+    try {
+      const result = await db
+        .delete(adminEvidenceOverrides)
+        .where(eq(adminEvidenceOverrides.id, id));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error("Error deleting admin evidence override:", error);
+      return false;
+    }
+  }
+
+  async toggleAdminEvidenceOverride(
+    schoolId: string, 
+    evidenceRequirementId: string, 
+    stage: 'inspire' | 'investigate' | 'act',
+    roundNumber: number, 
+    markedBy: string
+  ): Promise<{ created: boolean; override: AdminEvidenceOverride | null }> {
+    // Check if override already exists
+    const [existing] = await db
+      .select()
+      .from(adminEvidenceOverrides)
+      .where(
+        and(
+          eq(adminEvidenceOverrides.schoolId, schoolId),
+          eq(adminEvidenceOverrides.evidenceRequirementId, evidenceRequirementId),
+          eq(adminEvidenceOverrides.roundNumber, roundNumber)
+        )
+      );
+
+    if (existing) {
+      // Delete the existing override (toggle off)
+      await this.deleteAdminEvidenceOverride(existing.id);
+      return { created: false, override: null };
+    } else {
+      // Create new override (toggle on)
+      const newOverride = await this.createAdminEvidenceOverride({
+        schoolId,
+        evidenceRequirementId,
+        stage,
+        roundNumber,
+        markedBy
+      });
+      return { created: true, override: newOverride };
+    }
+  }
+
   // Progression system operations
   async getSchoolEvidenceCounts(schoolId: string): Promise<{
     inspire: { total: number; approved: number };
@@ -3270,6 +3361,22 @@ export class DatabaseStorage implements IStorage {
     if (!school) return undefined;
 
     const counts = await this.getSchoolEvidenceCounts(schoolId);
+    
+    // Get admin evidence overrides for the current round and add them to counts
+    const currentRound = school.currentRound || 1;
+    const adminOverrides = await this.getAdminEvidenceOverrides(schoolId, currentRound);
+    
+    // Count overrides by stage and add to approved counts
+    const overridesByStage = {
+      inspire: adminOverrides.filter(o => o.stage === 'inspire').length,
+      investigate: adminOverrides.filter(o => o.stage === 'investigate').length,
+      act: adminOverrides.filter(o => o.stage === 'act').length
+    };
+    
+    // Add admin overrides to the approved counts
+    counts.inspire.approved += overridesByStage.inspire;
+    counts.investigate.approved += overridesByStage.investigate;
+    counts.act.approved += overridesByStage.act;
     
     // Capture the current round before any updates for certificate generation
     // This ensures certificates are created for the COMPLETED round, not the next round
