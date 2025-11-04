@@ -15,7 +15,7 @@ export interface SchoolAuditResult {
   progressPercentage: number;
   currentStage: string;
   legacyEvidenceCount: number;
-  status: 'logical' | 'illogical_excessive_progress' | 'illogical_round_mismatch';
+  status: 'logical' | 'illogical_excessive_progress' | 'illogical_round_mismatch' | 'illogical_no_evidence';
   issue?: string;
   recommendedFix?: {
     currentRound: number;
@@ -26,6 +26,7 @@ export interface SchoolAuditResult {
     awardCompleted: boolean;
     currentStage: 'inspire' | 'investigate' | 'act';
     progressPercentage: number;
+    resetType: 'complete' | 'progress_only';
   };
 }
 
@@ -36,6 +37,7 @@ export interface AuditSummary {
   byIssueType: {
     excessiveProgress: number;
     roundMismatch: number;
+    noEvidence: number;
   };
   byRound: {
     [key: number]: {
@@ -68,6 +70,7 @@ export class SchoolRoundFixer {
       byIssueType: {
         excessiveProgress: 0,
         roundMismatch: 0,
+        noEvidence: 0,
       },
       byRound: {},
     };
@@ -100,6 +103,8 @@ export class SchoolRoundFixer {
           summary.byIssueType.excessiveProgress++;
         } else if (audit.status === 'illogical_round_mismatch') {
           summary.byIssueType.roundMismatch++;
+        } else if (audit.status === 'illogical_no_evidence') {
+          summary.byIssueType.noEvidence++;
         }
       }
     }
@@ -121,11 +126,12 @@ export class SchoolRoundFixer {
   }
   
   /**
-   * Audits a single school to determine if its progress percentage is logical
+   * Audits a single school to determine if its round state is logical
    * 
-   * NEW LOGIC:
+   * UPDATED LOGIC (November 2025):
+   * - CRITICAL: Schools in Round 2+ MUST have legacy evidence to justify their placement
+   * - Schools in Round 2+ with 0 evidence were incorrectly promoted → Full reset to Round 1
    * - Progress should be 0-100% per round (not cumulative)
-   * - Schools in Round 2+ with progress > 100% are illogical (migration issue)
    * - currentRound should equal roundsCompleted + 1
    */
   private auditSchool(school: any): SchoolAuditResult {
@@ -137,6 +143,7 @@ export class SchoolRoundFixer {
     const awardCompleted = school.awardCompleted || false;
     const progressPercentage = school.progressPercentage || 0;
     const currentStage = school.currentStage || 'inspire';
+    const legacyEvidenceCount = school.legacyEvidenceCount || 0;
     
     const result: SchoolAuditResult = {
       id: school.id,
@@ -150,9 +157,18 @@ export class SchoolRoundFixer {
       awardCompleted,
       progressPercentage,
       currentStage,
-      legacyEvidenceCount: school.legacyEvidenceCount || 0,
+      legacyEvidenceCount,
       status: 'logical',
     };
+    
+    // Check 0 (CRITICAL): Schools in Round 2+ with NO evidence were incorrectly placed
+    // They should be completely reset to Round 1
+    if (currentRound > 1 && legacyEvidenceCount === 0) {
+      result.status = 'illogical_no_evidence';
+      result.issue = `Invalid round placement: Round ${currentRound} school has 0 legacy evidence (should be in Round 1)`;
+      result.recommendedFix = this.calculateFix(school);
+      return result;
+    }
     
     // Check 1: Round position should be correct
     // currentRound should equal roundsCompleted + 1
@@ -197,29 +213,49 @@ export class SchoolRoundFixer {
   /**
    * Calculates the recommended fix for a school with illogical state
    * 
-   * NEW FIX LOGIC:
-   * 1. PRESERVE roundsCompleted (their achievements!)
-   * 2. Fix currentRound = roundsCompleted + 1 (if needed)
-   * 3. Reset progressPercentage to 0 (start fresh in current round)
-   * 4. Reset all completion flags to false (haven't done anything in current round yet)
-   * 5. Set currentStage to 'inspire' (starting the round)
+   * UPDATED FIX LOGIC (November 2025):
+   * TWO SCENARIOS:
+   * 
+   * 1. Schools in Round 2+ with 0 evidence → COMPLETE RESET to Round 1
+   *    - currentRound = 1, roundsCompleted = 0
+   *    - These were incorrectly promoted by migration
+   * 
+   * 2. Schools with evidence but bad progress → PROGRESS RESET only
+   *    - PRESERVE currentRound and roundsCompleted (their achievements)
+   *    - Reset progress to 0% and clear flags for current round
    */
   private calculateFix(school: any): SchoolAuditResult['recommendedFix'] {
+    const currentRound = school.currentRound || 1;
     const roundsCompleted = school.roundsCompleted || 0;
+    const legacyEvidenceCount = school.legacyEvidenceCount || 0;
     
-    // The correct current round based on achievements
+    // SCENARIO 1: School in Round 2+ with NO evidence → COMPLETE RESET
+    if (currentRound > 1 && legacyEvidenceCount === 0) {
+      return {
+        currentRound: 1,
+        roundsCompleted: 0,
+        inspireCompleted: false,
+        investigateCompleted: false,
+        actCompleted: false,
+        awardCompleted: false,
+        currentStage: 'inspire',
+        progressPercentage: 0,
+        resetType: 'complete',
+      };
+    }
+    
+    // SCENARIO 2: School has evidence but bad progress → PRESERVE ROUND, reset progress only
     const correctCurrentRound = roundsCompleted + 1;
-    
-    // Reset for fresh start in current round
     return {
       currentRound: correctCurrentRound,
       roundsCompleted: roundsCompleted, // PRESERVE their achievements
-      inspireCompleted: false, // Haven't started current round yet
+      inspireCompleted: false,
       investigateCompleted: false,
       actCompleted: false,
       awardCompleted: false,
-      currentStage: 'inspire', // Starting fresh
-      progressPercentage: 0, // 0% progress in current round
+      currentStage: 'inspire',
+      progressPercentage: 0,
+      resetType: 'progress_only',
     };
   }
   

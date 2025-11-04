@@ -14,6 +14,7 @@ interface AuditSummary {
   byIssueType: {
     excessiveProgress: number;
     roundMismatch: number;
+    noEvidence: number;
   };
   byRound: {
     [key: number]: {
@@ -37,7 +38,8 @@ interface SchoolAuditResult {
   awardCompleted: boolean;
   progressPercentage: number;
   currentStage: string;
-  status: 'logical' | 'illogical_excessive_progress' | 'illogical_round_mismatch';
+  legacyEvidenceCount: number;
+  status: 'logical' | 'illogical_excessive_progress' | 'illogical_round_mismatch' | 'illogical_no_evidence';
   issue?: string;
   recommendedFix?: any;
 }
@@ -150,21 +152,21 @@ export default function SchoolRoundFixer() {
             School Round Integrity Check
           </CardTitle>
           <CardDescription>
-            Audit schools to identify those with illogical progress percentages (e.g., Round 2+ schools with 100% or higher progress),
-            then fix them by resetting progress to 0% while PRESERVING their round achievements (currentRound and roundsCompleted remain intact).
+            Audit schools to identify illogical round states from migration. Schools in Round 2+ with NO legacy evidence get complete reset to Round 1. 
+            Schools with evidence but excessive progress (≥100%) get progress reset while preserving their round achievements.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <strong>What this fixes:</strong> The migration incorrectly left progress percentages at 100% or higher for Round 2+ schools 
-              (e.g., Round 2 schools showing 100-200%, Round 3 schools showing 200-300%). This tool resets progress to 0% and clears completion flags for the current round,
-              while <strong>PRESERVING</strong> their round achievements (schools stay in Round 2/3, roundsCompleted is kept).
+              <strong>TWO FIX TYPES:</strong>
               <br /><br />
-              <strong>What is preserved:</strong> currentRound, roundsCompleted, legacyEvidenceCount
-              <br />
-              <strong>What is reset:</strong> progressPercentage (to 0%), currentStage (to 'inspire'), all completion flags (to false)
+              <strong>1. Complete Reset (Round 2+ with 0 evidence):</strong> Schools incorrectly placed in Round 2/3 with NO legacy evidence will be completely reset to Round 1 
+              (currentRound=1, roundsCompleted=0). These were incorrectly promoted by the migration.
+              <br /><br />
+              <strong>2. Progress Reset Only (has evidence):</strong> Schools with evidence but excessive progress (≥100%) will have only their progress reset to 0% 
+              while <strong>PRESERVING</strong> their round achievements (currentRound and roundsCompleted stay intact).
             </AlertDescription>
           </Alert>
 
@@ -248,9 +250,13 @@ export default function SchoolRoundFixer() {
             {auditSummary.illogicalSchools > 0 && (
               <div className="space-y-3">
                 <h4 className="font-semibold">Issues Found:</h4>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="flex items-center justify-between p-3 bg-red-50 dark:bg-red-900/20 rounded">
+                    <span className="text-sm">No Evidence</span>
+                    <Badge variant="destructive">{auditSummary.byIssueType.noEvidence}</Badge>
+                  </div>
                   <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded">
-                    <span className="text-sm">Excessive Progress (&gt;100%)</span>
+                    <span className="text-sm">Excessive Progress</span>
                     <Badge variant="destructive">{auditSummary.byIssueType.excessiveProgress}</Badge>
                   </div>
                   <div className="flex items-center justify-between p-3 bg-orange-50 dark:bg-orange-900/20 rounded">
@@ -322,10 +328,13 @@ export default function SchoolRoundFixer() {
                       <div key={idx} className="p-3 bg-gray-50 dark:bg-gray-800 rounded text-sm">
                         <div className="font-medium">{detail.name}</div>
                         <div className="text-gray-600 dark:text-gray-400">
+                          Round: {detail.before.currentRound} → {detail.after.currentRound}
+                          {detail.before.currentRound === detail.after.currentRound ? ' (preserved)' : ' (complete reset)'}
+                        </div>
+                        <div className="text-gray-600 dark:text-gray-400">
                           Progress: {detail.before.progressPercentage}% → {detail.after.progressPercentage}%
                         </div>
                         <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
-                          Round {detail.before.currentRound} (preserved), 
                           Stage: {detail.before.currentStage} → {detail.after.currentStage}
                         </div>
                       </div>
@@ -365,7 +374,8 @@ export default function SchoolRoundFixer() {
                       </div>
                       {school.recommendedFix && (
                         <div className="text-xs text-green-600 dark:text-green-400 mt-1">
-                          Will fix to: Round {school.recommendedFix.currentRound} (preserved), 
+                          Will fix to: Round {school.recommendedFix.currentRound}
+                          {school.recommendedFix.resetType === 'complete' ? ' (complete reset to Round 1)' : ' (round preserved)'}, 
                           {school.recommendedFix.progressPercentage}% progress, stage '{school.recommendedFix.currentStage}'
                         </div>
                       )}
