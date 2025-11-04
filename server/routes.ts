@@ -12213,6 +12213,114 @@ Return JSON with:
     res.send(csvContent);
   });
 
+  // Evidence Approval Import Routes
+  // These routes handle CSV import of evidence completions from legacy system
+  
+  // In-memory storage for import progress tracking
+  const evidenceImportProgress = new Map<string, any>();
+
+  // Validate evidence CSV
+  app.post('/api/admin/import/evidence/validate', isAuthenticated, requireAdmin, importUpload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const { parseEvidenceCSV, validateEvidenceImport } = await import('./lib/evidenceImportUtils');
+      
+      // Parse CSV
+      const rows = await parseEvidenceCSV(req.file.buffer, req.file.originalname);
+      
+      // Validate (show first 100 for preview)
+      const validation = await validateEvidenceImport(rows, 100);
+      
+      res.json(validation);
+    } catch (error) {
+      console.error('[Evidence Import Validate] Error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Validation failed' 
+      });
+    }
+  });
+
+  // Process evidence import (with test mode for single school)
+  app.post('/api/admin/import/evidence/process', isAuthenticated, requireAdmin, importUpload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const testMode = req.body.testMode === 'true';
+      const { parseEvidenceCSV, processEvidenceImport } = await import('./lib/evidenceImportUtils');
+      
+      // Parse CSV
+      const rows = await parseEvidenceCSV(req.file.buffer, req.file.originalname);
+      
+      if (rows.length === 0) {
+        return res.status(400).json({ message: 'No valid rows found in CSV' });
+      }
+
+      // Create batch ID for tracking
+      const batchId = nanoid();
+      
+      // Initialize progress
+      evidenceImportProgress.set(batchId, {
+        status: 'processing',
+        processedSchools: 0,
+        totalSchools: testMode ? 1 : rows.length,
+        successCount: 0,
+        errorCount: 0,
+        errors: [],
+        startTime: Date.now(),
+      });
+
+      // Start processing in background
+      processEvidenceImport(
+        rows,
+        (progress) => {
+          evidenceImportProgress.set(batchId, progress);
+        },
+        testMode
+      ).catch(error => {
+        console.error('[Evidence Import Process] Error:', error);
+        const currentProgress = evidenceImportProgress.get(batchId) || {};
+        evidenceImportProgress.set(batchId, {
+          ...currentProgress,
+          status: 'error',
+          errors: [...(currentProgress.errors || []), error.message],
+        });
+      });
+
+      // Return batch ID for polling
+      res.json({ batchId, testMode });
+    } catch (error) {
+      console.error('[Evidence Import Process] Error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Import failed' 
+      });
+    }
+  });
+
+  // Get progress of evidence import
+  app.get('/api/admin/import/evidence/progress/:batchId', isAuthenticated, requireAdmin, async (req, res) => {
+    const { batchId } = req.params;
+    const progress = evidenceImportProgress.get(batchId);
+    
+    if (!progress) {
+      return res.status(404).json({ message: 'Import batch not found' });
+    }
+    
+    // Clean up completed imports after 5 minutes
+    if (progress.status === 'completed' || progress.status === 'error') {
+      const age = Date.now() - (progress.endTime || progress.startTime);
+      if (age > 5 * 60 * 1000) {
+        evidenceImportProgress.delete(batchId);
+      }
+    }
+    
+    res.json(progress);
+  });
+
   // Server-side meta tag injection for case study pages
   // This route MUST be before Vite/SPA catch-all to intercept case study requests
   // ONLY enabled in production - in development, Vite needs to transform the HTML

@@ -107,7 +107,7 @@ import EmailManagementSection from "@/components/admin/EmailManagementSection";
 import ActivityLogsSection from "@/components/admin/activity-logs/ActivityLogsSection";
 import EvidenceGalleryTab from "@/components/admin/EvidenceGalleryTab";
 import PrintableFormsTab from "@/components/admin/PrintableFormsTab";
-import DataImport from "@/components/admin/DataImport";
+import EvidenceImport from "@/components/admin/EvidenceImport";
 import TeamsSection from '@/components/admin/teams/TeamsSection';
 import EvidenceRequirementsSection from '@/components/admin/evidence-requirements/EvidenceRequirementsSection';
 import SystemHealthTab from '@/components/admin/SystemHealthTab';
@@ -1064,9 +1064,9 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
           <UserManagementTab />
         )}
 
-        {/* Data Import Tab */}
+        {/* Evidence Import Tab */}
         {activeTab === 'data-import' && (
-          <DataImport />
+          <EvidenceImport />
         )}
 
         {/* User Activity Logs Tab */}
