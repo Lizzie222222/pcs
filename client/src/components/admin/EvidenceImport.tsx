@@ -110,7 +110,7 @@ export default function EvidenceImport() {
     }
   };
 
-  const handleImport = async (isTest: boolean) => {
+  const handleImport = async (isTest: boolean, schoolIndex: number = 0) => {
     if (!file || !validation) return;
 
     setTestMode(isTest);
@@ -128,6 +128,7 @@ export default function EvidenceImport() {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('testMode', isTest.toString());
+      formData.append('testSchoolIndex', schoolIndex.toString());
 
       const response = await fetch('/api/admin/import/evidence/process', {
         method: 'POST',
@@ -314,19 +315,33 @@ export default function EvidenceImport() {
               {/* Preview */}
               {validation.preview.length > 0 && (
                 <div>
-                  <h4 className="font-semibold mb-2">Preview (first {validation.preview.length} schools):</h4>
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
+                  <h4 className="font-semibold mb-2">Preview (first {validation.preview.length} schools with evidence):</h4>
+                  <div className="space-y-2 max-h-80 overflow-y-auto">
                     {validation.preview.map((item, i) => (
-                      <div key={i} className="p-3 bg-gray-50 rounded border border-gray-200">
-                        <div className="font-medium text-sm text-navy">
-                          {item.schoolName} ({item.country})
-                        </div>
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {item.requirementsToApprove.map((req, j) => (
-                            <Badge key={j} variant="secondary" className="text-xs">
-                              {req}
-                            </Badge>
-                          ))}
+                      <div key={i} className="p-3 bg-gray-50 rounded border border-gray-200 hover:border-pcs_blue transition-colors">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1">
+                            <div className="font-medium text-sm text-navy">
+                              {item.schoolName} ({item.country})
+                            </div>
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {item.requirementsToApprove.map((req, j) => (
+                                <Badge key={j} variant="secondary" className="text-xs">
+                                  {req}
+                                </Badge>
+                              ))}
+                            </div>
+                          </div>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleImport(true, i)}
+                            className="shrink-0"
+                            data-testid={`button-test-school-${i}`}
+                          >
+                            <Play className="w-3 h-3 mr-1" />
+                            Test
+                          </Button>
                         </div>
                       </div>
                     ))}

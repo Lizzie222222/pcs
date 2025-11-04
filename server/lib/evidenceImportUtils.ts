@@ -264,7 +264,8 @@ export async function validateEvidenceImport(
 export async function processEvidenceImport(
   rows: EvidenceImportRow[],
   onProgress?: (progress: EvidenceImportProgress) => void,
-  testMode: boolean = false
+  testMode: boolean = false,
+  testSchoolIndex: number = 0
 ): Promise<EvidenceImportProgress> {
   const startTime = Date.now();
   const progress: EvidenceImportProgress = {
@@ -289,8 +290,8 @@ export async function processEvidenceImport(
   // Ensure import system user exists
   await ensureImportSystemUser();
 
-  // Process rows (just first one in test mode)
-  const rowsToProcess = testMode ? rows.slice(0, 1) : rows;
+  // Process rows (specific school in test mode, all schools otherwise)
+  const rowsToProcess = testMode ? [rows[testSchoolIndex]] : rows;
 
   for (const row of rowsToProcess) {
     try {

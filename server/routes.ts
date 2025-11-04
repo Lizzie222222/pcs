@@ -12251,6 +12251,7 @@ Return JSON with:
       }
 
       const testMode = req.body.testMode === 'true';
+      const testSchoolIndex = req.body.testSchoolIndex ? parseInt(req.body.testSchoolIndex) : 0;
       const { parseEvidenceCSV, processEvidenceImport } = await import('./lib/evidenceImportUtils');
       
       // Parse CSV
@@ -12258,6 +12259,11 @@ Return JSON with:
       
       if (rows.length === 0) {
         return res.status(400).json({ message: 'No valid rows found in CSV' });
+      }
+
+      // Validate test school index
+      if (testMode && (testSchoolIndex < 0 || testSchoolIndex >= rows.length)) {
+        return res.status(400).json({ message: 'Invalid school index' });
       }
 
       // Create batch ID for tracking
@@ -12280,7 +12286,8 @@ Return JSON with:
         (progress) => {
           evidenceImportProgress.set(batchId, progress);
         },
-        testMode
+        testMode,
+        testSchoolIndex
       ).catch(error => {
         console.error('[Evidence Import Process] Error:', error);
         const currentProgress = evidenceImportProgress.get(batchId) || {};
