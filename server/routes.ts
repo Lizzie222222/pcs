@@ -12231,8 +12231,8 @@ Return JSON with:
       // Parse CSV
       const rows = await parseEvidenceCSV(req.file.buffer, req.file.originalname);
       
-      // Validate (show first 100 for preview)
-      const validation = await validateEvidenceImport(rows, 100);
+      // Validate all rows (preview will still show first 10)
+      const validation = await validateEvidenceImport(rows);
       
       res.json(validation);
     } catch (error) {
