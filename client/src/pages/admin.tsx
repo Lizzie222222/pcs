@@ -108,6 +108,7 @@ import ActivityLogsSection from "@/components/admin/activity-logs/ActivityLogsSe
 import EvidenceGalleryTab from "@/components/admin/EvidenceGalleryTab";
 import PrintableFormsTab from "@/components/admin/PrintableFormsTab";
 import EvidenceImport from "@/components/admin/EvidenceImport";
+import DataImport from "@/components/admin/DataImport";
 import TeamsSection from '@/components/admin/teams/TeamsSection';
 import EvidenceRequirementsSection from '@/components/admin/evidence-requirements/EvidenceRequirementsSection';
 import SystemHealthTab from '@/components/admin/SystemHealthTab';
@@ -1064,9 +1065,22 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
           <UserManagementTab />
         )}
 
-        {/* Evidence Import Tab */}
+        {/* Data Import Tab - with tabs for Schools/Users and Evidence */}
         {activeTab === 'data-import' && (
-          <EvidenceImport />
+          <div className="space-y-6">
+            <Tabs defaultValue="evidence" className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="evidence" data-testid="tab-evidence-import">Evidence Approval Import</TabsTrigger>
+                <TabsTrigger value="schools-users" data-testid="tab-schools-users-import">Schools & Users Import</TabsTrigger>
+              </TabsList>
+              <TabsContent value="evidence" className="mt-6">
+                <EvidenceImport />
+              </TabsContent>
+              <TabsContent value="schools-users" className="mt-6">
+                <DataImport />
+              </TabsContent>
+            </Tabs>
+          </div>
         )}
 
         {/* User Activity Logs Tab */}

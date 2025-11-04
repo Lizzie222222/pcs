@@ -14,6 +14,7 @@ interface ValidationResult {
   errors: { row: number; schoolName: string; message: string }[];
   warnings: { row: number; schoolName: string; message: string }[];
   preview: {
+    rowIndex: number;
     schoolName: string;
     country: string;
     requirementsToApprove: string[];
@@ -335,7 +336,7 @@ export default function EvidenceImport() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => handleImport(true, i)}
+                            onClick={() => handleImport(true, item.rowIndex)}
                             className="shrink-0"
                             data-testid={`button-test-school-${i}`}
                           >

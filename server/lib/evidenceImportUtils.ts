@@ -96,6 +96,7 @@ export interface EvidenceImportValidation {
     message: string;
   }[];
   preview: {
+    rowIndex: number;  // Original row index in the CSV
     schoolName: string;
     country: string;
     requirementsToApprove: string[];
@@ -234,9 +235,10 @@ export async function validateEvidenceImport(
     if (!hasErrors) {
       validRows++;
       
-      // Add to preview (first 10)
+      // Add to preview (first 10) - store original row index for accurate testing
       if (preview.length < 10) {
         preview.push({
+          rowIndex: i,  // Original index in parsed rows array
           schoolName: row.schoolName,
           country: row.country,
           requirementsToApprove: row.completedRequirements.map(r => r.requirementTitle),
