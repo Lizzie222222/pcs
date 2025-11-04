@@ -86,8 +86,12 @@ export default function SchoolUserImport() {
   };
 
   const handleImport = async () => {
-    if (!file || !validation || validation.invalidRows > 0) return;
+    if (!file || !validation) {
+      console.log('Import blocked: missing file or validation', { file, validation });
+      return;
+    }
 
+    console.log('Starting import...', { validRows: validation.validRows, invalidRows: validation.invalidRows });
     setIsImporting(true);
     setResult(null);
 
@@ -95,6 +99,7 @@ export default function SchoolUserImport() {
       const formData = new FormData();
       formData.append('file', file);
 
+      console.log('Sending import request...');
       const response = await fetch('/api/admin/school-user-import/process', {
         method: 'POST',
         body: formData,
@@ -105,6 +110,7 @@ export default function SchoolUserImport() {
       }
 
       const data = await response.json();
+      console.log('Import result:', data);
       setResult(data);
 
       toast({
@@ -112,6 +118,7 @@ export default function SchoolUserImport() {
         description: `Created ${data.schoolsCreated} schools and ${data.usersCreated} users`,
       });
     } catch (error) {
+      console.error('Import error:', error);
       toast({
         title: "Import Error",
         description: error instanceof Error ? error.message : "Failed to import data",
