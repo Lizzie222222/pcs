@@ -1,6 +1,6 @@
 import { db } from '../db';
-import { schools, evidence } from '@shared/schema';
-import { eq, count, and, sql as drizzleSql } from 'drizzle-orm';
+import { schools } from '@shared/schema';
+import { eq } from 'drizzle-orm';
 
 export interface SchoolAuditResult {
   id: string;
@@ -15,9 +15,7 @@ export interface SchoolAuditResult {
   progressPercentage: number;
   currentStage: string;
   legacyEvidenceCount: number;
-  newEvidenceCount: number;
-  totalEvidenceCount: number;
-  status: 'logical' | 'illogical_excessive_progress' | 'illogical_round_mismatch' | 'illogical_no_evidence';
+  status: 'logical' | 'illogical_excessive_progress' | 'illogical_round_mismatch';
   issue?: string;
   recommendedFix?: {
     currentRound: number;
@@ -28,7 +26,6 @@ export interface SchoolAuditResult {
     awardCompleted: boolean;
     currentStage: 'inspire' | 'investigate' | 'act';
     progressPercentage: number;
-    resetType: 'complete' | 'progress_only';
   };
 }
 
@@ -39,7 +36,6 @@ export interface AuditSummary {
   byIssueType: {
     excessiveProgress: number;
     roundMismatch: number;
-    noEvidence: number;
   };
   byRound: {
     [key: number]: {
@@ -56,55 +52,27 @@ const BATCH_SIZE = 50;
 export class SchoolRoundFixer {
   /**
    * Audits all schools and identifies those with illogical progress percentages
-   * CRITICAL FIX: Now counts BOTH legacy evidence AND new approved evidence
+   * Focus: Schools in Round 2+ with progress > 100% need fixing
    */
   async auditAllSchools(): Promise<{ schools: SchoolAuditResult[]; summary: AuditSummary }> {
     console.log('[School Round Audit] Starting comprehensive audit...');
     
-    // CRITICAL: Get schools WITH their evidence counts
-    // We need to count BOTH legacy evidence AND new approved evidence
-    const schoolsWithEvidence = await db
-      .select({
-        id: schools.id,
-        name: schools.name,
-        country: schools.country,
-        currentRound: schools.currentRound,
-        roundsCompleted: schools.roundsCompleted,
-        inspireCompleted: schools.inspireCompleted,
-        investigateCompleted: schools.investigateCompleted,
-        actCompleted: schools.actCompleted,
-        awardCompleted: schools.awardCompleted,
-        progressPercentage: schools.progressPercentage,
-        currentStage: schools.currentStage,
-        legacyEvidenceCount: schools.legacyEvidenceCount,
-        newEvidenceCount: count(evidence.id),
-      })
-      .from(schools)
-      .leftJoin(
-        evidence, 
-        and(
-          eq(evidence.schoolId, schools.id),
-          eq(evidence.status, 'approved' as any)
-        )
-      )
-      .groupBy(schools.id);
-    
-    console.log(`[School Round Audit] Found ${schoolsWithEvidence.length} schools to audit`);
+    const allSchools = await db.select().from(schools);
+    console.log(`[School Round Audit] Found ${allSchools.length} schools to audit`);
     
     const auditResults: SchoolAuditResult[] = [];
     const summary: AuditSummary = {
-      totalSchools: schoolsWithEvidence.length,
+      totalSchools: allSchools.length,
       logicalSchools: 0,
       illogicalSchools: 0,
       byIssueType: {
         excessiveProgress: 0,
         roundMismatch: 0,
-        noEvidence: 0,
       },
       byRound: {},
     };
     
-    for (const school of schoolsWithEvidence) {
+    for (const school of allSchools) {
       const audit = this.auditSchool(school);
       auditResults.push(audit);
       
@@ -132,8 +100,6 @@ export class SchoolRoundFixer {
           summary.byIssueType.excessiveProgress++;
         } else if (audit.status === 'illogical_round_mismatch') {
           summary.byIssueType.roundMismatch++;
-        } else if (audit.status === 'illogical_no_evidence') {
-          summary.byIssueType.noEvidence++;
         }
       }
     }
@@ -155,12 +121,11 @@ export class SchoolRoundFixer {
   }
   
   /**
-   * Audits a single school to determine if its round state is logical
+   * Audits a single school to determine if its progress percentage is logical
    * 
-   * FIXED LOGIC (November 2025):
-   * - CRITICAL: Schools in Round 2+ MUST have evidence (legacy OR new) to justify their placement
-   * - Schools in Round 2+ with 0 TOTAL evidence were incorrectly promoted → Full reset to Round 1
+   * NEW LOGIC:
    * - Progress should be 0-100% per round (not cumulative)
+   * - Schools in Round 2+ with progress > 100% are illogical (migration issue)
    * - currentRound should equal roundsCompleted + 1
    */
   private auditSchool(school: any): SchoolAuditResult {
@@ -172,9 +137,6 @@ export class SchoolRoundFixer {
     const awardCompleted = school.awardCompleted || false;
     const progressPercentage = school.progressPercentage || 0;
     const currentStage = school.currentStage || 'inspire';
-    const legacyEvidenceCount = school.legacyEvidenceCount || 0;
-    const newEvidenceCount = Number(school.newEvidenceCount) || 0;
-    const totalEvidenceCount = legacyEvidenceCount + newEvidenceCount;
     
     const result: SchoolAuditResult = {
       id: school.id,
@@ -188,21 +150,9 @@ export class SchoolRoundFixer {
       awardCompleted,
       progressPercentage,
       currentStage,
-      legacyEvidenceCount,
-      newEvidenceCount,
-      totalEvidenceCount,
+      legacyEvidenceCount: school.legacyEvidenceCount || 0,
       status: 'logical',
     };
-    
-    // Check 0 (CRITICAL - FIXED): Schools in Round 2+ with NO TOTAL evidence were incorrectly placed
-    // They should be completely reset to Round 1
-    // FIXED: Now checks TOTAL evidence (legacy + new approved) not just legacy
-    if (currentRound > 1 && totalEvidenceCount === 0) {
-      result.status = 'illogical_no_evidence';
-      result.issue = `Invalid round placement: Round ${currentRound} school has 0 total evidence (0 legacy + 0 new approved, should be in Round 1)`;
-      result.recommendedFix = this.calculateFix(school);
-      return result;
-    }
     
     // Check 1: Round position should be correct
     // currentRound should equal roundsCompleted + 1
@@ -215,25 +165,16 @@ export class SchoolRoundFixer {
     }
     
     // Check 2: Progress percentage should be 0-100% per round (NOT cumulative)
-    // The migration incorrectly used cumulative progress (Round 2 = 100-200%, Round 3 = 200-300%)
+    // The migration incorrectly used cumulative progress (Round 2 = 153%, Round 3 = 273%)
     // Each round should reset to 0% and progress to 100%
-    // Schools in Round 2+ with >= 100% need fixing (includes exactly 100% leftover from Round 1)
-    if (currentRound > 1 && progressPercentage >= 100) {
+    if (progressPercentage > 100) {
       result.status = 'illogical_excessive_progress';
-      result.issue = `Excessive progress: Round ${currentRound} school has ${progressPercentage.toFixed(1)}% progress (should be 0-99% for current round)`;
+      result.issue = `Excessive progress: Round ${currentRound} school has ${progressPercentage.toFixed(1)}% progress (should be 0-100%)`;
       result.recommendedFix = this.calculateFix(school);
       return result;
     }
     
-    // Check 3a: Round 1 schools should never exceed 100% progress
-    if (currentRound === 1 && progressPercentage > 100) {
-      result.status = 'illogical_excessive_progress';
-      result.issue = `Excessive progress: Round 1 school has ${progressPercentage.toFixed(1)}% progress (should be 0-100%)`;
-      result.recommendedFix = this.calculateFix(school);
-      return result;
-    }
-    
-    // Check 3b: Progress < 0 is also illogical
+    // Check 3: Progress < 0 is also illogical
     if (progressPercentage < 0) {
       result.status = 'illogical_excessive_progress';
       result.issue = `Negative progress: ${progressPercentage.toFixed(1)}% (should be 0-100%)`;
@@ -247,53 +188,29 @@ export class SchoolRoundFixer {
   /**
    * Calculates the recommended fix for a school with illogical state
    * 
-   * FIXED LOGIC (November 2025):
-   * TWO SCENARIOS:
-   * 
-   * 1. Schools in Round 2+ with 0 TOTAL evidence → COMPLETE RESET to Round 1
-   *    - currentRound = 1, roundsCompleted = 0
-   *    - These were incorrectly promoted by migration
-   *    - FIXED: Now checks TOTAL evidence (legacy + new) not just legacy
-   * 
-   * 2. Schools with evidence but bad progress → PROGRESS RESET only
-   *    - PRESERVE currentRound and roundsCompleted (their achievements)
-   *    - Reset progress to 0% and clear flags for current round
+   * NEW FIX LOGIC:
+   * 1. PRESERVE roundsCompleted (their achievements!)
+   * 2. Fix currentRound = roundsCompleted + 1 (if needed)
+   * 3. Reset progressPercentage to 0 (start fresh in current round)
+   * 4. Reset all completion flags to false (haven't done anything in current round yet)
+   * 5. Set currentStage to 'inspire' (starting the round)
    */
   private calculateFix(school: any): SchoolAuditResult['recommendedFix'] {
-    const currentRound = school.currentRound || 1;
     const roundsCompleted = school.roundsCompleted || 0;
-    const legacyEvidenceCount = school.legacyEvidenceCount || 0;
-    const newEvidenceCount = Number(school.newEvidenceCount) || 0;
-    const totalEvidenceCount = legacyEvidenceCount + newEvidenceCount;
     
-    // SCENARIO 1: School in Round 2+ with NO TOTAL evidence → COMPLETE RESET
-    // FIXED: Now checks total evidence, not just legacy
-    if (currentRound > 1 && totalEvidenceCount === 0) {
-      return {
-        currentRound: 1,
-        roundsCompleted: 0,
-        inspireCompleted: false,
-        investigateCompleted: false,
-        actCompleted: false,
-        awardCompleted: false,
-        currentStage: 'inspire',
-        progressPercentage: 0,
-        resetType: 'complete',
-      };
-    }
-    
-    // SCENARIO 2: School has evidence but bad progress → PRESERVE ROUND, reset progress only
+    // The correct current round based on achievements
     const correctCurrentRound = roundsCompleted + 1;
+    
+    // Reset for fresh start in current round
     return {
       currentRound: correctCurrentRound,
       roundsCompleted: roundsCompleted, // PRESERVE their achievements
-      inspireCompleted: false,
+      inspireCompleted: false, // Haven't started current round yet
       investigateCompleted: false,
       actCompleted: false,
       awardCompleted: false,
-      currentStage: 'inspire',
-      progressPercentage: 0,
-      resetType: 'progress_only',
+      currentStage: 'inspire', // Starting fresh
+      progressPercentage: 0, // 0% progress in current round
     };
   }
   
@@ -346,7 +263,6 @@ export class SchoolRoundFixer {
   
   /**
    * Fixes a single school with transaction safety
-   * CRITICAL FIX: Must fetch school WITH evidence counts, not just school alone
    */
   private async fixSingleSchool(
     schoolId: string,
@@ -356,36 +272,9 @@ export class SchoolRoundFixer {
       details: Array<{ schoolId: string; name: string; before: any; after: any }>;
     }
   ): Promise<void> {
-    // CRITICAL: Fetch school WITH evidence counts (same as audit)
-    // This ensures auditSchool has newEvidenceCount to calculate totalEvidenceCount correctly
-    const schoolsWithEvidence = await db
-      .select({
-        id: schools.id,
-        name: schools.name,
-        country: schools.country,
-        currentRound: schools.currentRound,
-        roundsCompleted: schools.roundsCompleted,
-        inspireCompleted: schools.inspireCompleted,
-        investigateCompleted: schools.investigateCompleted,
-        actCompleted: schools.actCompleted,
-        awardCompleted: schools.awardCompleted,
-        progressPercentage: schools.progressPercentage,
-        currentStage: schools.currentStage,
-        legacyEvidenceCount: schools.legacyEvidenceCount,
-        newEvidenceCount: count(evidence.id),
-      })
-      .from(schools)
-      .leftJoin(
-        evidence, 
-        and(
-          eq(evidence.schoolId, schools.id),
-          eq(evidence.status, 'approved' as any)
-        )
-      )
-      .where(eq(schools.id, schoolId))
-      .groupBy(schools.id);
-    
-    const school = schoolsWithEvidence[0];
+    const school = await db.query.schools.findFirst({
+      where: eq(schools.id, schoolId),
+    });
     
     if (!school) {
       result.errors.push({ schoolId, error: 'School not found' });
