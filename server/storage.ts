@@ -3373,10 +3373,19 @@ export class DatabaseStorage implements IStorage {
       act: adminOverrides.filter(o => o.stage === 'act').length
     };
     
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Progress] School ${schoolId}: Admin overrides - inspire: ${overridesByStage.inspire}, investigate: ${overridesByStage.investigate}, act: ${overridesByStage.act}`);
+      console.log(`[Progress] School ${schoolId}: Counts before overrides - inspire: ${counts.inspire.approved}, investigate: ${counts.investigate.approved}, act: ${counts.act.approved}`);
+    }
+    
     // Add admin overrides to the approved counts
     counts.inspire.approved += overridesByStage.inspire;
     counts.investigate.approved += overridesByStage.investigate;
     counts.act.approved += overridesByStage.act;
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Progress] School ${schoolId}: Counts after overrides - inspire: ${counts.inspire.approved}, investigate: ${counts.investigate.approved}, act: ${counts.act.approved}`);
+    }
     
     // Capture the current round before any updates for certificate generation
     // This ensures certificates are created for the COMPLETED round, not the next round
@@ -3575,6 +3584,11 @@ export class DatabaseStorage implements IStorage {
     // Round 1: 0-100%, Round 2: 100-200%, Round 3: 200-300%, etc.
     const completedRounds = updates.roundsCompleted ?? school.roundsCompleted ?? 0;
     const progressPercentage = (completedRounds * 100) + currentRoundProgress;
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`[Progress] School ${schoolId}: Current round progress: ${currentRoundProgress}%, Completed rounds: ${completedRounds}, Total progress: ${progressPercentage}%`);
+      console.log(`[Progress] School ${schoolId}: Old progress: ${school.progressPercentage}%, New progress: ${progressPercentage}%, Has changes: ${progressPercentage !== school.progressPercentage}`);
+    }
     
     // Update progress percentage if it has changed
     if (progressPercentage !== school.progressPercentage) {
