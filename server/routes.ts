@@ -2492,6 +2492,34 @@ Return JSON with:
     }
   });
   
+  // GET /api/schools/me/evidence-overrides - Get evidence overrides for the authenticated school user
+  app.get('/api/schools/me/evidence-overrides', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      // Get user's schools
+      const userSchools = await storage.getUserSchools(userId);
+      if (userSchools.length === 0) {
+        return res.status(404).json({ message: "User not associated with a school" });
+      }
+
+      // Use the first school (most users only have one school)
+      const school = userSchools[0];
+      const currentRound = school.currentRound || 1;
+      
+      // Fetch overrides for the user's school
+      const overrides = await storage.getAdminEvidenceOverrides(school.id, currentRound);
+      
+      res.json(overrides);
+    } catch (error) {
+      console.error("Error fetching school evidence overrides:", error);
+      res.status(500).json({ message: "Failed to fetch evidence overrides" });
+    }
+  });
+  
   // PUT /api/verification-requests/:id/approve - Approve a verification request
   app.put('/api/verification-requests/:id/approve', isAuthenticated, async (req: any, res) => {
     try {

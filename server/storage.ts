@@ -3286,6 +3286,17 @@ export class DatabaseStorage implements IStorage {
         )
       );
 
+    // Get admin overrides for current round
+    const adminOverrides = await db
+      .select()
+      .from(adminEvidenceOverrides)
+      .where(
+        and(
+          eq(adminEvidenceOverrides.schoolId, schoolId),
+          eq(adminEvidenceOverrides.roundNumber, currentRound)
+        )
+      );
+
     const inspireEvidence = allEvidence.filter(e => e.stage === 'inspire');
     const investigateEvidence = allEvidence.filter(e => e.stage === 'investigate');
     const actEvidence = allEvidence.filter(e => e.stage === 'act');
@@ -3293,10 +3304,11 @@ export class DatabaseStorage implements IStorage {
     // Count approved evidence items:
     // - For evidence with evidenceRequirementId: count unique requirement IDs
     // - For evidence without evidenceRequirementId: count each item individually
-    const getApprovedRequirementsCount = (stageEvidence: typeof allEvidence) => {
+    // - Include admin overrides for the stage
+    const getApprovedRequirementsCount = (stageEvidence: typeof allEvidence, stageId: string) => {
       const approvedEvidence = stageEvidence.filter(e => e.status === 'approved');
       
-      // Count unique requirement IDs
+      // Count unique requirement IDs from approved evidence
       const uniqueRequirementIds = new Set(
         approvedEvidence
           .filter(e => e.evidenceRequirementId !== null)
@@ -3305,6 +3317,14 @@ export class DatabaseStorage implements IStorage {
       
       // Count evidence items without requirement IDs (e.g., admin uploads)
       const evidenceWithoutRequirement = approvedEvidence.filter(e => e.evidenceRequirementId === null);
+      
+      // Count admin overrides for this stage (already filtered by round)
+      const stageOverrides = adminOverrides.filter(o => o.stage === stageId);
+      
+      // Add override requirement IDs to the unique set (union operation)
+      stageOverrides.forEach(override => {
+        uniqueRequirementIds.add(override.evidenceRequirementId);
+      });
       
       return uniqueRequirementIds.size + evidenceWithoutRequirement.length;
     };
@@ -3341,17 +3361,17 @@ export class DatabaseStorage implements IStorage {
     return {
       inspire: {
         total: inspireEvidence.length,
-        approved: getApprovedRequirementsCount(inspireEvidence)
+        approved: getApprovedRequirementsCount(inspireEvidence, 'inspire')
       },
       investigate: {
         total: investigateEvidence.length,
-        approved: getApprovedRequirementsCount(investigateEvidence),
+        approved: getApprovedRequirementsCount(investigateEvidence, 'investigate'),
         hasQuiz,
         hasActionPlan
       },
       act: {
         total: actEvidence.length,
-        approved: getApprovedRequirementsCount(actEvidence)
+        approved: getApprovedRequirementsCount(actEvidence, 'act')
       }
     };
   }
@@ -3360,31 +3380,11 @@ export class DatabaseStorage implements IStorage {
     const school = await this.getSchool(schoolId);
     if (!school) return undefined;
 
+    // Get evidence counts (now includes admin overrides)
     const counts = await this.getSchoolEvidenceCounts(schoolId);
     
-    // Get admin evidence overrides for the current round and add them to counts
-    const currentRound = school.currentRound || 1;
-    const adminOverrides = await this.getAdminEvidenceOverrides(schoolId, currentRound);
-    
-    // Count overrides by stage and add to approved counts
-    const overridesByStage = {
-      inspire: adminOverrides.filter(o => o.stage === 'inspire').length,
-      investigate: adminOverrides.filter(o => o.stage === 'investigate').length,
-      act: adminOverrides.filter(o => o.stage === 'act').length
-    };
-    
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[Progress] School ${schoolId}: Admin overrides - inspire: ${overridesByStage.inspire}, investigate: ${overridesByStage.investigate}, act: ${overridesByStage.act}`);
-      console.log(`[Progress] School ${schoolId}: Counts before overrides - inspire: ${counts.inspire.approved}, investigate: ${counts.investigate.approved}, act: ${counts.act.approved}`);
-    }
-    
-    // Add admin overrides to the approved counts
-    counts.inspire.approved += overridesByStage.inspire;
-    counts.investigate.approved += overridesByStage.investigate;
-    counts.act.approved += overridesByStage.act;
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[Progress] School ${schoolId}: Counts after overrides - inspire: ${counts.inspire.approved}, investigate: ${counts.investigate.approved}, act: ${counts.act.approved}`);
+      console.log(`[Progress] School ${schoolId}: Current round progress: ${school.progressPercentage}%, Completed rounds: ${school.roundsCompleted || 0}, Total progress: ${school.progressPercentage}%`);
     }
     
     // Capture the current round before any updates for certificate generation

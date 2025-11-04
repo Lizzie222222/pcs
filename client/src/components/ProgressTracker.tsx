@@ -41,6 +41,13 @@ interface Evidence {
   roundNumber?: number;
 }
 
+interface AdminOverride {
+  id: string;
+  evidenceRequirementId: string;
+  stage: string;
+  roundNumber: number;
+}
+
 interface ProgressTrackerProps {
   inspireCompleted: boolean;
   investigateCompleted: boolean;
@@ -148,6 +155,12 @@ export default function ProgressTracker({
     enabled: !!schoolId,
   });
 
+  // Fetch admin overrides for this school (already filtered by current round on backend)
+  const { data: adminOverrides = [] } = useQuery<AdminOverride[]>({
+    queryKey: ['/api/schools/me/evidence-overrides'],
+    enabled: !!schoolId,
+  });
+
   const stages = [
     {
       id: 'inspire',
@@ -248,6 +261,23 @@ export default function ProgressTracker({
     return allEvidence.find(
       ev => ev.evidenceRequirementId === requirementId && ev.roundNumber === currentRound
     );
+  };
+
+  // Check if requirement is satisfied (approved evidence OR admin override)
+  const isRequirementSatisfied = (requirementId: string) => {
+    // Check if has approved evidence
+    const hasApprovedEvidence = allEvidence.some(
+      ev => ev.evidenceRequirementId === requirementId && 
+            ev.roundNumber === currentRound && 
+            ev.status === 'approved'
+    );
+    
+    // Check if has admin override
+    const hasOverride = adminOverrides.some(
+      ov => ov.evidenceRequirementId === requirementId
+    );
+    
+    return hasApprovedEvidence || hasOverride;
   };
 
   // Handle opening evidence form with requirement
@@ -418,13 +448,13 @@ export default function ProgressTracker({
                           {isAudit && (
                             <div className="flex items-center justify-between gap-2 mt-3">
                               <div className="flex items-center gap-1.5">
-                                {auditStatus === 'not_started' && (
+                                {!isRequirementSatisfied(requirement.id) && auditStatus === 'not_started' && (
                                   <>
                                     <Circle className="h-4 w-4 text-gray-400" />
                                     <span className="text-xs text-gray-500">{t('progress.status.not_started')}</span>
                                   </>
                                 )}
-                                {auditStatus === 'submitted' && (
+                                {!isRequirementSatisfied(requirement.id) && auditStatus === 'submitted' && (
                                   <>
                                     <Clock className="h-4 w-4 text-yellow-500" />
                                     <Badge 
@@ -436,7 +466,7 @@ export default function ProgressTracker({
                                     </Badge>
                                   </>
                                 )}
-                                {auditStatus === 'approved' && (
+                                {(isRequirementSatisfied(requirement.id) || auditStatus === 'approved') && (
                                   <>
                                     <CheckCircle className="h-4 w-4 text-green-500" />
                                     <Badge 
@@ -448,7 +478,7 @@ export default function ProgressTracker({
                                     </Badge>
                                   </>
                                 )}
-                                {auditStatus === 'rejected' && (
+                                {!isRequirementSatisfied(requirement.id) && auditStatus === 'rejected' && (
                                   <>
                                     <X className="h-4 w-4 text-red-500" />
                                     <Badge 
@@ -463,7 +493,7 @@ export default function ProgressTracker({
                               </div>
 
                               {/* Audit Action Buttons */}
-                              {auditStatus === 'not_started' && (
+                              {!isRequirementSatisfied(requirement.id) && auditStatus === 'not_started' && (
                                 <Button
                                   size="sm"
                                   className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 bg-pcs_blue hover:bg-pcs_blue/90"
@@ -473,7 +503,7 @@ export default function ProgressTracker({
                                   {t('progress.buttons.do_audit')}
                                 </Button>
                               )}
-                              {auditStatus === 'submitted' && (
+                              {!isRequirementSatisfied(requirement.id) && auditStatus === 'submitted' && (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -484,7 +514,7 @@ export default function ProgressTracker({
                                   {t('progress.buttons.review_answers')}
                                 </Button>
                               )}
-                              {auditStatus === 'rejected' && (
+                              {!isRequirementSatisfied(requirement.id) && auditStatus === 'rejected' && (
                                 <Button
                                   size="sm"
                                   variant="destructive"
@@ -502,13 +532,13 @@ export default function ProgressTracker({
                           {isActionPlan && (
                             <div className="flex items-center justify-between gap-2 mt-3">
                               <div className="flex items-center gap-1.5">
-                                {!evidenceStatus && (
+                                {!isRequirementSatisfied(requirement.id) && !evidenceStatus && (
                                   <>
                                     <Circle className="h-4 w-4 text-gray-400" />
                                     <span className="text-xs text-gray-500">{t('progress.status.not_started')}</span>
                                   </>
                                 )}
-                                {evidenceStatus === 'pending' && (
+                                {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'pending' && (
                                   <>
                                     <Clock className="h-4 w-4 text-yellow-500" />
                                     <Badge 
@@ -520,7 +550,7 @@ export default function ProgressTracker({
                                     </Badge>
                                   </>
                                 )}
-                                {evidenceStatus === 'approved' && (
+                                {isRequirementSatisfied(requirement.id) && (
                                   <>
                                     <CheckCircle className="h-4 w-4 text-green-500" />
                                     <Badge 
@@ -532,7 +562,7 @@ export default function ProgressTracker({
                                     </Badge>
                                   </>
                                 )}
-                                {evidenceStatus === 'rejected' && (
+                                {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'rejected' && (
                                   <>
                                     <X className="h-4 w-4 text-red-500" />
                                     <Badge 
@@ -547,7 +577,7 @@ export default function ProgressTracker({
                               </div>
 
                               {/* Action Plan Action Buttons */}
-                              {!evidenceStatus && (
+                              {!isRequirementSatisfied(requirement.id) && !evidenceStatus && (
                                 <Button
                                   size="sm"
                                   className="text-xs h-8 px-3 font-semibold shadow-md transition-all duration-300 bg-teal hover:bg-teal/90"
@@ -557,7 +587,7 @@ export default function ProgressTracker({
                                   {t('progress.buttons.create_plan')}
                                 </Button>
                               )}
-                              {evidenceStatus === 'pending' && (
+                              {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'pending' && (
                                 <Button
                                   size="sm"
                                   variant="outline"
@@ -568,7 +598,7 @@ export default function ProgressTracker({
                                   {t('progress.buttons.view_plan')}
                                 </Button>
                               )}
-                              {evidenceStatus === 'rejected' && (
+                              {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'rejected' && (
                                 <Button
                                   size="sm"
                                   variant="destructive"
@@ -586,13 +616,13 @@ export default function ProgressTracker({
                           {!isAudit && !isActionPlan && (
                             <div className="flex items-center justify-between gap-2 mt-3">
                               <div className="flex items-center gap-1.5">
-                                {!evidenceStatus && (
+                                {!isRequirementSatisfied(requirement.id) && !evidenceStatus && (
                                   <>
                                     <Circle className="h-4 w-4 text-gray-400" />
                                     <span className="text-xs text-gray-500">{t('progress.status.not_started')}</span>
                                   </>
                                 )}
-                                {evidenceStatus === 'pending' && (
+                                {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'pending' && (
                                   <>
                                     <Clock className="h-4 w-4 text-yellow-500" />
                                     <Badge 
@@ -604,7 +634,7 @@ export default function ProgressTracker({
                                     </Badge>
                                   </>
                                 )}
-                                {evidenceStatus === 'approved' && (
+                                {isRequirementSatisfied(requirement.id) && (
                                   <>
                                     <CheckCircle className="h-4 w-4 text-green-500" />
                                     <Badge 
@@ -616,7 +646,7 @@ export default function ProgressTracker({
                                     </Badge>
                                   </>
                                 )}
-                                {evidenceStatus === 'rejected' && (
+                                {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'rejected' && (
                                   <>
                                     <X className="h-4 w-4 text-red-500" />
                                     <Badge 
@@ -631,7 +661,7 @@ export default function ProgressTracker({
                               </div>
 
                               {/* Action Button */}
-                              {evidenceStatus !== 'approved' && evidenceStatus !== 'pending' && (
+                              {!isRequirementSatisfied(requirement.id) && evidenceStatus !== 'pending' && (
                                 <Button
                                   size="sm"
                                   variant={evidenceStatus === 'rejected' ? 'destructive' : 'default'}
