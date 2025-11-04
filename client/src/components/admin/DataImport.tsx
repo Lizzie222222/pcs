@@ -818,6 +818,37 @@ function MigrationDialogContent() {
     },
   });
 
+  const recalculateRoundProgressMutation = useMutation({
+    mutationFn: async () => {
+      const response = await fetch('/api/admin/migration/recalculate-round-progress', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+      });
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to recalculate round progress');
+      }
+      return response.json();
+    },
+    onSuccess: (data: any) => {
+      toast({
+        title: 'Round Progress Recalculated',
+        description: `Processed ${data.processed} schools. Updated ${data.updated}, skipped ${data.skipped}.`,
+        duration: 8000,
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/migration/logs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Recalculation Failed',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+
   const runMigrationMutation = useMutation({
     mutationFn: async ({ dryRun }: { dryRun: boolean }) => {
       const response = await fetch('/api/admin/migration/run', {
@@ -1061,6 +1092,72 @@ function MigrationDialogContent() {
                       </>
                     )}
                   </Button>
+                </CardContent>
+              </Card>
+
+              {/* Round Progress Recalculation Tool */}
+              <Card className="border-2 border-orange-500/20 bg-gradient-to-br from-orange-50/30 to-white">
+                <CardHeader>
+                  <CardTitle className="text-lg text-orange-700">Recalculate Round 2+ Schools Progress (Fix 100% Issue)</CardTitle>
+                  <CardDescription>
+                    Fixes Round 2+ schools showing 100% when they should be 0%. Recalculates progress based on actual evidence, not stale completion flags.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button
+                    onClick={() => recalculateRoundProgressMutation.mutate()}
+                    disabled={recalculateRoundProgressMutation.isPending}
+                    className="bg-orange-600 hover:bg-orange-700"
+                    data-testid="button-recalculate-round-progress"
+                  >
+                    {recalculateRoundProgressMutation.isPending ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Recalculating Round Progress...
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Recalculate Round 2+ Progress
+                      </>
+                    )}
+                  </Button>
+
+                  {recalculateRoundProgressMutation.isSuccess && recalculateRoundProgressMutation.data && (
+                    <Alert className="bg-orange-50 border-orange-200">
+                      <CheckCircle className="h-4 w-4 text-orange-600" />
+                      <AlertDescription className="text-orange-800">
+                        <strong className="block mb-2">Round Progress Recalculation Complete</strong>
+                        <div className="space-y-1 text-sm">
+                          <div>• Total schools processed: {recalculateRoundProgressMutation.data.processed}</div>
+                          <div>• Schools updated: {recalculateRoundProgressMutation.data.updated}</div>
+                          <div>• Schools skipped (no changes): {recalculateRoundProgressMutation.data.skipped}</div>
+                          {recalculateRoundProgressMutation.data.progressChanges && recalculateRoundProgressMutation.data.progressChanges.length > 0 && (
+                            <div className="mt-2">
+                              <strong>Progress Changes Summary:</strong>
+                              <ul className="ml-4 mt-1">
+                                {recalculateRoundProgressMutation.data.progressChanges.slice(0, 5).map((change: any, idx: number) => (
+                                  <li key={idx}>
+                                    {change.schoolName}: {change.oldProgress}% → {change.newProgress}%
+                                  </li>
+                                ))}
+                                {recalculateRoundProgressMutation.data.progressChanges.length > 5 && (
+                                  <li className="font-semibold">
+                                    ...and {recalculateRoundProgressMutation.data.progressChanges.length - 5} more
+                                  </li>
+                                )}
+                              </ul>
+                            </div>
+                          )}
+                          {recalculateRoundProgressMutation.data.errors && recalculateRoundProgressMutation.data.errors.length > 0 && (
+                            <div className="mt-2 text-red-700 font-medium">
+                              ⚠️ {recalculateRoundProgressMutation.data.errors.length} errors encountered (check logs for details)
+                            </div>
+                          )}
+                        </div>
+                      </AlertDescription>
+                    </Alert>
+                  )}
                 </CardContent>
               </Card>
 
