@@ -165,16 +165,25 @@ export class SchoolRoundFixer {
     }
     
     // Check 2: Progress percentage should be 0-100% per round (NOT cumulative)
-    // The migration incorrectly used cumulative progress (Round 2 = 153%, Round 3 = 273%)
+    // The migration incorrectly used cumulative progress (Round 2 = 100-200%, Round 3 = 200-300%)
     // Each round should reset to 0% and progress to 100%
-    if (progressPercentage > 100) {
+    // Schools in Round 2+ with >= 100% need fixing (includes exactly 100% leftover from Round 1)
+    if (currentRound > 1 && progressPercentage >= 100) {
       result.status = 'illogical_excessive_progress';
-      result.issue = `Excessive progress: Round ${currentRound} school has ${progressPercentage.toFixed(1)}% progress (should be 0-100%)`;
+      result.issue = `Excessive progress: Round ${currentRound} school has ${progressPercentage.toFixed(1)}% progress (should be 0-99% for current round)`;
       result.recommendedFix = this.calculateFix(school);
       return result;
     }
     
-    // Check 3: Progress < 0 is also illogical
+    // Check 3a: Round 1 schools should never exceed 100% progress
+    if (currentRound === 1 && progressPercentage > 100) {
+      result.status = 'illogical_excessive_progress';
+      result.issue = `Excessive progress: Round 1 school has ${progressPercentage.toFixed(1)}% progress (should be 0-100%)`;
+      result.recommendedFix = this.calculateFix(school);
+      return result;
+    }
+    
+    // Check 3b: Progress < 0 is also illogical
     if (progressPercentage < 0) {
       result.status = 'illogical_excessive_progress';
       result.issue = `Negative progress: ${progressPercentage.toFixed(1)}% (should be 0-100%)`;

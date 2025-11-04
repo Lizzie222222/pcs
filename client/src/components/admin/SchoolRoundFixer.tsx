@@ -150,7 +150,7 @@ export default function SchoolRoundFixer() {
             School Round Integrity Check
           </CardTitle>
           <CardDescription>
-            Audit schools to identify those with illogical progress percentages (e.g., Round 2 schools with 153% progress, Round 3 schools with 273% progress),
+            Audit schools to identify those with illogical progress percentages (e.g., Round 2+ schools with 100% or higher progress),
             then fix them by resetting progress to 0% while PRESERVING their round achievements (currentRound and roundsCompleted remain intact).
           </CardDescription>
         </CardHeader>
@@ -158,8 +158,8 @@ export default function SchoolRoundFixer() {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              <strong>What this fixes:</strong> The migration incorrectly used cumulative progress percentages 
-              (Round 2 = 153%, Round 3 = 273%). This tool resets progress to 0% and clears completion flags for the current round,
+              <strong>What this fixes:</strong> The migration incorrectly left progress percentages at 100% or higher for Round 2+ schools 
+              (e.g., Round 2 schools showing 100-200%, Round 3 schools showing 200-300%). This tool resets progress to 0% and clears completion flags for the current round,
               while <strong>PRESERVING</strong> their round achievements (schools stay in Round 2/3, roundsCompleted is kept).
               <br /><br />
               <strong>What is preserved:</strong> currentRound, roundsCompleted, legacyEvidenceCount
