@@ -7,21 +7,22 @@ import { parseImportFile, normalizeColumnName } from "./importUtils";
 /**
  * Maps CSV column names to evidence requirement titles
  * CSV columns use format like "stage_1_assembly" or "stage2_audit"
+ * Note: Titles must match EXACTLY with database (including spaces and punctuation)
  */
 export const CSV_TO_REQUIREMENT_MAP: Record<string, string> = {
   // Inspire stage
   'stage_1_assembly': 'School Assembly',
-  'stage_1_litterpick': 'Litter Audit & Cleanup',
-  'stage_1_pledge': 'Recycling Infrastructure',
+  'stage_1_litterpick': 'Local Cleanup',
+  'stage_1_pledge': 'Plastic Clever Pledge',
   
   // Investigate stage
   'stage2_audit': 'Plastic Waste Audit',
   'stage2_actionplan': 'Action Plan Development',
   
   // Act stage
-  'stage_3_shareevidence': 'Plastic-Free Initiative',
-  'stage_3_campaign': 'Student-Led Campaign',
-  'stage_3_sharesuccess': 'Community Engagement',
+  'stage_3_campaign': 'Run a Campaign ',  // Note: has trailing space in DB
+  'stage_3shareevidence': 'Share your evidence ',  // Note: has trailing space in DB
+  'stage_3_sharesuccess': 'Share your success!',
 };
 
 /**
