@@ -39,6 +39,8 @@ interface SchoolAuditResult {
   progressPercentage: number;
   currentStage: string;
   legacyEvidenceCount: number;
+  newEvidenceCount: number;
+  totalEvidenceCount: number;
   status: 'logical' | 'illogical_excessive_progress' | 'illogical_round_mismatch' | 'illogical_no_evidence';
   issue?: string;
   recommendedFix?: any;
@@ -160,10 +162,12 @@ export default function SchoolRoundFixer() {
           <Alert>
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
+              <strong>FIXED - Now counts BOTH legacy and new evidence!</strong>
+              <br /><br />
               <strong>TWO FIX TYPES:</strong>
               <br /><br />
-              <strong>1. Complete Reset (Round 2+ with 0 evidence):</strong> Schools incorrectly placed in Round 2/3 with NO legacy evidence will be completely reset to Round 1 
-              (currentRound=1, roundsCompleted=0). These were incorrectly promoted by the migration.
+              <strong>1. Complete Reset (Round 2+ with 0 TOTAL evidence):</strong> Schools incorrectly placed in Round 2/3 with NO evidence 
+              (neither legacy from migration NOR new submissions through the platform) will be completely reset to Round 1.
               <br /><br />
               <strong>2. Progress Reset Only (has evidence):</strong> Schools with evidence but excessive progress (≥100%) will have only their progress reset to 0% 
               while <strong>PRESERVING</strong> their round achievements (currentRound and roundsCompleted stay intact).
@@ -371,6 +375,8 @@ export default function SchoolRoundFixer() {
                       <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                         Current state: Round {school.currentRound}, {school.progressPercentage.toFixed(1)}% progress, 
                         {school.roundsCompleted} rounds completed
+                        <br />
+                        Evidence: {school.totalEvidenceCount} total ({school.legacyEvidenceCount} legacy + {school.newEvidenceCount} new approved)
                       </div>
                       {school.recommendedFix && (
                         <div className="text-xs text-green-600 dark:text-green-400 mt-1">
