@@ -3410,13 +3410,18 @@ export class DatabaseStorage implements IStorage {
       }
       
       // Ensure progress respects stage completion minimums to prevent regression
-      // Migrated schools with completed stages should not be downgraded
-      if (actComplete) {
-        currentRoundProgress = Math.max(currentRoundProgress, 100);
-      } else if (investigateComplete) {
-        currentRoundProgress = Math.max(currentRoundProgress, 67);
-      } else if (inspireComplete) {
-        currentRoundProgress = Math.max(currentRoundProgress, 33);
+      // ONLY apply this for Round 1 migrated schools
+      // Round 2+ schools should have their flags reset, so don't trust stale flags
+      const currentRound = school.currentRound || 1;
+      if (currentRound === 1) {
+        // Migrated schools with completed stages should not be downgraded
+        if (actComplete) {
+          currentRoundProgress = Math.max(currentRoundProgress, 100);
+        } else if (investigateComplete) {
+          currentRoundProgress = Math.max(currentRoundProgress, 67);
+        } else if (inspireComplete) {
+          currentRoundProgress = Math.max(currentRoundProgress, 33);
+        }
       }
     } else {
       // For non-migrated schools, calculate based on evidence
