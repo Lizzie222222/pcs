@@ -12328,6 +12328,63 @@ Return JSON with:
     res.json(progress);
   });
 
+  // Simple School & User Import Routes
+  // These routes handle CSV import of schools and users (simpler than full data migration)
+  
+  // Validate school/user CSV
+  app.post('/api/admin/school-user-import/validate', isAuthenticated, requireAdmin, importUpload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const { parseSchoolUserCSV, validateSchoolUserImport } = await import('./lib/schoolUserImportUtils');
+      
+      // Parse CSV
+      const csvContent = req.file.buffer.toString('utf-8');
+      const rows = parseSchoolUserCSV(csvContent);
+      
+      // Validate all rows
+      const validation = await validateSchoolUserImport(rows);
+      
+      res.json(validation);
+    } catch (error) {
+      console.error('[School/User Import Validate] Error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Validation failed' 
+      });
+    }
+  });
+
+  // Process school/user import
+  app.post('/api/admin/school-user-import/process', isAuthenticated, requireAdmin, importUpload.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: 'No file uploaded' });
+      }
+
+      const { parseSchoolUserCSV, processSchoolUserImport } = await import('./lib/schoolUserImportUtils');
+      
+      // Parse CSV
+      const csvContent = req.file.buffer.toString('utf-8');
+      const rows = parseSchoolUserCSV(csvContent);
+      
+      if (rows.length === 0) {
+        return res.status(400).json({ message: 'No valid rows found in CSV' });
+      }
+
+      // Process import
+      const result = await processSchoolUserImport(rows);
+      
+      res.json(result);
+    } catch (error) {
+      console.error('[School/User Import Process] Error:', error);
+      res.status(500).json({ 
+        message: error instanceof Error ? error.message : 'Import failed' 
+      });
+    }
+  });
+
   // Server-side meta tag injection for case study pages
   // This route MUST be before Vite/SPA catch-all to intercept case study requests
   // ONLY enabled in production - in development, Vite needs to transform the HTML

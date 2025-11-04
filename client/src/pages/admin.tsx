@@ -108,7 +108,7 @@ import ActivityLogsSection from "@/components/admin/activity-logs/ActivityLogsSe
 import EvidenceGalleryTab from "@/components/admin/EvidenceGalleryTab";
 import PrintableFormsTab from "@/components/admin/PrintableFormsTab";
 import EvidenceImport from "@/components/admin/EvidenceImport";
-import DataImport from "@/components/admin/DataImport";
+import SchoolUserImport from "@/components/admin/SchoolUserImport";
 import TeamsSection from '@/components/admin/teams/TeamsSection';
 import EvidenceRequirementsSection from '@/components/admin/evidence-requirements/EvidenceRequirementsSection';
 import SystemHealthTab from '@/components/admin/SystemHealthTab';
@@ -1077,7 +1077,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 <EvidenceImport />
               </TabsContent>
               <TabsContent value="schools-users" className="mt-6">
-                <DataImport />
+                <SchoolUserImport />
               </TabsContent>
             </Tabs>
           </div>
