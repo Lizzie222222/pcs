@@ -109,6 +109,7 @@ import EvidenceGalleryTab from "@/components/admin/EvidenceGalleryTab";
 import PrintableFormsTab from "@/components/admin/PrintableFormsTab";
 import EvidenceImport from "@/components/admin/EvidenceImport";
 import SchoolUserImport from "@/components/admin/SchoolUserImport";
+import SchoolRoundFixer from "@/components/admin/SchoolRoundFixer";
 import TeamsSection from '@/components/admin/teams/TeamsSection';
 import EvidenceRequirementsSection from '@/components/admin/evidence-requirements/EvidenceRequirementsSection';
 import SystemHealthTab from '@/components/admin/SystemHealthTab';
@@ -1065,19 +1066,23 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
           <UserManagementTab />
         )}
 
-        {/* Data Import Tab - with tabs for Schools/Users and Evidence */}
+        {/* Data Import Tab - with tabs for Schools/Users, Evidence, and Round Fixer */}
         {activeTab === 'data-import' && (
           <div className="space-y-6">
             <Tabs defaultValue="evidence" className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
+              <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="evidence" data-testid="tab-evidence-import">Evidence Approval Import</TabsTrigger>
                 <TabsTrigger value="schools-users" data-testid="tab-schools-users-import">Schools & Users Import</TabsTrigger>
+                <TabsTrigger value="round-fixer" data-testid="tab-round-fixer">Round Integrity Check</TabsTrigger>
               </TabsList>
               <TabsContent value="evidence" className="mt-6">
                 <EvidenceImport />
               </TabsContent>
               <TabsContent value="schools-users" className="mt-6">
                 <SchoolUserImport />
+              </TabsContent>
+              <TabsContent value="round-fixer" className="mt-6">
+                <SchoolRoundFixer />
               </TabsContent>
             </Tabs>
           </div>

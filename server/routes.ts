@@ -5305,6 +5305,87 @@ Return JSON with:
     }
   });
 
+  // Audit and fix school rounds (comprehensive fix for illogical round states)
+  app.post('/api/admin/migration/audit-school-rounds', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      console.log('[School Round Audit] Starting audit...');
+      
+      const { SchoolRoundFixer } = await import('./lib/schoolRoundFixer');
+      const fixer = new SchoolRoundFixer();
+      
+      const result = await fixer.auditAllSchools();
+      
+      console.log('[School Round Audit] Audit complete');
+      
+      res.json({
+        success: true,
+        ...result,
+      });
+    } catch (error) {
+      console.error('[School Round Audit] Failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to audit school rounds',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
+  app.post('/api/admin/migration/fix-school-rounds', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      console.log('[School Round Fix] Starting fix process...');
+      
+      const { schoolIds, dryRun = false } = req.body;
+      
+      if (!schoolIds || !Array.isArray(schoolIds)) {
+        return res.status(400).json({
+          success: false,
+          message: 'schoolIds array is required',
+        });
+      }
+      
+      console.log(`[School Round Fix] Fixing ${schoolIds.length} schools (dryRun: ${dryRun})`);
+      
+      const { SchoolRoundFixer } = await import('./lib/schoolRoundFixer');
+      const fixer = new SchoolRoundFixer();
+      
+      if (dryRun) {
+        // In dry run mode, just audit the specific schools
+        const allSchools = await db.select().from(schools);
+        const targetSchools = allSchools.filter(s => schoolIds.includes(s.id));
+        
+        const auditResults = targetSchools.map(s => {
+          const audit = (fixer as any).auditSchool(s);
+          return audit;
+        });
+        
+        res.json({
+          success: true,
+          dryRun: true,
+          message: `Dry run complete - no changes made`,
+          wouldFix: auditResults.filter(a => a.status !== 'logical').length,
+          preview: auditResults.filter(a => a.status !== 'logical'),
+        });
+      } else {
+        const result = await fixer.fixSchools(schoolIds);
+        
+        res.json({
+          success: true,
+          dryRun: false,
+          message: `Fixed ${result.fixed} schools`,
+          ...result,
+        });
+      }
+    } catch (error) {
+      console.error('[School Round Fix] Failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fix school rounds',
+        error: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  });
+
   // Consolidated migration cleanup - runs all cleanup steps in sequence
   app.post('/api/admin/migration/cleanup', isAuthenticated, requireAdmin, async (req, res) => {
     try {
