@@ -3398,8 +3398,10 @@ export class DatabaseStorage implements IStorage {
         (counts.investigate.hasActionPlan ? 1 : 0) +
         counts.act.approved;
       
-      // Add legacy evidence count to the total
-      const legacyEvidence = school.legacyEvidenceCount || 0;
+      // Add legacy evidence count to the total ONLY for Round 1
+      // For Round 2+, legacy evidence should not count towards progress
+      const currentRound = updates.currentRound ?? school.currentRound ?? 1;
+      const legacyEvidence = (currentRound === 1) ? (school.legacyEvidenceCount || 0) : 0;
       const totalEvidence = totalNewApproved + legacyEvidence;
       
       // Calculate total required items
