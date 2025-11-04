@@ -406,7 +406,7 @@ export interface IStorage {
   ): Promise<{ created: boolean; override: AdminEvidenceOverride | null }>;
   
   // Progression system operations
-  checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined>;
+  checkAndUpdateSchoolProgression(schoolId: string, options?: { skipAutoAdvancement?: boolean }): Promise<School | undefined>;
   getSchoolEvidenceCounts(schoolId: string): Promise<{
     inspire: { total: number; approved: number };
     investigate: { total: number; approved: number; hasQuiz: boolean; hasActionPlan: boolean };
@@ -3389,12 +3389,15 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
-  async checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined> {
+  async checkAndUpdateSchoolProgression(schoolId: string, options?: { skipAutoAdvancement?: boolean }): Promise<School | undefined> {
     const school = await this.getSchool(schoolId);
     if (!school) return undefined;
 
     // Get evidence counts (now includes admin overrides)
     const counts = await this.getSchoolEvidenceCounts(schoolId);
+    
+    // Extract skipAutoAdvancement flag (defaults to false for normal progression)
+    const skipAutoAdvancement = options?.skipAutoAdvancement || false;
     
     if (process.env.NODE_ENV === 'development') {
       console.log(`[Progress] School ${schoolId}: Current round progress: ${school.progressPercentage}%, Completed rounds: ${school.roundsCompleted || 0}, Total progress: ${school.progressPercentage}%`);
