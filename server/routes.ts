@@ -5641,6 +5641,61 @@ Return JSON with:
     }
   });
 
+  // Recalculate progress for all schools (applies new calculation logic)
+  app.post('/api/admin/recalculate-all-progress', isAuthenticated, requireAdmin, async (req, res) => {
+    try {
+      console.log('[Recalculate Progress] Starting recalculation for all schools...');
+      
+      const allSchools = await db.select().from(schools);
+      console.log(`[Recalculate Progress] Found ${allSchools.length} schools`);
+      
+      let updated = 0;
+      let skipped = 0;
+      const errors: any[] = [];
+      
+      for (const school of allSchools) {
+        try {
+          const beforeProgress = school.progressPercentage;
+          await storage.checkAndUpdateSchoolProgression(school.id);
+          const updatedSchool = await storage.getSchool(school.id);
+          const afterProgress = updatedSchool?.progressPercentage ?? 0;
+          
+          if (beforeProgress !== afterProgress) {
+            updated++;
+            console.log(`[Recalculate Progress] ${school.name}: ${beforeProgress}% → ${afterProgress}%`);
+          } else {
+            skipped++;
+          }
+        } catch (error) {
+          errors.push({
+            schoolId: school.id,
+            schoolName: school.name,
+            error: error instanceof Error ? error.message : 'Unknown error'
+          });
+        }
+      }
+      
+      console.log(`[Recalculate Progress] Complete: ${updated} updated, ${skipped} unchanged, ${errors.length} errors`);
+      
+      res.json({
+        success: true,
+        message: 'Progress recalculation complete',
+        total: allSchools.length,
+        updated,
+        skipped,
+        errors: errors.slice(0, 10),
+        totalErrors: errors.length
+      });
+    } catch (error) {
+      console.error('[Recalculate Progress] Failed:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to recalculate progress',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
   // AI-powered analytics insights generation
   app.post('/api/admin/analytics/generate-insights', isAuthenticated, requireAdmin, async (req, res) => {
     try {
