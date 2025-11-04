@@ -3,6 +3,7 @@ import { db } from '../db';
 import { schools, users, schoolUsers } from '@shared/schema';
 import { eq, and } from 'drizzle-orm';
 import bcrypt from 'bcrypt';
+import { nanoid } from 'nanoid';
 
 export interface SchoolUserImportRow {
   school_name: string;
@@ -200,6 +201,7 @@ export async function processSchoolUserImport(
         const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
         const [newUser] = await db.insert(users).values({
+          id: nanoid(), // Generate unique ID
           email: row.user_email,
           password: hashedPassword,
           role: 'teacher',
