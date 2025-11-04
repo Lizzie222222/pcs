@@ -15,7 +15,7 @@ export interface SchoolAuditResult {
   progressPercentage: number;
   currentStage: string;
   legacyEvidenceCount: number;
-  status: 'logical' | 'illogical_excessive_progress' | 'illogical_round_mismatch';
+  status: 'logical' | 'illogical_excessive_progress' | 'illogical_round_mismatch' | 'illogical_stale_flags';
   issue?: string;
   recommendedFix?: {
     currentRound: number;
@@ -36,6 +36,7 @@ export interface AuditSummary {
   byIssueType: {
     excessiveProgress: number;
     roundMismatch: number;
+    staleFlags: number;
   };
   byRound: {
     [key: number]: {
@@ -68,6 +69,7 @@ export class SchoolRoundFixer {
       byIssueType: {
         excessiveProgress: 0,
         roundMismatch: 0,
+        staleFlags: 0,
       },
       byRound: {},
     };
@@ -100,6 +102,8 @@ export class SchoolRoundFixer {
           summary.byIssueType.excessiveProgress++;
         } else if (audit.status === 'illogical_round_mismatch') {
           summary.byIssueType.roundMismatch++;
+        } else if (audit.status === 'illogical_stale_flags') {
+          summary.byIssueType.staleFlags++;
         }
       }
     }
@@ -180,6 +184,26 @@ export class SchoolRoundFixer {
       result.issue = `Negative progress: ${progressPercentage.toFixed(1)}% (should be 0-100%)`;
       result.recommendedFix = this.calculateFix(school);
       return result;
+    }
+    
+    // Check 4: Round 2+ schools should have all completion flags reset to false
+    // If a school is in Round 2+, it means they completed Round 1 and moved on
+    // All completion flags should be reset for the new round
+    if (currentRound >= 2) {
+      const hasStaleFlags = inspireCompleted || investigateCompleted || actCompleted || awardCompleted;
+      
+      if (hasStaleFlags) {
+        const staleFlags = [];
+        if (inspireCompleted) staleFlags.push('inspireCompleted');
+        if (investigateCompleted) staleFlags.push('investigateCompleted');
+        if (actCompleted) staleFlags.push('actCompleted');
+        if (awardCompleted) staleFlags.push('awardCompleted');
+        
+        result.status = 'illogical_stale_flags';
+        result.issue = `Round ${currentRound} school has stale completion flags from previous round: ${staleFlags.join(', ')} (should all be false)`;
+        result.recommendedFix = this.calculateFix(school);
+        return result;
+      }
     }
     
     return result;
