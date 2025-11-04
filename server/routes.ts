@@ -8429,15 +8429,19 @@ Return JSON with:
         return res.status(404).json({ message: "School not found" });
       }
 
+      // Recalculate progress after manual updates to ensure accuracy
+      console.log(`[Admin Progression] Recalculating school progression after manual update...`);
+      const updatedSchool = await storage.checkAndUpdateSchoolProgression(schoolId);
+
       console.log(`[Admin Progression] School updated successfully. New state:`, {
-        id: school.id,
-        name: school.name,
-        currentRound: school.currentRound,
-        currentStage: school.currentStage,
-        progressPercentage: school.progressPercentage
+        id: updatedSchool?.id || school.id,
+        name: updatedSchool?.name || school.name,
+        currentRound: updatedSchool?.currentRound || school.currentRound,
+        currentStage: updatedSchool?.currentStage || school.currentStage,
+        progressPercentage: updatedSchool?.progressPercentage || school.progressPercentage
       });
 
-      res.json(school);
+      res.json(updatedSchool || school);
     } catch (error) {
       console.error("[Admin Progression] Error updating school progression:", error);
       res.status(500).json({ message: "Failed to update school progression" });

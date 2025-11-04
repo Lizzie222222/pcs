@@ -55,6 +55,7 @@ import { UploadEvidenceDialog } from "@/components/admin/UploadEvidenceDialog";
 import { EditEvidenceDialog } from "@/components/admin/EditEvidenceDialog";
 import { UploadPhotoConsentDialog } from "@/components/admin/UploadPhotoConsentDialog";
 import { UploadAuditDialog } from "@/components/admin/UploadAuditDialog";
+import SchoolProgressOverride from "@/components/admin/SchoolProgressOverride";
 
 interface SchoolData {
   id: string;
@@ -260,7 +261,7 @@ export default function SchoolProfile() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tabs Navigation - Sticky positioned below header (nav 64px + banner 48px + header ~96px = ~208px) */}
           <div className="bg-white rounded-lg shadow-sm border p-1.5 sticky top-52 z-10">
-            <TabsList className="bg-transparent w-full grid grid-cols-5 gap-1">
+            <TabsList className="bg-transparent w-full grid grid-cols-6 gap-1">
               <TabsTrigger 
                 value="overview" 
                 className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
@@ -292,6 +293,14 @@ export default function SchoolProfile() {
               >
                 <BarChart3 className="h-4 w-4" />
                 <span className="hidden sm:inline">Analytics</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="progress" 
+                className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
+                data-testid="tab-progress"
+              >
+                <Target className="h-4 w-4" />
+                <span className="hidden sm:inline">Progress</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="settings" 
@@ -333,6 +342,11 @@ export default function SchoolProfile() {
               school={school}
               reductionPromises={reductionPromises}
             />
+          </TabsContent>
+
+          {/* Progress Override Tab */}
+          <TabsContent value="progress">
+            <SchoolProgressOverride schoolId={id!} />
           </TabsContent>
 
           {/* Settings Tab */}

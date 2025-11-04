@@ -50,7 +50,6 @@ interface SchoolProgressOverrideProps {
 export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolProgressOverrideProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [isExpanded, setIsExpanded] = useState(false);
 
   // Fetch school details
   const { data: school } = useQuery<School>({
@@ -152,20 +151,15 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
   }
 
   return (
-    <Card className="mt-4">
-      <CardHeader className="cursor-pointer" onClick={() => setIsExpanded(!isExpanded)}>
-        <div className="flex items-center justify-between">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <Settings className="h-5 w-5" />
-            Admin Progress Override
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2 text-xl">
+            <Settings className="h-6 w-6" />
+            Progress Override Controls
           </CardTitle>
-          <Button variant="ghost" size="sm" data-testid="button-toggle-override-panel">
-            {isExpanded ? 'Hide' : 'Show'}
-          </Button>
-        </div>
-      </CardHeader>
-      
-      {isExpanded && (
+        </CardHeader>
+        
         <CardContent className="space-y-6">
           {/* Round and Stage Controls */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
@@ -289,7 +283,7 @@ export default function SchoolProgressOverride({ schoolId, onUpdate }: SchoolPro
             </ul>
           </div>
         </CardContent>
-      )}
-    </Card>
+      </Card>
+    </div>
   );
 }

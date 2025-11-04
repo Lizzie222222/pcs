@@ -1726,6 +1726,19 @@ export class DatabaseStorage implements IStorage {
     actCompleted?: boolean;
     progressPercentage?: number;
   }): Promise<School | undefined> {
+    // Get current school state to check for round rollbacks
+    const currentSchool = await this.getSchool(id);
+    if (!currentSchool) {
+      return undefined;
+    }
+
+    // If rolling back to a lower round, reset roundsCompleted
+    if (updates.currentRound !== undefined && updates.currentRound < (currentSchool.currentRound || 1)) {
+      // When rolling back, roundsCompleted should be currentRound - 1 (0 for round 1)
+      (updates as any).roundsCompleted = Math.max(0, updates.currentRound - 1);
+      console.log(`[Manual Progression] Rolling back from Round ${currentSchool.currentRound} to Round ${updates.currentRound}, resetting roundsCompleted to ${(updates as any).roundsCompleted}`);
+    }
+
     const [school] = await db
       .update(schools)
       .set({ ...updates, updatedAt: new Date() })

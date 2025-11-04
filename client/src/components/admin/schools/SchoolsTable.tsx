@@ -8,7 +8,6 @@ import { CheckCircle, XCircle, Eye, Trash2, ChevronDown, ChevronUp, ArrowUp, Arr
 import type { SchoolData } from "@/components/admin/shared/types";
 import { useTranslation } from 'react-i18next';
 import EditSchoolDialog from "@/components/admin/EditSchoolDialog";
-import SchoolProgressOverride from "@/components/admin/SchoolProgressOverride";
 
 // SchoolTeachersRow component
 interface SchoolTeacher {
@@ -124,9 +123,6 @@ function SchoolTeachersRow({ schoolId, isExpanded }: { schoolId: string; isExpan
               </div>
             )}
           </div>
-
-          {/* Admin Progress Override Section */}
-          <SchoolProgressOverride schoolId={schoolId} />
         </div>
       </td>
     </tr>
