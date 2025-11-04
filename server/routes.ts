@@ -8302,9 +8302,12 @@ Return JSON with:
     try {
       const { schoolId } = req.params;
       
+      console.log(`[Admin Override] POST request for school ${schoolId} with body:`, req.body);
+      
       // Validate request body with Zod
       const validation = toggleEvidenceOverrideSchema.safeParse(req.body);
       if (!validation.success) {
+        console.log(`[Admin Override] Validation failed:`, validation.error.errors);
         return res.status(400).json({ 
           message: "Invalid request body", 
           errors: validation.error.errors 
@@ -8319,23 +8322,28 @@ Return JSON with:
 
       const school = await storage.getSchool(schoolId);
       if (!school) {
+        console.log(`[Admin Override] School not found: ${schoolId}`);
         return res.status(404).json({ message: "School not found" });
       }
 
       const currentRound = school.currentRound || 1;
+      console.log(`[Admin Override] School current round: ${currentRound}`);
       
       // Verify evidence requirement exists and matches school's round/stage
       const requirement = await storage.getEvidenceRequirement(evidenceRequirementId);
       if (!requirement) {
+        console.log(`[Admin Override] Requirement not found: ${evidenceRequirementId}`);
         return res.status(404).json({ message: "Evidence requirement not found" });
       }
       
       if (requirement.stage !== stage) {
+        console.log(`[Admin Override] Stage mismatch - requirement: ${requirement.stage}, provided: ${stage}`);
         return res.status(400).json({ 
           message: "Evidence requirement stage does not match provided stage" 
         });
       }
       
+      console.log(`[Admin Override] Toggling override for requirement ${evidenceRequirementId}`);
       const result = await storage.toggleAdminEvidenceOverride(
         schoolId,
         evidenceRequirementId,
@@ -8344,12 +8352,15 @@ Return JSON with:
         req.user.id
       );
 
+      console.log(`[Admin Override] Toggle result:`, result);
+
       // Recalculate school progression after toggling override
+      console.log(`[Admin Override] Recalculating school progression...`);
       await storage.checkAndUpdateSchoolProgression(schoolId);
       
       res.json(result);
     } catch (error) {
-      console.error("Error toggling admin evidence override:", error);
+      console.error("[Admin Override] Error toggling admin evidence override:", error);
       res.status(500).json({ message: "Failed to toggle evidence override" });
     }
   });
@@ -8359,9 +8370,12 @@ Return JSON with:
     try {
       const { schoolId } = req.params;
       
+      console.log(`[Admin Progression] PATCH request for school ${schoolId} with body:`, req.body);
+      
       // Validate request body with Zod
       const validation = updateSchoolProgressionSchema.safeParse(req.body);
       if (!validation.success) {
+        console.log(`[Admin Progression] Validation failed:`, validation.error.errors);
         return res.status(400).json({ 
           message: "Invalid request body", 
           errors: validation.error.errors 
@@ -8378,15 +8392,26 @@ Return JSON with:
       if (actCompleted !== undefined) updates.actCompleted = actCompleted;
       if (progressPercentage !== undefined) updates.progressPercentage = progressPercentage;
 
+      console.log(`[Admin Progression] Applying updates:`, updates);
+
       const school = await storage.manuallyUpdateSchoolProgression(schoolId, updates);
       
       if (!school) {
+        console.log(`[Admin Progression] School not found: ${schoolId}`);
         return res.status(404).json({ message: "School not found" });
       }
 
+      console.log(`[Admin Progression] School updated successfully. New state:`, {
+        id: school.id,
+        name: school.name,
+        currentRound: school.currentRound,
+        currentStage: school.currentStage,
+        progressPercentage: school.progressPercentage
+      });
+
       res.json(school);
     } catch (error) {
-      console.error("Error updating school progression:", error);
+      console.error("[Admin Progression] Error updating school progression:", error);
       res.status(500).json({ message: "Failed to update school progression" });
     }
   });
