@@ -614,6 +614,7 @@ export interface IStorage {
   createAudit(audit: InsertAuditResponse): Promise<AuditResponse>;
   getAudit(id: string): Promise<AuditResponse | undefined>;
   getSchoolAudit(schoolId: string): Promise<AuditResponse | undefined>;
+  getSchoolAudits(schoolId: string): Promise<Array<AuditResponse & { submittedByUser: User; reviewedByUser: User | null }>>;
   updateAudit(id: string, updates: Partial<AuditResponse>): Promise<AuditResponse | undefined>;
   submitAudit(id: string, userId: string): Promise<AuditResponse | undefined>;
   reviewAudit(id: string, reviewerId: string, approved: boolean, notes?: string): Promise<AuditResponse | undefined>;
@@ -6136,6 +6137,43 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(auditResponses.createdAt))
       .limit(1);
     return audit;
+  }
+
+  async getSchoolAudits(schoolId: string): Promise<Array<AuditResponse & { submittedByUser: User; reviewedByUser: User | null }>> {
+    const results = await db
+      .select({
+        audit: auditResponses,
+        submittedByUser: users,
+        reviewedByUser: {
+          id: sql<string>`reviewer.id`,
+          email: sql<string>`reviewer.email`,
+          firstName: sql<string | null>`reviewer.first_name`,
+          lastName: sql<string | null>`reviewer.last_name`,
+          role: sql<string>`reviewer.role`,
+          isAdmin: sql<boolean>`reviewer.is_admin`,
+        },
+      })
+      .from(auditResponses)
+      .innerJoin(users, eq(auditResponses.submittedBy, users.id))
+      .leftJoin(
+        sql`users as reviewer`,
+        sql`${auditResponses.reviewedBy} = reviewer.id`
+      )
+      .where(eq(auditResponses.schoolId, schoolId))
+      .orderBy(desc(auditResponses.roundNumber), desc(auditResponses.submittedAt));
+
+    return results.map((r) => ({
+      ...r.audit,
+      submittedByUser: r.submittedByUser,
+      reviewedByUser: r.reviewedByUser.id ? {
+        id: r.reviewedByUser.id,
+        email: r.reviewedByUser.email,
+        firstName: r.reviewedByUser.firstName,
+        lastName: r.reviewedByUser.lastName,
+        role: r.reviewedByUser.role,
+        isAdmin: r.reviewedByUser.isAdmin,
+      } as User : null,
+    }));
   }
 
   async updateAudit(id: string, updates: Partial<AuditResponse>): Promise<AuditResponse | undefined> {

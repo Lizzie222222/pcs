@@ -8231,6 +8231,18 @@ Return JSON with:
     }
   });
 
+  // Get audits for a specific school
+  app.get('/api/admin/schools/:id/audits', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const schoolId = req.params.id;
+      const audits = await storage.getSchoolAudits(schoolId);
+      res.json(audits);
+    } catch (error) {
+      console.error("Error fetching school audits:", error);
+      res.status(500).json({ message: "Failed to fetch audits" });
+    }
+  });
+
   // Update school details
   app.put('/api/admin/schools/:id', isAuthenticated, requireAdmin, async (req, res) => {
     try {

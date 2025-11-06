@@ -47,6 +47,7 @@ import {
   Award,
   Eye,
   EyeOff,
+  ClipboardCheck,
 } from "lucide-react";
 import type { ReductionPromise } from "@shared/schema";
 import { calculateAggregateMetrics } from "@shared/plasticMetrics";
@@ -109,6 +110,38 @@ interface Evidence {
   reviewNotes: string | null;
   files: any[];
   videoLinks: string | null;
+}
+
+interface AuditData {
+  id: string;
+  schoolId: string;
+  submittedBy: string;
+  status: 'draft' | 'submitted' | 'approved' | 'rejected';
+  roundNumber: number;
+  part1Data: any;
+  part2Data: any;
+  part3Data: any;
+  part4Data: any;
+  resultsData: any;
+  totalPlasticItems: number;
+  topProblemPlastics: any[];
+  reviewedBy: string | null;
+  reviewedAt: string | null;
+  reviewNotes: string | null;
+  submittedAt: string | null;
+  createdAt: string;
+  submittedByUser: {
+    id: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+  };
+  reviewedByUser: {
+    id: string;
+    email: string;
+    firstName: string | null;
+    lastName: string | null;
+  } | null;
 }
 
 export default function SchoolProfile() {
@@ -261,7 +294,7 @@ export default function SchoolProfile() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           {/* Tabs Navigation - Sticky positioned below header (nav 64px + banner 48px + header ~96px = ~208px) */}
           <div className="bg-white rounded-lg shadow-sm border p-1.5 sticky top-52 z-10">
-            <TabsList className="bg-transparent w-full grid grid-cols-6 gap-1">
+            <TabsList className="bg-transparent w-full grid grid-cols-7 gap-1">
               <TabsTrigger 
                 value="overview" 
                 className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
@@ -285,6 +318,14 @@ export default function SchoolProfile() {
               >
                 <FileText className="h-4 w-4" />
                 <span className="hidden sm:inline">Evidence</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="audits" 
+                className="gap-2 data-[state=active]:bg-pcs_blue data-[state=active]:text-white" 
+                data-testid="tab-audits"
+              >
+                <ClipboardCheck className="h-4 w-4" />
+                <span className="hidden sm:inline">Audits</span>
               </TabsTrigger>
               <TabsTrigger 
                 value="analytics" 
@@ -334,6 +375,11 @@ export default function SchoolProfile() {
               evidence={evidence}
               isLoading={evidenceLoading}
             />
+          </TabsContent>
+
+          {/* Audits Tab */}
+          <TabsContent value="audits">
+            <AuditsTab schoolId={id!} />
           </TabsContent>
 
           {/* Analytics Tab */}
@@ -1238,5 +1284,508 @@ function SettingsTab({ school, photoConsentStatus }: {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+// Audits Tab Component
+function AuditsTab({ schoolId }: { schoolId: string }) {
+  const [selectedAudit, setSelectedAudit] = useState<AuditData | null>(null);
+  const [viewDialogOpen, setViewDialogOpen] = useState(false);
+
+  const { data: audits = [], isLoading } = useQuery<AuditData[]>({
+    queryKey: ['/api/admin/schools', schoolId, 'audits'],
+    queryFn: async () => {
+      const response = await fetch(`/api/admin/schools/${schoolId}/audits`, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch audits');
+      return response.json();
+    },
+  });
+
+  if (isLoading) {
+    return <LoadingSpinner message="Loading audits..." />;
+  }
+
+  if (audits.length === 0) {
+    return (
+      <EmptyState
+        icon={ClipboardCheck}
+        title="No Audits"
+        description="No waste audits have been submitted for this school yet."
+      />
+    );
+  }
+
+  const handleViewAudit = (audit: AuditData) => {
+    setSelectedAudit(audit);
+    setViewDialogOpen(true);
+  };
+
+  return (
+    <>
+      <div className="space-y-4">
+        {/* Summary Stats Card */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-pcs_blue" />
+              Audit Summary
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-4 gap-4">
+              <div>
+                <p className="text-sm text-gray-600">Total Audits</p>
+                <p className="text-2xl font-bold text-navy" data-testid="text-total-audits">
+                  {audits.length}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Approved</p>
+                <p className="text-2xl font-bold text-green-600" data-testid="text-approved-audits">
+                  {audits.filter(a => a.status === 'approved').length}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Pending</p>
+                <p className="text-2xl font-bold text-yellow-600" data-testid="text-pending-audits">
+                  {audits.filter(a => a.status === 'submitted').length}
+                </p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-600">Latest Round</p>
+                <p className="text-2xl font-bold text-pcs_blue" data-testid="text-latest-round">
+                  {Math.max(...audits.map(a => a.roundNumber))}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Trends & Comparison */}
+        {audits.length > 1 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <TrendingUp className="h-5 w-5 text-pcs_blue" />
+                Trends & Comparison
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Plastic Items Trend */}
+                <div>
+                  <h4 className="font-semibold mb-3">Total Plastic Items by Round</h4>
+                  <div className="space-y-2">
+                    {audits
+                      .filter(a => a.status === 'approved')
+                      .sort((a, b) => a.roundNumber - b.roundNumber)
+                      .map((audit, idx, arr) => {
+                        const prevAudit = arr[idx - 1];
+                        const change = prevAudit 
+                          ? audit.totalPlasticItems - prevAudit.totalPlasticItems
+                          : 0;
+                        const percentChange = prevAudit && prevAudit.totalPlasticItems > 0
+                          ? ((change / prevAudit.totalPlasticItems) * 100).toFixed(1)
+                          : null;
+
+                        return (
+                          <div
+                            key={audit.id}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                            data-testid={`trend-round-${audit.roundNumber}`}
+                          >
+                            <div className="flex items-center gap-3">
+                              <div className="w-24">
+                                <Badge variant="outline">Round {audit.roundNumber}</Badge>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-lg">{audit.totalPlasticItems}</span>
+                                <span className="text-sm text-gray-600">items</span>
+                              </div>
+                            </div>
+                            {idx > 0 && percentChange !== null && (
+                              <div className={`flex items-center gap-1 ${
+                                change < 0 ? 'text-green-600' : change > 0 ? 'text-red-600' : 'text-gray-600'
+                              }`}>
+                                {change < 0 ? (
+                                  <TrendingUp className="h-4 w-4 transform rotate-180" />
+                                ) : change > 0 ? (
+                                  <TrendingUp className="h-4 w-4" />
+                                ) : null}
+                                <span className="font-semibold">
+                                  {change > 0 ? '+' : ''}{change} ({change > 0 ? '+' : ''}{percentChange}%)
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+
+                {/* Progress Summary */}
+                {audits.filter(a => a.status === 'approved').length > 1 && (
+                  <div className="p-4 bg-gradient-to-r from-pcs_blue/10 to-teal/10 rounded-lg border-2 border-pcs_blue/20">
+                    <h4 className="font-semibold mb-2 flex items-center gap-2">
+                      <Award className="h-5 w-5 text-pcs_blue" />
+                      Overall Progress
+                    </h4>
+                    {(() => {
+                      const approvedAudits = audits
+                        .filter(a => a.status === 'approved')
+                        .sort((a, b) => a.roundNumber - b.roundNumber);
+                      const firstAudit = approvedAudits[0];
+                      const latestAudit = approvedAudits[approvedAudits.length - 1];
+                      const totalReduction = firstAudit.totalPlasticItems - latestAudit.totalPlasticItems;
+                      const percentReduction = firstAudit.totalPlasticItems > 0
+                        ? ((totalReduction / firstAudit.totalPlasticItems) * 100).toFixed(1)
+                        : 0;
+
+                      return (
+                        <div className="grid grid-cols-3 gap-4 mt-3">
+                          <div>
+                            <p className="text-sm text-gray-600">Starting Point</p>
+                            <p className="text-xl font-bold text-navy">{firstAudit.totalPlasticItems} items</p>
+                            <p className="text-xs text-gray-500">Round {firstAudit.roundNumber}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Current Status</p>
+                            <p className="text-xl font-bold text-navy">{latestAudit.totalPlasticItems} items</p>
+                            <p className="text-xs text-gray-500">Round {latestAudit.roundNumber}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm text-gray-600">Total Change</p>
+                            <p className={`text-xl font-bold ${
+                              totalReduction > 0 ? 'text-green-600' : totalReduction < 0 ? 'text-red-600' : 'text-gray-600'
+                            }`}>
+                              {totalReduction > 0 ? '-' : totalReduction < 0 ? '+' : ''}{Math.abs(totalReduction)} items
+                            </p>
+                            <p className={`text-xs font-semibold ${
+                              totalReduction > 0 ? 'text-green-600' : totalReduction < 0 ? 'text-red-600' : 'text-gray-600'
+                            }`}>
+                              {totalReduction > 0 ? '↓' : totalReduction < 0 ? '↑' : '='} {Math.abs(Number(percentReduction))}%
+                            </p>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Audits List */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ClipboardCheck className="h-5 w-5 text-pcs_blue" />
+              Audit History ({audits.length})
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              {audits.map((audit) => (
+                <div
+                  key={audit.id}
+                  className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                  data-testid={`card-audit-${audit.id}`}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="font-semibold text-lg" data-testid={`text-audit-round-${audit.id}`}>
+                          Round {audit.roundNumber}
+                        </h3>
+                        <Badge
+                          className={
+                            audit.status === 'approved' ? 'bg-green-600' :
+                            audit.status === 'rejected' ? 'bg-red-600' :
+                            audit.status === 'submitted' ? 'bg-yellow-600' :
+                            'bg-gray-400'
+                          }
+                          data-testid={`badge-status-${audit.id}`}
+                        >
+                          {audit.status}
+                        </Badge>
+                        {audit.totalPlasticItems > 0 && (
+                          <Badge variant="outline" className="text-coral" data-testid={`badge-total-items-${audit.id}`}>
+                            {audit.totalPlasticItems} items
+                          </Badge>
+                        )}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <p className="text-gray-600">Submitted by</p>
+                          <p className="font-medium" data-testid={`text-submitted-by-${audit.id}`}>
+                            {audit.submittedByUser.firstName && audit.submittedByUser.lastName
+                              ? `${audit.submittedByUser.firstName} ${audit.submittedByUser.lastName}`
+                              : audit.submittedByUser.email}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Submitted on</p>
+                          <p className="font-medium" data-testid={`text-submitted-date-${audit.id}`}>
+                            {audit.submittedAt ? new Date(audit.submittedAt).toLocaleDateString() : 'Not submitted'}
+                          </p>
+                        </div>
+                        {audit.reviewedByUser && (
+                          <>
+                            <div>
+                              <p className="text-gray-600">Reviewed by</p>
+                              <p className="font-medium" data-testid={`text-reviewed-by-${audit.id}`}>
+                                {audit.reviewedByUser.firstName && audit.reviewedByUser.lastName
+                                  ? `${audit.reviewedByUser.firstName} ${audit.reviewedByUser.lastName}`
+                                  : audit.reviewedByUser.email}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-gray-600">Reviewed on</p>
+                              <p className="font-medium" data-testid={`text-reviewed-date-${audit.id}`}>
+                                {audit.reviewedAt ? new Date(audit.reviewedAt).toLocaleDateString() : 'N/A'}
+                              </p>
+                            </div>
+                          </>
+                        )}
+                      </div>
+
+                      {audit.topProblemPlastics && audit.topProblemPlastics.length > 0 && (
+                        <div className="mt-3">
+                          <p className="text-sm text-gray-600 mb-1">Top Problem Plastics:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {audit.topProblemPlastics.slice(0, 3).map((plastic: any, idx: number) => (
+                              <Badge
+                                key={idx}
+                                variant="outline"
+                                className="text-xs"
+                                data-testid={`badge-problem-plastic-${audit.id}-${idx}`}
+                              >
+                                {plastic.name || plastic.label} ({plastic.count || plastic.quantity})
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {audit.reviewNotes && (
+                        <div className="mt-3 p-2 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                          <p className="text-sm text-gray-600 font-semibold">Review Notes:</p>
+                          <p className="text-sm" data-testid={`text-review-notes-${audit.id}`}>
+                            {audit.reviewNotes}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewAudit(audit)}
+                      className="ml-4"
+                      data-testid={`button-view-audit-${audit.id}`}
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* View Audit Dialog */}
+      {selectedAudit && (
+        <AlertDialog open={viewDialogOpen} onOpenChange={setViewDialogOpen}>
+          <AlertDialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center justify-between">
+                <span>Audit Details - Round {selectedAudit.roundNumber}</span>
+                <Badge
+                  className={
+                    selectedAudit.status === 'approved' ? 'bg-green-600' :
+                    selectedAudit.status === 'rejected' ? 'bg-red-600' :
+                    selectedAudit.status === 'submitted' ? 'bg-yellow-600' :
+                    'bg-gray-400'
+                  }
+                >
+                  {selectedAudit.status}
+                </Badge>
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Complete audit submission from {selectedAudit.submittedAt ? new Date(selectedAudit.submittedAt).toLocaleDateString() : 'N/A'}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            
+            <Tabs defaultValue="summary" className="my-4">
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="summary">Summary</TabsTrigger>
+                <TabsTrigger value="part1">Part 1: School</TabsTrigger>
+                <TabsTrigger value="part2">Part 2: Lunchroom</TabsTrigger>
+                <TabsTrigger value="part3">Part 3: Classrooms</TabsTrigger>
+                <TabsTrigger value="part4">Part 4: Waste</TabsTrigger>
+              </TabsList>
+
+              {/* Summary Tab */}
+              <TabsContent value="summary" className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-gray-600">Total Plastic Items</p>
+                    <p className="text-3xl font-bold text-coral">{selectedAudit.totalPlasticItems}</p>
+                  </div>
+                  <div className="p-4 border rounded-lg">
+                    <p className="text-sm text-gray-600">Round Number</p>
+                    <p className="text-3xl font-bold text-pcs_blue">{selectedAudit.roundNumber}</p>
+                  </div>
+                </div>
+
+                {selectedAudit.topProblemPlastics && selectedAudit.topProblemPlastics.length > 0 && (
+                  <div className="border rounded-lg p-4">
+                    <h4 className="font-semibold mb-3">Top Problem Plastics</h4>
+                    <div className="space-y-2">
+                      {selectedAudit.topProblemPlastics.map((plastic: any, idx: number) => (
+                        <div key={idx} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                          <span className="font-medium">{plastic.name || plastic.label}</span>
+                          <Badge variant="outline">{plastic.count || plastic.quantity} items</Badge>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Submission Information</h4>
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-gray-600">Submitted by</p>
+                      <p className="font-medium">
+                        {selectedAudit.submittedByUser.firstName && selectedAudit.submittedByUser.lastName
+                          ? `${selectedAudit.submittedByUser.firstName} ${selectedAudit.submittedByUser.lastName}`
+                          : selectedAudit.submittedByUser.email}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-gray-600">Submitted on</p>
+                      <p className="font-medium">
+                        {selectedAudit.submittedAt ? new Date(selectedAudit.submittedAt).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                    {selectedAudit.reviewedByUser && (
+                      <>
+                        <div>
+                          <p className="text-gray-600">Reviewed by</p>
+                          <p className="font-medium">
+                            {selectedAudit.reviewedByUser.firstName && selectedAudit.reviewedByUser.lastName
+                              ? `${selectedAudit.reviewedByUser.firstName} ${selectedAudit.reviewedByUser.lastName}`
+                              : selectedAudit.reviewedByUser.email}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">Reviewed on</p>
+                          <p className="font-medium">
+                            {selectedAudit.reviewedAt ? new Date(selectedAudit.reviewedAt).toLocaleDateString() : 'N/A'}
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                  {selectedAudit.reviewNotes && (
+                    <div className="mt-4 p-3 bg-yellow-50 border-l-4 border-yellow-400 rounded">
+                      <p className="text-sm font-semibold text-gray-700">Review Notes:</p>
+                      <p className="text-sm mt-1">{selectedAudit.reviewNotes}</p>
+                    </div>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* Part 1: School Info */}
+              <TabsContent value="part1" className="space-y-4">
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">School Information</h4>
+                  {selectedAudit.part1Data && Object.keys(selectedAudit.part1Data).length > 0 ? (
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {Object.entries(selectedAudit.part1Data).map(([key, value]: [string, any]) => (
+                        <div key={key}>
+                          <p className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                          <p className="font-medium">{String(value) || 'N/A'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No data available for Part 1</p>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* Part 2: Lunchroom & Staffroom */}
+              <TabsContent value="part2" className="space-y-4">
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Lunchroom & Staffroom</h4>
+                  {selectedAudit.part2Data && Object.keys(selectedAudit.part2Data).length > 0 ? (
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {Object.entries(selectedAudit.part2Data).map(([key, value]: [string, any]) => (
+                        <div key={key}>
+                          <p className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                          <p className="font-medium">{typeof value === 'object' ? JSON.stringify(value) : String(value) || 'N/A'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No data available for Part 2</p>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* Part 3: Classrooms & Bathrooms */}
+              <TabsContent value="part3" className="space-y-4">
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Classrooms & Bathrooms</h4>
+                  {selectedAudit.part3Data && Object.keys(selectedAudit.part3Data).length > 0 ? (
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {Object.entries(selectedAudit.part3Data).map(([key, value]: [string, any]) => (
+                        <div key={key}>
+                          <p className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                          <p className="font-medium">{typeof value === 'object' ? JSON.stringify(value) : String(value) || 'N/A'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No data available for Part 3</p>
+                  )}
+                </div>
+              </TabsContent>
+
+              {/* Part 4: Waste Management */}
+              <TabsContent value="part4" className="space-y-4">
+                <div className="border rounded-lg p-4">
+                  <h4 className="font-semibold mb-3">Waste Management</h4>
+                  {selectedAudit.part4Data && Object.keys(selectedAudit.part4Data).length > 0 ? (
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      {Object.entries(selectedAudit.part4Data).map(([key, value]: [string, any]) => (
+                        <div key={key}>
+                          <p className="text-gray-600 capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}</p>
+                          <p className="font-medium">{typeof value === 'object' ? JSON.stringify(value) : String(value) || 'N/A'}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-gray-500">No data available for Part 4</p>
+                  )}
+                </div>
+              </TabsContent>
+            </Tabs>
+
+            <AlertDialogFooter>
+              <AlertDialogAction onClick={() => setViewDialogOpen(false)}>
+                Close
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
+    </>
   );
 }
