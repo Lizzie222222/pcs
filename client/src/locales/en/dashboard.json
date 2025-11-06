@@ -106,6 +106,10 @@
         "impact_measurement": "Impact measurement"
       }
     },
+    "above_and_beyond": {
+      "title": "Above and Beyond",
+      "description": "Extra work not tied to specific requirements"
+    },
     "stage_locked": "Complete previous stage to unlock",
     "stage_current": "Current Stage",
     "stage_completed": "Completed",
