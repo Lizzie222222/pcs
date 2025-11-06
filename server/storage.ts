@@ -4491,16 +4491,10 @@ export class DatabaseStorage implements IStorage {
     const [usersCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(users).where(userDateFilter);
     const [evidenceCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(evidenceDateFilter);
     
-    // Calculate total actions (approved evidence + legacy counts)
-    const [approvedEvidenceCount] = await db.select({ 
-      count: sql<number>`COUNT(*) FILTER (WHERE status = 'approved')` 
-    }).from(evidence).where(evidenceDateFilter);
-    
-    const [legacyCount] = await db.select({ 
-      sum: sql<number>`COALESCE(SUM(legacy_evidence_count), 0)` 
-    }).from(schoolUsers);
-    
-    const totalActions = Number(approvedEvidenceCount?.count || 0) + Number(legacyCount?.sum || 0);
+    // Count schools that have completed at least one round (became "plastic clever")
+    const [completedAwardsCount] = await db.select({ 
+      count: sql<number>`COUNT(*) FILTER (WHERE rounds_completed >= 1)` 
+    }).from(schools).where(schoolDateFilter);
     
     const [pendingCount] = await db.select({ count: sql<number>`COUNT(*)` }).from(evidence).where(and(eq(evidence.status, 'pending'), evidenceDateFilter));
     const [avgProgress] = await db.select({ avg: sql<number>`COALESCE(AVG(progress_percentage), 0)` }).from(schools).where(schoolDateFilter);
@@ -4511,7 +4505,7 @@ export class DatabaseStorage implements IStorage {
       totalSchools: schoolsCount?.count || 0,
       totalUsers: usersCount?.count || 0,
       totalEvidence: evidenceCount?.count || 0,
-      completedAwards: totalActions,
+      completedAwards: completedAwardsCount?.count || 0,
       pendingEvidence: pendingCount?.count || 0,
       averageProgress: avgProgress?.avg || 0,
       studentsImpacted: studentsSum?.sum || 0,
