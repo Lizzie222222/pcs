@@ -24,6 +24,13 @@ const updateSchoolProgressionSchema = z.object({
   actCompleted: z.boolean().optional(),
   progressPercentage: z.number().min(0).max(300).optional()
 });
+
+const reorderResourcePackItemsSchema = z.object({
+  items: z.array(z.object({
+    resourceId: z.string().uuid(),
+    orderIndex: z.number().int().min(0)
+  })).min(1)
+});
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
 import { eq, and, or, sql, desc, gte, lte, count, ilike, inArray } from "drizzle-orm";
@@ -642,6 +649,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error removing resource from pack:", error);
       res.status(500).json({ message: "Failed to remove resource from pack" });
+    }
+  });
+
+  // Update resource pack items order (admin/partner only)
+  app.put('/api/resource-packs/:id/resources/reorder', isAuthenticated, async (req: any, res) => {
+    try {
+      if (!req.user?.isAdmin && req.user?.role !== 'partner') {
+        return res.status(403).json({ message: "Admin or Partner access required" });
+      }
+
+      // Validate request body
+      const validation = reorderResourcePackItemsSchema.safeParse(req.body);
+      if (!validation.success) {
+        return res.status(400).json({ 
+          message: "Invalid request body", 
+          errors: validation.error.errors 
+        });
+      }
+
+      await storage.updateResourcePackItemsOrder(req.params.id, validation.data.items);
+      res.json({ success: true });
+    } catch (error) {
+      console.error("Error updating resource order:", error);
+      res.status(500).json({ message: "Failed to update resource order" });
     }
   });
 

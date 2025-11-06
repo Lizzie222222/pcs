@@ -307,6 +307,26 @@ export default function Resources() {
     }
   };
 
+  const handleDownloadPack = async (packId: string) => {
+    try {
+      // Fetch pack details to get the resources
+      const response = await fetch(`/api/resource-packs/${packId}`);
+      if (!response.ok) throw new Error('Failed to fetch pack details');
+      
+      const packDetail: ResourcePackDetail = await response.json();
+      
+      // Download all resources in the pack
+      await handleDownloadAllResources(packId, packDetail.resources);
+    } catch (error) {
+      console.error('Failed to download pack:', error);
+      toast({
+        title: "Download Failed",
+        description: "Unable to download resource pack. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
+
   // Check if resource is new (within last 7 days)
   const isNewResource = (createdAt: string) => {
     const created = new Date(createdAt);
@@ -646,11 +666,11 @@ export default function Resources() {
             <Button
               size="sm"
               className="w-full bg-coral hover:bg-coral/90 text-white shadow-md"
-              onClick={() => {
+              onClick={async () => {
                 if (isLocked) {
                   alert(t('register_to_access') || 'Please register or log in to access this resource pack');
                 } else {
-                  setSelectedPack(pack.id);
+                  await handleDownloadPack(pack.id);
                 }
               }}
               data-testid={`button-download-pack-${pack.id}`}

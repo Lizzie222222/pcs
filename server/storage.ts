@@ -329,6 +329,7 @@ export interface IStorage {
   addResourceToPack(packId: string, resourceId: string, orderIndex: number): Promise<ResourcePackItem>;
   removeResourceFromPack(packId: string, resourceId: string): Promise<boolean>;
   updateResourcePackDownloads(id: string): Promise<void>;
+  updateResourcePackItemsOrder(packId: string, items: Array<{ resourceId: string; orderIndex: number }>): Promise<void>;
 
   // Notification operations
   createNotification(notification: InsertNotification): Promise<Notification>;
@@ -2581,6 +2582,21 @@ export class DatabaseStorage implements IStorage {
       .update(resourcePacks)
       .set({ downloadCount: sql`download_count + 1` })
       .where(eq(resourcePacks.id, id));
+  }
+
+  async updateResourcePackItemsOrder(packId: string, items: Array<{ resourceId: string; orderIndex: number }>): Promise<void> {
+    // Update each resource's order index in a transaction - all succeed or all fail
+    await db.transaction(async (tx) => {
+      for (const item of items) {
+        await tx
+          .update(resourcePackItems)
+          .set({ orderIndex: item.orderIndex })
+          .where(and(
+            eq(resourcePackItems.packId, packId),
+            eq(resourcePackItems.resourceId, item.resourceId)
+          ));
+      }
+    });
   }
 
   // Notification operations

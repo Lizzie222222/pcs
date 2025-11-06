@@ -289,6 +289,8 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
     e.preventDefault();
     setIsSubmitting(true);
 
+    let createdPackId: string | null = null;
+
     try {
       const endpoint = pack ? `/api/resource-packs/${pack.id}` : '/api/resource-packs';
       const method = pack ? 'PUT' : 'POST';
@@ -308,41 +310,63 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to save resource pack');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Failed to save resource pack');
       }
 
       const savedPack = await response.json();
+      createdPackId = savedPack.id;
 
+      // For new packs, add all resources
       if (!pack && packResources.length > 0) {
         for (let i = 0; i < packResources.length; i++) {
           const item = packResources[i];
-          await fetch(`/api/resource-packs/${savedPack.id}/resources`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              resourceId: item.resourceId,
-              orderIndex: i,
-            }),
-          });
+          try {
+            const addResponse = await fetch(`/api/resource-packs/${savedPack.id}/resources`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                resourceId: item.resourceId,
+                orderIndex: i,
+              }),
+            });
+
+            if (!addResponse.ok) {
+              throw new Error(`Failed to add resource: ${item.resource.title}`);
+            }
+          } catch (error: any) {
+            // If adding resources fails, delete the created pack to avoid partial state
+            await fetch(`/api/resource-packs/${savedPack.id}`, { method: 'DELETE' });
+            throw new Error(`Failed to add resource "${item.resource.title}": ${error.message}`);
+          }
         }
       }
 
+      // For existing packs, just update the order of resources
       if (pack && packResources.length > 0) {
-        for (let i = 0; i < packResources.length; i++) {
-          const item = packResources[i];
-          await fetch(`/api/resource-packs/${pack.id}/resources`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              resourceId: item.resourceId,
-              orderIndex: i,
-            }),
-          });
+        const items = packResources.map((item, index) => ({
+          resourceId: item.resourceId,
+          orderIndex: index,
+        }));
+        
+        const reorderResponse = await fetch(`/api/resource-packs/${pack.id}/resources/reorder`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ items }),
+        });
+
+        if (!reorderResponse.ok) {
+          const errorData = await reorderResponse.json().catch(() => ({}));
+          throw new Error(errorData.message || 'Failed to update resource order');
         }
+
+        // Invalidate queries to refetch updated pack with correct order
+        queryClient.invalidateQueries({ queryKey: ['/api/resource-packs', pack.id] });
+        queryClient.invalidateQueries({ queryKey: ['/api/resource-packs'] });
       }
 
       toast({
@@ -352,6 +376,7 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
 
       onSuccess();
     } catch (error: any) {
+      console.error('Pack save error:', error);
       toast({
         title: "Save Failed",
         description: error.message || "Failed to save resource pack. Please try again.",
