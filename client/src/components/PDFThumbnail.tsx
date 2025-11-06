@@ -37,6 +37,13 @@ export function PDFThumbnail({ url, className = '' }: PDFThumbnailProps) {
         const page = await pdf.getPage(1);
 
         const canvas = canvasRef.current;
+        if (!canvas) {
+          // Canvas ref became null during async loading (component unmounted?)
+          setError(true);
+          setLoading(false);
+          return;
+        }
+        
         const context = canvas.getContext('2d');
         if (!context) {
           setError(true);

@@ -78,6 +78,12 @@ interface ResourcePack {
   downloadCount: number;
   resourceCount: number;
   createdAt: string;
+  previewResources?: Array<{
+    id: string;
+    title: string;
+    fileUrl: string | null;
+    fileType: string | null;
+  }>;
 }
 
 interface ResourcePackDetail extends ResourcePack {
@@ -438,6 +444,113 @@ export default function Resources() {
     );
   };
 
+  // Resource Pack Thumbnail component - displays preview thumbnails of pack resources
+  const ResourcePackThumbnail = ({ previewResources }: { 
+    previewResources: Array<{
+      id: string;
+      title: string;
+      fileUrl: string | null;
+      fileType: string | null;
+    }> 
+  }) => {
+    const resourceCount = previewResources.length;
+
+    // Helper to render individual thumbnail cell
+    const renderThumbnailCell = (resource: {
+      id: string;
+      title: string;
+      fileUrl: string | null;
+      fileType: string | null;
+    }, className: string = '') => {
+      const fileType = resource.fileType?.toLowerCase() || '';
+      const fileUrl = resource.fileUrl || '';
+
+      // Image files
+      if (fileType.includes('image') && fileUrl) {
+        return (
+          <div key={resource.id} className={`bg-gray-100 relative overflow-hidden ${className}`}>
+            <img 
+              src={fileUrl} 
+              alt={resource.title}
+              crossOrigin="anonymous"
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.currentTarget.style.display = 'none';
+                const parent = e.currentTarget.parentElement;
+                if (parent) {
+                  parent.innerHTML = '<div class="w-full h-full flex items-center justify-center bg-pcs_blue/10"><svg class="h-12 w-12 text-pcs_blue/30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg></div>';
+                }
+              }}
+            />
+          </div>
+        );
+      }
+      
+      // PDF files
+      if (fileType.includes('pdf') && fileUrl) {
+        const pdfProxyUrl = getProxyUrl(fileUrl);
+        return (
+          <div key={resource.id} className={`bg-gray-100 flex items-center justify-center ${className}`}>
+            <PDFThumbnail url={pdfProxyUrl} className="w-full h-full" />
+          </div>
+        );
+      }
+      
+      // Video files
+      if (fileType.includes('video')) {
+        return (
+          <div key={resource.id} className={`bg-coral/10 flex items-center justify-center ${className}`}>
+            <Video className="h-12 w-12 text-coral/30" />
+          </div>
+        );
+      }
+      
+      // Other file types
+      return (
+        <div key={resource.id} className={`bg-pcs_blue/10 flex items-center justify-center ${className}`}>
+          <FileText className="h-12 w-12 text-pcs_blue/30" />
+        </div>
+      );
+    };
+
+    // No resources - show placeholder
+    if (resourceCount === 0) {
+      return (
+        <div className="w-full h-48 bg-gray-100 flex items-center justify-center">
+          <Package className="h-16 w-16 text-gray-300" />
+        </div>
+      );
+    }
+
+    // 1 resource - show single large thumbnail
+    if (resourceCount === 1) {
+      return (
+        <div className="w-full h-48">
+          {renderThumbnailCell(previewResources[0], 'w-full h-full')}
+        </div>
+      );
+    }
+
+    // 2 resources - show 2-column grid
+    if (resourceCount === 2) {
+      return (
+        <div className="w-full h-48 grid grid-cols-2 gap-0.5">
+          {renderThumbnailCell(previewResources[0], 'w-full h-full')}
+          {renderThumbnailCell(previewResources[1], 'w-full h-full')}
+        </div>
+      );
+    }
+
+    // 3+ resources - show 2x2 grid (first 4 resources)
+    return (
+      <div className="w-full h-48 grid grid-cols-2 grid-rows-2 gap-0.5">
+        {previewResources.slice(0, 4).map((resource) => 
+          renderThumbnailCell(resource, 'w-full h-full')
+        )}
+      </div>
+    );
+  };
+
   const ResourceCard = ({ resource }: { resource: Resource }) => {
     const isNew = isNewResource(resource.createdAt);
     const isRecommended = isRecommendedResource(resource.stage);
@@ -589,6 +702,9 @@ export default function Resources() {
         }`} 
         data-testid={`pack-${pack.id}`}
       >
+        {pack.previewResources && pack.previewResources.length > 0 && (
+          <ResourcePackThumbnail previewResources={pack.previewResources} />
+        )}
         <CardHeader className="pb-3 space-y-2">
           {/* Top row: NEW/RECOMMENDED badges */}
           <div className="flex justify-between items-start gap-3">

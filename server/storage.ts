@@ -322,7 +322,7 @@ export interface IStorage {
     visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
-  }): Promise<Array<ResourcePack & { resourceCount: number; previewResources: Resource[] }>>;
+  }): Promise<Array<ResourcePack & { resourceCount: number; previewResources: Array<Pick<Resource, 'id' | 'title' | 'fileUrl' | 'fileType'>> }>>;
   getResourcePackById(id: string): Promise<(ResourcePack & { resources: Resource[] }) | undefined>;
   updateResourcePack(id: string, updates: Partial<InsertResourcePack>): Promise<ResourcePack | undefined>;
   deleteResourcePack(id: string): Promise<boolean>;
@@ -2528,7 +2528,7 @@ export class DatabaseStorage implements IStorage {
         
         return {
           ...pack,
-          previewResources,
+          previewResources: previewResources as Array<Pick<Resource, 'id' | 'title' | 'fileUrl' | 'fileType'>>,
         };
       })
     );
