@@ -1187,12 +1187,12 @@ export default function Home() {
 
             {/* Above and Beyond Section */}
             <div className="mb-8">
-              <Card className="bg-gradient-to-br from-purple-50 via-white to-purple-50 border-2 border-purple-200 shadow-md">
+              <Card className="bg-white border shadow-xl">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                       <h3 className="text-lg font-bold mb-2 flex items-center gap-2 text-[#21496a]">
-                        <Award className="h-5 w-5 text-purple-600" />
+                        <Award className="h-5 w-5 text-[#009de1]" />
                         Above and Beyond
                       </h3>
                       <p className="text-sm text-gray-600 mb-4">
@@ -1200,7 +1200,7 @@ export default function Home() {
                       </p>
                       <Button
                         onClick={handleAboveAndBeyondSubmit}
-                        className="bg-[#009de1] hover:bg-purple-700 text-white shadow-sm"
+                        className="bg-[#009de1] hover:bg-[#007ab8] text-white shadow-sm"
                         size="sm"
                         data-testid="button-submit-above-and-beyond"
                       >
@@ -1212,13 +1212,13 @@ export default function Home() {
 
                   {/* List of Above and Beyond Submissions */}
                   {aboveAndBeyondEvidence.length > 0 && (
-                    <div className="mt-6 pt-6 border-t border-purple-200">
+                    <div className="mt-6 pt-6 border-t border-gray-200">
                       <h4 className="text-sm font-semibold text-gray-700 mb-3">Your Submissions ({aboveAndBeyondEvidence.length})</h4>
                       <div className="space-y-2">
                         {aboveAndBeyondEvidence.slice(0, 5).map((evidence) => (
                           <div
                             key={evidence.id}
-                            className="flex items-center justify-between p-3 bg-white rounded-lg border border-purple-100 hover:shadow-sm transition-shadow"
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-sm transition-shadow"
                             data-testid={`above-beyond-${evidence.id}`}
                           >
                             <div className="flex-1">
