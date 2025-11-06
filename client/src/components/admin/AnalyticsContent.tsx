@@ -604,11 +604,14 @@ export default function AnalyticsContent({ activeTab }: AnalyticsContentProps) {
 
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm text-gray-600 font-medium">Actions Taken</CardTitle>
+                    <CardTitle className="text-sm text-gray-600 font-medium flex items-center gap-2">
+                      <Award className="h-4 w-4 text-pcs_teal" />
+                      Awards Completed
+                    </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="text-2xl font-bold text-coral">{overviewQuery.data.completedAwards.toLocaleString()}</div>
-                    <p className="text-xs text-gray-500 mt-1">Evidence submissions</p>
+                    <div className="text-2xl font-bold text-pcs_teal" data-testid="metric-awards-completed">{overviewQuery.data.completedAwards.toLocaleString()}</div>
+                    <p className="text-xs text-gray-500 mt-1">Schools that completed at least one round</p>
                   </CardContent>
                 </Card>
 
