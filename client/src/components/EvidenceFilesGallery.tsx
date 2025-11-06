@@ -1,9 +1,10 @@
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { X, Download, ChevronLeft, ChevronRight, FileText, Film, Image as ImageIcon } from "lucide-react";
+import { X, Download, ChevronLeft, ChevronRight, FileText, Film, Image as ImageIcon, ExternalLink } from "lucide-react";
 import { PDFThumbnail } from "./PDFThumbnail";
 import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
+import { isChrome } from "@/lib/utils";
 
 interface EvidenceFile {
   name: string;
@@ -169,12 +170,27 @@ export function EvidenceFilesGallery({ files, className = "" }: EvidenceFilesGal
                       data-testid="video-preview"
                     />
                   ) : isPDF(selectedFile.type) ? (
-                    <iframe
-                      src={normalizeObjectStorageUrl(selectedFile.url)}
-                      className="w-full h-full"
-                      data-testid="pdf-preview"
-                      title={selectedFile.name}
-                    />
+                    isChrome() ? (
+                      <div className="text-center p-8">
+                        <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+                        <p className="text-gray-600 mb-4">PDF preview is not available in Chrome</p>
+                        <Button
+                          onClick={() => window.open(normalizeObjectStorageUrl(selectedFile.url), '_blank')}
+                          data-testid="button-open-pdf-new-tab"
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          <ExternalLink className="w-4 h-4 mr-2" />
+                          Open PDF in New Tab
+                        </Button>
+                      </div>
+                    ) : (
+                      <iframe
+                        src={normalizeObjectStorageUrl(selectedFile.url)}
+                        className="w-full h-full"
+                        data-testid="pdf-preview"
+                        title={selectedFile.name}
+                      />
+                    )
                   ) : (
                     <div className="text-center p-8">
                       <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />

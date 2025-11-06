@@ -88,6 +88,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { PLASTIC_ITEM_WEIGHTS, calculateAggregateMetrics } from "@/../../shared/plasticMetrics";
 import type { ReductionPromise, InsertReductionPromise, AuditResponse } from "@/../../shared/schema";
 import { LANGUAGE_FLAG_MAP, languageCodeFromName } from "@/lib/languageUtils";
+import { formatSafeDate } from "@/lib/utils";
 
 // Lazy load heavy components
 const EventsSection = lazy(() => import("@/components/dashboard/EventsSection"));
@@ -1224,7 +1225,7 @@ export default function Home() {
                             <div className="flex-1">
                               <p className="text-sm font-medium text-gray-800">{evidence.title}</p>
                               <p className="text-xs text-gray-500">
-                                {new Date(evidence.submittedAt).toLocaleDateString()}
+                                {formatSafeDate(evidence.submittedAt)}
                               </p>
                             </div>
                             <Badge
