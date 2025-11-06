@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { LoadingSpinner, EmptyState } from "@/components/ui/states";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
@@ -400,6 +400,9 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
           <DialogTitle data-testid="text-pack-editor-title">
             {pack ? 'Edit Resource Pack' : 'Create New Resource Pack'}
           </DialogTitle>
+          <DialogDescription>
+            {pack ? 'Update pack details and manage resources' : 'Create a curated collection of educational resources'}
+          </DialogDescription>
         </DialogHeader>
 
         <div className="flex gap-2 border-b mb-4">
@@ -466,7 +469,7 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
                     onValueChange={(value) => handleInputChange('stage', value)}
                   >
                     <SelectTrigger data-testid="select-pack-stage">
-                      <SelectValue />
+                      <SelectValue placeholder="Select stage" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="inspire">Inspire</SelectItem>
@@ -488,7 +491,6 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
                       <SelectValue placeholder="Select theme (optional)" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">No theme</SelectItem>
                       {THEME_OPTIONS.map(theme => (
                         <SelectItem key={theme.value} value={theme.value}>
                           {theme.label}
@@ -508,7 +510,7 @@ function PackEditorDialog({ pack, onClose, onSuccess }: {
                   onValueChange={(value) => handleInputChange('visibility', value)}
                 >
                   <SelectTrigger data-testid="select-pack-visibility">
-                    <SelectValue />
+                    <SelectValue placeholder="Select visibility" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="public">Public (visible to everyone)</SelectItem>
