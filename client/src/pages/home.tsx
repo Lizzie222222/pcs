@@ -1249,7 +1249,7 @@ export default function Home() {
             </div>
 
             {/* Round Completion Celebration */}
-            {school.awardCompleted && (
+            {!!school.awardCompleted && (
               <div className="mb-8">
                 <Card className={`${
                   school.currentRound === 1 ? 'bg-gradient-to-br from-blue-50 via-white to-blue-50' :
@@ -1321,7 +1321,7 @@ export default function Home() {
             )}
 
             {/* Certificate Display */}
-            {certificates.length > 0 && school.roundsCompleted && school.roundsCompleted >= 1 && (
+            {certificates.length > 0 && !!school.roundsCompleted && school.roundsCompleted >= 1 && (
               <div className="mb-8">
                 <Card className="bg-gradient-to-br from-yellow-50 via-white to-yellow-50 border-2 border-yellow-300 shadow-xl">
                   <CardHeader>
