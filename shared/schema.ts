@@ -55,7 +55,8 @@ export const schoolTypeEnum = pgEnum('school_type', [
 export const programStageEnum = pgEnum('program_stage', [
   'inspire',
   'investigate', 
-  'act'
+  'act',
+  'above_and_beyond'
 ]);
 
 /**

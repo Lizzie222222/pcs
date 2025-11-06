@@ -712,6 +712,7 @@ function EvidenceTab({ schoolId, evidence, isLoading }: {
                 <SelectItem value="inspire">Inspire</SelectItem>
                 <SelectItem value="investigate">Investigate</SelectItem>
                 <SelectItem value="act">Act</SelectItem>
+                <SelectItem value="above_and_beyond">Above and Beyond</SelectItem>
               </SelectContent>
             </Select>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
@@ -765,9 +766,10 @@ function EvidenceTab({ schoolId, evidence, isLoading }: {
                           <Badge className={
                             ev.stage === 'inspire' ? 'bg-pcs_blue' :
                             ev.stage === 'investigate' ? 'bg-teal' :
-                            'bg-coral'
+                            ev.stage === 'act' ? 'bg-coral' :
+                            'bg-purple-500'
                           }>
-                            {ev.stage}
+                            {ev.stage === 'above_and_beyond' ? 'Above and Beyond' : ev.stage}
                           </Badge>
                           <Badge className={
                             ev.status === 'approved' ? 'bg-green-600' :

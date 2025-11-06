@@ -20,7 +20,7 @@ import { X, Upload, File, Trash2, AlertCircle, Info } from "lucide-react";
 const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.object({
   title: z.string().min(1, t('forms:validation.required')).max(200, t('forms:validation.name_too_long', { max: 200 })),
   description: z.string().min(10, t('forms:evidence_submission.description_min_length')),
-  stage: z.enum(['inspire', 'investigate', 'act'], {
+  stage: z.enum(['inspire', 'investigate', 'act', 'above_and_beyond'], {
     required_error: t('forms:validation.invalid_selection'),
   }),
   videoLinks: z.string().optional(),
@@ -33,7 +33,7 @@ interface EvidenceSubmissionFormProps {
   onClose: () => void;
   schoolId?: string;
   evidenceRequirementId?: string;
-  preSelectedStage?: 'inspire' | 'investigate' | 'act';
+  preSelectedStage?: 'inspire' | 'investigate' | 'act' | 'above_and_beyond';
   isAdminOrPartner?: boolean;
 }
 

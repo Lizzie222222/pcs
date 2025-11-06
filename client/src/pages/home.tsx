@@ -258,6 +258,7 @@ export default function Home() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
+  const [preSelectedStage, setPreSelectedStage] = useState<'inspire' | 'investigate' | 'act' | 'above_and_beyond' | undefined>(undefined);
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [evidenceToDelete, setEvidenceToDelete] = useState<string | null>(null);
@@ -384,6 +385,16 @@ export default function Home() {
     enabled: activeTab === 'promises' && !!schoolAudit?.id,
     retry: false,
   });
+
+  // Fetch "above and beyond" evidence for the school
+  const { data: allEvidence = [] } = useQuery<any[]>({
+    queryKey: ['/api/evidence', { schoolId: dashboardData?.school?.id }],
+    enabled: activeTab === 'progress' && !!dashboardData?.school?.id,
+    retry: false,
+  });
+
+  // Filter for "above and beyond" evidence
+  const aboveAndBeyondEvidence = allEvidence.filter(ev => ev.stage === 'above_and_beyond');
 
   // Fetch resources for the resources tab
   const { data: allResources = [], isLoading: resourcesLoading } = useQuery<Resource[]>({
@@ -668,6 +679,12 @@ export default function Home() {
     }, 100);
   };
 
+  // Handler to open evidence form for "Above and Beyond" submissions
+  const handleAboveAndBeyondSubmit = () => {
+    setPreSelectedStage('above_and_beyond');
+    setShowEvidenceForm(true);
+  };
+
 
   // Handle errors (unauthorized and no school registration)
   useEffect(() => {
@@ -745,6 +762,7 @@ export default function Home() {
       case 'inspire': return 'bg-pcs_blue';
       case 'investigate': return 'bg-teal';
       case 'act': return 'bg-coral';
+      case 'above_and_beyond': return 'bg-purple-600';
       default: return 'bg-gray-500';
     }
   };
@@ -1165,6 +1183,68 @@ export default function Home() {
                 schoolId={school.id}
                 currentRound={school.currentRound ?? 1}
               />
+            </div>
+
+            {/* Above and Beyond Section */}
+            <div className="mb-8">
+              <Card className="bg-gradient-to-br from-purple-50 via-white to-purple-50 border-2 border-purple-200 shadow-md">
+                <CardContent className="p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex-1">
+                      <h3 className="text-lg font-bold text-purple-900 mb-2 flex items-center gap-2">
+                        <Award className="h-5 w-5 text-purple-600" />
+                        Above and Beyond
+                      </h3>
+                      <p className="text-sm text-gray-600 mb-4">
+                        Submit extra work that isn't attached to a specific requirement. Show us the amazing things you're doing!
+                      </p>
+                      <Button
+                        onClick={handleAboveAndBeyondSubmit}
+                        className="bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+                        size="sm"
+                        data-testid="button-submit-above-and-beyond"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Submit Evidence
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* List of Above and Beyond Submissions */}
+                  {aboveAndBeyondEvidence.length > 0 && (
+                    <div className="mt-6 pt-6 border-t border-purple-200">
+                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Your Submissions ({aboveAndBeyondEvidence.length})</h4>
+                      <div className="space-y-2">
+                        {aboveAndBeyondEvidence.slice(0, 5).map((evidence) => (
+                          <div
+                            key={evidence.id}
+                            className="flex items-center justify-between p-3 bg-white rounded-lg border border-purple-100 hover:shadow-sm transition-shadow"
+                            data-testid={`above-beyond-${evidence.id}`}
+                          >
+                            <div className="flex-1">
+                              <p className="text-sm font-medium text-gray-800">{evidence.title}</p>
+                              <p className="text-xs text-gray-500">
+                                {new Date(evidence.submittedAt).toLocaleDateString()}
+                              </p>
+                            </div>
+                            <Badge
+                              className={`${getStatusColor(evidence.status)} text-white text-xs`}
+                              data-testid={`status-${evidence.id}`}
+                            >
+                              {evidence.status}
+                            </Badge>
+                          </div>
+                        ))}
+                        {aboveAndBeyondEvidence.length > 5 && (
+                          <p className="text-xs text-gray-500 text-center pt-2">
+                            + {aboveAndBeyondEvidence.length - 5} more submission{aboveAndBeyondEvidence.length - 5 !== 1 ? 's' : ''}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
             </div>
 
             {/* Round Completion Celebration */}
@@ -2014,8 +2094,12 @@ export default function Home() {
       {/* Evidence Submission Form */}
       {showEvidenceForm && (
         <EvidenceSubmissionForm 
-          onClose={() => setShowEvidenceForm(false)}
+          onClose={() => {
+            setShowEvidenceForm(false);
+            setPreSelectedStage(undefined);
+          }}
           schoolId={school.id}
+          preSelectedStage={preSelectedStage}
         />
       )}
 
