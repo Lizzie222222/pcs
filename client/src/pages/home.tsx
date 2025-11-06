@@ -88,7 +88,6 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { PLASTIC_ITEM_WEIGHTS, calculateAggregateMetrics } from "@/../../shared/plasticMetrics";
 import type { ReductionPromise, InsertReductionPromise, AuditResponse } from "@/../../shared/schema";
 import { LANGUAGE_FLAG_MAP, languageCodeFromName } from "@/lib/languageUtils";
-import { formatSafeDate } from "@/lib/utils";
 
 // Lazy load heavy components
 const EventsSection = lazy(() => import("@/components/dashboard/EventsSection"));
@@ -1225,7 +1224,7 @@ export default function Home() {
                             <div className="flex-1">
                               <p className="text-sm font-medium text-gray-800">{evidence.title}</p>
                               <p className="text-xs text-gray-500">
-                                {formatSafeDate(evidence.submittedAt)}
+                                {new Date(evidence.submittedAt).toLocaleDateString()}
                               </p>
                             </div>
                             <Badge
@@ -1249,7 +1248,7 @@ export default function Home() {
             </div>
 
             {/* Round Completion Celebration */}
-            {!!school.awardCompleted && (
+            {school.awardCompleted && (
               <div className="mb-8">
                 <Card className={`${
                   school.currentRound === 1 ? 'bg-gradient-to-br from-blue-50 via-white to-blue-50' :
@@ -1321,7 +1320,7 @@ export default function Home() {
             )}
 
             {/* Certificate Display */}
-            {certificates.length > 0 && !!school.roundsCompleted && school.roundsCompleted >= 1 && (
+            {certificates.length > 0 && school.roundsCompleted && school.roundsCompleted >= 1 && (
               <div className="mb-8">
                 <Card className="bg-gradient-to-br from-yellow-50 via-white to-yellow-50 border-2 border-yellow-300 shadow-xl">
                   <CardHeader>

@@ -685,6 +685,5 @@
     "open": "Open chat",
     "close": "Close chat",
     "error": "Sorry, I encountered an error. Please try again later."
-  },
-  "invalid_date": "Μη έγκυρη ημερομηνία"
+  }
 }
