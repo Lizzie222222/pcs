@@ -322,7 +322,7 @@ export interface IStorage {
     visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
-  }): Promise<Array<ResourcePack & { resourceCount: number }>>;
+  }): Promise<Array<ResourcePack & { resourceCount: number; previewResources: Resource[] }>>;
   getResourcePackById(id: string): Promise<(ResourcePack & { resources: Resource[] }) | undefined>;
   updateResourcePack(id: string, updates: Partial<InsertResourcePack>): Promise<ResourcePack | undefined>;
   deleteResourcePack(id: string): Promise<boolean>;
@@ -2476,7 +2476,7 @@ export class DatabaseStorage implements IStorage {
     visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
-  } = {}): Promise<Array<ResourcePack & { resourceCount: number }>> {
+  } = {}): Promise<Array<ResourcePack & { resourceCount: number; previewResources: Resource[] }>> {
     const conditions = [eq(resourcePacks.isActive, true)];
     
     if (filters.stage) {
@@ -2508,7 +2508,32 @@ export class DatabaseStorage implements IStorage {
       query = query.offset(filters.offset) as any;
     }
     
-    return await query;
+    const packs = await query;
+    
+    // Fetch preview resources for each pack (first 4 resources ordered by orderIndex)
+    const packsWithPreviews = await Promise.all(
+      packs.map(async (pack) => {
+        const previewResources = await db
+          .select({
+            id: resources.id,
+            title: resources.title,
+            fileUrl: resources.fileUrl,
+            fileType: resources.fileType,
+          })
+          .from(resourcePackItems)
+          .innerJoin(resources, eq(resourcePackItems.resourceId, resources.id))
+          .where(eq(resourcePackItems.packId, pack.id))
+          .orderBy(asc(resourcePackItems.orderIndex))
+          .limit(4);
+        
+        return {
+          ...pack,
+          previewResources,
+        };
+      })
+    );
+    
+    return packsWithPreviews;
   }
 
   async getResourcePackById(id: string): Promise<(ResourcePack & { resources: Resource[] }) | undefined> {
