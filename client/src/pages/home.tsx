@@ -1191,7 +1191,7 @@ export default function Home() {
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
-                      <h3 className="text-lg font-bold text-purple-900 mb-2 flex items-center gap-2">
+                      <h3 className="text-lg font-bold mb-2 flex items-center gap-2 text-[#21496a]">
                         <Award className="h-5 w-5 text-purple-600" />
                         Above and Beyond
                       </h3>
@@ -1200,7 +1200,7 @@ export default function Home() {
                       </p>
                       <Button
                         onClick={handleAboveAndBeyondSubmit}
-                        className="bg-purple-600 hover:bg-purple-700 text-white shadow-sm"
+                        className="bg-[#009de1] hover:bg-purple-700 text-white shadow-sm"
                         size="sm"
                         data-testid="button-submit-above-and-beyond"
                       >
@@ -2090,7 +2090,6 @@ export default function Home() {
           </Suspense>
         )}
       </div>
-
       {/* Evidence Submission Form */}
       {showEvidenceForm && (
         <EvidenceSubmissionForm 
@@ -2102,7 +2101,6 @@ export default function Home() {
           preSelectedStage={preSelectedStage}
         />
       )}
-
       {/* Delete Evidence Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
@@ -2126,7 +2124,6 @@ export default function Home() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       {/* Delete Promise Confirmation Dialog */}
       <AlertDialog open={deletePromiseDialogOpen} onOpenChange={setDeletePromiseDialogOpen}>
         <AlertDialogContent data-testid="dialog-delete-promise-confirmation">
@@ -2154,7 +2151,6 @@ export default function Home() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-
       {/* Edit Promise Dialog */}
       {editingPromise && (
         <Dialog open={editPromiseDialogOpen} onOpenChange={setEditPromiseDialogOpen}>
@@ -2246,14 +2242,12 @@ export default function Home() {
           </DialogContent>
         </Dialog>
       )}
-
       {/* Onboarding Components */}
       <WelcomeModal 
         open={showWelcomeModal}
         onClose={handleWelcomeModalClose}
         onStartTour={handleStartTour}
       />
-
       <InteractiveTour 
         isActive={showTour}
         onComplete={handleTourComplete}
