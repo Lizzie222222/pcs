@@ -31,6 +31,24 @@ const reorderResourcePackItemsSchema = z.object({
     orderIndex: z.number().int().min(0)
   })).min(1)
 });
+
+// Admin schools query params validation schema
+const adminSchoolsQuerySchema = z.object({
+  country: z.string().optional().transform(val => val === 'all' ? undefined : val),
+  stage: z.enum(['inspire', 'investigate', 'act', 'all']).optional().transform(val => val === 'all' ? undefined : val),
+  type: z.enum(['primary', 'secondary', 'high_school', 'international', 'other', 'all']).optional().transform(val => val === 'all' ? undefined : val),
+  search: z.string().optional(),
+  language: z.string().optional().transform(val => val === 'all' ? undefined : val),
+  sortByDate: z.enum(['newest', 'oldest']).optional(),
+  joinedMonth: z.string().optional(),
+  joinedYear: z.string().optional(),
+  interactionStatus: z.enum(['all', 'interacted', 'not-interacted']).optional().transform(val => val === 'all' ? undefined : val),
+  completionStatus: z.enum(['all', 'plastic-clever', 'in-progress']).optional().transform(val => val === 'all' ? undefined : val),
+  page: z.coerce.number().int().positive().default(1),
+  limit: z.coerce.number().int().positive().max(200).default(50),
+  sortBy: z.enum(['name', 'country', 'progress', 'joinDate']).optional(),
+  sortOrder: z.enum(['asc', 'desc']).optional(),
+});
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
 import { eq, and, or, sql, desc, gte, lte, count, ilike, inArray } from "drizzle-orm";
@@ -8008,6 +8026,15 @@ Return JSON with:
   // Get all schools for admin management
   app.get('/api/admin/schools', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
+      // Validate and parse query parameters
+      const parseResult = adminSchoolsQuerySchema.safeParse(req.query);
+      if (!parseResult.success) {
+        return res.status(400).json({ 
+          message: "Invalid query parameters", 
+          errors: parseResult.error.flatten() 
+        });
+      }
+      
       const { 
         country, 
         stage, 
@@ -8023,31 +8050,29 @@ Return JSON with:
         limit,
         sortBy,
         sortOrder
-      } = req.query;
+      } = parseResult.data;
       
-      // Parse pagination params
-      const currentPage = page ? parseInt(page as string) : 1;
-      const pageLimit = limit ? parseInt(limit as string) : 50;
-      const offset = (currentPage - 1) * pageLimit;
+      // Calculate pagination offset (page and limit are already validated numbers)
+      const offset = (page - 1) * limit;
       
       // Get total count for pagination metadata
       // For interactionStatus filter, we need to fetch all schools and filter in memory
       // For other filters, we can use an efficient COUNT(*) query
       let total: number;
       
-      if (interactionStatus && interactionStatus !== 'all') {
+      if (interactionStatus) {
         // Fall back to fetching all schools for interaction status filtering
         const totalSchools = await storage.getSchools({
-          country: country as string,
-          stage: stage as string,
-          type: type as string,
-          search: search as string,
-          language: language as string,
-          sortByDate: sortByDate as 'newest' | 'oldest',
-          joinedMonth: joinedMonth as string,
-          joinedYear: joinedYear as string,
-          interactionStatus: interactionStatus as string,
-          completionStatus: completionStatus as string,
+          country,
+          stage,
+          type,
+          search,
+          language,
+          sortByDate,
+          joinedMonth,
+          joinedYear,
+          interactionStatus,
+          completionStatus,
         });
         total = totalSchools.length;
       } else {
@@ -8055,7 +8080,7 @@ Return JSON with:
         const conditions = [];
         
         // Country filter
-        if (country && country !== 'all') {
+        if (country) {
           const allCodes = getAllCountryCodes(country);
           const searchValues = [...allCodes, country];
           if (searchValues.length > 1) {
@@ -8066,12 +8091,12 @@ Return JSON with:
         }
         
         // Stage filter
-        if (stage && stage !== 'all') {
+        if (stage) {
           conditions.push(eq(schools.currentStage, stage as any));
         }
         
         // Completion status filter
-        if (completionStatus && completionStatus !== 'all') {
+        if (completionStatus) {
           if (completionStatus === 'plastic-clever') {
             conditions.push(eq(schools.awardCompleted, true));
           } else if (completionStatus === 'in-progress') {
@@ -8080,12 +8105,12 @@ Return JSON with:
         }
         
         // Type filter
-        if (type && type !== 'all') {
+        if (type) {
           conditions.push(eq(schools.type, type as any));
         }
         
         // Language filter
-        if (language && language !== 'all') {
+        if (language) {
           const languageMap: Record<string, string> = {
             'en': 'English',
             'es': 'Spanish',
@@ -8146,29 +8171,29 @@ Return JSON with:
       
       // Get paginated schools
       const paginatedSchools = await storage.getSchools({
-        country: country as string,
-        stage: stage as string,
-        type: type as string,
-        search: search as string,
-        language: language as string,
-        sortByDate: sortByDate as 'newest' | 'oldest',
-        joinedMonth: joinedMonth as string,
-        joinedYear: joinedYear as string,
-        interactionStatus: interactionStatus as string,
-        completionStatus: completionStatus as string,
-        sortBy: sortBy as 'name' | 'country' | 'progress' | 'joinDate' | undefined,
-        sortOrder: sortOrder as 'asc' | 'desc' | undefined,
-        limit: pageLimit,
-        offset: offset,
+        country,
+        stage,
+        type,
+        search,
+        language,
+        sortByDate,
+        joinedMonth,
+        joinedYear,
+        interactionStatus,
+        completionStatus,
+        sortBy,
+        sortOrder,
+        limit,
+        offset,
       });
       
       // Return pagination metadata
       res.json({
         schools: paginatedSchools,
         total,
-        page: currentPage,
-        limit: pageLimit,
-        totalPages: Math.ceil(total / pageLimit)
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit)
       });
     } catch (error) {
       console.error("Error fetching schools:", error);

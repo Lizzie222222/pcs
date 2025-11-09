@@ -2477,7 +2477,7 @@ export class DatabaseStorage implements IStorage {
     visibility?: 'public' | 'private';
     limit?: number;
     offset?: number;
-  } = {}): Promise<Array<ResourcePack & { resourceCount: number; previewResources: Resource[] }>> {
+  } = {}): Promise<Array<ResourcePack & { resourceCount: number; previewResources: Array<Pick<Resource, 'id' | 'title' | 'fileUrl' | 'fileType'>> }>> {
     const conditions = [eq(resourcePacks.isActive, true)];
     
     if (filters.stage) {
@@ -2514,7 +2514,7 @@ export class DatabaseStorage implements IStorage {
     // Fetch preview resources for each pack (first 4 resources ordered by orderIndex)
     const packsWithPreviews = await Promise.all(
       packs.map(async (pack) => {
-        const previewResources = await db
+        const previewResourcesRaw = await db
           .select({
             id: resources.id,
             title: resources.title,
@@ -2527,14 +2527,25 @@ export class DatabaseStorage implements IStorage {
           .orderBy(asc(resourcePackItems.orderIndex))
           .limit(4);
         
+        // Map to ensure correct shape
+        const previewResources = previewResourcesRaw.map((r): Pick<Resource, 'id' | 'title' | 'fileUrl' | 'fileType'> => ({
+          id: r.id,
+          title: r.title,
+          fileUrl: r.fileUrl,
+          fileType: r.fileType,
+        }));
+        
         return {
           ...pack,
-          previewResources: previewResources as Array<Pick<Resource, 'id' | 'title' | 'fileUrl' | 'fileType'>>,
+          previewResources,
         };
       })
     );
     
-    return packsWithPreviews;
+    return packsWithPreviews satisfies Array<ResourcePack & { 
+      resourceCount: number; 
+      previewResources: Array<Pick<Resource, 'id' | 'title' | 'fileUrl' | 'fileType'>> 
+    }>;
   }
 
   async getResourcePackById(id: string): Promise<(ResourcePack & { resources: Resource[] }) | undefined> {
