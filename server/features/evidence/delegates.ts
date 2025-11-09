@@ -89,43 +89,13 @@ export interface EvidenceFileDelegate {
 /**
  * Main Evidence Delegates Container
  * 
- * Aggregates all dependencies that Evidence module needs.
+ * Aggregates cross-cutting dependencies that Evidence module needs.
  * This is the single dependency injected into EvidenceStorage.
+ * 
+ * NOTE: Database operations are now owned by EvidenceStorage directly
+ * using Drizzle ORM. Only external dependencies are delegated.
  */
 export interface EvidenceDelegates {
-  /**
-   * Database persistence operations
-   * Picks only the methods Evidence needs from IStorage
-   * This creates a clear contract and prevents overreach
-   */
-  persistence: Pick<IStorage, 
-    // Phase 1: Evidence CRUD
-    'createEvidence' | 
-    'updateEvidence' | 
-    'getEvidence' | 
-    'getEvidenceById' | 
-    'getAllEvidence' | 
-    'deleteEvidence' |
-    
-    // Phase 2: Evidence Requirements
-    'getEvidenceRequirements' |
-    'getEvidenceRequirement' |
-    'createEvidenceRequirement' |
-    'updateEvidenceRequirement' |
-    'deleteEvidenceRequirement' |
-    
-    // Phase 3: Admin Review
-    'updateEvidenceStatus' |
-    'getPendingEvidence' |
-    'getApprovedPublicEvidence' |
-    'assignEvidence' |
-    
-    // School context (needed for evidence operations)
-    'getSchool' | 
-    'getSchoolUser' | 
-    'getUserSchools'
-  >;
-  
   /**
    * School progression delegate
    * Triggers progression checks when evidence is approved
@@ -143,6 +113,12 @@ export interface EvidenceDelegates {
    * Manages evidence file uploads and deletions
    */
   files: EvidenceFileDelegate;
+  
+  /**
+   * School/User context helpers
+   * For fetching school/user data needed for emails and validations
+   */
+  context: Pick<IStorage, 'getSchool' | 'getUser' | 'getSchoolUser' | 'getUserSchools'>;
 }
 
 /**
@@ -152,7 +128,7 @@ export interface EvidenceDelegates {
  * with production implementations. In tests, you can create
  * custom delegates with mock implementations.
  * 
- * @param storage - Main IStorage instance for persistence
+ * @param storage - Main IStorage instance for context operations (school/user lookups)
  * @param schoolProgressionDelegate - Progression delegate from Schools module
  * @returns Fully-wired EvidenceDelegates instance
  */
@@ -161,12 +137,11 @@ export function createEvidenceDelegates(
   schoolProgressionDelegate: SchoolProgressionDelegate
 ): EvidenceDelegates {
   return {
-    // Persistence: Direct pass-through to IStorage
-    // Type system ensures we only pick the methods Evidence needs
-    persistence: storage,
-    
     // Progression: Delegate from Schools module
     progression: schoolProgressionDelegate,
+    
+    // Context: For looking up schools/users needed in email composition and validation
+    context: storage,
     
     // Email: Wire to actual email service
     email: {

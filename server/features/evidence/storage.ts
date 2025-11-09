@@ -6,6 +6,9 @@ import type {
   EvidenceRequirement,
   InsertEvidenceRequirement
 } from '@shared/schema';
+import { db } from '../../db';
+import { evidence, evidenceRequirements, schools, users } from '@shared/schema';
+import { eq, and, or, desc, asc, ilike } from 'drizzle-orm';
 
 /**
  * Evidence Storage
@@ -42,8 +45,11 @@ export class EvidenceStorage {
    * @returns Created evidence record
    */
   async createEvidence(data: InsertEvidence): Promise<Evidence> {
-    // Delegate to persistence layer (IStorage)
-    return await this.delegates.persistence.createEvidence(data);
+    const [evidenceRecord] = await db
+      .insert(evidence)
+      .values(data)
+      .returning();
+    return evidenceRecord;
   }
 
   /**
@@ -52,8 +58,11 @@ export class EvidenceStorage {
    * @returns Evidence record or undefined
    */
   async getEvidence(id: string): Promise<Evidence | undefined> {
-    // Delegate to persistence layer
-    return await this.delegates.persistence.getEvidence(id);
+    const [evidenceRecord] = await db
+      .select()
+      .from(evidence)
+      .where(eq(evidence.id, id));
+    return evidenceRecord;
   }
 
   /**
@@ -66,8 +75,39 @@ export class EvidenceStorage {
     schoolCountry: string; 
     schoolLanguage: string | null 
   } | undefined> {
-    // Delegate to persistence layer
-    return await this.delegates.persistence.getEvidenceById(id);
+    const [evidenceRecord] = await db
+      .select({
+        id: evidence.id,
+        schoolId: evidence.schoolId,
+        submittedBy: evidence.submittedBy,
+        evidenceRequirementId: evidence.evidenceRequirementId,
+        title: evidence.title,
+        description: evidence.description,
+        stage: evidence.stage,
+        status: evidence.status,
+        visibility: evidence.visibility,
+        files: evidence.files,
+        videoLinks: evidence.videoLinks,
+        reviewedBy: evidence.reviewedBy,
+        reviewedAt: evidence.reviewedAt,
+        reviewNotes: evidence.reviewNotes,
+        isFeatured: evidence.isFeatured,
+        isAuditQuiz: evidence.isAuditQuiz,
+        roundNumber: evidence.roundNumber,
+        hasChildren: evidence.hasChildren,
+        parentalConsentFiles: evidence.parentalConsentFiles,
+        submittedAt: evidence.submittedAt,
+        updatedAt: evidence.updatedAt,
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        schoolLanguage: schools.primaryLanguage,
+      })
+      .from(evidence)
+      .leftJoin(schools, eq(evidence.schoolId, schools.id))
+      .where(eq(evidence.id, id))
+      .limit(1);
+    
+    return evidenceRecord as any;
   }
 
   /**
@@ -83,8 +123,76 @@ export class EvidenceStorage {
     visibility?: 'public' | 'private';
     assignedTo?: string;
   }): Promise<EvidenceWithSchool[]> {
-    // Delegate to persistence layer
-    return await this.delegates.persistence.getAllEvidence(filters);
+    // Build WHERE conditions
+    const conditions = [];
+    
+    if (filters?.status) {
+      conditions.push(eq(evidence.status, filters.status));
+    }
+    if (filters?.stage) {
+      conditions.push(eq(evidence.stage, filters.stage));
+    }
+    if (filters?.schoolId) {
+      conditions.push(eq(evidence.schoolId, filters.schoolId));
+    }
+    if (filters?.visibility) {
+      conditions.push(eq(evidence.visibility, filters.visibility));
+    }
+    if (filters?.country) {
+      conditions.push(eq(schools.country, filters.country));
+    }
+    if (filters?.assignedTo) {
+      conditions.push(eq(evidence.assignedTo, filters.assignedTo));
+    }
+
+    // Query with JOIN to include school data and reviewer info
+    const query = db
+      .select({
+        id: evidence.id,
+        schoolId: evidence.schoolId,
+        submittedBy: evidence.submittedBy,
+        evidenceRequirementId: evidence.evidenceRequirementId,
+        title: evidence.title,
+        description: evidence.description,
+        stage: evidence.stage,
+        status: evidence.status,
+        visibility: evidence.visibility,
+        files: evidence.files,
+        videoLinks: evidence.videoLinks,
+        reviewedBy: evidence.reviewedBy,
+        reviewedAt: evidence.reviewedAt,
+        reviewNotes: evidence.reviewNotes,
+        assignedTo: evidence.assignedTo,
+        isFeatured: evidence.isFeatured,
+        isAuditQuiz: evidence.isAuditQuiz,
+        roundNumber: evidence.roundNumber,
+        hasChildren: evidence.hasChildren,
+        parentalConsentFiles: evidence.parentalConsentFiles,
+        submittedAt: evidence.submittedAt,
+        updatedAt: evidence.updatedAt,
+        school: {
+          id: schools.id,
+          name: schools.name,
+          country: schools.country,
+          photoConsentStatus: schools.photoConsentStatus,
+          photoConsentDocumentUrl: schools.photoConsentDocumentUrl,
+        },
+        reviewer: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+        },
+      })
+      .from(evidence)
+      .leftJoin(schools, eq(evidence.schoolId, schools.id))
+      .leftJoin(users, eq(evidence.reviewedBy, users.id));
+
+    const results = conditions.length > 0
+      ? await query.where(and(...conditions)).orderBy(desc(evidence.submittedAt))
+      : await query.orderBy(desc(evidence.submittedAt));
+    
+    return results.filter(r => r.school !== null) as Array<EvidenceWithSchool>;
   }
 
   /**
@@ -94,8 +202,15 @@ export class EvidenceStorage {
    * @returns Updated evidence record or undefined
    */
   async updateEvidence(id: string, updates: Partial<InsertEvidence>): Promise<Evidence | undefined> {
-    // Delegate to persistence layer
-    return await this.delegates.persistence.updateEvidence(id, updates);
+    const [evidenceRecord] = await db
+      .update(evidence)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      } as any)
+      .where(eq(evidence.id, id))
+      .returning();
+    return evidenceRecord;
   }
 
   /**
@@ -104,8 +219,15 @@ export class EvidenceStorage {
    * @returns true if deleted, false otherwise
    */
   async deleteEvidence(id: string): Promise<boolean> {
-    // Delegate to persistence layer
-    return await this.delegates.persistence.deleteEvidence(id);
+    try {
+      const result = await db
+        .delete(evidence)
+        .where(eq(evidence.id, id));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error("Error deleting evidence:", error);
+      return false;
+    }
   }
 
   /**
@@ -256,9 +378,9 @@ export class EvidenceStorage {
     visibility?: 'public' | 'private';
     assignedTo?: string;
   }): Promise<EvidenceWithSchool[]> {
-    // Delegate to the getAllEvidence method (extracted in Phase 1)
+    // Delegate to the getAllEvidence method (already implemented above)
     // This method already provides all the admin review functionality
-    return await this.delegates.persistence.getAllEvidence(filters);
+    return await this.getAllEvidence(filters);
   }
 
   /**
@@ -268,7 +390,11 @@ export class EvidenceStorage {
    * @returns Array of pending evidence submissions
    */
   async getPendingEvidence(): Promise<Evidence[]> {
-    return await this.delegates.persistence.getPendingEvidence();
+    return await db
+      .select()
+      .from(evidence)
+      .where(eq(evidence.status, 'pending'))
+      .orderBy(desc(evidence.submittedAt));
   }
 
   /**
@@ -278,7 +404,16 @@ export class EvidenceStorage {
    * @returns Array of approved public evidence
    */
   async getApprovedPublicEvidence(): Promise<Evidence[]> {
-    return await this.delegates.persistence.getApprovedPublicEvidence();
+    return await db
+      .select()
+      .from(evidence)
+      .where(
+        and(
+          eq(evidence.status, 'approved'),
+          eq(evidence.visibility, 'public')
+        )
+      )
+      .orderBy(desc(evidence.submittedAt));
   }
 
   /**
@@ -289,7 +424,183 @@ export class EvidenceStorage {
    * @param assignedToUserId - Admin user ID or null to unassign
    */
   async assignEvidence(evidenceId: string, assignedToUserId: string | null): Promise<void> {
-    return await this.delegates.persistence.assignEvidence(evidenceId, assignedToUserId);
+    await db
+      .update(evidence)
+      .set({ 
+        assignedTo: assignedToUserId,
+        updatedAt: new Date(),
+      })
+      .where(eq(evidence.id, evidenceId));
+  }
+
+  /**
+   * Get approved evidence for inspiration page with filters
+   * Includes school details and supports pagination
+   * 
+   * @param filters - Filter criteria including stage, country, search, pagination
+   * @returns Array of approved evidence with school details
+   */
+  async getApprovedEvidenceForInspiration(filters?: {
+    stage?: string;
+    country?: string;
+    search?: string;
+    visibility?: 'public' | 'private';
+    limit?: number;
+    offset?: number;
+  }): Promise<Array<EvidenceWithSchool & { 
+    schoolName: string;
+    schoolCountry: string;
+    schoolLanguage: string | null;
+  }>> {
+    const conditions = [
+      eq(evidence.status, 'approved'),
+      eq(schools.photoConsentStatus, 'approved')
+    ];
+    
+    // Visibility filter logic:
+    // - If 'public': show only public evidence
+    // - If 'private': This filter is handled at route level with ACL checks
+    if (filters?.visibility === 'public') {
+      conditions.push(eq(evidence.visibility, 'public'));
+    } else if (filters?.visibility === 'private') {
+      conditions.push(eq(evidence.visibility, 'private'));
+    }
+    
+    if (filters?.stage) {
+      conditions.push(eq(evidence.stage, filters.stage as any));
+    }
+    
+    if (filters?.country) {
+      conditions.push(eq(schools.country, filters.country));
+    }
+    
+    if (filters?.search) {
+      const searchCondition = or(
+        ilike(evidence.title, `%${filters.search}%`),
+        ilike(evidence.description, `%${filters.search}%`)
+      );
+      if (searchCondition) {
+        conditions.push(searchCondition);
+      }
+    }
+    
+    let query = db
+      .select({
+        id: evidence.id,
+        schoolId: evidence.schoolId,
+        submittedBy: evidence.submittedBy,
+        evidenceRequirementId: evidence.evidenceRequirementId,
+        title: evidence.title,
+        description: evidence.description,
+        stage: evidence.stage,
+        status: evidence.status,
+        visibility: evidence.visibility,
+        files: evidence.files,
+        videoLinks: evidence.videoLinks,
+        reviewedBy: evidence.reviewedBy,
+        reviewedAt: evidence.reviewedAt,
+        reviewNotes: evidence.reviewNotes,
+        isFeatured: evidence.isFeatured,
+        isAuditQuiz: evidence.isAuditQuiz,
+        roundNumber: evidence.roundNumber,
+        hasChildren: evidence.hasChildren,
+        parentalConsentFiles: evidence.parentalConsentFiles,
+        submittedAt: evidence.submittedAt,
+        updatedAt: evidence.updatedAt,
+        school: {
+          id: schools.id,
+          name: schools.name,
+          country: schools.country,
+        },
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        schoolLanguage: schools.primaryLanguage,
+      })
+      .from(evidence)
+      .leftJoin(schools, eq(evidence.schoolId, schools.id));
+    
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+    
+    // Order by featured first, then by submission date
+    query = query.orderBy(desc(evidence.isFeatured), desc(evidence.submittedAt)) as any;
+    
+    if (filters?.limit) {
+      query = query.limit(filters.limit) as any;
+    }
+    if (filters?.offset) {
+      query = query.offset(filters.offset) as any;
+    }
+    
+    return await query as any;
+  }
+
+  /**
+   * Get evidence by file URL
+   * Searches for evidence containing a specific file URL
+   * 
+   * @param fileUrl - File URL to search for
+   * @returns Evidence with matching file or undefined
+   */
+  async getEvidenceByFileUrl(fileUrl: string): Promise<(EvidenceWithSchool & { 
+    schoolName: string;
+    schoolCountry: string;
+    schoolLanguage: string | null;
+  }) | undefined> {
+    // Extract file ID from various URL formats
+    const fileId = fileUrl.split('/').pop() || '';
+    
+    // Query evidence where the files JSON contains this file ID
+    const results = await db
+      .select({
+        id: evidence.id,
+        schoolId: evidence.schoolId,
+        submittedBy: evidence.submittedBy,
+        evidenceRequirementId: evidence.evidenceRequirementId,
+        title: evidence.title,
+        description: evidence.description,
+        stage: evidence.stage,
+        status: evidence.status,
+        visibility: evidence.visibility,
+        files: evidence.files,
+        videoLinks: evidence.videoLinks,
+        reviewedBy: evidence.reviewedBy,
+        reviewedAt: evidence.reviewedAt,
+        reviewNotes: evidence.reviewNotes,
+        isFeatured: evidence.isFeatured,
+        isAuditQuiz: evidence.isAuditQuiz,
+        roundNumber: evidence.roundNumber,
+        hasChildren: evidence.hasChildren,
+        parentalConsentFiles: evidence.parentalConsentFiles,
+        submittedAt: evidence.submittedAt,
+        updatedAt: evidence.updatedAt,
+        school: {
+          id: schools.id,
+          name: schools.name,
+          country: schools.country,
+        },
+        schoolName: schools.name,
+        schoolCountry: schools.country,
+        schoolLanguage: schools.primaryLanguage,
+      })
+      .from(evidence)
+      .leftJoin(schools, eq(evidence.schoolId, schools.id))
+      .where(eq(evidence.status, 'approved'));
+    
+    // Filter in JavaScript to check the files JSON array
+    const matchingEvidence = results.find((ev: any) => {
+      const files = Array.isArray(ev.files) ? ev.files : [];
+      return files.some((file: any) => 
+        file.url && (
+          file.url.includes(fileId) || 
+          file.url === `/objects/uploads/${fileId}` ||
+          file.url === `/api/objects/uploads/${fileId}`
+        )
+      );
+    });
+    
+    return matchingEvidence as any;
   }
 
 }
