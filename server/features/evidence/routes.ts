@@ -7,25 +7,38 @@ import { createEvidenceDelegates } from './delegates';
 import { createSchoolProgressionDelegate } from '../schools/progression';
 import { schoolStorage } from '../schools/storage';
 import type { IStorage } from '../../storage';
-import { insertEvidenceSchema } from '@shared/schema';
+import { insertEvidenceSchema, insertEvidenceRequirementSchema } from '@shared/schema';
 import { sendEvidenceSubmissionEmail } from '../../emailService';
 import { mailchimpService } from '../../mailchimpService';
+import { translateEvidenceRequirement } from '../../translationService';
 import { z } from 'zod';
 
 /**
- * Create Evidence Router
+ * Create Evidence Routers (Dual Router Structure)
  * 
- * PHASE 1: Core CRUD Routes (4 endpoints)
+ * PHASE 1: Evidence CRUD Routes (4 endpoints) - mounted at /api/evidence
  * - POST /api/evidence - Submit new evidence
  * - GET /api/evidence - Get user's evidence with filters
  * - GET /api/evidence/:id - View single evidence (public if approved)
  * - DELETE /api/evidence/:id - Delete pending evidence
  * 
+ * PHASE 2: Evidence Requirements Routes (6 endpoints) - mounted at /api/evidence-requirements
+ * - GET /api/evidence-requirements - Get all requirements (with optional stage filter)
+ * - GET /api/evidence-requirements/:id - Get single requirement
+ * - POST /api/evidence-requirements - Create requirement (admin)
+ * - PATCH /api/evidence-requirements/:id - Update requirement (admin)
+ * - DELETE /api/evidence-requirements/:id - Delete requirement (admin)
+ * - POST /api/evidence-requirements/:id/translate - Translate requirement (admin)
+ * 
  * @param storage - Main IStorage instance
- * @returns Express Router with evidence routes
+ * @returns Object containing evidenceRouter and requirementsRouter
  */
-export function createEvidenceRouter(storage: IStorage) {
-  const router = Router();
+export function createEvidenceRouters(storage: IStorage): {
+  evidenceRouter: Router;
+  requirementsRouter: Router;
+} {
+  const evidenceRouter = Router();
+  const requirementsRouter = Router();
   
   // Initialize EvidenceStorage with delegates
   const progressionDelegate = createSchoolProgressionDelegate(schoolStorage);
@@ -33,7 +46,7 @@ export function createEvidenceRouter(storage: IStorage) {
   const evidenceStorage = getEvidenceStorage(delegates);
 
   // ============================================================================
-  // PUBLIC ROUTES
+  // PHASE 1: EVIDENCE ROUTES (mounted at /api/evidence)
   // ============================================================================
 
   /**
@@ -45,7 +58,7 @@ export function createEvidenceRouter(storage: IStorage) {
    * 
    * Migrated from server/routes.ts:1230-1248
    */
-  router.get('/:id', async (req: any, res) => {
+  evidenceRouter.get('/:id', async (req: any, res) => {
     try {
       const evidence = await evidenceStorage.getEvidenceById(req.params.id);
       if (!evidence) {
@@ -65,10 +78,6 @@ export function createEvidenceRouter(storage: IStorage) {
     }
   });
 
-  // ============================================================================
-  // AUTHENTICATED ROUTES
-  // ============================================================================
-
   /**
    * POST /api/evidence
    * 
@@ -81,7 +90,7 @@ export function createEvidenceRouter(storage: IStorage) {
    * 
    * Migrated from server/routes.ts:2855-2965
    */
-  router.post('/', isAuthenticated, async (req: any, res) => {
+  evidenceRouter.post('/', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
@@ -203,7 +212,7 @@ export function createEvidenceRouter(storage: IStorage) {
    * 
    * Migrated from server/routes.ts:2968-3033
    */
-  router.get('/', isAuthenticated, async (req: any, res) => {
+  evidenceRouter.get('/', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
@@ -280,7 +289,7 @@ export function createEvidenceRouter(storage: IStorage) {
    * 
    * Migrated from server/routes.ts:3036-3088
    */
-  router.delete('/:id', isAuthenticated, async (req: any, res) => {
+  evidenceRouter.delete('/:id', isAuthenticated, async (req: any, res) => {
     try {
       const { id } = req.params;
       const userId = req.user.id;
@@ -334,10 +343,246 @@ export function createEvidenceRouter(storage: IStorage) {
     }
   });
 
-  return router;
+  // ============================================================================
+  // PHASE 2: EVIDENCE REQUIREMENTS ROUTES (mounted at /api/evidence-requirements)
+  // ============================================================================
+
+  /**
+   * GET /api/evidence-requirements
+   * 
+   * Get all evidence requirements (public, optional stage filter)
+   * Migrated from server/routes.ts:3147-3156
+   */
+  requirementsRouter.get('/', async (req, res) => {
+    try {
+      const { stage } = req.query;
+      const requirements = await evidenceStorage.getEvidenceRequirements(stage as string);
+      res.json(requirements);
+    } catch (error) {
+      console.error("Error fetching evidence requirements:", error);
+      res.status(500).json({ message: "Failed to fetch evidence requirements" });
+    }
+  });
+
+  /**
+   * GET /api/evidence-requirements/:id
+   * 
+   * Get single evidence requirement (public)
+   * Migrated from server/routes.ts:3159-3173
+   */
+  requirementsRouter.get('/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const requirement = await evidenceStorage.getEvidenceRequirement(id);
+      
+      if (!requirement) {
+        return res.status(404).json({ message: "Evidence requirement not found" });
+      }
+      
+      res.json(requirement);
+    } catch (error) {
+      console.error("Error fetching evidence requirement:", error);
+      res.status(500).json({ message: "Failed to fetch evidence requirement" });
+    }
+  });
+
+  /**
+   * POST /api/evidence-requirements
+   * 
+   * Create evidence requirement (admin only)
+   * Migrated from server/routes.ts:3176-3200
+   */
+  requirementsRouter.post('/', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const requirementData = insertEvidenceRequirementSchema.parse(req.body);
+      const requirement = await evidenceStorage.createEvidenceRequirement(requirementData);
+      
+      console.log(`[Evidence Requirement Created] ID: ${requirement.id}, Stage: ${requirement.stage}, Title: ${requirement.title}`);
+      res.status(201).json(requirement);
+    } catch (error) {
+      console.error("Error creating evidence requirement:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to create evidence requirement" });
+    }
+  });
+
+  /**
+   * PATCH /api/evidence-requirements/:id
+   * 
+   * Update evidence requirement (admin only)
+   * Migrated from server/routes.ts:3203-3249
+   */
+  requirementsRouter.patch('/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      
+      // Extract JSONB fields before schema validation
+      const { translations, languageSpecificResources, languageSpecificLinks, ...rest } = req.body;
+      
+      // Validate partial update data (excluding JSONB fields for explicit handling)
+      const updateData = insertEvidenceRequirementSchema.partial().parse(rest);
+      
+      // Add JSONB fields to updateData if provided
+      if (translations !== undefined) {
+        updateData.translations = translations;
+      }
+      if (languageSpecificResources !== undefined) {
+        updateData.languageSpecificResources = languageSpecificResources;
+      }
+      if (languageSpecificLinks !== undefined) {
+        updateData.languageSpecificLinks = languageSpecificLinks;
+      }
+      
+      const requirement = await evidenceStorage.updateEvidenceRequirement(id, updateData);
+      
+      if (!requirement) {
+        return res.status(404).json({ message: "Evidence requirement not found" });
+      }
+      
+      console.log(`[Evidence Requirement Updated] ID: ${requirement.id}, Title: ${requirement.title}`);
+      res.json(requirement);
+    } catch (error) {
+      console.error("Error updating evidence requirement:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      res.status(500).json({ message: "Failed to update evidence requirement" });
+    }
+  });
+
+  /**
+   * POST /api/evidence-requirements/:id/translate
+   * 
+   * Generate translations for evidence requirement (admin only)
+   * Migrated from server/routes.ts:3252-3303
+   */
+  requirementsRouter.post('/:id/translate', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      
+      const requirement = await evidenceStorage.getEvidenceRequirement(id);
+      if (!requirement) {
+        return res.status(404).json({ message: "Evidence requirement not found" });
+      }
+
+      const supportedLanguages = ['es', 'fr', 'de', 'it', 'pt', 'nl', 'ru', 'zh', 'ko', 'ar', 'id', 'el', 'cy'];
+      const translations: Record<string, { title: string; description: string }> = {
+        en: {
+          title: requirement.title,
+          description: requirement.description
+        }
+      };
+
+      for (const lang of supportedLanguages) {
+        try {
+          const translated = await translateEvidenceRequirement(
+            { title: requirement.title, description: requirement.description },
+            lang
+          );
+          translations[lang] = translated;
+        } catch (error) {
+          console.error(`Failed to translate to ${lang}:`, error);
+          translations[lang] = {
+            title: requirement.title,
+            description: requirement.description
+          };
+        }
+      }
+
+      const updated = await evidenceStorage.updateEvidenceRequirement(id, { translations });
+      
+      console.log(`[Evidence Requirement Translated] ID: ${id}, Languages: ${Object.keys(translations).length}`);
+      res.json({ translations, requirement: updated });
+    } catch (error) {
+      console.error("Error translating evidence requirement:", error);
+      res.status(500).json({ message: "Failed to translate evidence requirement" });
+    }
+  });
+
+  /**
+   * DELETE /api/evidence-requirements/:id
+   * 
+   * Delete evidence requirement (admin only)
+   * Migrated from server/routes.ts:3306-3342
+   */
+  requirementsRouter.delete('/:id', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+
+      const user = await storage.getUser(userId);
+      if (!user || !user.isAdmin) {
+        return res.status(403).json({ message: "Admin access required" });
+      }
+
+      const { id } = req.params;
+      
+      // Check if any evidence is linked to this requirement
+      const linkedEvidence = await storage.getEvidenceByRequirement(id);
+      
+      if (linkedEvidence.length > 0) {
+        return res.status(409).json({ 
+          message: "Cannot delete evidence requirement with linked evidence submissions",
+          linkedEvidenceCount: linkedEvidence.length
+        });
+      }
+      
+      const deleted = await evidenceStorage.deleteEvidenceRequirement(id);
+      
+      if (!deleted) {
+        return res.status(404).json({ message: "Evidence requirement not found" });
+      }
+      
+      console.log(`[Evidence Requirement Deleted] ID: ${id}`);
+      res.json({ message: "Evidence requirement deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting evidence requirement:", error);
+      res.status(500).json({ message: "Failed to delete evidence requirement" });
+    }
+  });
+
+  return { evidenceRouter, requirementsRouter };
 }
 
 /**
- * Export for mounting in main routes
+ * Backward compatibility export (deprecated)
+ * @deprecated Use createEvidenceRouters instead
  */
-export const evidenceRouter = createEvidenceRouter;
+export function createEvidenceRouter(storage: IStorage) {
+  const { evidenceRouter } = createEvidenceRouters(storage);
+  return evidenceRouter;
+}
