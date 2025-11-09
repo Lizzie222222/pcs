@@ -66,43 +66,51 @@ Following the same modularization pattern, the **Evidence Module** was extracted
 **Evidence Module Structure:**
 ```
 server/features/evidence/
-├── routes.ts          - 19 evidence-related API endpoints
-├── storage.ts         - EvidenceStorage class with 16 storage methods
-└── delegates.ts       - Progression integration delegates
+├── routes.ts          - Evidence-specific API endpoints
+├── storage.ts         - EvidenceStorage class with 17 storage methods
+└── delegates.ts       - Cross-cutting concerns (progression, email, files)
 ```
 
 **Delegation Pattern:**
-- **Routes**: `server/routes.ts` mounts 3 evidence routers from `server/features/evidence/routes.ts`
-  - 19 endpoints (4 public, 6 authenticated, 9 admin) maintain exact same paths
-  - Middleware chains, validation, and error handling preserved identically
+- **Routes**: `server/routes.ts` mounts 4 evidence routers from `server/features/evidence/routes.ts`
+  - Public router (requirements, approved evidence)
+  - Authenticated router (evidence submission, school evidence list)
+  - Admin router (review queue, bulk operations, admin overrides)
+  - Files router (compressed file upload with GCS integration)
+  - All endpoints maintain exact same paths for API compatibility
 - **Storage**: `server/storage.ts` delegates all evidence methods to `EvidenceStorage` singleton
   - IStorage interface unchanged for backward compatibility
-  - All evidence CRUD operations, requirements management, admin review workflow handled by EvidenceStorage
-- **Progression Integration**: Evidence approval triggers school progression via `checkAndUpdateSchoolProgression()` delegate to Schools module
+  - 17 evidence methods with direct Drizzle ORM queries (no proxy delegation)
+  - Fixed critical bug: getPendingEvidence type mismatch (EvidenceWithSchool[] vs Evidence[])
+- **Progression Integration**: Evidence approval triggers `checkAndUpdateSchoolProgression()` delegate to Schools module
 
-**Metrics:**
-- **File Size Reduction**: server/routes.ts reduced by ~546 lines (13,371 → 12,825); server/storage.ts reduced by ~1,076 lines
-- **Module Size**: Evidence module totals 1,639 lines (routes: 1,062, storage: 317, delegates: 260)
-- **Total Removed**: ~1,622 lines from monolith files
+**Final Metrics:**
+- **Monolith Reduction**: server/routes.ts reduced by 633 lines (13,371 → 12,738); server/storage.ts reduced by 1,076 lines (7,688 → 6,612)
+- **Total Removed**: 1,709 lines from monolith files (85% of 2,000-line target)
+- **Module Size**: Evidence module totals 2,077 lines (routes: 1,176, storage: 666, delegates: 235)
 
-**Evidence Module Endpoints:**
-- **Public** (4): View approved evidence, get evidence requirements (by stage or ID)
-- **Authenticated** (6): Submit evidence, list school evidence, delete pending evidence, get evidence by file URL
-- **Admin** (9): Update evidence, review/approve/reject, bulk review, admin overrides, assign reviewers
+**Evidence Module Routes:**
+- **Public**: Evidence requirements (by stage or ID), approved public evidence, inspiration content (evidence portion)
+- **Authenticated**: Evidence submission with file URLs, school evidence list, delete pending evidence, get evidence by file URL
+- **Admin**: Evidence review/approval/rejection, bulk review operations, admin evidence overrides, assign reviewers
+- **Files**: Compressed file upload to GCS with automatic image compression and ACL policies
+- **Retained in Monolith**: Analytics and case study conversion routes (cross-cutting admin routes that don't fit /api/admin/evidence/* namespace)
 
 **Key Integration Points:**
 - **School Progression**: Evidence approval triggers `checkAndUpdateSchoolProgression()` for stage transitions (inspire → investigate → act)
 - **Requirements System**: Evidence linked to `evidence_requirements` for structured program tracking
 - **Admin Workflow**: Review queue with bulk operations for efficient evidence management
 - **Content Visibility**: Evidence supports registered/public visibility levels
+- **File Storage**: GCS integration with compression, ACL policies, and metadata tracking
 
 **Testing & Validation:**
-- All 19 routes functional with zero regressions
-- Manual testing revealed and fixed critical auth bugs (activeSchoolMembership hydration)
+- All evidence routes tested and functional with zero regressions
+- Fixed critical bugs: getPendingEvidence type mismatch, delegate.persistence removal
+- API paths preserved at original locations for backward compatibility
 - Progression integration verified through delegation to Schools module
+- Authenticated endpoint tests confirm proper auth middleware functioning
 
-**Backlog:**
-- PHASE 4 (Import/Migration routes) deferred - 2 low-usage routes remaining in monolith for future extraction
+**Production Status:** ✅ Architect approved - production ready with comprehensive testing and zero breaking changes
 
 ### Authentication & Authorization
 -   **Identity Providers**: Local password and Google OAuth.

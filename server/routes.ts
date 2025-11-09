@@ -4558,20 +4558,6 @@ Return JSON with:
     }
   });
 
-  app.get('/api/admin/analytics/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
-    try {
-      const { startDate, endDate } = req.query;
-      const analytics = await storage.getEvidenceAnalytics(
-        startDate as string | undefined,
-        endDate as string | undefined
-      );
-      res.json(analytics);
-    } catch (error) {
-      console.error("Error fetching evidence analytics:", error);
-      res.status(500).json({ message: "Failed to fetch evidence analytics" });
-    }
-  });
-
   app.get('/api/admin/analytics/user-engagement', isAuthenticated, requireAdminOrPartner, async (req, res) => {
     try {
       const { startDate, endDate } = req.query;
@@ -4644,6 +4630,20 @@ Return JSON with:
     } catch (error) {
       console.error("Error fetching waste trends analytics:", error);
       res.status(500).json({ message: "Failed to fetch waste trends analytics" });
+    }
+  });
+
+  app.get('/api/admin/analytics/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const { startDate, endDate } = req.query;
+      const analytics = await storage.getEvidenceAnalytics(
+        startDate as string | undefined,
+        endDate as string | undefined
+      );
+      res.json(analytics);
+    } catch (error) {
+      console.error("Error fetching evidence analytics:", error);
+      res.status(500).json({ message: "Failed to fetch evidence analytics" });
     }
   });
 
@@ -6548,6 +6548,40 @@ Return JSON with:
     }
   });
 
+  // Update case study featured status
+  app.put('/api/admin/case-studies/:id/featured', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      const { featured } = req.body;
+      
+      if (typeof featured !== 'boolean') {
+        return res.status(400).json({ message: "Featured must be a boolean value" });
+      }
+
+      const caseStudy = await storage.updateCaseStudyFeatured(req.params.id, featured);
+      
+      if (!caseStudy) {
+        return res.status(404).json({ message: "Case study not found" });
+      }
+
+      res.json(caseStudy);
+    } catch (error) {
+      console.error("Error updating case study featured status:", error);
+      res.status(500).json({ message: "Failed to update case study" });
+    }
+  });
+
+  // Helper function to synchronize imageUrl with images array
+  function syncImageUrl(data: any): any {
+    // If images array exists and has items, ensure imageUrl is set to first image
+    if (data.images && Array.isArray(data.images) && data.images.length > 0) {
+      const firstImageUrl = data.images[0].url;
+      if (firstImageUrl && !data.imageUrl) {
+        data.imageUrl = firstImageUrl;
+      }
+    }
+    return data;
+  }
+
   // Create case study from evidence
   app.post('/api/admin/case-studies/from-evidence', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
@@ -6587,40 +6621,6 @@ Return JSON with:
       res.status(500).json({ message: "Failed to create case study" });
     }
   });
-
-  // Update case study featured status
-  app.put('/api/admin/case-studies/:id/featured', isAuthenticated, requireAdminOrPartner, async (req, res) => {
-    try {
-      const { featured } = req.body;
-      
-      if (typeof featured !== 'boolean') {
-        return res.status(400).json({ message: "Featured must be a boolean value" });
-      }
-
-      const caseStudy = await storage.updateCaseStudyFeatured(req.params.id, featured);
-      
-      if (!caseStudy) {
-        return res.status(404).json({ message: "Case study not found" });
-      }
-
-      res.json(caseStudy);
-    } catch (error) {
-      console.error("Error updating case study featured status:", error);
-      res.status(500).json({ message: "Failed to update case study" });
-    }
-  });
-
-  // Helper function to synchronize imageUrl with images array
-  function syncImageUrl(data: any): any {
-    // If images array exists and has items, ensure imageUrl is set to first image
-    if (data.images && Array.isArray(data.images) && data.images.length > 0) {
-      const firstImageUrl = data.images[0].url;
-      if (firstImageUrl && !data.imageUrl) {
-        data.imageUrl = firstImageUrl;
-      }
-    }
-    return data;
-  }
 
   // Create new case study
   app.post('/api/admin/case-studies', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {

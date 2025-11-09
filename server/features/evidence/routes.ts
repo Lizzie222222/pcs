@@ -43,6 +43,10 @@ import { z } from 'zod';
  * PHASE 4: Evidence File Upload Routes (1 endpoint) - mounted at /api/evidence-files
  * - POST /api/evidence-files/upload-compressed - Upload and compress evidence files
  * 
+ * NOTE: Cross-cutting admin routes remain in server/routes.ts:
+ * - GET /api/admin/analytics/evidence - Evidence analytics (in analytics section)
+ * - POST /api/admin/case-studies/from-evidence - Create case study from evidence (in case studies section)
+ * 
  * @param storage - Main IStorage instance
  * @returns Object containing evidenceRouter, requirementsRouter, adminEvidenceRouter, and evidenceFilesRouter
  */
