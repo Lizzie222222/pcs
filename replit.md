@@ -60,6 +60,50 @@ server/features/schools/
 
 All endpoints tested and verified working correctly through the new module structure with no regressions.
 
+**Evidence Module (November 2025):**
+Following the same modularization pattern, the **Evidence Module** was extracted to improve maintainability and AI editability.
+
+**Evidence Module Structure:**
+```
+server/features/evidence/
+├── routes.ts          - 19 evidence-related API endpoints
+├── storage.ts         - EvidenceStorage class with 16 storage methods
+└── delegates.ts       - Progression integration delegates
+```
+
+**Delegation Pattern:**
+- **Routes**: `server/routes.ts` mounts 3 evidence routers from `server/features/evidence/routes.ts`
+  - 19 endpoints (4 public, 6 authenticated, 9 admin) maintain exact same paths
+  - Middleware chains, validation, and error handling preserved identically
+- **Storage**: `server/storage.ts` delegates all evidence methods to `EvidenceStorage` singleton
+  - IStorage interface unchanged for backward compatibility
+  - All evidence CRUD operations, requirements management, admin review workflow handled by EvidenceStorage
+- **Progression Integration**: Evidence approval triggers school progression via `checkAndUpdateSchoolProgression()` delegate to Schools module
+
+**Metrics:**
+- **File Size Reduction**: server/routes.ts reduced by ~546 lines (13,371 → 12,825); server/storage.ts reduced by ~1,076 lines
+- **Module Size**: Evidence module totals 1,639 lines (routes: 1,062, storage: 317, delegates: 260)
+- **Total Removed**: ~1,622 lines from monolith files
+
+**Evidence Module Endpoints:**
+- **Public** (4): View approved evidence, get evidence requirements (by stage or ID)
+- **Authenticated** (6): Submit evidence, list school evidence, delete pending evidence, get evidence by file URL
+- **Admin** (9): Update evidence, review/approve/reject, bulk review, admin overrides, assign reviewers
+
+**Key Integration Points:**
+- **School Progression**: Evidence approval triggers `checkAndUpdateSchoolProgression()` for stage transitions (inspire → investigate → act)
+- **Requirements System**: Evidence linked to `evidence_requirements` for structured program tracking
+- **Admin Workflow**: Review queue with bulk operations for efficient evidence management
+- **Content Visibility**: Evidence supports registered/public visibility levels
+
+**Testing & Validation:**
+- All 19 routes functional with zero regressions
+- Manual testing revealed and fixed critical auth bugs (activeSchoolMembership hydration)
+- Progression integration verified through delegation to Schools module
+
+**Backlog:**
+- PHASE 4 (Import/Migration routes) deferred - 2 low-usage routes remaining in monolith for future extraction
+
 ### Authentication & Authorization
 -   **Identity Providers**: Local password and Google OAuth.
 -   **Role-Based Access Control (RBAC)**: Supports roles such as Teacher, Head Teacher, Pending Teacher, and Platform Admin. All teachers have equal access to team management features.
