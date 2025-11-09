@@ -370,7 +370,8 @@ router.put('/set-acl', isAuthenticated, async (req: any, res: Response) => {
       visibility,
       filename
     );
-    res.status(200).json({ objectPath });
+    // Normalize path for frontend (convert /objects/ to /api/objects/)
+    res.status(200).json({ objectPath: normalizeObjectStorageUrl(objectPath) });
   } catch (error) {
     console.error('[CaseStudies] Error setting file ACL:', error);
     res.status(500).json({ error: 'Failed to set file permissions' });
@@ -384,27 +385,30 @@ router.put('/set-acl', isAuthenticated, async (req: any, res: Response) => {
 /**
  * Helper function to log audit actions for case study operations
  * @param userId - User performing the action
+ * @param userEmail - User email
  * @param action - Action type (created, edited, deleted)
- * @param entityType - Entity type (case_study)
  * @param entityId - Entity ID
  * @param metadata - Optional metadata about the action
+ * @param req - Express Request object
  */
 async function logAuditAction(
   userId: string,
+  userEmail: string | undefined,
   action: string,
-  entityType: string,
   entityId: string,
-  metadata?: any
+  metadata: any | undefined,
+  req: any
 ): Promise<void> {
   try {
-    await logUserActivity({
+    await logUserActivity(
       userId,
+      userEmail,
       action,
-      entityType,
-      entityId,
       metadata,
-      timestamp: new Date(),
-    });
+      entityId,
+      'case_study',
+      req
+    );
   } catch (error) {
     console.error('Failed to log audit action:', error);
   }
@@ -551,7 +555,7 @@ adminRouter.post('/', isAuthenticated, requireAdminOrPartner, async (req: any, r
     
     const caseStudy = await caseStudyStorage.createCaseStudy(dataWithSyncedImage);
     
-    await logAuditAction(req.user.id, 'created', 'case_study', caseStudy.id);
+    await logAuditAction(req.user.id, req.user.email, 'created', caseStudy.id, undefined, req);
     
     const caseStudyWithSchool = await caseStudyStorage.getCaseStudyById(caseStudy.id);
     
@@ -590,7 +594,7 @@ adminRouter.put('/:id', isAuthenticated, requireAdminOrPartner, async (req: any,
       return res.status(404).json({ message: "Case study not found" });
     }
 
-    await logAuditAction(req.user.id, 'edited', 'case_study', req.params.id, { changes: validatedData });
+    await logAuditAction(req.user.id, req.user.email, 'edited', req.params.id, { changes: validatedData }, req);
 
     if (validatedData.status === 'published' && originalCaseStudy?.status !== 'published') {
       try {
