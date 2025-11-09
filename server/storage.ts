@@ -132,7 +132,7 @@ import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne
 import * as bcrypt from "bcrypt";
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
 import { normalizeCountryName, getAllCountryCodes, getCountryCode } from './countryMapping';
-import { schoolStorage } from './features/schools/storage';
+import { schoolStorage, getSchoolStorage } from './features/schools/storage';
 
 /**
  * Custom error class for database constraint violations

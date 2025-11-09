@@ -15,6 +15,14 @@
 
 import type { IStorage } from '../../storage';
 import type { SchoolProgressionDelegate } from '../schools/progression';
+import { 
+  sendEvidenceApprovalEmail as emailServiceApproval, 
+  sendEvidenceRejectionEmail as emailServiceRejection, 
+  sendEvidenceSubmissionEmail as emailServiceSubmission 
+} from '../../emailService';
+import { uploadToObjectStorage } from '../../routes/utils/objectStorage';
+import { compressImage as compressImageService } from '../../imageCompression';
+import { ObjectStorageService } from '../../objectStorage';
 
 /**
  * Email Delegate for Evidence-related notifications
@@ -154,44 +162,92 @@ export function createEvidenceDelegates(
     // Progression: Delegate from Schools module
     progression: schoolProgressionDelegate,
     
-    // Email: Wire to actual email service in later phases
+    // Email: Wire to actual email service
     email: {
       async sendEvidenceApprovalEmail(evidenceId: string, recipientEmail: string): Promise<void> {
-        // TODO PHASE 3: Wire to emailService.sendEvidenceApprovalEmail()
-        // For now, this is a no-op placeholder
-        console.log(`[Email Delegate] TODO: Send approval email for evidence ${evidenceId} to ${recipientEmail}`);
+        // Get evidence and school details for email
+        const evidence = await storage.getEvidence(evidenceId);
+        if (!evidence) return;
+        
+        const school = await storage.getSchool(evidence.schoolId);
+        const user = await storage.getUser(evidence.submittedBy!);
+        
+        await emailServiceApproval(
+          recipientEmail,
+          school?.name || 'Your School',
+          evidence.title,
+          undefined, // reviewerName
+          user?.preferredLanguage || 'en'
+        );
       },
       
       async sendEvidenceRejectionEmail(evidenceId: string, recipientEmail: string, notes?: string): Promise<void> {
-        // TODO PHASE 3: Wire to emailService.sendEvidenceRejectionEmail()
-        console.log(`[Email Delegate] TODO: Send rejection email for evidence ${evidenceId} to ${recipientEmail}${notes ? ` with notes: ${notes}` : ''}`);
+        // Get evidence and school details for email
+        const evidence = await storage.getEvidence(evidenceId);
+        if (!evidence) return;
+        
+        const school = await storage.getSchool(evidence.schoolId);
+        const user = await storage.getUser(evidence.submittedBy!);
+        
+        await emailServiceRejection(
+          recipientEmail,
+          school?.name || 'Your School',
+          evidence.title,
+          notes || 'Please review and resubmit',
+          undefined, // reviewerName
+          user?.preferredLanguage || 'en'
+        );
       },
       
       async sendEvidenceSubmissionConfirmation(evidenceId: string, recipientEmail: string): Promise<void> {
-        // TODO PHASE 1: Wire to emailService.sendEvidenceSubmissionConfirmation()
-        console.log(`[Email Delegate] TODO: Send submission confirmation for evidence ${evidenceId} to ${recipientEmail}`);
+        // Get evidence and school details for email
+        const evidence = await storage.getEvidence(evidenceId);
+        if (!evidence) return;
+        
+        const school = await storage.getSchool(evidence.schoolId);
+        const user = await storage.getUser(evidence.submittedBy!);
+        
+        await emailServiceSubmission(
+          recipientEmail,
+          school?.name || 'Your School',
+          evidence.title,
+          evidence.stage,
+          user?.preferredLanguage || 'en'
+        );
       }
     },
     
-    // Files: Wire to actual object storage and image compression in later phases
+    // Files: Wire to actual object storage and image compression
     files: {
       async uploadFile(file: Express.Multer.File, path: string, isPublic: boolean): Promise<string> {
-        // TODO PHASE 1: Wire to objectStorage.uploadFile()
-        // For now, return empty string
-        console.log(`[File Delegate] TODO: Upload file to ${path} (public: ${isPublic})`);
-        return '';
+        // Use uploadToObjectStorage utility
+        const visibility = isPublic ? 'public' : 'private';
+        const url = await uploadToObjectStorage(
+          file.buffer,
+          file.mimetype,
+          file.originalname,
+          'system', // Using system as owner for evidence files
+          visibility
+        );
+        return url;
       },
       
       async deleteFile(url: string): Promise<void> {
-        // TODO PHASE 1: Wire to objectStorage.deleteFile()
-        console.log(`[File Delegate] TODO: Delete file at ${url}`);
+        // Delete file from object storage
+        try {
+          const objectStorageService = new ObjectStorageService();
+          const objectPath = objectStorageService.normalizeObjectEntityPath(url);
+          const file = await objectStorageService.getObjectEntityFile(objectPath);
+          await file.delete();
+        } catch (error) {
+          console.warn(`Failed to delete file ${url}:`, error);
+          // Don't throw - file deletion is best-effort
+        }
       },
       
       async compressImage(buffer: Buffer): Promise<Buffer> {
-        // TODO PHASE 1: Wire to imageCompression.compressImage()
-        // For now, return buffer unchanged
-        console.log(`[File Delegate] TODO: Compress image (${buffer.length} bytes)`);
-        return buffer;
+        // Compress image using imageCompression service
+        return await compressImageService(buffer);
       }
     }
   };
