@@ -49,6 +49,7 @@ import { getAllCountryCodes } from './countryMapping';
 // Import feature routers
 import { schoolsRouter, adminSchoolsQuerySchema, toggleEvidenceOverrideSchema, updateSchoolProgressionSchema } from './features/schools/routes';
 import { createEvidenceRouters } from './features/evidence/routes';
+import { initCaseStudyRoutes, adminRouter as caseStudyAdminRouter } from './features/case-studies/routes';
 import { getPDFDelegate } from './features/case-studies/delegates';
 
 /**
@@ -75,6 +76,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.use('/api/evidence-requirements', requirementsRouter);
   app.use('/api/admin/evidence', adminEvidenceRouter);
   app.use('/api/evidence-files', evidenceFilesRouter);
+
+  // Mount case study router
+  const caseStudyRouter = initCaseStudyRoutes(storage);
+  app.use('/api/case-studies', caseStudyRouter);
+
+  // Mount case study admin router
+  app.use('/api/admin/case-studies', caseStudyAdminRouter);
 
   // Serve PDF resources from public folder with proper CORS headers
   app.get('/api/pdfs/:filename', async (req, res) => {
@@ -1118,122 +1126,6 @@ Return JSON with:
     }
   });
 
-  /**
-   * @description GET /api/case-studies - Public endpoint for retrieving case studies with filtering by stage, country, categories, tags. Only published case studies shown to non-admin users.
-   * @returns {CaseStudy[]} Array of case study objects with pagination
-   * @location server/routes.ts#L461
-   * @related shared/schema.ts (caseStudies table), client/src/pages/inspiration.tsx, client/src/pages/admin.tsx (CaseStudyEditor)
-   */
-  app.get('/api/case-studies', async (req: any, res) => {
-    try {
-      const { stage, country, search, categories, tags, status, limit, offset } = req.query;
-      
-      // Check if user is authenticated and is admin
-      const isAdmin = req.isAuthenticated && req.isAuthenticated() && req.user?.isAdmin;
-      
-      // Parse comma-separated categories and tags into arrays
-      const categoriesArray = categories && typeof categories === 'string' 
-        ? categories.split(',').map(c => c.trim()).filter(c => c.length > 0)
-        : undefined;
-        
-      const tagsArray = tags && typeof tags === 'string'
-        ? tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
-        : undefined;
-      
-      // Draft Protection: Only admins can see drafts
-      // For non-admin users, always filter to 'published' status
-      const statusFilter = isAdmin && status ? (status as 'draft' | 'published') : 'published';
-      
-      const caseStudies = await storage.getCaseStudies({
-        stage: stage as string,
-        country: country as string,
-        search: search as string,
-        categories: categoriesArray,
-        tags: tagsArray,
-        status: statusFilter,
-        limit: limit ? parseInt(limit as string) : 20,
-        offset: offset ? parseInt(offset as string) : 0,
-      });
-      
-      // Normalize URLs in case studies
-      const normalizedCaseStudies = caseStudies.map(cs => ({
-        ...cs,
-        imageUrl: normalizeObjectStorageUrl(cs.imageUrl),
-        images: Array.isArray(cs.images) ? cs.images.map((img: any) => ({
-          ...img,
-          url: normalizeObjectStorageUrl(img.url),
-        })) : cs.images,
-      }));
-      
-      res.json(normalizedCaseStudies);
-    } catch (error) {
-      console.error("Error fetching case studies:", error);
-      res.status(500).json({ message: "Failed to fetch case studies" });
-    }
-  });
-
-  // Get single case study by ID
-  app.get('/api/case-studies/:id', async (req: any, res) => {
-    try {
-      const caseStudy = await storage.getCaseStudyById(req.params.id);
-      if (!caseStudy) {
-        return res.status(404).json({ message: "Case study not found" });
-      }
-      
-      // Draft Protection: Only admins can view draft case studies
-      const isAdmin = req.isAuthenticated && req.isAuthenticated() && req.user?.isAdmin;
-      if (caseStudy.status === 'draft' && !isAdmin) {
-        return res.status(404).json({ message: "Case study not found" });
-      }
-      
-      // Get creator name
-      let createdByName = 'Unknown';
-      if (caseStudy.createdBy) {
-        const creator = await storage.getUser(caseStudy.createdBy);
-        if (creator) {
-          createdByName = `${creator.firstName || ''} ${creator.lastName || ''}`.trim() || creator.email || 'Unknown';
-        }
-      }
-      
-      // Get evidence data if evidenceId is present
-      let evidenceLink: string | null = null;
-      let evidenceFiles: any[] | null = null;
-      if (caseStudy.evidenceId) {
-        const evidence = await storage.getEvidenceById(caseStudy.evidenceId);
-        if (evidence) {
-          evidenceLink = evidence.videoLinks || null;
-          // Normalize evidence file URLs
-          evidenceFiles = Array.isArray(evidence.files) 
-            ? evidence.files.map((file: any) => ({
-                ...file,
-                url: normalizeObjectStorageUrl(file.url),
-              }))
-            : null;
-        }
-      }
-      
-      // Transform the response to match the expected frontend interface
-      const transformedCaseStudy = {
-        ...caseStudy,
-        location: (caseStudy as any).schoolCountry || '', // Map schoolCountry to location
-        createdByName, // Add creator name
-        evidenceLink, // From evidence table
-        evidenceFiles, // From evidence table (with normalized URLs)
-        // Normalize URLs
-        imageUrl: normalizeObjectStorageUrl(caseStudy.imageUrl),
-        images: Array.isArray(caseStudy.images) ? caseStudy.images.map((img: any) => ({
-          ...img,
-          url: normalizeObjectStorageUrl(img.url),
-        })) : caseStudy.images,
-      };
-      
-      res.json(transformedCaseStudy);
-    } catch (error) {
-      console.error("Error fetching case study:", error);
-      res.status(500).json({ message: "Failed to fetch case study" });
-    }
-  });
-
   // PHASE 1: Migrated to server/features/evidence/routes.ts
   // Get single evidence by ID (public endpoint for approved evidence)
   // app.get('/api/evidence/:id', async (req: any, res) => {
@@ -1256,90 +1148,11 @@ Return JSON with:
   //   }
   // });
 
-  // Get related case studies by ID
-  app.get('/api/case-studies/:id/related', async (req, res) => {
-    try {
-      const { id } = req.params;
-      const limit = req.query.limit ? parseInt(req.query.limit as string) : 4;
-      const relatedCaseStudies = await storage.getRelatedCaseStudies(id, limit);
-      
-      // Normalize URLs in related case studies
-      const normalizedRelated = relatedCaseStudies.map(cs => ({
-        ...cs,
-        imageUrl: normalizeObjectStorageUrl(cs.imageUrl),
-        images: Array.isArray(cs.images) ? cs.images.map((img: any) => ({
-          ...img,
-          url: normalizeObjectStorageUrl(img.url),
-        })) : cs.images,
-      }));
-      
-      res.json(normalizedRelated);
-    } catch (error) {
-      console.error("Error fetching related case studies:", error);
-      res.status(500).json({ message: "Failed to fetch related case studies" });
-    }
-  });
-
-  /**
-   * @description GET /api/case-studies/:id/pdf - Generates and downloads beautifully formatted PDF of case study using shared PDF service. Includes images, metrics, timeline, and quotes.
-   * @param {string} id - Case study ID from URL params
-   * @returns {Buffer} PDF file buffer for download
-   * @location server/routes.ts#L533
-   * @related generatePdfHtml, server/lib/pdfGenerator.ts, server/features/case-studies/delegates.ts, shared/schema.ts (caseStudies table), client/src/pages/inspiration.tsx
-   */
-  app.get('/api/case-studies/:id/pdf', async (req: any, res) => {
-    try {
-      const caseStudy = await storage.getCaseStudyById(req.params.id);
-      if (!caseStudy) {
-        return res.status(404).json({ error: 'Case study not found' });
-      }
-      
-      // Draft Protection: Only admins can download draft case studies
-      const isAdmin = req.isAuthenticated && req.isAuthenticated() && req.user?.isAdmin;
-      if (caseStudy.status === 'draft' && !isAdmin) {
-        return res.status(404).json({ error: 'Case study not found' });
-      }
-      
-      // Get evidence data if evidenceId is present
-      let evidenceLink: string | null = null;
-      let evidenceFiles: any[] | null = null;
-      if (caseStudy.evidenceId) {
-        const evidence = await storage.getEvidenceById(caseStudy.evidenceId);
-        if (evidence) {
-          evidenceLink = evidence.videoLinks || null;
-          evidenceFiles = Array.isArray(evidence.files) ? evidence.files : null;
-        }
-      }
-      
-      // Add evidence data to case study for PDF generation
-      const caseStudyWithEvidence = {
-        ...caseStudy,
-        evidenceLink,
-        evidenceFiles
-      };
-      
-      // Get base URL for converting relative image URLs to absolute
-      const protocol = req.protocol || 'https';
-      const host = req.get('host') || 'plasticcleverschools.com';
-      const baseUrl = `${protocol}://${host}`;
-      
-      // Generate beautiful HTML for PDF
-      const htmlContent = generatePdfHtml(caseStudyWithEvidence, baseUrl);
-      
-      // Use shared PDF service via delegate
-      const pdfDelegate = getPDFDelegate();
-      const pdfBuffer = await pdfDelegate.generateCaseStudyPDF(htmlContent);
-      
-      // Set headers and send PDF
-      const filename = sanitizeFilename(caseStudy.title);
-      res.setHeader('Content-Type', 'application/pdf');
-      res.setHeader('Content-Disposition', `attachment; filename="${filename}.pdf"`);
-      res.send(pdfBuffer);
-    } catch (error) {
-      console.error('[PDF] PDF generation error:', error);
-      res.status(500).json({ error: 'Failed to generate PDF' });
-    }
-  });
+  // Case Study Routes: Migrated to server/features/case-studies/routes.ts
+  // - GET /api/case-studies - Gallery list with filters
+  // - GET /api/case-studies/:id - View single case study
+  // - GET /api/case-studies/:id/related - Get related case studies
+  // - GET /api/case-studies/:id/pdf - PDF export
 
   // Get global movement data for landing page
   app.get('/api/landing/global-movement', async (req, res) => {
@@ -4207,46 +4020,6 @@ Return JSON with:
     }
   });
 
-  // Get upload URL for case study files
-  app.post("/api/case-studies/upload", isAuthenticated, async (req, res) => {
-    const objectStorageService = new ObjectStorageService();
-    try {
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
-    } catch (error) {
-      console.error("Error getting upload URL:", error);
-      res.status(500).json({ error: "Failed to get upload URL" });
-    }
-  });
-
-  // Set ACL policy for uploaded case study files
-  app.put("/api/case-studies/set-acl", isAuthenticated, async (req: any, res) => {
-    if (!req.body.fileURL) {
-      return res.status(400).json({ error: "fileURL is required" });
-    }
-
-    const userId = req.user?.id;
-    const visibility = req.body.visibility || 'public';
-    const filename = req.body.filename;
-
-    try {
-      const objectStorageService = new ObjectStorageService();
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
-        req.body.fileURL,
-        {
-          owner: userId,
-          visibility: visibility,
-        },
-        filename,
-      );
-
-      res.status(200).json({ objectPath });
-    } catch (error) {
-      console.error("Error setting file ACL:", error);
-      res.status(500).json({ error: "Failed to set file permissions" });
-    }
-  });
-
   // Set ACL policy for uploaded evidence files
   app.put("/api/evidence-files", isAuthenticated, async (req: any, res) => {
     if (!req.body.fileURL) {
@@ -6446,91 +6219,7 @@ Return JSON with:
     }
   });
 
-  // Admin Case Study Management Routes
-  
-  // Get all case studies for admin management
-  app.get('/api/admin/case-studies', isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const { stage, country, featured, search, categories, tags, status, limit, offset } = req.query;
-      
-      // Parse comma-separated categories and tags into arrays
-      const categoriesArray = categories && typeof categories === 'string' 
-        ? categories.split(',').map(c => c.trim()).filter(c => c.length > 0)
-        : undefined;
-        
-      const tagsArray = tags && typeof tags === 'string'
-        ? tags.split(',').map(t => t.trim()).filter(t => t.length > 0)
-        : undefined;
-      
-      const caseStudies = await storage.getCaseStudies({
-        stage: stage as string,
-        country: country as string,
-        featured: featured === 'true' ? true : featured === 'false' ? false : undefined,
-        search: search as string,
-        categories: categoriesArray,
-        tags: tagsArray,
-        status: status as 'draft' | 'published' | undefined, // Admins can filter by any status
-        limit: limit ? parseInt(limit as string) : 50,
-        offset: offset ? parseInt(offset as string) : 0,
-      });
-      res.json(caseStudies);
-    } catch (error) {
-      console.error("Error fetching case studies:", error);
-      res.status(500).json({ message: "Failed to fetch case studies" });
-    }
-  });
-
-  // Get single case study by ID (admin - no draft protection)
-  app.get('/api/admin/case-studies/:id', isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const caseStudy = await storage.getCaseStudyById(req.params.id);
-      
-      if (!caseStudy) {
-        return res.status(404).json({ message: "Case study not found" });
-      }
-      
-      res.json(caseStudy);
-    } catch (error) {
-      console.error("Error fetching case study:", error);
-      res.status(500).json({ message: "Failed to fetch case study" });
-    }
-  });
-
-  // Update case study featured status
-  app.put('/api/admin/case-studies/:id/featured', isAuthenticated, requireAdminOrPartner, async (req, res) => {
-    try {
-      const { featured } = req.body;
-      
-      if (typeof featured !== 'boolean') {
-        return res.status(400).json({ message: "Featured must be a boolean value" });
-      }
-
-      const caseStudy = await storage.updateCaseStudyFeatured(req.params.id, featured);
-      
-      if (!caseStudy) {
-        return res.status(404).json({ message: "Case study not found" });
-      }
-
-      res.json(caseStudy);
-    } catch (error) {
-      console.error("Error updating case study featured status:", error);
-      res.status(500).json({ message: "Failed to update case study" });
-    }
-  });
-
-  // Helper function to synchronize imageUrl with images array
-  function syncImageUrl(data: any): any {
-    // If images array exists and has items, ensure imageUrl is set to first image
-    if (data.images && Array.isArray(data.images) && data.images.length > 0) {
-      const firstImageUrl = data.images[0].url;
-      if (firstImageUrl && !data.imageUrl) {
-        data.imageUrl = firstImageUrl;
-      }
-    }
-    return data;
-  }
-
-  // Create case study from evidence
+  // Create case study from evidence (cross-cutting route - stays in monolith)
   app.post('/api/admin/case-studies/from-evidence', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
     try {
       const { evidenceId, title, description, impact, imageUrl, featured = false, priority = 0 } = req.body;
@@ -6567,231 +6256,6 @@ Return JSON with:
     } catch (error) {
       console.error("Error creating case study from evidence:", error);
       res.status(500).json({ message: "Failed to create case study" });
-    }
-  });
-
-  // Create new case study
-  app.post('/api/admin/case-studies', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
-    try {
-      const validatedData = insertCaseStudySchema.parse(req.body);
-      
-      // Sync imageUrl with images array
-      const dataWithSyncedImage = syncImageUrl(validatedData);
-      
-      const caseStudy = await storage.createCaseStudy(dataWithSyncedImage);
-      
-      // Log audit action
-      await logAuditAction(req.user.id, 'created', 'case_study', caseStudy.id);
-      
-      // Fetch the case study with school info joined
-      const caseStudyWithSchool = await storage.getCaseStudyById(caseStudy.id);
-      
-      res.status(201).json(caseStudyWithSchool || caseStudy);
-    } catch (error) {
-      console.error("Error creating case study:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to create case study" });
-    }
-  });
-
-  // Update case study
-  app.put('/api/admin/case-studies/:id', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
-    try {
-      const validatedData = insertCaseStudySchema.partial().parse(req.body);
-      
-      // Sync imageUrl with images array
-      const dataWithSyncedImage = syncImageUrl(validatedData);
-      
-      // Get original case study to check if status is changing to published
-      const originalCaseStudy = await storage.getCaseStudyById(req.params.id);
-      
-      const caseStudy = await storage.updateCaseStudy(req.params.id, dataWithSyncedImage);
-      
-      if (!caseStudy) {
-        return res.status(404).json({ message: "Case study not found" });
-      }
-
-      // Log audit action
-      await logAuditAction(req.user.id, 'edited', 'case_study', req.params.id, { changes: validatedData });
-
-      // Auto-create version when publishing
-      if (validatedData.status === 'published' && originalCaseStudy?.status !== 'published') {
-        try {
-          // Get the next version number
-          const existingVersions = await storage.getCaseStudyVersions(req.params.id);
-          const nextVersionNumber = existingVersions.length > 0 
-            ? Math.max(...existingVersions.map(v => v.versionNumber)) + 1 
-            : 1;
-          
-          // Create version snapshot
-          await storage.createCaseStudyVersion({
-            caseStudyId: req.params.id,
-            versionNumber: nextVersionNumber,
-            title: caseStudy.title,
-            description: caseStudy.description,
-            stage: caseStudy.stage,
-            status: caseStudy.status || 'draft',
-            impact: caseStudy.impact,
-            images: caseStudy.images as any,
-            videos: caseStudy.videos as any,
-            studentQuotes: caseStudy.studentQuotes as any,
-            impactMetrics: caseStudy.impactMetrics as any,
-            timelineSections: caseStudy.timelineSections as any,
-            templateType: caseStudy.templateType,
-            beforeImage: caseStudy.beforeImage,
-            afterImage: caseStudy.afterImage,
-            snapshot: caseStudy as any,
-            createdBy: req.user!.id,
-          });
-          
-          console.log(`[Version] Auto-created version ${nextVersionNumber} for case study ${req.params.id}`);
-        } catch (versionError) {
-          // Log version creation error but don't fail the update
-          console.error("Error auto-creating version:", versionError);
-        }
-      }
-
-      // Fetch the updated case study with school info joined
-      const caseStudyWithSchool = await storage.getCaseStudyById(caseStudy.id);
-      
-      res.json(caseStudyWithSchool || caseStudy);
-    } catch (error) {
-      console.error("Error updating case study:", error);
-      if (error instanceof z.ZodError) {
-        return res.status(400).json({ message: "Validation error", errors: error.errors });
-      }
-      res.status(500).json({ message: "Failed to update case study" });
-    }
-  });
-
-  // Delete case study
-  app.delete('/api/admin/case-studies/:id', isAuthenticated, requireAdminOrPartner, async (req, res) => {
-    try {
-      const deleted = await storage.deleteCaseStudy(req.params.id);
-      
-      if (!deleted) {
-        return res.status(404).json({ message: "Case study not found" });
-      }
-
-      res.json({ message: "Case study deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting case study:", error);
-      res.status(500).json({ message: "Failed to delete case study" });
-    }
-  });
-
-  // Create a version snapshot
-  app.post("/api/admin/case-studies/:id/versions", isAuthenticated, requireAdminOrPartner, async (req, res) => {
-    try {
-      const { id } = req.params;
-      
-      // Get the current case study
-      const caseStudy = await storage.getCaseStudyById(id);
-      if (!caseStudy) {
-        return res.status(404).json({ success: false, message: "Case study not found" });
-      }
-      
-      // Get the next version number
-      const existingVersions = await storage.getCaseStudyVersions(id);
-      const nextVersionNumber = existingVersions.length > 0 
-        ? Math.max(...existingVersions.map(v => v.versionNumber)) + 1 
-        : 1;
-      
-      // Create version snapshot
-      const version = await storage.createCaseStudyVersion({
-        caseStudyId: id,
-        versionNumber: nextVersionNumber,
-        title: caseStudy.title,
-        description: caseStudy.description,
-        stage: caseStudy.stage,
-        status: caseStudy.status || 'draft',
-        impact: caseStudy.impact,
-        images: caseStudy.images as any,
-        videos: caseStudy.videos as any,
-        studentQuotes: caseStudy.studentQuotes as any,
-        impactMetrics: caseStudy.impactMetrics as any,
-        timelineSections: caseStudy.timelineSections as any,
-        templateType: caseStudy.templateType,
-        beforeImage: caseStudy.beforeImage,
-        afterImage: caseStudy.afterImage,
-        snapshot: caseStudy as any, // Full snapshot as JSON
-        createdBy: req.user!.id,
-      });
-      
-      res.json({ success: true, version });
-    } catch (error: any) {
-      console.error("Error creating case study version:", error);
-      res.status(500).json({ success: false, message: error.message });
-    }
-  });
-
-  // List all versions for a case study
-  app.get("/api/admin/case-studies/:id/versions", isAuthenticated, requireAdmin, async (req, res) => {
-    try {
-      const { id } = req.params;
-      const versions = await storage.getCaseStudyVersions(id);
-      res.json({ success: true, versions });
-    } catch (error: any) {
-      console.error("Error getting case study versions:", error);
-      res.status(500).json({ success: false, message: error.message });
-    }
-  });
-
-  // Restore a specific version
-  app.post("/api/admin/case-studies/:id/versions/:versionId/restore", isAuthenticated, requireAdminOrPartner, async (req, res) => {
-    try {
-      const { id, versionId } = req.params;
-      
-      // Get the version to restore
-      const version = await storage.getCaseStudyVersion(versionId);
-      if (!version || version.caseStudyId !== id) {
-        return res.status(404).json({ success: false, message: "Version not found" });
-      }
-      
-      // Use snapshot field for complete restoration
-      const snapshot = version.snapshot as any;
-      
-      // Update case study with ALL fields from version and snapshot
-      const updated = await storage.updateCaseStudy(id, {
-        // Core fields from version table
-        title: version.title,
-        description: version.description,
-        stage: version.stage,
-        status: version.status || snapshot?.status || 'draft',
-        impact: version.impact,
-        
-        // Media from version table
-        images: version.images as any,
-        videos: version.videos as any,
-        studentQuotes: version.studentQuotes as any,
-        impactMetrics: version.impactMetrics as any,
-        timelineSections: version.timelineSections as any,
-        
-        // Template fields from version table
-        templateType: version.templateType,
-        beforeImage: version.beforeImage,
-        afterImage: version.afterImage,
-        
-        // Additional fields from snapshot (these are not in version table columns)
-        categories: snapshot?.categories,
-        tags: snapshot?.tags,
-        metaDescription: snapshot?.metaDescription,
-        metaKeywords: snapshot?.metaKeywords,
-        imageUrl: snapshot?.imageUrl,
-        featured: snapshot?.featured,
-        priority: snapshot?.priority,
-        evidenceId: snapshot?.evidenceId,
-        
-        // Note: Review workflow fields (reviewStatus, submittedAt, reviewedBy, reviewedAt, reviewNotes)
-        // are NOT restored as they track the current approval state, not historical state
-      });
-      
-      res.json({ success: true, caseStudy: updated });
-    } catch (error: any) {
-      console.error("Error restoring case study version:", error);
-      res.status(500).json({ success: false, message: error.message });
     }
   });
 
