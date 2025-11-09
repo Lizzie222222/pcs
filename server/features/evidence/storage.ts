@@ -2,7 +2,9 @@ import type { EvidenceDelegates } from './delegates';
 import type { 
   Evidence, 
   InsertEvidence, 
-  EvidenceWithSchool 
+  EvidenceWithSchool,
+  EvidenceRequirement,
+  InsertEvidenceRequirement
 } from '@shared/schema';
 
 /**
@@ -104,6 +106,75 @@ export class EvidenceStorage {
   async deleteEvidence(id: string): Promise<boolean> {
     // Delegate to persistence layer
     return await this.delegates.persistence.deleteEvidence(id);
+  }
+
+  /**
+   * PHASE 2: Evidence Requirements Methods
+   * ========================================
+   */
+
+  /**
+   * Get all evidence requirements, optionally filtered by stage
+   * Requirements define what evidence is needed for each stage (inspire/investigate/act)
+   * Supports multi-language translations (14 languages)
+   * 
+   * @param stage - Optional stage filter ('inspire' | 'investigate' | 'act')
+   * @returns Array of evidence requirements
+   */
+  async getEvidenceRequirements(stage?: 'inspire' | 'investigate' | 'act'): Promise<EvidenceRequirement[]> {
+    // Delegate to persistence layer
+    return await this.delegates.persistence.getEvidenceRequirements(stage);
+  }
+
+  /**
+   * Get single evidence requirement by ID
+   * 
+   * @param id - Evidence requirement ID
+   * @returns Evidence requirement or undefined
+   */
+  async getEvidenceRequirement(id: string): Promise<EvidenceRequirement | undefined> {
+    // Delegate to persistence layer
+    return await this.delegates.persistence.getEvidenceRequirement(id);
+  }
+
+  /**
+   * Create new evidence requirement
+   * Used by admins to define what evidence schools must submit per stage
+   * 
+   * @param data - Evidence requirement data to insert
+   * @returns Created evidence requirement
+   */
+  async createEvidenceRequirement(data: InsertEvidenceRequirement): Promise<EvidenceRequirement> {
+    // Delegate to persistence layer
+    return await this.delegates.persistence.createEvidenceRequirement(data);
+  }
+
+  /**
+   * Update evidence requirement
+   * Used to modify requirement details, translations, or ordering
+   * 
+   * @param id - Evidence requirement ID
+   * @param updates - Fields to update
+   * @returns Updated evidence requirement or undefined
+   */
+  async updateEvidenceRequirement(
+    id: string, 
+    updates: Partial<InsertEvidenceRequirement>
+  ): Promise<EvidenceRequirement | undefined> {
+    // Delegate to persistence layer
+    return await this.delegates.persistence.updateEvidenceRequirement(id, updates);
+  }
+
+  /**
+   * Delete evidence requirement
+   * Removes a requirement definition from the system
+   * 
+   * @param id - Evidence requirement ID
+   * @returns true if deleted, false otherwise
+   */
+  async deleteEvidenceRequirement(id: string): Promise<boolean> {
+    // Delegate to persistence layer
+    return await this.delegates.persistence.deleteEvidenceRequirement(id);
   }
 
 }
