@@ -69,10 +69,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount feature routers
   app.use(schoolsRouter);
   
-  // Mount evidence routers (PHASE 1 + PHASE 2)
-  const { evidenceRouter, requirementsRouter } = createEvidenceRouters(storage);
+  // Mount evidence routers (PHASE 1 + PHASE 2 + PHASE 3)
+  const { evidenceRouter, requirementsRouter, adminEvidenceRouter } = createEvidenceRouters(storage);
   app.use('/api/evidence', evidenceRouter);
   app.use('/api/evidence-requirements', requirementsRouter);
+  app.use('/api/admin/evidence', adminEvidenceRouter);
 
   // Serve PDF resources from public folder with proper CORS headers
   app.get('/api/pdfs/:filename', async (req, res) => {
@@ -3097,53 +3098,11 @@ Return JSON with:
   //   }
   // });
 
-  // Update evidence (admin only)
-  app.patch('/api/admin/evidence/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      const updates = req.body;
-
-      // Get existing evidence to verify it exists
-      const evidence = await storage.getEvidence(id);
-      if (!evidence) {
-        return res.status(404).json({ message: "Evidence not found" });
-      }
-
-      // If updating status to approved or rejected, use proper review method
-      if (updates.status && ['approved', 'rejected'].includes(updates.status) && evidence.status !== updates.status) {
-        console.log(`[Evidence] Updating evidence ${id} status to ${updates.status} via admin PATCH`);
-        const updatedEvidence = await storage.updateEvidenceStatus(
-          id,
-          updates.status as 'approved' | 'rejected',
-          req.user.id,
-          updates.reviewNotes
-        );
-        
-        if (!updatedEvidence) {
-          return res.status(500).json({ message: "Failed to update evidence" });
-        }
-
-        // Check and update school progression if approved
-        if (updates.status === 'approved') {
-          console.log(`[Evidence] Triggering school progression check for school ${updatedEvidence.schoolId}`);
-          await storage.checkAndUpdateSchoolProgression(updatedEvidence.schoolId);
-        }
-
-        return res.json(updatedEvidence);
-      }
-
-      // For other updates, use regular update method
-      const updatedEvidence = await storage.updateEvidence(id, updates);
-      if (!updatedEvidence) {
-        return res.status(500).json({ message: "Failed to update evidence" });
-      }
-
-      res.json(updatedEvidence);
-    } catch (error) {
-      console.error("Error updating evidence:", error);
-      res.status(500).json({ message: "Failed to update evidence" });
-    }
-  });
+  // ============================================================================
+  // MIGRATED TO: server/features/evidence/routes.ts (PHASE 3)
+  // PATCH /api/admin/evidence/:id - Update evidence metadata (admin only)
+  // Route migrated to adminEvidenceRouter
+  // ============================================================================
 
   // ============================================================================
   // MIGRATED TO: server/features/evidence/routes.ts (PHASE 2)
@@ -5838,57 +5797,23 @@ Return JSON with:
     }
   });
 
-  /**
-   * @description GET /api/admin/evidence - Admin-only endpoint for retrieving all evidence submissions with flexible filtering by status, stage, school, country, and visibility.
-   * @returns {Evidence[]} Array of evidence objects matching filters
-   * @location server/routes.ts#L2570
-   * @related shared/schema.ts (evidence table), client/src/pages/admin.tsx (evidence review tab)
-   */
-  app.get('/api/admin/evidence', isAuthenticated, requireAdminOrPartner, async (req, res) => {
-    try {
-      const filters = {
-        status: req.query.status as 'pending' | 'approved' | 'rejected' | undefined,
-        stage: req.query.stage as 'inspire' | 'investigate' | 'act' | undefined,
-        schoolId: req.query.schoolId as string | undefined,
-        country: req.query.country as string | undefined,
-        visibility: req.query.visibility as 'public' | 'private' | undefined,
-        assignedTo: req.query.assignedTo as string | undefined,
-      };
-      
-      // Remove undefined values
-      const cleanFilters = Object.fromEntries(
-        Object.entries(filters).filter(([_, v]) => v !== undefined)
-      );
-      
-      const evidence = await storage.getAllEvidence(cleanFilters);
-      res.json(evidence);
-    } catch (error) {
-      console.error("Error fetching evidence:", error);
-      res.status(500).json({ message: "Failed to fetch evidence" });
-    }
-  });
+  // ============================================================================
+  // MIGRATED TO: server/features/evidence/routes.ts (PHASE 3)
+  // GET /api/admin/evidence - List evidence with filtering (admin/partner)
+  // Route migrated to adminEvidenceRouter
+  // ============================================================================
 
-  // Get pending evidence for review (kept for backward compatibility)
-  app.get('/api/admin/evidence/pending', isAuthenticated, requireAdminOrPartner, async (req, res) => {
-    try {
-      const evidence = await storage.getPendingEvidence();
-      res.json(evidence);
-    } catch (error) {
-      console.error("Error fetching pending evidence:", error);
-      res.status(500).json({ message: "Failed to fetch pending evidence" });
-    }
-  });
+  // ============================================================================
+  // MIGRATED TO: server/features/evidence/routes.ts (PHASE 3)
+  // GET /api/admin/evidence/pending - Get pending evidence for review queue
+  // Route migrated to adminEvidenceRouter
+  // ============================================================================
 
-  // Get approved and public evidence for case studies
-  app.get('/api/admin/evidence/approved-public', isAuthenticated, requireAdminOrPartner, async (req, res) => {
-    try {
-      const evidence = await storage.getApprovedPublicEvidence();
-      res.json(evidence);
-    } catch (error) {
-      console.error("Error fetching approved public evidence:", error);
-      res.status(500).json({ message: "Failed to fetch approved public evidence" });
-    }
-  });
+  // ============================================================================
+  // MIGRATED TO: server/features/evidence/routes.ts (PHASE 3)
+  // GET /api/admin/evidence/approved-public - Get approved and public evidence for case studies
+  // Route migrated to adminEvidenceRouter
+  // ============================================================================
 
   // Migration endpoint: Normalize evidence file URLs
   app.post('/api/admin/evidence/migrate-urls', isAuthenticated, requireAdmin, async (req, res) => {
@@ -5929,304 +5854,35 @@ Return JSON with:
     }
   });
 
-  /**
-   * @description PATCH /api/admin/evidence/:id/review - Admin/Partner endpoint for approving or rejecting evidence submissions. Updates school progression on approval and sends notification emails (approval or revision request).
-   * @param {string} id - Evidence ID from URL params
-   * @returns {Evidence} Updated evidence object with review status
-   * @location server/routes.ts#L2655
-   * @related shared/schema.ts (evidence table), server/email.ts (sendEvidenceApprovalEmail, sendEvidenceRejectionEmail), client/src/pages/admin.tsx (evidence review handlers)
-   */
-  app.patch('/api/admin/evidence/:id/review', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
-    try {
-      const { status, reviewNotes } = req.body;
-      const reviewerId = req.user.id;
-      
-      if (!['approved', 'rejected'].includes(status)) {
-        return res.status(400).json({ message: "Invalid status" });
-      }
+  // ============================================================================
+  // MIGRATED TO: server/features/evidence/routes.ts (PHASE 3)
+  // PATCH /api/admin/evidence/:id/review - Review evidence (approve/reject)
+  // Route migrated to adminEvidenceRouter
+  // ============================================================================
 
-      const evidence = await storage.updateEvidenceStatus(
-        req.params.id,
-        status,
-        reviewerId,
-        reviewNotes
-      );
+  // ============================================================================
+  // MIGRATED TO: server/features/evidence/routes.ts (PHASE 3)
+  // POST /api/admin/evidence/bulk-review - Bulk approve/reject evidence
+  // Route migrated to adminEvidenceRouter
+  // ============================================================================
 
-      if (!evidence) {
-        return res.status(404).json({ message: "Evidence not found" });
-      }
+  // ============================================================================
+  // MIGRATED TO: server/features/evidence/routes.ts (PHASE 3)
+  // DELETE /api/admin/evidence/bulk-delete - Bulk delete evidence endpoint
+  // Route migrated to adminEvidenceRouter
+  // ============================================================================
 
-      // Check and update school progression if approved
-      if (status === 'approved') {
-        await storage.checkAndUpdateSchoolProgression(evidence.schoolId);
-      }
+  // ============================================================================
+  // MIGRATED TO: server/features/evidence/routes.ts (PHASE 3)
+  // DELETE /api/admin/evidence/:id - Delete individual evidence (admin only)
+  // Route migrated to adminEvidenceRouter
+  // ============================================================================
 
-      // Send notification email
-      const user = await storage.getUser(evidence.submittedBy);
-      const school = await storage.getSchool(evidence.schoolId);
-      const reviewer = await storage.getUser(reviewerId);
-      const reviewerName = reviewer?.firstName && reviewer?.lastName 
-        ? `${reviewer.firstName} ${reviewer.lastName}` 
-        : reviewer?.email || 'Platform Admin';
-      
-      if (user?.email && school) {
-        if (status === 'approved') {
-          await sendEvidenceApprovalEmail(user.email, school.name, evidence.title, reviewerName, user.preferredLanguage || 'en');
-        } else {
-          await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit', reviewerName, user.preferredLanguage || 'en');
-        }
-      }
-
-      // Log evidence approval or rejection
-      await logUserActivity(
-        reviewerId,
-        reviewer?.email || undefined,
-        status === 'approved' ? 'evidence_approve' : 'evidence_reject',
-        {
-          evidenceId: evidence.id,
-          title: evidence.title,
-          stage: evidence.stage,
-          schoolId: evidence.schoolId,
-          reviewNotes: reviewNotes,
-        },
-        evidence.id,
-        'evidence',
-        req
-      );
-
-      // Log audit action
-      await logAuditAction(
-        reviewerId,
-        status === 'approved' ? 'approved' : 'rejected',
-        'evidence',
-        evidence.id,
-        { reason: reviewNotes }
-      );
-
-      res.json(evidence);
-    } catch (error) {
-      console.error("Error reviewing evidence:", error);
-      res.status(500).json({ message: "Failed to review evidence" });
-    }
-  });
-
-  // Bulk evidence review endpoint (admin/partner)
-  app.post('/api/admin/evidence/bulk-review', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
-    try {
-      const { evidenceIds, status, reviewNotes } = req.body;
-      const reviewerId = req.user.id;
-      
-      if (!Array.isArray(evidenceIds) || evidenceIds.length === 0) {
-        return res.status(400).json({ message: "Evidence IDs array is required" });
-      }
-      
-      if (!['approved', 'rejected'].includes(status)) {
-        return res.status(400).json({ message: "Invalid status" });
-      }
-
-      const results: {
-        success: string[];
-        failed: Array<{ id: string; reason: string }>;
-        emailsProcessed: number;
-      } = {
-        success: [],
-        failed: [],
-        emailsProcessed: 0
-      };
-
-      const affectedSchools = new Set<string>();
-      
-      // Get reviewer name once (used for all bulk emails)
-      const reviewer = await storage.getUser(reviewerId);
-      const reviewerName = reviewer?.firstName && reviewer?.lastName 
-        ? `${reviewer.firstName} ${reviewer.lastName}` 
-        : reviewer?.email || 'Platform Admin';
-
-      // Process each evidence submission
-      for (const evidenceId of evidenceIds) {
-        try {
-          const evidence = await storage.updateEvidenceStatus(
-            evidenceId,
-            status,
-            reviewerId,
-            reviewNotes
-          );
-
-          if (evidence) {
-            results.success.push(evidenceId);
-            
-            // Track affected schools for progression check
-            if (status === 'approved') {
-              affectedSchools.add(evidence.schoolId);
-            }
-
-            // Log audit action
-            await logAuditAction(
-              reviewerId,
-              status === 'approved' ? 'approved' : 'rejected',
-              'evidence',
-              evidenceId,
-              { reason: reviewNotes }
-            );
-
-            // Send notification email (non-blocking)
-            try {
-              const user = await storage.getUser(evidence.submittedBy);
-              const school = await storage.getSchool(evidence.schoolId);
-              
-              if (user?.email && school) {
-                if (status === 'approved') {
-                  await sendEvidenceApprovalEmail(user.email, school.name, evidence.title, reviewerName, user.preferredLanguage || 'en');
-                } else {
-                  await sendEvidenceRejectionEmail(user.email, school.name, evidence.title, reviewNotes || 'Please review and resubmit', reviewerName, user.preferredLanguage || 'en');
-                }
-                results.emailsProcessed++;
-              }
-            } catch (emailError) {
-              console.warn(`Email notification failed for evidence ${evidenceId}:`, emailError);
-            }
-          } else {
-            results.failed.push({ id: evidenceId, reason: 'Evidence not found' });
-          }
-        } catch (error) {
-          console.error(`Error reviewing evidence ${evidenceId}:`, error);
-          results.failed.push({ id: evidenceId, reason: 'Review failed' });
-        }
-      }
-
-      // Check progression for all affected schools
-      for (const schoolId of Array.from(affectedSchools)) {
-        try {
-          await storage.checkAndUpdateSchoolProgression(schoolId);
-        } catch (error) {
-          console.warn(`Failed to check progression for school ${schoolId}:`, error);
-        }
-      }
-
-      res.json({
-        message: `Bulk review completed. ${results.success.length} successful, ${results.failed.length} failed.`,
-        results
-      });
-    } catch (error) {
-      console.error("Error in bulk evidence review:", error);
-      res.status(500).json({ message: "Failed to perform bulk review" });
-    }
-  });
-
-  // Bulk delete evidence endpoint
-  app.delete('/api/admin/evidence/bulk-delete', isAuthenticated, requireAdmin, async (req: any, res) => {
-    try {
-      const { evidenceIds } = req.body;
-      
-      if (!Array.isArray(evidenceIds) || evidenceIds.length === 0) {
-        return res.status(400).json({ message: "Evidence IDs array is required" });
-      }
-
-      const results: {
-        success: string[];
-        failed: Array<{ id: string; reason: string }>;
-      } = {
-        success: [],
-        failed: []
-      };
-
-      for (const evidenceId of evidenceIds) {
-        try {
-          const deleted = await storage.deleteEvidence(evidenceId);
-          if (deleted) {
-            results.success.push(evidenceId);
-          } else {
-            results.failed.push({ id: evidenceId, reason: 'Evidence not found' });
-          }
-        } catch (error) {
-          console.error(`Error deleting evidence ${evidenceId}:`, error);
-          results.failed.push({ id: evidenceId, reason: 'Delete failed' });
-        }
-      }
-
-      res.json({
-        message: `Bulk delete completed. ${results.success.length} deleted, ${results.failed.length} failed.`,
-        results
-      });
-    } catch (error) {
-      console.error("Error in bulk evidence delete:", error);
-      res.status(500).json({ message: "Failed to perform bulk delete" });
-    }
-  });
-
-  // Delete individual evidence (admin only)
-  app.delete('/api/admin/evidence/:id', isAuthenticated, requireAdmin, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      const userId = req.user.id;
-
-      // Get evidence before deletion for logging
-      const evidence = await storage.getEvidence(id);
-      if (!evidence) {
-        return res.status(404).json({ message: "Evidence not found" });
-      }
-
-      // Delete the evidence
-      const deleted = await storage.deleteEvidence(id);
-      if (!deleted) {
-        return res.status(500).json({ message: "Failed to delete evidence" });
-      }
-
-      // Log the deletion
-      await logAuditAction(
-        userId,
-        'deleted',
-        'evidence',
-        id,
-        {
-          title: evidence.title,
-          stage: evidence.stage,
-          schoolId: evidence.schoolId,
-        }
-      );
-
-      res.json({ success: true, message: "Evidence deleted successfully" });
-    } catch (error) {
-      console.error("Error deleting evidence:", error);
-      res.status(500).json({ message: "Failed to delete evidence" });
-    }
-  });
-
-  // Assign evidence to admin
-  app.patch('/api/admin/evidence/:id/assign', isAuthenticated, requireAdmin, async (req: any, res) => {
-    try {
-      const { id } = req.params;
-      const { assignedTo } = req.body;
-      const userId = req.user.id;
-      
-      await storage.assignEvidence(id, assignedTo);
-      
-      // Log the assignment
-      await logAuditAction(
-        userId,
-        assignedTo ? 'assigned' : 'unassigned',
-        'evidence',
-        id,
-        { assignedTo }
-      );
-      
-      // Send notification to assigned user
-      if (assignedTo) {
-        await storage.createNotification({
-          userId: assignedTo,
-          type: 'evidence_assigned' as any,
-          title: 'Evidence Assigned to You',
-          message: 'You have been assigned new evidence to review',
-          linkUrl: `/admin/evidence/${id}`,
-        });
-      }
-      
-      res.json({ success: true });
-    } catch (error) {
-      console.error("Error assigning evidence:", error);
-      res.status(500).json({ message: "Failed to assign evidence" });
-    }
-  });
+  // ============================================================================
+  // MIGRATED TO: server/features/evidence/routes.ts (PHASE 3)
+  // PATCH /api/admin/evidence/:id/assign - Assign evidence to admin
+  // Route migrated to adminEvidenceRouter
+  // ============================================================================
 
   // Audit Routes
   

@@ -116,6 +116,9 @@ export interface EvidenceDelegates {
     
     // Phase 3: Admin Review
     'updateEvidenceStatus' |
+    'getPendingEvidence' |
+    'getApprovedPublicEvidence' |
+    'assignEvidence' |
     
     // School context (needed for evidence operations)
     'getSchool' | 

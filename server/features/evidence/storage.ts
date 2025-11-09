@@ -261,6 +261,37 @@ export class EvidenceStorage {
     return await this.delegates.persistence.getAllEvidence(filters);
   }
 
+  /**
+   * Get all pending evidence for review queue
+   * Admin helper for evidence that needs review
+   * 
+   * @returns Array of pending evidence submissions
+   */
+  async getPendingEvidence(): Promise<Evidence[]> {
+    return await this.delegates.persistence.getPendingEvidence();
+  }
+
+  /**
+   * Get approved public evidence for case studies
+   * Admin helper for selecting featured evidence
+   * 
+   * @returns Array of approved public evidence
+   */
+  async getApprovedPublicEvidence(): Promise<Evidence[]> {
+    return await this.delegates.persistence.getApprovedPublicEvidence();
+  }
+
+  /**
+   * Assign evidence to admin for review
+   * Updates assignedTo field and tracks assignments
+   * 
+   * @param evidenceId - Evidence ID to assign
+   * @param assignedToUserId - Admin user ID or null to unassign
+   */
+  async assignEvidence(evidenceId: string, assignedToUserId: string | null): Promise<void> {
+    return await this.delegates.persistence.assignEvidence(evidenceId, assignedToUserId);
+  }
+
 }
 
 /**
