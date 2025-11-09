@@ -1,14 +1,20 @@
-import type { EvidenceDelegates } from './delegates';
-import type { 
-  Evidence, 
-  InsertEvidence, 
-  EvidenceWithSchool,
-  EvidenceRequirement,
-  InsertEvidenceRequirement
-} from '@shared/schema';
 import { db } from '../../db';
-import { evidence, evidenceRequirements, schools, users } from '@shared/schema';
-import { eq, and, or, desc, asc, ilike } from 'drizzle-orm';
+import { 
+  evidence, 
+  evidenceRequirements, 
+  schools, 
+  users,
+  adminEvidenceOverrides,
+  type Evidence, 
+  type InsertEvidence, 
+  type EvidenceWithSchool,
+  type EvidenceRequirement,
+  type InsertEvidenceRequirement,
+  type AdminEvidenceOverride,
+  type InsertAdminEvidenceOverride
+} from '@shared/schema';
+import { eq, and, or, desc, asc, inArray, sql, ilike } from 'drizzle-orm';
+import type { EvidenceDelegates } from './delegates';
 
 /**
  * Evidence Storage
@@ -244,8 +250,18 @@ export class EvidenceStorage {
    * @returns Array of evidence requirements
    */
   async getEvidenceRequirements(stage?: 'inspire' | 'investigate' | 'act'): Promise<EvidenceRequirement[]> {
-    // Delegate to persistence layer
-    return await this.delegates.persistence.getEvidenceRequirements(stage);
+    if (stage) {
+      return await db
+        .select()
+        .from(evidenceRequirements)
+        .where(eq(evidenceRequirements.stage, stage as any))
+        .orderBy(asc(evidenceRequirements.orderIndex));
+    }
+    
+    return await db
+      .select()
+      .from(evidenceRequirements)
+      .orderBy(asc(evidenceRequirements.stage), asc(evidenceRequirements.orderIndex));
   }
 
   /**
@@ -255,8 +271,11 @@ export class EvidenceStorage {
    * @returns Evidence requirement or undefined
    */
   async getEvidenceRequirement(id: string): Promise<EvidenceRequirement | undefined> {
-    // Delegate to persistence layer
-    return await this.delegates.persistence.getEvidenceRequirement(id);
+    const [requirement] = await db
+      .select()
+      .from(evidenceRequirements)
+      .where(eq(evidenceRequirements.id, id));
+    return requirement;
   }
 
   /**
@@ -267,8 +286,11 @@ export class EvidenceStorage {
    * @returns Created evidence requirement
    */
   async createEvidenceRequirement(data: InsertEvidenceRequirement): Promise<EvidenceRequirement> {
-    // Delegate to persistence layer
-    return await this.delegates.persistence.createEvidenceRequirement(data);
+    const [requirement] = await db
+      .insert(evidenceRequirements)
+      .values(data)
+      .returning();
+    return requirement;
   }
 
   /**
@@ -283,8 +305,12 @@ export class EvidenceStorage {
     id: string, 
     updates: Partial<InsertEvidenceRequirement>
   ): Promise<EvidenceRequirement | undefined> {
-    // Delegate to persistence layer
-    return await this.delegates.persistence.updateEvidenceRequirement(id, updates);
+    const [requirement] = await db
+      .update(evidenceRequirements)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(evidenceRequirements.id, id))
+      .returning();
+    return requirement;
   }
 
   /**
@@ -295,8 +321,15 @@ export class EvidenceStorage {
    * @returns true if deleted, false otherwise
    */
   async deleteEvidenceRequirement(id: string): Promise<boolean> {
-    // Delegate to persistence layer
-    return await this.delegates.persistence.deleteEvidenceRequirement(id);
+    try {
+      const result = await db
+        .delete(evidenceRequirements)
+        .where(eq(evidenceRequirements.id, id));
+      return (result.rowCount ?? 0) > 0;
+    } catch (error) {
+      console.error("Error deleting evidence requirement:", error);
+      return false;
+    }
   }
 
   /**
@@ -326,24 +359,29 @@ export class EvidenceStorage {
     reviewNotes?: string
   ): Promise<Evidence | undefined> {
     // Get evidence first to know the schoolId for progression check
-    const evidence = await this.delegates.persistence.getEvidenceById(id);
-    if (!evidence) {
+    const evidenceRecord = await this.getEvidenceById(id);
+    if (!evidenceRecord) {
       throw new Error('Evidence not found');
     }
 
-    // Update status via persistence layer
-    const updated = await this.delegates.persistence.updateEvidenceStatus(
-      id,
-      status,
-      reviewedBy,
-      reviewNotes
-    );
+    // Update status via direct database query
+    const [updated] = await db
+      .update(evidence)
+      .set({
+        status: status as any,
+        reviewedBy,
+        reviewedAt: new Date(),
+        reviewNotes,
+        updatedAt: new Date(),
+      })
+      .where(eq(evidence.id, id))
+      .returning();
 
     // CRITICAL: Trigger school progression check if approved
     // This may advance the school to the next stage or complete a round
     if (status === 'approved' && updated) {
       await this.delegates.progression.checkAndUpdateSchoolProgression(
-        evidence.schoolId,
+        evidenceRecord.schoolId,
         {
           reason: 'evidence_approved',
           evidenceId: id

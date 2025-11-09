@@ -132,7 +132,10 @@ import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne
 import * as bcrypt from "bcrypt";
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
 import { normalizeCountryName, getAllCountryCodes, getCountryCode } from './countryMapping';
-import { schoolStorage, getSchoolStorage } from './features/schools/storage';
+import { schoolStorage } from './features/schools/storage';
+import { getEvidenceStorage } from './features/evidence/storage';
+import { createEvidenceDelegates } from './features/evidence/delegates';
+import { createSchoolProgressionDelegate } from './features/schools/progression';
 
 /**
  * Custom error class for database constraint violations
@@ -2339,55 +2342,15 @@ export class DatabaseStorage implements IStorage {
 
   // Evidence operations
   async createEvidence(evidenceData: InsertEvidence): Promise<Evidence> {
-    const [evidenceRecord] = await db
-      .insert(evidence)
-      .values(evidenceData)
-      .returning();
-    return evidenceRecord;
+    return evidenceStorage.createEvidence(evidenceData);
   }
 
   async getEvidence(id: string): Promise<Evidence | undefined> {
-    const [evidenceRecord] = await db
-      .select()
-      .from(evidence)
-      .where(eq(evidence.id, id));
-    return evidenceRecord;
+    return evidenceStorage.getEvidence(id);
   }
 
   async getEvidenceById(id: string): Promise<EvidenceWithSchool & { schoolName: string; schoolCountry: string; schoolLanguage: string | null } | undefined> {
-    const [evidenceRecord] = await db
-      .select({
-        id: evidence.id,
-        schoolId: evidence.schoolId,
-        submittedBy: evidence.submittedBy,
-        evidenceRequirementId: evidence.evidenceRequirementId,
-        title: evidence.title,
-        description: evidence.description,
-        stage: evidence.stage,
-        status: evidence.status,
-        visibility: evidence.visibility,
-        files: evidence.files,
-        videoLinks: evidence.videoLinks,
-        reviewedBy: evidence.reviewedBy,
-        reviewedAt: evidence.reviewedAt,
-        reviewNotes: evidence.reviewNotes,
-        isFeatured: evidence.isFeatured,
-        isAuditQuiz: evidence.isAuditQuiz,
-        roundNumber: evidence.roundNumber,
-        hasChildren: evidence.hasChildren,
-        parentalConsentFiles: evidence.parentalConsentFiles,
-        submittedAt: evidence.submittedAt,
-        updatedAt: evidence.updatedAt,
-        schoolName: schools.name,
-        schoolCountry: schools.country,
-        schoolLanguage: schools.primaryLanguage,
-      })
-      .from(evidence)
-      .leftJoin(schools, eq(evidence.schoolId, schools.id))
-      .where(eq(evidence.id, id))
-      .limit(1);
-    
-    return evidenceRecord as any;
+    return evidenceStorage.getEvidenceById(id);
   }
 
   async getSchoolEvidence(schoolId: string): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null }>> {
@@ -2395,11 +2358,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getPendingEvidence(): Promise<Evidence[]> {
-    return await db
-      .select()
-      .from(evidence)
-      .where(eq(evidence.status, 'pending'))
-      .orderBy(desc(evidence.submittedAt));
+    return evidenceStorage.getPendingEvidence();
   }
 
   async getAllEvidence(filters?: {
@@ -2410,89 +2369,11 @@ export class DatabaseStorage implements IStorage {
     visibility?: 'public' | 'private';
     assignedTo?: string;
   }): Promise<EvidenceWithSchool[]> {
-    // Build WHERE conditions
-    const conditions = [];
-    
-    if (filters?.status) {
-      conditions.push(eq(evidence.status, filters.status));
-    }
-    if (filters?.stage) {
-      conditions.push(eq(evidence.stage, filters.stage));
-    }
-    if (filters?.schoolId) {
-      conditions.push(eq(evidence.schoolId, filters.schoolId));
-    }
-    if (filters?.visibility) {
-      conditions.push(eq(evidence.visibility, filters.visibility));
-    }
-    if (filters?.country) {
-      conditions.push(eq(schools.country, filters.country));
-    }
-    if (filters?.assignedTo) {
-      conditions.push(eq(evidence.assignedTo, filters.assignedTo));
-    }
-
-    // Query with JOIN to include school data and reviewer info
-    const query = db
-      .select({
-        id: evidence.id,
-        schoolId: evidence.schoolId,
-        submittedBy: evidence.submittedBy,
-        evidenceRequirementId: evidence.evidenceRequirementId,
-        title: evidence.title,
-        description: evidence.description,
-        stage: evidence.stage,
-        status: evidence.status,
-        visibility: evidence.visibility,
-        files: evidence.files,
-        videoLinks: evidence.videoLinks,
-        reviewedBy: evidence.reviewedBy,
-        reviewedAt: evidence.reviewedAt,
-        reviewNotes: evidence.reviewNotes,
-        assignedTo: evidence.assignedTo,
-        isFeatured: evidence.isFeatured,
-        isAuditQuiz: evidence.isAuditQuiz,
-        roundNumber: evidence.roundNumber,
-        hasChildren: evidence.hasChildren,
-        parentalConsentFiles: evidence.parentalConsentFiles,
-        submittedAt: evidence.submittedAt,
-        updatedAt: evidence.updatedAt,
-        school: {
-          id: schools.id,
-          name: schools.name,
-          country: schools.country,
-          photoConsentStatus: schools.photoConsentStatus,
-          photoConsentDocumentUrl: schools.photoConsentDocumentUrl,
-        },
-        reviewer: {
-          id: users.id,
-          email: users.email,
-          firstName: users.firstName,
-          lastName: users.lastName,
-        },
-      })
-      .from(evidence)
-      .leftJoin(schools, eq(evidence.schoolId, schools.id))
-      .leftJoin(users, eq(evidence.reviewedBy, users.id));
-
-    const results = conditions.length > 0
-      ? await query.where(and(...conditions)).orderBy(desc(evidence.submittedAt))
-      : await query.orderBy(desc(evidence.submittedAt));
-    
-    return results.filter(r => r.school !== null) as Array<EvidenceWithSchool>;
+    return evidenceStorage.getAllEvidence(filters);
   }
 
   async getApprovedPublicEvidence(): Promise<Evidence[]> {
-    return await db
-      .select()
-      .from(evidence)
-      .where(
-        and(
-          eq(evidence.status, 'approved'),
-          eq(evidence.visibility, 'public')
-        )
-      )
-      .orderBy(desc(evidence.submittedAt));
+    return evidenceStorage.getApprovedPublicEvidence();
   }
 
   async getApprovedEvidenceForInspiration(filters?: {
@@ -2507,88 +2388,7 @@ export class DatabaseStorage implements IStorage {
     schoolCountry: string;
     schoolLanguage: string | null;
   }>> {
-    const conditions = [
-      eq(evidence.status, 'approved'),
-      eq(schools.photoConsentStatus, 'approved')
-    ];
-    
-    // Visibility filter logic:
-    // - If 'public': show only public evidence
-    // - If 'private': This filter is handled at route level with ACL checks
-    if (filters?.visibility === 'public') {
-      conditions.push(eq(evidence.visibility, 'public'));
-    } else if (filters?.visibility === 'private') {
-      conditions.push(eq(evidence.visibility, 'private'));
-    }
-    
-    if (filters?.stage) {
-      conditions.push(eq(evidence.stage, filters.stage as any));
-    }
-    
-    if (filters?.country) {
-      conditions.push(eq(schools.country, filters.country));
-    }
-    
-    if (filters?.search) {
-      const searchCondition = or(
-        ilike(evidence.title, `%${filters.search}%`),
-        ilike(evidence.description, `%${filters.search}%`)
-      );
-      if (searchCondition) {
-        conditions.push(searchCondition);
-      }
-    }
-    
-    let query = db
-      .select({
-        id: evidence.id,
-        schoolId: evidence.schoolId,
-        submittedBy: evidence.submittedBy,
-        evidenceRequirementId: evidence.evidenceRequirementId,
-        title: evidence.title,
-        description: evidence.description,
-        stage: evidence.stage,
-        status: evidence.status,
-        visibility: evidence.visibility,
-        files: evidence.files,
-        videoLinks: evidence.videoLinks,
-        reviewedBy: evidence.reviewedBy,
-        reviewedAt: evidence.reviewedAt,
-        reviewNotes: evidence.reviewNotes,
-        isFeatured: evidence.isFeatured,
-        isAuditQuiz: evidence.isAuditQuiz,
-        roundNumber: evidence.roundNumber,
-        hasChildren: evidence.hasChildren,
-        parentalConsentFiles: evidence.parentalConsentFiles,
-        submittedAt: evidence.submittedAt,
-        updatedAt: evidence.updatedAt,
-        school: {
-          id: schools.id,
-          name: schools.name,
-          country: schools.country,
-        },
-        schoolName: schools.name,
-        schoolCountry: schools.country,
-        schoolLanguage: schools.primaryLanguage,
-      })
-      .from(evidence)
-      .leftJoin(schools, eq(evidence.schoolId, schools.id));
-    
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
-    }
-    
-    // Order by featured first, then by submission date
-    query = query.orderBy(desc(evidence.isFeatured), desc(evidence.submittedAt)) as any;
-    
-    if (filters?.limit) {
-      query = query.limit(filters.limit) as any;
-    }
-    if (filters?.offset) {
-      query = query.offset(filters.offset) as any;
-    }
-    
-    return await query as any;
+    return evidenceStorage.getApprovedEvidenceForInspiration(filters);
   }
 
   async getEvidenceByFileUrl(fileUrl: string): Promise<(EvidenceWithSchool & { 
@@ -2596,59 +2396,7 @@ export class DatabaseStorage implements IStorage {
     schoolCountry: string;
     schoolLanguage: string | null;
   }) | undefined> {
-    // Extract file ID from various URL formats
-    const fileId = fileUrl.split('/').pop() || '';
-    
-    // Query evidence where the files JSON contains this file ID
-    const results = await db
-      .select({
-        id: evidence.id,
-        schoolId: evidence.schoolId,
-        submittedBy: evidence.submittedBy,
-        evidenceRequirementId: evidence.evidenceRequirementId,
-        title: evidence.title,
-        description: evidence.description,
-        stage: evidence.stage,
-        status: evidence.status,
-        visibility: evidence.visibility,
-        files: evidence.files,
-        videoLinks: evidence.videoLinks,
-        reviewedBy: evidence.reviewedBy,
-        reviewedAt: evidence.reviewedAt,
-        reviewNotes: evidence.reviewNotes,
-        isFeatured: evidence.isFeatured,
-        isAuditQuiz: evidence.isAuditQuiz,
-        roundNumber: evidence.roundNumber,
-        hasChildren: evidence.hasChildren,
-        parentalConsentFiles: evidence.parentalConsentFiles,
-        submittedAt: evidence.submittedAt,
-        updatedAt: evidence.updatedAt,
-        school: {
-          id: schools.id,
-          name: schools.name,
-          country: schools.country,
-        },
-        schoolName: schools.name,
-        schoolCountry: schools.country,
-        schoolLanguage: schools.primaryLanguage,
-      })
-      .from(evidence)
-      .leftJoin(schools, eq(evidence.schoolId, schools.id))
-      .where(eq(evidence.status, 'approved'));
-    
-    // Filter in JavaScript to check the files JSON array
-    const matchingEvidence = results.find((ev: any) => {
-      const files = Array.isArray(ev.files) ? ev.files : [];
-      return files.some((file: any) => 
-        file.url && (
-          file.url.includes(fileId) || 
-          file.url === `/objects/uploads/${fileId}` ||
-          file.url === `/api/objects/uploads/${fileId}`
-        )
-      );
-    });
-    
-    return matchingEvidence as any;
+    return evidenceStorage.getEvidenceByFileUrl(fileUrl);
   }
 
   async updateEvidenceStatus(
@@ -2657,40 +2405,15 @@ export class DatabaseStorage implements IStorage {
     reviewedBy: string,
     reviewNotes?: string
   ): Promise<Evidence | undefined> {
-    const [evidenceRecord] = await db
-      .update(evidence)
-      .set({
-        status: status as any,
-        reviewedBy,
-        reviewedAt: new Date(),
-        reviewNotes,
-        updatedAt: new Date(),
-      })
-      .where(eq(evidence.id, id))
-      .returning();
-    return evidenceRecord;
+    return evidenceStorage.updateEvidenceStatus(id, status, reviewedBy, reviewNotes);
   }
 
   async assignEvidence(evidenceId: string, assignedToUserId: string | null): Promise<void> {
-    await db
-      .update(evidence)
-      .set({ 
-        assignedTo: assignedToUserId,
-        updatedAt: new Date(),
-      })
-      .where(eq(evidence.id, evidenceId));
+    return evidenceStorage.assignEvidence(evidenceId, assignedToUserId);
   }
 
   async updateEvidence(id: string, updates: Partial<InsertEvidence>): Promise<Evidence | undefined> {
-    const [evidenceRecord] = await db
-      .update(evidence)
-      .set({
-        ...updates,
-        updatedAt: new Date(),
-      } as any)
-      .where(eq(evidence.id, id))
-      .returning();
-    return evidenceRecord;
+    return evidenceStorage.updateEvidence(id, updates);
   }
 
   async updateEvidenceFiles(id: string, files: any[]): Promise<Evidence | undefined> {
@@ -2706,15 +2429,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteEvidence(id: string): Promise<boolean> {
-    try {
-      const result = await db
-        .delete(evidence)
-        .where(eq(evidence.id, id));
-      return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      console.error("Error deleting evidence:", error);
-      return false;
-    }
+    return evidenceStorage.deleteEvidence(id);
   }
 
   async deleteSchool(id: string): Promise<boolean> {
@@ -2723,58 +2438,26 @@ export class DatabaseStorage implements IStorage {
 
   // Evidence Requirements operations
   async getEvidenceRequirements(stage?: string): Promise<EvidenceRequirement[]> {
-    if (stage) {
-      return await db
-        .select()
-        .from(evidenceRequirements)
-        .where(eq(evidenceRequirements.stage, stage as any))
-        .orderBy(asc(evidenceRequirements.orderIndex));
-    }
-    
-    return await db
-      .select()
-      .from(evidenceRequirements)
-      .orderBy(asc(evidenceRequirements.stage), asc(evidenceRequirements.orderIndex));
+    return evidenceStorage.getEvidenceRequirements(stage as 'inspire' | 'investigate' | 'act' | undefined);
   }
 
   async getEvidenceRequirement(id: string): Promise<EvidenceRequirement | undefined> {
-    const [requirement] = await db
-      .select()
-      .from(evidenceRequirements)
-      .where(eq(evidenceRequirements.id, id));
-    return requirement;
+    return evidenceStorage.getEvidenceRequirement(id);
   }
 
   async createEvidenceRequirement(data: InsertEvidenceRequirement): Promise<EvidenceRequirement> {
-    const [requirement] = await db
-      .insert(evidenceRequirements)
-      .values(data)
-      .returning();
-    return requirement;
+    return evidenceStorage.createEvidenceRequirement(data);
   }
 
   async updateEvidenceRequirement(
     id: string, 
     data: Partial<InsertEvidenceRequirement>
   ): Promise<EvidenceRequirement | undefined> {
-    const [requirement] = await db
-      .update(evidenceRequirements)
-      .set({ ...data, updatedAt: new Date() })
-      .where(eq(evidenceRequirements.id, id))
-      .returning();
-    return requirement;
+    return evidenceStorage.updateEvidenceRequirement(id, data);
   }
 
   async deleteEvidenceRequirement(id: string): Promise<boolean> {
-    try {
-      const result = await db
-        .delete(evidenceRequirements)
-        .where(eq(evidenceRequirements.id, id));
-      return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      console.error("Error deleting evidence requirement:", error);
-      return false;
-    }
+    return evidenceStorage.deleteEvidenceRequirement(id);
   }
 
   async getEvidenceByRequirement(requirementId: string): Promise<Evidence[]> {
@@ -6922,3 +6605,8 @@ export class DatabaseStorage implements IStorage {
 }
 
 export const storage = new DatabaseStorage();
+
+// Initialize Evidence Storage with delegates
+const progressionDelegate = createSchoolProgressionDelegate(schoolStorage);
+const evidenceDelegates = createEvidenceDelegates(storage, progressionDelegate);
+const evidenceStorage = getEvidenceStorage(evidenceDelegates);
