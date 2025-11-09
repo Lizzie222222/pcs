@@ -34,6 +34,10 @@ declare global {
       needsPasswordReset: boolean | null;
       createdAt: Date | null;
       updatedAt: Date | null;
+      activeSchoolMembership?: {
+        schoolId: string;
+        role: string;
+      };
     }
   }
 }
@@ -167,8 +171,24 @@ export async function setupAuth(app: Express) {
   passport.deserializeUser(async (id: string, done) => {
     try {
       const user = await storage.getUser(id);
-      done(null, user || false);
+      if (!user) return done(null, false);
+      
+      // Cast to Express.User to allow adding activeSchoolMembership
+      const sessionUser = user as Express.User;
+      
+      // Hydrate active school membership for teachers
+      if (sessionUser.role === 'teacher' || sessionUser.role === 'head_teacher') {
+        const membership = await storage.getUserActiveSchoolMembership(id);
+        if (membership) {
+          sessionUser.activeSchoolMembership = membership;
+        } else {
+          console.warn(`[Auth] Teacher ${id} has no active school membership`);
+        }
+      }
+      
+      done(null, sessionUser);
     } catch (error) {
+      console.error('[Auth] deserializeUser error:', error);
       done(error);
     }
   });

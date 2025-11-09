@@ -203,6 +203,7 @@ export interface IStorage {
   updateAdminOnboarding(userId: string, data: { firstName: string; lastName: string; preferredLanguage: string }): Promise<User | undefined>;
   updateUserLastActive(userId: string): Promise<void>;
   markUserAsInteracted(userId: string): Promise<void>;
+  getUserActiveSchoolMembership(userId: string): Promise<{ schoolId: string; role: string } | undefined>;
   
   // School operations
   createSchool(school: InsertSchool): Promise<School>;
@@ -1355,6 +1356,41 @@ export class DatabaseStorage implements IStorage {
       .update(users)
       .set({ hasInteracted: true, lastActiveAt: new Date(), updatedAt: new Date() })
       .where(eq(users.id, userId));
+  }
+
+  async getUserActiveSchoolMembership(userId: string): Promise<{ schoolId: string; role: string } | undefined> {
+    // Get user's school memberships (excluding pending)
+    const memberships = await db
+      .select({
+        schoolId: schoolUsers.schoolId,
+        role: schoolUsers.role,
+        createdAt: schoolUsers.createdAt,
+      })
+      .from(schoolUsers)
+      .innerJoin(schools, eq(schoolUsers.schoolId, schools.id))
+      .where(
+        and(
+          eq(schoolUsers.userId, userId),
+          or(
+            eq(schoolUsers.role, 'teacher'),
+            eq(schoolUsers.role, 'head_teacher')
+          )
+        )
+      )
+      .orderBy(desc(schoolUsers.createdAt));
+
+    if (memberships.length === 0) {
+      return undefined;
+    }
+
+    if (memberships.length > 1) {
+      console.warn(`[Auth] User ${userId} has ${memberships.length} school memberships. Using most recent.`);
+    }
+
+    return {
+      schoolId: memberships[0].schoolId,
+      role: memberships[0].role,
+    };
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
