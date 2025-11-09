@@ -99,7 +99,7 @@ export interface EvidenceDelegates {
    * This creates a clear contract and prevents overreach
    */
   persistence: Pick<IStorage, 
-    // Evidence CRUD
+    // Phase 1: Evidence CRUD
     'createEvidence' | 
     'updateEvidence' | 
     'getEvidence' | 
@@ -107,12 +107,15 @@ export interface EvidenceDelegates {
     'getAllEvidence' | 
     'deleteEvidence' |
     
-    // Evidence Requirements
+    // Phase 2: Evidence Requirements
     'getEvidenceRequirements' |
     'getEvidenceRequirement' |
     'createEvidenceRequirement' |
     'updateEvidenceRequirement' |
     'deleteEvidenceRequirement' |
+    
+    // Phase 3: Admin Review
+    'updateEvidenceStatus' |
     
     // School context (needed for evidence operations)
     'getSchool' | 

@@ -177,6 +177,90 @@ export class EvidenceStorage {
     return await this.delegates.persistence.deleteEvidenceRequirement(id);
   }
 
+  /**
+   * PHASE 3: Admin Review Methods
+   * ===============================
+   */
+
+  /**
+   * Update evidence status (approve/reject)
+   * CRITICAL: Triggers school progression via delegate
+   * 
+   * This is the most important method in the Evidence module because:
+   * - Approving evidence can trigger school stage progression (inspire → investigate → act)
+   * - Stage progression affects award completion and certificate generation
+   * - Any bugs here will break the core platform functionality
+   * 
+   * @param id - Evidence ID to update
+   * @param status - New status ('approved' or 'rejected')
+   * @param reviewedBy - Admin user ID performing the review
+   * @param reviewNotes - Optional notes/feedback for the school
+   * @returns Updated evidence record or undefined
+   */
+  async updateEvidenceStatus(
+    id: string,
+    status: 'approved' | 'rejected',
+    reviewedBy: string,
+    reviewNotes?: string
+  ): Promise<Evidence | undefined> {
+    // Get evidence first to know the schoolId for progression check
+    const evidence = await this.delegates.persistence.getEvidenceById(id);
+    if (!evidence) {
+      throw new Error('Evidence not found');
+    }
+
+    // Update status via persistence layer
+    const updated = await this.delegates.persistence.updateEvidenceStatus(
+      id,
+      status,
+      reviewedBy,
+      reviewNotes
+    );
+
+    // CRITICAL: Trigger school progression check if approved
+    // This may advance the school to the next stage or complete a round
+    if (status === 'approved' && updated) {
+      await this.delegates.progression.checkAndUpdateSchoolProgression(
+        evidence.schoolId,
+        {
+          reason: 'evidence_approved',
+          evidenceId: id
+        }
+      );
+    }
+
+    return updated;
+  }
+
+  /**
+   * Get evidence for admin review
+   * 
+   * This is a convenience wrapper around getAllEvidence with admin-specific semantics.
+   * Admins use this to review evidence submissions with filtering, pagination, and sorting.
+   * 
+   * Supports:
+   * - Filtering by status, stage, school, country, visibility, assignment
+   * - Full school and reviewer details in response
+   * 
+   * Note: Pagination and advanced sorting should be handled at the route level
+   * or by using the underlying getAllEvidence method with custom post-processing.
+   * 
+   * @param filters - Filter criteria for evidence retrieval
+   * @returns Array of evidence with school details
+   */
+  async getAdminEvidence(filters?: {
+    status?: 'pending' | 'approved' | 'rejected';
+    stage?: 'inspire' | 'investigate' | 'act';
+    schoolId?: string;
+    country?: string;
+    visibility?: 'public' | 'private';
+    assignedTo?: string;
+  }): Promise<EvidenceWithSchool[]> {
+    // Delegate to the getAllEvidence method (extracted in Phase 1)
+    // This method already provides all the admin review functionality
+    return await this.delegates.persistence.getAllEvidence(filters);
+  }
+
 }
 
 /**
