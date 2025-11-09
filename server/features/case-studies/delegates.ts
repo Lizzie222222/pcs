@@ -1,5 +1,6 @@
-import { ObjectStorageService } from '../../lib/objectStorage';
+import { ObjectStorageService } from '../../objectStorage';
 import type { Request, Response } from 'express';
+import { generatePDFReport } from '../../lib/pdfGenerator';
 
 /**
  * Case Study Delegates
@@ -48,7 +49,7 @@ export class MediaDelegate {
   async setFileACL(
     fileURL: string,
     userId: string,
-    visibility: string = 'public',
+    visibility: 'public' | 'private' | 'registered' = 'public',
     filename?: string
   ): Promise<string> {
     try {
@@ -78,16 +79,22 @@ export class PDFDelegate {
   /**
    * Generate PDF from case study HTML
    * 
-   * This method will be implemented in Phase 3B to use the shared
-   * generatePDFReport service instead of inline Puppeteer code
+   * Uses the shared generatePDFReport service for consistent PDF generation
+   * across the application (resources and case studies)
    * 
    * @param htmlContent - HTML string to convert to PDF
    * @returns PDF buffer
    */
   async generateCaseStudyPDF(htmlContent: string): Promise<Buffer> {
-    // This will be implemented in Phase 3B
-    // For now, this is a placeholder
-    throw new Error('PDF generation not yet refactored - use inline code for now');
+    try {
+      console.log('[PDFDelegate] Generating case study PDF using shared service...');
+      const pdfBuffer = await generatePDFReport(htmlContent);
+      console.log('[PDFDelegate] Case study PDF generated successfully');
+      return pdfBuffer;
+    } catch (error) {
+      console.error('[PDFDelegate] Error generating case study PDF:', error);
+      throw new Error(`Failed to generate case study PDF: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 }
 

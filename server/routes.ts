@@ -25,7 +25,6 @@ import { generateAnalyticsInsights } from "./lib/aiInsights";
 import { translateEmailContent, translateEvidenceRequirement, type EmailContent } from "./translationService";
 import { promises as fs } from 'fs';
 import path from 'path';
-import puppeteer from 'puppeteer';
 import { apiCache, CACHE_TTL } from "./cache";
 import { parseImportFile, sanitizeForPreview, generateSchoolTemplate, generateUserTemplate, generateRelationshipTemplate } from './lib/importUtils.js';
 import { importSchools, importUsers, importRelationships, updateImportBatch } from './lib/importProcessor.js';
@@ -50,6 +49,7 @@ import { getAllCountryCodes } from './countryMapping';
 // Import feature routers
 import { schoolsRouter, adminSchoolsQuerySchema, toggleEvidenceOverrideSchema, updateSchoolProgressionSchema } from './features/schools/routes';
 import { createEvidenceRouters } from './features/evidence/routes';
+import { getPDFDelegate } from './features/case-studies/delegates';
 
 /**
  * @description Main route registration function setting up all API endpoints including auth, schools, evidence, case studies, events, email, and file uploads. Applies authentication middleware and ACL policies.
@@ -1281,11 +1281,11 @@ Return JSON with:
   });
 
   /**
-   * @description GET /api/case-studies/:id/pdf - Generates and downloads beautifully formatted PDF of case study using Puppeteer. Includes images, metrics, timeline, and quotes.
+   * @description GET /api/case-studies/:id/pdf - Generates and downloads beautifully formatted PDF of case study using shared PDF service. Includes images, metrics, timeline, and quotes.
    * @param {string} id - Case study ID from URL params
    * @returns {Buffer} PDF file buffer for download
    * @location server/routes.ts#L533
-   * @related generatePdfHtml, shared/schema.ts (caseStudies table), client/src/pages/inspiration.tsx
+   * @related generatePdfHtml, server/lib/pdfGenerator.ts, server/features/case-studies/delegates.ts, shared/schema.ts (caseStudies table), client/src/pages/inspiration.tsx
    */
   app.get('/api/case-studies/:id/pdf', async (req: any, res) => {
     try {
@@ -1318,28 +1318,6 @@ Return JSON with:
         evidenceFiles
       };
       
-      console.log('[PDF] Starting PDF generation for case study:', caseStudy.id);
-      
-      // Use system Chromium for Replit/NixOS compatibility
-      const executablePath = process.env.PUPPETEER_EXECUTABLE_PATH || 
-                            '/nix/store/zi4f80l169xlmivz8vja8wlphq74qqk0-chromium-125.0.6422.141/bin/chromium';
-      
-      const browser = await puppeteer.launch({
-        headless: true,
-        executablePath,
-        args: [
-          '--no-sandbox',
-          '--disable-setuid-sandbox',
-          '--disable-dev-shm-usage',
-          '--disable-gpu',
-          '--disable-software-rasterizer'
-        ]
-      });
-      
-      console.log('[PDF] Browser launched successfully');
-      
-      const page = await browser.newPage();
-      
       // Get base URL for converting relative image URLs to absolute
       const protocol = req.protocol || 'https';
       const host = req.get('host') || 'plasticcleverschools.com';
@@ -1347,46 +1325,16 @@ Return JSON with:
       
       // Generate beautiful HTML for PDF
       const htmlContent = generatePdfHtml(caseStudyWithEvidence, baseUrl);
-      await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
       
-      console.log('[PDF] HTML content loaded, waiting for images...');
+      // Use shared PDF service via delegate
+      const pdfDelegate = getPDFDelegate();
+      const pdfBuffer = await pdfDelegate.generateCaseStudyPDF(htmlContent);
       
-      // Wait for all images to load or fail
-      try {
-        await page.evaluate(() => {
-          return Promise.all(
-            Array.from(document.images).map((img) => {
-              if (img.complete) return Promise.resolve();
-              return new Promise((resolve) => {
-                img.addEventListener('load', resolve);
-                img.addEventListener('error', resolve); // Continue even if image fails
-              });
-            })
-          );
-        });
-        console.log('[PDF] All images loaded');
-      } catch (error) {
-        console.log('[PDF] Image loading timeout or error, continuing...', error);
-      }
-      
-      console.log('[PDF] Generating PDF...');
-      
-      // Generate PDF with options
-      const pdf = await page.pdf({
-        format: 'A4',
-        printBackground: true,
-        margin: { top: '20mm', right: '15mm', bottom: '20mm', left: '15mm' }
-      });
-      
-      await browser.close();
-      
-      console.log('[PDF] PDF generated successfully');
-      
-      // Set headers
+      // Set headers and send PDF
       const filename = sanitizeFilename(caseStudy.title);
       res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `attachment; filename="${filename}.pdf"`);
-      res.send(Buffer.from(pdf));
+      res.send(pdfBuffer);
     } catch (error) {
       console.error('[PDF] PDF generation error:', error);
       res.status(500).json({ error: 'Failed to generate PDF' });
