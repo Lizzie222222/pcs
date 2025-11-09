@@ -798,37 +798,41 @@ export const isHeadTeacher: RequestHandler = async (req, res, next) => {
       message: "Authentication required" 
     });
   }
+
+  // Platform admins have access to all schools
+  if (req.user.isAdmin) {
+    return next();
+  }
+
+  // Get schoolId from activeSchoolMembership
+  const userSchoolId = req.user.activeSchoolMembership?.schoolId;
+  const userRole = req.user.activeSchoolMembership?.role;
   
-  const schoolId = req.params.schoolId;
-  if (!schoolId) {
-    return res.status(400).json({ 
+  if (!userSchoolId || !userRole) {
+    return res.status(403).json({ 
       success: false, 
-      message: "School ID required" 
+      message: "School membership required" 
     });
   }
-  
-  try {
-    const schoolUser = await storage.getSchoolUser(schoolId, req.user.id);
-    if (schoolUser && schoolUser.role === 'head_teacher' && schoolUser.isVerified) {
-      return next();
-    }
-    
-    // Also allow platform admins
-    if (req.user.isAdmin) {
-      return next();
-    }
-    
+
+  // Check if user is member of the requested school
+  const requestedSchoolId = req.params.schoolId;
+  if (userSchoolId !== requestedSchoolId) {
+    return res.status(403).json({ 
+      success: false, 
+      message: "Access denied - you are not a member of this school" 
+    });
+  }
+
+  // Check if user is a head teacher
+  if (userRole !== 'head_teacher') {
     return res.status(403).json({ 
       success: false, 
       message: "Head teacher access required" 
     });
-  } catch (error) {
-    console.error("Error checking head teacher status:", error);
-    return res.status(500).json({ 
-      success: false, 
-      message: "Failed to verify head teacher status" 
-    });
   }
+
+  next();
 };
 
 // School Member middleware - checks if user is a verified member of a school
@@ -839,38 +843,34 @@ export const isSchoolMember: RequestHandler = async (req, res, next) => {
       message: "Authentication required" 
     });
   }
-  
-  const schoolId = req.params.schoolId;
-  if (!schoolId) {
-    return res.status(400).json({ 
-      success: false, 
-      message: "School ID required" 
-    });
+
+  // Platform admins have access to all schools
+  if (req.user.isAdmin) {
+    (req as any).schoolRole = 'admin';
+    return next();
   }
+
+  // Get schoolId and role from activeSchoolMembership
+  const membership = req.user.activeSchoolMembership;
   
-  try {
-    const schoolUser = await storage.getSchoolUser(schoolId, req.user.id);
-    if (schoolUser && schoolUser.isVerified) {
-      // Attach school role to request for use in route handlers
-      (req as any).schoolRole = schoolUser.role;
-      return next();
-    }
-    
-    // Also allow platform admins
-    if (req.user.isAdmin) {
-      (req as any).schoolRole = 'admin';
-      return next();
-    }
-    
+  if (!membership || !membership.schoolId) {
     return res.status(403).json({ 
       success: false, 
       message: "School membership required" 
     });
-  } catch (error) {
-    console.error("Error checking school membership:", error);
-    return res.status(500).json({ 
+  }
+
+  // Check if user is member of the requested school
+  const requestedSchoolId = req.params.schoolId;
+  if (membership.schoolId !== requestedSchoolId) {
+    return res.status(403).json({ 
       success: false, 
-      message: "Failed to verify school membership" 
+      message: "Access denied - you are not a member of this school" 
     });
   }
+
+  // Attach school role to request for use in route handlers
+  (req as any).schoolRole = membership.role;
+
+  next();
 };
