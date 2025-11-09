@@ -10,21 +10,7 @@ import { insertSchoolSchema, insertEvidenceSchema, insertEvidenceRequirementSche
 import { nanoid } from 'nanoid';
 import { z } from "zod";
 
-// Admin override validation schemas
-const toggleEvidenceOverrideSchema = z.object({
-  evidenceRequirementId: z.string().uuid(),
-  stage: z.enum(['inspire', 'investigate', 'act'])
-});
-
-const updateSchoolProgressionSchema = z.object({
-  currentRound: z.number().int().min(1).max(10).optional(),
-  currentStage: z.enum(['inspire', 'investigate', 'act']).optional(),
-  inspireCompleted: z.boolean().optional(),
-  investigateCompleted: z.boolean().optional(),
-  actCompleted: z.boolean().optional(),
-  progressPercentage: z.number().min(0).max(300).optional()
-});
-
+// Resource pack reordering validation schema
 const reorderResourcePackItemsSchema = z.object({
   items: z.array(z.object({
     resourceId: z.string().uuid(),
@@ -32,23 +18,6 @@ const reorderResourcePackItemsSchema = z.object({
   })).min(1)
 });
 
-// Admin schools query params validation schema
-const adminSchoolsQuerySchema = z.object({
-  country: z.string().optional().transform(val => val === 'all' ? undefined : val),
-  stage: z.enum(['inspire', 'investigate', 'act', 'all']).optional().transform(val => val === 'all' ? undefined : val),
-  type: z.enum(['primary', 'secondary', 'high_school', 'international', 'other', 'all']).optional().transform(val => val === 'all' ? undefined : val),
-  search: z.string().optional(),
-  language: z.string().optional().transform(val => val === 'all' ? undefined : val),
-  sortByDate: z.enum(['newest', 'oldest']).optional(),
-  joinedMonth: z.string().optional(),
-  joinedYear: z.string().optional(),
-  interactionStatus: z.enum(['all', 'interacted', 'not-interacted']).optional().transform(val => val === 'all' ? undefined : val),
-  completionStatus: z.enum(['all', 'plastic-clever', 'in-progress']).optional().transform(val => val === 'all' ? undefined : val),
-  page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(200).default(50),
-  sortBy: z.enum(['name', 'country', 'progress', 'joinDate']).optional(),
-  sortOrder: z.enum(['asc', 'desc']).optional(),
-});
 import { randomUUID, randomBytes } from 'crypto';
 import { db } from "./db";
 import { eq, and, or, sql, desc, gte, lte, count, ilike, inArray } from "drizzle-orm";
@@ -69,7 +38,7 @@ import { generateCSV, getCSVHeaders, generateExcel, generateTitleFromFilename } 
 import { stripHtml, escapeHtml, sanitizeFilename, generatePdfHtml } from './routes/utils/pdf';
 import { bulkResourceUpload, photoConsentUpload, uploadCompression, importUpload } from './routes/utils/uploads';
 import { uploadToObjectStorage } from './routes/utils/objectStorage';
-import { requireAdmin, requireAdminOrPartner } from './routes/utils/middleware';
+import { requireAdmin, requireAdminOrPartner, requireFullAdmin } from './routes/utils/middleware';
 import { normalizeObjectStorageUrl, normalizeFileArray } from './routes/utils/urlNormalization';
 import { generatePDFReport } from './lib/pdfGenerator';
 import { calculateAggregateMetrics } from '@shared/plasticMetrics';
@@ -77,6 +46,9 @@ import { calculateAggregateMetrics } from '@shared/plasticMetrics';
 // Import WebSocket collaboration functions
 import { getOnlineUsers, broadcastChatMessage, notifyDocumentLock, broadcastDocumentUnlock } from './websocket';
 import { getAllCountryCodes } from './countryMapping';
+
+// Import feature routers
+import { schoolsRouter } from './features/schools/routes';
 
 /**
  * @description Main route registration function setting up all API endpoints including auth, schools, evidence, case studies, events, email, and file uploads. Applies authentication middleware and ACL policies.
@@ -92,6 +64,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Apply trackUserActivity middleware globally to all authenticated routes
   // This updates lastActiveAt timestamp for all user activity
   app.use(trackUserActivity);
+
+  // Mount feature routers
+  app.use(schoolsRouter);
 
   // Serve PDF resources from public folder with proper CORS headers
   app.get('/api/pdfs/:filename', async (req, res) => {
@@ -4697,24 +4672,7 @@ Return JSON with:
   // (using requireAdminOrPartner middleware from utils/middleware.ts)
 
   // Middleware to block partners from specific actions (role assignment, data downloads)
-  const requireFullAdmin = async (req: any, res: any, next: any) => {
-    try {
-      const userId = req.user?.id;
-      if (!userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-
-      const user = await storage.getUser(userId);
-      if (!user || !user.isAdmin || user.role === 'partner') {
-        return res.status(403).json({ message: "Full admin access required. Partners cannot perform this action." });
-      }
-
-      next();
-    } catch (error) {
-      console.error("Error checking full admin status:", error);
-      res.status(500).json({ message: "Failed to verify admin status" });
-    }
-  };
+  // Note: requireFullAdmin middleware is defined in individual feature routers as needed
 
   // Bulk delete resources (admin/partner only)
   app.post('/api/admin/resources/bulk-delete', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {

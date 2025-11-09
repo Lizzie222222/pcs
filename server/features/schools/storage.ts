@@ -1157,6 +1157,221 @@ export class SchoolStorage {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user;
   }
+
+  async getSchoolsWithImageCounts(): Promise<Array<School & { imageCount: number }>> {
+    const schoolsList = await db
+      .select({
+        ...getTableColumns(schools),
+        imageCount: sql<number>`COALESCE(COUNT(DISTINCT ${evidence.id}) FILTER (WHERE ${evidence.status} = 'approved'), 0)`.as('imageCount')
+      })
+      .from(schools)
+      .leftJoin(evidence, eq(schools.id, evidence.schoolId))
+      .groupBy(schools.id)
+      .orderBy(desc(schools.createdAt));
+    
+    return schoolsList;
+  }
+
+  async getSchoolByDomain(domain: string): Promise<School | undefined> {
+    const normalizedDomain = domain.toLowerCase().trim();
+    
+    const [school] = await db
+      .select()
+      .from(schools)
+      .where(
+        sql`LOWER(SUBSTRING(${schools.adminEmail} FROM POSITION('@' IN ${schools.adminEmail}) + 1)) = ${normalizedDomain}`
+      )
+      .limit(1);
+    
+    return school;
+  }
+
+  async getInvitationByEmail(schoolId: string, email: string): Promise<TeacherInvitation | undefined> {
+    const [invitation] = await db
+      .select()
+      .from(teacherInvitations)
+      .where(and(
+        eq(teacherInvitations.schoolId, schoolId),
+        eq(teacherInvitations.email, email.toLowerCase())
+      ))
+      .orderBy(desc(teacherInvitations.createdAt))
+      .limit(1);
+    
+    return invitation;
+  }
+
+  async createInvitation(invitationData: InsertTeacherInvitation): Promise<TeacherInvitation> {
+    return this.createTeacherInvitation(invitationData);
+  }
+
+  async getPendingVerificationRequest(schoolId: string, userId: string): Promise<any | undefined> {
+    const { verificationRequests } = await import('@shared/schema');
+    
+    const [request] = await db
+      .select()
+      .from(verificationRequests)
+      .where(and(
+        eq(verificationRequests.schoolId, schoolId),
+        eq(verificationRequests.userId, userId),
+        eq(verificationRequests.status, 'pending')
+      ))
+      .limit(1);
+    
+    return request;
+  }
+
+  async createVerificationRequest(requestData: any): Promise<any> {
+    const { verificationRequests } = await import('@shared/schema');
+    
+    const [request] = await db
+      .insert(verificationRequests)
+      .values(requestData)
+      .returning();
+    
+    return request;
+  }
+
+  async getSchoolVerificationRequests(schoolId: string): Promise<any[]> {
+    const { verificationRequests } = await import('@shared/schema');
+    
+    return await db
+      .select()
+      .from(verificationRequests)
+      .where(eq(verificationRequests.schoolId, schoolId))
+      .orderBy(desc(verificationRequests.createdAt));
+  }
+
+  async getSchoolCertificates(schoolId: string): Promise<any[]> {
+    return await db
+      .select()
+      .from(certificates)
+      .where(eq(certificates.schoolId, schoolId))
+      .orderBy(desc(certificates.issuedAt));
+  }
+
+  async getSchoolAnalytics(schoolId: string): Promise<{
+    submissionTrends: Array<{ month: string; count: number }>;
+    teamContributions: Array<{ userId: string; userName: string; submissionCount: number; approvedCount: number }>;
+    stageTimeline: Array<{ stage: 'inspire' | 'investigate' | 'act'; completedAt: string | null; daysToComplete: number | null }>;
+    reviewStats: {
+      averageReviewTimeHours: number;
+      pendingCount: number;
+      approvedCount: number;
+      rejectedCount: number;
+    };
+    fileTypeDistribution: Record<string, number>;
+  }> {
+    const submissionsByMonth = await db
+      .select({
+        month: sql<string>`TO_CHAR(${evidence.submittedAt}, 'YYYY-MM')`,
+        count: count()
+      })
+      .from(evidence)
+      .where(eq(evidence.schoolId, schoolId))
+      .groupBy(sql`TO_CHAR(${evidence.submittedAt}, 'YYYY-MM')`)
+      .orderBy(sql`TO_CHAR(${evidence.submittedAt}, 'YYYY-MM')`);
+
+    const teamMembers = await db
+      .select({
+        userId: schoolUsers.userId,
+        firstName: users.firstName,
+        lastName: users.lastName,
+      })
+      .from(schoolUsers)
+      .leftJoin(users, eq(schoolUsers.userId, users.id))
+      .where(eq(schoolUsers.schoolId, schoolId));
+
+    const teamContributions = await Promise.all(
+      teamMembers.map(async (member) => {
+        const submissions = await db
+          .select({
+            total: count(),
+            approved: sql<number>`COUNT(*) FILTER (WHERE ${evidence.status} = 'approved')`
+          })
+          .from(evidence)
+          .where(and(
+            eq(evidence.schoolId, schoolId),
+            eq(evidence.submittedBy, member.userId)
+          ));
+
+        return {
+          userId: member.userId,
+          userName: `${member.firstName || ''} ${member.lastName || ''}`.trim() || 'Unknown',
+          submissionCount: Number(submissions[0]?.total || 0),
+          approvedCount: Number(submissions[0]?.approved || 0)
+        };
+      })
+    );
+
+    const school = await this.getSchool(schoolId);
+    const stageTimeline = [
+      {
+        stage: 'inspire' as const,
+        completedAt: school?.inspireCompleted ? school.updatedAt?.toISOString() || null : null,
+        daysToComplete: null
+      },
+      {
+        stage: 'investigate' as const,
+        completedAt: school?.investigateCompleted ? school.updatedAt?.toISOString() || null : null,
+        daysToComplete: null
+      },
+      {
+        stage: 'act' as const,
+        completedAt: school?.actCompleted ? school.updatedAt?.toISOString() || null : null,
+        daysToComplete: null
+      }
+    ];
+
+    const reviewStats = await db
+      .select({
+        pendingCount: sql<number>`COUNT(*) FILTER (WHERE ${evidence.status} = 'pending')`,
+        approvedCount: sql<number>`COUNT(*) FILTER (WHERE ${evidence.status} = 'approved')`,
+        rejectedCount: sql<number>`COUNT(*) FILTER (WHERE ${evidence.status} = 'rejected')`,
+        avgReviewTime: sql<number>`AVG(EXTRACT(EPOCH FROM (${evidence.reviewedAt} - ${evidence.submittedAt})) / 3600) FILTER (WHERE ${evidence.reviewedAt} IS NOT NULL)`
+      })
+      .from(evidence)
+      .where(eq(evidence.schoolId, schoolId));
+
+    return {
+      submissionTrends: submissionsByMonth.map(row => ({
+        month: row.month,
+        count: Number(row.count)
+      })),
+      teamContributions,
+      stageTimeline,
+      reviewStats: {
+        averageReviewTimeHours: Number(reviewStats[0]?.avgReviewTime || 0),
+        pendingCount: Number(reviewStats[0]?.pendingCount || 0),
+        approvedCount: Number(reviewStats[0]?.approvedCount || 0),
+        rejectedCount: Number(reviewStats[0]?.rejectedCount || 0)
+      },
+      fileTypeDistribution: {}
+    };
+  }
+
+  async getSchoolAuditAnalytics(schoolId: string): Promise<{
+    totalAudits: number;
+    completedAudits: number;
+    averageScore: number;
+    latestAudit: any;
+    trends: Array<{ date: string; score: number }>;
+  }> {
+    const audits = await db
+      .select()
+      .from(auditResponses)
+      .where(eq(auditResponses.schoolId, schoolId))
+      .orderBy(desc(auditResponses.createdAt));
+
+    const completedAudits = audits.filter(a => a.status === 'approved');
+    
+    return {
+      totalAudits: audits.length,
+      completedAudits: completedAudits.length,
+      averageScore: 0,
+      latestAudit: audits[0] || null,
+      trends: []
+    };
+  }
 }
 
 export const schoolStorage = new SchoolStorage();

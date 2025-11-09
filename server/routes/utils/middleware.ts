@@ -103,3 +103,26 @@ export const requireAdminOrPartner = async (req: any, res: any, next: any) => {
     res.status(500).json({ message: "Failed to verify access" });
   }
 };
+
+/**
+ * Middleware to block partners from specific actions (role assignment, data downloads)
+ * Requires full admin access - partners are not allowed
+ */
+export const requireFullAdmin = async (req: any, res: any, next: any) => {
+  try {
+    const userId = req.user?.id;
+    if (!userId) {
+      return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const user = await storage.getUser(userId);
+    if (!user || !user.isAdmin || user.role === 'partner') {
+      return res.status(403).json({ message: "Full admin access required. Partners cannot perform this action." });
+    }
+
+    next();
+  } catch (error) {
+    console.error("Error checking full admin status:", error);
+    res.status(500).json({ message: "Failed to verify admin status" });
+  }
+};
