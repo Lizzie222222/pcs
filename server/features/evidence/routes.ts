@@ -12,10 +12,13 @@ import { sendEvidenceSubmissionEmail, sendEvidenceApprovalEmail, sendEvidenceRej
 import { mailchimpService } from '../../mailchimpService';
 import { translateEvidenceRequirement } from '../../translationService';
 import { requireAdmin, requireAdminOrPartner } from '../../routes/utils/middleware';
+import { uploadCompression } from '../../routes/utils/uploads';
+import { shouldCompressFile, compressImage } from '../../imageCompression';
+import { ObjectStorageService } from '../../objectStorage';
 import { z } from 'zod';
 
 /**
- * Create Evidence Routers (Triple Router Structure)
+ * Create Evidence Routers (Quad Router Structure)
  * 
  * PHASE 1: Evidence CRUD Routes (4 endpoints) - mounted at /api/evidence
  * - POST /api/evidence - Submit new evidence
@@ -37,17 +40,22 @@ import { z } from 'zod';
  * - PATCH /api/admin/evidence/:id/review - Review evidence (approve/reject)
  * - POST /api/admin/evidence/bulk-review - Bulk approve/reject multiple evidence
  * 
+ * PHASE 4: Evidence File Upload Routes (1 endpoint) - mounted at /api/evidence-files
+ * - POST /api/evidence-files/upload-compressed - Upload and compress evidence files
+ * 
  * @param storage - Main IStorage instance
- * @returns Object containing evidenceRouter, requirementsRouter, and adminEvidenceRouter
+ * @returns Object containing evidenceRouter, requirementsRouter, adminEvidenceRouter, and evidenceFilesRouter
  */
 export function createEvidenceRouters(storage: IStorage): {
   evidenceRouter: Router;
   requirementsRouter: Router;
   adminEvidenceRouter: Router;
+  evidenceFilesRouter: Router;
 } {
   const evidenceRouter = Router();
   const requirementsRouter = Router();
   const adminEvidenceRouter = Router();
+  const evidenceFilesRouter = Router();
   
   // Initialize EvidenceStorage with delegates
   const progressionDelegate = createSchoolProgressionDelegate(schoolStorage);
@@ -111,7 +119,7 @@ export function createEvidenceRouters(storage: IStorage): {
       const isAdminOrPartner = user?.isAdmin || user?.role === 'partner';
       
       // Get school to check stage lock status and round number
-      const school = await delegates.persistence.getSchool(req.body.schoolId);
+      const school = await schoolStorage.getSchool(req.body.schoolId);
       if (!school) {
         return res.status(404).json({ message: "School not found" });
       }
@@ -132,7 +140,7 @@ export function createEvidenceRouters(storage: IStorage): {
 
       // If not admin/partner, verify user is a member of the school
       if (!isAdminOrPartner) {
-        const schoolUser = await delegates.persistence.getSchoolUser(evidenceData.schoolId, userId);
+        const schoolUser = await schoolStorage.getSchoolUser(evidenceData.schoolId, userId);
         if (!schoolUser) {
           return res.status(403).json({ 
             message: "You must be a member of the school to submit evidence" 
@@ -152,7 +160,7 @@ export function createEvidenceRouters(storage: IStorage): {
         // Send email notifications (non-blocking) for non-admin submissions
         try {
           const user = await storage.getUser(userId);
-          const school = await delegates.persistence.getSchool(evidenceData.schoolId);
+          const school = await schoolStorage.getSchool(evidenceData.schoolId);
           
           if (user?.email && school) {
             // Send confirmation email to the teacher who submitted the evidence
@@ -234,7 +242,7 @@ export function createEvidenceRouters(storage: IStorage): {
         // Admins can access any school's evidence
         if (!user?.isAdmin) {
           // Non-admins must be a member of the school
-          const schoolUser = await delegates.persistence.getSchoolUser(targetSchoolId, userId);
+          const schoolUser = await schoolStorage.getSchoolUser(targetSchoolId, userId);
           if (!schoolUser) {
             return res.status(403).json({ 
               message: "You don't have permission to view evidence for this school" 
@@ -243,7 +251,7 @@ export function createEvidenceRouters(storage: IStorage): {
         }
       } else {
         // No schoolId provided, get user's first school
-        const schools = await delegates.persistence.getUserSchools(userId);
+        const schools = await schoolStorage.getUserSchools(userId);
         if (schools.length === 0) {
           return res.json([]);
         }
@@ -315,8 +323,8 @@ export function createEvidenceRouters(storage: IStorage): {
       }
 
       // Verify user is a member of the school that submitted the evidence
-      const userSchools = await delegates.persistence.getUserSchools(userId);
-      const hasPermission = userSchools.some(school => school.id === evidence.schoolId);
+      const userSchools = await schoolStorage.getUserSchools(userId);
+      const hasPermission = userSchools.some((school: { id: string }) => school.id === evidence.schoolId);
       
       if (!hasPermission) {
         return res.status(403).json({ message: "You don't have permission to delete this evidence" });
@@ -1049,7 +1057,109 @@ export function createEvidenceRouters(storage: IStorage): {
     }
   });
 
-  return { evidenceRouter, requirementsRouter, adminEvidenceRouter };
+  // ============================================================================
+  // PHASE 4: EVIDENCE FILE UPLOAD ROUTES (mounted at /api/evidence-files)
+  // ============================================================================
+
+  /**
+   * POST /api/evidence-files/upload-compressed
+   * 
+   * Upload and compress evidence files
+   * - Accepts file via multer middleware
+   * - Optionally compresses images (jpeg, png, webp, etc.)
+   * - Uploads to GCS object storage
+   * - Sets ACL policy based on visibility
+   * - Returns upload metadata (objectPath, sizes, compression ratio)
+   * 
+   * Migrated from server/routes.ts:4204-4288
+   */
+  evidenceFilesRouter.post('/upload-compressed', isAuthenticated, uploadCompression.single('file'), async (req: any, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: "No file provided" });
+      }
+
+      const userId = req.user?.id;
+      const visibility = req.body.visibility || 'private';
+      const filename = req.file.originalname;
+      const mimeType = req.file.mimetype;
+      
+      let fileBuffer = req.file.buffer;
+      const originalSize = req.file.buffer.length;
+      let compressedSize = originalSize;
+      let wasCompressed = false;
+      
+      // Only compress if it's an image format we support
+      if (shouldCompressFile(mimeType)) {
+        try {
+          fileBuffer = await compressImage(fileBuffer, {
+            maxWidth: 1920,
+            maxHeight: 1920,
+            quality: 85,
+          });
+          compressedSize = fileBuffer.length;
+          wasCompressed = true;
+          
+          const savingsPercent = ((originalSize - compressedSize) / originalSize * 100).toFixed(1);
+          console.log(`Compressed ${filename}: ${(originalSize / 1024 / 1024).toFixed(2)}MB → ${(compressedSize / 1024 / 1024).toFixed(2)}MB (saved ${savingsPercent}%)`);
+        } catch (compressionError) {
+          console.warn(`Compression failed for ${filename}, uploading original:`, compressionError);
+          // Reset to original buffer if compression fails
+          fileBuffer = req.file.buffer;
+          compressedSize = originalSize;
+          wasCompressed = false;
+        }
+      } else {
+        console.log(`Skipping compression for non-image file: ${filename} (${mimeType})`);
+      }
+
+      // Get upload URL from object storage
+      const objectStorageService = new ObjectStorageService();
+      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+      
+      // Upload file to object storage
+      const uploadResponse = await fetch(uploadURL, {
+        method: 'PUT',
+        body: fileBuffer,
+        headers: {
+          'Content-Type': mimeType,
+          'Content-Length': fileBuffer.length.toString(),
+        },
+      });
+
+      if (!uploadResponse.ok) {
+        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
+      }
+
+      // Set ACL policy
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        uploadURL.split('?')[0],
+        {
+          owner: userId,
+          visibility: visibility,
+        },
+        filename,
+      );
+
+      // Calculate compression ratio (0 if not compressed)
+      const compressionRatio = wasCompressed 
+        ? ((originalSize - compressedSize) / originalSize * 100).toFixed(1)
+        : '0';
+
+      res.status(200).json({ 
+        objectPath,
+        originalSize,
+        compressedSize,
+        compressionRatio,
+        wasCompressed,
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      res.status(500).json({ error: "Failed to upload file" });
+    }
+  });
+
+  return { evidenceRouter, requirementsRouter, adminEvidenceRouter, evidenceFilesRouter };
 }
 
 /**

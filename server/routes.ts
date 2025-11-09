@@ -69,11 +69,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Mount feature routers
   app.use(schoolsRouter);
   
-  // Mount evidence routers (PHASE 1 + PHASE 2 + PHASE 3)
-  const { evidenceRouter, requirementsRouter, adminEvidenceRouter } = createEvidenceRouters(storage);
+  // Mount evidence routers (PHASE 1 + PHASE 2 + PHASE 3 + PHASE 4)
+  const { evidenceRouter, requirementsRouter, adminEvidenceRouter, evidenceFilesRouter } = createEvidenceRouters(storage);
   app.use('/api/evidence', evidenceRouter);
   app.use('/api/evidence-requirements', requirementsRouter);
   app.use('/api/admin/evidence', adminEvidenceRouter);
+  app.use('/api/evidence-files', evidenceFilesRouter);
 
   // Serve PDF resources from public folder with proper CORS headers
   app.get('/api/pdfs/:filename', async (req, res) => {
@@ -4196,94 +4197,6 @@ Return JSON with:
         return res.sendStatus(404);
       }
       return res.sendStatus(500);
-    }
-  });
-
-  // Upload and compress evidence files
-  // (using uploadCompression from utils/uploads.ts)
-  app.post("/api/evidence-files/upload-compressed", isAuthenticated, uploadCompression.single('file'), async (req: any, res) => {
-    try {
-      if (!req.file) {
-        return res.status(400).json({ error: "No file provided" });
-      }
-
-      const userId = req.user?.id;
-      const visibility = req.body.visibility || 'private';
-      const filename = req.file.originalname;
-      const mimeType = req.file.mimetype;
-      
-      let fileBuffer = req.file.buffer;
-      const originalSize = req.file.buffer.length;
-      let compressedSize = originalSize;
-      let wasCompressed = false;
-      
-      // Only compress if it's an image format we support
-      if (shouldCompressFile(mimeType)) {
-        try {
-          fileBuffer = await compressImage(fileBuffer, {
-            maxWidth: 1920,
-            maxHeight: 1920,
-            quality: 85,
-          });
-          compressedSize = fileBuffer.length;
-          wasCompressed = true;
-          
-          const savingsPercent = ((originalSize - compressedSize) / originalSize * 100).toFixed(1);
-          console.log(`Compressed ${filename}: ${(originalSize / 1024 / 1024).toFixed(2)}MB → ${(compressedSize / 1024 / 1024).toFixed(2)}MB (saved ${savingsPercent}%)`);
-        } catch (compressionError) {
-          console.warn(`Compression failed for ${filename}, uploading original:`, compressionError);
-          // Reset to original buffer if compression fails
-          fileBuffer = req.file.buffer;
-          compressedSize = originalSize;
-          wasCompressed = false;
-        }
-      } else {
-        console.log(`Skipping compression for non-image file: ${filename} (${mimeType})`);
-      }
-
-      // Get upload URL from object storage
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      
-      // Upload file to object storage
-      const uploadResponse = await fetch(uploadURL, {
-        method: 'PUT',
-        body: fileBuffer,
-        headers: {
-          'Content-Type': mimeType,
-          'Content-Length': fileBuffer.length.toString(),
-        },
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error(`Failed to upload file: ${uploadResponse.statusText}`);
-      }
-
-      // Set ACL policy
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
-        uploadURL.split('?')[0],
-        {
-          owner: userId,
-          visibility: visibility,
-        },
-        filename,
-      );
-
-      // Calculate compression ratio (0 if not compressed)
-      const compressionRatio = wasCompressed 
-        ? ((originalSize - compressedSize) / originalSize * 100).toFixed(1)
-        : '0';
-
-      res.status(200).json({ 
-        objectPath,
-        originalSize,
-        compressedSize,
-        compressionRatio,
-        wasCompressed,
-      });
-    } catch (error) {
-      console.error("Error uploading file:", error);
-      res.status(500).json({ error: "Failed to upload file" });
     }
   });
 
