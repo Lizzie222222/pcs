@@ -29,13 +29,13 @@ import { eq, and, or, sql, count, ilike, inArray, gte } from 'drizzle-orm';
 import { getAllCountryCodes } from './utils/countryMapping';
 import { storage } from '../../storage';
 
-// Validation schemas
-const toggleEvidenceOverrideSchema = z.object({
+// Validation schemas - exported for use in routes.ts
+export const toggleEvidenceOverrideSchema = z.object({
   evidenceRequirementId: z.string().uuid(),
   stage: z.enum(['inspire', 'investigate', 'act'])
 });
 
-const updateSchoolProgressionSchema = z.object({
+export const updateSchoolProgressionSchema = z.object({
   currentRound: z.number().int().min(1).max(10).optional(),
   currentStage: z.enum(['inspire', 'investigate', 'act']).optional(),
   inspireCompleted: z.boolean().optional(),
@@ -44,7 +44,7 @@ const updateSchoolProgressionSchema = z.object({
   progressPercentage: z.number().min(0).max(300).optional()
 });
 
-const adminSchoolsQuerySchema = z.object({
+export const adminSchoolsQuerySchema = z.object({
   country: z.string().optional().transform(val => val === 'all' ? undefined : val),
   stage: z.enum(['inspire', 'investigate', 'act', 'all']).optional().transform(val => val === 'all' ? undefined : val),
   type: z.enum(['primary', 'secondary', 'high_school', 'international', 'other', 'all']).optional().transform(val => val === 'all' ? undefined : val),
@@ -504,16 +504,13 @@ schoolsRouter.get('/api/schools/me/evidence-overrides', isAuthenticated, async (
     }
 
     // Get overrides for all user's schools
-    const overridesPromises = userSchools.map(async (schoolUser) => {
-      const school = await schoolStorage.getSchool(schoolUser.schoolId);
-      if (!school) return [];
-      
+    const overridesPromises = userSchools.map(async (school) => {
       const currentRound = school.currentRound || 1;
-      const overrides = await schoolStorage.getAdminEvidenceOverrides(schoolUser.schoolId, currentRound);
+      const overrides = await storage.getAdminEvidenceOverrides(school.id, currentRound);
       
       return overrides.map(override => ({
         ...override,
-        schoolId: schoolUser.schoolId,
+        schoolId: school.id,
         schoolName: school.name
       }));
     });
@@ -750,10 +747,15 @@ schoolsRouter.patch('/api/schools/:schoolId/photo-consent/reject', isAuthenticat
     const { schoolId } = req.params;
     const { reason } = req.body;
     
-    const school = await schoolStorage.updateSchool(schoolId, {
+    const updates: any = {
       photoConsentStatus: 'rejected',
-      photoConsentReviewedAt: new Date(),
-    });
+    };
+    
+    if (reason) {
+      updates.photoConsentReviewNotes = reason;
+    }
+    
+    const school = await schoolStorage.updateSchool(schoolId, updates);
 
     if (!school) {
       return res.status(404).json({ message: "School not found" });

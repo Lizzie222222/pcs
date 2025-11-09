@@ -48,7 +48,7 @@ import { getOnlineUsers, broadcastChatMessage, notifyDocumentLock, broadcastDocu
 import { getAllCountryCodes } from './countryMapping';
 
 // Import feature routers
-import { schoolsRouter } from './features/schools/routes';
+import { schoolsRouter, adminSchoolsQuerySchema, toggleEvidenceOverrideSchema, updateSchoolProgressionSchema } from './features/schools/routes';
 
 /**
  * @description Main route registration function setting up all API endpoints including auth, schools, evidence, case studies, events, email, and file uploads. Applies authentication middleware and ACL policies.
