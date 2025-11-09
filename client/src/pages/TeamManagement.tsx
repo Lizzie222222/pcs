@@ -378,7 +378,7 @@ export default function TeamManagement() {
                               </Badge>
                             </td>
                             <td className="p-3 text-gray-600" data-testid={`text-member-date-${member.userId}`}>
-                              {member.createdAt ? format(new Date(member.createdAt), 'MMM dd, yyyy') : 'N/A'}
+                              {format(new Date(member.createdAt), 'MMM dd, yyyy')}
                             </td>
                             <td className="p-3">
                               {member.userId !== user?.id && (
@@ -448,7 +448,7 @@ export default function TeamManagement() {
                             </div>
                             <div className="text-sm text-gray-500 mb-3" data-testid={`text-request-date-${request.id}`}>
                               <Calendar className="h-3 w-3 inline mr-1" />
-                              {request.createdAt ? format(new Date(request.createdAt), 'MMM dd, yyyy') : 'N/A'}
+                              {format(new Date(request.createdAt), 'MMM dd, yyyy')}
                             </div>
                             <div className="bg-gray-50 p-3 rounded-md" data-testid={`text-request-evidence-${request.id}`}>
                               <p className="text-sm text-gray-700 font-medium mb-1">Evidence/Reason:</p>
@@ -498,8 +498,8 @@ export default function TeamManagement() {
                                 {invitation.email}
                               </p>
                               <p className="text-xs text-gray-500" data-testid={`text-invitation-date-${invitation.id}`}>
-                                Sent {invitation.createdAt ? format(new Date(invitation.createdAt), 'MMM dd, yyyy') : 'N/A'} • 
-                                Expires {invitation.expiresAt ? format(new Date(invitation.expiresAt), 'MMM dd, yyyy') : 'N/A'}
+                                Sent {format(new Date(invitation.createdAt), 'MMM dd, yyyy')} • 
+                                Expires {format(new Date(invitation.expiresAt), 'MMM dd, yyyy')}
                               </p>
                             </div>
                           </div>
