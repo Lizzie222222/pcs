@@ -7,15 +7,154 @@ This module handles all evidence-related functionality for the Plastic Clever Sc
 The Evidence module follows a **4-phase extraction strategy** to safely migrate from monolithic files while maintaining backward compatibility and zero regressions.
 
 ### Delegation Pattern
+
+The Evidence module uses **dependency injection via delegates** to avoid tight coupling with other modules and services. This pattern provides:
+- **Testability**: Easy to mock dependencies in unit tests
+- **Flexibility**: Swap implementations without changing Evidence logic
+- **Clear contracts**: Explicit interfaces define dependencies
+- **Separation of concerns**: Evidence doesn't know implementation details
+
+#### Delegate Structure
+
+The `EvidenceDelegates` interface aggregates four types of dependencies:
+
+```typescript
+interface EvidenceDelegates {
+  persistence: Pick<IStorage, 'createEvidence' | 'updateEvidence' | ...>;
+  progression: SchoolProgressionDelegate;
+  email: EvidenceEmailDelegate;
+  files: EvidenceFileDelegate;
+}
+```
+
+#### 1. Persistence Delegate
+**Purpose**: Database operations for evidence and related entities
+
+```typescript
+// Evidence CRUD
+await this.delegates.persistence.createEvidence(data);
+await this.delegates.persistence.updateEvidence(id, updates);
+await this.delegates.persistence.getEvidenceById(id);
+
+// School context (needed for evidence operations)
+await this.delegates.persistence.getSchool(schoolId);
+await this.delegates.persistence.getUserSchools(userId);
+```
+
+**Implementation**: Direct pass-through to `IStorage` interface. Uses TypeScript's `Pick<>` utility type to enforce minimal interface principle - Evidence only accesses methods it needs.
+
+#### 2. Progression Delegate
+**Purpose**: Trigger school stage advancement and round completion
+
+```typescript
+// After approving evidence, check if school should advance
+await this.delegates.progression.checkAndUpdateSchoolProgression(
+  evidence.schoolId,
+  { reason: 'evidence_approved', evidenceId: evidence.id }
+);
+```
+
+**Implementation**: Wraps `SchoolStorage.checkAndUpdateSchoolProgression()` which:
+- Counts approved evidence per stage (inspire/investigate/act)
+- Marks stages complete when thresholds met (3+ evidence per stage)
+- Advances school to next stage/round
+- Generates certificates on round completion
+- Sends celebration emails
+
+**Critical**: This is the **highest-risk** integration point. Evidence approval MUST trigger progression correctly or schools won't advance.
+
+#### 3. Email Delegate
+**Purpose**: Send evidence-related notifications
+
+```typescript
+// Approval notification
+await this.delegates.email.sendEvidenceApprovalEmail(id, teacherEmail);
+
+// Rejection with feedback
+await this.delegates.email.sendEvidenceRejectionEmail(id, teacherEmail, notes);
+
+// Submission confirmation
+await this.delegates.email.sendEvidenceSubmissionConfirmation(id, teacherEmail);
+```
+
+**Implementation**: Will be wired to `emailService` in Phase 1/3. Currently stubbed with console.log for infrastructure testing.
+
+#### 4. Files Delegate
+**Purpose**: Manage evidence file uploads, deletions, and compression
+
+```typescript
+// Upload with ACL policy
+const url = await this.delegates.files.uploadFile(file, 'evidence/inspire', isPublic);
+
+// Delete on evidence removal
+await this.delegates.files.deleteFile(url);
+
+// Compress before upload
+const compressed = await this.delegates.files.compressImage(buffer);
+```
+
+**Implementation**: Will be wired to `objectStorage` and `imageCompression` services in Phase 1. Currently stubbed.
+
+#### Delegate Initialization
+
+Delegates are created at app startup and injected into `EvidenceStorage`:
+
+```typescript
+import { createSchoolProgressionDelegate } from '../schools';
+import { createEvidenceDelegates } from './delegates';
+
+// Create school progression delegate
+const progressionDelegate = createSchoolProgressionDelegate(schoolStorage);
+
+// Create evidence delegates with all dependencies
+const evidenceDelegates = createEvidenceDelegates(storage, progressionDelegate);
+
+// Initialize evidence storage with delegates
+const evidenceStorage = getEvidenceStorage(evidenceDelegates);
+```
+
+This happens in `server/storage.ts` or `server/index.ts` during application bootstrap.
+
+#### Testing with Delegates
+
+For unit tests, create mock delegates:
+
+```typescript
+const mockDelegates: EvidenceDelegates = {
+  persistence: {
+    createEvidence: vi.fn(),
+    updateEvidence: vi.fn(),
+    // ... other methods
+  },
+  progression: {
+    checkAndUpdateSchoolProgression: vi.fn()
+  },
+  email: {
+    sendEvidenceApprovalEmail: vi.fn(),
+    sendEvidenceRejectionEmail: vi.fn(),
+    sendEvidenceSubmissionConfirmation: vi.fn()
+  },
+  files: {
+    uploadFile: vi.fn().mockResolvedValue('mock-url'),
+    deleteFile: vi.fn(),
+    compressImage: vi.fn().mockResolvedValue(Buffer.from(''))
+  }
+};
+
+const storage = new EvidenceStorage(mockDelegates);
+```
+
+### Module Organization
 - **Routes**: `server/routes.ts` mounts `evidenceRouter` from this module
 - **Storage**: `server/storage.ts` delegates evidence methods to `EvidenceStorage` singleton
+- **Delegates**: `delegates.ts` defines all dependency interfaces
 - **Utilities**: Shared utilities (image compression, object storage) remain in original locations with re-exports
 
 ### Critical Dependencies
-1. **Schools Module**: Evidence approval triggers school progression via `checkAndUpdateSchoolProgression()`
-2. **Object Storage**: Evidence files with ACL policies for public/private access
+1. **Schools Module**: Evidence approval triggers school progression via `SchoolProgressionDelegate`
+2. **Object Storage**: Evidence files with ACL policies for public/private access (via `EvidenceFileDelegate`)
 3. **Photo Consent**: GDPR enforcement for public evidence display
-4. **Email Notifications**: 4 types of evidence-related emails
+4. **Email Notifications**: 4 types of evidence-related emails (via `EvidenceEmailDelegate`)
 
 ## Extraction Phases
 
