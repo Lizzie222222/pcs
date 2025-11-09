@@ -1246,7 +1246,7 @@ export class SchoolStorage {
       .select()
       .from(certificates)
       .where(eq(certificates.schoolId, schoolId))
-      .orderBy(desc(certificates.issuedAt));
+      .orderBy(desc(certificates.issuedDate));
   }
 
   async getSchoolAnalytics(schoolId: string): Promise<{
