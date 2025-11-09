@@ -20,7 +20,7 @@ import {
   type Evidence,
   type AdminEvidenceOverride,
   type InsertAdminEvidenceOverride,
-} from '@db/schema';
+} from '@shared/schema';
 import { 
   eq, 
   and, 
