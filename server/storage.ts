@@ -132,6 +132,7 @@ import { eq, and, or, desc, asc, ilike, count, sql, inArray, getTableColumns, ne
 import * as bcrypt from "bcrypt";
 import { sendCourseCompletionCelebrationEmail, getBaseUrl } from './emailService';
 import { normalizeCountryName, getAllCountryCodes, getCountryCode } from './countryMapping';
+import { schoolStorage } from './features/schools/storage';
 
 /**
  * Custom error class for database constraint violations
@@ -1501,21 +1502,15 @@ export class DatabaseStorage implements IStorage {
 
   // School operations
   async createSchool(schoolData: InsertSchool): Promise<School> {
-    const [school] = await db
-      .insert(schools)
-      .values(schoolData)
-      .returning();
-    return school;
+    return schoolStorage.createSchool(schoolData);
   }
 
   async getSchool(id: string): Promise<School | undefined> {
-    const [school] = await db.select().from(schools).where(eq(schools.id, id));
-    return school;
+    return schoolStorage.getSchool(id);
   }
 
   async getSchoolByName(name: string): Promise<School | undefined> {
-    const [school] = await db.select().from(schools).where(eq(schools.name, name));
-    return school;
+    return schoolStorage.getSchoolByName(name);
   }
 
   async getSchools(filters: {
@@ -1536,188 +1531,11 @@ export class DatabaseStorage implements IStorage {
     limit?: number;
     offset?: number;
   } = {}): Promise<Array<School & { primaryContactEmail: string | null; primaryContactFirstName: string | null; primaryContactLastName: string | null }>> {
-    const conditions = [];
-    if (filters.country && filters.country !== 'all') {
-      // Handle both full names and country codes in the database
-      // Database has mix of "United Kingdom" (full name) and "GR", "ID" (codes)
-      const allCodes = getAllCountryCodes(filters.country);
-      const searchValues = [...allCodes, filters.country]; // Include original value
-      
-      if (searchValues.length > 1) {
-        // Match against codes OR full name
-        conditions.push(inArray(schools.country, searchValues));
-      } else {
-        conditions.push(eq(schools.country, searchValues[0]));
-      }
-    }
-    if (filters.stage && filters.stage !== 'all') {
-      conditions.push(eq(schools.currentStage, filters.stage as any));
-    }
-    if (filters.completionStatus && filters.completionStatus !== 'all') {
-      // Filter by completion status using roundsCompleted
-      if (filters.completionStatus === 'plastic-clever') {
-        // Schools that have completed at least one round (roundsCompleted >= 1)
-        conditions.push(gte(schools.roundsCompleted, 1));
-      } else if (filters.completionStatus === 'plastic-clever-ii') {
-        // Schools that have completed at least two rounds (roundsCompleted >= 2)
-        conditions.push(gte(schools.roundsCompleted, 2));
-      } else if (filters.completionStatus === 'plastic-clever-iii') {
-        // Schools that have completed at least three rounds (roundsCompleted >= 3)
-        conditions.push(gte(schools.roundsCompleted, 3));
-      } else if (filters.completionStatus === 'in-progress') {
-        // Schools that haven't completed any round yet (roundsCompleted = 0 or null)
-        conditions.push(or(eq(schools.roundsCompleted, 0), isNull(schools.roundsCompleted)));
-      }
-    }
-    if (filters.type && filters.type !== 'all') {
-      conditions.push(eq(schools.type, filters.type as any));
-    }
-    if (filters.showOnMap !== undefined) {
-      conditions.push(eq(schools.showOnMap, filters.showOnMap));
-    }
-    if (filters.language && filters.language !== 'all') {
-      // Map language codes to full names since DB stores full names
-      const languageMap: Record<string, string> = {
-        'en': 'English',
-        'es': 'Spanish', 
-        'fr': 'French',
-        'de': 'German',
-        'it': 'Italian',
-        'pt': 'Portuguese',
-        'nl': 'Dutch',
-        'el': 'Greek',
-        'id': 'Indonesian',
-        'zh': 'Chinese'
-      };
-      const languageName = languageMap[filters.language] || filters.language;
-      conditions.push(eq(schools.primaryLanguage, languageName));
-    }
-    if (filters.search) {
-      // Search across school name, address, and admin email (case-insensitive)
-      const searchTerm = `%${filters.search}%`;
-      conditions.push(
-        or(
-          ilike(schools.name, searchTerm),
-          ilike(schools.address, searchTerm),
-          ilike(schools.adminEmail, searchTerm)
-        )
-      );
-    }
-    if (filters.lastActiveDays) {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - filters.lastActiveDays);
-      conditions.push(gte(schools.lastActiveAt, cutoffDate));
-    }
-    
-    // Filter by joined month and year
-    if (filters.joinedMonth && filters.joinedYear) {
-      const month = parseInt(filters.joinedMonth);
-      const year = parseInt(filters.joinedYear);
-      const startDate = new Date(year, month - 1, 1);
-      const endDate = new Date(year, month, 0, 23, 59, 59, 999);
-      conditions.push(and(
-        gte(schools.createdAt, startDate),
-        sql`${schools.createdAt} <= ${endDate}`
-      ));
-    } else if (filters.joinedYear) {
-      const year = parseInt(filters.joinedYear);
-      const startDate = new Date(year, 0, 1);
-      const endDate = new Date(year, 11, 31, 23, 59, 59, 999);
-      conditions.push(and(
-        gte(schools.createdAt, startDate),
-        sql`${schools.createdAt} <= ${endDate}`
-      ));
-    }
-    
-    let query = db
-      .select({
-        ...getTableColumns(schools),
-        primaryContactEmail: users.email,
-        primaryContactFirstName: users.firstName,
-        primaryContactLastName: users.lastName,
-      })
-      .from(schools)
-      .leftJoin(users, eq(schools.primaryContactId, users.id));
-    
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
-    }
-    
-    // Apply sorting
-    if (filters.sortBy && filters.sortOrder) {
-      const order = filters.sortOrder === 'asc' ? asc : desc;
-      switch (filters.sortBy) {
-        case 'name':
-          query = query.orderBy(order(schools.name)) as any;
-          break;
-        case 'country':
-          query = query.orderBy(order(schools.country)) as any;
-          break;
-        case 'progress':
-          query = query.orderBy(order(schools.progressPercentage)) as any;
-          break;
-        case 'joinDate':
-          query = query.orderBy(order(schools.createdAt)) as any;
-          break;
-      }
-    } else {
-      // Default sorting by date if no sortBy is specified
-      const sortOrder = filters.sortByDate === 'oldest' ? asc : desc;
-      query = query.orderBy(sortOrder(schools.createdAt)) as any;
-    }
-    
-    if (filters.limit) {
-      query = query.limit(filters.limit) as any;
-    }
-    if (filters.offset) {
-      query = query.offset(filters.offset) as any;
-    }
-    
-    let results = await query;
-    
-    // Filter by user interaction status if specified
-    if (filters.interactionStatus && filters.interactionStatus !== 'all') {
-      // Get all school IDs with their interaction status
-      const schoolInteractionQuery = await db
-        .select({
-          schoolId: schoolUsers.schoolId,
-          hasInteractedUser: sql<boolean>`EXISTS(
-            SELECT 1 FROM ${schoolUsers} su
-            JOIN ${users} u ON su.user_id = u.id
-            WHERE su.school_id = ${schoolUsers.schoolId}
-            AND u.has_interacted = true
-          )`.as('has_interacted_user')
-        })
-        .from(schoolUsers)
-        .groupBy(schoolUsers.schoolId);
-      
-      const schoolInteractionMap = new Map(
-        schoolInteractionQuery.map(row => [row.schoolId, row.hasInteractedUser])
-      );
-      
-      if (filters.interactionStatus === 'interacted') {
-        // Only include schools with at least one interacted user
-        results = results.filter(school => schoolInteractionMap.get(school.id) === true);
-      } else if (filters.interactionStatus === 'not-interacted') {
-        // Only include schools without any interacted users (or no users at all)
-        results = results.filter(school => schoolInteractionMap.get(school.id) !== true);
-      }
-    }
-    
-    // Normalize country codes to full names
-    return results.map(school => ({
-      ...school,
-      country: normalizeCountryName(school.country) || school.country
-    }));
+    return schoolStorage.getSchools(filters);
   }
 
   async updateSchool(id: string, updates: Partial<School>): Promise<School | undefined> {
-    const [school] = await db
-      .update(schools)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(schools.id, id))
-      .returning();
-    return school;
+    return schoolStorage.updateSchool(id, updates);
   }
 
   async manuallyUpdateSchoolProgression(id: string, updates: {
@@ -1728,25 +1546,7 @@ export class DatabaseStorage implements IStorage {
     actCompleted?: boolean;
     progressPercentage?: number;
   }): Promise<School | undefined> {
-    // Get current school state to check for round rollbacks
-    const currentSchool = await this.getSchool(id);
-    if (!currentSchool) {
-      return undefined;
-    }
-
-    // If rolling back to a lower round, reset roundsCompleted
-    if (updates.currentRound !== undefined && updates.currentRound < (currentSchool.currentRound || 1)) {
-      // When rolling back, roundsCompleted should be currentRound - 1 (0 for round 1)
-      (updates as any).roundsCompleted = Math.max(0, updates.currentRound - 1);
-      console.log(`[Manual Progression] Rolling back from Round ${currentSchool.currentRound} to Round ${updates.currentRound}, resetting roundsCompleted to ${(updates as any).roundsCompleted}`);
-    }
-
-    const [school] = await db
-      .update(schools)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(schools.id, id))
-      .returning();
-    return school;
+    return schoolStorage.manuallyUpdateSchoolProgression(id, updates);
   }
 
   async getSchoolStats(): Promise<{
@@ -1755,34 +1555,7 @@ export class DatabaseStorage implements IStorage {
     countries: number;
     studentsImpacted: number;
   }> {
-    const [stats] = await db
-      .select({
-        totalSchools: count(),
-        countries: sql<number>`count(distinct country)`,
-        studentsImpacted: sql<number>`coalesce(sum(student_count), 0)`,
-      })
-      .from(schools);
-    
-    const [evidenceStats] = await db
-      .select({
-        approvedEvidence: sql<number>`count(*) filter (where status = 'approved')`,
-      })
-      .from(evidence);
-    
-    const [legacyStats] = await db
-      .select({
-        legacyTotal: sql<number>`coalesce(sum(legacy_evidence_count), 0)`,
-      })
-      .from(schoolUsers);
-    
-    const totalActions = Number(evidenceStats?.approvedEvidence || 0) + Number(legacyStats?.legacyTotal || 0);
-    
-    return {
-      totalSchools: stats.totalSchools,
-      completedAwards: totalActions,
-      countries: stats.countries,
-      studentsImpacted: stats.studentsImpacted,
-    };
+    return schoolStorage.getSchoolStats();
   }
 
   async getSchoolCountsByCountry(filters: {
@@ -1795,131 +1568,20 @@ export class DatabaseStorage implements IStorage {
     completedAwards: number;
     featuredSchools: number;
   }>> {
-    const conditions = [];
-    
-    // Only show schools that are on the map
-    conditions.push(eq(schools.showOnMap, true));
-    
-    if (filters.country) {
-      const allCodes = getAllCountryCodes(filters.country);
-      if (allCodes.length > 1) {
-        conditions.push(inArray(schools.country, allCodes));
-      } else {
-        conditions.push(eq(schools.country, allCodes[0]));
-      }
-    }
-    
-    if (filters.lastActiveDays) {
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - filters.lastActiveDays);
-      conditions.push(gte(schools.lastActiveAt, cutoffDate));
-    }
-    
-    let query = db
-      .select({
-        country: schools.country,
-        totalSchools: count(),
-        completedAwards: sql<number>`count(*) filter (where ${schools.awardCompleted} = true)`,
-        featuredSchools: sql<number>`count(*) filter (where ${schools.featuredSchool} = true)`,
-      })
-      .from(schools);
-    
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions)) as any;
-    }
-    
-    query = query.groupBy(schools.country) as any;
-    query = query.orderBy(desc(sql`count(*)`)) as any;
-    
-    const results = await query;
-    
-    // Normalize country codes to full names and get ISO codes
-    return results.map(row => {
-      const normalizedName = normalizeCountryName(row.country) || row.country;
-      const isoCode = getCountryCode(normalizedName) || row.country;
-      
-      return {
-        countryCode: isoCode,
-        countryName: normalizedName,
-        totalSchools: Number(row.totalSchools),
-        completedAwards: Number(row.completedAwards),
-        featuredSchools: Number(row.featuredSchools),
-      };
-    });
+    return schoolStorage.getSchoolCountsByCountry(filters);
   }
 
   async getUniqueCountries(): Promise<string[]> {
-    const result = await db
-      .selectDistinct({ country: schools.country })
-      .from(schools)
-      .where(sql`${schools.country} IS NOT NULL AND ${schools.country} != ''`)
-      .orderBy(asc(schools.country));
-    
-    // Normalize country codes to full names and remove duplicates
-    const countries = result.map(row => row.country).filter(Boolean);
-    const normalizedCountries = countries.map(c => normalizeCountryName(c) || c);
-    
-    // Remove duplicates that may appear after normalization
-    const uniqueCountries = Array.from(new Set(normalizedCountries));
-    
-    return uniqueCountries.sort();
+    return schoolStorage.getUniqueCountries();
   }
 
   async findSchoolsByEmailDomain(domain: string): Promise<Array<School & { userEmails: string[] }>> {
-    const normalizedDomain = domain.toLowerCase().trim();
-    
-    const results = await db
-      .select({
-        ...getTableColumns(schools),
-        userEmail: users.email,
-      })
-      .from(schools)
-      .innerJoin(schoolUsers, eq(schoolUsers.schoolId, schools.id))
-      .innerJoin(users, eq(users.id, schoolUsers.userId))
-      .where(
-        sql`LOWER(SUBSTRING(${users.email} FROM POSITION('@' IN ${users.email}) + 1)) = ${normalizedDomain}`
-      );
-
-    const schoolMap = new Map<string, School & { userEmails: string[] }>();
-    
-    for (const row of results) {
-      const schoolId = row.id;
-      
-      if (!schoolMap.has(schoolId)) {
-        const { userEmail, ...schoolData } = row;
-        schoolMap.set(schoolId, {
-          ...schoolData,
-          userEmails: [],
-        });
-      }
-      
-      if (row.userEmail) {
-        schoolMap.get(schoolId)!.userEmails.push(row.userEmail);
-      }
-    }
-    
-    return Array.from(schoolMap.values()).filter(school => school.userEmails.length >= 2);
+    return schoolStorage.findSchoolsByEmailDomain(domain);
   }
 
   // Photo Consent operations
   async updateSchoolPhotoConsent(schoolId: string, documentUrl: string, approvedBy?: string): Promise<School | undefined> {
-    const [updated] = await db
-      .update(schools)
-      .set({
-        photoConsentDocumentUrl: documentUrl,
-        photoConsentStatus: approvedBy ? 'approved' : 'pending',
-        photoConsentUploadedAt: new Date(),
-        // Auto-approve if uploaded by admin
-        ...(approvedBy ? {
-          photoConsentApprovedAt: new Date(),
-          photoConsentApprovedBy: approvedBy,
-        } : {}),
-        updatedAt: new Date(),
-      })
-      .where(eq(schools.id, schoolId))
-      .returning();
-    
-    return updated;
+    return schoolStorage.updateSchoolPhotoConsent(schoolId, documentUrl, approvedBy);
   }
 
   async reviewSchoolPhotoConsent(
@@ -1928,24 +1590,7 @@ export class DatabaseStorage implements IStorage {
     reviewedBy: string,
     notes?: string
   ): Promise<School | undefined> {
-    const updateData: any = {
-      photoConsentStatus: status,
-      photoConsentReviewNotes: notes || null,
-      updatedAt: new Date(),
-    };
-
-    if (status === 'approved') {
-      updateData.photoConsentApprovedAt = new Date();
-      updateData.photoConsentApprovedBy = reviewedBy;
-    }
-
-    const [updated] = await db
-      .update(schools)
-      .set(updateData)
-      .where(eq(schools.id, schoolId))
-      .returning();
-    
-    return updated;
+    return schoolStorage.reviewSchoolPhotoConsent(schoolId, status, reviewedBy, notes);
   }
 
   async getSchoolPhotoConsentStatus(schoolId: string): Promise<{
@@ -1955,26 +1600,7 @@ export class DatabaseStorage implements IStorage {
     approvedAt: Date | null;
     reviewNotes: string | null;
   } | undefined> {
-    const school = await db.query.schools.findFirst({
-      where: eq(schools.id, schoolId),
-      columns: {
-        photoConsentStatus: true,
-        photoConsentDocumentUrl: true,
-        photoConsentUploadedAt: true,
-        photoConsentApprovedAt: true,
-        photoConsentReviewNotes: true,
-      },
-    });
-
-    if (!school) return undefined;
-
-    return {
-      status: school.photoConsentStatus,
-      documentUrl: school.photoConsentDocumentUrl,
-      uploadedAt: school.photoConsentUploadedAt,
-      approvedAt: school.photoConsentApprovedAt,
-      reviewNotes: school.photoConsentReviewNotes,
-    };
+    return schoolStorage.getSchoolPhotoConsentStatus(schoolId);
   }
 
   async getSchoolsWithPendingPhotoConsent(): Promise<Array<{
@@ -1985,52 +1611,25 @@ export class DatabaseStorage implements IStorage {
     photoConsentUploadedAt: Date | null;
     photoConsentStatus: string | null;
   }>> {
-    const pendingSchools = await db
-      .select({
-        id: schools.id,
-        name: schools.name,
-        country: schools.country,
-        photoConsentDocumentUrl: schools.photoConsentDocumentUrl,
-        photoConsentUploadedAt: schools.photoConsentUploadedAt,
-        photoConsentStatus: schools.photoConsentStatus,
-      })
-      .from(schools)
-      .where(eq(schools.photoConsentStatus, 'pending'));
-    
-    return pendingSchools;
+    return schoolStorage.getSchoolsWithPendingPhotoConsent();
   }
 
   // School User operations
   async addUserToSchool(schoolUserData: InsertSchoolUser): Promise<SchoolUser> {
-    const [schoolUser] = await db
-      .insert(schoolUsers)
-      .values(schoolUserData)
-      .returning();
-    return schoolUser;
+    return schoolStorage.addUserToSchool(schoolUserData);
   }
 
   async getSchoolUsers(schoolId: string): Promise<SchoolUser[]> {
-    return await db
-      .select()
-      .from(schoolUsers)
-      .where(eq(schoolUsers.schoolId, schoolId));
+    return schoolStorage.getSchoolUsers(schoolId);
   }
 
   async getUserSchools(userId: string): Promise<School[]> {
-    return await db
-      .select(getTableColumns(schools))
-      .from(schools)
-      .innerJoin(schoolUsers, eq(schoolUsers.schoolId, schools.id))
-      .where(eq(schoolUsers.userId, userId));
+    return schoolStorage.getUserSchools(userId);
   }
 
   // School User role management
   async getSchoolUser(schoolId: string, userId: string): Promise<SchoolUser | undefined> {
-    const [schoolUser] = await db
-      .select()
-      .from(schoolUsers)
-      .where(and(eq(schoolUsers.schoolId, schoolId), eq(schoolUsers.userId, userId)));
-    return schoolUser;
+    return schoolStorage.getSchoolUser(schoolId, userId);
   }
 
   async updateSchoolUserRole(
@@ -2038,58 +1637,18 @@ export class DatabaseStorage implements IStorage {
     userId: string,
     role: 'head_teacher' | 'teacher' | 'pending_teacher'
   ): Promise<SchoolUser | undefined> {
-    const [schoolUser] = await db
-      .update(schoolUsers)
-      .set({ 
-        role: role as 'head_teacher' | 'teacher' | 'pending_teacher',
-        updatedAt: sql`NOW()`
-      })
-      .where(and(eq(schoolUsers.schoolId, schoolId), eq(schoolUsers.userId, userId)))
-      .returning();
-    return schoolUser;
+    return schoolStorage.updateSchoolUserRole(schoolId, userId, role);
   }
 
   async removeUserFromSchool(schoolId: string, userId: string): Promise<SchoolUser | undefined> {
-    try {
-      const [deletedRecord] = await db
-        .delete(schoolUsers)
-        .where(and(eq(schoolUsers.schoolId, schoolId), eq(schoolUsers.userId, userId)))
-        .returning();
-      return deletedRecord;
-    } catch (error) {
-      console.error("Error removing user from school:", error);
-      return undefined;
-    }
+    return schoolStorage.removeUserFromSchool(schoolId, userId);
   }
 
   async getSchoolUsersWithDetails(
     schoolId: string, 
     filters?: { role?: string; limit?: number; offset?: number }
   ): Promise<Array<SchoolUser & { user: User | null }>> {
-    let query = db
-      .select({
-        ...getTableColumns(schoolUsers),
-        user: users,
-      })
-      .from(schoolUsers)
-      .leftJoin(users, eq(schoolUsers.userId, users.id))
-      .$dynamic();
-
-    const conditions = [eq(schoolUsers.schoolId, schoolId)];
-    if (filters?.role) {
-      conditions.push(eq(schoolUsers.role, filters.role as any));
-    }
-    
-    query = query.where(and(...conditions));
-
-    if (filters?.limit) {
-      query = query.limit(filters.limit);
-    }
-    if (filters?.offset) {
-      query = query.offset(filters.offset);
-    }
-
-    return await query;
+    return schoolStorage.getSchoolUsersWithDetails(schoolId, filters);
   }
 
   async updateLegacyEvidenceCount(
@@ -2097,24 +1656,12 @@ export class DatabaseStorage implements IStorage {
     userId: string,
     count: number
   ): Promise<SchoolUser | undefined> {
-    const [schoolUser] = await db
-      .update(schoolUsers)
-      .set({ 
-        legacyEvidenceCount: count,
-        updatedAt: sql`NOW()`
-      })
-      .where(and(eq(schoolUsers.schoolId, schoolId), eq(schoolUsers.userId, userId)))
-      .returning();
-    return schoolUser;
+    return schoolStorage.updateLegacyEvidenceCount(schoolId, userId, count);
   }
 
   // Teacher invitation operations
   async createTeacherInvitation(invitationData: InsertTeacherInvitation): Promise<TeacherInvitation> {
-    const [invitation] = await db
-      .insert(teacherInvitations)
-      .values(invitationData)
-      .returning();
-    return invitation;
+    return schoolStorage.createTeacherInvitation(invitationData);
   }
 
   async getTeacherInvitationByToken(token: string): Promise<TeacherInvitation | undefined> {
@@ -2126,11 +1673,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSchoolInvitations(schoolId: string): Promise<TeacherInvitation[]> {
-    return await db
-      .select()
-      .from(teacherInvitations)
-      .where(eq(teacherInvitations.schoolId, schoolId))
-      .orderBy(desc(teacherInvitations.createdAt));
+    return schoolStorage.getSchoolInvitations(schoolId);
   }
 
   async acceptTeacherInvitation(token: string): Promise<TeacherInvitation | undefined> {
@@ -2812,41 +2355,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getSchoolEvidence(schoolId: string): Promise<Array<Evidence & { reviewer?: { id: string | null; email: string | null; firstName: string | null; lastName: string | null; } | null }>> {
-    return await db
-      .select({
-        id: evidence.id,
-        schoolId: evidence.schoolId,
-        submittedBy: evidence.submittedBy,
-        evidenceRequirementId: evidence.evidenceRequirementId,
-        title: evidence.title,
-        description: evidence.description,
-        stage: evidence.stage,
-        status: evidence.status,
-        visibility: evidence.visibility,
-        files: evidence.files,
-        videoLinks: evidence.videoLinks,
-        reviewedBy: evidence.reviewedBy,
-        reviewedAt: evidence.reviewedAt,
-        reviewNotes: evidence.reviewNotes,
-        assignedTo: evidence.assignedTo,
-        isFeatured: evidence.isFeatured,
-        isAuditQuiz: evidence.isAuditQuiz,
-        roundNumber: evidence.roundNumber,
-        hasChildren: evidence.hasChildren,
-        parentalConsentFiles: evidence.parentalConsentFiles,
-        submittedAt: evidence.submittedAt,
-        updatedAt: evidence.updatedAt,
-        reviewer: {
-          id: users.id,
-          email: users.email,
-          firstName: users.firstName,
-          lastName: users.lastName,
-        },
-      })
-      .from(evidence)
-      .leftJoin(users, eq(evidence.reviewedBy, users.id))
-      .where(eq(evidence.schoolId, schoolId))
-      .orderBy(desc(evidence.submittedAt));
+    return schoolStorage.getSchoolEvidence(schoolId);
   }
 
   async getPendingEvidence(): Promise<Evidence[]> {
@@ -3173,15 +2682,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteSchool(id: string): Promise<boolean> {
-    try {
-      const result = await db
-        .delete(schools)
-        .where(eq(schools.id, id));
-      return (result.rowCount ?? 0) > 0;
-    } catch (error) {
-      console.error("Error deleting school:", error);
-      return false;
-    }
+    return schoolStorage.deleteSchool(id);
   }
 
   // Evidence Requirements operations
@@ -3258,22 +2759,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAdminEvidenceOverrides(schoolId: string, roundNumber?: number): Promise<AdminEvidenceOverride[]> {
-    if (roundNumber !== undefined) {
-      return await db
-        .select()
-        .from(adminEvidenceOverrides)
-        .where(
-          and(
-            eq(adminEvidenceOverrides.schoolId, schoolId),
-            eq(adminEvidenceOverrides.roundNumber, roundNumber)
-          )
-        );
-    }
-    
-    return await db
-      .select()
-      .from(adminEvidenceOverrides)
-      .where(eq(adminEvidenceOverrides.schoolId, schoolId));
+    return schoolStorage.getAdminEvidenceOverrides(schoolId, roundNumber);
   }
 
   async deleteAdminEvidenceOverride(id: string): Promise<boolean> {
@@ -3330,524 +2816,19 @@ export class DatabaseStorage implements IStorage {
     investigate: { total: number; approved: number; hasQuiz: boolean; hasActionPlan: boolean };
     act: { total: number; approved: number };
   }> {
-    const school = await this.getSchool(schoolId);
-    if (!school) {
-      return {
-        inspire: { total: 0, approved: 0 },
-        investigate: { total: 0, approved: 0, hasQuiz: false, hasActionPlan: false },
-        act: { total: 0, approved: 0 }
-      };
-    }
-
-    const currentRound = school.currentRound || 1;
-
-    // Get all evidence for current round
-    const allEvidence = await db
-      .select()
-      .from(evidence)
-      .where(
-        and(
-          eq(evidence.schoolId, schoolId),
-          eq(evidence.roundNumber, currentRound)
-        )
-      );
-
-    // Get admin overrides for current round
-    const adminOverrides = await db
-      .select()
-      .from(adminEvidenceOverrides)
-      .where(
-        and(
-          eq(adminEvidenceOverrides.schoolId, schoolId),
-          eq(adminEvidenceOverrides.roundNumber, currentRound)
-        )
-      );
-
-    const inspireEvidence = allEvidence.filter(e => e.stage === 'inspire');
-    const investigateEvidence = allEvidence.filter(e => e.stage === 'investigate');
-    const actEvidence = allEvidence.filter(e => e.stage === 'act');
-
-    // Count approved evidence items:
-    // - For evidence with evidenceRequirementId: count unique requirement IDs
-    // - For evidence without evidenceRequirementId: count each item individually
-    // - Include admin overrides for the stage
-    const getApprovedRequirementsCount = (stageEvidence: typeof allEvidence, stageId: string) => {
-      const approvedEvidence = stageEvidence.filter(e => e.status === 'approved');
-      
-      // Count unique requirement IDs from approved evidence
-      const uniqueRequirementIds = new Set(
-        approvedEvidence
-          .filter(e => e.evidenceRequirementId !== null)
-          .map(e => e.evidenceRequirementId)
-      );
-      
-      // Count evidence items without requirement IDs (e.g., admin uploads)
-      const evidenceWithoutRequirement = approvedEvidence.filter(e => e.evidenceRequirementId === null);
-      
-      // Count admin overrides for this stage (already filtered by round)
-      const stageOverrides = adminOverrides.filter(o => o.stage === stageId);
-      
-      // Add override requirement IDs to the unique set (union operation)
-      stageOverrides.forEach(override => {
-        uniqueRequirementIds.add(override.evidenceRequirementId);
-      });
-      
-      return uniqueRequirementIds.size + evidenceWithoutRequirement.length;
-    };
-
-    // Check if school has an approved audit for current round
-    const approvedAudit = await db
-      .select()
-      .from(auditResponses)
-      .where(
-        and(
-          eq(auditResponses.schoolId, schoolId),
-          eq(auditResponses.status, 'approved'),
-          eq(auditResponses.roundNumber, currentRound)
-        )
-      )
-      .limit(1);
-
-    const hasQuiz = approvedAudit.length > 0;
-
-    // Check if school has any reduction promises (action plan) for current round
-    const actionPlans = await db
-      .select()
-      .from(reductionPromises)
-      .where(
-        and(
-          eq(reductionPromises.schoolId, schoolId),
-          eq(reductionPromises.roundNumber, currentRound)
-        )
-      )
-      .limit(1);
-
-    const hasActionPlan = actionPlans.length > 0;
-
-    return {
-      inspire: {
-        total: inspireEvidence.length,
-        approved: getApprovedRequirementsCount(inspireEvidence, 'inspire')
-      },
-      investigate: {
-        total: investigateEvidence.length,
-        approved: getApprovedRequirementsCount(investigateEvidence, 'investigate'),
-        hasQuiz,
-        hasActionPlan
-      },
-      act: {
-        total: actEvidence.length,
-        approved: getApprovedRequirementsCount(actEvidence, 'act')
-      }
-    };
+    return schoolStorage.getSchoolEvidenceCounts(schoolId);
   }
 
   async checkAndUpdateSchoolProgression(schoolId: string): Promise<School | undefined> {
-    const school = await this.getSchool(schoolId);
-    if (!school) return undefined;
-
-    // Get evidence counts (now includes admin overrides)
-    const counts = await this.getSchoolEvidenceCounts(schoolId);
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[Progress] School ${schoolId}: Current round progress: ${school.progressPercentage}%, Completed rounds: ${school.roundsCompleted || 0}, Total progress: ${school.progressPercentage}%`);
-    }
-    
-    // Capture the current round before any updates for certificate generation
-    // This ensures certificates are created for the COMPLETED round, not the next round
-    // The round transition sequence is: complete → increment → reset → certificate for completed round
-    // We MUST use this captured value for certificate generation, not school.currentRound or updated.currentRound
-    const completedRound = school.currentRound || 1;
-    
-    let updates: Partial<School> = {};
-    let hasChanges = false;
-    let justCompletedRound = false;
-
-    // Check Inspire completion (3 approved evidence)
-    if (counts.inspire.approved >= 3 && !school.inspireCompleted) {
-      updates.inspireCompleted = true;
-      hasChanges = true;
-    }
-
-    // Check Investigate completion (2 approved items total, counting audit and action plan as 1 item each)
-    const investigateItemCount = counts.investigate.approved + (counts.investigate.hasQuiz ? 1 : 0) + (counts.investigate.hasActionPlan ? 1 : 0);
-    if (investigateItemCount >= 2 && !school.investigateCompleted) {
-      updates.investigateCompleted = true;
-      updates.auditQuizCompleted = true;
-      hasChanges = true;
-    }
-
-    // Check Act completion (3 approved evidence)
-    if (counts.act.approved >= 3 && !school.actCompleted) {
-      updates.actCompleted = true;
-      hasChanges = true;
-      justCompletedRound = true;
-      
-      // Round completed! Increment roundsCompleted
-      const roundsCompleted = (school.roundsCompleted || 0) + 1;
-      updates.roundsCompleted = roundsCompleted;
-      
-      // Automatically advance to next round
-      const nextRound = (school.currentRound || 1) + 1;
-      updates.currentRound = nextRound;
-      updates.currentStage = 'inspire';
-      updates.inspireCompleted = false;
-      updates.investigateCompleted = false;
-      updates.actCompleted = false;
-      updates.awardCompleted = false;
-      updates.auditQuizCompleted = false;
-      
-      console.log(`[Round Progression] School ${schoolId} completed round ${completedRound}, advancing to round ${nextRound}`);
-    }
-
-    // Only recalculate currentStage if we're NOT advancing to a new round
-    // (new round already sets currentStage to 'inspire')
-    if (!justCompletedRound) {
-      // Always recalculate currentStage based on completion status to enforce linear progression
-      // This ensures users progress through stages linearly regardless of where they submit evidence
-      const finalInspireCompleted = updates.inspireCompleted ?? school.inspireCompleted;
-      const finalInvestigateCompleted = updates.investigateCompleted ?? school.investigateCompleted;
-      
-      let correctStage: 'inspire' | 'investigate' | 'act';
-      
-      if (!finalInspireCompleted) {
-        // If INSPIRE not completed, stay in INSPIRE regardless of other evidence
-        correctStage = 'inspire';
-      } else if (!finalInvestigateCompleted) {
-        // If INSPIRE complete but INVESTIGATE not complete, must be in INVESTIGATE
-        correctStage = 'investigate';
-      } else {
-        // Both INSPIRE and INVESTIGATE complete, move to ACT
-        correctStage = 'act';
-      }
-      
-      // Update currentStage if it's different from the correct linear stage
-      if (school.currentStage !== correctStage) {
-        updates.currentStage = correctStage;
-        hasChanges = true;
-      }
-
-      // Ensure awardCompleted is set if all three stages are complete
-      // This catches schools that already had actCompleted=true but never got the award flag
-      const finalActCompleted = updates.actCompleted ?? school.actCompleted;
-      if (finalInspireCompleted && finalInvestigateCompleted && finalActCompleted && !school.awardCompleted) {
-        updates.awardCompleted = true;
-        hasChanges = true;
-        justCompletedRound = true;
-        
-        // If roundsCompleted wasn't set yet, set it now
-        if ((school.roundsCompleted || 0) === 0 && !updates.roundsCompleted) {
-          updates.roundsCompleted = 1;
-        }
-        
-        // Advance to next round
-        const nextRound = (school.currentRound || 1) + 1;
-        updates.currentRound = nextRound;
-        updates.currentStage = 'inspire';
-        updates.inspireCompleted = false;
-        updates.investigateCompleted = false;
-        updates.actCompleted = false;
-        updates.awardCompleted = false;
-        updates.auditQuizCompleted = false;
-        
-        console.log(`[Round Progression] School ${schoolId} completed round ${completedRound} (catch-up), advancing to round ${nextRound}`);
-      }
-    }
-
-    // Calculate granular progress percentage based on approved requirements
-    let currentRoundProgress = 0;
-    
-    // For migrated schools, blend legacy evidence count with new evidence
-    if (school.isMigrated) {
-      const inspireComplete = updates.inspireCompleted ?? school.inspireCompleted;
-      const investigateComplete = updates.investigateCompleted ?? school.investigateCompleted;
-      const actComplete = updates.actCompleted ?? school.actCompleted;
-      
-      // Get total requirements for each stage
-      const allRequirements = await db
-        .select()
-        .from(evidenceRequirements);
-      
-      const inspireRequirements = allRequirements.filter(r => r.stage === 'inspire').length;
-      const investigateRequirements = allRequirements.filter(r => r.stage === 'investigate').length;
-      const actRequirements = allRequirements.filter(r => r.stage === 'act').length;
-      
-      // Calculate new evidence approved
-      const totalNewApproved = 
-        counts.inspire.approved + 
-        counts.investigate.approved + 
-        (counts.investigate.hasQuiz ? 1 : 0) +
-        (counts.investigate.hasActionPlan ? 1 : 0) +
-        counts.act.approved;
-      
-      // Legacy evidence is no longer used - calculate based on new evidence only
-      const totalEvidence = totalNewApproved;
-      
-      // Calculate total required items
-      const totalRequired = inspireRequirements + investigateRequirements + actRequirements + 2; // +2 for audit and action plan
-      
-      // Calculate percentage based on combined evidence
-      if (totalRequired > 0) {
-        currentRoundProgress = Math.min(100, Math.round((totalEvidence / totalRequired) * 100));
-      }
-      
-      // Ensure progress respects stage completion minimums to prevent regression
-      // ONLY apply this for Round 1 migrated schools
-      // Round 2+ schools should have their flags reset, so don't trust stale flags
-      const currentRound = school.currentRound || 1;
-      if (currentRound === 1) {
-        // Migrated schools with completed stages should not be downgraded
-        if (actComplete) {
-          currentRoundProgress = Math.max(currentRoundProgress, 100);
-        } else if (investigateComplete) {
-          currentRoundProgress = Math.max(currentRoundProgress, 67);
-        } else if (inspireComplete) {
-          currentRoundProgress = Math.max(currentRoundProgress, 33);
-        }
-      }
-    } else {
-      // For non-migrated schools, calculate based on evidence
-      // Get total requirements for each stage
-      const allRequirements = await db
-        .select()
-        .from(evidenceRequirements);
-      
-      const inspireRequirements = allRequirements.filter(r => r.stage === 'inspire').length;
-      const investigateRequirements = allRequirements.filter(r => r.stage === 'investigate').length;
-      const actRequirements = allRequirements.filter(r => r.stage === 'act').length;
-      
-      // Calculate total approved items (including audit and action plan for investigate)
-      const totalApproved = 
-        counts.inspire.approved + 
-        counts.investigate.approved + 
-        (counts.investigate.hasQuiz ? 1 : 0) +
-        (counts.investigate.hasActionPlan ? 1 : 0) +
-        counts.act.approved;
-      
-      // Calculate total required items (requirements + audit + action plan)
-      const totalRequired = inspireRequirements + investigateRequirements + actRequirements + 2; // +2 for audit and action plan
-      
-      // Calculate percentage (fallback to stage-based if no requirements defined)
-      if (totalRequired > 0) {
-        currentRoundProgress = Math.round((totalApproved / totalRequired) * 100);
-      } else {
-        // Fallback to old stage-based calculation
-        const inspireComplete = updates.inspireCompleted ?? school.inspireCompleted;
-        const investigateComplete = updates.investigateCompleted ?? school.investigateCompleted;
-        const actComplete = updates.actCompleted ?? school.actCompleted;
-        
-        if (actComplete) {
-          currentRoundProgress = 100;
-        } else if (investigateComplete) {
-          currentRoundProgress = 67;
-        } else if (inspireComplete) {
-          currentRoundProgress = 33;
-        }
-      }
-    }
-    
-    // Make progress cumulative across rounds
-    // Round 1: 0-100%, Round 2: 100-200%, Round 3: 200-300%, etc.
-    const completedRounds = updates.roundsCompleted ?? school.roundsCompleted ?? 0;
-    const progressPercentage = (completedRounds * 100) + currentRoundProgress;
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`[Progress] School ${schoolId}: Current round progress: ${currentRoundProgress}%, Completed rounds: ${completedRounds}, Total progress: ${progressPercentage}%`);
-      console.log(`[Progress] School ${schoolId}: Old progress: ${school.progressPercentage}%, New progress: ${progressPercentage}%, Has changes: ${progressPercentage !== school.progressPercentage}`);
-    }
-    
-    // Update progress percentage if it has changed
-    if (progressPercentage !== school.progressPercentage) {
-      updates.progressPercentage = progressPercentage;
-      hasChanges = true;
-    }
-
-    if (hasChanges) {
-      const [updated] = await db
-        .update(schools)
-        .set({
-          ...updates,
-          updatedAt: new Date()
-        })
-        .where(eq(schools.id, schoolId))
-        .returning();
-      
-      // Generate certificate for round completion
-      // Use justCompletedRound flag since we reset actCompleted for the next round
-      if (justCompletedRound) {
-        // Use the captured completedRound value - this is the round that was JUST completed
-        // NOT school.currentRound (which is the OLD value) or updated.currentRound (which is the NEXT round)
-        const currentRound = completedRound;
-        
-        // Check if certificate already exists for this round
-        const existingCertificates = await db
-          .select()
-          .from(certificates)
-          .where(
-            and(
-              eq(certificates.schoolId, schoolId),
-              eq(certificates.stage, 'act'),
-              sql`(${certificates.metadata}->>'round')::int = ${currentRound}`
-            )
-          );
-        
-        // Only create certificate if one doesn't exist for this round
-        if (existingCertificates.length === 0) {
-          const certificateNumber = `PCSR${currentRound}-${Date.now()}-${schoolId.substring(0, 8)}`;
-          
-          const [newCertificate] = await db.insert(certificates).values({
-            schoolId,
-            stage: 'act',
-            issuedBy: null,
-            certificateNumber,
-            completedDate: new Date(),
-            title: `Round ${currentRound} Completion Certificate`,
-            description: `Successfully completed all three stages (Inspire, Investigate, Act) in Round ${currentRound}`,
-            metadata: {
-              round: currentRound,
-              achievements: {
-                inspire: counts.inspire.approved,
-                investigate: counts.investigate.approved,
-                act: counts.act.approved
-              }
-            }
-          }).returning();
-
-          // PDFs are now generated on-demand when requested via /api/certificates/:id/download
-          // No need to pre-generate and store PDFs in object storage
-          if (newCertificate) {
-            console.log(`[Certificate] Created certificate ${newCertificate.id} for school ${schoolId}. PDF will be generated on-demand.`);
-          }
-        }
-      }
-      
-      // Send celebration email when round is completed
-      // Use justCompletedRound flag since we reset actCompleted for the next round
-      if (justCompletedRound) {
-        // Use the captured completedRound value - this is the round that was JUST completed
-        // NOT school.currentRound (which is the OLD value) or updated.currentRound (which is the NEXT round)
-        const currentRound = completedRound;
-        
-        // Get the certificate for this round to include in email
-        const roundCertificates = await db
-          .select()
-          .from(certificates)
-          .where(
-            and(
-              eq(certificates.schoolId, schoolId),
-              eq(certificates.stage, 'act'),
-              sql`(${certificates.metadata}->>'round')::int = ${currentRound}`
-            )
-          )
-          .limit(1);
-        
-        // Get school primary contact email
-        const primaryContact = school.primaryContactId 
-          ? await this.getUser(school.primaryContactId)
-          : null;
-        
-        if (primaryContact?.email) {
-          // Build certificate URL if we have one - force PDF format
-          const certificateUrl = roundCertificates.length > 0
-            ? `${getBaseUrl()}/api/certificates/${roundCertificates[0].id}/download`
-            : undefined;
-          
-          // Send celebration email (fire and forget - don't block on email)
-          sendCourseCompletionCelebrationEmail(
-            primaryContact.email,
-            school.name,
-            currentRound,
-            certificateUrl,
-            primaryContact.preferredLanguage ?? undefined
-          ).catch(err => console.error('Failed to send celebration email:', err));
-        }
-      }
-      
-      return updated;
-    }
-
-    return school;
+    return schoolStorage.checkAndUpdateSchoolProgression(schoolId);
   }
-
   async startNewRound(schoolId: string): Promise<School | undefined> {
-    const school = await this.getSchool(schoolId);
-    if (!school) return undefined;
-
-    // Only allow starting new round if current round is complete
-    if (!school.awardCompleted) return undefined;
-
-    const nextRound = (school.currentRound || 1) + 1;
-
-    const [updated] = await db
-      .update(schools)
-      .set({
-        currentRound: nextRound,
-        currentStage: 'inspire',
-        inspireCompleted: false,
-        investigateCompleted: false,
-        actCompleted: false,
-        awardCompleted: false,
-        auditQuizCompleted: false,
-        progressPercentage: 0,
-        updatedAt: new Date()
-      })
-      .where(eq(schools.id, schoolId))
-      .returning();
-    
-    return updated;
+    return schoolStorage.startNewRound(schoolId);
   }
 
   // Migration function to fix schools stuck in previous rounds
   async migrateStuckSchools(): Promise<{ fixed: number; schools: string[] }> {
-    console.log('[Migration] Checking for schools stuck in previous rounds...');
-    
-    // Find all schools where roundsCompleted > 0 but currentRound doesn't match
-    const allSchools = await db.select().from(schools);
-    
-    const stuckSchools = allSchools.filter(school => {
-      const roundsCompleted = school.roundsCompleted || 0;
-      const currentRound = school.currentRound || 1;
-      
-      // School is stuck if they've completed rounds but currentRound hasn't advanced
-      // For example: roundsCompleted=1 but currentRound=1 means they should be in round 2
-      return roundsCompleted > 0 && currentRound <= roundsCompleted;
-    });
-    
-    if (stuckSchools.length === 0) {
-      console.log('[Migration] No stuck schools found.');
-      return { fixed: 0, schools: [] };
-    }
-    
-    console.log(`[Migration] Found ${stuckSchools.length} stuck schools. Fixing...`);
-    
-    const fixedSchools: string[] = [];
-    
-    for (const school of stuckSchools) {
-      const roundsCompleted = school.roundsCompleted || 0;
-      const correctRound = roundsCompleted + 1;
-      
-      console.log(`[Migration] Fixing school ${school.id} (${school.name}): roundsCompleted=${roundsCompleted}, currentRound=${school.currentRound} -> ${correctRound}`);
-      
-      await db
-        .update(schools)
-        .set({
-          currentRound: correctRound,
-          currentStage: 'inspire',
-          inspireCompleted: false,
-          investigateCompleted: false,
-          actCompleted: false,
-          awardCompleted: false,
-          auditQuizCompleted: false,
-          updatedAt: new Date()
-        })
-        .where(eq(schools.id, school.id));
-      
-      fixedSchools.push(`${school.name} (${school.id})`);
-    }
-    
-    console.log(`[Migration] Successfully fixed ${fixedSchools.length} schools.`);
-    
-    return { fixed: fixedSchools.length, schools: fixedSchools };
+    return schoolStorage.migrateStuckSchools();
   }
 
   // Case Study operations
