@@ -33,6 +33,27 @@ import { PDFThumbnail } from "@/components/PDFThumbnail";
 import { Footer } from "@/components/Footer";
 import { normalizeObjectStorageUrl } from "@/lib/urlNormalization";
 
+/**
+ * Check if a URL points to a PDF file by checking Content-Type header
+ */
+async function isPdfUrl(url: string): Promise<boolean> {
+  // First check file extension
+  if (url.toLowerCase().endsWith('.pdf')) {
+    return true;
+  }
+  
+  // For object storage paths without extensions, check Content-Type
+  try {
+    const normalizedUrl = normalizeObjectStorageUrl(url);
+    const response = await fetch(normalizedUrl, { method: 'HEAD' });
+    const contentType = response.headers.get('Content-Type');
+    return contentType?.includes('application/pdf') || false;
+  } catch (error) {
+    console.error('Error checking if URL is PDF:', error);
+    return false;
+  }
+}
+
 interface CaseStudy {
   id: string;
   title: string;
@@ -154,6 +175,31 @@ function ImageCarousel({ images, title }: { images: { url: string; caption?: str
 
 function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
   const { t } = useTranslation('inspiration');
+  const [imageUrlIsPdf, setImageUrlIsPdf] = useState<boolean | null>(null);
+  
+  // Check if imageUrl is a PDF on component mount
+  useEffect(() => {
+    if (!caseStudy.imageUrl) {
+      setImageUrlIsPdf(null);
+      return;
+    }
+    
+    // Quick check: if type field exists, use it
+    const matchingImage = caseStudy.images?.find(img => img.url === caseStudy.imageUrl);
+    if (matchingImage?.type === 'application/pdf') {
+      setImageUrlIsPdf(true);
+      return;
+    }
+    
+    // Check if URL has .pdf extension
+    if (caseStudy.imageUrl.toLowerCase().endsWith('.pdf')) {
+      setImageUrlIsPdf(true);
+      return;
+    }
+    
+    // For UUIDs without extensions, check Content-Type asynchronously
+    isPdfUrl(caseStudy.imageUrl).then(setImageUrlIsPdf);
+  }, [caseStudy.imageUrl, caseStudy.images]);
   
   const getStageColor = (stage: string) => {
     switch (stage) {
@@ -187,46 +233,58 @@ function CaseStudyCard({ caseStudy }: { caseStudy: CaseStudy }) {
       {(() => {
         // Filter out PDFs from images array using the type field (not URL string)
         // Evidence files use UUID paths without .pdf extension, so we must check type metadata
+        // NOTE: Only filter if type field exists, otherwise include all images
         const actualImages = caseStudy.images?.filter(img => {
+          // If no type field, assume it's an image (legacy data)
+          if (!img.type) return true;
           return img.type !== 'application/pdf';
         }) || [];
         
-        // Check if we have actual (non-PDF) images in the array
-        if (actualImages.length > 0) {
+        // If we only have one image and it matches imageUrl, skip carousel and check imageUrl directly
+        // This allows proper PDF detection for the main image
+        if (actualImages.length === 1 && actualImages[0].url === caseStudy.imageUrl) {
+          // Fall through to imageUrl check below
+        } else if (actualImages.length > 0) {
           return <ImageCarousel images={actualImages} title={caseStudy.title} />;
         }
         
-        // No actual images in array, check imageUrl
+        // No actual images in array (or only one matching imageUrl), check imageUrl
         if (caseStudy.imageUrl) {
-          // Check if imageUrl corresponds to a PDF by looking it up in images array
-          const matchingImage = caseStudy.images?.find(img => img.url === caseStudy.imageUrl);
-          const isPdf = matchingImage?.type === 'application/pdf' || 
-                        caseStudy.imageUrl.toLowerCase().includes('.pdf');
-          
-          if (isPdf) {
-            // Show PDF thumbnail
+          // Show loading state while checking if it's a PDF
+          if (imageUrlIsPdf === null) {
             return (
-              <div className="relative overflow-hidden group">
+              <div className="relative overflow-hidden group" data-testid="image-loading">
+                <div className="w-full h-64 bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+                  <div className="text-gray-400 text-sm">Checking file type...</div>
+                </div>
+              </div>
+            );
+          }
+          
+          // Render PDF thumbnail if it's a PDF
+          if (imageUrlIsPdf) {
+            return (
+              <div className="relative overflow-hidden group" data-testid="pdf-container">
                 <PDFThumbnail 
                   url={caseStudy.imageUrl}
                   className="w-full h-64 bg-gray-100 dark:bg-gray-800"
                 />
               </div>
             );
-          } else {
-            // Show regular image
-            return (
-              <div className="relative overflow-hidden group">
-                <OptimizedImage 
-                  src={caseStudy.imageUrl} 
-                  alt={caseStudy.title}
-                  className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-                  priority={false}
-                  respectConnectionSpeed={true}
-                />
-              </div>
-            );
           }
+          
+          // Render regular image
+          return (
+            <div className="relative overflow-hidden group" data-testid="image-container">
+              <OptimizedImage 
+                src={caseStudy.imageUrl} 
+                alt={caseStudy.title}
+                className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                priority={false}
+                respectConnectionSpeed={true}
+              />
+            </div>
+          );
         }
         
         // No image at all
