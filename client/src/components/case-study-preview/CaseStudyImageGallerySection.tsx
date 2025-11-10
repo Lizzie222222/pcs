@@ -8,6 +8,7 @@ import {
   CarouselPrevious,
 } from "@/components/ui/carousel";
 import type { ImageItem } from "./types";
+import { isPdfMedia } from "@/lib/media";
 
 interface CaseStudyImageGallerySectionProps {
   images: ImageItem[];
@@ -15,14 +16,18 @@ interface CaseStudyImageGallerySectionProps {
 }
 
 export function CaseStudyImageGallerySection({ images, title }: CaseStudyImageGallerySectionProps) {
-  if (!images || images.length <= 1) return null;
+  // Filter out PDFs from the gallery (PDFs can't be displayed in carousel properly)
+  // Only include images with type field not set to PDF, or images without type field
+  const imageOnlyItems = images.filter(img => !isPdfMedia(img));
+  
+  if (!imageOnlyItems || imageOnlyItems.length <= 1) return null;
 
   return (
     <div className="mb-16 scroll-reveal-scale">
       <h2 className="text-3xl font-bold text-navy mb-8">Photo Gallery</h2>
       <Carousel className="w-full">
         <CarouselContent>
-          {images.map((image, idx) => (
+          {imageOnlyItems.map((image, idx) => (
             <CarouselItem key={idx}>
               <Dialog>
                 <DialogTrigger asChild>

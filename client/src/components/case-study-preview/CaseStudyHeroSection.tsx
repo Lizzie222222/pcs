@@ -2,6 +2,9 @@ import { Badge } from "@/components/ui/badge";
 import { Award, School, MapPin, Calendar, ChevronDown } from "lucide-react";
 import type { VideoItem } from "./types";
 import { VideoEmbed, getStageColor } from "./utils";
+import { useMediaAssetInfo } from "@/lib/media";
+import { PDFThumbnail } from "@/components/PDFThumbnail";
+import { OptimizedImage } from "@/components/ui/OptimizedImage";
 
 interface CaseStudyHeroSectionProps {
   heroVideo?: VideoItem;
@@ -32,15 +35,34 @@ export function CaseStudyHeroSection({
   onScrollToContent,
   showScrollIndicator = true,
 }: CaseStudyHeroSectionProps) {
+  const [isPdf, isLoadingMedia] = useMediaAssetInfo(heroImage);
+
   return (
     <div className="relative h-[500px] max-h-[500px] overflow-hidden">
-      <div 
-        className="absolute inset-0 w-full h-full bg-cover bg-center"
-        style={{ 
-          backgroundImage: `url(${heroImage})`,
-          transform: 'translateY(calc(var(--scroll) * 0.5px))',
-        }}
-      />
+      {/* Hero Media - Image or PDF thumbnail with parallax effect */}
+      {isLoadingMedia ? (
+        <div className="absolute inset-0 w-full h-full bg-gray-200 animate-pulse" />
+      ) : (
+        <div 
+          className="absolute inset-0 w-full h-full"
+          style={{ 
+            transform: 'translateY(calc(var(--scroll) * 0.5px))',
+          }}
+        >
+          {isPdf ? (
+            <PDFThumbnail 
+              url={heroImage || ''} 
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <OptimizedImage
+              src={heroImage || ''}
+              alt={title}
+              className="w-full h-full object-cover"
+            />
+          )}
+        </div>
+      )}
       
       <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
 
