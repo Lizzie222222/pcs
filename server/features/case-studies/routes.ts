@@ -3,7 +3,7 @@ import type { Request, Response } from 'express';
 import { getCaseStudyStorage } from './storage';
 import { getPDFDelegate, getMediaDelegate } from './delegates';
 import { generatePdfHtml, sanitizeFilename } from '../../routes/utils/pdf';
-import { normalizeObjectStorageUrl } from '../../routes/utils/urlNormalization';
+import { normalizeObjectStorageUrl, normalizeFileArray } from '../../routes/utils/urlNormalization';
 import { isAuthenticated } from '../../auth';
 import { requireAdmin, requireAdminOrPartner } from '../../routes/utils/middleware';
 import { insertCaseStudySchema } from '@shared/schema';
@@ -280,11 +280,40 @@ router.get('/:id/pdf', async (req: any, res: Response) => {
       }
     }
     
-    // Add evidence data to case study for PDF generation
-    const caseStudyWithEvidence = {
+    // Normalize all media URLs before PDF generation
+    // This ensures Puppeteer can load images correctly via /api/objects/ proxy
+    const normalizedCaseStudy = {
       ...caseStudy,
       evidenceLink,
-      evidenceFiles
+      evidenceFiles: normalizeFileArray(evidenceFiles || []),
+      // Normalize main images
+      imageUrl: normalizeObjectStorageUrl(caseStudy.imageUrl),
+      beforeImage: normalizeObjectStorageUrl(caseStudy.beforeImage),
+      afterImage: normalizeObjectStorageUrl(caseStudy.afterImage),
+      // Normalize gallery images
+      images: Array.isArray(caseStudy.images) 
+        ? caseStudy.images.map((img: any) => {
+            if (typeof img === 'string') {
+              return normalizeObjectStorageUrl(img);
+            }
+            return {
+              ...img,
+              url: normalizeObjectStorageUrl(img.url),
+            };
+          })
+        : [],
+      // Normalize video thumbnails
+      videos: Array.isArray(caseStudy.videos)
+        ? caseStudy.videos.map((video: any) => {
+            if (typeof video === 'string') {
+              return video;
+            }
+            return {
+              ...video,
+              thumbnail: normalizeObjectStorageUrl(video.thumbnail),
+            };
+          })
+        : [],
     };
     
     // Get base URL for converting relative image URLs to absolute
@@ -293,7 +322,7 @@ router.get('/:id/pdf', async (req: any, res: Response) => {
     const baseUrl = `${protocol}://${host}`;
     
     // Generate beautiful HTML for PDF
-    const htmlContent = generatePdfHtml(caseStudyWithEvidence, baseUrl);
+    const htmlContent = generatePdfHtml(normalizedCaseStudy, baseUrl);
     
     // Use shared PDF service via delegate
     const pdfBuffer = await pdfDelegate.generateCaseStudyPDF(htmlContent);
