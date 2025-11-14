@@ -3,6 +3,15 @@
 ## Overview
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
+## Recent Changes
+**November 14, 2025**: Fixed photo consent workflow
+- Migrated photo consent document uploads from local multer storage to Google Cloud Storage for reliable document access
+- Normalized all photo consent API responses to use consistent nested `photoConsent` object structure (status, documentUrl, uploadedAt, approvedAt, reviewNotes)
+- Implemented dynamic photo consent status banners in evidence submission form that display real-time status (approved/pending/rejected/not uploaded)
+- Added comprehensive cache invalidation across all admin mutations (approve/reject) to ensure immediate UI updates
+- Updated all frontend components (EvidenceSubmissionForm, PhotoConsentQueue, admin panels) to use the new normalized data structure
+- Cleaned up legacy data with malformed photo consent URLs
+
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
