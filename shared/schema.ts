@@ -1868,8 +1868,13 @@ export type EvidenceWithSchool = Evidence & {
     id: string;
     name: string;
     country: string;
-    photoConsentStatus?: typeof schools.$inferSelect.photoConsentStatus;
-    photoConsentDocumentUrl?: string | null;
+    photoConsent?: {
+      status: 'pending' | 'approved' | 'rejected' | null;
+      documentUrl: string | null;
+      uploadedAt: Date | null;
+      approvedAt: Date | null;
+      reviewNotes: string | null;
+    } | null;
   };
   reviewer?: {
     id: string | null;

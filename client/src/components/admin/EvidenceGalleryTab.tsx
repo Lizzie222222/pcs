@@ -387,7 +387,7 @@ export default function EvidenceGalleryTab() {
                   
                   {/* Permission Status Badge */}
                   {(() => {
-                    const permissionBadge = getPermissionBadge(evidence.school?.photoConsentStatus);
+                    const permissionBadge = getPermissionBadge(evidence.school?.photoConsent?.status);
                     const PermissionIcon = permissionBadge.icon;
                     return (
                       <div className="mt-2">
@@ -504,7 +504,7 @@ export default function EvidenceGalleryTab() {
                 <div>
                   <label className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">{t('evidenceGallery.form.labels.photoPermission')}</label>
                   {(() => {
-                    const permissionBadge = getPermissionBadge(selectedEvidence.school?.photoConsentStatus);
+                    const permissionBadge = getPermissionBadge(selectedEvidence.school?.photoConsent?.status);
                     const PermissionIcon = permissionBadge.icon;
                     return (
                       <Badge className={permissionBadge.color} variant="outline">
@@ -517,11 +517,11 @@ export default function EvidenceGalleryTab() {
               </div>
               
               {/* Permission Warning */}
-              {selectedEvidence.school?.photoConsentStatus !== 'approved' && (
+              {selectedEvidence.school?.photoConsent?.status !== 'approved' && (
                 <div className="p-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md">
                   <p className="text-sm text-yellow-800 dark:text-yellow-200">
                     <ShieldAlert className="h-4 w-4 inline mr-1" />
-                    <strong>{t('evidenceGallery.warnings.permissionRequired')}</strong> {selectedEvidence.school?.photoConsentStatus === 'pending' ? t('evidenceGallery.warnings.photoConsentPending') : t('evidenceGallery.warnings.photoConsentMissing')}
+                    <strong>{t('evidenceGallery.warnings.permissionRequired')}</strong> {selectedEvidence.school?.photoConsent?.status === 'pending' ? t('evidenceGallery.warnings.photoConsentPending') : t('evidenceGallery.warnings.photoConsentMissing')}
                   </p>
                 </div>
               )}

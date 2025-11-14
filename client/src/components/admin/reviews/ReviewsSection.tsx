@@ -91,9 +91,11 @@ export default function ReviewsSection({
     id: string;
     name: string;
     country: string;
-    photoConsentDocumentUrl: string | null;
-    photoConsentUploadedAt: Date | null;
-    photoConsentStatus: string | null;
+    photoConsent: {
+      documentUrl: string | null;
+      uploadedAt: Date | null;
+      status: string | null;
+    } | null;
   }>>({
     queryKey: ['/api/admin/photo-consent/pending'],
     enabled: true,

@@ -30,9 +30,11 @@ interface PhotoConsentQueueProps {
     id: string;
     name: string;
     country: string;
-    photoConsentDocumentUrl: string | null;
-    photoConsentUploadedAt: Date | null;
-    photoConsentStatus: string | null;
+    photoConsent: {
+      documentUrl: string | null;
+      uploadedAt: Date | null;
+      status: string | null;
+    } | null;
   }>;
   photoConsentLoading: boolean;
   approvePhotoConsentMutation: any;
@@ -110,17 +112,17 @@ export default function PhotoConsentQueue({
                           <MapPin className="h-4 w-4" />
                           {school.country}
                         </span>
-                        {school.photoConsentUploadedAt && (
+                        {school.photoConsent?.uploadedAt && (
                           <span className="flex items-center gap-1">
                             <Clock className="h-4 w-4" />
-                            {new Date(school.photoConsentUploadedAt).toLocaleDateString()}
+                            {new Date(school.photoConsent.uploadedAt).toLocaleDateString()}
                           </span>
                         )}
                       </div>
-                      {school.photoConsentDocumentUrl && (
+                      {school.photoConsent?.documentUrl && (
                         <div className="mt-2">
                           <a
-                            href={school.photoConsentDocumentUrl}
+                            href={school.photoConsent.documentUrl}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-1 text-pcs_blue hover:underline text-sm"

@@ -332,9 +332,11 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
       id: string;
       name: string;
       country: string;
-      photoConsentDocumentUrl: string | null;
-      photoConsentUploadedAt: Date | null;
-      photoConsentStatus: string | null;
+      photoConsent: {
+        documentUrl: string | null;
+        uploadedAt: Date | null;
+        status: string | null;
+      } | null;
     }>;
   }>({
     queryKey: ['/api/admin/dashboard-data'],
@@ -412,13 +414,16 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
         variant: "destructive",
       });
     },
-    onSettled: () => {
+    onSettled: (data, error, variables) => {
       // Refetch to ensure consistency (surgical invalidation)
       queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       // Invalidate evidence queries so photo consent status updates immediately
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
+      // Invalidate photo consent status for the specific school so UI updates in evidence form
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', variables.schoolId, 'photo-consent'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
     },
   });
 
@@ -460,13 +465,16 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
         variant: "destructive",
       });
     },
-    onSettled: () => {
+    onSettled: (data, error, variables) => {
       // Refetch to ensure consistency (surgical invalidation)
       queryClient.invalidateQueries({ queryKey: ['/api/admin/photo-consent/pending'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/schools'] });
       queryClient.invalidateQueries({ queryKey: ['/api/admin/dashboard-data'] });
       // Invalidate evidence queries so photo consent status updates immediately
       queryClient.invalidateQueries({ queryKey: ['/api/admin/evidence'] });
+      // Invalidate photo consent status for the specific school so UI updates in evidence form
+      queryClient.invalidateQueries({ queryKey: ['/api/schools', variables.schoolId, 'photo-consent'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/dashboard'] });
     },
   });
 

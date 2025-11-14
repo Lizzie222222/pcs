@@ -3,6 +3,7 @@ import { schoolStorage } from './storage';
 import { isAuthenticated, isSchoolMember } from '../../auth';
 import { requireAdmin, requireAdminOrPartner, requireFullAdmin } from '../../routes/utils/middleware';
 import { photoConsentUpload } from '../../routes/utils/uploads';
+import { uploadToObjectStorage } from '../../routes/utils/objectStorage';
 import { 
   sendWelcomeEmail, 
   sendTeacherInvitationEmail, 
@@ -671,17 +672,29 @@ schoolsRouter.post('/api/schools/:schoolId/photo-consent/upload', isAuthenticate
   try {
     const { schoolId } = req.params;
     const file = req.file;
+    const userId = req.user.id;
 
     if (!file) {
       return res.status(400).json({ message: "No file uploaded" });
     }
 
-    const photoConsentDocumentUrl = `/uploads/photo-consent/${file.filename}`;
+    // Upload to object storage
+    const photoConsentDocumentUrl = await uploadToObjectStorage(
+      file.buffer,
+      file.mimetype,
+      file.originalname,
+      userId,
+      'public' // Photo consent documents should be publicly accessible for review
+    );
+    
+    // Auto-approve if admin is uploading
+    const isAdmin = req.user.isAdmin;
     
     const school = await schoolStorage.updateSchool(schoolId, {
       photoConsentDocumentUrl,
-      photoConsentStatus: 'pending',
+      photoConsentStatus: isAdmin ? 'approved' : 'pending',
       photoConsentUploadedAt: new Date(),
+      ...(isAdmin ? { photoConsentApprovedAt: new Date() } : {}),
     });
 
     if (!school) {
@@ -689,8 +702,9 @@ schoolsRouter.post('/api/schools/:schoolId/photo-consent/upload', isAuthenticate
     }
 
     res.json({ 
-      message: "Photo consent uploaded successfully",
-      photoConsentUrl: photoConsentDocumentUrl 
+      message: isAdmin ? "Photo consent uploaded and approved" : "Photo consent uploaded successfully",
+      photoConsentUrl: photoConsentDocumentUrl,
+      status: isAdmin ? 'approved' : 'pending'
     });
   } catch (error) {
     console.error("Error uploading photo consent:", error);
@@ -708,11 +722,13 @@ schoolsRouter.get('/api/schools/:schoolId/photo-consent', isAuthenticated, isSch
       return res.status(404).json({ message: "School not found" });
     }
 
+    // Return normalized field names to match frontend expectations
     res.json({
-      photoConsentUrl: school.photoConsentDocumentUrl,
-      photoConsentStatus: school.photoConsentStatus,
-      photoConsentSubmittedAt: school.photoConsentUploadedAt,
-      photoConsentReviewedAt: school.photoConsentApprovedAt,
+      status: school.photoConsentStatus,
+      documentUrl: school.photoConsentDocumentUrl,
+      uploadedAt: school.photoConsentUploadedAt,
+      approvedAt: school.photoConsentApprovedAt,
+      reviewNotes: school.photoConsentReviewNotes,
     });
   } catch (error) {
     console.error("Error fetching photo consent:", error);

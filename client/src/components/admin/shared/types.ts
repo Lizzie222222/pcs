@@ -25,8 +25,10 @@ export interface PendingEvidence {
     id: string;
     name: string;
     country: string;
-    photoConsentStatus?: 'pending' | 'approved' | 'rejected' | null;
-    photoConsentDocumentUrl?: string | null;
+    photoConsent?: {
+      status: 'pending' | 'approved' | 'rejected' | null;
+      documentUrl: string | null;
+    } | null;
   };
 }
 

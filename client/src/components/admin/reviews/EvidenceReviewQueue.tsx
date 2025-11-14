@@ -137,7 +137,7 @@ export default function EvidenceReviewQueue({
   };
 
   const handleApproveClick = (evidence: PendingEvidence) => {
-    if (evidence.school?.photoConsentStatus !== 'approved') {
+    if (evidence.school?.photoConsent?.status !== 'approved') {
       setPendingApprovalEvidence(evidence);
       setConsentWarningDialogOpen(true);
     } else {
@@ -393,19 +393,19 @@ export default function EvidenceReviewQueue({
                             {t('reviews.evidence.badges.public')}
                           </Badge>
                         )}
-                        {evidence.school?.photoConsentStatus === 'approved' && (
+                        {evidence.school?.photoConsent?.status === 'approved' && (
                           <Badge variant="outline" className="bg-green-50 text-green-700 border-green-300">
                             <ShieldCheck className="h-3 w-3 mr-1" />
                             {t('reviews.evidence.badges.photoApproved')}
                           </Badge>
                         )}
-                        {evidence.school?.photoConsentStatus === 'pending' && (
+                        {evidence.school?.photoConsent?.status === 'pending' && (
                           <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-300">
                             <ShieldAlert className="h-3 w-3 mr-1" />
                             {t('reviews.evidence.badges.photoPending')}
                           </Badge>
                         )}
-                        {(!evidence.school?.photoConsentStatus || evidence.school?.photoConsentStatus === 'rejected') && (
+                        {(!evidence.school?.photoConsent?.status || evidence.school?.photoConsent?.status === 'rejected') && (
                           <Badge variant="outline" className="bg-red-50 text-red-700 border-red-300">
                             <Shield className="h-3 w-3 mr-1" />
                             {t('reviews.evidence.badges.noPhotoConsent')}
@@ -574,9 +574,9 @@ export default function EvidenceReviewQueue({
                 <Trans i18nKey="reviews.evidence.consentWarning.noConsent" ns="admin" />
               </p>
               <p className="text-sm text-gray-600">
-                {pendingApprovalEvidence?.school?.photoConsentStatus === 'pending'
+                {pendingApprovalEvidence?.school?.photoConsent?.status === 'pending'
                   ? t('reviews.evidence.consentWarning.statusPending')
-                  : pendingApprovalEvidence?.school?.photoConsentStatus === 'rejected'
+                  : pendingApprovalEvidence?.school?.photoConsent?.status === 'rejected'
                   ? t('reviews.evidence.consentWarning.statusRejected')
                   : t('reviews.evidence.consentWarning.statusNone')}
               </p>

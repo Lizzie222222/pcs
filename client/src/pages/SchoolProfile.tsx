@@ -77,11 +77,6 @@ interface SchoolData {
   type?: string;
   address?: string;
   primaryLanguage?: string | null;
-  photoConsentStatus?: string | null;
-  photoConsentDocumentUrl?: string | null;
-  photoConsentUploadedAt?: string | null;
-  photoConsentApprovedAt?: string | null;
-  photoConsentReviewNotes?: string | null;
 }
 
 interface SchoolTeacher {

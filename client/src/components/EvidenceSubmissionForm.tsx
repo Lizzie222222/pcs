@@ -14,7 +14,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { X, Upload, File, Trash2, AlertCircle, Info } from "lucide-react";
+import { X, Upload, File, Trash2, AlertCircle, Info, CheckCircle, Clock, XCircle } from "lucide-react";
 
 // Factory function for translated schema
 const createEvidenceSchema = (t: (key: string, options?: any) => string) => z.object({
@@ -93,6 +93,25 @@ export default function EvidenceSubmissionForm({
   const { data: schoolData } = useQuery<SchoolDashboardData>({
     queryKey: ['/api/dashboard'],
     enabled: !!selectedSchoolId && !isAdminOrPartner,
+  });
+
+  // Fetch photo consent status for the selected school
+  const { data: photoConsentStatus } = useQuery<{
+    status: string | null;
+    documentUrl: string | null;
+    uploadedAt: Date | null;
+    approvedAt: Date | null;
+    reviewNotes: string | null;
+  } | null>({
+    queryKey: ['/api/schools', selectedSchoolId, 'photo-consent'],
+    queryFn: async () => {
+      const response = await fetch(`/api/schools/${selectedSchoolId}/photo-consent`, { 
+        credentials: 'include' 
+      });
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!selectedSchoolId,
   });
   
   const evidenceSchema = createEvidenceSchema(t);
@@ -511,13 +530,48 @@ export default function EvidenceSubmissionForm({
                 )}
               />
 
-              {/* Photo Consent Reminder */}
-              <Alert className="bg-blue-50 border-blue-200">
-                <Info className="h-4 w-4 text-blue-600" />
-                <AlertDescription className="text-sm text-blue-900">
-                  <Trans i18nKey="evidence_submission.photo_consent_reminder" ns="forms" />
-                </AlertDescription>
-              </Alert>
+              {/* Photo Consent Status Banner */}
+              {photoConsentStatus?.status === 'approved' ? (
+                <Alert className="bg-green-50 border-green-200">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <AlertDescription className="text-sm text-green-900">
+                    <strong>{t('forms:evidence_submission.photo_consent_approved_title')}</strong>
+                    <br />
+                    {t('forms:evidence_submission.photo_consent_approved_message')}
+                  </AlertDescription>
+                </Alert>
+              ) : photoConsentStatus?.status === 'pending' ? (
+                <Alert className="bg-yellow-50 border-yellow-200">
+                  <Clock className="h-4 w-4 text-yellow-600" />
+                  <AlertDescription className="text-sm text-yellow-900">
+                    <strong>{t('forms:evidence_submission.photo_consent_pending_title')}</strong>
+                    <br />
+                    {t('forms:evidence_submission.photo_consent_pending_message')}
+                  </AlertDescription>
+                </Alert>
+              ) : photoConsentStatus?.status === 'rejected' ? (
+                <Alert className="bg-red-50 border-red-200">
+                  <XCircle className="h-4 w-4 text-red-600" />
+                  <AlertDescription className="text-sm text-red-900">
+                    <strong>{t('forms:evidence_submission.photo_consent_rejected_title')}</strong>
+                    <br />
+                    {t('forms:evidence_submission.photo_consent_rejected_message')}
+                    {photoConsentStatus.reviewNotes && (
+                      <>
+                        <br />
+                        <em className="text-xs">{t('forms:evidence_submission.rejection_notes')}: {photoConsentStatus.reviewNotes}</em>
+                      </>
+                    )}
+                  </AlertDescription>
+                </Alert>
+              ) : (
+                <Alert className="bg-blue-50 border-blue-200">
+                  <Info className="h-4 w-4 text-blue-600" />
+                  <AlertDescription className="text-sm text-blue-900">
+                    <Trans i18nKey="evidence_submission.photo_consent_reminder" ns="forms" />
+                  </AlertDescription>
+                </Alert>
+              )}
 
               {/* Info Banner */}
               <div className="bg-yellow/10 border border-yellow rounded-lg p-4 flex items-start gap-3">

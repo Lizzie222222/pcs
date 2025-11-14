@@ -182,6 +182,9 @@ export class EvidenceStorage {
           country: schools.country,
           photoConsentStatus: schools.photoConsentStatus,
           photoConsentDocumentUrl: schools.photoConsentDocumentUrl,
+          photoConsentUploadedAt: schools.photoConsentUploadedAt,
+          photoConsentApprovedAt: schools.photoConsentApprovedAt,
+          photoConsentReviewNotes: schools.photoConsentReviewNotes,
         },
         reviewer: {
           id: users.id,
@@ -198,7 +201,31 @@ export class EvidenceStorage {
       ? await query.where(and(...conditions)).orderBy(desc(evidence.submittedAt))
       : await query.orderBy(desc(evidence.submittedAt));
     
-    return results.filter(r => r.school !== null) as Array<EvidenceWithSchool>;
+    // Transform results to use nested photoConsent structure
+    return results
+      .filter(r => r.school !== null)
+      .map(r => {
+        const school = r.school!; // Already filtered null above
+        return {
+          ...r,
+          school: {
+            ...school,
+            photoConsent: school.photoConsentStatus || school.photoConsentDocumentUrl ? {
+              status: school.photoConsentStatus,
+              documentUrl: school.photoConsentDocumentUrl,
+              uploadedAt: school.photoConsentUploadedAt,
+              approvedAt: school.photoConsentApprovedAt,
+              reviewNotes: school.photoConsentReviewNotes,
+            } : null,
+            // Remove flattened fields
+            photoConsentStatus: undefined,
+            photoConsentDocumentUrl: undefined,
+            photoConsentUploadedAt: undefined,
+            photoConsentApprovedAt: undefined,
+            photoConsentReviewNotes: undefined,
+          }
+        };
+      }) as Array<EvidenceWithSchool>;
   }
 
   /**
