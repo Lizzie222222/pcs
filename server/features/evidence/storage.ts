@@ -128,6 +128,7 @@ export class EvidenceStorage {
     country?: string;
     visibility?: 'public' | 'private';
     assignedTo?: string;
+    roundNumber?: number;
   }): Promise<EvidenceWithSchool[]> {
     // Build WHERE conditions
     const conditions = [];
@@ -149,6 +150,9 @@ export class EvidenceStorage {
     }
     if (filters?.assignedTo) {
       conditions.push(eq(evidence.assignedTo, filters.assignedTo));
+    }
+    if (filters?.roundNumber !== undefined) {
+      conditions.push(eq(evidence.roundNumber, filters.roundNumber));
     }
 
     // Query with JOIN to include school data and reviewer info

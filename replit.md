@@ -4,6 +4,14 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
+**November 15, 2025**: Fixed round progression bug and added multi-round evidence viewing
+- Fixed critical progression bug where Investigate stage could complete with only audit approval, skipping the required Action Plan submission
+- Updated progression logic to require BOTH Plastic Waste Audit (hasQuiz) AND Action Plan Development (hasActionPlan) for Investigate stage completion
+- Added round selector to Progress Tracker allowing schools to view evidence from previous rounds with visual round indicators
+- Enhanced Recent Activity section to display evidence from all rounds with color-coded round badges (blue/purple/green)
+- Updated evidence API to support roundNumber filtering for historical evidence viewing
+- Schools must now complete all requirements (Inspire: 3 items, Investigate: audit + action plan, Act: 3 items) before advancing to next round
+
 **November 14, 2025**: Fixed photo consent workflow
 - Migrated photo consent document uploads from local multer storage to Google Cloud Storage for reliable document access
 - Normalized all photo consent API responses to use consistent nested `photoConsent` object structure (status, documentUrl, uploadedAt, approvedAt, reviewNotes)

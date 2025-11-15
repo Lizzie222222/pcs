@@ -4,7 +4,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
-import { CheckCircle, Circle, Clock, X, ExternalLink } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { CheckCircle, Circle, Clock, X, ExternalLink, Info } from "lucide-react";
 import inspireIcon from "@assets/PSC - Inspire_1760461719847.png";
 import investigateIcon from "@assets/PSC - Investigate_1760461719848.png";
 import actIcon from "@assets/PSC - Act_1760461719847.png";
@@ -64,6 +66,7 @@ export default function ProgressTracker({
   currentRound,
 }: ProgressTrackerProps) {
   const { t, i18n } = useTranslation('dashboard');
+  const [selectedRound, setSelectedRound] = useState(currentRound);
   const [showEvidenceForm, setShowEvidenceForm] = useState(false);
   const [selectedRequirementId, setSelectedRequirementId] = useState<string | undefined>();
   const [selectedStage, setSelectedStage] = useState<string>('inspire');
@@ -123,11 +126,11 @@ export default function ProgressTracker({
     queryKey: ['/api/evidence-requirements'],
   });
 
-  // Fetch all school evidence to match with requirements
+  // Fetch all school evidence to match with requirements (filtered by selected round)
   const { data: allEvidence = [] } = useQuery<Evidence[]>({
-    queryKey: ['/api/evidence', schoolId],
+    queryKey: ['/api/evidence', schoolId, selectedRound],
     queryFn: async () => {
-      const res = await fetch(`/api/evidence?schoolId=${schoolId}`);
+      const res = await fetch(`/api/evidence?schoolId=${schoolId}&roundNumber=${selectedRound}`);
       if (!res.ok) throw new Error('Failed to fetch evidence');
       return res.json();
     },
@@ -255,7 +258,7 @@ export default function ProgressTracker({
   const getRequirementEvidence = (requirementId: string) => {
     if (!allEvidence) return null;
     return allEvidence.find(
-      ev => ev.evidenceRequirementId === requirementId && ev.roundNumber === currentRound
+      ev => ev.evidenceRequirementId === requirementId && ev.roundNumber === selectedRound
     );
   };
 
@@ -264,7 +267,7 @@ export default function ProgressTracker({
     // Check if has approved evidence
     const hasApprovedEvidence = allEvidence.some(
       ev => ev.evidenceRequirementId === requirementId && 
-            ev.roundNumber === currentRound && 
+            ev.roundNumber === selectedRound && 
             ev.status === 'approved'
     );
     
@@ -324,6 +327,46 @@ export default function ProgressTracker({
           <h2 className="text-3xl lg:text-4xl font-bold text-navy mb-4 tracking-tight">{t('progress.title')}</h2>
           <p className="text-gray-600 text-lg font-medium">{t('progress.journey_description')}</p>
         </div>
+
+        {/* Round Selector */}
+        {currentRound > 1 && (
+          <div className="flex justify-center">
+            <div className="inline-flex items-center gap-3">
+              <label htmlFor="round-selector" className="text-sm font-medium text-gray-700">
+                View Round:
+              </label>
+              <Select
+                value={selectedRound.toString()}
+                onValueChange={(value) => setSelectedRound(parseInt(value))}
+              >
+                <SelectTrigger 
+                  id="round-selector"
+                  className="w-32"
+                  data-testid="round-selector"
+                >
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {Array.from({ length: currentRound }, (_, i) => i + 1).map((round) => (
+                    <SelectItem key={round} value={round.toString()}>
+                      Round {round}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        )}
+
+        {/* Previous Round Indicator Banner */}
+        {selectedRound < currentRound && (
+          <Alert className="bg-blue-50 border-blue-200" data-testid="previous-round-banner">
+            <Info className="h-4 w-4 text-blue-600" />
+            <AlertDescription className="text-blue-800 font-medium">
+              You are viewing evidence from Round {selectedRound}. This is a previous round.
+            </AlertDescription>
+          </Alert>
+        )}
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {stages.map((stage, index) => {

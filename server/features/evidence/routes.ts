@@ -237,7 +237,7 @@ export function createEvidenceRouters(storage: IStorage): {
     try {
       const userId = req.user.id;
       const user = await storage.getUser(userId);
-      const { schoolId, status, visibility, requirePhotoConsent } = req.query;
+      const { schoolId, status, visibility, requirePhotoConsent, roundNumber } = req.query;
       
       // If schoolId is provided, verify user has access to it
       let targetSchoolId = schoolId as string | undefined;
@@ -266,13 +266,14 @@ export function createEvidenceRouters(storage: IStorage): {
       const filters: any = { schoolId: targetSchoolId };
       if (status) filters.status = status as 'pending' | 'approved' | 'rejected';
       if (visibility) filters.visibility = visibility as 'public' | 'private';
+      if (roundNumber) filters.roundNumber = parseInt(roundNumber as string, 10);
 
       // Get evidence with school data (includes photo consent status)
       let evidence = await evidenceStorage.getAllEvidence(filters);
       
       // Filter by photo consent status if required
       if (requirePhotoConsent === 'true') {
-        evidence = evidence.filter(ev => ev.school?.photoConsentStatus === 'approved');
+        evidence = evidence.filter(ev => ev.school?.photoConsent?.status === 'approved');
       }
       
       // Transform to match the expected format with full evidence data
@@ -296,7 +297,7 @@ export function createEvidenceRouters(storage: IStorage): {
           ? (ev.files as any[]).filter((f: any) => f.type?.startsWith('image/')).map((f: any) => f.url) 
           : [],
         createdAt: ev.submittedAt,
-        photoConsentStatus: ev.school?.photoConsentStatus || null,
+        photoConsentStatus: ev.school?.photoConsent?.status || null,
       }));
       
       res.json(transformedEvidence);

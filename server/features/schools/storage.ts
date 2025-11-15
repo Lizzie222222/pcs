@@ -829,8 +829,7 @@ export class SchoolStorage {
       hasChanges = true;
     }
 
-    const investigateItemCount = counts.investigate.approved + (counts.investigate.hasQuiz ? 1 : 0) + (counts.investigate.hasActionPlan ? 1 : 0);
-    if (investigateItemCount >= 2 && !school.investigateCompleted) {
+    if (counts.investigate.hasQuiz && counts.investigate.hasActionPlan && !school.investigateCompleted) {
       updates.investigateCompleted = true;
       updates.auditQuizCompleted = true;
       hasChanges = true;

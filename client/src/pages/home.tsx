@@ -185,6 +185,7 @@ interface DashboardData {
     submittedAt: string;
     reviewedAt?: string;
     reviewNotes?: string;
+    roundNumber: number;
     reviewer?: {
       id: string | null;
       email: string | null;
@@ -773,6 +774,14 @@ export default function Home() {
       case 'pending': return 'bg-yellow';
       case 'rejected': return 'bg-red-500';
       default: return 'bg-gray-500';
+    }
+  };
+
+  const getRoundBadgeColor = (roundNumber: number) => {
+    switch (roundNumber) {
+      case 1: return 'bg-blue-500';
+      case 2: return 'bg-purple-500';
+      default: return 'bg-green-600'; // Round 3+
     }
   };
 
@@ -1478,13 +1487,16 @@ export default function Home() {
                             )}
                           </div>
                           <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
+                            <div className="flex items-center gap-3 mb-2 flex-wrap">
                               <h4 className="font-semibold text-navy group-hover:text-ocean-blue transition-colors">{evidence.title}</h4>
                               <Badge className={`${getStageColor(evidence.stage)} text-white shadow-sm`}>
                                 {t(`progress.${evidence.stage}.title`)}
                               </Badge>
                               <Badge variant="outline" className={`${getStatusColor(evidence.status)} text-white border-0 shadow-sm`}>
                                 {t(`evidence.evidence_${evidence.status}`)}
+                              </Badge>
+                              <Badge className={`${getRoundBadgeColor(evidence.roundNumber)} text-white shadow-sm text-xs`}>
+                                Round {evidence.roundNumber}
                               </Badge>
                             </div>
                             <p className="text-sm text-gray-600 flex items-center gap-2">

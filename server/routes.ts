@@ -2592,7 +2592,7 @@ Return JSON with:
       // For now, use the first school (multi-school support can be added later)
       const school = schools[0];
       
-      // Get recent evidence for this school
+      // Get recent evidence for this school (from ALL rounds)
       const evidence = await storage.getSchoolEvidence(school.id);
       
       // Get user's role in this school
@@ -2601,9 +2601,22 @@ Return JSON with:
       // Get evidence counts with progression info
       const evidenceCounts = await storage.getSchoolEvidenceCounts(school.id);
       
+      // Map evidence to include roundNumber in response (already present from DB)
+      const recentEvidenceWithRounds = evidence.slice(0, 10).map(ev => ({
+        id: ev.id,
+        title: ev.title,
+        stage: ev.stage,
+        status: ev.status,
+        submittedAt: ev.submittedAt,
+        reviewedAt: ev.reviewedAt,
+        reviewNotes: ev.reviewNotes,
+        roundNumber: ev.roundNumber || 1, // Include round number, default to 1 if not set
+        reviewer: ev.reviewer,
+      }));
+      
       res.json({
         school,
-        recentEvidence: evidence.slice(0, 5), // Latest 5 submissions
+        recentEvidence: recentEvidenceWithRounds, // Latest 10 submissions from all rounds
         schoolUser: schoolUser ? {
           role: schoolUser.role,
           isVerified: schoolUser.isVerified,
