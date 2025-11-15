@@ -4,7 +4,9 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
-**November 15, 2025**: Fixed photo consent document visibility in admin review queue and school profiles
+**November 15, 2025**: Fixed admin Quick Stats progress display and photo consent visibility
+- Fixed progress percentage display bug in admin school profile Quick Stats section where 0% progress incorrectly showed as 100%
+- Updated progress display formula to use conditional logic: shows 100% for completed rounds (100, 200, 300), 0% for no progress, and correct percentages for in-progress states
 - Normalized photo consent API response structure to use consistent nested `photoConsent` object format
 - Updated `getSchoolsWithPendingPhotoConsent()` to return `photoConsent: { documentUrl, uploadedAt, status }` instead of flat structure
 - Photo consent documents are now visible in both the Review Queue and School Profile pages
