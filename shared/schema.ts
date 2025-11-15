@@ -40,6 +40,7 @@ export const userRoleEnum = pgEnum('user_role', [
 ]);
 
 export const schoolTypeEnum = pgEnum('school_type', [
+  'kindergarten',
   'primary',
   'secondary', 
   'high_school',

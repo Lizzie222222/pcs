@@ -428,6 +428,7 @@ export default function Inspiration() {
   const [filters, setFilters] = useState({
     search: '',
     country: '',
+    schoolType: '',
     stage: '',
     contentType: 'all',
     categories: [] as string[],
@@ -450,6 +451,7 @@ export default function Inspiration() {
       const params = new URLSearchParams({
         search: filters.search,
         country: filters.country,
+        schoolType: filters.schoolType,
         stage: filters.stage,
         contentType: filters.contentType,
         limit: limit.toString(),
@@ -525,6 +527,7 @@ export default function Inspiration() {
     setFilters({
       search: '',
       country: '',
+      schoolType: '',
       stage: '',
       contentType: 'all',
       categories: [],
@@ -536,6 +539,7 @@ export default function Inspiration() {
   const hasActiveFilters = 
     filters.search || 
     filters.country || 
+    filters.schoolType ||
     filters.stage || 
     filters.contentType !== 'all' ||
     filters.categories.length > 0 || 
@@ -583,8 +587,8 @@ export default function Inspiration() {
             </div>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Row 1: Search, Country, Stage, Content Type */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Row 1: Search, Country, School Type, Stage, Content Type */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
               <div>
                 <Input
                   placeholder={t('filters.search_placeholder')}
@@ -605,6 +609,18 @@ export default function Inspiration() {
                       {option.label}
                     </SelectItem>
                   ))}
+                </SelectContent>
+              </Select>
+              
+              <Select value={filters.schoolType} onValueChange={(value) => handleFilterChange('schoolType', value)}>
+                <SelectTrigger data-testid="select-school-type">
+                  <SelectValue placeholder={t('filters.all_school_types')} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t('filters.all_school_types')}</SelectItem>
+                  <SelectItem value="kindergarten">{t('school_types.kindergarten')}</SelectItem>
+                  <SelectItem value="primary">{t('school_types.primary')}</SelectItem>
+                  <SelectItem value="secondary">{t('school_types.secondary')}</SelectItem>
                 </SelectContent>
               </Select>
               

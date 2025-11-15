@@ -97,7 +97,7 @@ export class CaseStudyStorage {
 
   /**
    * Get case studies with optional filters
-   * Supports filtering by stage, country, featured status, search term, categories, tags, and status
+   * Supports filtering by stage, country, school type, featured status, search term, categories, tags, and status
    * 
    * @param filters - Filter criteria
    * @returns Array of case studies with school details
@@ -105,6 +105,7 @@ export class CaseStudyStorage {
   async getCaseStudies(filters: {
     stage?: string;
     country?: string;
+    schoolType?: string;
     featured?: boolean;
     search?: string;
     categories?: string[];
@@ -127,6 +128,18 @@ export class CaseStudyStorage {
         conditions.push(sql`${caseStudies.schoolId} IN (${sql.join(schoolIds.map(id => sql`${id}`), sql`, `)})`);
       } else {
         // No schools match the country filter, return empty
+        return [];
+      }
+    }
+    if (filters.schoolType) {
+      const schoolConditions = await db.select({ id: schools.id })
+        .from(schools)
+        .where(eq(schools.type, filters.schoolType as any));
+      const schoolIds = schoolConditions.map(s => s.id);
+      if (schoolIds.length > 0) {
+        conditions.push(sql`${caseStudies.schoolId} IN (${sql.join(schoolIds.map(id => sql`${id}`), sql`, `)})`);
+      } else {
+        // No schools match the school type filter, return empty
         return [];
       }
     }

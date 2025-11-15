@@ -983,7 +983,7 @@ Return JSON with:
    */
   app.get('/api/inspiration-content', async (req: any, res) => {
     try {
-      const { stage, country, search, contentType, limit, offset, featured, categories, tags } = req.query;
+      const { stage, country, schoolType, search, contentType, limit, offset, featured, categories, tags } = req.query;
       
       // Check if user is authenticated
       const isAuthenticated = req.isAuthenticated && req.isAuthenticated();
@@ -994,6 +994,9 @@ Return JSON with:
       
       // Parse featured filter (convert string 'true' to boolean)
       const featuredFilter = featured === 'true' ? true : undefined;
+      
+      // Normalize schoolType filter (convert 'all' to undefined)
+      const schoolTypeFilter = schoolType && schoolType !== 'all' ? (schoolType as string) : undefined;
       
       // Parse categories and tags filters (split comma-separated values into arrays)
       const categoriesFilter = categories ? (categories as string).split(',').map(c => c.trim()) : undefined;
@@ -1022,6 +1025,7 @@ Return JSON with:
         const caseStudies = await storage.getCaseStudies({
           stage: stage as string,
           country: country as string,
+          schoolType: schoolTypeFilter,
           search: search as string,
           featured: featuredFilter,
           categories: categoriesFilter,
