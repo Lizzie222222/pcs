@@ -70,48 +70,39 @@ export function initializeWebSocket(httpServer: Server): WebSocketServer {
 
   wss.on('connection', async (ws: WebSocket, req: IncomingMessage) => {
     try {
-      // Authenticate user from session (returns user object or identifier string for rate limiting)
-      const authResult = await authenticateWebSocket(req);
+      // Extract rate limit identifier BEFORE any authentication
+      const rateLimitKey = getRateLimitKey(req);
+      const now = Date.now();
       
-      // Check if this is a rate-limited identifier
-      if (typeof authResult === 'string') {
-        const identifier = authResult;
-        const now = Date.now();
+      // Check rate limit FIRST - before any database queries
+      let attempts = failedAttempts.get(rateLimitKey) || [];
+      attempts = attempts.filter((timestamp: number) => now - timestamp < RATE_LIMIT_WINDOW);
+      
+      if (attempts.length >= MAX_FAILED_ATTEMPTS) {
+        const lastAttempt = attempts[attempts.length - 1];
+        const timeSinceLastAttempt = now - lastAttempt;
         
-        // Get or initialize attempts array
-        let attempts = failedAttempts.get(identifier) || [];
-        
-        // Remove attempts older than the rate limit window
-        attempts = attempts.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
-        
-        // Check if user is in cooldown (last attempt was recent and they've exceeded limit)
-        if (attempts.length >= MAX_FAILED_ATTEMPTS) {
-          const lastAttempt = attempts[attempts.length - 1];
-          const timeSinceLastAttempt = now - lastAttempt;
-          
-          if (timeSinceLastAttempt < COOLDOWN_PERIOD) {
-            const remainingCooldown = Math.ceil((COOLDOWN_PERIOD - timeSinceLastAttempt) / 1000);
-            console.log(`[WebSocket] Rate limited: ${identifier} - ${attempts.length} attempts, ${remainingCooldown}s cooldown remaining`);
-            ws.close(1008, `Too many connection attempts. Please wait ${remainingCooldown} seconds.`);
-            return;
-          } else {
-            // Cooldown period has elapsed, reset attempts
-            attempts = [];
-          }
+        if (timeSinceLastAttempt < COOLDOWN_PERIOD) {
+          const remainingCooldown = Math.ceil((COOLDOWN_PERIOD - timeSinceLastAttempt) / 1000);
+          console.log(`[WebSocket] Rate limited: ${rateLimitKey} - cooldown ${remainingCooldown}s remaining (blocked before auth)`);
+          ws.close(1008, `Too many connection attempts. Please wait ${remainingCooldown} seconds.`);
+          return;
+        } else {
+          // Cooldown period has elapsed, reset attempts
+          attempts = [];
+          failedAttempts.delete(rateLimitKey);
         }
-        
-        // Record this failed attempt
-        attempts.push(now);
-        failedAttempts.set(identifier, attempts);
-        
-        console.log(`[WebSocket] Unauthenticated/rejected connection attempt from ${identifier} (${attempts.length}/${MAX_FAILED_ATTEMPTS})`);
-        ws.close(1008, 'Authentication required');
-        return;
       }
       
-      const user = authResult;
+      // Now authenticate (only if not rate limited)
+      const user = await authenticateWebSocket(req);
+      
       if (!user) {
-        console.log('[WebSocket] Unauthenticated connection attempt');
+        // Record failed attempt
+        attempts.push(now);
+        failedAttempts.set(rateLimitKey, attempts);
+        
+        console.log(`[WebSocket] Rejected connection from ${rateLimitKey} (${attempts.length}/${MAX_FAILED_ATTEMPTS} attempts)`);
         ws.close(1008, 'Authentication required');
         return;
       }
@@ -241,8 +232,30 @@ export function initializeWebSocket(httpServer: Server): WebSocketServer {
 }
 
 /**
+ * Extract rate limit key from request (session ID or IP address)
+ * This is used BEFORE authentication to enable early rate limiting
+ */
+function getRateLimitKey(req: IncomingMessage): string {
+  try {
+    const cookies = req.headers.cookie ? parseCookie(req.headers.cookie) : {};
+    const sessionCookie = cookies['connect.sid'];
+    
+    if (sessionCookie) {
+      // Use session ID as rate limit key
+      const decodedSessionId = decodeURIComponent(sessionCookie).replace(/^s:/, '').split('.')[0];
+      return `session-${decodedSessionId}`;
+    }
+    
+    // Fallback to IP address
+    return `ip-${req.socket.remoteAddress}`;
+  } catch (error) {
+    return `error-${req.socket.remoteAddress}`;
+  }
+}
+
+/**
  * Authenticate WebSocket connection using session cookie
- * Returns: User object on success, identifier string for rate limiting on failure, null for no session
+ * Returns: User object on success, null on failure
  */
 async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
   try {
@@ -251,8 +264,7 @@ async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
     const sessionCookie = cookies['connect.sid'];
 
     if (!sessionCookie) {
-      // Return session ID as identifier for rate limiting
-      return `no-session-${req.socket.remoteAddress}`;
+      return null;
     }
 
     // Decode session ID (remove 's:' prefix and extract ID before signature)
@@ -264,16 +276,14 @@ async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
 
     // If no session store (using default MemoryStore), we can't access it directly
     if (!sessionStore) {
-      console.warn('[WebSocket] Session store not available (using MemoryStore)');
-      return `no-store-${decodedSessionId}`;
+      return null;
     }
 
     // Retrieve session from store
     return new Promise((resolve) => {
       sessionStore.get(decodedSessionId, async (err: any, session: any) => {
         if (err || !session) {
-          console.log('[WebSocket] Session not found or error:', err);
-          return resolve(`invalid-session-${decodedSessionId}`);
+          return resolve(null);
         }
 
         // Extract user ID from session
@@ -285,19 +295,16 @@ async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
           if (user && (user.isAdmin || user.role === 'admin' || user.role === 'partner')) {
             resolve(user);
           } else {
-            // Return user email as identifier for rate limiting
-            const identifier = user?.email || `user-${userId}`;
-            console.log('[WebSocket] Non-admin user rejected:', identifier, user?.role);
-            resolve(identifier);
+            resolve(null);
           }
         } else {
-          resolve(`no-passport-${decodedSessionId}`);
+          resolve(null);
         }
       });
     });
   } catch (error) {
     console.error('[WebSocket] Authentication error:', error);
-    return `error-${req.socket.remoteAddress}`;
+    return null;
   }
 }
 

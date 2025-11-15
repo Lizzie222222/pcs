@@ -1,0 +1,82 @@
+[WebSocket] Rate limited: chara.ntova@cognita.com - 5 attempts, 261s cooldown remaining
+
+2025-11-15 20:20:51.92
+d0ab12f7
+User
+[WebSocket] Non-admin user rejected: chara.ntova@cognita.com teacher
+2025-11-15 20:20:52.16
+d0ab12f7
+User
+[WebSocket] Non-admin user rejected: edougia@sch.gr teacher
+2025-11-15 20:20:52.16
+d0ab12f7
+User
+[WebSocket] Rate limited: edougia@sch.gr - 5 attempts, 260s cooldown remaining
+2025-11-15 20:20:53.49
+d0ab12f7
+User
+[WebSocket] Non-admin user rejected: chara.ntova@cognita.com teacher
+2025-11-15 20:20:53.49
+d0ab12f7
+User
+[WebSocket] Rate limited: chara.ntova@cognita.com - 5 attempts, 260s cooldown remaining
+2025-11-15 20:20:54.11
+d0ab12f7
+User
+[WebSocket] Rate limited: edougia@sch.gr - 5 attempts, 259s cooldown remaining
+2025-11-15 20:20:54.11
+d0ab12f7
+User
+[WebSocket] Non-admin user rejected: edougia@sch.gr teacher
+2025-11-15 20:20:55.06
+d0ab12f7
+User
+[WebSocket] Non-admin user rejected: chara.ntova@cognita.com teacher
+2025-11-15 20:20:55.06
+d0ab12f7
+User
+[WebSocket] Rate limited: chara.ntova@cognita.com - 5 attempts, 258s cooldown remaining
+2025-11-15 20:20:56.12
+d0ab12f7
+User
+[WebSocket] Non-admin user rejected: edougia@sch.gr teacher
+2025-11-15 20:20:56.12
+d0ab12f7
+User
+[WebSocket] Rate limited: edougia@sch.gr - 5 attempts, 257s cooldown remaining
+2025-11-15 20:20:56.69
+d0ab12f7
+User
+7:20:56 PM [express] GET /api/my-events 304 in 198ms :: []
+2025-11-15 20:20:56.73
+d0ab12f7
+User
+[WebSocket] Rate limited: chara.ntova@cognita.com - 5 attempts, 256s cooldown remaining
+2025-11-15 20:20:56.73
+d0ab12f7
+User
+[WebSocket] Non-admin user rejected: chara.ntova@cognita.com teacher
+2025-11-15 20:20:58.20
+d0ab12f7
+User
+[WebSocket] Non-admin user rejected: edougia@sch.gr teacher
+2025-11-15 20:20:58.20
+d0ab12f7
+User
+[WebSocket] Rate limited: edougia@sch.gr - 5 attempts, 254s cooldown remaining
+2025-11-15 20:20:58.32
+d0ab12f7
+User
+[WebSocket] Rate limited: chara.ntova@cognita.com - 5 attempts, 255s cooldown remaining
+2025-11-15 20:20:58.32
+d0ab12f7
+User
+[WebSocket] Non-admin user rejected: chara.ntova@cognita.com teacher
+2025-11-15 20:20:59.92
+d0ab12f7
+User
+[WebSocket] Non-admin user rejected: chara.ntova@cognita.com teacher
+2025-11-15 20:20:59.92
+d0ab12f7
+User
+[WebSocket] Rate limited: chara.ntova@cognita.com - 5 attempts, 253s cooldown remaining
