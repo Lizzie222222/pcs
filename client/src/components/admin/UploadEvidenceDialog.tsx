@@ -1,5 +1,5 @@
-import { useState, useRef } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useRef, useEffect } from "react";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import {
@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2, Upload, X } from "lucide-react";
+import { Loader2, Upload, X, Star } from "lucide-react";
 
 interface UploadEvidenceDialogProps {
   open: boolean;
@@ -34,6 +34,14 @@ interface EvidenceFile {
   type: string;
 }
 
+interface EvidenceRequirement {
+  id: string;
+  stage: string;
+  title: string;
+  description: string;
+  orderIndex: number;
+}
+
 export function UploadEvidenceDialog({
   open,
   onOpenChange,
@@ -46,10 +54,33 @@ export function UploadEvidenceDialog({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [stage, setStage] = useState<"inspire" | "investigate" | "act">("inspire");
+  const [evidenceRequirementId, setEvidenceRequirementId] = useState<string>("");
   const [visibility, setVisibility] = useState<"public" | "private">("private");
   const [videoLinks, setVideoLinks] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<EvidenceFile[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Fetch requirements for the selected stage
+  const { data: requirements = [], isLoading: requirementsLoading, isError: requirementsError, refetch: refetchRequirements } = useQuery<EvidenceRequirement[]>({
+    queryKey: ['/api/evidence-requirements', stage],
+    queryFn: async () => {
+      const response = await fetch(`/api/evidence-requirements?stage=${stage}`, { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch requirements');
+      return response.json();
+    },
+    retry: 2,
+    refetchOnWindowFocus: true,
+  });
+
+  // Reset requirement selection when stage changes if current selection is invalid for new stage
+  useEffect(() => {
+    if (evidenceRequirementId && evidenceRequirementId !== "bonus" && requirements.length > 0) {
+      const isValid = requirements.some(req => req.id === evidenceRequirementId);
+      if (!isValid) {
+        setEvidenceRequirementId("");
+      }
+    }
+  }, [stage, requirements, evidenceRequirementId]);
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -125,6 +156,7 @@ export function UploadEvidenceDialog({
         title,
         description,
         stage,
+        evidenceRequirementId: evidenceRequirementId === "bonus" ? null : (evidenceRequirementId || null),
         visibility,
         files: uploadedFiles,
         videoLinks: videoLinks || null,
@@ -154,6 +186,7 @@ export function UploadEvidenceDialog({
     setTitle("");
     setDescription("");
     setStage("inspire");
+    setEvidenceRequirementId("");
     setVisibility("private");
     setVideoLinks("");
     setUploadedFiles([]);
@@ -165,6 +198,14 @@ export function UploadEvidenceDialog({
       toast({
         title: "Title required",
         description: "Please enter a title for the evidence",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!evidenceRequirementId) {
+      toast({
+        title: "Requirement required",
+        description: "Please select which requirement this evidence fulfills or mark it as bonus evidence",
         variant: "destructive",
       });
       return;
@@ -231,6 +272,56 @@ export function UploadEvidenceDialog({
                 </SelectContent>
               </Select>
             </div>
+          </div>
+
+          <div>
+            <Label htmlFor="requirement">Requirement *</Label>
+            <Select 
+              value={evidenceRequirementId} 
+              onValueChange={setEvidenceRequirementId}
+              disabled={requirementsLoading}
+            >
+              <SelectTrigger id="requirement" data-testid="select-requirement">
+                <SelectValue placeholder={
+                  requirementsLoading ? "Loading requirements..." : 
+                  "Select a requirement"
+                } />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="bonus">
+                  <div className="flex items-center gap-2">
+                    <Star className="h-4 w-4 text-yellow-500" />
+                    <span>Bonus Evidence (not linked to requirement)</span>
+                  </div>
+                </SelectItem>
+                {requirements.map((req) => (
+                  <SelectItem key={req.id} value={req.id}>
+                    {req.title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {requirementsError ? (
+              <div className="mt-1 space-y-1">
+                <p className="text-xs text-red-600">
+                  Failed to load requirements.{' '}
+                  <button
+                    type="button"
+                    onClick={() => refetchRequirements()}
+                    className="underline hover:no-underline"
+                  >
+                    Click to retry
+                  </button>
+                </p>
+                <p className="text-xs text-gray-500">
+                  You can still upload as bonus evidence while requirements are unavailable
+                </p>
+              </div>
+            ) : (
+              <p className="text-xs text-gray-500 mt-1">
+                Select which requirement this evidence fulfills, or mark as bonus evidence
+              </p>
+            )}
           </div>
 
           <div>
@@ -318,7 +409,7 @@ export function UploadEvidenceDialog({
             </Button>
             <Button
               type="submit"
-              disabled={submitMutation.isPending || isUploading}
+              disabled={submitMutation.isPending || isUploading || requirementsLoading}
               data-testid="button-submit"
             >
               {submitMutation.isPending ? (
