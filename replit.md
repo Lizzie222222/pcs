@@ -44,7 +44,7 @@ Core entities include Users, Schools, Evidence, Audit Logs, Reduction Promises (
 -   **Plastic Waste Audit System**: Comprehensive 5-step audit workflow covering 11 room types with granular plastic item tracking and automatic annual calculations. Fully internationalized with separate audit submission and action plan development.
 -   **Mobile Responsiveness**: Full mobile optimization for the admin panel.
 -   **Events System**: Full lifecycle management, multi-language landing pages, automated email reminders, capacity tracking, and calendar integration with auto-translate features.
--   **Inspiration Page**: Unified gallery of case studies and approved evidence with smart sorting/filtering.
+-   **Inspiration Page**: Unified gallery of case studies and approved evidence with smart sorting/filtering by country, school type, stage, and content type.
 -   **Resources System**: Enhanced page with language tabs, gradient-styled cards, badges, smart ordering, locked visibility, automatic notifications, and visual thumbnail previews.
 -   **Notifications System**: Real-time notifications via bell icon and dashboard banners.
 -   **Content Management**: Printable forms with admin review, advanced filtering for the Evidence Gallery, and server-side image compression.
@@ -55,7 +55,7 @@ Core entities include Users, Schools, Evidence, Audit Logs, Reduction Promises (
 -   **Real-Time Collaboration**: Admin dashboard features online presence tracking, document locking, admin chat, and activity history. WebSocket connections are restricted to admin and partner users only. Client-side role checks prevent non-admin connection attempts. Server-side rate limiting (5 attempts per minute, 5-minute cooldown) stops repeated failed connections from outdated cached JavaScript, encouraging browser refreshes while preventing expensive server costs.
 -   **Health Monitoring**: Internal uptime monitoring and a system health dashboard.
 -   **Program Stages**: All program stages (Inspire, Investigate, Act) are fully unlocked and simultaneously accessible.
--   **Registration Form**: Redesigned age selection for granular student demographic tracking.
+-   **Registration Form**: Redesigned age selection for granular student demographic tracking. School type selection (Kindergarten, Primary, Secondary, High School, International, Other) required during signup to enable targeted filtering and resource recommendations.
 -   **Bonus Evidence System**: Tracks bonus/additional evidence that doesn't count toward stage completion requirements, with admin tools for triage.
 
 ## External Dependencies
