@@ -3,85 +3,6 @@
 ## Overview
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
-## Recent Changes
-**November 15, 2025**: Performance Optimizations - Implemented comprehensive server protection and WebSocket notification system
-- **Rate Limiting**: Installed express-rate-limit with tiered request limits to protect against bot traffic and abuse
-  - Bot/suspicious traffic: 5 requests/hour (blocks WordPress/PHP scanner endpoints like /xmlrpc.php, /wp-admin, /.env, etc.)
-  - Anonymous users: 100 requests/15 minutes
-  - Authenticated users: 300 requests/15 minutes
-  - Admin users: 1000 requests/15 minutes
-  - Automatic IP detection with IPv6 support using ipKeyGenerator
-  - All rate limit violations logged for monitoring
-  - **FIXED**: Removed `/admin` from bot blocker list to allow legitimate admin panel access (was blocking admin logins)
-- **Request Timeout Protection**: Added 90-second timeout middleware to prevent hanging requests
-  - Graceful 504 Gateway Timeout responses when requests exceed time limit
-  - Protects against resource exhaustion from long-running or stuck requests
-  - Applied globally to all API routes
-- **WebSocket Notification System**: Eliminated polling with real-time WebSocket notifications
-  - Added `notification_update` WebSocket event type for real-time notification delivery
-  - Server-side broadcasts when notifications are created (user-specific or school-wide)
-  - Frontend CollaborationContext handles notification events with subscription system
-  - Navigation component uses WebSocket for instant notification count updates
-  - Fallback to 30-second polling when WebSocket is disconnected
-  - **Expected Impact**: Eliminates ~18K notification polling requests/day, reducing to WebSocket messages only
-- **Combined Infrastructure Savings**: 99%+ reduction in unnecessary traffic
-  - WebSocket reconnection fix: 3M → 10-20K connections/day
-  - Idle timeout feature: Additional reduction from disconnecting inactive users
-  - Notification polling elimination: 18K fewer requests/day
-  - Bot blocking: Prevents 162K+ malicious requests/day (e.g., /xmlrpc.php attacks)
-  - Request timeout: Prevents resource exhaustion from hanging requests
-
-**November 15, 2025**: CRITICAL FIX - Resolved excessive WebSocket reconnection issue causing high infrastructure costs
-- **Root Cause**: WebSocket was reconnecting every few minutes (~383 connections per user per day, ~3 million per day total) due to userId dependency triggering React effect when user object reference changed during TanStack Query refetches
-- **Solution Implemented**: 
-  - Introduced `userIdRef` to track userId without causing re-renders or reconnections
-  - Added `shouldMaintainConnectionRef` flag to control when automatic reconnection should occur
-  - Modified `onclose` handler to check `shouldMaintainConnectionRef` before attempting reconnection
-  - Implemented visibility-based disconnect with 30-second delay for hidden tabs
-  - Fixed connection effect to depend on `[isAuthenticated, user?.id]` with guards to prevent duplicate connections
-  - **NEW: Idle Timeout Feature** - Added automatic disconnect after 30 minutes of user inactivity with manual reconnection
-- **Key Technical Changes**:
-  - `hasInitiatedConnectionRef` prevents duplicate connections when user object reference changes
-  - `shouldMaintainConnectionRef` set to `false` during intentional disconnects (logout, hidden tabs, idle timeout) preventing `onclose` from auto-reconnecting
-  - Proper timeout clearing in visibility handler prevents overlapping disconnect timers
-  - Activity tracking via mousedown, keydown, scroll, touchstart events resets 30-minute idle timer
-  - `IdleTimeoutNotification` component displays amber alert with "Reconnect Now" button when user is idle-disconnected
-- **Expected Impact**: Reduced WebSocket connections from ~3 million/day to ~10-20K/day (one stable connection per user session instead of reconnecting every few minutes), with additional savings from idle user disconnects
-- **Architect Review**: PASS - Confirmed all reconnection issues resolved with no security concerns or race conditions. Idle timeout feature also approved.
-
-**November 15, 2025**: Enhanced evidence review queue UI with improved filtering and preview
-- **Three-Tier Filter Organization**: Reorganized filters into logical tiers - Tier 1 (Stage toggles + Requirement dropdown + Status tabs + Assignee + View toggle), Tier 2 (Search + Sort + Clear filters), Tier 3 (Collapsible advanced filters in 2-column grid)
-- **Stage-Requirement Adjacency**: Moved requirement filter from advanced section to be adjacent to stage filter for better UX and logical grouping
-- **Table Preview Enhancement**: Added thumbnail preview column to table view with clickable Dialog component for detailed evidence inspection
-- **Smart Thumbnail Display**: Thumbnails intelligently find first image-type file from evidence files array, falling back to icon for non-image files (PDFs, videos)
-- **Improved Filter Layout**: Changed advanced filters from 5-column to 2-column grid to prevent date range overflow, added responsive flex-wrap
-- **Country Filter Fix**: Added "All Countries" option to country dropdown for proper clear filters functionality
-- **Accessibility**: Replaced custom modal div with proper Dialog component for better screen reader support and keyboard navigation
-
-**November 15, 2025**: Implemented comprehensive bonus evidence and homeless evidence triage system
-- **Bonus Evidence System**: Added `isBonus` field to evidence schema to track bonus/additional evidence that doesn't count toward stage completion requirements
-- **Admin Upload Form Enhancement**: Dynamic requirement selector loads requirements based on selected stage, with "Bonus Evidence" option always available for submissions that don't fit specific requirements
-- **Evidence Triage Dashboard**: New admin tool in Program dropdown lists all homeless evidence (evidenceRequirementId=null, isBonus=false) with pagination, filtering by school/stage, and ability to assign to requirements or mark as bonus
-- **School-Side Visibility**: Discreet amber notification in Progress Tracker alerts schools when they have homeless admin-uploaded evidence that won't count until assigned
-- **Bonus Badge Display**: Gold "Bonus" badge appears in Recent Activity feed for evidence marked as bonus, providing visual distinction
-- **Progress Calculation Fix**: Progress tracking now correctly excludes bonus evidence while preserving homeless evidence counts until assigned
-- **Orphan Evidence Handling**: Triage dashboard displays evidence without associated schools as "Unknown School" for admin cleanup
-- **Migration**: Database migration completed successfully setting isBonus default to false for all existing evidence
-- Fixed admin Quick Stats progress display bug in school profile where 0% progress incorrectly showed as 100%
-- Normalized photo consent API response structure to use consistent nested `photoConsent` object format
-- Photo consent documents now visible in both Review Queue and School Profile pages
-- Fixed round progression to require BOTH Plastic Waste Audit AND Action Plan for Investigate stage completion
-- Added round selector to Progress Tracker for viewing historical evidence from previous rounds
-- Enhanced Recent Activity with color-coded round badges (blue/purple/green) for all rounds
-
-**November 14, 2025**: Fixed photo consent workflow
-- Migrated photo consent document uploads from local multer storage to Google Cloud Storage for reliable document access
-- Normalized all photo consent API responses to use consistent nested `photoConsent` object structure (status, documentUrl, uploadedAt, approvedAt, reviewNotes)
-- Implemented dynamic photo consent status banners in evidence submission form that display real-time status (approved/pending/rejected/not uploaded)
-- Added comprehensive cache invalidation across all admin mutations (approve/reject) to ensure immediate UI updates
-- Updated all frontend components (EvidenceSubmissionForm, PhotoConsentQueue, admin panels) to use the new normalized data structure
-- Cleaned up legacy data with malformed photo consent URLs
-
 ## User Preferences
 Preferred communication style: Simple, everyday language.
 
@@ -135,6 +56,7 @@ Core entities include Users, Schools, Evidence, Audit Logs, Reduction Promises (
 -   **Health Monitoring**: Internal uptime monitoring and a system health dashboard.
 -   **Program Stages**: All program stages (Inspire, Investigate, Act) are fully unlocked and simultaneously accessible.
 -   **Registration Form**: Redesigned age selection for granular student demographic tracking.
+-   **Bonus Evidence System**: Tracks bonus/additional evidence that doesn't count toward stage completion requirements, with admin tools for triage.
 
 ## External Dependencies
 -   **Database**: Neon PostgreSQL
