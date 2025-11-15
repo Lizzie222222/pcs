@@ -381,6 +381,14 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
           return;
         }
 
+        // Don't reconnect if server rejected due to permissions (code 1008)
+        // This happens when non-admin users try to connect to admin-only WebSocket
+        if (event.code === 1008) {
+          console.log('[Collaboration] Connection rejected due to insufficient permissions, not reconnecting');
+          shouldMaintainConnectionRef.current = false; // Prevent any future reconnection attempts
+          return;
+        }
+
         // Only attempt to reconnect if still authenticated AND connection should be maintained
         // This prevents reconnection when: (1) user is not logged in, (2) page is intentionally hidden
         if (!isAuthenticated || !shouldMaintainConnectionRef.current) {
