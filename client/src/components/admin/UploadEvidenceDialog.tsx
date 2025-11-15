@@ -157,6 +157,7 @@ export function UploadEvidenceDialog({
         description,
         stage,
         evidenceRequirementId: evidenceRequirementId === "bonus" ? null : (evidenceRequirementId || null),
+        isBonus: evidenceRequirementId === "bonus",
         visibility,
         files: uploadedFiles,
         videoLinks: videoLinks || null,

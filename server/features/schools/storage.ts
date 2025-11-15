@@ -664,6 +664,7 @@ export class SchoolStorage {
         schoolId: evidence.schoolId,
         submittedBy: evidence.submittedBy,
         evidenceRequirementId: evidence.evidenceRequirementId,
+        isBonus: evidence.isBonus,
         title: evidence.title,
         description: evidence.description,
         stage: evidence.stage,
@@ -763,7 +764,10 @@ export class SchoolStorage {
           .map(e => e.evidenceRequirementId)
       );
       
-      const evidenceWithoutRequirement = approvedEvidence.filter(e => e.evidenceRequirementId === null);
+      // Only count homeless evidence (not bonus evidence)
+      const evidenceWithoutRequirement = approvedEvidence.filter(e => 
+        e.evidenceRequirementId === null && !e.isBonus
+      );
       
       const stageOverrides = adminOverrides.filter(o => o.stage === stageId);
       

@@ -397,6 +397,7 @@ export const evidence = pgTable("evidence", {
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
   submittedBy: varchar("submitted_by").notNull().references(() => users.id),
   evidenceRequirementId: varchar("evidence_requirement_id").references(() => evidenceRequirements.id),
+  isBonus: boolean("is_bonus").default(false),
   title: varchar("title").notNull(),
   description: text("description"),
   stage: programStageEnum("stage").notNull(),
