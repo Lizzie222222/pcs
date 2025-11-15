@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import ProgressTracker from "@/components/ProgressTracker";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
+import { EvidenceDetailModal } from "@/components/EvidenceDetailModal";
 import { WelcomeModal } from "@/components/WelcomeModal";
 import { InteractiveTour } from "@/components/InteractiveTour";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -288,6 +289,8 @@ export default function Home() {
     return stored === 'true';
   });
   const isManualTourTrigger = useRef(false);
+  const [selectedEvidence, setSelectedEvidence] = useState<any>(null);
+  const [showEvidenceDetailModal, setShowEvidenceDetailModal] = useState(false);
 
   // Redirect admins and partners to admin dashboard
   useEffect(() => {
@@ -1228,7 +1231,11 @@ export default function Home() {
                         {aboveAndBeyondEvidence.slice(0, 5).map((evidence) => (
                           <div
                             key={evidence.id}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-sm transition-shadow"
+                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200 hover:shadow-md hover:bg-white transition-all cursor-pointer"
+                            onClick={() => {
+                              setSelectedEvidence(evidence);
+                              setShowEvidenceDetailModal(true);
+                            }}
                             data-testid={`above-beyond-${evidence.id}`}
                           >
                             <div className="flex-1">
@@ -2270,6 +2277,15 @@ export default function Home() {
         isActive={showTour}
         onComplete={handleTourComplete}
         onSkip={handleTourSkip}
+      />
+      {/* Evidence Detail Modal */}
+      <EvidenceDetailModal
+        evidence={selectedEvidence}
+        isOpen={showEvidenceDetailModal}
+        onClose={() => {
+          setShowEvidenceDetailModal(false);
+          setSelectedEvidence(null);
+        }}
       />
     </div>
   );
