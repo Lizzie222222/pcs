@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, Link } from "wouter";
 import { useTranslation } from "react-i18next";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +12,7 @@ import logoUrl from "@assets/Logo_1757848498470.png";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import Avatar from "./Avatar";
 import { NotificationDropdown } from "./NotificationDropdown";
+import { useCollaboration } from "@/contexts/CollaborationContext";
 
 interface DashboardData {
   school: {
@@ -28,6 +29,8 @@ export default function Navigation() {
   const { isAuthenticated, user } = useAuth();
   const [location, setLocation] = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const queryClient = useQueryClient();
+  const { connectionState, onNotificationUpdate } = useCollaboration();
 
   // Query dashboard to get user's school role
   const { data: dashboardData } = useQuery<DashboardData>({
@@ -42,12 +45,26 @@ export default function Navigation() {
   });
 
   // Get unread notification count
+  // Use WebSocket for real-time updates when connected
+  // Fall back to 30-second polling when disconnected
   const { data: unreadCountData } = useQuery<{ count: number }>({
     queryKey: ['/api/notifications/unread-count'],
     enabled: isAuthenticated,
     retry: false,
-    refetchInterval: 120000, // Refetch every 2 minutes
+    // Only poll when WebSocket is disconnected (30s fallback)
+    refetchInterval: connectionState === 'connected' ? false : 30000,
   });
+
+  // Subscribe to WebSocket notification updates for real-time count refresh
+  useEffect(() => {
+    if (connectionState === 'connected' && isAuthenticated) {
+      const unsubscribe = onNotificationUpdate(() => {
+        // Refetch notification count when WebSocket sends update
+        queryClient.invalidateQueries({ queryKey: ['/api/notifications/unread-count'] });
+      });
+      return unsubscribe;
+    }
+  }, [connectionState, isAuthenticated, onNotificationUpdate, queryClient]);
 
   const unreadCount = unreadCountData?.count || 0;
 
