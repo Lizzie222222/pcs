@@ -52,7 +52,7 @@ Core entities include Users, Schools, Evidence, Audit Logs, Reduction Promises (
 -   **SEO Optimization**: Server-side meta tag injection, JSON-LD, proper heading hierarchy.
 -   **User Profile Management**: Comprehensive page for editing user details, language, password, and account deletion.
 -   **Legal Pages**: Fully internationalized Privacy Policy and Terms & Conditions.
--   **Real-Time Collaboration**: Admin dashboard features online presence tracking, document locking, admin chat, and activity history. WebSocket connections are restricted to admin and partner users only; non-admin connection attempts are permanently rejected (no reconnection loops) to optimize resource usage.
+-   **Real-Time Collaboration**: Admin dashboard features online presence tracking, document locking, admin chat, and activity history. WebSocket connections are restricted to admin and partner users only. Client-side role checks prevent non-admin connection attempts. Server-side rate limiting (5 attempts per minute, 5-minute cooldown) stops repeated failed connections from outdated cached JavaScript, encouraging browser refreshes while preventing expensive server costs.
 -   **Health Monitoring**: Internal uptime monitoring and a system health dashboard.
 -   **Program Stages**: All program stages (Inspire, Investigate, Act) are fully unlocked and simultaneously accessible.
 -   **Registration Form**: Redesigned age selection for granular student demographic tracking.

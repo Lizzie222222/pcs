@@ -46,6 +46,12 @@ const documentLocks = new Map<string, DocumentLock>(); // ${documentType}:${docu
 const typingUsers = new Map<string, { name: string; timestamp: Date }>(); // userId -> typing info
 const documentViewers = new Map<string, Set<string>>(); // ${documentType}:${documentId} -> Set<userId>
 
+// Rate limiting for failed connection attempts
+const failedAttempts = new Map<string, number[]>(); // userId -> array of timestamps
+const MAX_FAILED_ATTEMPTS = 5; // Maximum failed attempts
+const RATE_LIMIT_WINDOW = 60000; // 1 minute window
+const COOLDOWN_PERIOD = 5 * 60 * 1000; // 5 minute cooldown
+
 // Heartbeat interval (30 seconds)
 const HEARTBEAT_INTERVAL = 30000;
 // Lock expiration time (5 minutes)
@@ -64,9 +70,46 @@ export function initializeWebSocket(httpServer: Server): WebSocketServer {
 
   wss.on('connection', async (ws: WebSocket, req: IncomingMessage) => {
     try {
-      // Authenticate user from session
-      const user = await authenticateWebSocket(req);
+      // Authenticate user from session (returns user object or identifier string for rate limiting)
+      const authResult = await authenticateWebSocket(req);
       
+      // Check if this is a rate-limited identifier
+      if (typeof authResult === 'string') {
+        const identifier = authResult;
+        const now = Date.now();
+        
+        // Get or initialize attempts array
+        let attempts = failedAttempts.get(identifier) || [];
+        
+        // Remove attempts older than the rate limit window
+        attempts = attempts.filter(timestamp => now - timestamp < RATE_LIMIT_WINDOW);
+        
+        // Check if user is in cooldown (last attempt was recent and they've exceeded limit)
+        if (attempts.length >= MAX_FAILED_ATTEMPTS) {
+          const lastAttempt = attempts[attempts.length - 1];
+          const timeSinceLastAttempt = now - lastAttempt;
+          
+          if (timeSinceLastAttempt < COOLDOWN_PERIOD) {
+            const remainingCooldown = Math.ceil((COOLDOWN_PERIOD - timeSinceLastAttempt) / 1000);
+            console.log(`[WebSocket] Rate limited: ${identifier} - ${attempts.length} attempts, ${remainingCooldown}s cooldown remaining`);
+            ws.close(1008, `Too many connection attempts. Please wait ${remainingCooldown} seconds.`);
+            return;
+          } else {
+            // Cooldown period has elapsed, reset attempts
+            attempts = [];
+          }
+        }
+        
+        // Record this failed attempt
+        attempts.push(now);
+        failedAttempts.set(identifier, attempts);
+        
+        console.log(`[WebSocket] Unauthenticated/rejected connection attempt from ${identifier} (${attempts.length}/${MAX_FAILED_ATTEMPTS})`);
+        ws.close(1008, 'Authentication required');
+        return;
+      }
+      
+      const user = authResult;
       if (!user) {
         console.log('[WebSocket] Unauthenticated connection attempt');
         ws.close(1008, 'Authentication required');
@@ -176,11 +219,30 @@ export function initializeWebSocket(httpServer: Server): WebSocketServer {
     cleanupExpiredLocks();
   }, 60000); // Check every minute
 
+  // Cleanup interval for old failed attempts (every 10 minutes)
+  const attemptsCleanupInterval = setInterval(() => {
+    const now = Date.now();
+    const entries = Array.from(failedAttempts.entries());
+    for (const [identifier, attempts] of entries) {
+      // Remove attempts older than cooldown period
+      const recentAttempts = attempts.filter((timestamp: number) => now - timestamp < COOLDOWN_PERIOD);
+      if (recentAttempts.length === 0) {
+        failedAttempts.delete(identifier);
+      } else {
+        failedAttempts.set(identifier, recentAttempts);
+      }
+    }
+    if (failedAttempts.size > 0) {
+      console.log(`[WebSocket] Cleanup: ${failedAttempts.size} identifiers with recent failed attempts`);
+    }
+  }, 10 * 60000); // Every 10 minutes
+
   return wss;
 }
 
 /**
  * Authenticate WebSocket connection using session cookie
+ * Returns: User object on success, identifier string for rate limiting on failure, null for no session
  */
 async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
   try {
@@ -189,7 +251,8 @@ async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
     const sessionCookie = cookies['connect.sid'];
 
     if (!sessionCookie) {
-      return null;
+      // Return session ID as identifier for rate limiting
+      return `no-session-${req.socket.remoteAddress}`;
     }
 
     // Decode session ID (remove 's:' prefix and extract ID before signature)
@@ -202,7 +265,7 @@ async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
     // If no session store (using default MemoryStore), we can't access it directly
     if (!sessionStore) {
       console.warn('[WebSocket] Session store not available (using MemoryStore)');
-      return null;
+      return `no-store-${decodedSessionId}`;
     }
 
     // Retrieve session from store
@@ -210,7 +273,7 @@ async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
       sessionStore.get(decodedSessionId, async (err: any, session: any) => {
         if (err || !session) {
           console.log('[WebSocket] Session not found or error:', err);
-          return resolve(null);
+          return resolve(`invalid-session-${decodedSessionId}`);
         }
 
         // Extract user ID from session
@@ -222,17 +285,19 @@ async function authenticateWebSocket(req: IncomingMessage): Promise<any> {
           if (user && (user.isAdmin || user.role === 'admin' || user.role === 'partner')) {
             resolve(user);
           } else {
-            console.log('[WebSocket] Non-admin user rejected:', user?.email, user?.role);
-            resolve(null);
+            // Return user email as identifier for rate limiting
+            const identifier = user?.email || `user-${userId}`;
+            console.log('[WebSocket] Non-admin user rejected:', identifier, user?.role);
+            resolve(identifier);
           }
         } else {
-          resolve(null);
+          resolve(`no-passport-${decodedSessionId}`);
         }
       });
     });
   } catch (error) {
     console.error('[WebSocket] Authentication error:', error);
-    return null;
+    return `error-${req.socket.remoteAddress}`;
   }
 }
 
