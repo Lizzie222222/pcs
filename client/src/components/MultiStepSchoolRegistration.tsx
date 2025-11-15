@@ -67,6 +67,7 @@ export default function MultiStepSchoolRegistration({ onClose }: MultiStepSchool
         ...step1Data,
         ...step2Data,
         ...data,
+        type: step1Data.type,
         language: i18n.language, // Include current UI language for welcome email
       };
 

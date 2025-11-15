@@ -1509,6 +1509,7 @@ Return JSON with:
         // Step 1: School Info
         country: z.string().min(1),
         schoolName: z.string().min(1).max(200),
+        type: z.enum(['kindergarten', 'primary', 'secondary', 'high_school', 'international', 'other']),
         adminEmail: z.string().min(1).email(),
         address: z.string().min(1),
         postcode: z.string().optional(),
@@ -1565,6 +1566,7 @@ Return JSON with:
       // Create school with all the collected data
       const school = await storage.createSchool({
         name: data.schoolName,
+        type: data.type,
         country: data.country,
         address: data.address,
         adminEmail: data.adminEmail,

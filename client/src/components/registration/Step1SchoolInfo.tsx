@@ -19,6 +19,7 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 export interface Step1Data {
   country: string;
   name: string;
+  type?: string | undefined;
   adminEmail: string;
   address: string;
   postcode?: string;
@@ -43,6 +44,9 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
     return z.object({
       country: z.string().min(1, t('forms:validation.required')),
       name: z.string().min(1, t('forms:validation.required')).max(200),
+      type: z.enum(['kindergarten', 'primary', 'secondary', 'high_school', 'international', 'other'], {
+        required_error: t('forms:validation.required'),
+      }),
       adminEmail: z.string().min(1, t('forms:validation.required')).email(t('forms:validation.email_invalid')),
       address: z.string().min(1, t('forms:validation.required')),
       postcode: countryConfig?.postalCodeField === 'postcode' 
@@ -63,6 +67,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
     defaultValues: {
       country: initialData?.country || '',
       name: initialData?.name || '',
+      type: initialData?.type || '',
       adminEmail: initialData?.adminEmail || '',
       address: initialData?.address || '',
       postcode: initialData?.postcode || '',
@@ -163,6 +168,33 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
                   />
                 </FormControl>
                 <FormMessage data-testid="error-school-name" />
+              </FormItem>
+            )}
+          />
+
+          {/* School Type */}
+          <FormField
+            control={form.control}
+            name="type"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>School Type</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger data-testid="select-school-type">
+                      <SelectValue placeholder="Select school type" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="kindergarten">Kindergarten</SelectItem>
+                    <SelectItem value="primary">Primary</SelectItem>
+                    <SelectItem value="secondary">Secondary</SelectItem>
+                    <SelectItem value="high_school">High School</SelectItem>
+                    <SelectItem value="international">International</SelectItem>
+                    <SelectItem value="other">Other</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage data-testid="error-school-type" />
               </FormItem>
             )}
           />
