@@ -51,6 +51,7 @@ import { schoolsRouter, adminSchoolsQuerySchema, toggleEvidenceOverrideSchema, u
 import { createEvidenceRouters } from './features/evidence/routes';
 import { initCaseStudyRoutes, adminRouter as caseStudyAdminRouter } from './features/case-studies/routes';
 import { getPDFDelegate } from './features/case-studies/delegates';
+import { apiLimiter } from './middleware/rateLimiting';
 
 /**
  * @description Main route registration function setting up all API endpoints including auth, schools, evidence, case studies, events, email, and file uploads. Applies authentication middleware and ACL policies.
@@ -62,6 +63,9 @@ import { getPDFDelegate } from './features/case-studies/delegates';
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
   await setupAuth(app);
+
+  // API rate limiter - Applied after auth so req.user is available for tiered limits
+  app.use(apiLimiter);
 
   // Apply trackUserActivity middleware globally to all authenticated routes
   // This updates lastActiveAt timestamp for all user activity

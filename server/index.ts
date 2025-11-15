@@ -6,8 +6,13 @@ import { setupVite, serveStatic, log } from "./vite";
 import { initializeWebSocket } from "./websocket";
 import { initScheduler } from "./scheduler";
 import { startHealthMonitoring } from "./healthMonitor";
+import { botBlocker } from "./middleware/rateLimiting";
+import { requestTimeout } from "./middleware/timeout";
 
 const app = express();
+
+// Bot blocker - Apply early to reject bot traffic immediately
+app.use(botBlocker);
 
 // Enable gzip/brotli compression for all responses
 // This reduces JSON API responses by 60-80% for faster AI agent edits
@@ -29,6 +34,9 @@ app.use(compression({
 
 app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ extended: false, limit: '200mb' }));
+
+// Request timeout - Prevent hanging requests (90 seconds)
+app.use(requestTimeout(90000));
 
 // Configure CORS to allow credentials from approved origins only
 app.use(cors({
