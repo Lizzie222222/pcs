@@ -260,9 +260,11 @@ export interface IStorage {
     id: string;
     name: string;
     country: string;
-    photoConsentDocumentUrl: string | null;
-    photoConsentUploadedAt: Date | null;
-    photoConsentStatus: string | null;
+    photoConsent: {
+      documentUrl: string | null;
+      uploadedAt: Date | null;
+      status: string | null;
+    } | null;
   }>>;
   
   // School User operations
@@ -1647,9 +1649,11 @@ export class DatabaseStorage implements IStorage {
     id: string;
     name: string;
     country: string;
-    photoConsentDocumentUrl: string | null;
-    photoConsentUploadedAt: Date | null;
-    photoConsentStatus: string | null;
+    photoConsent: {
+      documentUrl: string | null;
+      uploadedAt: Date | null;
+      status: string | null;
+    } | null;
   }>> {
     return schoolStorage.getSchoolsWithPendingPhotoConsent();
   }

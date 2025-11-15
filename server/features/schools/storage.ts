@@ -505,9 +505,11 @@ export class SchoolStorage {
     id: string;
     name: string;
     country: string;
-    photoConsentDocumentUrl: string | null;
-    photoConsentUploadedAt: Date | null;
-    photoConsentStatus: string | null;
+    photoConsent: {
+      documentUrl: string | null;
+      uploadedAt: Date | null;
+      status: string | null;
+    } | null;
   }>> {
     const pendingSchools = await db
       .select({
@@ -521,7 +523,16 @@ export class SchoolStorage {
       .from(schools)
       .where(eq(schools.photoConsentStatus, 'pending'));
     
-    return pendingSchools;
+    return pendingSchools.map(school => ({
+      id: school.id,
+      name: school.name,
+      country: school.country,
+      photoConsent: school.photoConsentDocumentUrl || school.photoConsentUploadedAt ? {
+        documentUrl: school.photoConsentDocumentUrl,
+        uploadedAt: school.photoConsentUploadedAt,
+        status: school.photoConsentStatus,
+      } : null
+    }));
   }
 
   async addUserToSchool(schoolUserData: InsertSchoolUser): Promise<SchoolUser> {
