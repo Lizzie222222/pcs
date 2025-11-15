@@ -50,6 +50,8 @@ interface CollaborationContextType {
   conflictWarnings: any[];
   typingUsers: TypingUser[];
   documentViewers: Map<string, DocumentViewer[]>;
+  isIdleDisconnected: boolean;
+  reconnect: () => void;
   sendPresenceUpdate: (currentActivity: ConnectedUser['currentActivity'], userId?: string) => void;
   requestDocumentLock: (documentId: string, documentType: 'case_study' | 'event') => Promise<{ success: boolean; lock?: DocumentLock; locked?: boolean; lockedBy?: string; error?: string }>;
   releaseDocumentLock: (documentId: string, documentType: 'case_study' | 'event') => void;
@@ -81,9 +83,13 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
   const userIdRef = useRef<string | undefined>(undefined);
   // Track whether we should maintain the connection (false when page is intentionally hidden or user logged out)
   const shouldMaintainConnectionRef = useRef(true);
+  // Track idle timeout
+  const idleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastActivityTimeRef = useRef<number>(Date.now());
   
   const maxReconnectAttempts = 5;
   const baseReconnectDelay = 1000;
+  const idleTimeoutDuration = 30 * 60 * 1000; // 30 minutes in milliseconds
 
   // State
   const [connectionState, setConnectionState] = useState<'disconnected' | 'connecting' | 'connected'>('disconnected');
@@ -93,6 +99,7 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
   const [conflictWarnings, setConflictWarnings] = useState<any[]>([]);
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   const [documentViewers, setDocumentViewers] = useState<Map<string, DocumentViewer[]>>(new Map());
+  const [isIdleDisconnected, setIsIdleDisconnected] = useState(false);
 
   // Stable message handlers using refs
   const handlePresenceUpdate = useCallback((payload: any) => {
@@ -396,6 +403,12 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
       reconnectTimeoutRef.current = null;
     }
     
+    // Clear idle timeout when disconnecting
+    if (idleTimeoutRef.current) {
+      clearTimeout(idleTimeoutRef.current);
+      idleTimeoutRef.current = null;
+    }
+    
     const socket = socketRef.current;
     if (socket) {
       socket.close();
@@ -406,6 +419,40 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     reconnectAttemptsRef.current = 0;
     isConnectingRef.current = false;
   }, []);
+
+  // Reset idle timer whenever there's user activity
+  const resetIdleTimer = useCallback(() => {
+    lastActivityTimeRef.current = Date.now();
+    
+    // Clear existing idle timeout
+    if (idleTimeoutRef.current) {
+      clearTimeout(idleTimeoutRef.current);
+    }
+    
+    // Set new idle timeout
+    idleTimeoutRef.current = setTimeout(() => {
+      const socket = socketRef.current;
+      if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+        console.log('[Collaboration] User idle for 30 minutes, disconnecting...');
+        shouldMaintainConnectionRef.current = false;
+        setIsIdleDisconnected(true);
+        disconnect();
+        hasInitiatedConnectionRef.current = false;
+      }
+    }, idleTimeoutDuration);
+  }, [disconnect, idleTimeoutDuration]);
+
+  // Manual reconnect function (for when user clicks reconnect button)
+  const reconnect = useCallback(() => {
+    if (isAuthenticated && userIdRef.current) {
+      console.log('[Collaboration] Manual reconnect requested');
+      shouldMaintainConnectionRef.current = true;
+      setIsIdleDisconnected(false);
+      hasInitiatedConnectionRef.current = true;
+      reconnectAttemptsRef.current = 0;
+      connect();
+    }
+  }, [isAuthenticated, connect]);
 
   // API methods using stable sendMessage
   const sendPresenceUpdate = useCallback((currentActivity: ConnectedUser['currentActivity'], userId?: string) => {
@@ -637,6 +684,42 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     }
   }, [connectionState, sendMessage]);
 
+  // Track user activity and reset idle timer for WebSocket disconnect (30 minutes)
+  useEffect(() => {
+    if (connectionState !== 'connected') {
+      return;
+    }
+
+    // Start the idle timer when connected
+    resetIdleTimer();
+
+    // Activity events to track
+    const activityEvents = ['mousedown', 'keydown', 'scroll', 'touchstart'];
+    
+    const handleActivity = () => {
+      // Reset idle timer on any user activity
+      resetIdleTimer();
+    };
+
+    // Add event listeners
+    activityEvents.forEach(event => {
+      document.addEventListener(event, handleActivity, { passive: true });
+    });
+
+    // Cleanup
+    return () => {
+      activityEvents.forEach(event => {
+        document.removeEventListener(event, handleActivity);
+      });
+      
+      // Clear idle timeout when disconnecting
+      if (idleTimeoutRef.current) {
+        clearTimeout(idleTimeoutRef.current);
+        idleTimeoutRef.current = null;
+      }
+    };
+  }, [connectionState, resetIdleTimer]);
+
   // Idle detection: auto-unlock documents after 10 minutes of inactivity
   useEffect(() => {
     if (connectionState !== 'connected' || !user) {
@@ -694,6 +777,8 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     conflictWarnings,
     typingUsers,
     documentViewers,
+    isIdleDisconnected,
+    reconnect,
     sendPresenceUpdate,
     requestDocumentLock,
     releaseDocumentLock,
@@ -711,6 +796,8 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     conflictWarnings,
     typingUsers,
     documentViewers,
+    isIdleDisconnected,
+    reconnect,
     sendPresenceUpdate,
     requestDocumentLock,
     releaseDocumentLock,

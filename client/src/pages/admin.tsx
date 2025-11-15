@@ -116,6 +116,7 @@ import EvidenceTriageSection from '@/components/admin/EvidenceTriageSection';
 import SystemHealthTab from '@/components/admin/SystemHealthTab';
 import CollaborationSidebar from '@/components/admin/CollaborationSidebar';
 import ChatPanel from '@/components/admin/ChatPanel';
+import { IdleTimeoutNotification } from '@/components/IdleTimeoutNotification';
 import pcsLogoUrl from "@assets/PSC Logo - Blue_1761334524895.png";
 import type { 
   AdminStats, 
@@ -636,6 +637,9 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
 
   return (
     <div className="min-h-screen bg-gray-50 pt-20">
+      {/* Idle Timeout Notification */}
+      <IdleTimeoutNotification />
+      
       <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8 py-4 sm:py-6 lg:py-8">
         {/* Welcome Banner */}
         {showWelcomeBanner && (
