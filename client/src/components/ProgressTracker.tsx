@@ -12,7 +12,8 @@ import { useTranslation } from "react-i18next";
 import EvidenceSubmissionForm from "@/components/EvidenceSubmissionForm";
 import { PlasticWasteAudit } from "@/components/PlasticWasteAudit";
 import { ActionPlan } from "@/components/ActionPlan";
-import type { AuditResponse } from "@shared/schema";
+import { EvidenceDetailModal } from "@/components/EvidenceDetailModal";
+import type { AuditResponse, Evidence } from "@shared/schema";
 
 interface EvidenceCounts {
   inspire?: { total: number; approved: number };
@@ -33,13 +34,6 @@ interface EvidenceRequirement {
   languageSpecificLinks?: Record<string, Array<{ title: string; url: string }>>;
 }
 
-interface Evidence {
-  id: string;
-  evidenceRequirementId?: string;
-  status: 'pending' | 'approved' | 'rejected';
-  stage: string;
-  roundNumber?: number;
-}
 
 interface AdminOverride {
   id: string;
@@ -76,6 +70,8 @@ export default function ProgressTracker({
   const [showAuditModal, setShowAuditModal] = useState(false);
   const [showActionPlanModal, setShowActionPlanModal] = useState(false);
   const [actionPlanRequirementId, setActionPlanRequirementId] = useState<string>('');
+  const [selectedEvidence, setSelectedEvidence] = useState<Evidence | null>(null);
+  const [showEvidenceDetailModal, setShowEvidenceDetailModal] = useState(false);
 
   // Helper function to get translated content for evidence requirements
   const getTranslatedRequirement = (requirement: EvidenceRequirement) => {
@@ -313,6 +309,12 @@ export default function ProgressTracker({
   const handleOpenActionPlan = (requirementId: string) => {
     setActionPlanRequirementId(requirementId);
     setShowActionPlanModal(true);
+  };
+
+  // Handle opening evidence detail modal
+  const handleViewEvidence = (evidence: Evidence) => {
+    setSelectedEvidence(evidence);
+    setShowEvidenceDetailModal(true);
   };
 
   return (
@@ -622,19 +624,33 @@ export default function ProgressTracker({
                                     <span className="text-xs text-gray-500">{t('progress.status.not_started')}</span>
                                   </>
                                 )}
-                                {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'pending' && (
+                                {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'pending' && evidence && (
                                   <>
                                     <Clock className="h-4 w-4 text-yellow-500" />
                                     <Badge 
                                       variant="outline" 
-                                      className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200"
+                                      className="text-xs bg-yellow-50 text-yellow-700 border-yellow-200 cursor-pointer hover:bg-yellow-100 transition-colors"
                                       data-testid={`status-pending-${requirement.id}`}
+                                      onClick={() => handleViewEvidence(evidence)}
                                     >
                                       {t('progress.status.pending')}
                                     </Badge>
                                   </>
                                 )}
-                                {isRequirementSatisfied(requirement.id) && (
+                                {isRequirementSatisfied(requirement.id) && evidence && (
+                                  <>
+                                    <CheckCircle className="h-4 w-4 text-green-500" />
+                                    <Badge 
+                                      variant="outline" 
+                                      className="text-xs bg-green-50 text-green-700 border-green-200 cursor-pointer hover:bg-green-100 transition-colors"
+                                      data-testid={`status-approved-${requirement.id}`}
+                                      onClick={() => handleViewEvidence(evidence)}
+                                    >
+                                      {t('progress.status.approved')}
+                                    </Badge>
+                                  </>
+                                )}
+                                {isRequirementSatisfied(requirement.id) && !evidence && (
                                   <>
                                     <CheckCircle className="h-4 w-4 text-green-500" />
                                     <Badge 
@@ -646,13 +662,14 @@ export default function ProgressTracker({
                                     </Badge>
                                   </>
                                 )}
-                                {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'rejected' && (
+                                {!isRequirementSatisfied(requirement.id) && evidenceStatus === 'rejected' && evidence && (
                                   <>
                                     <X className="h-4 w-4 text-red-500" />
                                     <Badge 
                                       variant="outline" 
-                                      className="text-xs bg-red-50 text-red-700 border-red-200"
+                                      className="text-xs bg-red-50 text-red-700 border-red-200 cursor-pointer hover:bg-red-100 transition-colors"
                                       data-testid={`status-rejected-${requirement.id}`}
+                                      onClick={() => handleViewEvidence(evidence)}
                                     >
                                       {t('progress.status.rejected')}
                                     </Badge>
@@ -762,6 +779,16 @@ export default function ProgressTracker({
           />
         </DialogContent>
       </Dialog>
+
+      {/* Evidence Detail Modal */}
+      <EvidenceDetailModal
+        evidence={selectedEvidence}
+        isOpen={showEvidenceDetailModal}
+        onClose={() => {
+          setShowEvidenceDetailModal(false);
+          setSelectedEvidence(null);
+        }}
+      />
     </>
   );
 }
