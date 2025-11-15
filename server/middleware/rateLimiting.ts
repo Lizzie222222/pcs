@@ -3,12 +3,12 @@ import type { Request, Response } from 'express';
 import { log } from '../vite';
 
 // Bot blocklist - common bot/scanner endpoints that don't exist on our site
+// NOTE: Do NOT include '/admin' here - it's a real route for the admin panel!
 const botEndpoints = [
   '/xmlrpc.php',
   '/wp-admin',
   '/wp-login.php',
   '/.env',
-  '/admin',
   '/phpmyadmin',
   '/.git',
   '/wp-content',

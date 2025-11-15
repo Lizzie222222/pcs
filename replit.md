@@ -6,12 +6,13 @@ This web application supports the Plastic Clever Schools program, a three-stage 
 ## Recent Changes
 **November 15, 2025**: Performance Optimizations - Implemented comprehensive server protection and WebSocket notification system
 - **Rate Limiting**: Installed express-rate-limit with tiered request limits to protect against bot traffic and abuse
-  - Bot/suspicious traffic: 5 requests/hour
+  - Bot/suspicious traffic: 5 requests/hour (blocks WordPress/PHP scanner endpoints like /xmlrpc.php, /wp-admin, /.env, etc.)
   - Anonymous users: 100 requests/15 minutes
   - Authenticated users: 300 requests/15 minutes
   - Admin users: 1000 requests/15 minutes
-  - Automatic IP detection with trust proxy support
+  - Automatic IP detection with IPv6 support using ipKeyGenerator
   - All rate limit violations logged for monitoring
+  - **FIXED**: Removed `/admin` from bot blocker list to allow legitimate admin panel access (was blocking admin logins)
 - **Request Timeout Protection**: Added 90-second timeout middleware to prevent hanging requests
   - Graceful 504 Gateway Timeout responses when requests exceed time limit
   - Protects against resource exhaustion from long-running or stuck requests
