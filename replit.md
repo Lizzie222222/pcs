@@ -4,6 +4,15 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
+**November 15, 2025**: Enhanced evidence review queue UI with improved filtering and preview
+- **Three-Tier Filter Organization**: Reorganized filters into logical tiers - Tier 1 (Stage toggles + Requirement dropdown + Status tabs + Assignee + View toggle), Tier 2 (Search + Sort + Clear filters), Tier 3 (Collapsible advanced filters in 2-column grid)
+- **Stage-Requirement Adjacency**: Moved requirement filter from advanced section to be adjacent to stage filter for better UX and logical grouping
+- **Table Preview Enhancement**: Added thumbnail preview column to table view with clickable Dialog component for detailed evidence inspection
+- **Smart Thumbnail Display**: Thumbnails intelligently find first image-type file from evidence files array, falling back to icon for non-image files (PDFs, videos)
+- **Improved Filter Layout**: Changed advanced filters from 5-column to 2-column grid to prevent date range overflow, added responsive flex-wrap
+- **Country Filter Fix**: Added "All Countries" option to country dropdown for proper clear filters functionality
+- **Accessibility**: Replaced custom modal div with proper Dialog component for better screen reader support and keyboard navigation
+
 **November 15, 2025**: Implemented comprehensive bonus evidence and homeless evidence triage system
 - **Bonus Evidence System**: Added `isBonus` field to evidence schema to track bonus/additional evidence that doesn't count toward stage completion requirements
 - **Admin Upload Form Enhancement**: Dynamic requirement selector loads requirements based on selected stage, with "Bonus Evidence" option always available for submissions that don't fit specific requirements
