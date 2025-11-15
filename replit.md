@@ -4,19 +4,21 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
-**November 15, 2025**: Fixed admin Quick Stats progress display and photo consent visibility
-- Fixed progress percentage display bug in admin school profile Quick Stats section where 0% progress incorrectly showed as 100%
-- Updated progress display formula to use conditional logic: shows 100% for completed rounds (100, 200, 300), 0% for no progress, and correct percentages for in-progress states
+**November 15, 2025**: Implemented comprehensive bonus evidence and homeless evidence triage system
+- **Bonus Evidence System**: Added `isBonus` field to evidence schema to track bonus/additional evidence that doesn't count toward stage completion requirements
+- **Admin Upload Form Enhancement**: Dynamic requirement selector loads requirements based on selected stage, with "Bonus Evidence" option always available for submissions that don't fit specific requirements
+- **Evidence Triage Dashboard**: New admin tool in Program dropdown lists all homeless evidence (evidenceRequirementId=null, isBonus=false) with pagination, filtering by school/stage, and ability to assign to requirements or mark as bonus
+- **School-Side Visibility**: Discreet amber notification in Progress Tracker alerts schools when they have homeless admin-uploaded evidence that won't count until assigned
+- **Bonus Badge Display**: Gold "Bonus" badge appears in Recent Activity feed for evidence marked as bonus, providing visual distinction
+- **Progress Calculation Fix**: Progress tracking now correctly excludes bonus evidence while preserving homeless evidence counts until assigned
+- **Orphan Evidence Handling**: Triage dashboard displays evidence without associated schools as "Unknown School" for admin cleanup
+- **Migration**: Database migration completed successfully setting isBonus default to false for all existing evidence
+- Fixed admin Quick Stats progress display bug in school profile where 0% progress incorrectly showed as 100%
 - Normalized photo consent API response structure to use consistent nested `photoConsent` object format
-- Updated `getSchoolsWithPendingPhotoConsent()` to return `photoConsent: { documentUrl, uploadedAt, status }` instead of flat structure
-- Photo consent documents are now visible in both the Review Queue and School Profile pages
-- Mapper returns `photoConsent: null` when no document data exists (semantic null handling)
-- Fixed round progression bug where Investigate stage could complete with only audit approval, skipping the required Action Plan submission
-- Updated progression logic to require BOTH Plastic Waste Audit (hasQuiz) AND Action Plan Development (hasActionPlan) for Investigate stage completion
-- Added round selector to Progress Tracker allowing schools to view evidence from previous rounds with visual round indicators
-- Enhanced Recent Activity section to display evidence from all rounds with color-coded round badges (blue/purple/green)
-- Updated evidence API to support roundNumber filtering for historical evidence viewing
-- Schools must now complete all requirements (Inspire: 3 items, Investigate: audit + action plan, Act: 3 items) before advancing to next round
+- Photo consent documents now visible in both Review Queue and School Profile pages
+- Fixed round progression to require BOTH Plastic Waste Audit AND Action Plan for Investigate stage completion
+- Added round selector to Progress Tracker for viewing historical evidence from previous rounds
+- Enhanced Recent Activity with color-coded round badges (blue/purple/green) for all rounds
 
 **November 14, 2025**: Fixed photo consent workflow
 - Migrated photo consent document uploads from local multer storage to Google Cloud Storage for reliable document access
