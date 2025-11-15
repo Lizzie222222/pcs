@@ -2238,10 +2238,10 @@ export class DatabaseStorage implements IStorage {
       broadcastNotificationUpdate(notificationData.userId, 'new');
     } else if (notificationData.schoolId) {
       // School-wide notification - notify all team members
-      const schoolMembers = await this.getSchoolTeamMembers(notificationData.schoolId);
+      const schoolUsers = await this.getSchoolUsers(notificationData.schoolId);
       const { broadcastNotificationUpdate } = await import('./websocket');
-      for (const member of schoolMembers) {
-        broadcastNotificationUpdate(member.id, 'new');
+      for (const schoolUser of schoolUsers) {
+        broadcastNotificationUpdate(schoolUser.userId, 'new');
       }
     }
     

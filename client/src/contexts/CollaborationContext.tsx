@@ -28,7 +28,7 @@ export interface ChatMessage {
 }
 
 interface WebSocketMessage {
-  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong' | 'idle_unlock' | 'start_viewing' | 'stop_viewing' | 'viewers_updated';
+  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong' | 'idle_unlock' | 'start_viewing' | 'stop_viewing' | 'viewers_updated' | 'notification_update';
   payload?: any;
 }
 
@@ -51,6 +51,7 @@ interface CollaborationContextType {
   typingUsers: TypingUser[];
   documentViewers: Map<string, DocumentViewer[]>;
   isIdleDisconnected: boolean;
+  onNotificationUpdate: (callback: () => void) => () => void;
   reconnect: () => void;
   sendPresenceUpdate: (currentActivity: ConnectedUser['currentActivity'], userId?: string) => void;
   requestDocumentLock: (documentId: string, documentType: 'case_study' | 'event') => Promise<{ success: boolean; lock?: DocumentLock; locked?: boolean; lockedBy?: string; error?: string }>;
@@ -86,6 +87,8 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
   // Track idle timeout
   const idleTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastActivityTimeRef = useRef<number>(Date.now());
+  // Track notification update callbacks
+  const notificationCallbacksRef = useRef<Set<() => void>>(new Set());
   
   const maxReconnectAttempts = 5;
   const baseReconnectDelay = 1000;
@@ -238,6 +241,11 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     });
   }, []);
 
+  const handleNotificationUpdate = useCallback(() => {
+    // Trigger all registered notification callbacks
+    notificationCallbacksRef.current.forEach(callback => callback());
+  }, []);
+
   // Message router
   const handleMessage = useCallback((message: WebSocketMessage) => {
     switch (message.type) {
@@ -265,8 +273,11 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
       case 'viewers_updated':
         handleViewersUpdated(message.payload);
         break;
+      case 'notification_update':
+        handleNotificationUpdate();
+        break;
     }
-  }, [handlePresenceUpdate, handleDocumentLock, handleDocumentUnlock, handleChatMessage, handleConflictWarning, handleTypingStart, handleTypingStop, handleViewersUpdated]);
+  }, [handlePresenceUpdate, handleDocumentLock, handleDocumentUnlock, handleChatMessage, handleConflictWarning, handleTypingStart, handleTypingStop, handleViewersUpdated, handleNotificationUpdate]);
 
   // Update the message handler ref whenever handleMessage changes
   useEffect(() => {
@@ -565,6 +576,14 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     return documentViewers.get(viewKey) || [];
   }, [documentViewers]);
 
+  // Subscribe to notification updates via WebSocket
+  const onNotificationUpdate = useCallback((callback: () => void) => {
+    notificationCallbacksRef.current.add(callback);
+    return () => {
+      notificationCallbacksRef.current.delete(callback);
+    };
+  }, []);
+
   // Update userId ref when user changes (used for visibility handling)
   useEffect(() => {
     userIdRef.current = user?.id;
@@ -778,6 +797,7 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     typingUsers,
     documentViewers,
     isIdleDisconnected,
+    onNotificationUpdate,
     reconnect,
     sendPresenceUpdate,
     requestDocumentLock,
@@ -797,6 +817,7 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     typingUsers,
     documentViewers,
     isIdleDisconnected,
+    onNotificationUpdate,
     reconnect,
     sendPresenceUpdate,
     requestDocumentLock,
