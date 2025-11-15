@@ -301,6 +301,13 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
       return;
     }
 
+    // Only allow admin and partner users to connect to WebSocket
+    // This prevents teachers from making connection attempts that will be rejected
+    if (!user?.isAdmin && user?.role !== 'admin' && user?.role !== 'partner') {
+      console.log('[Collaboration] Non-admin user, skipping WebSocket connection');
+      return;
+    }
+
     // Prevent multiple simultaneous connection attempts - set flag immediately to prevent race conditions
     if (isConnectingRef.current) {
       console.log('[Collaboration] Connection already in progress');
@@ -414,7 +421,7 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
       setConnectionState('disconnected');
       isConnectingRef.current = false;
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   const disconnect = useCallback(() => {
     if (reconnectTimeoutRef.current) {
