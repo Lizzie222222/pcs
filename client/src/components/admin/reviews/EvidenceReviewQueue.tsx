@@ -35,6 +35,12 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Clock,
   Trophy,
   CheckCircle,
@@ -173,6 +179,7 @@ export default function EvidenceReviewQueue({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [evidenceToDelete, setEvidenceToDelete] = useState<string | null>(null);
   const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
+  const [previewEvidence, setPreviewEvidence] = useState<PendingEvidence | null>(null);
   
   // Debounce search query
   const debouncedSearchQuery = useDebounce(evidenceSearchQuery, 300);
@@ -306,6 +313,7 @@ export default function EvidenceReviewQueue({
                 data-testid="checkbox-select-all-table"
               />
             </TableHead>
+            <TableHead className="w-20">Preview</TableHead>
             <TableHead>School</TableHead>
             <TableHead>Stage</TableHead>
             <TableHead>Title</TableHead>
@@ -330,6 +338,33 @@ export default function EvidenceReviewQueue({
                   className="rounded border-gray-300"
                   data-testid={`checkbox-table-evidence-${item.id}`}
                 />
+              </TableCell>
+              <TableCell>
+                <button
+                  onClick={() => setPreviewEvidence(item)}
+                  className="group relative"
+                  data-testid={`button-table-preview-${item.id}`}
+                >
+                  {(() => {
+                    // Find first image file for thumbnail
+                    const firstImage = item.files?.find(f => f.type?.includes('image'));
+                    if (firstImage?.url) {
+                      return (
+                        <img
+                          src={firstImage.url}
+                          alt="Evidence preview"
+                          className="h-12 w-12 object-cover rounded border border-gray-200 group-hover:border-pcs_blue transition-colors"
+                        />
+                      );
+                    }
+                    // Show appropriate icon if no images
+                    return (
+                      <div className="h-12 w-12 bg-gray-100 rounded border border-gray-200 flex items-center justify-center group-hover:border-pcs_blue transition-colors">
+                        <Eye className="h-5 w-5 text-gray-400" />
+                      </div>
+                    );
+                  })()}
+                </button>
               </TableCell>
               <TableCell className="font-medium">
                 <div className="flex items-center gap-1">
@@ -464,178 +499,206 @@ export default function EvidenceReviewQueue({
             )}
           </div>
 
-          {/* Row 1: Stage Filter + View Toggle */}
-          <div className="flex items-center justify-between gap-4 mt-4">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-gray-700">Stage:</span>
-              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+          {/* TIER 1: Primary Filters - Stage, Requirement, Status, View */}
+          <div className="mt-4 space-y-3">
+            {/* Row 1: Stage + Requirement + View Toggle */}
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Stage Filter */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Stage:</span>
+                  <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                    <button
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        evidenceStageFilter === 'all'
+                          ? 'bg-white text-navy shadow-sm'
+                          : 'text-gray-600 hover:text-navy'
+                      }`}
+                      onClick={() => setEvidenceStageFilter('all')}
+                      data-testid="filter-stage-all"
+                    >
+                      All
+                    </button>
+                    <button
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        evidenceStageFilter === 'inspire'
+                          ? 'bg-pcs_blue text-white shadow-sm'
+                          : 'text-gray-600 hover:text-navy'
+                      }`}
+                      onClick={() => setEvidenceStageFilter('inspire')}
+                      data-testid="filter-stage-inspire"
+                    >
+                      Inspire
+                    </button>
+                    <button
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        evidenceStageFilter === 'investigate'
+                          ? 'bg-teal text-white shadow-sm'
+                          : 'text-gray-600 hover:text-navy'
+                      }`}
+                      onClick={() => setEvidenceStageFilter('investigate')}
+                      data-testid="filter-stage-investigate"
+                    >
+                      Investigate
+                    </button>
+                    <button
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        evidenceStageFilter === 'act'
+                          ? 'bg-coral text-white shadow-sm'
+                          : 'text-gray-600 hover:text-navy'
+                      }`}
+                      onClick={() => setEvidenceStageFilter('act')}
+                      data-testid="filter-stage-act"
+                    >
+                      Act
+                    </button>
+                    <button
+                      className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                        evidenceStageFilter === 'above_and_beyond'
+                          ? 'bg-purple-600 text-white shadow-sm'
+                          : 'text-gray-600 hover:text-navy'
+                      }`}
+                      onClick={() => setEvidenceStageFilter('above_and_beyond')}
+                      data-testid="filter-stage-above-beyond"
+                    >
+                      Above & Beyond
+                    </button>
+                  </div>
+                </div>
+
+                {/* Requirement Filter - Now adjacent to Stage */}
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-medium text-gray-700">Requirement:</span>
+                  <Select
+                    value={evidenceRequirementFilter}
+                    onValueChange={setEvidenceRequirementFilter}
+                    data-testid="filter-requirement"
+                  >
+                    <SelectTrigger className="w-[220px]">
+                      <SelectValue placeholder="All Requirements" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Requirements</SelectItem>
+                      {filteredRequirements?.map((req) => (
+                        <SelectItem key={req.id} value={req.id}>
+                          {req.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {/* View Toggle */}
+              <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
                 <button
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    evidenceStageFilter === 'all'
+                  className={`p-2 rounded-md transition-colors ${
+                    evidenceViewMode === 'card'
                       ? 'bg-white text-navy shadow-sm'
                       : 'text-gray-600 hover:text-navy'
                   }`}
-                  onClick={() => setEvidenceStageFilter('all')}
-                  data-testid="filter-stage-all"
+                  onClick={() => setEvidenceViewMode('card')}
+                  data-testid="view-mode-card"
+                  title="Card View"
                 >
-                  All
+                  <LayoutGrid className="h-4 w-4" />
                 </button>
                 <button
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    evidenceStageFilter === 'inspire'
-                      ? 'bg-pcs_blue text-white shadow-sm'
+                  className={`p-2 rounded-md transition-colors ${
+                    evidenceViewMode === 'table'
+                      ? 'bg-white text-navy shadow-sm'
                       : 'text-gray-600 hover:text-navy'
                   }`}
-                  onClick={() => setEvidenceStageFilter('inspire')}
-                  data-testid="filter-stage-inspire"
+                  onClick={() => setEvidenceViewMode('table')}
+                  data-testid="view-mode-table"
+                  title="Table View"
                 >
-                  Inspire
-                </button>
-                <button
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    evidenceStageFilter === 'investigate'
-                      ? 'bg-teal text-white shadow-sm'
-                      : 'text-gray-600 hover:text-navy'
-                  }`}
-                  onClick={() => setEvidenceStageFilter('investigate')}
-                  data-testid="filter-stage-investigate"
-                >
-                  Investigate
-                </button>
-                <button
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    evidenceStageFilter === 'act'
-                      ? 'bg-coral text-white shadow-sm'
-                      : 'text-gray-600 hover:text-navy'
-                  }`}
-                  onClick={() => setEvidenceStageFilter('act')}
-                  data-testid="filter-stage-act"
-                >
-                  Act
-                </button>
-                <button
-                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                    evidenceStageFilter === 'above_and_beyond'
-                      ? 'bg-purple-600 text-white shadow-sm'
-                      : 'text-gray-600 hover:text-navy'
-                  }`}
-                  onClick={() => setEvidenceStageFilter('above_and_beyond')}
-                  data-testid="filter-stage-above-beyond"
-                >
-                  Above & Beyond
+                  <List className="h-4 w-4" />
                 </button>
               </div>
             </div>
-            
-            {/* View Toggle */}
-            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
-              <button
-                className={`p-2 rounded-md transition-colors ${
-                  evidenceViewMode === 'card'
-                    ? 'bg-white text-navy shadow-sm'
-                    : 'text-gray-600 hover:text-navy'
-                }`}
-                onClick={() => setEvidenceViewMode('card')}
-                data-testid="view-mode-card"
-                title="Card View"
-              >
-                <LayoutGrid className="h-4 w-4" />
-              </button>
-              <button
-                className={`p-2 rounded-md transition-colors ${
-                  evidenceViewMode === 'table'
-                    ? 'bg-white text-navy shadow-sm'
-                    : 'text-gray-600 hover:text-navy'
-                }`}
-                onClick={() => setEvidenceViewMode('table')}
-                data-testid="view-mode-table"
-                title="Table View"
-              >
-                <List className="h-4 w-4" />
-              </button>
+
+            {/* Row 2: Status Tabs + Assignee */}
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg flex-1">
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStatusFilter === 'all'
+                      ? 'bg-white text-navy shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStatusFilter('all')}
+                  data-testid="filter-evidence-all"
+                >
+                  {t('reviews.evidence.filters.all')}
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStatusFilter === 'pending'
+                      ? 'bg-white text-navy shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStatusFilter('pending')}
+                  data-testid="filter-evidence-pending"
+                >
+                  {t('reviews.evidence.filters.pending')}
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStatusFilter === 'approved'
+                      ? 'bg-white text-navy shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStatusFilter('approved')}
+                  data-testid="filter-evidence-approved"
+                >
+                  {t('reviews.evidence.filters.approved')}
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStatusFilter === 'rejected'
+                      ? 'bg-white text-navy shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStatusFilter('rejected')}
+                  data-testid="filter-evidence-rejected"
+                >
+                  {t('reviews.evidence.filters.rejected')}
+                </button>
+              </div>
+
+              {/* Assignee Filter */}
+              <div className="flex items-center gap-2">
+                <UserCog className="h-4 w-4 text-gray-500" />
+                <Select
+                  value={evidenceAssigneeFilter}
+                  onValueChange={setEvidenceAssigneeFilter}
+                  data-testid="filter-assignee"
+                >
+                  <SelectTrigger className="w-[200px]">
+                    <SelectValue placeholder={t('reviews.evidence.filters.filterByAssignee')} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t('reviews.evidence.filters.allEvidence')}</SelectItem>
+                    <SelectItem value="unassigned">{t('reviews.evidence.filters.unassigned')}</SelectItem>
+                    {currentUserId && (
+                      <SelectItem value="me">{t('reviews.evidence.filters.assignedToMe')}</SelectItem>
+                    )}
+                    {admins?.map((admin) => (
+                      <SelectItem key={admin.id} value={admin.id}>
+                        {admin.firstName} {admin.lastName}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
             </div>
           </div>
 
-          {/* Row 2: Status Filter Tabs + Assignee */}
-          <div className="flex items-center gap-4 mt-4">
-            <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg flex-1">
-              <button
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  evidenceStatusFilter === 'all'
-                    ? 'bg-white text-navy shadow-sm'
-                    : 'text-gray-600 hover:text-navy'
-                }`}
-                onClick={() => setEvidenceStatusFilter('all')}
-                data-testid="filter-evidence-all"
-              >
-                {t('reviews.evidence.filters.all')}
-              </button>
-              <button
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  evidenceStatusFilter === 'pending'
-                    ? 'bg-white text-navy shadow-sm'
-                    : 'text-gray-600 hover:text-navy'
-                }`}
-                onClick={() => setEvidenceStatusFilter('pending')}
-                data-testid="filter-evidence-pending"
-              >
-                {t('reviews.evidence.filters.pending')}
-              </button>
-              <button
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  evidenceStatusFilter === 'approved'
-                    ? 'bg-white text-navy shadow-sm'
-                    : 'text-gray-600 hover:text-navy'
-                }`}
-                onClick={() => setEvidenceStatusFilter('approved')}
-                data-testid="filter-evidence-approved"
-              >
-                {t('reviews.evidence.filters.approved')}
-              </button>
-              <button
-                className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
-                  evidenceStatusFilter === 'rejected'
-                    ? 'bg-white text-navy shadow-sm'
-                    : 'text-gray-600 hover:text-navy'
-                }`}
-                onClick={() => setEvidenceStatusFilter('rejected')}
-                data-testid="filter-evidence-rejected"
-              >
-                {t('reviews.evidence.filters.rejected')}
-              </button>
-            </div>
-
-            {/* Assignee Filter */}
-            <div className="flex items-center gap-2">
-              <UserCog className="h-4 w-4 text-gray-500" />
-              <Select
-                value={evidenceAssigneeFilter}
-                onValueChange={setEvidenceAssigneeFilter}
-                data-testid="filter-assignee"
-              >
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder={t('reviews.evidence.filters.filterByAssignee')} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">{t('reviews.evidence.filters.allEvidence')}</SelectItem>
-                  <SelectItem value="unassigned">{t('reviews.evidence.filters.unassigned')}</SelectItem>
-                  {currentUserId && (
-                    <SelectItem value="me">{t('reviews.evidence.filters.assignedToMe')}</SelectItem>
-                  )}
-                  {admins?.map((admin) => (
-                    <SelectItem key={admin.id} value={admin.id}>
-                      {admin.firstName} {admin.lastName}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Row 3: Search + Sort + Clear Filters */}
-          <div className="flex items-center gap-3 mt-4">
+          {/* TIER 2: Search, Sort, Clear */}
+          <div className="flex flex-wrap items-center gap-3 mt-4">
             {/* Search Bar */}
-            <div className="relative flex-1 max-w-md">
+            <div className="relative flex-1 min-w-[280px] max-w-md">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
               <Input
                 type="text"
@@ -682,7 +745,7 @@ export default function EvidenceReviewQueue({
             )}
           </div>
 
-          {/* Row 4: Collapsible Advanced Filters */}
+          {/* TIER 3: Advanced Filters (Collapsible) */}
           <Collapsible
             open={advancedFiltersOpen}
             onOpenChange={setAdvancedFiltersOpen}
@@ -701,29 +764,7 @@ export default function EvidenceReviewQueue({
               </Button>
             </CollapsibleTrigger>
             <CollapsibleContent className="mt-3">
-              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
-                {/* Requirement Filter */}
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-gray-700">Requirement</label>
-                  <Select
-                    value={evidenceRequirementFilter}
-                    onValueChange={setEvidenceRequirementFilter}
-                    data-testid="filter-requirement"
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="All Requirements" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Requirements</SelectItem>
-                      {filteredRequirements?.map((req) => (
-                        <SelectItem key={req.id} value={req.id}>
-                          {req.title}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-gray-50 rounded-lg">
                 {/* Country Filter */}
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-gray-700">Country</label>
@@ -736,6 +777,7 @@ export default function EvidenceReviewQueue({
                       <SelectValue placeholder="All Countries" />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="all">All Countries</SelectItem>
                       {countries?.map((country) => (
                         <SelectItem key={country.value} value={country.value}>
                           {country.label}
@@ -786,25 +828,26 @@ export default function EvidenceReviewQueue({
                   </Select>
                 </div>
 
-                {/* Date Range */}
+                {/* Date Range - Full width to prevent overflow */}
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-gray-700">Date Range</label>
-                  <div className="flex gap-2 items-center">
-                    <div className="flex-1">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
                       <Input
                         type="date"
                         value={evidenceDateFrom ? evidenceDateFrom.toISOString().split('T')[0] : ''}
                         onChange={(e) => setEvidenceDateFrom(e.target.value ? new Date(e.target.value) : undefined)}
+                        placeholder="From"
                         className="text-xs"
                         data-testid="input-date-from"
                       />
                     </div>
-                    <span className="text-xs text-gray-500">to</span>
-                    <div className="flex-1">
+                    <div>
                       <Input
                         type="date"
                         value={evidenceDateTo ? evidenceDateTo.toISOString().split('T')[0] : ''}
                         onChange={(e) => setEvidenceDateTo(e.target.value ? new Date(e.target.value) : undefined)}
+                        placeholder="To"
                         className="text-xs"
                         data-testid="input-date-to"
                       />
@@ -1246,6 +1289,49 @@ export default function EvidenceReviewQueue({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Evidence Preview Modal */}
+      <Dialog open={!!previewEvidence} onOpenChange={(open) => !open && setPreviewEvidence(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {previewEvidence?.title}
+            </DialogTitle>
+          </DialogHeader>
+          {previewEvidence && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-2">
+                <Badge className={getStageColor(previewEvidence.stage)}>
+                  {previewEvidence.stage}
+                </Badge>
+                <Badge variant="outline" className="bg-yellow text-black">
+                  {previewEvidence.status}
+                </Badge>
+              </div>
+              <p className="text-gray-600">{previewEvidence.description}</p>
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <span className="font-medium text-gray-700">School:</span> {previewEvidence.school?.name || 'Unknown'}
+                </div>
+                <div>
+                  <span className="font-medium text-gray-700">Submitted:</span> {new Date(previewEvidence.submittedAt).toLocaleDateString()}
+                </div>
+              </div>
+              {previewEvidence.videoLinks && previewEvidence.videoLinks.length > 0 && (
+                <div>
+                  <EvidenceVideoLinks videoLinks={previewEvidence.videoLinks} />
+                </div>
+              )}
+              {previewEvidence.files && previewEvidence.files.length > 0 && (
+                <EvidenceFilesGallery
+                  files={previewEvidence.files}
+                  className="mt-4"
+                />
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </>
   );
 }
