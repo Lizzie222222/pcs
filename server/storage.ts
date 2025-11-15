@@ -430,6 +430,7 @@ export interface IStorage {
   getCaseStudies(filters?: {
     stage?: string;
     country?: string;
+    schoolType?: string;
     featured?: boolean;
     search?: string;
     categories?: string[];
@@ -2583,6 +2584,7 @@ export class DatabaseStorage implements IStorage {
   async getCaseStudies(filters: {
     stage?: string;
     country?: string;
+    schoolType?: string;
     featured?: boolean;
     search?: string;
     categories?: string[];

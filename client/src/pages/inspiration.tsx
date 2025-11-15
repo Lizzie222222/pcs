@@ -614,13 +614,13 @@ export default function Inspiration() {
               
               <Select value={filters.schoolType} onValueChange={(value) => handleFilterChange('schoolType', value)}>
                 <SelectTrigger data-testid="select-school-type">
-                  <SelectValue placeholder={t('filters.all_school_types')} />
+                  <SelectValue placeholder="All School Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t('filters.all_school_types')}</SelectItem>
-                  <SelectItem value="kindergarten">{t('school_types.kindergarten')}</SelectItem>
-                  <SelectItem value="primary">{t('school_types.primary')}</SelectItem>
-                  <SelectItem value="secondary">{t('school_types.secondary')}</SelectItem>
+                  <SelectItem value="all">All School Types</SelectItem>
+                  <SelectItem value="kindergarten">Kindergarten</SelectItem>
+                  <SelectItem value="primary">Primary</SelectItem>
+                  <SelectItem value="secondary">Secondary</SelectItem>
                 </SelectContent>
               </Select>
               
