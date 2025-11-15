@@ -35,9 +35,6 @@ app.use(compression({
 app.use(express.json({ limit: '200mb' }));
 app.use(express.urlencoded({ extended: false, limit: '200mb' }));
 
-// Request timeout - Prevent hanging requests (90 seconds)
-app.use(requestTimeout(90000));
-
 // Configure CORS to allow credentials from approved origins only
 app.use(cors({
   origin: (origin, callback) => {
@@ -78,6 +75,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Range'],
   exposedHeaders: ['Content-Range', 'Accept-Ranges', 'Content-Length'],
 }));
+
+// Request timeout - Prevent hanging requests (90 seconds)
+// Placed after CORS to ensure preflight requests get proper headers before timeout
+app.use(requestTimeout(90000));
 
 app.use((req, res, next) => {
   const start = Date.now();

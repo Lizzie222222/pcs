@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import type { Request, Response } from 'express';
 import { log } from '../vite';
 
@@ -36,6 +36,7 @@ export const botBlocker = rateLimit({
       retryAfter: '1 hour'
     });
   },
+  keyGenerator: (req: Request) => `bot:${ipKeyGenerator(req)}`,
 });
 
 // General API rate limiter with tiered limits based on authentication
@@ -77,6 +78,6 @@ export const apiLimiter = rateLimit({
   // Use IP + user ID as key for better accuracy
   keyGenerator: (req: Request) => {
     const user = (req as any).user;
-    return user ? `user:${user.id}` : `ip:${req.ip}`;
+    return user ? `user:${user.id}` : `ip:${ipKeyGenerator(req)}`;
   },
 });
