@@ -112,6 +112,7 @@ import SchoolUserImport from "@/components/admin/SchoolUserImport";
 import SchoolRoundFixer from "@/components/admin/SchoolRoundFixer";
 import TeamsSection from '@/components/admin/teams/TeamsSection';
 import EvidenceRequirementsSection from '@/components/admin/evidence-requirements/EvidenceRequirementsSection';
+import EvidenceTriageSection from '@/components/admin/EvidenceTriageSection';
 import SystemHealthTab from '@/components/admin/SystemHealthTab';
 import CollaborationSidebar from '@/components/admin/CollaborationSidebar';
 import ChatPanel from '@/components/admin/ChatPanel';
@@ -137,7 +138,7 @@ import type {
  * @location client/src/pages/admin.tsx#L731
  * @related server/routes.ts (registerRoutes), shared/schema.ts (users, schools, evidence, caseStudies, events), server/auth.ts (isAuthenticated)
  */
-function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' | 'system-health' | 'certificates' }) {
+function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'evidence-triage' | 'events' | 'printable-forms' | 'activity' | 'system-health' | 'certificates' }) {
   const { t } = useTranslation('admin');
   const { user, isAuthenticated, isLoading } = useAuth();
   const { toast } = useToast();
@@ -145,7 +146,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
   const { data: countryOptions = [] } = useCountries();
   const [location] = useLocation();
   const [showWelcomeBanner, setShowWelcomeBanner] = useState(false);
-  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'media-library' | 'data-import' | 'activity' | 'system-health' | 'certificates'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'evidence-triage' | 'events' | 'printable-forms' | 'media-library' | 'data-import' | 'activity' | 'system-health' | 'certificates'>(initialTab);
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
   const [exportFormat, setExportFormat] = useState<'csv' | 'excel'>('csv');
   const [emailDialogOpen, setEmailDialogOpen] = useState(false);
@@ -940,7 +941,7 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
             <DropdownMenuTrigger asChild>
               <button
                 className={`px-3 sm:px-4 py-3 sm:py-2 rounded-lg text-sm font-medium transition-colors flex items-center gap-1 relative whitespace-nowrap flex-shrink-0 min-h-11 ${
-                  ['evidence-requirements', 'printable-forms'].includes(activeTab)
+                  ['evidence-requirements', 'evidence-triage', 'printable-forms'].includes(activeTab)
                     ? 'bg-white text-navy shadow-sm' 
                     : 'text-gray-600 hover:text-navy'
                 }`}
@@ -957,6 +958,13 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
                 data-testid="tab-program-evidence-requirements"
               >
                 {t('navigation.setEvidenceRequirements')}
+              </DropdownMenuItem>
+              <DropdownMenuItem 
+                onClick={() => setActiveTab('evidence-triage')}
+                className={activeTab === 'evidence-triage' ? 'bg-gray-100 font-medium' : ''}
+                data-testid="tab-program-evidence-triage"
+              >
+                Evidence Triage
               </DropdownMenuItem>
               <DropdownMenuItem 
                 onClick={() => setActiveTab('printable-forms')}
@@ -1149,6 +1157,11 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
           />
         )}
 
+        {/* Evidence Triage Tab */}
+        {activeTab === 'evidence-triage' && (
+          <EvidenceTriageSection />
+        )}
+
         {/* Events Tab */}
         {activeTab === 'events' && (
           <Suspense fallback={
@@ -1205,9 +1218,9 @@ function AdminContent({ initialTab = 'overview' }: { initialTab?: 'overview' | '
   );
 }
 
-export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' } = {}) {
+export default function Admin({ initialTab = 'overview' }: { initialTab?: 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'evidence-triage' | 'events' | 'printable-forms' | 'activity' } = {}) {
   const urlParams = new URLSearchParams(window.location.search);
-  const tabFromUrl = urlParams.get('tab') as 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'events' | 'printable-forms' | 'activity' | null;
+  const tabFromUrl = urlParams.get('tab') as 'overview' | 'reviews' | 'schools' | 'teams' | 'resources' | 'resource-packs' | 'case-studies' | 'users' | 'email-test' | 'evidence-requirements' | 'evidence-triage' | 'events' | 'printable-forms' | 'activity' | null;
   
   const effectiveInitialTab = tabFromUrl || initialTab;
   

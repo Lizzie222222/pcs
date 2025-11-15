@@ -7,7 +7,7 @@ import { createEvidenceDelegates } from './delegates';
 import { createSchoolProgressionDelegate } from '../schools/progression';
 import { schoolStorage } from '../schools/storage';
 import type { IStorage } from '../../storage';
-import { insertEvidenceSchema, insertEvidenceRequirementSchema } from '@shared/schema';
+import { insertEvidenceSchema, insertEvidenceRequirementSchema, evidence } from '@shared/schema';
 import { sendEvidenceSubmissionEmail, sendEvidenceApprovalEmail, sendEvidenceRejectionEmail } from '../../emailService';
 import { mailchimpService } from '../../mailchimpService';
 import { translateEvidenceRequirement } from '../../translationService';
@@ -16,6 +16,8 @@ import { uploadCompression } from '../../routes/utils/uploads';
 import { shouldCompressFile, compressImage } from '../../imageCompression';
 import { ObjectStorageService } from '../../objectStorage';
 import { z } from 'zod';
+import { db } from '../../db';
+import { sql, and, eq } from 'drizzle-orm';
 
 /**
  * Create Evidence Routers (Quad Router Structure)
@@ -1065,6 +1067,190 @@ export function createEvidenceRouters(storage: IStorage): {
     } catch (error) {
       console.error("Error assigning evidence:", error);
       res.status(500).json({ message: "Failed to assign evidence" });
+    }
+  });
+
+  /**
+   * GET /api/admin/evidence/homeless
+   * 
+   * Get all homeless evidence (evidenceRequirementId=null AND isBonus=false)
+   * Used by Evidence Triage dashboard to identify unassigned evidence
+   * 
+   * UNIFIED PAGINATION ARCHITECTURE:
+   * - Route is thin pass-through (parse, call storage, shape response)
+   * - Storage handles ALL pagination logic
+   * - No duplicate queries or calculations
+   * 
+   * Query params:
+   * - schoolId: Optional filter by school
+   * - stage: Optional filter by stage (inspire/investigate/act)
+   * - page: Page number (default 1)
+   * - limit: Items per page (default 20)
+   */
+  adminEvidenceRouter.get('/homeless', isAuthenticated, requireAdminOrPartner, async (req, res) => {
+    try {
+      // Parse query params
+      const { schoolId, stage, page, limit } = req.query;
+      
+      const parsedPage = Number.parseInt(page as string, 10);
+      const parsedLimit = Number.parseInt(limit as string, 10);
+      
+      const requestedPage = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
+      const requestedLimit = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 20;
+      
+      // Delegate everything to storage
+      const result = await evidenceStorage.getHomelessEvidence(
+        schoolId as string | undefined,
+        stage as 'inspire' | 'investigate' | 'act' | undefined,
+        requestedPage,
+        requestedLimit
+      );
+      
+      // Shape response
+      return res.json({
+        evidence: result.items,
+        pagination: {
+          page: result.page,
+          limit: result.limit,
+          total: result.total,
+          totalPages: result.totalPages,
+          hasMore: result.page < result.totalPages
+        }
+      });
+    } catch (error) {
+      console.error('[Evidence Triage] Failed to fetch homeless evidence:', error);
+      return res.status(500).json({
+        error: 'Failed to fetch homeless evidence'
+      });
+    }
+  });
+
+  /**
+   * PATCH /api/admin/evidence/:id/assign-requirement
+   * 
+   * Assign homeless evidence to a requirement
+   * - Validates requirement exists and matches evidence stage
+   * - Updates evidence record with evidenceRequirementId
+   * - Invalidates school progress cache (triggers progression check)
+   * 
+   * Body: { evidenceRequirementId: string }
+   */
+  adminEvidenceRouter.patch('/:id/assign-requirement', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { evidenceRequirementId } = req.body;
+      const userId = req.user.id;
+      
+      if (!evidenceRequirementId) {
+        return res.status(400).json({ message: "evidenceRequirementId is required" });
+      }
+      
+      // Get evidence to verify it exists and is homeless
+      const evidence = await evidenceStorage.getEvidence(id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+      
+      if (evidence.evidenceRequirementId) {
+        return res.status(400).json({ message: "Evidence is already assigned to a requirement" });
+      }
+      
+      // Get requirement to validate it exists and matches stage
+      const requirement = await evidenceStorage.getEvidenceRequirement(evidenceRequirementId);
+      if (!requirement) {
+        return res.status(404).json({ message: "Evidence requirement not found" });
+      }
+      
+      if (requirement.stage !== evidence.stage) {
+        return res.status(400).json({ 
+          message: `Requirement stage (${requirement.stage}) does not match evidence stage (${evidence.stage})` 
+        });
+      }
+      
+      // Update evidence with requirement assignment
+      const updatedEvidence = await evidenceStorage.updateEvidence(id, {
+        evidenceRequirementId,
+      });
+      
+      if (!updatedEvidence) {
+        return res.status(500).json({ message: "Failed to assign requirement" });
+      }
+      
+      // Invalidate school progress cache and trigger progression check
+      await delegates.progression.checkAndUpdateSchoolProgression(evidence.schoolId);
+      
+      // Log the assignment
+      await logAuditAction(
+        userId,
+        'assigned_requirement',
+        'evidence',
+        id,
+        { evidenceRequirementId, requirementTitle: requirement.title }
+      );
+      
+      res.json(updatedEvidence);
+    } catch (error) {
+      console.error("Error assigning requirement to evidence:", error);
+      res.status(500).json({ message: "Failed to assign requirement" });
+    }
+  });
+
+  /**
+   * PATCH /api/admin/evidence/:id/mark-bonus
+   * 
+   * Mark homeless evidence as bonus evidence
+   * - Updates evidence record with isBonus=true
+   * - Invalidates school progress cache
+   * 
+   * Body: { isBonus: true }
+   */
+  adminEvidenceRouter.patch('/:id/mark-bonus', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { isBonus } = req.body;
+      const userId = req.user.id;
+      
+      if (typeof isBonus !== 'boolean') {
+        return res.status(400).json({ message: "isBonus must be a boolean" });
+      }
+      
+      // Get evidence to verify it exists
+      const evidence = await evidenceStorage.getEvidence(id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+      
+      if (evidence.evidenceRequirementId && isBonus) {
+        return res.status(400).json({ 
+          message: "Cannot mark evidence as bonus if it's assigned to a requirement. Unassign it first." 
+        });
+      }
+      
+      // Update evidence with bonus flag
+      const updatedEvidence = await evidenceStorage.updateEvidence(id, {
+        isBonus,
+      });
+      
+      if (!updatedEvidence) {
+        return res.status(500).json({ message: "Failed to mark as bonus" });
+      }
+      
+      // Invalidate school progress cache
+      await delegates.progression.checkAndUpdateSchoolProgression(evidence.schoolId);
+      
+      // Log the action
+      await logAuditAction(
+        userId,
+        isBonus ? 'marked_bonus' : 'unmarked_bonus',
+        'evidence',
+        id,
+        { isBonus }
+      );
+      
+      res.json(updatedEvidence);
+    } catch (error) {
+      console.error("Error marking evidence as bonus:", error);
+      res.status(500).json({ message: "Failed to mark as bonus" });
     }
   });
 

@@ -233,6 +233,174 @@ export class EvidenceStorage {
   }
 
   /**
+   * Get homeless evidence (evidenceRequirementId IS NULL AND isBonus = false)
+   * Used by Evidence Triage dashboard to identify unassigned evidence
+   * 
+   * UNIFIED PAGINATION ARCHITECTURE:
+   * - ALL pagination logic in storage layer (sanitize, count, clamp, query)
+   * - Route is thin pass-through
+   * - Single COUNT query, single SELECT query
+   * - Short-circuits for empty results
+   * 
+   * @param schoolId - Optional school filter
+   * @param stage - Optional stage filter
+   * @param requestedPage - Requested page number (will be sanitized)
+   * @param requestedLimit - Requested items per page (will be sanitized)
+   * @returns Object with items, total, page, totalPages, limit
+   */
+  async getHomelessEvidence(
+    schoolId: string | undefined,
+    stage: 'inspire' | 'investigate' | 'act' | undefined,
+    requestedPage: number,
+    requestedLimit: number
+  ): Promise<{
+    items: EvidenceWithSchool[];
+    total: number;
+    page: number;
+    totalPages: number;
+    limit: number;
+  }> {
+    // Sanitize inputs
+    const limit = Math.min(100, Math.max(1, requestedLimit));
+    const page = Math.max(1, requestedPage);
+    
+    // Build filters
+    const conditions = [
+      sql`${evidence.evidenceRequirementId} IS NULL`,
+      eq(evidence.isBonus, false),
+    ];
+    
+    if (schoolId) {
+      conditions.push(eq(evidence.schoolId, schoolId));
+    }
+    if (stage) {
+      conditions.push(eq(evidence.stage, stage));
+    }
+
+    // Single COUNT query - no JOIN needed to count all evidence including orphans
+    const countResult = await db
+      .select({ count: sql<number>`count(*)` })
+      .from(evidence)
+      .where(and(...conditions));
+    
+    const total = Number(countResult[0]?.count || 0);
+    
+    // Short-circuit for empty results
+    if (total === 0) {
+      return {
+        items: [],
+        total: 0,
+        page: 1,
+        totalPages: 1,
+        limit
+      };
+    }
+    
+    // Calculate totalPages and clamp page
+    const totalPages = Math.max(1, Math.ceil(total / limit));
+    const sanitizedPage = Math.min(page, totalPages);
+    const offset = (sanitizedPage - 1) * limit;
+    
+    // Single SELECT query with sanitized page - LEFT JOIN to include orphan evidence
+    const results = await db
+      .select({
+        id: evidence.id,
+        schoolId: evidence.schoolId,
+        submittedBy: evidence.submittedBy,
+        evidenceRequirementId: evidence.evidenceRequirementId,
+        isBonus: evidence.isBonus,
+        title: evidence.title,
+        description: evidence.description,
+        stage: evidence.stage,
+        status: evidence.status,
+        visibility: evidence.visibility,
+        files: evidence.files,
+        videoLinks: evidence.videoLinks,
+        reviewedBy: evidence.reviewedBy,
+        reviewedAt: evidence.reviewedAt,
+        reviewNotes: evidence.reviewNotes,
+        assignedTo: evidence.assignedTo,
+        isFeatured: evidence.isFeatured,
+        isAuditQuiz: evidence.isAuditQuiz,
+        roundNumber: evidence.roundNumber,
+        hasChildren: evidence.hasChildren,
+        parentalConsentFiles: evidence.parentalConsentFiles,
+        submittedAt: evidence.submittedAt,
+        updatedAt: evidence.updatedAt,
+        school: {
+          id: schools.id,
+          name: sql<string | null>`COALESCE(${schools.name}, 'Unknown School')`,
+          country: schools.country,
+          photoConsentStatus: schools.photoConsentStatus,
+          photoConsentDocumentUrl: schools.photoConsentDocumentUrl,
+          photoConsentUploadedAt: schools.photoConsentUploadedAt,
+          photoConsentApprovedAt: schools.photoConsentApprovedAt,
+          photoConsentReviewNotes: schools.photoConsentReviewNotes,
+        },
+        reviewer: {
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+        },
+      })
+      .from(evidence)
+      .leftJoin(schools, eq(evidence.schoolId, schools.id))
+      .leftJoin(users, eq(evidence.reviewedBy, users.id))
+      .where(and(...conditions))
+      .orderBy(desc(evidence.submittedAt), asc(evidence.id))
+      .limit(limit)
+      .offset(offset);
+    
+    // Transform results to use nested photoConsent structure
+    // Handle both orphan evidence (null school.id) and normal evidence
+    const items = results
+      .map(r => {
+        const school = r.school;
+        if (!school || school.id === null) {
+          // Orphan evidence - create minimal school object with fallback name
+          return {
+            ...r,
+            school: {
+              id: null,
+              name: 'Unknown School',
+              country: null,
+              photoConsent: null,
+            }
+          };
+        }
+        
+        // Normal evidence with school
+        return {
+          ...r,
+          school: {
+            ...school,
+            photoConsent: school.photoConsentStatus || school.photoConsentDocumentUrl ? {
+              status: school.photoConsentStatus,
+              documentUrl: school.photoConsentDocumentUrl,
+              uploadedAt: school.photoConsentUploadedAt,
+              approvedAt: school.photoConsentApprovedAt,
+              reviewNotes: school.photoConsentReviewNotes,
+            } : null,
+            photoConsentStatus: undefined,
+            photoConsentDocumentUrl: undefined,
+            photoConsentUploadedAt: undefined,
+            photoConsentApprovedAt: undefined,
+            photoConsentReviewNotes: undefined,
+          }
+        };
+      }) as Array<EvidenceWithSchool>;
+
+    return {
+      items,
+      total,
+      page: sanitizedPage,
+      totalPages,
+      limit
+    };
+  }
+
+  /**
    * Update evidence record
    * @param id - Evidence ID
    * @param updates - Fields to update
