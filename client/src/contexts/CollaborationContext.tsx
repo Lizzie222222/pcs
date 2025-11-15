@@ -77,6 +77,10 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
   const isConnectingRef = useRef(false);
   const messageHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
   const hasInitiatedConnectionRef = useRef(false);
+  // Track userId in a ref to prevent reconnections when user object reference changes
+  const userIdRef = useRef<string | undefined>(undefined);
+  // Track whether we should maintain the connection (false when page is intentionally hidden or user logged out)
+  const shouldMaintainConnectionRef = useRef(true);
   
   const maxReconnectAttempts = 5;
   const baseReconnectDelay = 1000;
@@ -359,10 +363,10 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
           return;
         }
 
-        // Only attempt to reconnect if still authenticated
-        // This prevents infinite reconnection loops when user is not logged in
-        if (!isAuthenticated) {
-          console.log('[Collaboration] Not reconnecting - user not authenticated');
+        // Only attempt to reconnect if still authenticated AND connection should be maintained
+        // This prevents reconnection when: (1) user is not logged in, (2) page is intentionally hidden
+        if (!isAuthenticated || !shouldMaintainConnectionRef.current) {
+          console.log('[Collaboration] Not reconnecting - connection on hold (user logged out or page hidden)');
           return;
         }
 
@@ -514,30 +518,113 @@ export function CollaborationProvider({ children, user, isAuthenticated }: Colla
     return documentViewers.get(viewKey) || [];
   }, [documentViewers]);
 
-  // Connect on mount if authenticated
-  // Use userId to prevent reconnections when user object identity changes
-  const userId = user?.id;
+  // Update userId ref when user changes (used for visibility handling)
   useEffect(() => {
-    // Comprehensive check: only connect if all conditions are met
-    const socket = socketRef.current;
-    const isConnectedOrConnecting = socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING);
-    const shouldConnect = isAuthenticated && userId && !hasInitiatedConnectionRef.current && !isConnectedOrConnecting;
-    
-    if (shouldConnect) {
-      hasInitiatedConnectionRef.current = true;
-      console.log('[Collaboration] Initiating connection for user:', userId);
-      connect();
-    }
+    userIdRef.current = user?.id;
+  }, [user?.id]);
 
-    // Cleanup: disconnect when component unmounts or user logs out
-    return () => {
-      if (!isAuthenticated || !userId) {
+  // Connect on mount if authenticated - FIXED: depends on isAuthenticated and user?.id, but uses ref checks to prevent duplicate connections
+  useEffect(() => {
+    // If user logged out, immediately disconnect and stop maintaining connection
+    if (!isAuthenticated) {
+      shouldMaintainConnectionRef.current = false;
+      if (hasInitiatedConnectionRef.current || socketRef.current) {
+        console.log('[Collaboration] User logged out, disconnecting WebSocket');
         hasInitiatedConnectionRef.current = false;
         disconnect();
       }
+      return;
+    }
+
+    // User is authenticated - resume maintaining connection
+    shouldMaintainConnectionRef.current = true;
+
+    // If authenticated but no userId yet, wait for it
+    const currentUserId = user?.id;
+    if (!currentUserId) {
+      console.log('[Collaboration] Authenticated but no userId yet, waiting...');
+      return;
+    }
+
+    // Check if we should connect
+    const socket = socketRef.current;
+    const isConnectedOrConnecting = socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING);
+    
+    // Only connect if we haven't already initiated a connection
+    // This prevents duplicate connections when user object reference changes but id stays the same
+    if (!hasInitiatedConnectionRef.current && !isConnectedOrConnecting) {
+      hasInitiatedConnectionRef.current = true;
+      console.log('[Collaboration] Initiating connection for user:', currentUserId);
+      connect();
+    } else if (isConnectedOrConnecting) {
+      console.log('[Collaboration] Already connected or connecting, skipping duplicate connection attempt');
+    }
+
+    // Cleanup only on unmount (logout is handled above in the effect body)
+    return () => {
+      console.log('[Collaboration] Component unmounting, disconnecting WebSocket');
+      shouldMaintainConnectionRef.current = false;
+      hasInitiatedConnectionRef.current = false;
+      disconnect();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAuthenticated, userId]);
+  }, [isAuthenticated, user?.id]);
+
+  // Disconnect when user switches tabs to save money on WebSocket connections (with delay to avoid disconnecting during brief switches)
+  useEffect(() => {
+    let hideTimeout: NodeJS.Timeout | null = null;
+
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Clear any existing timeout first to avoid multiple timers
+        if (hideTimeout) {
+          clearTimeout(hideTimeout);
+          hideTimeout = null;
+        }
+        
+        // User switched tabs or minimized window - wait 30 seconds before disconnecting
+        // This prevents disconnecting during brief tab switches
+        hideTimeout = setTimeout(() => {
+          const socket = socketRef.current;
+          if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) {
+            console.log('[Collaboration] Page hidden for 30s, disconnecting WebSocket to save resources');
+            shouldMaintainConnectionRef.current = false; // Prevent automatic reconnection
+            disconnect();
+            hasInitiatedConnectionRef.current = false;
+          }
+        }, 30000); // 30 second delay
+      } else {
+        // User returned to tab - cancel any pending disconnect
+        if (hideTimeout) {
+          clearTimeout(hideTimeout);
+          hideTimeout = null;
+        }
+        
+        // Resume maintaining connection
+        shouldMaintainConnectionRef.current = true;
+        
+        // Reconnect if needed
+        if (isAuthenticated && userIdRef.current) {
+          const socket = socketRef.current;
+          const isConnected = socket && socket.readyState === WebSocket.OPEN;
+          if (!isConnected && !hasInitiatedConnectionRef.current) {
+            console.log('[Collaboration] Page visible again, reconnecting WebSocket');
+            hasInitiatedConnectionRef.current = true;
+            connect();
+          }
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+      }
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isAuthenticated]);
 
   // Send ping every 25 seconds to keep connection alive
   useEffect(() => {
