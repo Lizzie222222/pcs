@@ -320,6 +320,13 @@ export default function ProgressTracker({
     setShowEvidenceDetailModal(true);
   };
 
+  // Get homeless evidence (admin-uploaded evidence not assigned to a requirement)
+  const homelessEvidence = allEvidence.filter(
+    ev => ev.evidenceRequirementId === null && 
+          ev.isBonus === false && 
+          ev.roundNumber === selectedRound
+  );
+
   return (
     <>
       <div className="space-y-10">
@@ -364,6 +371,21 @@ export default function ProgressTracker({
             <Info className="h-4 w-4 text-blue-600" />
             <AlertDescription className="text-blue-800 font-medium">
               You are viewing evidence from Round {selectedRound}. This is a previous round.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {/* Homeless Evidence Notification */}
+        {homelessEvidence.length > 0 && (
+          <Alert className="bg-amber-50 border-amber-200" data-testid="homeless-evidence-alert">
+            <Info className="h-4 w-4 text-amber-600" />
+            <AlertDescription className="text-amber-800">
+              <div className="font-medium mb-1">
+                You have {homelessEvidence.length} piece{homelessEvidence.length !== 1 ? 's' : ''} of evidence that {homelessEvidence.length !== 1 ? 'are' : 'is'} not yet assigned to a requirement
+              </div>
+              <div className="text-sm text-amber-700">
+                This evidence was uploaded by an admin but {homelessEvidence.length !== 1 ? 'haven\'t' : 'hasn\'t'} been assigned to a specific requirement yet. {homelessEvidence.length !== 1 ? 'They' : 'It'} won't count toward your progress until assigned. Please contact your program administrator.
+              </div>
             </AlertDescription>
           </Alert>
         )}

@@ -186,6 +186,7 @@ interface DashboardData {
     reviewedAt?: string;
     reviewNotes?: string;
     roundNumber: number;
+    isBonus?: boolean;
     reviewer?: {
       id: string | null;
       email: string | null;
@@ -1498,6 +1499,11 @@ export default function Home() {
                               <Badge className={`${getRoundBadgeColor(evidence.roundNumber)} text-white shadow-sm text-xs`}>
                                 Round {evidence.roundNumber}
                               </Badge>
+                              {evidence.isBonus && (
+                                <Badge className="bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm text-xs" data-testid={`bonus-badge-${evidence.id}`}>
+                                  Bonus
+                                </Badge>
+                              )}
                             </div>
                             <p className="text-sm text-gray-600 flex items-center gap-2">
                               <Calendar className="h-3 w-3" />
