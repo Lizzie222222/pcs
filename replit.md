@@ -12,12 +12,15 @@ This web application supports the Plastic Clever Schools program, a three-stage 
   - Modified `onclose` handler to check `shouldMaintainConnectionRef` before attempting reconnection
   - Implemented visibility-based disconnect with 30-second delay for hidden tabs
   - Fixed connection effect to depend on `[isAuthenticated, user?.id]` with guards to prevent duplicate connections
+  - **NEW: Idle Timeout Feature** - Added automatic disconnect after 30 minutes of user inactivity with manual reconnection
 - **Key Technical Changes**:
   - `hasInitiatedConnectionRef` prevents duplicate connections when user object reference changes
-  - `shouldMaintainConnectionRef` set to `false` during intentional disconnects (logout, hidden tabs) preventing `onclose` from auto-reconnecting
+  - `shouldMaintainConnectionRef` set to `false` during intentional disconnects (logout, hidden tabs, idle timeout) preventing `onclose` from auto-reconnecting
   - Proper timeout clearing in visibility handler prevents overlapping disconnect timers
-- **Expected Impact**: Reduced WebSocket connections from ~3 million/day to ~10-20K/day (one stable connection per user session instead of reconnecting every few minutes)
-- **Architect Review**: PASS - Confirmed all reconnection issues resolved with no security concerns or race conditions
+  - Activity tracking via mousedown, keydown, scroll, touchstart events resets 30-minute idle timer
+  - `IdleTimeoutNotification` component displays amber alert with "Reconnect Now" button when user is idle-disconnected
+- **Expected Impact**: Reduced WebSocket connections from ~3 million/day to ~10-20K/day (one stable connection per user session instead of reconnecting every few minutes), with additional savings from idle user disconnects
+- **Architect Review**: PASS - Confirmed all reconnection issues resolved with no security concerns or race conditions. Idle timeout feature also approved.
 
 **November 15, 2025**: Enhanced evidence review queue UI with improved filtering and preview
 - **Three-Tier Filter Organization**: Reorganized filters into logical tiers - Tier 1 (Stage toggles + Requirement dropdown + Status tabs + Assignee + View toggle), Tier 2 (Search + Sort + Clear filters), Tier 3 (Collapsible advanced filters in 2-column grid)
