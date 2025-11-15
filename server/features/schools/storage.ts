@@ -715,7 +715,7 @@ export class SchoolStorage {
       .where(eq(adminEvidenceOverrides.schoolId, schoolId));
   }
 
-  async getSchoolEvidenceCounts(schoolId: string): Promise<{
+  async getSchoolEvidenceCounts(schoolId: string, roundNumber?: number): Promise<{
     inspire: { total: number; approved: number };
     investigate: { total: number; approved: number; hasQuiz: boolean; hasActionPlan: boolean };
     act: { total: number; approved: number };
@@ -729,7 +729,8 @@ export class SchoolStorage {
       };
     }
 
-    const currentRound = school.currentRound || 1;
+    // Use provided roundNumber or fall back to school's current round
+    const currentRound = roundNumber ?? school.currentRound ?? 1;
 
     const allEvidence = await db
       .select()
@@ -912,6 +913,11 @@ export class SchoolStorage {
       }
     }
 
+    // CRITICAL FIX: Re-fetch evidence counts for the effective round after any round transitions
+    // This ensures we don't use stale counts from the previous round
+    const effectiveRound = updates.currentRound ?? school.currentRound ?? 1;
+    const freshCounts = await this.getSchoolEvidenceCounts(schoolId, effectiveRound);
+
     let currentRoundProgress = 0;
     
     if (school.isMigrated) {
@@ -928,11 +934,11 @@ export class SchoolStorage {
       const actRequirements = allRequirements.filter(r => r.stage === 'act').length;
       
       const totalNewApproved = 
-        counts.inspire.approved + 
-        counts.investigate.approved + 
-        (counts.investigate.hasQuiz ? 1 : 0) +
-        (counts.investigate.hasActionPlan ? 1 : 0) +
-        counts.act.approved;
+        freshCounts.inspire.approved + 
+        freshCounts.investigate.approved + 
+        (freshCounts.investigate.hasQuiz ? 1 : 0) +
+        (freshCounts.investigate.hasActionPlan ? 1 : 0) +
+        freshCounts.act.approved;
       
       const totalEvidence = totalNewApproved;
       
@@ -962,11 +968,11 @@ export class SchoolStorage {
       const actRequirements = allRequirements.filter(r => r.stage === 'act').length;
       
       const totalApproved = 
-        counts.inspire.approved + 
-        counts.investigate.approved + 
-        (counts.investigate.hasQuiz ? 1 : 0) +
-        (counts.investigate.hasActionPlan ? 1 : 0) +
-        counts.act.approved;
+        freshCounts.inspire.approved + 
+        freshCounts.investigate.approved + 
+        (freshCounts.investigate.hasQuiz ? 1 : 0) +
+        (freshCounts.investigate.hasActionPlan ? 1 : 0) +
+        freshCounts.act.approved;
       
       const totalRequired = inspireRequirements + investigateRequirements + actRequirements + 2;
       

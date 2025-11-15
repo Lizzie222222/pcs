@@ -5594,7 +5594,15 @@ Return JSON with:
   app.get('/api/audits/school/:schoolId', isAuthenticated, async (req: any, res) => {
     try {
       const { schoolId } = req.params;
-      const audit = await storage.getSchoolAudit(schoolId);
+      
+      // Get school to determine current round
+      const school = await storage.getSchool(schoolId);
+      if (!school) {
+        return res.status(404).json({ message: "School not found" });
+      }
+      
+      // Fetch audit for the school's current round
+      const audit = await storage.getSchoolAudit(schoolId, school.currentRound || 1);
       
       if (!audit) {
         return res.status(404).json({ message: "No audit found for this school" });
