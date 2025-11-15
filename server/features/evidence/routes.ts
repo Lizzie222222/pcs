@@ -275,10 +275,11 @@ export function createEvidenceRouters(storage: IStorage): {
         evidence = evidence.filter(ev => ev.school?.photoConsentStatus === 'approved');
       }
       
-      // Transform to match the expected format with file URLs extracted
+      // Transform to match the expected format with full evidence data
       const transformedEvidence = evidence.map(ev => ({
         id: ev.id,
         title: ev.title,
+        description: ev.description,
         stage: ev.stage,
         status: ev.status,
         visibility: ev.visibility,
@@ -286,6 +287,11 @@ export function createEvidenceRouters(storage: IStorage): {
         schoolName: ev.school?.name || '',
         evidenceRequirementId: ev.evidenceRequirementId,
         roundNumber: ev.roundNumber,
+        files: ev.files || [],
+        videoLinks: ev.videoLinks,
+        submittedAt: ev.submittedAt,
+        reviewedAt: ev.reviewedAt,
+        reviewNotes: ev.reviewNotes,
         fileUrls: Array.isArray(ev.files) 
           ? (ev.files as any[]).filter((f: any) => f.type?.startsWith('image/')).map((f: any) => f.url) 
           : [],
