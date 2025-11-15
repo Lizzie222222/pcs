@@ -88,7 +88,7 @@ export default function EvidenceTriageSection() {
   const pagination = homelessData?.pagination;
 
   // Fetch all schools for filter dropdown
-  const { data: schools = [] } = useQuery<Array<{ id: string; name: string; country: string }>>({
+  const { data: schoolsData } = useQuery<{ schools: Array<{ id: string; name: string; country: string }> }>({
     queryKey: ['/api/admin/schools'],
     queryFn: async () => {
       const res = await fetch('/api/admin/schools', { credentials: 'include' });
@@ -97,6 +97,8 @@ export default function EvidenceTriageSection() {
     },
     retry: false,
   });
+
+  const schools = schoolsData?.schools || [];
 
   // Fetch evidence requirements filtered by stage
   const { data: requirements = [] } = useQuery<EvidenceRequirement[]>({
