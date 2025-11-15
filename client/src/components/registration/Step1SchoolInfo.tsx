@@ -18,7 +18,7 @@ import { InfoTooltip } from "@/components/ui/info-tooltip";
 
 export interface Step1Data {
   country: string;
-  schoolName: string;
+  name: string;
   adminEmail: string;
   address: string;
   postcode?: string;
@@ -42,7 +42,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
     
     return z.object({
       country: z.string().min(1, t('forms:validation.required')),
-      schoolName: z.string().min(1, t('forms:validation.required')).max(200),
+      name: z.string().min(1, t('forms:validation.required')).max(200),
       adminEmail: z.string().min(1, t('forms:validation.required')).email(t('forms:validation.email_invalid')),
       address: z.string().min(1, t('forms:validation.required')),
       postcode: countryConfig?.postalCodeField === 'postcode' 
@@ -62,7 +62,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
     resolver: zodResolver(schema),
     defaultValues: {
       country: initialData?.country || '',
-      schoolName: initialData?.schoolName || '',
+      name: initialData?.name || '',
       adminEmail: initialData?.adminEmail || '',
       address: initialData?.address || '',
       postcode: initialData?.postcode || '',
@@ -151,7 +151,7 @@ export default function Step1SchoolInfo({ initialData, onNext, onCancel }: Step1
           {/* School Name */}
           <FormField
             control={form.control}
-            name="schoolName"
+            name="name"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>{t('forms:school_registration.school_name_label')}</FormLabel>
