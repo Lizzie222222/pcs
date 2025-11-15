@@ -227,8 +227,12 @@ export default function EditSchoolDialog({ school, open, onOpenChange }: EditSch
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="not_specified">Not specified</SelectItem>
+                  <SelectItem value="kindergarten">Kindergarten</SelectItem>
                   <SelectItem value="primary">Primary</SelectItem>
                   <SelectItem value="secondary">Secondary</SelectItem>
+                  <SelectItem value="high_school">High School</SelectItem>
+                  <SelectItem value="international">International</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
