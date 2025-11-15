@@ -2229,6 +2229,22 @@ export class DatabaseStorage implements IStorage {
       .insert(notifications)
       .values(notificationData)
       .returning();
+    
+    // Broadcast notification update via WebSocket to eliminate polling
+    // This notifies users immediately when a new notification is created
+    if (notificationData.userId) {
+      // User-specific notification
+      const { broadcastNotificationUpdate } = await import('./websocket');
+      broadcastNotificationUpdate(notificationData.userId, 'new');
+    } else if (notificationData.schoolId) {
+      // School-wide notification - notify all team members
+      const schoolMembers = await this.getSchoolTeamMembers(notificationData.schoolId);
+      const { broadcastNotificationUpdate } = await import('./websocket');
+      for (const member of schoolMembers) {
+        broadcastNotificationUpdate(member.id, 'new');
+      }
+    }
+    
     return notification;
   }
 

@@ -6,7 +6,7 @@ import { storage } from './storage';
 
 // Type definitions for WebSocket messages
 export interface WebSocketMessage {
-  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong' | 'idle_unlock' | 'start_viewing' | 'stop_viewing' | 'viewers_updated';
+  type: 'presence_update' | 'document_lock_request' | 'document_unlock' | 'chat_message' | 'conflict_warning' | 'typing_start' | 'typing_stop' | 'ping' | 'pong' | 'idle_unlock' | 'start_viewing' | 'stop_viewing' | 'viewers_updated' | 'notification_update';
   payload?: any;
 }
 
@@ -889,4 +889,28 @@ export function broadcastDocumentUnlock(documentId: string, documentType: string
       reason: reason || 'force_unlock',
     },
   });
+}
+
+/**
+ * Broadcast notification update to specific user or all users
+ * Used by API routes to notify users of new notifications in real-time
+ * This eliminates the need for polling, reducing server load
+ */
+export function broadcastNotificationUpdate(userId?: string, action: 'new' | 'read' | 'deleted' = 'new') {
+  if (userId) {
+    // Send to specific user
+    const socket = userSocketMap.get(userId);
+    if (socket && socket.readyState === WebSocket.OPEN) {
+      sendToClient(socket, {
+        type: 'notification_update',
+        payload: { action },
+      });
+    }
+  } else {
+    // Broadcast to all users
+    broadcastToAll({
+      type: 'notification_update',
+      payload: { action },
+    });
+  }
 }
