@@ -383,8 +383,42 @@ export default function ProgressTracker({
               <div className="font-medium mb-1">
                 You have {homelessEvidence.length} piece{homelessEvidence.length !== 1 ? 's' : ''} of evidence that {homelessEvidence.length !== 1 ? 'are' : 'is'} not yet assigned to a requirement
               </div>
-              <div className="text-sm text-amber-700">
+              <div className="text-sm text-amber-700 mb-3">
                 This evidence was uploaded by an admin but {homelessEvidence.length !== 1 ? 'haven\'t' : 'hasn\'t'} been assigned to a specific requirement yet. {homelessEvidence.length !== 1 ? 'They' : 'It'} won't count toward your progress until assigned. Please contact your program administrator.
+              </div>
+              
+              {/* List of homeless evidence items */}
+              <div className="space-y-2 mt-3">
+                {homelessEvidence.map((evidence) => (
+                  <div 
+                    key={evidence.id}
+                    className="flex items-center justify-between gap-3 bg-white/60 rounded-lg p-3 hover:bg-white/80 transition-colors cursor-pointer border border-amber-200/50"
+                    onClick={() => handleViewEvidence(evidence)}
+                    data-testid={`homeless-evidence-${evidence.id}`}
+                  >
+                    <div className="flex-1 min-w-0">
+                      <div className="font-medium text-amber-900 text-sm truncate">
+                        {evidence.title}
+                      </div>
+                      <div className="text-xs text-amber-700 mt-0.5">
+                        {evidence.stage ? evidence.stage.charAt(0).toUpperCase() + evidence.stage.slice(1) : 'Unknown stage'} • 
+                        {evidence.submittedAt && ` ${new Date(evidence.submittedAt).toLocaleDateString()}`}
+                      </div>
+                    </div>
+                    <Badge 
+                      variant="outline" 
+                      className={`text-xs flex-shrink-0 ${
+                        evidence.status === 'approved' 
+                          ? 'bg-green-50 text-green-700 border-green-200' 
+                          : evidence.status === 'pending'
+                          ? 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                          : 'bg-red-50 text-red-700 border-red-200'
+                      }`}
+                    >
+                      {evidence.status ? evidence.status.charAt(0).toUpperCase() + evidence.status.slice(1) : 'Unknown'}
+                    </Badge>
+                  </div>
+                ))}
               </div>
             </AlertDescription>
           </Alert>
