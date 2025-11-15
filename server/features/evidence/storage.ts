@@ -123,12 +123,17 @@ export class EvidenceStorage {
    */
   async getAllEvidence(filters?: {
     status?: 'pending' | 'approved' | 'rejected';
-    stage?: 'inspire' | 'investigate' | 'act';
+    stage?: 'inspire' | 'investigate' | 'act' | 'above_and_beyond';
     schoolId?: string;
     country?: string;
     visibility?: 'public' | 'private';
     assignedTo?: string;
     roundNumber?: number;
+    evidenceRequirementId?: string;
+    search?: string;
+    sortBy?: 'newest' | 'oldest' | 'schoolName' | 'stage';
+    dateFrom?: Date;
+    dateTo?: Date;
   }): Promise<EvidenceWithSchool[]> {
     // Build WHERE conditions
     const conditions = [];
@@ -154,14 +159,36 @@ export class EvidenceStorage {
     if (filters?.roundNumber !== undefined) {
       conditions.push(eq(evidence.roundNumber, filters.roundNumber));
     }
+    if (filters?.evidenceRequirementId) {
+      conditions.push(eq(evidence.evidenceRequirementId, filters.evidenceRequirementId));
+    }
+    if (filters?.dateFrom) {
+      conditions.push(sql`${evidence.submittedAt} >= ${filters.dateFrom}`);
+    }
+    if (filters?.dateTo) {
+      conditions.push(sql`${evidence.submittedAt} <= ${filters.dateTo}`);
+    }
+    
+    // Add search filter for school name, title, and description
+    if (filters?.search) {
+      const searchTerm = `%${filters.search}%`;
+      conditions.push(
+        or(
+          ilike(schools.name, searchTerm),
+          ilike(evidence.title, searchTerm),
+          ilike(evidence.description, searchTerm)
+        )
+      );
+    }
 
     // Query with JOIN to include school data and reviewer info
-    const query = db
+    let query = db
       .select({
         id: evidence.id,
         schoolId: evidence.schoolId,
         submittedBy: evidence.submittedBy,
         evidenceRequirementId: evidence.evidenceRequirementId,
+        isBonus: evidence.isBonus,
         title: evidence.title,
         description: evidence.description,
         stage: evidence.stage,
@@ -201,9 +228,30 @@ export class EvidenceStorage {
       .leftJoin(schools, eq(evidence.schoolId, schools.id))
       .leftJoin(users, eq(evidence.reviewedBy, users.id));
 
-    const results = conditions.length > 0
-      ? await query.where(and(...conditions)).orderBy(desc(evidence.submittedAt))
-      : await query.orderBy(desc(evidence.submittedAt));
+    // Apply WHERE conditions
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as typeof query;
+    }
+
+    // Apply sorting based on sortBy parameter
+    const sortBy = filters?.sortBy || 'newest';
+    switch (sortBy) {
+      case 'oldest':
+        query = query.orderBy(asc(evidence.submittedAt)) as typeof query;
+        break;
+      case 'schoolName':
+        query = query.orderBy(asc(schools.name)) as typeof query;
+        break;
+      case 'stage':
+        query = query.orderBy(asc(evidence.stage), desc(evidence.submittedAt)) as typeof query;
+        break;
+      case 'newest':
+      default:
+        query = query.orderBy(desc(evidence.submittedAt)) as typeof query;
+        break;
+    }
+
+    const results = await query;
     
     // Transform results to use nested photoConsent structure
     return results

@@ -3,11 +3,13 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { useTranslation } from 'react-i18next';
+import { useDebounce } from "@/hooks/useDebounce";
 import ReviewsFilters from "./ReviewsFilters";
 import EvidenceReviewQueue from "./EvidenceReviewQueue";
 import AuditReviewQueue from "./AuditReviewQueue";
 import PhotoConsentQueue from "./PhotoConsentQueue";
 import type { AdminStats, PendingEvidence, PendingAudit } from "@/components/admin/shared/types";
+import type { User } from "@shared/schema";
 
 interface ReviewsSectionProps {
   activeTab: string;
@@ -30,6 +32,16 @@ export default function ReviewsSection({
   const [reviewType, setReviewType] = useState<'evidence' | 'audits' | 'photo-consent'>('evidence');
   const [evidenceStatusFilter, setEvidenceStatusFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending');
   const [evidenceAssigneeFilter, setEvidenceAssigneeFilter] = useState<string>('all');
+  const [evidenceStageFilter, setEvidenceStageFilter] = useState<'all' | 'inspire' | 'investigate' | 'act' | 'above_and_beyond'>('all');
+  const [evidenceRequirementFilter, setEvidenceRequirementFilter] = useState<string>('all');
+  const [evidenceSearchQuery, setEvidenceSearchQuery] = useState<string>('');
+  const [evidenceSortBy, setEvidenceSortBy] = useState<'newest' | 'oldest' | 'schoolName' | 'stage'>('newest');
+  const [evidenceCountryFilter, setEvidenceCountryFilter] = useState<string>('all');
+  const [evidenceRoundFilter, setEvidenceRoundFilter] = useState<string>('all');
+  const [evidenceVisibilityFilter, setEvidenceVisibilityFilter] = useState<'all' | 'public' | 'private'>('all');
+  const [evidenceDateFrom, setEvidenceDateFrom] = useState<Date | undefined>(undefined);
+  const [evidenceDateTo, setEvidenceDateTo] = useState<Date | undefined>(undefined);
+  const [evidenceViewMode, setEvidenceViewMode] = useState<'card' | 'table'>('card');
   const [selectedEvidence, setSelectedEvidence] = useState<string[]>([]);
   const [reviewData, setReviewData] = useState<{
     evidenceId: string;
@@ -48,18 +60,63 @@ export default function ReviewsSection({
   } | null>(null);
 
   // Get current user
-  const { data: currentUser } = useQuery({
+  const { data: currentUser } = useQuery<User>({
     queryKey: ['/api/user'],
     retry: false,
   });
 
-  // Evidence query with status and assignee filter
+  // Debounce search query to avoid excessive API calls
+  const debouncedSearchQuery = useDebounce(evidenceSearchQuery, 300);
+
+  // Evidence query with all filters
   const { data: pendingEvidence, isLoading: evidenceLoading } = useQuery<PendingEvidence[]>({
-    queryKey: ['/api/admin/evidence', evidenceStatusFilter, evidenceAssigneeFilter, currentUser?.id],
+    queryKey: [
+      '/api/admin/evidence',
+      evidenceStatusFilter,
+      evidenceAssigneeFilter,
+      evidenceStageFilter,
+      evidenceRequirementFilter,
+      debouncedSearchQuery,
+      evidenceSortBy,
+      evidenceCountryFilter,
+      evidenceRoundFilter,
+      evidenceVisibilityFilter,
+      evidenceDateFrom,
+      evidenceDateTo,
+      currentUser?.id
+    ],
     queryFn: async () => {
       const params = new URLSearchParams();
+      
       if (evidenceStatusFilter && evidenceStatusFilter !== 'all') {
         params.append('status', evidenceStatusFilter);
+      }
+      if (evidenceStageFilter && evidenceStageFilter !== 'all') {
+        params.append('stage', evidenceStageFilter);
+      }
+      if (evidenceRequirementFilter && evidenceRequirementFilter !== 'all') {
+        params.append('evidenceRequirementId', evidenceRequirementFilter);
+      }
+      if (debouncedSearchQuery) {
+        params.append('search', debouncedSearchQuery);
+      }
+      if (evidenceSortBy && evidenceSortBy !== 'newest') {
+        params.append('sortBy', evidenceSortBy);
+      }
+      if (evidenceCountryFilter && evidenceCountryFilter !== 'all') {
+        params.append('country', evidenceCountryFilter);
+      }
+      if (evidenceRoundFilter && evidenceRoundFilter !== 'all') {
+        params.append('roundNumber', evidenceRoundFilter);
+      }
+      if (evidenceVisibilityFilter && evidenceVisibilityFilter !== 'all') {
+        params.append('visibility', evidenceVisibilityFilter);
+      }
+      if (evidenceDateFrom) {
+        params.append('dateFrom', evidenceDateFrom.toISOString());
+      }
+      if (evidenceDateTo) {
+        params.append('dateTo', evidenceDateTo.toISOString());
       }
       if (evidenceAssigneeFilter && evidenceAssigneeFilter !== 'all') {
         if (evidenceAssigneeFilter === 'me' && currentUser?.id) {
@@ -70,6 +127,7 @@ export default function ReviewsSection({
           params.append('assignedTo', evidenceAssigneeFilter);
         }
       }
+      
       const url = `/api/admin/evidence${params.toString() ? `?${params.toString()}` : ''}`;
       const res = await fetch(url, { credentials: 'include' });
       if (!res.ok) throw new Error(`${res.status}: ${await res.text()}`);
@@ -394,6 +452,26 @@ export default function ReviewsSection({
           setEvidenceStatusFilter={setEvidenceStatusFilter}
           evidenceAssigneeFilter={evidenceAssigneeFilter}
           setEvidenceAssigneeFilter={setEvidenceAssigneeFilter}
+          evidenceStageFilter={evidenceStageFilter}
+          setEvidenceStageFilter={setEvidenceStageFilter}
+          evidenceRequirementFilter={evidenceRequirementFilter}
+          setEvidenceRequirementFilter={setEvidenceRequirementFilter}
+          evidenceSearchQuery={evidenceSearchQuery}
+          setEvidenceSearchQuery={setEvidenceSearchQuery}
+          evidenceSortBy={evidenceSortBy}
+          setEvidenceSortBy={setEvidenceSortBy}
+          evidenceCountryFilter={evidenceCountryFilter}
+          setEvidenceCountryFilter={setEvidenceCountryFilter}
+          evidenceRoundFilter={evidenceRoundFilter}
+          setEvidenceRoundFilter={setEvidenceRoundFilter}
+          evidenceVisibilityFilter={evidenceVisibilityFilter}
+          setEvidenceVisibilityFilter={setEvidenceVisibilityFilter}
+          evidenceDateFrom={evidenceDateFrom}
+          setEvidenceDateFrom={setEvidenceDateFrom}
+          evidenceDateTo={evidenceDateTo}
+          setEvidenceDateTo={setEvidenceDateTo}
+          evidenceViewMode={evidenceViewMode}
+          setEvidenceViewMode={setEvidenceViewMode}
           currentUserId={currentUser?.id}
         />
       )}

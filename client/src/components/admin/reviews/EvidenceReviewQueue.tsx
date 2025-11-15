@@ -1,8 +1,17 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Select,
   SelectContent,
@@ -10,6 +19,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +48,13 @@ import {
   AlertTriangle,
   Loader2,
   UserCog,
+  Search,
+  Filter,
+  LayoutGrid,
+  List,
+  Calendar,
+  X,
+  ChevronDown,
 } from "lucide-react";
 import { EvidenceFilesGallery } from "@/components/EvidenceFilesGallery";
 import { EvidenceVideoLinks } from "@/components/EvidenceVideoLinks";
@@ -41,6 +62,8 @@ import { EvidenceAssignment } from "./EvidenceAssignment";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { useTranslation, Trans } from 'react-i18next';
+import { useCountries } from "@/hooks/useCountries";
+import { useDebounce } from "@/hooks/useDebounce";
 import type { PendingEvidence } from "@/components/admin/shared/types";
 import type { User } from "@shared/schema";
 
@@ -78,6 +101,26 @@ interface EvidenceReviewQueueProps {
   setEvidenceStatusFilter: (filter: 'all' | 'pending' | 'approved' | 'rejected') => void;
   evidenceAssigneeFilter: string;
   setEvidenceAssigneeFilter: (filter: string) => void;
+  evidenceStageFilter: 'all' | 'inspire' | 'investigate' | 'act' | 'above_and_beyond';
+  setEvidenceStageFilter: (filter: 'all' | 'inspire' | 'investigate' | 'act' | 'above_and_beyond') => void;
+  evidenceRequirementFilter: string;
+  setEvidenceRequirementFilter: (filter: string) => void;
+  evidenceSearchQuery: string;
+  setEvidenceSearchQuery: (query: string) => void;
+  evidenceSortBy: 'newest' | 'oldest' | 'schoolName' | 'stage';
+  setEvidenceSortBy: (sortBy: 'newest' | 'oldest' | 'schoolName' | 'stage') => void;
+  evidenceCountryFilter: string;
+  setEvidenceCountryFilter: (filter: string) => void;
+  evidenceRoundFilter: string;
+  setEvidenceRoundFilter: (filter: string) => void;
+  evidenceVisibilityFilter: 'all' | 'public' | 'private';
+  setEvidenceVisibilityFilter: (filter: 'all' | 'public' | 'private') => void;
+  evidenceDateFrom: Date | undefined;
+  setEvidenceDateFrom: (date: Date | undefined) => void;
+  evidenceDateTo: Date | undefined;
+  setEvidenceDateTo: (date: Date | undefined) => void;
+  evidenceViewMode: 'card' | 'table';
+  setEvidenceViewMode: (mode: 'card' | 'table') => void;
   currentUserId?: string;
 }
 
@@ -101,6 +144,26 @@ export default function EvidenceReviewQueue({
   setEvidenceStatusFilter,
   evidenceAssigneeFilter,
   setEvidenceAssigneeFilter,
+  evidenceStageFilter,
+  setEvidenceStageFilter,
+  evidenceRequirementFilter,
+  setEvidenceRequirementFilter,
+  evidenceSearchQuery,
+  setEvidenceSearchQuery,
+  evidenceSortBy,
+  setEvidenceSortBy,
+  evidenceCountryFilter,
+  setEvidenceCountryFilter,
+  evidenceRoundFilter,
+  setEvidenceRoundFilter,
+  evidenceVisibilityFilter,
+  setEvidenceVisibilityFilter,
+  evidenceDateFrom,
+  setEvidenceDateFrom,
+  evidenceDateTo,
+  setEvidenceDateTo,
+  evidenceViewMode,
+  setEvidenceViewMode,
   currentUserId,
 }: EvidenceReviewQueueProps) {
   const { toast } = useToast();
@@ -109,6 +172,10 @@ export default function EvidenceReviewQueue({
   const [pendingApprovalEvidence, setPendingApprovalEvidence] = useState<PendingEvidence | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [evidenceToDelete, setEvidenceToDelete] = useState<string | null>(null);
+  const [advancedFiltersOpen, setAdvancedFiltersOpen] = useState(false);
+  
+  // Debounce search query
+  const debouncedSearchQuery = useDebounce(evidenceSearchQuery, 300);
 
   const { data: admins } = useQuery<User[]>({
     queryKey: ['/api/admin/users'],
@@ -118,6 +185,17 @@ export default function EvidenceReviewQueue({
       return res.json();
     }
   });
+
+  const { data: evidenceRequirements } = useQuery<any[]>({
+    queryKey: ['/api/evidence-requirements'],
+    queryFn: async () => {
+      const res = await fetch('/api/evidence-requirements', { credentials: 'include' });
+      if (!res.ok) throw new Error('Failed to fetch evidence requirements');
+      return res.json();
+    }
+  });
+
+  const { data: countries } = useCountries();
 
   // Helper functions
   const toggleEvidenceSelection = (evidenceId: string) => {
@@ -169,6 +247,166 @@ export default function EvidenceReviewQueue({
       default: return 'bg-gray-500 text-white';
     }
   };
+
+  // Count active filters
+  const activeFiltersCount = useMemo(() => {
+    let count = 0;
+    if (evidenceStageFilter !== 'all') count++;
+    if (evidenceRequirementFilter !== 'all') count++;
+    if (evidenceSearchQuery) count++;
+    if (evidenceCountryFilter !== 'all') count++;
+    if (evidenceRoundFilter !== 'all') count++;
+    if (evidenceVisibilityFilter !== 'all') count++;
+    if (evidenceDateFrom) count++;
+    if (evidenceDateTo) count++;
+    return count;
+  }, [
+    evidenceStageFilter,
+    evidenceRequirementFilter,
+    evidenceSearchQuery,
+    evidenceCountryFilter,
+    evidenceRoundFilter,
+    evidenceVisibilityFilter,
+    evidenceDateFrom,
+    evidenceDateTo
+  ]);
+
+  // Clear all filters
+  const clearAllFilters = () => {
+    setEvidenceStageFilter('all');
+    setEvidenceRequirementFilter('all');
+    setEvidenceSearchQuery('');
+    setEvidenceCountryFilter('all');
+    setEvidenceRoundFilter('all');
+    setEvidenceVisibilityFilter('all');
+    setEvidenceDateFrom(undefined);
+    setEvidenceDateTo(undefined);
+    setEvidenceSortBy('newest');
+  };
+
+  // Filter evidence requirements by selected stage
+  const filteredRequirements = useMemo(() => {
+    if (!evidenceRequirements) return [];
+    if (evidenceStageFilter === 'all') return evidenceRequirements;
+    return evidenceRequirements.filter(req => req.stage === evidenceStageFilter);
+  }, [evidenceRequirements, evidenceStageFilter]);
+
+  // Table View Component
+  const EvidenceTableView = ({ evidence }: { evidence: PendingEvidence[] }) => (
+    <div className="border rounded-lg overflow-hidden">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead className="w-12">
+              <input
+                type="checkbox"
+                checked={selectedEvidence.length === evidence.length}
+                onChange={toggleSelectAllEvidence}
+                className="rounded border-gray-300"
+                data-testid="checkbox-select-all-table"
+              />
+            </TableHead>
+            <TableHead>School</TableHead>
+            <TableHead>Stage</TableHead>
+            <TableHead>Title</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Submitted Date</TableHead>
+            <TableHead>Assigned To</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {evidence.map((item) => (
+            <TableRow
+              key={item.id}
+              className={selectedEvidence.includes(item.id) ? 'bg-blue-50' : ''}
+              data-testid={`table-row-evidence-${item.id}`}
+            >
+              <TableCell>
+                <input
+                  type="checkbox"
+                  checked={selectedEvidence.includes(item.id)}
+                  onChange={() => toggleEvidenceSelection(item.id)}
+                  className="rounded border-gray-300"
+                  data-testid={`checkbox-table-evidence-${item.id}`}
+                />
+              </TableCell>
+              <TableCell className="font-medium">
+                <div className="flex items-center gap-1">
+                  <Building className="h-3 w-3 text-gray-400" />
+                  <span className="text-sm">{item.school?.name || 'Unknown'}</span>
+                </div>
+              </TableCell>
+              <TableCell>
+                <Badge className={getStageColor(item.stage)} data-testid={`badge-stage-${item.id}`}>
+                  {item.stage}
+                </Badge>
+              </TableCell>
+              <TableCell>
+                <div className="max-w-xs">
+                  <div className="font-medium text-sm truncate">{item.title}</div>
+                  <div className="text-xs text-gray-500 truncate">{item.description}</div>
+                </div>
+              </TableCell>
+              <TableCell>
+                <Badge variant="outline" className="bg-yellow text-black">
+                  {item.status}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-sm text-gray-600">
+                {new Date(item.submittedAt).toLocaleDateString()}
+              </TableCell>
+              <TableCell>
+                <div className="min-w-[150px]">
+                  <EvidenceAssignment
+                    evidenceId={item.id}
+                    currentAssignedTo={item.assignedTo}
+                  />
+                </div>
+              </TableCell>
+              <TableCell className="text-right">
+                <div className="flex gap-1 justify-end">
+                  <Button
+                    size="sm"
+                    className="bg-green-500 hover:bg-green-600 h-8 px-2"
+                    onClick={() => handleApproveClick(item)}
+                    data-testid={`button-table-approve-${item.id}`}
+                  >
+                    <CheckCircle className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="h-8 px-2"
+                    onClick={() => setReviewData({
+                      evidenceId: item.id,
+                      action: 'rejected',
+                      notes: ''
+                    })}
+                    data-testid={`button-table-reject-${item.id}`}
+                  >
+                    <XCircle className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 px-2"
+                    onClick={() => {
+                      setEvidenceToDelete(item.id);
+                      setDeleteDialogOpen(true);
+                    }}
+                    data-testid={`button-table-delete-${item.id}`}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
+  );
 
   return (
     <>
@@ -226,7 +464,99 @@ export default function EvidenceReviewQueue({
             )}
           </div>
 
-          {/* Status Filter Tabs */}
+          {/* Row 1: Stage Filter + View Toggle */}
+          <div className="flex items-center justify-between gap-4 mt-4">
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-gray-700">Stage:</span>
+              <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg">
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStageFilter === 'all'
+                      ? 'bg-white text-navy shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStageFilter('all')}
+                  data-testid="filter-stage-all"
+                >
+                  All
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStageFilter === 'inspire'
+                      ? 'bg-pcs_blue text-white shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStageFilter('inspire')}
+                  data-testid="filter-stage-inspire"
+                >
+                  Inspire
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStageFilter === 'investigate'
+                      ? 'bg-teal text-white shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStageFilter('investigate')}
+                  data-testid="filter-stage-investigate"
+                >
+                  Investigate
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStageFilter === 'act'
+                      ? 'bg-coral text-white shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStageFilter('act')}
+                  data-testid="filter-stage-act"
+                >
+                  Act
+                </button>
+                <button
+                  className={`px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    evidenceStageFilter === 'above_and_beyond'
+                      ? 'bg-purple-600 text-white shadow-sm'
+                      : 'text-gray-600 hover:text-navy'
+                  }`}
+                  onClick={() => setEvidenceStageFilter('above_and_beyond')}
+                  data-testid="filter-stage-above-beyond"
+                >
+                  Above & Beyond
+                </button>
+              </div>
+            </div>
+            
+            {/* View Toggle */}
+            <div className="flex items-center gap-2 bg-gray-100 p-1 rounded-lg">
+              <button
+                className={`p-2 rounded-md transition-colors ${
+                  evidenceViewMode === 'card'
+                    ? 'bg-white text-navy shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                onClick={() => setEvidenceViewMode('card')}
+                data-testid="view-mode-card"
+                title="Card View"
+              >
+                <LayoutGrid className="h-4 w-4" />
+              </button>
+              <button
+                className={`p-2 rounded-md transition-colors ${
+                  evidenceViewMode === 'table'
+                    ? 'bg-white text-navy shadow-sm'
+                    : 'text-gray-600 hover:text-navy'
+                }`}
+                onClick={() => setEvidenceViewMode('table')}
+                data-testid="view-mode-table"
+                title="Table View"
+              >
+                <List className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Row 2: Status Filter Tabs + Assignee */}
           <div className="flex items-center gap-4 mt-4">
             <div className="flex space-x-1 bg-gray-100 p-1 rounded-lg flex-1">
               <button
@@ -302,6 +632,189 @@ export default function EvidenceReviewQueue({
             </div>
           </div>
 
+          {/* Row 3: Search + Sort + Clear Filters */}
+          <div className="flex items-center gap-3 mt-4">
+            {/* Search Bar */}
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Search by school name, title, or description..."
+                value={evidenceSearchQuery}
+                onChange={(e) => setEvidenceSearchQuery(e.target.value)}
+                className="pl-9"
+                data-testid="input-search-evidence"
+              />
+            </div>
+
+            {/* Sort Dropdown */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600">Sort:</span>
+              <Select
+                value={evidenceSortBy}
+                onValueChange={(value: any) => setEvidenceSortBy(value)}
+                data-testid="select-sort-by"
+              >
+                <SelectTrigger className="w-[180px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="newest">Newest First</SelectItem>
+                  <SelectItem value="oldest">Oldest First</SelectItem>
+                  <SelectItem value="schoolName">School Name A-Z</SelectItem>
+                  <SelectItem value="stage">Stage</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Clear Filters Button */}
+            {activeFiltersCount > 0 && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={clearAllFilters}
+                className="flex items-center gap-1"
+                data-testid="button-clear-filters"
+              >
+                <X className="h-4 w-4" />
+                Clear {activeFiltersCount} filter{activeFiltersCount !== 1 ? 's' : ''}
+              </Button>
+            )}
+          </div>
+
+          {/* Row 4: Collapsible Advanced Filters */}
+          <Collapsible
+            open={advancedFiltersOpen}
+            onOpenChange={setAdvancedFiltersOpen}
+            className="mt-4"
+          >
+            <CollapsibleTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+                data-testid="button-toggle-advanced-filters"
+              >
+                <Filter className="h-4 w-4" />
+                Advanced Filters
+                <ChevronDown className={`h-4 w-4 transition-transform ${advancedFiltersOpen ? 'rotate-180' : ''}`} />
+              </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent className="mt-3">
+              <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 p-4 bg-gray-50 rounded-lg">
+                {/* Requirement Filter */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-700">Requirement</label>
+                  <Select
+                    value={evidenceRequirementFilter}
+                    onValueChange={setEvidenceRequirementFilter}
+                    data-testid="filter-requirement"
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Requirements" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Requirements</SelectItem>
+                      {filteredRequirements?.map((req) => (
+                        <SelectItem key={req.id} value={req.id}>
+                          {req.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Country Filter */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-700">Country</label>
+                  <Select
+                    value={evidenceCountryFilter}
+                    onValueChange={setEvidenceCountryFilter}
+                    data-testid="filter-country"
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Countries" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {countries?.map((country) => (
+                        <SelectItem key={country.value} value={country.value}>
+                          {country.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Round Filter */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-700">Round</label>
+                  <Select
+                    value={evidenceRoundFilter}
+                    onValueChange={setEvidenceRoundFilter}
+                    data-testid="filter-round"
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All Rounds" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Rounds</SelectItem>
+                      <SelectItem value="1">Round 1</SelectItem>
+                      <SelectItem value="2">Round 2</SelectItem>
+                      <SelectItem value="3">Round 3</SelectItem>
+                      <SelectItem value="4">Round 4</SelectItem>
+                      <SelectItem value="5">Round 5</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Visibility Filter */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-700">Visibility</label>
+                  <Select
+                    value={evidenceVisibilityFilter}
+                    onValueChange={(value: any) => setEvidenceVisibilityFilter(value)}
+                    data-testid="filter-visibility"
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="All" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All</SelectItem>
+                      <SelectItem value="public">Public</SelectItem>
+                      <SelectItem value="private">Private</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* Date Range */}
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-gray-700">Date Range</label>
+                  <div className="flex gap-2 items-center">
+                    <div className="flex-1">
+                      <Input
+                        type="date"
+                        value={evidenceDateFrom ? evidenceDateFrom.toISOString().split('T')[0] : ''}
+                        onChange={(e) => setEvidenceDateFrom(e.target.value ? new Date(e.target.value) : undefined)}
+                        className="text-xs"
+                        data-testid="input-date-from"
+                      />
+                    </div>
+                    <span className="text-xs text-gray-500">to</span>
+                    <div className="flex-1">
+                      <Input
+                        type="date"
+                        value={evidenceDateTo ? evidenceDateTo.toISOString().split('T')[0] : ''}
+                        onChange={(e) => setEvidenceDateTo(e.target.value ? new Date(e.target.value) : undefined)}
+                        className="text-xs"
+                        data-testid="input-date-to"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CollapsibleContent>
+          </Collapsible>
+
           {evidencePending && evidencePending.length > 0 && (
             <div className="flex items-center gap-2">
               <input
@@ -356,6 +869,8 @@ export default function EvidenceReviewQueue({
               <h3 className="text-lg font-semibold text-gray-600 mb-2">{t('reviews.evidence.emptyState.title')}</h3>
               <p className="text-gray-500">{t('reviews.evidence.emptyState.description')}</p>
             </div>
+          ) : evidenceViewMode === 'table' ? (
+            <EvidenceTableView evidence={evidencePending || []} />
           ) : (
             <div className="space-y-4">
               {evidencePending?.map((evidence) => (

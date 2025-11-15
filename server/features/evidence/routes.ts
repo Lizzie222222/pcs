@@ -692,7 +692,8 @@ export function createEvidenceRouters(storage: IStorage): {
    * GET /api/admin/evidence
    * 
    * List evidence with flexible filtering
-   * - Filters by status, stage, schoolId, country, visibility, assignedTo
+   * - Filters by status, stage, schoolId, country, visibility, assignedTo, evidenceRequirementId
+   * - Supports search, sorting, and date range filtering
    * - Returns all evidence with school details
    * 
    * Migrated from server/routes.ts:5847-5869
@@ -701,11 +702,17 @@ export function createEvidenceRouters(storage: IStorage): {
     try {
       const filters = {
         status: req.query.status as 'pending' | 'approved' | 'rejected' | undefined,
-        stage: req.query.stage as 'inspire' | 'investigate' | 'act' | undefined,
+        stage: req.query.stage as 'inspire' | 'investigate' | 'act' | 'above_and_beyond' | undefined,
         schoolId: req.query.schoolId as string | undefined,
         country: req.query.country as string | undefined,
         visibility: req.query.visibility as 'public' | 'private' | undefined,
         assignedTo: req.query.assignedTo as string | undefined,
+        evidenceRequirementId: req.query.evidenceRequirementId as string | undefined,
+        search: req.query.search as string | undefined,
+        sortBy: req.query.sortBy as 'newest' | 'oldest' | 'schoolName' | 'stage' | undefined,
+        roundNumber: req.query.roundNumber ? parseInt(req.query.roundNumber as string) : undefined,
+        dateFrom: req.query.dateFrom ? new Date(req.query.dateFrom as string) : undefined,
+        dateTo: req.query.dateTo ? new Date(req.query.dateTo as string) : undefined,
       };
       
       // Remove undefined values
