@@ -1,0 +1,116 @@
+2025-11-15 19:54:02.12
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: edougia@sch.gr teacher
+2025-11-15 19:54:02.12
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:02.12
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: edougia@sch.gr teacher
+2025-11-15 19:54:02.12
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:02.33
+3f8e7d5c
+User
+6:54:02 PM [express] GET /api/my-events 304 in 196ms :: []
+2025-11-15 19:54:02.35
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:02.35
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: sarahvant33@gmail.com teacher
+2025-11-15 19:54:02.40
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: gn.maria@yahoo.gr teacher
+2025-11-15 19:54:02.40
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:03.20
+3f8e7d5c
+User
+6:54:03 PM [express] [Rate Limit] Blocked bot request to /xmlrpc.php from 104.154.182.220
+2025-11-15 19:54:03.65
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: chara.ntova@cognita.com teacher
+2025-11-15 19:54:03.65
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:04.14
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:04.14
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: edougia@sch.gr teacher
+2025-11-15 19:54:04.26
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: gn.maria@yahoo.gr teacher
+2025-11-15 19:54:04.26
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:04.36
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: sarahvant33@gmail.com teacher
+2025-11-15 19:54:04.36
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:05.63
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: chara.ntova@cognita.com teacher
+2025-11-15 19:54:05.63
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:05.65
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: gn.maria@yahoo.gr teacher
+2025-11-15 19:54:05.65
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:06.11
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: edougia@sch.gr teacher
+2025-11-15 19:54:06.11
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:06.21
+3f8e7d5c
+User
+6:54:06 PM [express] [Rate Limit] Blocked bot request to /xmlrpc.php from 104.154.182.220
+2025-11-15 19:54:06.39
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:06.39
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: sarahvant33@gmail.com teacher
+2025-11-15 19:54:07.13
+3f8e7d5c
+User
+[WebSocket] Unauthenticated connection attempt
+2025-11-15 19:54:07.13
+3f8e7d5c
+User
+[WebSocket] Non-admin user rejected: gn.maria@yahoo.gr teacher
