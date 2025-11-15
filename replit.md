@@ -4,6 +4,21 @@
 This web application supports the Plastic Clever Schools program, a three-stage initiative (Inspire, Investigate, Act) aimed at reducing plastic use in schools. It provides a public website and an integrated CRM, offering educational resources, evidence tracking, case studies, plastic reduction promise tracking, and administrative tools. The project's core purpose is to foster environmental responsibility, expand the program's reach, and provide a comprehensive platform for schools to engage with environmental initiatives and track their progress.
 
 ## Recent Changes
+**November 15, 2025**: CRITICAL FIX - Resolved excessive WebSocket reconnection issue causing high infrastructure costs
+- **Root Cause**: WebSocket was reconnecting every few minutes (~383 connections per user per day, ~3 million per day total) due to userId dependency triggering React effect when user object reference changed during TanStack Query refetches
+- **Solution Implemented**: 
+  - Introduced `userIdRef` to track userId without causing re-renders or reconnections
+  - Added `shouldMaintainConnectionRef` flag to control when automatic reconnection should occur
+  - Modified `onclose` handler to check `shouldMaintainConnectionRef` before attempting reconnection
+  - Implemented visibility-based disconnect with 30-second delay for hidden tabs
+  - Fixed connection effect to depend on `[isAuthenticated, user?.id]` with guards to prevent duplicate connections
+- **Key Technical Changes**:
+  - `hasInitiatedConnectionRef` prevents duplicate connections when user object reference changes
+  - `shouldMaintainConnectionRef` set to `false` during intentional disconnects (logout, hidden tabs) preventing `onclose` from auto-reconnecting
+  - Proper timeout clearing in visibility handler prevents overlapping disconnect timers
+- **Expected Impact**: Reduced WebSocket connections from ~3 million/day to ~10-20K/day (one stable connection per user session instead of reconnecting every few minutes)
+- **Architect Review**: PASS - Confirmed all reconnection issues resolved with no security concerns or race conditions
+
 **November 15, 2025**: Enhanced evidence review queue UI with improved filtering and preview
 - **Three-Tier Filter Organization**: Reorganized filters into logical tiers - Tier 1 (Stage toggles + Requirement dropdown + Status tabs + Assignee + View toggle), Tier 2 (Search + Sort + Clear filters), Tier 3 (Collapsible advanced filters in 2-column grid)
 - **Stage-Requirement Adjacency**: Moved requirement filter from advanced section to be adjacent to stage filter for better UX and logical grouping
