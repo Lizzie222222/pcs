@@ -2501,6 +2501,7 @@ Return JSON with:
       });
       
       console.log(`[School Team] Found ${teamMembers.length} team members`);
+      console.log(`[School Team] First member data:`, JSON.stringify(teamMembers[0], null, 2));
       
       res.json(teamMembers);
     } catch (error) {
