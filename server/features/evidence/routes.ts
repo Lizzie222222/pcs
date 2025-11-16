@@ -1203,6 +1203,62 @@ export function createEvidenceRouters(storage: IStorage): {
   });
 
   /**
+   * POST /api/admin/evidence/:id/check-duplicate
+   * 
+   * Check if school already has evidence for a requirement
+   * - Finds existing evidence for the same school, requirement, and round
+   * - Returns duplicate evidence details if found
+   * - Used for duplicate detection before assignment
+   * 
+   * Body: { requirementId: string }
+   */
+  adminEvidenceRouter.post('/:id/check-duplicate', isAuthenticated, requireAdminOrPartner, async (req: any, res) => {
+    try {
+      const { id } = req.params;
+      const { requirementId } = req.body;
+      
+      if (!requirementId) {
+        return res.status(400).json({ message: "requirementId is required" });
+      }
+      
+      // Get current evidence to get schoolId and roundNumber
+      const currentEvidence = await evidenceStorage.getEvidence(id);
+      if (!currentEvidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+      
+      // Find existing evidence for the same school, requirement, and round
+      const duplicates = await evidenceStorage.getAllEvidence({
+        schoolId: currentEvidence.schoolId,
+        evidenceRequirementId: requirementId,
+        roundNumber: currentEvidence.roundNumber,
+      });
+      
+      // Filter out the current evidence and only include pending/approved
+      const existingEvidence = duplicates.filter(e => 
+        e.id !== id && 
+        (e.status === 'pending' || e.status === 'approved')
+      );
+      
+      if (existingEvidence.length > 0) {
+        // Get requirement details for the response
+        const requirement = await evidenceStorage.getEvidenceRequirement(requirementId);
+        
+        return res.json({
+          hasDuplicate: true,
+          duplicate: existingEvidence[0],
+          requirementTitle: requirement?.title || 'Unknown requirement',
+        });
+      }
+      
+      res.json({ hasDuplicate: false });
+    } catch (error) {
+      console.error("Error checking for duplicate evidence:", error);
+      res.status(500).json({ message: "Failed to check for duplicates" });
+    }
+  });
+
+  /**
    * PATCH /api/admin/evidence/:id/mark-bonus
    * 
    * Mark homeless evidence as bonus evidence
