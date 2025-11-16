@@ -1244,7 +1244,7 @@ export default function SchoolQuickViewDialog({
             <AlertDialogCancel data-testid="button-cancel-duplicate-assignment">Cancel</AlertDialogCancel>
             <AlertDialogAction
               onClick={confirmAssignRequirement}
-              className="bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-800"
+              className="bg-yellow-600 hover:bg-yellow-700 dark:bg-yellow-700 dark:hover:bg-yellow-800 text-white"
               data-testid="button-confirm-duplicate-assignment"
             >
               {duplicateWarning?.currentRequirement ? 'Reassign' : 'Assign Anyway'}
