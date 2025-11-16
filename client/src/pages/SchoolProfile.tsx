@@ -586,6 +586,8 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
   const [selectedTeacher, setSelectedTeacher] = useState<SchoolTeacher | null>(null);
   const [newEmail, setNewEmail] = useState('');
   const [sendPasswordReset, setSendPasswordReset] = useState(true);
+  const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
+  const [inviteEmail, setInviteEmail] = useState('');
 
   // Fetch users for assignment
   const { data: usersWithSchools = [], isLoading: usersLoading } = useQuery<any[]>({
@@ -650,6 +652,29 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
     },
   });
 
+  // Invite teacher mutation
+  const inviteTeacherMutation = useMutation({
+    mutationFn: async (email: string) => {
+      await apiRequest('POST', `/api/schools/${schoolId}/invite-teacher`, { email });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Invitation Sent",
+        description: "Teacher invitation has been sent successfully.",
+      });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/schools', schoolId, 'teachers'] });
+      setInviteDialogOpen(false);
+      setInviteEmail('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Invitation Failed",
+        description: error.message || "Failed to send invitation. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleAssignSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const selectedUser = usersWithSchools.find(u => u && u.user && u.user.id === selectedUserId);
@@ -688,6 +713,21 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
     updateEmailMutation.mutate({ userId: selectedTeacher.userId, email: newEmail, sendPasswordReset });
   };
 
+  const handleInviteSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!inviteEmail) {
+      toast({
+        title: "Email Required",
+        description: "Please enter an email address.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    inviteTeacherMutation.mutate(inviteEmail);
+  };
+
   const filteredUsers = usersWithSchools
     .filter(item => item && item.user)
     .filter(item => {
@@ -709,18 +749,28 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
               <Users className="h-5 w-5 text-pcs_blue" />
               Teachers ({teachers.length})
             </CardTitle>
-            <Button
-              onClick={() => setAssignDialogOpen(true)}
-              className="bg-pcs_blue hover:bg-navy"
-              size="sm"
-              data-testid="button-assign-teacher"
-            >
-              <Users className="h-4 w-4 mr-2" />
-              Assign Teacher
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setInviteDialogOpen(true)}
+                className="bg-green-600 hover:bg-green-700"
+                size="sm"
+                data-testid="button-invite-teacher"
+              >
+                <Mail className="h-4 w-4 mr-2" />
+                Invite Teacher
+              </Button>
+              <Button
+                onClick={() => setAssignDialogOpen(true)}
+                className="bg-pcs_blue hover:bg-navy"
+                size="sm"
+                data-testid="button-assign-teacher"
+              >
+                <Users className="h-4 w-4 mr-2" />
+                Assign Teacher
+              </Button>
+            </div>
           </div>
-        </CardHeader>
-        <CardContent>
+        </CardHeader>        <CardContent>
           {teachers.length === 0 ? (
             <EmptyState
               icon={Users}
@@ -953,6 +1003,52 @@ function TeachersTab({ schoolId, teachers, isLoading }: {
                 data-testid="button-confirm-update-email"
               >
                 {updateEmailMutation.isPending ? 'Updating...' : 'Update Email'}
+              </Button>
+            </AlertDialogFooter>
+          </form>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Invite Teacher Dialog */}
+      <AlertDialog open={inviteDialogOpen} onOpenChange={setInviteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Invite Teacher via Email</AlertDialogTitle>
+            <AlertDialogDescription>
+              Send an email invitation to a teacher to join this school. They will receive an invitation link that expires in 7 days.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <form onSubmit={handleInviteSubmit} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address *
+              </label>
+              <Input
+                type="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="teacher@example.com"
+                required
+                data-testid="input-invite-email"
+              />
+              <p className="text-sm text-gray-500 mt-2">
+                If this email already has an account, they will be assigned to the school. Otherwise, they'll receive an invitation to register.
+              </p>
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => {
+                setInviteDialogOpen(false);
+                setInviteEmail('');
+              }}>
+                Cancel
+              </AlertDialogCancel>
+              <Button
+                type="submit"
+                disabled={inviteTeacherMutation.isPending || !inviteEmail}
+                className="bg-green-600 hover:bg-green-700"
+                data-testid="button-send-invite"
+              >
+                {inviteTeacherMutation.isPending ? 'Sending...' : 'Send Invitation'}
               </Button>
             </AlertDialogFooter>
           </form>
