@@ -2535,16 +2535,22 @@ export class DatabaseStorage implements IStorage {
       );
 
     if (existing) {
-      // Delete the linked evidence record if it exists
-      if (existing.evidenceId) {
-        await db
-          .delete(evidence)
-          .where(eq(evidence.id, existing.evidenceId));
-      }
-      
-      // Delete the existing override (toggle off)
-      await this.deleteAdminEvidenceOverride(existing.id);
-      return { created: false, override: null };
+      // Use transaction to ensure atomic deletion of evidence and override
+      return await db.transaction(async (tx) => {
+        // Delete the linked evidence record if it exists
+        if (existing.evidenceId) {
+          await tx
+            .delete(evidence)
+            .where(eq(evidence.id, existing.evidenceId));
+        }
+        
+        // Delete the existing override (toggle off)
+        await tx
+          .delete(adminEvidenceOverrides)
+          .where(eq(adminEvidenceOverrides.id, existing.id));
+        
+        return { created: false, override: null };
+      });
     } else {
       // Fetch the requirement details to populate evidence title and description
       const requirement = await this.getEvidenceRequirement(evidenceRequirementId);
@@ -2553,38 +2559,44 @@ export class DatabaseStorage implements IStorage {
         throw new Error(`Evidence requirement ${evidenceRequirementId} not found`);
       }
 
-      // Create evidence record that looks like school-submitted evidence
-      const [evidenceRecord] = await db
-        .insert(evidence)
-        .values({
-          schoolId,
-          submittedBy: markedBy,
-          evidenceRequirementId,
-          title: requirement.title,
-          description: requirement.description,
-          stage,
-          status: 'approved',
-          visibility: 'registered',
-          reviewedBy: markedBy,
-          reviewedAt: new Date(),
-          roundNumber,
-          files: [],
-          videoLinks: null,
-          parentalConsentFiles: [],
-        })
-        .returning();
+      // Use transaction to ensure atomic creation of evidence and override
+      return await db.transaction(async (tx) => {
+        // Create evidence record that looks like school-submitted evidence
+        const [evidenceRecord] = await tx
+          .insert(evidence)
+          .values({
+            schoolId,
+            submittedBy: markedBy,
+            evidenceRequirementId,
+            title: requirement.title,
+            description: requirement.description,
+            stage,
+            status: 'approved',
+            visibility: 'registered',
+            reviewedBy: markedBy,
+            reviewedAt: new Date(),
+            roundNumber,
+            files: [],
+            videoLinks: null,
+            parentalConsentFiles: [],
+          })
+          .returning();
 
-      // Create new override (toggle on) with link to evidence
-      const newOverride = await this.createAdminEvidenceOverride({
-        schoolId,
-        evidenceRequirementId,
-        evidenceId: evidenceRecord.id,
-        stage,
-        roundNumber,
-        markedBy
+        // Create new override (toggle on) with link to evidence
+        const [newOverride] = await tx
+          .insert(adminEvidenceOverrides)
+          .values({
+            schoolId,
+            evidenceRequirementId,
+            evidenceId: evidenceRecord.id,
+            stage,
+            roundNumber,
+            markedBy
+          })
+          .returning();
+        
+        return { created: true, override: newOverride };
       });
-      
-      return { created: true, override: newOverride };
     }
   }
 
