@@ -2,6 +2,7 @@ import { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SchoolCombobox } from "@/components/ui/school-combobox";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { TemplateTypeSelector } from "../../case-study-sections/TemplateTypeSelector";
 import { useQuery } from "@tanstack/react-query";
@@ -57,37 +58,16 @@ export function Step1TemplateBasics({ form, isEditing }: Step1TemplateBasicsProp
             render={({ field }) => (
               <FormItem>
                 <FormLabel>School *</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  value={field.value}
-                  disabled={isEditing || isLoadingSchools}
-                >
-                  <FormControl>
-                    <SelectTrigger data-testid="select-school">
-                      <SelectValue placeholder="Select a school" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {schools?.map((school) => (
-                      <SelectItem key={school.id} value={school.id}>
-                        <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4" />
-                          <span>{school.name}</span>
-                          {school.country && (
-                            <span className="text-muted-foreground text-xs">
-                              ({school.country})
-                            </span>
-                          )}
-                          {typeof school.approvedImageCount === 'number' && (
-                            <span className="text-xs font-medium text-pcs_blue bg-pcs_blue/10 px-2 py-0.5 rounded-full ml-auto">
-                              {school.approvedImageCount} {school.approvedImageCount === 1 ? 'image' : 'images'}
-                            </span>
-                          )}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <FormControl>
+                  <SchoolCombobox
+                    schools={schools || []}
+                    value={field.value}
+                    onValueChange={field.onChange}
+                    placeholder="Select a school..."
+                    disabled={isEditing || isLoadingSchools}
+                    testId="select-school"
+                  />
+                </FormControl>
                 <FormDescription>
                   {isEditing 
                     ? "School cannot be changed after creation"
