@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { SchoolCombobox } from "@/components/ui/school-combobox";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Award, Plus, Download, Search, FileText, AlertCircle, Upload, RotateCcw, Image as ImageIcon } from "lucide-react";
@@ -513,23 +514,15 @@ export default function CertificatesSection({ activeTab }: CertificatesSectionPr
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>School *</FormLabel>
-                    <Select
-                      value={field.value}
-                      onValueChange={field.onChange}
-                    >
-                      <FormControl>
-                        <SelectTrigger data-testid="select-school">
-                          <SelectValue placeholder="Select a school" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {schools.map((school) => (
-                          <SelectItem key={school.id} value={school.id}>
-                            {school.name} ({school.country})
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <SchoolCombobox
+                        schools={schools}
+                        value={field.value}
+                        onValueChange={field.onChange}
+                        placeholder="Select a school..."
+                        testId="select-school"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
