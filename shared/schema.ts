@@ -291,6 +291,7 @@ export const teacherInvitations = pgTable("teacher_invitations", {
   schoolId: varchar("school_id").notNull().references(() => schools.id, { onDelete: 'cascade' }),
   invitedBy: varchar("invited_by").references(() => users.id),
   email: varchar("email").notNull(),
+  message: text("message"),
   token: varchar("token").notNull().unique(),
   status: invitationStatusEnum("status").default('pending'),
   expiresAt: timestamp("expires_at").notNull(),
